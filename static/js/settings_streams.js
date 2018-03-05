@@ -129,9 +129,10 @@ exports.set_up = function () {
         row.addClass("active_stream_row");
 
         var stream_name = row.find('.stream_name').text();
+        var deactivate_stream_modal = templates.render('deactivation-stream-modal', {stream_name: stream_name});
+        $("#settings_content .organization-box").append(deactivate_stream_modal);
 
-        $("#deactivation_stream_modal .stream_name").text(stream_name);
-        $("#deactivation_stream_modal").modal("show");
+        overlays.open_modal('deactivation_stream_modal');
     });
 
     $('.create_default_stream').keypress(function (e) {
@@ -167,34 +168,36 @@ exports.set_up = function () {
         default_stream_input[0].value = "";
     });
 
-    $("#do_deactivate_stream_button").click(function () {
+    $("#settings_content").on("click", "#do_deactivate_stream_button", function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
             ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
                $("#home-error"), 'alert-error');
         }
-        $("#deactivation_stream_modal").modal("hide");
+        overlays.close_modal('deactivation_stream_modal');
+        $("#deactivation_stream_modal").remove();
         $(".active_stream_row button").prop("disabled", true).text(i18n.t("Working…"));
         var stream_name = $(".active_stream_row").find('.stream_name').text();
         var stream_id = stream_data.get_sub(stream_name).stream_id;
-        channel.del({
-            url: '/json/streams/' + stream_id,
-            error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    $(".active_stream_row button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    $(".active_stream_row button").text(i18n.t("Failed!"));
-                }
-            },
-            success: function () {
-                var row = $(".active_stream_row");
-                row.remove();
-            },
-        });
+        var row = $(".active_stream_row");
+        exports.delete_stream(stream_id, $("#organization-status"), row);
     });
 
+    $("#settings_content").on("hide.bs.modal", "#deactivation_stream_modal", function () {
+        $("#deactivation_stream_modal").remove();
+    });
+};
+
+exports.delete_stream = function (stream_id, alert_element, stream_row) {
+    channel.del({
+        url: '/json/streams/' + stream_id,
+        error: function (xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, alert_element);
+        },
+        success: function () {
+            stream_row.remove();
+        },
+    });
 };
 
 return exports;

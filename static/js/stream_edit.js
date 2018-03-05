@@ -585,6 +585,39 @@ $(function () {
         e.stopPropagation();
     });
 
+    $("#subscriptions_table").on("click", ".deactivate", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var stream_id = get_stream_id(e.target);
+        if (!stream_id) {
+            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), 'alert-error');
+            return;
+        }
+        var stream_name = stream_data.maybe_get_stream_name(stream_id);
+        var deactivate_stream_modal = templates.render("deactivation-stream-modal", {stream_name: stream_name});
+        $(".subscription_settings").append(deactivate_stream_modal);
+        overlays.open_modal('deactivation_stream_modal');
+    });
+
+    $("#subscriptions_table").on("click", "#do_deactivate_stream_button", function (e) {
+        var stream_id = get_stream_id(e.target);
+        overlays.close_modal('deactivation_stream_modal');
+        $("#deactivation_stream_modal").remove();
+        if (!stream_id) {
+            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), 'alert-error');
+            return;
+        }
+        var row = $(".stream-row.active");
+        settings_streams.delete_stream(stream_id, $(".stream_change_property_info"), row);
+        $(".settings").hide();
+        $(".nothing-selected").show();
+    });
+
+    $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", function () {
+        $("#deactivation_stream_modal").remove();
+    });
+
     $("#subscriptions_table").on("click", ".stream-row", function (e) {
         if ($(e.target).closest(".check, .subscription_settings").length === 0) {
             exports.show_stream_row(this, true);
