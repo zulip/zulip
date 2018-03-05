@@ -469,6 +469,10 @@ def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATO
     internal_decorator = lru_cache(maxsize=maxsize, typed=typed)
 
     def decorator(user_function: Callable[..., Any]) -> Callable[..., Any]:
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            # In the development environment, we want every file
+            # change to refresh the source files from disk.
+            return user_function
         cache_enabled_user_function = internal_decorator(user_function)
 
         def wrapper(*args: Any, **kwargs: Any) -> Any:
