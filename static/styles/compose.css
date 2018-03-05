@@ -390,13 +390,10 @@ input.recipient_box {
 }
 
 #sending-indicator {
-    float: left;
+    top: 2px;
+    position: relative;
     font-weight: bold;
-    display: none;
-}
-
-#sending-indicator {
-    padding-top: 2px;
+    display: inline-block;
 }
 
 #compose a.message-control-button {
