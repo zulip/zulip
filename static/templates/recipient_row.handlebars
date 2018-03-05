@@ -33,15 +33,12 @@
             </span><span class="recipient_bar_controls no-select">
                 {{! edit subject pencil icon }}
                 {{#if always_visible_topic_edit}}
-                    <i class="icon-vector-pencil always_visible_topic_edit"></i>
+                    <i class="icon-vector-pencil always_visible_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
                 {{else}}
                     {{#if on_hover_topic_edit}}
-                    <i class="icon-vector-pencil on_hover_topic_edit"></i>
-                    {{else}}
-                    <i class="icon-vector-pencil on_hover_topic_edit" style="display: none"></i>
+                    <i class="icon-vector-pencil on_hover_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
                     {{/if}}
                 {{/if}}
-
                 {{! exterior links (e.g. to a trac ticket) }}
                 {{#each subject_links}}
                 <a href="{{this}}" target="_blank" class="no-underline">
