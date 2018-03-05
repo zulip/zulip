@@ -78,9 +78,7 @@ IGNORED_PHRASES = [
     r"one or more people...",
     r"confirmation email",
     r"invites remaining",
-    r"^left$",
     r"was too large; the maximum file size is 25MiB.",
-    r"^right$",
     r"selected message",
     r"a-z",
 

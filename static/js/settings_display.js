@@ -14,15 +14,18 @@ exports.display_checkmark = function ($elem) {
   $(check_mark).css("width","13px");
 };
 
-function change_display_setting(data, status_element) {
+function change_display_setting(data, status_element, success_msg) {
     var spinner = $(status_element).expectOne();
     loading.make_indicator(spinner, {text: strings.saving});
+    if (success_msg === undefined) {
+        success_msg = strings.success;
+    }
 
     channel.patch({
         url: '/json/settings/display',
         data: data,
         success: function () {
-            ui_report.success(strings.success, $(status_element).expectOne());
+            ui_report.success(success_msg, $(status_element).expectOne());
             exports.display_checkmark(spinner);
         },
         error: function (xhr) {
@@ -66,26 +69,9 @@ exports.set_up = function () {
         var new_language = $link.attr('data-name');
         $('#default_language_name').text(new_language);
 
-        var context = {};
-        context.lang = new_language;
-        var spinner = $("#language-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
+        change_display_setting(data, '#language-settings-status',
+                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."));
 
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("Saved. Please <a>reload</a> for the change to take effect."),
-                                  $('#language-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-                $('#language-settings-status').click(function () {
-                    window.location.reload();
-                });
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#language-settings-status').expectOne());
-            },
-        });
     });
 
     $('#default_language').on('click', function (e) {
@@ -105,34 +91,16 @@ exports.set_up = function () {
         exports.set_night_mode(this.checked);
     });
 
+    $('body').on('click', '.reload_link', function () {
+        window.location.reload();
+    });
+
     $("#left_side_userlist").change(function () {
         var left_side_userlist = this.checked;
         var data = {};
         data.left_side_userlist = JSON.stringify(left_side_userlist);
-        var context = {};
-        if (data.left_side_userlist === "true") {
-            context.side = i18n.t('left');
-        } else {
-            context.side = i18n.t('right');
-        }
-        var spinner = $("#display-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(i18n.t("Saved. Please <a>reload</a> for the change to take effect."),
-                                  $('#display-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-                $('#display-settings-status').click(function () {
-                    window.location.reload();
-                });
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#display-settings-status').expectOne());
-            },
-        });
+        change_display_setting(data, '#display-settings-status',
+                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."));
     });
 
     $("#twenty_four_hour_time").change(function () {
