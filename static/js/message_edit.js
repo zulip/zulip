@@ -129,6 +129,14 @@ exports.save = function (row, from_topic_edited_only) {
     // The message will automatically get replaced via message_list.update_message.
 };
 
+exports.update_message_topic_editing_pencil = function () {
+    if (page_params.realm_allow_message_editing) {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
+    } else {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
+    }
+};
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
