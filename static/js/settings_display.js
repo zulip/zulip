@@ -14,28 +14,27 @@ exports.display_checkmark = function ($elem) {
   $(check_mark).css("width","13px");
 };
 
-exports.set_night_mode = function (bool) {
-    var night_mode = bool;
-    var data = { night_mode: JSON.stringify(night_mode) };
-    var spinner = $("#display-settings-status").expectOne();
-    loading.make_indicator(spinner, {text: strings.saving });
+function change_display_setting(data, status_element) {
+    var spinner = $(status_element).expectOne();
+    loading.make_indicator(spinner, {text: strings.saving});
 
     channel.patch({
         url: '/json/settings/display',
         data: data,
         success: function () {
-            page_params.night_mode = night_mode;
-            if (overlays.settings_open()) {
-                ui_report.success(strings.success, $('#display-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-            }
+            ui_report.success(strings.success, $(status_element).expectOne());
+            exports.display_checkmark(spinner);
         },
         error: function (xhr) {
-            if (overlays.settings_open()) {
-                ui_report.error(strings.failure, xhr, $('#display-settings-status').expectOne());
-            }
+            ui_report.error(strings.failure, xhr, $(status_element).expectOne());
         },
     });
+}
+
+exports.set_night_mode = function (bool) {
+    var night_mode = bool;
+    var data = {night_mode: JSON.stringify(night_mode)};
+    change_display_setting(data, '#display-settings-status');
 };
 
 exports.set_up = function () {
@@ -99,26 +98,7 @@ exports.set_up = function () {
         var high_contrast_mode = this.checked;
         var data = {};
         data.high_contrast_mode = JSON.stringify(high_contrast_mode);
-        var context = {};
-        if (data.high_contrast_mode === "true") {
-            context.enabled_or_disabled = i18n.t('Enabled');
-        } else {
-            context.enabled_or_disabled = i18n.t('Disabled');
-        }
-        var spinner = $("#display-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(strings.success, $('#display-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#display-settings-status').expectOne());
-            },
-        });
+        change_display_setting(data, '#display-settings-status');
     });
 
     $("#night_mode").change(function () {
@@ -159,46 +139,14 @@ exports.set_up = function () {
         var data = {};
         var setting_value = $("#twenty_four_hour_time").is(":checked");
         data.twenty_four_hour_time = JSON.stringify(setting_value);
-        var context = {};
-        if (data.twenty_four_hour_time === "true") {
-            context.format = '24';
-        } else {
-            context.format = '12';
-        }
-        var spinner = $("#time-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(strings.success, $('#time-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#time-settings-status').expectOne());
-            },
-        });
+        change_display_setting(data, '#time-settings-status');
     });
 
     $("#user_timezone").change(function () {
         var data = {};
         var timezone = this.value;
         data.timezone = JSON.stringify(timezone);
-        var spinner = $("#time-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(strings.success, $('#time-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#time-settings-status').expectOne());
-            },
-        });
+        change_display_setting(data, '#time-settings-status');
     });
 
     $(".emojiset_choice").click(function () {
@@ -223,20 +171,7 @@ exports.set_up = function () {
         var data = {};
         var setting_value = $("#translate_emoticons").is(":checked");
         data.translate_emoticons = JSON.stringify(setting_value);
-        var spinner = $("#emoji-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-                ui_report.success(strings.success, $('#emoji-settings-status').expectOne());
-                exports.display_checkmark(spinner);
-            },
-            error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#emoji-settings-status').expectOne());
-            },
-        });
+        change_display_setting(data, '#emoji-settings-status');
     });
 };
 
