@@ -39,9 +39,12 @@ set_global('settings_account', {
 
 set_global('settings_org', {
     reset_realm_default_language: noop,
-    update_message_topic_editing_pencil: noop,
     update_message_retention_days: noop,
     update_realm_description: noop,
+});
+
+set_global('message_edit', {
+    update_message_topic_editing_pencil: noop,
 });
 
 // page_params is highly coupled to dispatching now

@@ -70,14 +70,6 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
-exports.update_message_topic_editing_pencil = function () {
-    if (page_params.realm_allow_message_editing) {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
-    } else {
-        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
-    }
-};
-
 exports.update_realm_description = function () {
     if (!meta.loaded) {
         return;
