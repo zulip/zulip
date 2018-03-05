@@ -2,29 +2,8 @@ var settings_display = (function () {
 
 var exports = {};
 
-// this is set down at the top of `exports.set_up` because i18n does not exist
-// yet. This object should eventually have a `success` and `failure` translated
-// string within it.
-var strings = {};
-
 function change_display_setting(data, status_element, success_msg) {
-    var spinner = $(status_element).expectOne();
-    loading.make_indicator(spinner, {text: strings.saving});
-    if (success_msg === undefined) {
-        success_msg = strings.success;
-    }
-
-    channel.patch({
-        url: '/json/settings/display',
-        data: data,
-        success: function () {
-            ui_report.success(success_msg, $(status_element).expectOne());
-            settings_ui.display_checkmark(spinner);
-        },
-        error: function (xhr) {
-            ui_report.error(strings.failure, xhr, $(status_element).expectOne());
-        },
-    });
+    settings_ui.do_settings_change('/json/settings/display', data, status_element, success_msg);
 }
 
 exports.set_night_mode = function (bool) {
@@ -34,12 +13,6 @@ exports.set_night_mode = function (bool) {
 };
 
 exports.set_up = function () {
-    strings = {
-        success: i18n.t("Saved"),
-        failure: i18n.t("Save failed"),
-        saving: i18n.t("Saving"),
-    };
-
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
@@ -115,7 +88,7 @@ exports.set_up = function () {
         var data = {};
         data.emojiset = JSON.stringify(emojiset);
         var spinner = $("#emoji-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: strings.saving });
+        loading.make_indicator(spinner, {text: settings_ui.strings.saving });
 
         channel.patch({
             url: '/json/settings/display',
@@ -123,7 +96,7 @@ exports.set_up = function () {
             success: function () {
             },
             error: function (xhr) {
-                ui_report.error(strings.failure, xhr, $('#emoji-settings-status').expectOne());
+                ui_report.error(settings_ui.strings.failure, xhr, $('#emoji-settings-status').expectOne());
             },
         });
     });
@@ -137,6 +110,12 @@ exports.set_up = function () {
 };
 
 exports.report_emojiset_change = function () {
+    // TODO: Clean up how this works so we can use
+    // change_display_setting.  The challenge is that we don't want to
+    // report success before the server_events request returns that
+    // causes the actual sprite sheet to change.  The current
+    // implementation is wrong, though, in that it displays the UI
+    // update in all active browser windows.
     function emoji_success() {
         if ($("#emoji-settings-status").length) {
             loading.destroy_indicator($("#emojiset_spinner"));

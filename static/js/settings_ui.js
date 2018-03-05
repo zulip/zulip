@@ -9,6 +9,42 @@ exports.display_checkmark = function ($elem) {
     $(check_mark).css("width", "13px");
 };
 
+exports.strings = {};
+function _initialize() {
+    exports.strings = {
+        success: i18n.t("Saved"),
+        failure: i18n.t("Save failed"),
+        saving: i18n.t("Saving"),
+    };
+}
+
+exports.initialize = function () {
+    i18n.ensure_i18n(_initialize);
+};
+
+// Generic function for informing users about changes to the settings
+// UI.  Intended to replace the old system that was built around
+// direct calls to `ui_report`.
+exports.do_settings_change = function (url, data, status_element, success_msg) {
+    var spinner = $(status_element).expectOne();
+    loading.make_indicator(spinner, {text: exports.strings.saving});
+    if (success_msg === undefined) {
+        success_msg = exports.strings.success;
+    }
+
+    channel.patch({
+        url: url,
+        data: data,
+        success: function () {
+            ui_report.success(success_msg, $(status_element).expectOne());
+            settings_ui.display_checkmark(spinner);
+        },
+        error: function (xhr) {
+            ui_report.error(exports.strings.failure, xhr, $(status_element).expectOne());
+        },
+    });
+};
+
 // This function is used to disable sub-setting when main setting is checked or unchecked
 // or two settings are inter-dependent on their values values.
 // * is_checked is boolean, shows if the main setting is checked or not.
