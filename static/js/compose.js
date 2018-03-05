@@ -19,7 +19,6 @@ exports.announce_warn_threshold = 60;
 exports.uploads_domain = document.location.protocol + '//' + document.location.host;
 exports.uploads_path = '/user_uploads';
 exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", 'g');
-exports.clone_file_input = undefined;
 
 function make_uploads_relative(content) {
     // Rewrite uploads in markdown links back to domain-relative form
@@ -869,9 +868,6 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#attach_files", function (e) {
         e.preventDefault();
-        if (exports.clone_file_input === undefined) {
-            exports.clone_file_input = $('#file_input').clone(true);
-        }
         $("#compose #file_input").trigger("click");
     });
 

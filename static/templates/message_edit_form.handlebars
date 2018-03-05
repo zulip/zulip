@@ -1,6 +1,10 @@
 {{! Client-side Mustache template for rendering the message edit form. }}
 
 <form id="message_edit_form" class="form-horizontal new-style">
+    <div class="alert" id="message-edit-send-status-{{message_id}}">
+        <span class="send-status-close">&times;</span>
+        <span class="error-msg"></span>
+    </div>
     {{#if is_stream}}
     <div class="control-group no-margin">
         <div class="controls edit-controls">
@@ -35,7 +39,9 @@
             <div class="message-edit-timer-control-group">
                 <span class="message_edit_countdown_timer"></span>
                 <div class="message-edit-timer-control-group">
+                    <input type="file" id="message_edit_file_input_{{message_id}}" class="notvisible pull-left" multiple />
                     <a class="message-control-button fa fa-font" aria-hidden="true" title="{{t 'Formatting' }}" data-overlay-trigger="markdown-help" ></a>
+                    <a class="message-control-button icon-vector-paper-clip notdisplayed" id="attach_files_{{message_id}}" href="#" title="{{t "Attach files" }}"></a>
                 </div>
                 <span><i id="message_edit_tooltip" class="message_edit_tooltip fa fa-question-circle" aria-hidden="true" data-toggle="tooltip"
                     title="{{#tr this}}This organization is configured to restrict editing of message content to __minutes_to_edit__ minutes after it is sent.{{/tr}}"></i>

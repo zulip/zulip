@@ -10,17 +10,6 @@ function make_upload_absolute(uri) {
     return uri;
 }
 
-// This function resets an input type="file".  Pass in the
-// jquery object.
-function clear_out_file_list(jq_file_list) {
-    if (compose.clone_file_input !== undefined) {
-        jq_file_list.replaceWith(compose.clone_file_input.clone(true));
-    }
-    // Hack explanation:
-    // IE won't let you do this (untested, but so says StackOverflow):
-    //    $("#file_input").val("");
-}
-
 // Show the upload button only if the browser supports it.
 exports.feature_check = function (upload_button) {
     if (window.XMLHttpRequest && (new XMLHttpRequest()).upload) {
@@ -46,6 +35,15 @@ exports.options = function (config) {
         error_msg = $('#compose-error-msg');
         upload_bar = 'compose-upload-bar';
         file_input = 'file_input';
+        break;
+    case 'edit':
+        textarea = $('#message_edit_content_' + config.row);
+        send_button = textarea.closest('.message_edit_save');
+        send_status = $('#message-edit-send-status-' + config.row);
+        send_status_close = send_status.find('.send-status-close');
+        error_msg = send_status.find('.error-msg');
+        upload_bar = 'message-edit-upload-bar-' + config.row;
+        file_input = 'message_edit_file_input_' + config.row;
         break;
     default:
         throw Error("Invalid upload mode!");
@@ -115,21 +113,25 @@ exports.options = function (config) {
         if (i === -1) {
             // This is a paste, so there's no filename. Show the image directly
             var pasted_image_uri = "[pasted image](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(pasted_image_uri);
+            compose_ui.insert_syntax_and_focus(pasted_image_uri, textarea);
         } else {
             // This is a dropped file, so make the filename a link to the image
             var filename_uri = "[" + filename + "](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(filename_uri);
+            compose_ui.insert_syntax_and_focus(filename_uri, textarea);
         }
         compose_ui.autosize_textarea();
         send_button.prop("disabled", false);
         send_status.removeClass("alert-info").hide();
 
         // In order to upload the same file twice in a row, we need to clear out
-        // the #file_input element, so that the next time we use the file dialog,
-        // an actual change event is fired.  This is extracted to a function
-        // to abstract away some IE hacks.
-        clear_out_file_list($("#" + file_input));
+        // the file input element, so that the next time we use the file dialog,
+        // an actual change event is fired. IE doesn't allow .val('') so we
+        // need to clone it. (Taken from the jQuery form plugin)
+        if (/MSIE/.test(navigator.userAgent)) {
+            $('#' + file_input).replaceWith($('#' + file_input).clone(true));
+        } else {
+            $('#' + file_input).val('');
+        }
     };
 
     return {
@@ -155,6 +157,18 @@ exports.options = function (config) {
         },
     };
 };
+
+// Expose the internal file upload functions to the desktop app,
+// since the linux/windows QtWebkit based apps upload images
+// directly to the server
+if (window.bridge) {
+    var opts = exports.options({ mode: "compose" });
+
+    exports.uploadStarted = opts.drop;
+    exports.progressUpdated = opts.progressUpdated;
+    exports.uploadError = opts.error;
+    exports.uploadFinished = opts.uploadFinished;
+}
 
 return exports;
 }());

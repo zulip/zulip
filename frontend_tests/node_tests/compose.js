@@ -13,6 +13,9 @@ set_global('document', {
     location: {},
 });
 set_global('transmit', {});
+set_global('window', {
+    bridge: false,
+});
 set_global('channel', {});
 set_global('templates', {});
 

@@ -255,6 +255,17 @@ $(function () {
             ui_util.blur_active_element();
         }
     });
+    $('#message_edit_form .send-status-close').click(function () {
+        var row_id = rows.id($(this).closest(".message_row"));
+        var send_status = $('#message-edit-send-status-' + row_id);
+        $(send_status).stop(true).fadeOut(200);
+    });
+    $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
+        e.preventDefault();
+
+        var row_id = rows.id($(this).closest(".message_row"));
+        $("#message_edit_file_input_" + row_id).trigger("click");
+    });
 
     // MUTING
 

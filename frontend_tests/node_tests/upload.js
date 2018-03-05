@@ -2,9 +2,15 @@ set_global('$', global.make_zjquery());
 set_global('document', {
     location: { },
 });
+set_global('navigator', {
+    userAgent: 'Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)',
+});
 set_global('i18n', global.stub_i18n);
 set_global('page_params', { });
 set_global('csrf_token', { });
+set_global('window', {
+    bridge: false,
+});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -94,6 +100,7 @@ var upload_opts = upload.options({ mode: "compose" });
         var compose_ui_autosize_textarea_checked = false;
         var compose_actions_start_checked = false;
         var syntax_to_insert;
+        var file_input_clear = false;
 
         function setup() {
             $("#compose-textarea").val('');
@@ -113,9 +120,15 @@ var upload_opts = upload.options({ mode: "compose" });
             $("#compose-send-button").attr('disabled', 'disabled');
             $("#compose-send-status").addClass("alert-info");
             $("#compose-send-status").show();
+
             $('#file_input').clone = function (param) {
                 assert(param);
                 return $('#file_input');
+            };
+
+            $('#file_input').replaceWith = function (elem) {
+                assert.equal(elem, $('#file_input'));
+                file_input_clear = true;
             };
         }
 
@@ -127,6 +140,7 @@ var upload_opts = upload.options({ mode: "compose" });
                 assert.equal($("#compose-send-button").prop('disabled'), false);
                 assert(!$('#compose-send-status').hasClass('alert-info'));
                 assert(!$('#compose-send-status').visible());
+                assert(file_input_clear);
             }
         }
 
