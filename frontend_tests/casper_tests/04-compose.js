@@ -50,7 +50,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
-        common.check_form('#send_message_form', {recipient: ''}, "Recipient empty on new PM");
+        common.pm_recipient.expect("");
         casper.click('body');
         casper.page.sendEvent('keypress', 'c');
     });
@@ -82,7 +82,7 @@ casper.then(function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#private_message_recipient', function () {
-        common.check_form('#send_message_form', {recipient: "cordelia@zulip.com"}, "Recipient populated after PM click");
+        common.pm_recipient.expect("cordelia@zulip.com");
 
         common.keypress(27); //escape
         casper.page.sendEvent('keypress', 'k');
@@ -151,13 +151,7 @@ casper.waitUntilVisible('#zhome', function () {
 
 casper.then(function () {
     casper.waitUntilVisible('#compose', function () {
-        // It may be possible to get the textbox contents with CasperJS,
-        // but it's easier to just evaluate jQuery in page context here.
-        var displayed_recipients = casper.evaluate(function () {
-            return $('#private_message_recipient').val();
-        });
-        casper.test.assertEquals(displayed_recipients, recipients.join(', '),
-            'Recipients are displayed correctly in a huddle reply');
+        common.pm_recipient.expect(recipients.join(','));
     });
 });
 

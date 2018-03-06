@@ -83,7 +83,8 @@ body.dark-mode input[type="email"],
 body.dark-mode input[type="password"],
 body.dark-mode textarea,
 body.dark-mode .new-style .tab-switcher .ind-tab:not(.selected),
-body.dark-mode select {
+body.dark-mode select,
+body.dark-mode .pill-container {
     background-color: hsla(0, 0%, 0%, 0.2);
     border-color: hsla(0, 0%, 0%, 0.6);
     color: inherit;
@@ -92,6 +93,19 @@ body.dark-mode select {
 body.dark-mode select option {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
+}
+
+body.dark-mode .pm_recipient .pill-container .pill {
+    color: inherit;
+    border: 1px solid hsla(0, 0%, 0%, 0.50);
+    background: hsla(0, 0%, 0%, 0.25);
+    font-weight: 600;
+}
+
+body.dark-mode .pm_recipient .pill-container .pill:focus {
+    color: #fff;
+    border: 1px solid hsla(176, 78%, 28%, 0.6);
+    background: hsla(176, 49%, 42%, 0.4);
 }
 
 body.dark-mode .new-style .button.no-style {

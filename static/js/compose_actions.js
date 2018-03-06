@@ -244,6 +244,7 @@ exports.cancel = function () {
     notifications.clear_compose_notifications();
     compose.abort_xhr();
     compose_state.set_message_type(false);
+    compose_pm_pill.clear();
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 

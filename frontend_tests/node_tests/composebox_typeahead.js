@@ -8,9 +8,12 @@ zrequire('typeahead_helper');
 zrequire('people');
 zrequire('user_groups');
 zrequire('stream_data');
+zrequire('user_pill');
+zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
 
 var ct = composebox_typeahead;
+var noop = function () {};
 
 var emoji_stadium = {
     emoji_name: 'stadium',
@@ -64,6 +67,9 @@ set_global('$', global.make_zjquery());
 
 set_global('page_params', {});
 set_global('channel', {});
+set_global('compose', {
+    finish: noop,
+});
 
 set_global('emoji', {
     active_realm_emojis: {},
@@ -133,6 +139,11 @@ var backend = {
 
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
+
+user_pill.get_user_ids = function () {
+    return [];
+};
+
 (function test_add_topic() {
     ct.add_topic('Denmark', 'civil fears');
     ct.add_topic('devel', 'fading');
@@ -451,17 +462,6 @@ global.user_groups.add(backend);
         assert.equal(options.matcher(othello), true);
         assert.equal(options.matcher(cordelia), true);
 
-        // Othello is already filled in, now typeahead makes suggestions for
-        // the value after the comma.
-        options.query = 'othello@zulip.com, cor';
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), true);
-
-        // No suggestions are made if the query is just a comma.
-        options.query = ',';
-        assert.equal(options.matcher(othello), false);
-        assert.equal(options.matcher(cordelia), false);
-
         options.query = 'bender';  // Doesn't exist
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
@@ -472,7 +472,8 @@ global.user_groups.add(backend);
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), false);
 
-        options.query = 'othello@zulip.com,, , cord';
+        // options.query = 'othello@zulip.com,, , cord';
+        options.query = 'cord';
         assert.equal(options.matcher(othello), false);
         assert.equal(options.matcher(cordelia), true);
 
@@ -503,27 +504,30 @@ global.user_groups.add(backend);
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
+        var event = {
+            target: '#doesnotmatter',
+        };
+
+        var appended_name;
+        compose_pm_pill.set_from_typeahead = function (item) {
+            appended_name = item.full_name;
+        };
+
         // options.updater()
         options.query = 'othello';
-        actual_value = options.updater(othello);
-        expected_value = 'othello@zulip.com, ';
-        assert.equal(actual_value, expected_value);
+        options.updater(othello, event);
+        assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         options.query = 'othello@zulip.com, cor';
-        actual_value = options.updater(cordelia);
-        expected_value = 'othello@zulip.com, cordelia@zulip.com, ';
-        assert.equal(actual_value, expected_value);
+        actual_value = options.updater(cordelia, event);
+        assert.equal(appended_name, 'Cordelia Lear');
 
-        var click_event = { type: 'click' };
+        var click_event = { type: 'click', target: '#doesnotmatter' };
         options.query = 'othello';
         // Focus lost (caused by the click event in the typeahead list)
         $('#private_message_recipient').blur();
         actual_value = options.updater(othello, click_event);
-        expected_value = 'othello@zulip.com, ';
-        assert.equal(actual_value, expected_value);
-        // Check that after the click event #private_message_recipient is
-        // focused.
-        assert.equal($('#private_message_recipient').is_focused(), true);
+        assert.equal(appended_name, 'Othello, the Moor of Venice');
 
         pm_recipient_typeahead_called = true;
     };
@@ -681,8 +685,6 @@ global.user_groups.add(backend);
     page_params.enter_sends = false;  // We manually specify it the first
                                       // time because the click_func
                                       // doesn't exist yet.
-    var noop = function () {};
-
     $("#stream").select(noop);
     $("#subject").select(noop);
     $("#private_message_recipient").select(noop);
@@ -743,11 +745,10 @@ global.user_groups.add(backend);
     page_params.enter_sends = false;
     event.metaKey = true;
     var compose_finish_called = false;
-    set_global('compose', {
-        finish: function () {
-            compose_finish_called = true;
-        },
-    });
+    compose.finish = function () {
+        compose_finish_called = true;
+    };
+
     $('form#send_message_form').keydown(event);
     assert(compose_finish_called);
     event.metaKey = false;

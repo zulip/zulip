@@ -56,6 +56,9 @@ zrequire('Handlebars', 'handlebars');
 zrequire('stream_data');
 zrequire('compose_state');
 zrequire('people');
+zrequire('input_pill');
+zrequire('user_pill');
+zrequire('compose_pm_pill');
 zrequire('compose');
 zrequire('upload');
 
@@ -82,15 +85,6 @@ people.initialize_current_user(me.user_id);
 
 people.add(alice);
 people.add(bob);
-
-(function test_update_email() {
-    compose_state.recipient('');
-    assert.equal(compose.update_email(), undefined);
-
-    compose_state.recipient('bob@example.com');
-    compose.update_email(32, 'bob_alias@example.com');
-    assert.equal(compose_state.recipient(), 'bob_alias@example.com');
-}());
 
 (function test_validate_stream_message_address_info() {
     var sub = {
@@ -145,17 +139,42 @@ people.add(bob);
 }());
 
 (function test_validate() {
-    $("#compose-send-button").prop('disabled', false);
-    $("#compose-send-button").focus();
-    $("#sending-indicator").hide();
-    $("#compose-textarea").select(noop);
+    function initialize_pm_pill() {
+        set_global('$', global.make_zjquery());
+
+        $("#compose-send-button").prop('disabled', false);
+        $("#compose-send-button").focus();
+        $("#sending-indicator").hide();
+        $("#compose-textarea").select(noop);
+
+
+        var pm_pill_container = $.create('fake-pm-pill-container');
+        $('#private_message_recipient').set_parent(pm_pill_container);
+        pm_pill_container.set_find_results('.input', $('#private_message_recipient'));
+        $('#private_message_recipient').before = noop;
+
+        compose_pm_pill.initialize();
+
+        set_global('ui_util', {
+            place_caret_at_end: noop,
+        });
+
+        $("#zephyr-mirror-error").is = noop;
+        $("#private_message_recipient").select(noop);
+    }
+
+    function add_content_to_compose_box() {
+        $("#compose-textarea").val('foobarfoobar');
+    }
+
+    initialize_pm_pill();
     assert(!compose.validate());
     assert(!$("#sending-indicator").visible());
     assert(!$("#compose-send-button").is_focused());
     assert.equal($("#compose-send-button").prop('disabled'), false);
     assert.equal($('#compose-error-msg').html(), i18n.t('You have nothing to send!'));
 
-    $("#compose-textarea").val('foobarfoobar');
+    add_content_to_compose_box();
     var zephyr_checked = false;
     $("#zephyr-mirror-error").is = function () {
         if (!zephyr_checked) {
@@ -168,23 +187,26 @@ people.add(bob);
     assert(zephyr_checked);
     assert.equal($('#compose-error-msg').html(), i18n.t('You need to be running Zephyr mirroring in order to send messages!'));
 
+    initialize_pm_pill();
+    add_content_to_compose_box();
+
     compose_state.set_message_type('private');
     compose_state.recipient('');
-    $("#private_message_recipient").select(noop);
     assert(!compose.validate());
-    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one recipient'));
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient'));
 
+    initialize_pm_pill();
+    add_content_to_compose_box();
     compose_state.recipient('foo@zulip.com');
-    global.page_params.realm_is_zephyr_mirror_realm = true;
-    assert(compose.validate());
 
-    global.page_params.realm_is_zephyr_mirror_realm = false;
     assert(!compose.validate());
-    assert.equal($('#compose-error-msg').html(), i18n.t('The recipient foo@zulip.com is not valid', {}));
+
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
     compose_state.recipient('foo@zulip.com,alice@zulip.com');
     assert(!compose.validate());
-    assert.equal($('#compose-error-msg').html(), i18n.t('The recipients foo@zulip.com,alice@zulip.com are not valid', {}));
+
+    assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient', {}));
 
     people.add_in_realm(bob);
     compose_state.recipient('bob@example.com');
@@ -1339,7 +1361,7 @@ function test_raw_file_drop(raw_drop_func) {
 
 }());
 
-(function test_set_focused_recipient() {
+(function test_create_message_object() {
     var sub = {
         stream_id: 101,
         name: 'social',
@@ -1351,7 +1373,6 @@ function test_raw_file_drop(raw_drop_func) {
         '#stream': 'social',
         '#subject': 'lunch',
         '#compose-textarea': 'burrito',
-        '#private_message_recipient': 'alice@example.com,    bob@example.com',
     };
 
     global.$ = function (selector) {
@@ -1379,6 +1400,7 @@ function test_raw_file_drop(raw_drop_func) {
     global.compose_state.get_message_type = function () {
         return 'private';
     };
+    compose_state.recipient('alice@example.com,    bob@example.com');
     message = compose.create_message_object();
     assert.deepEqual(message.to, ['alice@example.com', 'bob@example.com']);
     assert.equal(message.to_user_ids, '31,32');

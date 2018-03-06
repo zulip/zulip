@@ -63,9 +63,9 @@ casper.then(function () {
     casper.page.sendEvent('keypress', "C");
     casper.waitUntilVisible('#private-message', function () {
         casper.fill('form#send_message_form', {
-            recipient: 'cordelia@zulip.com, hamlet@zulip.com',
             content: 'Test Private Message',
         }, false);
+        common.pm_recipient.set('cordelia@zulip.com, hamlet@zulip.com');
         casper.click("#compose_close");
     });
 });
@@ -145,9 +145,9 @@ casper.then(function () {
     waitWhileDraftsVisible(function () {
         casper.test.assertVisible('#private-message', 'Private Message Box Restored');
         common.check_form('form#send_message_form', {
-            recipient: 'cordelia@zulip.com, hamlet@zulip.com',
             content: 'Test Private Message',
         }, "Private message box filled with draft content");
+        common.pm_recipient.expect('cordelia@zulip.com,hamlet@zulip.com');
         casper.test.assertSelectorHasText('title', 'private - Zulip Dev - Zulip', 'Narrowed to huddle');
     });
 });
@@ -178,9 +178,9 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#private-message', function () {
         casper.fill('form#send_message_form', {
-            recipient: 'cordelia@zulip.com',
             content: 'Test Private Message',
         }, false);
+        common.pm_recipient.set('cordelia@zulip.com');
     });
     casper.reload();
 });

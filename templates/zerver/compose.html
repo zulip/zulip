@@ -78,21 +78,22 @@
                                 </td>
                             </tr>
                             <tr id="private-message">
-                                <td class="message_header_colorblock message_header_private_message message_header left_part">
-
+                                <td class="to_text">
+                                    <span>{{ _('To') }}:</span>
                                 </td>
                                 <td class="right_part">
                                     <div class="pm_recipient">
-                                        <span class="you_text">{{ _('You and') }}</span>
-                                        <input type="text" class="recipient_box" name="recipient" id="private_message_recipient"
-                                                       value="" placeholder="{{ _('one or more people...') }}" autocomplete="off" tabindex="0"/>
+                                        <div class="pill-container" data-before="{{ _('You and') }}">
+                                            <div class="input" contenteditable="true" id="private_message_recipient" name="recipient"
+                                                 data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
                             <tr>
                                 <td class="messagebox" colspan="2">
                                     <textarea class="new_message_textarea" name="content" id='compose-textarea'
-                                              value="" placeholder="{{ _('Compose your message here...') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                                              value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                                     <div class="scrolling_list" id="preview_message_area" style="display:none;">
                                         <div id="markdown_preview_spinner"></div>
                                         <div id="preview_content"></div>

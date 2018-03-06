@@ -39,6 +39,7 @@
         "lightbox": false,
         "input_pill": false,
         "user_pill": false,
+        "compose_pm_pill": false,
         "stream_color": false,
         "people": false,
         "user_groups": false,

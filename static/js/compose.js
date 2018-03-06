@@ -567,8 +567,8 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (compose_state.recipient() === "") {
-        compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
+    if (compose_state.recipient().length === 0) {
+        compose_error(i18n.t("Please specify at least one valid recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist

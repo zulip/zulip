@@ -1005,6 +1005,7 @@ JS_SPECS = {
             'js/drafts.js',
             'js/input_pill.js',
             'js/user_pill.js',
+            'js/compose_pm_pill.js',
             'js/channel.js',
             'js/setup.js',
             'js/unread_ui.js',

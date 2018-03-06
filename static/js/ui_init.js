@@ -252,16 +252,18 @@ $(function () {
     }
 
     // initialize other stuff
-    reload.initialize();
     server_events.initialize();
     people.initialize();
+    compose_pm_pill.initialize();
+    reload.initialize();
     user_groups.initialize();
     unread.initialize();
     bot_data.initialize(); // Must happen after people.initialize()
     message_fetch.initialize();
     emoji.initialize();
     markdown.initialize(); // Must happen after emoji.initialize()
-    composebox_typeahead.initialize();
+    compose.initialize();
+    composebox_typeahead.initialize(); // Must happen after compose.initialize()
     search.initialize();
     tutorial.initialize();
     notifications.initialize();
@@ -277,7 +279,6 @@ $(function () {
     stream_list.initialize();
     drafts.initialize();
     sent_messages.initialize();
-    compose.initialize();
     hotspots.initialize();
     ui.initialize();
     panels.initialize();
