@@ -319,11 +319,10 @@ ul.filters li.out_of_home_view li.muted_topic {
 
     text-overflow: ellipsis;
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible;
 
     line-height: 1.1;
     position: relative;
-    top: 3px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
