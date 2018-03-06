@@ -38,6 +38,7 @@
         "ui_util": false,
         "lightbox": false,
         "input_pill": false,
+        "user_pill": false,
         "stream_color": false,
         "people": false,
         "user_groups": false,

@@ -1,4 +1,5 @@
 zrequire('dict');
+zrequire('user_pill');
 zrequire('settings_user_groups');
 
 set_global('$', global.make_zjquery());
@@ -21,7 +22,6 @@ set_global('user_groups', {
 set_global('ui_report', {});
 set_global('people', {
     my_current_user_id: noop,
-    get_realm_persons: noop,
 });
 
 (function test_populate_user_groups() {
@@ -45,6 +45,10 @@ set_global('people', {
         email: 'bob@example.com',
         user_id: 32,
         full_name: 'Bob',
+    };
+
+    people.get_realm_persons = function () {
+        return [iago, alice, bob];
     };
 
     user_groups.get_realm_user_groups = function () {
@@ -81,23 +85,29 @@ set_global('people', {
         get_person_from_user_id_called = true;
     };
 
+    var all_pills = {};
+
     var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
-    pills.pill.append = function (name, id) {
-        if (this.all_pills === undefined) {
-            this.all_pills = {};
-        }
-        assert.equal(this.all_pills[id], undefined);
-        this.all_pills[id] = name;
+    pills.appendValidatedData = function (item) {
+        var id = item.user_id;
+        assert.equal(all_pills[id], undefined);
+        all_pills[id] = item;
     };
-    pills.keys = function () {
-        return _.map(Object.keys(pills.pill.all_pills),
-            function (strnum) {
-                return parseInt(strnum, 10);
-            });
+    pills.items = function () {
+        return _.values(all_pills);
     };
 
-    function input_pill_stub(pill_container) {
-        assert.equal(pill_container, pill_container_stub);
+    var text_cleared;
+    pills.clear_text = function () {
+        text_cleared = true;
+    };
+
+    var create_item_handler;
+
+    function input_pill_stub(opts) {
+        assert.equal(opts.container, pill_container_stub);
+        create_item_handler = opts.create_item_from_text;
+        assert(create_item_handler);
         return pills;
     }
     var input_field_stub = $.create('fake-input-field');
@@ -132,6 +142,12 @@ set_global('people', {
             query: 'ali',
         };
 
+        (function test_source() {
+            var result = config.source.call(fake_context, iago);
+            var emails = _.pluck(result, 'email').sort();
+            assert.deepEqual(emails, [alice.email, bob.email]);
+        }());
+
         (function test_matcher() {
             /* Here the query doesn't begin with an '@' because typeahead is triggered
             by the '@' sign and thus removed in the query. */
@@ -160,8 +176,9 @@ set_global('people', {
                 assert.equal(sel, '.save-member-changes');
                 return sibling_context;
             };
+            text_cleared = false;
             config.updater(alice);
-            assert.equal(input_field_stub.text(), '');
+            assert.equal(text_cleared, true);
             assert.equal(pill_container_stub
                 .siblings('.save-member-changes')
                 .css('display'), 'inline-block');
@@ -204,27 +221,25 @@ set_global('people', {
     };
     pills.onPillCreate = function (handler) {
         assert.equal(typeof(handler), 'function');
-        var reject_called = false;
-        function reject() {
-            reject_called = true;
-        }
+        handler();
+    };
+
+    function test_create_item(handler) {
         (function test_rejection_path() {
-            handler(iago.email, reject);
+            var item = handler(iago.email, pills.items());
             assert(get_by_email_called);
-            assert(reject_called);
+            assert.equal(item, undefined);
         }());
 
         (function test_success_path() {
             get_by_email_called = false;
-            reject_called = false;
-            var res = handler(bob.email, reject);
+            var res = handler(bob.email, pills.items());
             assert(get_by_email_called);
-            assert(!reject_called);
             assert.equal(typeof(res), 'object');
-            assert.equal(res.key, bob.user_id);
-            assert.equal(res.value, bob.full_name);
+            assert.equal(res.user_id, bob.user_id);
+            assert.equal(res.display_value, bob.full_name);
         }());
-    };
+    }
 
     pills.onPillRemove = function (handler) {
         realm_user_group.members = Dict.from_array([2, 31]);
@@ -235,13 +250,16 @@ set_global('people', {
         assert(fade_out_called);
     };
 
-    set_global('input_pill', input_pill_stub);
+    set_global('input_pill', {
+        create: input_pill_stub,
+    });
     settings_user_groups.set_up();
     assert(templates_render_called);
     assert(user_groups_list_append_called);
     assert(get_person_from_user_id_called);
     assert(blueslip_warn_called);
     assert(input_typeahead_called);
+    test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
     assert.equal(typeof($('.organization').get_on_handler("submit", "form.admin-user-group-form")), 'function');
