@@ -1047,6 +1047,12 @@ input#terminal:checked ~ #tab-terminal {
     margin-left: 220px;
 }
 
+/* This is a workaround for line-wrapping issues with markdown code
+   blocks; see CircleCI docs for an example of what it fixes */
+.integration-instructions .help-content ol li p:not(:first-child) {
+    display: block;
+}
+
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
