@@ -59,6 +59,14 @@ a {
     user-select: auto;
 }
 
+.text-select {
+    -webkit-touch-callout: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
 p.n-margin {
     margin: 10px 0px 0px 0px;
 }
