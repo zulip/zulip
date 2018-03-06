@@ -1,7 +1,8 @@
 <div class="compose_invite_user" data-useremail="{{email}}">
-    {{#tr this}}<strong>__name__</strong> is not subscribed to this stream.{{/tr}}
+    <span class="compose_invite_close close">&times;</span>
+    {{#tr this}}<strong>__name__</strong> is not subscribed to this stream. They will not be notified if you mention them here.{{/tr}}
     <div class="compose_invite_user_controls">
         <span class="compose_invite_user_error alert alert-error" style="display: none;">{{t "Unable to subscribe user" }}</span>
-        <button href="" class="btn btn-warning compose_invite_link" >{{t "Subscribe" }}</button><button type="button" class="compose_invite_close close">&times;</button>
+        <button href="" class="btn btn-warning compose_invite_link" >{{t "Subscribe" }}</button>
     </div>
 </div>
