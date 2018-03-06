@@ -1693,6 +1693,49 @@ class EventsRegisterTest(ZulipTestCase):
         error = change_bot_owner_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        change_bot_owner_checker = self.check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('delete')),
+            ('bot', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+            ])),
+        ])
+        self.user_profile = self.example_user('aaron')
+        owner = self.example_user('hamlet')
+        bot = self.create_bot('test1')
+        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        events = self.do_test(action)
+        error = change_bot_owner_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        check_services = check_list(sub_validator=None, length=0)
+        change_bot_owner_checker = self.check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('add')),
+            ('bot', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('bot_type', check_int),
+                ('full_name', check_string),
+                ('is_active', check_bool),
+                ('api_key', check_string),
+                ('default_sending_stream', check_none_or(check_string)),
+                ('default_events_register_stream', check_none_or(check_string)),
+                ('default_all_public_streams', check_bool),
+                ('avatar_url', check_string),
+                ('owner', check_string),
+                ('services', check_services),
+            ])),
+        ])
+        previous_owner = self.example_user('aaron')
+        self.user_profile = self.example_user('hamlet')
+        bot = self.create_test_bot('test2', previous_owner)
+        action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
+        events = self.do_test(action)
+        error = change_bot_owner_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_do_update_outgoing_webhook_service(self):
         # type: () -> None
         update_outgoing_webhook_service_checker = self.check_events_dict([
