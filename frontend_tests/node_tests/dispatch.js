@@ -40,6 +40,10 @@ set_global('settings_display', {
     update_page: noop,
 });
 
+set_global('settings_notifications', {
+    update_page: noop,
+});
+
 set_global('settings_org', {
     reset_realm_default_language: noop,
     update_message_retention_days: noop,

@@ -341,9 +341,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'update_global_notifications':
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
-        if ($("#settings.tab-pane.active").length) {
-            settings_notifications.update_page();
-        }
+        settings_notifications.update_page();
         break;
 
     case 'update_message_flags':
