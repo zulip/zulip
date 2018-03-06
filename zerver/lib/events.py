@@ -376,6 +376,10 @@ def apply_event(state: Dict[str, Any],
                 if bot['email'] == email:
                     bot['is_active'] = False
 
+        if event['op'] == 'delete':
+            state['realm_bots'] = [item for item
+                                   in state['realm_bots'] if item['email'] != event['bot']['email']]
+
         if event['op'] == 'update':
             for bot in state['realm_bots']:
                 if bot['email'] == event['bot']['email']:

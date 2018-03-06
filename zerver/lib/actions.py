@@ -408,7 +408,7 @@ def notify_created_user(user_profile: UserProfile) -> None:
                              is_bot=user_profile.is_bot))
     send_event(event, active_user_ids(user_profile.realm_id))
 
-def notify_created_bot(user_profile: UserProfile) -> None:
+def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
     def stream_name(stream: Optional[Stream]) -> Optional[Text]:
         if not stream:
             return None
@@ -436,7 +436,10 @@ def notify_created_bot(user_profile: UserProfile) -> None:
     if user_profile.bot_owner is not None:
         bot['owner'] = user_profile.bot_owner.email
 
-    event = dict(type="realm_bot", op="add", bot=bot)
+    return dict(type="realm_bot", op="add", bot=bot)
+
+def notify_created_bot(user_profile: UserProfile) -> None:
+    event = created_bot_event(user_profile)
     send_event(event, bot_owner_user_ids(user_profile))
 
 def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: int=None) -> None:
@@ -2630,19 +2633,48 @@ def check_change_full_name(user_profile: UserProfile, full_name_raw: Text,
 
 def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
                         acting_user: UserProfile) -> None:
+    previous_owner = user_profile.bot_owner
+    if previous_owner == bot_owner:
+        return
+
     user_profile.bot_owner = bot_owner
     user_profile.save()  # Can't use update_fields because of how the foreign key works.
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type='bot_owner_changed',
                                  event_time=event_time)
+
+    update_users = bot_owner_user_ids(user_profile)
+
+    # For admins, update event is sent instead of delete/add
+    # event. bot_data of admin contains all the
+    # bots and none of them should be removed/(added again).
+
+    # Delete the bot from previous owner's bot data.
+    if previous_owner and not previous_owner.is_realm_admin:
+        send_event(dict(type='realm_bot',
+                        op="delete",
+                        bot=dict(email=user_profile.email,
+                                 user_id=user_profile.id,
+                                 )),
+                   {previous_owner.id, })
+        # Do not send update event for previous bot owner.
+        update_users = update_users - {previous_owner.id, }
+
+    # Notify the new owner that the bot has been added.
+    if not bot_owner.is_realm_admin:
+        add_event = created_bot_event(user_profile)
+        send_event(add_event, {bot_owner.id, })
+        # Do not send update event for bot_owner.
+        update_users = update_users - {bot_owner.id, }
+
     send_event(dict(type='realm_bot',
                     op='update',
                     bot=dict(email=user_profile.email,
                              user_id=user_profile.id,
                              owner_id=user_profile.bot_owner.id,
                              )),
-               bot_owner_user_ids(user_profile))
+               update_users)
 
 def do_change_tos_version(user_profile: UserProfile, tos_version: Text) -> None:
     user_profile.tos_version = tos_version
