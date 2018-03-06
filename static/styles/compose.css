@@ -469,6 +469,13 @@ a#undo_markdown_preview {
     margin: auto;
 }
 
+@media (max-width: 1300px) {
+    .compose_invite_user_controls {
+        float: none;
+        margin-top: 10px;
+    }
+}
+
 @media (max-width: 700px) {
     #compose_buttons .compose_reply_button {
         display: none;
