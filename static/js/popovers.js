@@ -509,13 +509,21 @@ exports.register_click_handlers = function () {
 
     $("#main_div").on("click", ".user-mention", function (e) {
         var id = $(this).attr('data-user-id');
-        if (id === '*') {
+        // We fallback to email to handle legacy markdown that was rendered
+        // before we cut over to using data-user-id
+        var email = $(this).attr('data-user-email');
+        if (id === '*' || email === '*') {
             return;
         }
         var row = $(this).closest(".message_row");
         e.stopPropagation();
         var message = current_msg_list.get(rows.id(row));
-        var user = people.get_person_from_user_id(id);
+        var user;
+        if (id) {
+            user = people.get_person_from_user_id(id);
+        } else {
+            user = people.get_by_email(email);
+        }
         show_user_info_popover(this, user, message);
     });
 
