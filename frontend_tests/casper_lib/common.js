@@ -205,6 +205,22 @@ exports.turn_off_press_enter_to_send = function () {
     }
 };
 
+exports.pm_recipient = {
+    set: function (recip) {
+        casper.evaluate(function (recipient) {
+            $("#private_message_recipient").text(recipient)
+                .trigger({ type: "keydown", keyCode: 13 });
+        }, { recipient: recip });
+    },
+
+    expect: function (expected_value) {
+        var displayed_recipients = casper.evaluate(function () {
+            return compose_state.recipient();
+        });
+        casper.test.assertEquals(displayed_recipients, expected_value);
+    },
+};
+
 // Wait for any previous send to finish, then send a message.
 exports.then_send_message = function (type, params) {
     casper.then(function () {
@@ -220,6 +236,10 @@ exports.then_send_message = function (type, params) {
         } else {
             casper.test.assertTrue(false, "send_message got valid message type");
         }
+
+        exports.pm_recipient.set(params.recipient);
+        delete params.recipient;
+
         casper.fill('form[action^="/json/messages"]', params);
 
         exports.turn_off_press_enter_to_send();
@@ -234,6 +254,9 @@ exports.then_send_message = function (type, params) {
             return casper.getFormValues('form[action^="/json/messages"]').content === '';
         });
         exports.wait_for_message_actually_sent();
+        casper.evaluate(function () {
+            compose_actions.cancel();
+        });
     });
 
     casper.then(function () {
