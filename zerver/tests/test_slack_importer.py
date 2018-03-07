@@ -108,12 +108,12 @@ class SlackImporter(ZulipTestCase):
 
         avatar_list = []  # type: List[Dict[str, Any]]
         timestamp = int(timezone_now().timestamp())
-        test_avatar_list = build_avatar(1, 1, 'email', avatar_url, timestamp, avatar_list)
-        self.assertEqual(test_avatar_list[0]['path'], avatar_url)
-        self.assertEqual(test_avatar_list[0]['s3_path'], '')
-        self.assertEqual(test_avatar_list[0]['user_profile_id'], 1)
+        build_avatar(1, 1, 'email', avatar_url, timestamp, avatar_list)
+        self.assertEqual(avatar_list[0]['path'], avatar_url)
+        self.assertEqual(avatar_list[0]['s3_path'], '')
+        self.assertEqual(avatar_list[0]['user_profile_id'], 1)
 
-        avatar_list = process_avatars(test_avatar_list, './avatar_dir', 3)
+        avatar_list = process_avatars(avatar_list, './avatar_dir', 3)
         avatar_hash = user_avatar_path_from_ids(1, 3)
         image_path = ('%s/%s.png' % ('./avatar_dir', avatar_hash))
         original_image_path = ('%s/%s.original' % ('./avatar_dir', avatar_hash))
@@ -489,7 +489,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar", return_value = [])
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
     def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
                                                mock_build_avatar_url: mock.Mock,
