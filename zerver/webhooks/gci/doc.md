@@ -6,8 +6,10 @@ you can now get Task notifications in Zulip!
 
 1. {!create-bot-construct-url-indented.md!}
 
-1. To set up the webhook, send the URL you constructed above to
-   `gci-support@google.com` to be configured.
+1. Send an email to `gci-support@google.com` asking them to enable webhooks
+   for your organization. They'll need the name of your organization, and
+   the URL constructed above.
+
 
 {!congrats.md!}
 
