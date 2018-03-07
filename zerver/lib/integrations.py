@@ -313,7 +313,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='github'
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
-    WebhookIntegration('gogs', ['version-control']),
+    WebhookIntegration('gogs', ['version-control'], stream_name='commits'),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
     WebhookIntegration('groove', ['customer-support'], display_name='Groove'),
