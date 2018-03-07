@@ -9,8 +9,7 @@ using the Zulip AppFollow integration!
 1. Click on the app for which you'd like to receive reviews. Click on
    **Integrations** and go to the **Others** tab.
 
-1. In the **Webhook URL** field, enter the URL created above.
-   Click **Save changes**.
+1. Set **Webhook URL** to the URL constructed above. Click **Save changes**.
 
 {!congrats.md!}
 
