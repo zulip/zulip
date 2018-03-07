@@ -399,6 +399,25 @@ function change_stream_privacy(e) {
     });
 }
 
+function stream_default_clicked(e) {
+    var sub = get_sub_for_target(e.target);
+    var stream_id = sub.stream_id;
+    var stream_name = sub.name;
+    var row = $(this).closest(".default_stream_row");
+
+    if (!sub) {
+        blueslip.error('stream_default_clicked() fails');
+        return;
+    }
+    if (sub.is_default) {
+        stream_data.remove_default_stream(stream_id);
+        settings_streams.delete_default_stream(stream_name, row);
+    } else {
+        stream_data.set_default_stream(stream_id);
+        settings_streams.make_stream_default(stream_name);
+    }
+}
+
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
     sub.desktop_notifications = !sub.desktop_notifications;
@@ -543,6 +562,8 @@ exports.initialize = function () {
 
     $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view",
                                  stream_home_view_clicked);
+    $("#subscriptions_table").on("click", "#sub_default_stream_setting",
+                                 stream_default_clicked);
     $("#subscriptions_table").on("click", "#sub_desktop_notifications_setting",
                                  stream_desktop_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_audible_notifications_setting",

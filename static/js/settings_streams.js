@@ -66,7 +66,7 @@ exports.update_default_streams_table = function () {
     }
 };
 
-function make_stream_default(stream_name) {
+exports.make_stream_default = function (stream_name) {
     var data = {
         stream_name: stream_name,
     };
@@ -85,7 +85,7 @@ function make_stream_default(stream_name) {
             default_stream_status.show();
         },
     });
-}
+};
 
 exports.delete_default_stream = function (stream_name, default_stream_row, alert_element) {
     channel.del({
@@ -109,7 +109,7 @@ exports.set_up = function () {
             e.preventDefault();
             e.stopPropagation();
             var default_stream_input = $(".create_default_stream");
-            make_stream_default(default_stream_input.val());
+            exports.make_stream_default(default_stream_input.val());
             default_stream_input[0].value = "";
         }
     });
@@ -124,7 +124,7 @@ exports.set_up = function () {
             return typeahead_helper.render_typeahead_item({ primary: item });
         },
         updater: function (stream_name) {
-            make_stream_default(stream_name);
+            exports.make_stream_default(stream_name);
         },
     });
 
@@ -132,7 +132,7 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         var default_stream_input = $(".create_default_stream");
-        make_stream_default(default_stream_input.val());
+        exports.make_stream_default(default_stream_input.val());
         // Clear value inside input box
         default_stream_input[0].value = "";
     });

@@ -454,6 +454,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         newly_subscribed: false,
         in_home_view: true,
         invite_only: false,
+        is_default: exports.is_default_stream_id(attrs.stream_id),
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_sounds,
         push_notifications: page_params.enable_stream_push_notifications,
@@ -604,6 +605,12 @@ exports.get_newbie_stream = function () {
     return;
 };
 
+exports.set_default_stream = function (stream_id) {
+    default_stream_ids.set(stream_id, true);
+    var sub = exports.get_sub_by_id(stream_id);
+    sub.is_default = true;
+};
+
 exports.remove_default_stream = function (stream_id) {
     page_params.realm_default_streams = _.reject(
         page_params.realm_default_streams,
@@ -612,6 +619,8 @@ exports.remove_default_stream = function (stream_id) {
         }
     );
     default_stream_ids.del(stream_id);
+    var sub = exports.get_sub_by_id(stream_id);
+    sub.is_default = false;
 };
 
 return exports;

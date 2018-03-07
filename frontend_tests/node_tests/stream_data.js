@@ -711,6 +711,21 @@ run_test('get_newbie_stream', () => {
     assert.equal(stream_data.get_newbie_stream(), undefined);
 });
 
+run_test('set_default_streams', () => {
+    var india = {
+        stream_id: 2198,
+        name: 'India',
+        subscribed: false,
+        in_home_view: false,
+    };
+
+    stream_data.add_sub('India', india);
+    stream_data.set_realm_default_streams([india]);
+    stream_data.set_default_stream(india.stream_id);
+    assert(stream_data.get_default_status('India'));
+    assert.equal(page_params.realm_default_streams.length, 1);
+});
+
 run_test('invite_streams', () => {
     // add default stream
     var orie = {

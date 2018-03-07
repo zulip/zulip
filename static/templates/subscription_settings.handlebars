@@ -39,6 +39,21 @@
             </div>
             <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
+        {{#if is_admin}}
+        <div class="subscription-type">
+            <div class="sub_setting_checkbox sub-default-stream-setting">
+                <div id="sub_default_stream_setting">
+                    <input id="defaultstream-{{stream_id}}" class="sub_setting_control" type="checkbox" tabindex="-1" {{#if is_default}}checked{{/if}} />
+                    <label class="subscription-type-text " id="sub_default_stream_setting_text">
+                        {{t 'Subscribe new users automatically when they join the organization.' }}
+                    </label>
+                </div>
+                <div class="default-streams-list-link">
+                    <a href="#organization/default-streams-list">[{{t "See default streams" }}]</a>
+                </div>
+            </div>
+        </div>
+        {{/if}}
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">
                 <ul class="grey-box">

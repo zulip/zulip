@@ -905,6 +905,26 @@ form#add_new_subscription {
     display: inline;
 }
 
+#sub_default_stream_setting {
+    margin-top: -8px;
+}
+
+#sub_default_stream_setting input[type=checkbox] {
+    transform: scale(0.78);
+    margin-left: -2px;
+}
+
+#sub_default_stream_setting_text {
+    display: inline-block;
+    vertical-align: bottom;
+    line-height: 18px;
+}
+
+.default-streams-list-link {
+    margin-left: 426px;
+    margin-top: -20px;
+}
+
 #subscription_overlay .subscription-type b {
     font-weight: 600;
 }
