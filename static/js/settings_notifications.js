@@ -2,19 +2,31 @@ var settings_notifications = (function () {
 
 var exports = {};
 
-var notification_settings = [
+var stream_notification_settings = [
+    {setting: "enable_stream_desktop_notifications", notifications:"desktop_notifications"},
+    {setting: "enable_stream_push_notifications", notifications:"push_notifications"},
+    {setting: "enable_stream_sounds", notifications:"audible_notifications"},
+];
+
+var pm_mention_notification_settings = [
     "enable_desktop_notifications",
-    "enable_digest_emails",
     "enable_offline_email_notifications",
     "enable_offline_push_notifications",
     "enable_online_push_notifications",
     "enable_sounds",
-    "enable_stream_desktop_notifications",
-    "enable_stream_push_notifications",
-    "enable_stream_sounds",
     "pm_content_in_desktop_notifications",
+];
+
+var other_notification_settings = [
+    "enable_digest_emails",
     "realm_name_in_notifications",
 ];
+
+var notification_settings = other_notification_settings.concat(
+    pm_mention_notification_settings,
+    _.map(stream_notification_settings, function (item) {
+        return item.setting;
+    }));
 
 function maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                        propagate_setting_function) {
