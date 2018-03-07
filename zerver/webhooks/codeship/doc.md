@@ -7,9 +7,9 @@ your build statuses.
 
 1. On your project's webpage, click on **Project Settings** in
    the top right corner. Click on the **Notifications** tab, and click on
-   the **+ New Notification** button. Select **Webhook**.
+   **+ New Notification**. Select **Webhook**.
 
-1. Set **Webhook URL** to the URL created above. You may also supply
+1. Set **Webhook URL** to the URL constructed above. You may also supply
    an optional description or a specific branch you would like to be
    notified about. Click **Save**.
 
