@@ -7,9 +7,9 @@ events in Basecamp.
 
 1. Go to your project on Basecamp. From the **Settings** menu in
    the top right corner, choose **Set up webhooks**. Click on
-   the **Add a new webhook** button.
+   **Add a new webhook**.
 
-1. Set **Payload URL** to the URL you created above. Select the events
+1. Set **Payload URL** to the URL constructed above. Select the events
    you would like to be notified about, and check the checkbox under
    **Enable this webhook**. Click **Add this webhook**.
 
