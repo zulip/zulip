@@ -87,6 +87,18 @@ function make_stream_default(stream_name) {
     });
 }
 
+exports.delete_default_stream = function (stream_name, default_stream_row, alert_element) {
+    channel.del({
+        url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+        error: function (xhr) {
+            ui_report.generic_row_button_error(xhr, alert_element);
+        },
+        success: function () {
+            default_stream_row.remove();
+        },
+    });
+};
+
 exports.set_up = function () {
     meta.loaded = true;
 
@@ -128,16 +140,7 @@ exports.set_up = function () {
     $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         var row = $(this).closest(".default_stream_row");
         var stream_name = row.attr("id");
-
-        channel.del({
-            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
-            error: function (xhr) {
-                ui_report.generic_row_button_error(xhr, $(e.target));
-            },
-            success: function () {
-                row.remove();
-            },
-        });
+        exports.delete_default_stream(stream_name, row, $(e.target));
     });
 };
 
