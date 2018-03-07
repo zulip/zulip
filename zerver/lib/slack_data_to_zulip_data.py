@@ -48,7 +48,7 @@ def allocate_ids(model_class: Any, count: int) -> List[int]:
     # convert List[Tuple[int]] to List[int]
     return [item[0] for item in query]
 
-def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
+def slack_workspace_to_realm(realm_id: int, user_list: List[ZerverFieldsT],
                              realm_subdomain: str, fixtures_path: str,
                              slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
                                                            AddedRecipientsT, AddedChannelsT,
@@ -64,17 +64,17 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
     DOMAIN_NAME = settings.EXTERNAL_HOST
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(fixtures_path, REALM_ID, realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(fixtures_path, realm_id, realm_subdomain, NOW)
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
                                 {"name": "API", "id": 3}],
                  zerver_userpresence=[],  # shows last logged in data, which is not available in slack
                  zerver_userprofile_mirrordummy=[],
-                 zerver_realmdomain=[{"realm": REALM_ID,
+                 zerver_realmdomain=[{"realm": realm_id,
                                       "allow_subdomains": False,
                                       "domain": DOMAIN_NAME,
-                                      "id": REALM_ID}],
+                                      "id": realm_id}],
                  zerver_useractivity=[],
                  zerver_realm=zerver_realm,
                  zerver_huddle=[],
@@ -84,9 +84,9 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
                  zerver_realmemoji=[])
 
     zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
-        slack_data_dir, user_list, REALM_ID, int(NOW), DOMAIN_NAME)
+        slack_data_dir, user_list, realm_id, int(NOW), DOMAIN_NAME)
     channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
-                                                                 REALM_ID,
+                                                                 realm_id,
                                                                  added_users,
                                                                  zerver_userprofile)
     # See https://zulipchat.com/help/set-default-streams-for-new-users
@@ -102,12 +102,12 @@ def slack_workspace_to_realm(REALM_ID: int, user_list: List[ZerverFieldsT],
 
     return realm, added_users, added_recipient, added_channels, avatars
 
-def build_zerver_realm(fixtures_path: str, REALM_ID: int, realm_subdomain: str,
+def build_zerver_realm(fixtures_path: str, realm_id: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
 
     zerver_realm_skeleton = get_data_file(fixtures_path + 'zerver_realm_skeleton.json')
 
-    zerver_realm_skeleton[0]['id'] = REALM_ID
+    zerver_realm_skeleton[0]['id'] = realm_id
     zerver_realm_skeleton[0]['string_id'] = realm_subdomain  # subdomain / short_name of realm
     zerver_realm_skeleton[0]['name'] = realm_subdomain
     zerver_realm_skeleton[0]['date_created'] = time
@@ -462,7 +462,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         subscription_id_count += 1
     return subscription_id_count
 
-def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], REALM_ID: int,
+def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT,
                                      realm: ZerverFieldsT) -> ZerverFieldsT:
@@ -491,7 +491,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
 
     id_list = [message_id_list, usermessage_id_list]
     zerver_message, zerver_usermessage = channel_message_to_zerver_message(
-        REALM_ID, users, added_users, added_recipient, all_messages,
+        realm_id, users, added_users, added_recipient, all_messages,
         realm['zerver_subscription'], id_list)
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
@@ -539,7 +539,7 @@ def get_total_messages_and_usermessages(zerver_subscription: List[ZerverFieldsT]
 
     return total_messages, total_usermessages
 
-def channel_message_to_zerver_message(REALM_ID: int, users: List[ZerverFieldsT],
+def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       added_users: AddedUsersT,
                                       added_recipient: AddedRecipientsT,
                                       all_messages: List[ZerverFieldsT],
@@ -646,21 +646,21 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
     fixtures_path = script_path + '../fixtures/'
 
-    REALM_ID = allocate_ids(Realm, 1)[0]
+    realm_id = allocate_ids(Realm, 1)[0]
 
     user_list = get_user_data(token)
     realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
-        REALM_ID, user_list, realm_subdomain, fixtures_path, slack_data_dir)
+        realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
 
-    message_json = convert_slack_workspace_messages(slack_data_dir, user_list, REALM_ID,
+    message_json = convert_slack_workspace_messages(slack_data_dir, user_list, realm_id,
                                                     added_users, added_recipient, added_channels,
                                                     realm)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
-    avatar_realm_folder = os.path.join(avatar_folder, str(REALM_ID))
+    avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
 
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, REALM_ID)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id)
 
     zerver_attachment = []  # type: List[ZerverFieldsT]
     attachment = {"zerver_attachment": zerver_attachment}
