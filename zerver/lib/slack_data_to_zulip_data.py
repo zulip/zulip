@@ -600,7 +600,7 @@ def channel_message_to_zerver_message(REALM_ID: int, users: List[ZerverFieldsT],
         zerver_message.append(zulip_message)
 
         # construct usermessages
-        zerver_usermessage, usermessage_id_count = build_zerver_usermessage(
+        usermessage_id_count = build_zerver_usermessage(
             zerver_usermessage, usermessage_id_count, usermessage_id_list,
             zerver_subscription, recipient_id, mentioned_users_id, message_id)
 
@@ -617,8 +617,7 @@ def get_message_sending_user(message: ZerverFieldsT) -> str:
 def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id_count: int,
                              usermessage_id_list: List[int],
                              zerver_subscription: List[ZerverFieldsT], recipient_id: int,
-                             mentioned_users_id: List[int],
-                             message_id: int) -> Tuple[List[ZerverFieldsT], int]:
+                             mentioned_users_id: List[int], message_id: int) -> int:
     for subscription in zerver_subscription:
         if subscription['recipient'] == recipient_id:
             flags_mask = 1  # For read
@@ -632,7 +631,7 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
                 message=message_id)
             usermessage_id_count += 1
             zerver_usermessage.append(usermessage)
-    return zerver_usermessage, usermessage_id_count
+    return usermessage_id_count
 
 def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, token: str) -> None:
     check_subdomain_available(realm_subdomain)

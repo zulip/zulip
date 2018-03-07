@@ -392,25 +392,21 @@ class SlackImporter(ZulipTestCase):
         mentioned_users_id = [12, 3, 16]
         message_id = 9
 
-        test_zerver_usermessage, test_usermessage_id = build_zerver_usermessage(zerver_usermessage,
-                                                                                usermessage_id_count,
-                                                                                usermessage_id_list,
-                                                                                zerver_subscription,
-                                                                                recipient_id,
-                                                                                mentioned_users_id,
-                                                                                message_id)
+        test_usermessage_id = build_zerver_usermessage(zerver_usermessage, usermessage_id_count,
+                                                       usermessage_id_list, zerver_subscription,
+                                                       recipient_id, mentioned_users_id, message_id)
         self.assertEqual(test_usermessage_id, 4)
 
-        self.assertEqual(test_zerver_usermessage[0]['flags_mask'], 1)
-        self.assertEqual(test_zerver_usermessage[0]['id'], 3)
-        self.assertEqual(test_zerver_usermessage[0]['message'], message_id)
-        self.assertEqual(test_zerver_usermessage[1]['user_profile'],
+        self.assertEqual(zerver_usermessage[0]['flags_mask'], 1)
+        self.assertEqual(zerver_usermessage[0]['id'], 3)
+        self.assertEqual(zerver_usermessage[0]['message'], message_id)
+        self.assertEqual(zerver_usermessage[1]['user_profile'],
                          zerver_subscription[2]['user_profile'])
-        self.assertEqual(test_zerver_usermessage[1]['flags_mask'], 9)
-        self.assertEqual(test_zerver_usermessage[3]['id'], 11)
-        self.assertEqual(test_zerver_usermessage[3]['message'], message_id)
+        self.assertEqual(zerver_usermessage[1]['flags_mask'], 9)
+        self.assertEqual(zerver_usermessage[3]['id'], 11)
+        self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_usermessage", return_value = [[], 2])
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_usermessage", return_value = 2)
     def test_channel_message_to_zerver_message(self, mock_build_zerver_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
