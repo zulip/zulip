@@ -171,6 +171,9 @@ best predictors of success:
 * Posting
   [screenshots or GIFs](https://zulip.readthedocs.io/en/latest/tutorials/screenshot-and-gif-software.html)
   for frontend changes.
+* Following the
+  [bug report guidelines](https://zulip.readthedocs.io/en/latest/contributing/bug-reports.html)
+  when opening an issue regarding a bug.
 * Being responsive to feedback on pull requests. This means incorporating or
   responding to all suggested changes, and leaving a note if you won't be
   able to address things within a few days.
@@ -183,6 +186,9 @@ internship programs.
 
 If you find an easily reproducible bug and/or are experienced in reporting
 bugs, feel free to just open an issue on the relevant project on GitHub.
+Make sure to have a look at our
+[bug report guidelines](https://zulip.readthedocs.io/en/latest/contributing/bug-reports.html)
+for details on how to write a helpful bug report.
 
 If you have a feature request or are not yet sure what the underlying bug
 is, the best place to post issues is
