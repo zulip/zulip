@@ -4466,14 +4466,14 @@ def send_user_group_update_notification(acting_user: UserProfile, group_name: Te
         return
 
     if action == "add_members":
-        message_template = """You have been added to the user group *{group_name}*. You can use \
+        message_template = _("""You have been added to the user group *{group_name}*. You can use \
 @*{group_name}* to mention everyone in the group. To view the members of the group you can click \
-on the group mention or [open](#organization/user-groups-admin) the user group management page."""
+on the group mention or [open](#organization/user-groups-admin) the user group management page.""")
     elif action == "remove_members":
-        message_template = """You have been removed from the user group *{group_name}*. You can ask \
-ask a group member or an organization adminstrator to add you back."""
+        message_template = _("""You have been removed from the user group *{group_name}*. You can ask \
+ask a group member or an organization adminstrator to add you back.""")
     elif action == "delete_group":
-        message_template = "A user group you were a part of ({group_name}) has been deleted."
+        message_template = _("A user group you were a part of ({group_name}) has been deleted.")
 
     for member in members:
         if member != acting_user:
