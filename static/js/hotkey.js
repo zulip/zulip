@@ -65,6 +65,7 @@ var keydown_either_mappings = {
     // in other apps, but that's also slightly dubious.
     8: {name: 'backspace', message_view_only: true}, // backspace
     13: {name: 'enter', message_view_only: false}, // enter
+    46: {name: 'delete', message_view_only: false}, // delete
 };
 
 var keypress_mappings = {
@@ -436,6 +437,7 @@ exports.process_hotkey = function (e, hotkey) {
         case 'up_arrow':
         case 'down_arrow':
         case 'backspace':
+        case 'delete':
             if (overlays.drafts_open()) {
                 drafts.drafts_handle_events(e, event_name);
                 return true;

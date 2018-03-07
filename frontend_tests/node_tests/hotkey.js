@@ -91,6 +91,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_down(27).name, 'escape');
     assert.equal(map_down(37).name, 'left_arrow');
     assert.equal(map_down(13).name, 'enter');
+    assert.equal(map_down(46).name, 'delete');
     assert.equal(map_down(13, true).name, 'enter');
 
     assert.equal(map_press(47).name, 'search'); // slash

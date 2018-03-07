@@ -365,7 +365,7 @@ exports.drafts_handle_events = function (e, event_key) {
     var elt = document.activeElement;
     var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
     // Allows user to delete drafts with backspace
-    if (event_key === "backspace") {
+    if (event_key === "backspace" || event_key === "delete") {
         if (elt.parentElement.hasAttribute("data-draft-id")) {
             var focus_draft_back_row = $(elt)[0].parentElement;
             var backnext_focus_draft_row = $(focus_draft_back_row).next();
