@@ -74,19 +74,10 @@ exports.set_up = function () {
         $("#" + setting).change(function () {
             var setting_data = $(this).prop('checked');
             change_notification_setting(setting, setting_data, "#stream-notify-settings-status");
-            if (setting === 'enable_stream_desktop_notifications') {
-                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
-                    stream_edit.set_notification_setting_for_all_streams('desktop_notifications', setting_data);
-                });
-            } else if (setting === 'enable_stream_push_notifications') {
-                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
-                    stream_edit.set_notification_setting_for_all_streams('push_notifications', setting_data);
-                });
-            } else if (setting === 'enable_stream_sounds') {
-                maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
-                    stream_edit.set_notification_setting_for_all_streams('audible_notifications', setting_data);
-                });
-            }
+            maybe_bulk_update_stream_notification_setting($('#' + setting), function () {
+                stream_edit.set_notification_setting_for_all_streams(
+                    stream_setting.notifications, setting_data);
+            });
         });
     });
 
