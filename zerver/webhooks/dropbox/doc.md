@@ -11,7 +11,7 @@ Get Dropbox notifications in Zulip!
    redirected to the **Settings** tab for your app. Scroll down to the
    **Webhooks** section.
 
-1. Set **Webhook URIs** to the URL you created above and click **Add**.
+1. Set **Webhook URIs** to the URL constructed above and click **Add**.
    The status of the webhook should say **Enabled**.
 
 {!congrats.md!}
