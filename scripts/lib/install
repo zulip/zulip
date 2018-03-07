@@ -73,6 +73,27 @@ ZULIP_PATH="$(readlink -f $(dirname $0)/../..)"
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 export LC_ALL="en_US.UTF-8"
 
+# Check for a supported OS release.
+apt-get install -y lsb-release
+os_release="$(lsb_release -sc)"
+case "$os_release" in
+    trusty|xenial) ;;
+    *)
+        set +x
+        cat <<EOF
+
+Unsupported OS release: $os_release
+
+Zulip in production is supported only on:
+ - Ubuntu 14.04 LTS "trusty"
+ - Ubuntu 16.04 LTS "xenial"
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+        exit 1
+esac
+
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
 # errors like a segfault running `pip install`.
