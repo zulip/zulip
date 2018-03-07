@@ -104,7 +104,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
-exports.initialize = function reload__initialize() {
+exports.initialize = function () {
     var location = window.location.toString();
     var hash_fragment = location.substring(location.indexOf('#') + 1);
 
