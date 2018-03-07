@@ -228,13 +228,11 @@ class SlackImporter(ZulipTestCase):
         subscription_id_list = [7, 8, 9, 23]
         recipient_id = 12
         zerver_subscription = []  # type: List[Dict[str, Any]]
-        zerver_subscription, final_subscription_id = build_subscription(channel_members,
-                                                                        zerver_subscription,
-                                                                        recipient_id,
-                                                                        added_users,
-                                                                        subscription_id_list,
-                                                                        subscription_id_count)
+        final_subscription_id = build_subscription(channel_members, zerver_subscription,
+                                                   recipient_id, added_users,
+                                                   subscription_id_list, subscription_id_count)
         # sanity checks
+        self.assertEqual(final_subscription_id, 4)
         self.assertEqual(zerver_subscription[0]['recipient'], 12)
         self.assertEqual(zerver_subscription[0]['id'], 7)
         self.assertEqual(zerver_subscription[0]['user_profile'], added_users[channel_members[0]])

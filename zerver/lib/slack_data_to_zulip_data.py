@@ -365,12 +365,9 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         # TOODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
-        zerver_subscription, subscription_id_count = build_subscription(channel['members'],
-                                                                        zerver_subscription,
-                                                                        recipient_id,
-                                                                        added_users,
-                                                                        subscription_id_list,
-                                                                        subscription_id_count)
+        subscription_id_count = build_subscription(channel['members'], zerver_subscription,
+                                                   recipient_id, added_users,
+                                                   subscription_id_list, subscription_id_count)
         # TOODO add zerver_subscription which correspond to
         # huddles type recipient
         # For huddles:
@@ -445,8 +442,7 @@ def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
 
 def build_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
                        recipient_id: int, added_users: AddedUsersT,
-                       subscription_id_list: List[int],
-                       subscription_id_count: int) -> Tuple[List[ZerverFieldsT], int]:
+                       subscription_id_list: List[int], subscription_id_count: int) -> int:
     for member in channel_members:
         subscription_id = subscription_id_list[subscription_id_count]
         sub = dict(
@@ -464,7 +460,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         # https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L324
         zerver_subscription.append(sub)
         subscription_id_count += 1
-    return zerver_subscription, subscription_id_count
+    return subscription_id_count
 
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], REALM_ID: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
