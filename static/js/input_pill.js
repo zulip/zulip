@@ -2,6 +2,10 @@ var input_pill = (function () {
 
 var exports = {};
 
+exports.random_id = function () {
+    return Math.random().toString(16);
+};
+
 exports.create = function (opts) {
     // a dictionary of the key codes that are associated with each key
     // to make if/else more human readable.
@@ -75,7 +79,7 @@ exports.create = function (opts) {
         // This is generally called by typeahead logic, where we have all
         // the data we need (as opposed to, say, just a user-typed email).
         appendValidatedData: function (item) {
-            var id = Math.random().toString(16);
+            var id = exports.random_id();
 
             if (!item.display_value) {
                 blueslip.error('no display_value returned');
