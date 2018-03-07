@@ -156,7 +156,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # ref: https://chat.zulip.org/help/change-your-avatar
         avatar_url = build_avatar_url(slack_user_id, user['team_id'],
                                       user['profile']['avatar_hash'])
-        avatar_list = build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
+        build_avatar(user_id, realm_id, email, avatar_url, timestamp, avatar_list)
 
         # check if user is the admin
         realm_admin = get_admin(user)
@@ -244,7 +244,7 @@ def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
     return avatar_url
 
 def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
-                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> List[ZerverFieldsT]:
+                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
     avatar = dict(
         path=avatar_url,  # Save slack's url here, which is used later while processing
         realm_id=realm_id,
@@ -255,7 +255,6 @@ def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
         s3_path="",
         size="")
     avatar_list.append(avatar)
-    return avatar_list
 
 def get_admin(user: ZerverFieldsT) -> bool:
     admin = user.get('is_admin', False)
