@@ -199,12 +199,18 @@ function populate_users(realm_people_data) {
     loading.destroy_indicator($('#admin_page_users_loading_indicator'));
     loading.destroy_indicator($('#admin_page_bots_loading_indicator'));
     loading.destroy_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    $("#admin_deactivated_users_table").show();
+    $("#admin_users_table").show();
+    $("#admin_bots_table").show();
 }
 
 exports.set_up = function () {
-    loading.make_indicator($('#admin_page_users_loading_indicator'));
-    loading.make_indicator($('#admin_page_bots_loading_indicator'));
-    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'));
+    loading.make_indicator($('#admin_page_users_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($('#admin_page_bots_loading_indicator'), {text: 'Loading...'});
+    loading.make_indicator($('#admin_page_deactivated_users_loading_indicator'), {text: 'Loading...'});
+    $("#admin_deactivated_users_table").hide();
+    $("#admin_users_table").hide();
+    $("#admin_bots_table").hide();
 
     // Populate users and bots tables
     channel.get({
