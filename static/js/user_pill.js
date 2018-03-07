@@ -10,6 +10,23 @@ exports.create_item_from_email = function (email, current_items) {
     var user = people.get_by_email(email);
 
     if (!user) {
+        if (page_params.realm_is_zephyr_mirror_realm) {
+            var existing_emails = _.pluck(current_items, 'email');
+
+            if (existing_emails.indexOf(email) >= 0) {
+                return;
+            }
+
+            // For Zephyr we can't assume any emails are invalid,
+            // so we just create a pill where the display value
+            // is the email itself.
+            return {
+                display_value: email,
+                email: email,
+            };
+        }
+
+        // The email is not allowed, so return.
         return;
     }
 
