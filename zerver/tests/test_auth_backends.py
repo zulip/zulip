@@ -1659,7 +1659,7 @@ class TestJWTLogin(ZulipTestCase):
             web_token = jwt.encode(payload, auth_key).decode('utf8')
             data = {'json_web_token': web_token}
             result = self.client_post('/accounts/login/jwt/', data)
-            self.assert_json_error_contains(result, "No realm specified in JSON web token claims", 400)
+            self.assert_json_error_contains(result, "No organization specified in JSON web token claims", 400)
 
     def test_login_failure_when_key_does_not_exist(self) -> None:
         data = {'json_web_token': 'not relevant'}

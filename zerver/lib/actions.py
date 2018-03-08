@@ -2063,7 +2063,7 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
         raise ValidationError("Requesting user not in given realm")
 
     if user_profile.realm.is_zephyr_mirror_realm and not stream_dict["invite_only"]:
-        raise JsonableError(_("You cannot get subscribers for public streams in this realm"))
+        raise JsonableError(_("Subscriber data is not available for this stream"))
 
     if (stream_dict["invite_only"] and not check_user_subscribed()):
         raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))

@@ -453,8 +453,8 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     # invited first.)
     realm = user_profile.realm
     if not email_allowed_for_realm(email, user_profile.realm):
-        return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
-                          {'email': email, 'realm': realm.string_id})
+        return json_error(_("Email '%(email)s' not allowed in this organization") %
+                          {'email': email})
 
     try:
         get_user(email, user_profile.realm)

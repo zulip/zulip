@@ -231,7 +231,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
         raise JsonableError(_("No user specified in JSON web token claims"))
     email_domain = payload.get('realm', None)
     if email_domain is None:
-        raise JsonableError(_("No realm specified in JSON web token claims"))
+        raise JsonableError(_("No organization specified in JSON web token claims"))
 
     email = "%s@%s" % (remote_user, email_domain)
 
