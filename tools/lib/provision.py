@@ -59,6 +59,7 @@ UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
 TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
+XUNIT_XML_TEST_RESULTS_DIR_PATH = os.path.join(VAR_DIR_PATH, 'xunit-test-results')
 
 is_travis = 'TRAVIS' in os.environ
 is_circleci = 'CIRCLECI' in os.environ
@@ -465,6 +466,8 @@ def main(options):
     os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
     # create linecoverage directory `var/node-coverage`
     os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
+    # create XUnit XML test results directory`var/xunit-test-results`
+    os.makedirs(XUNIT_XML_TEST_RESULTS_DIR_PATH, exist_ok=True)
 
     # The `build_emoji` script requires `emoji-datasource` package
     # which we install via npm; thus this step is after installing npm
