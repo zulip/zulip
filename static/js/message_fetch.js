@@ -9,7 +9,7 @@ var load_more_enabled = true;
 
 exports.reset_load_more_status = function reset_load_more_status() {
     load_more_enabled = true;
-    ui.hide_loading_more_messages_indicator();
+    message_scroll.hide_loading_more_messages_indicator();
 };
 
 function process_result(messages, opts) {
@@ -122,13 +122,14 @@ exports.load_old_messages = function load_old_messages(opts) {
 };
 
 
-exports.load_more_messages = function load_more_messages(msg_list) {
+exports.load_more_messages = function (opts) {
+    var msg_list = opts.msg_list;
     var batch_size = 100;
     var oldest_message_id;
     if (!load_more_enabled) {
         return;
     }
-    ui.show_loading_more_messages_indicator();
+    opts.show_loading();
     load_more_enabled = false;
     if (msg_list.first() === undefined) {
         oldest_message_id = page_params.pointer;
@@ -141,7 +142,7 @@ exports.load_more_messages = function load_more_messages(msg_list) {
         num_after: 0,
         msg_list: msg_list,
         cont: function (messages) {
-            ui.hide_loading_more_messages_indicator();
+            opts.hide_loading();
             if (messages.length >= batch_size) {
                 load_more_enabled = true;
             }

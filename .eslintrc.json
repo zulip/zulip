@@ -32,6 +32,7 @@
         "popovers": false,
         "server_events": false,
         "server_events_dispatch": false,
+        "message_scroll": false,
         "ui": false,
         "ui_report": false,
         "night_mode": false,

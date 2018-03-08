@@ -1058,6 +1058,7 @@ JS_SPECS = {
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
             'js/ui_report.js',
+            'js/message_scroll.js',
             'js/ui.js',
             'js/night_mode.js',
             'js/ui_util.js',
