@@ -404,7 +404,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'TBD',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No unicode emoji with this emoji code found.')
+        self.assert_json_error(result, 'Invalid emoji code.')
 
     def test_add_default_emoji_invalid_name(self) -> None:
         reaction_info = {
@@ -550,7 +550,7 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
             'reaction_type': 'zulip_extra_emoji',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No such extra emoji found.')
+        self.assert_json_error(result, 'Invalid emoji code.')
 
     def test_add_invalid_emoji_name(self) -> None:
         reaction_info = {
@@ -587,7 +587,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'non_existent',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No such realm emoji found.')
+        self.assert_json_error(result, 'Invalid custom emoji.')
 
     def test_add_realm_emoji_invalid_name(self) -> None:
         reaction_info = {
@@ -607,7 +607,7 @@ class RealmEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'green_tick',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'This realm emoji has been deactivated.')
+        self.assert_json_error(result, 'This custom emoji has been deactivated.')
 
     def test_add_to_existing_deactivated_realm_emoji_reaction(self) -> None:
         reaction_info = {

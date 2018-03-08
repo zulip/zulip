@@ -67,19 +67,19 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
         realm_emojis = realm.get_emoji()
         realm_emoji = realm_emojis.get(emoji_code)
         if realm_emoji is None:
-            raise JsonableError(_("No such realm emoji found."))
+            raise JsonableError(_("Invalid custom emoji."))
         if realm_emoji["deactivated"]:
-            raise JsonableError(_("This realm emoji has been deactivated."))
+            raise JsonableError(_("This custom emoji has been deactivated."))
         if emoji_name != emoji_code:
             raise JsonableError(_("Invalid emoji name."))
     elif emoji_type == "zulip_extra_emoji":
         if emoji_code not in ["zulip"]:
-            raise JsonableError(_("No such extra emoji found."))
+            raise JsonableError(_("Invalid emoji code."))
         if emoji_name != emoji_code:
             raise JsonableError(_("Invalid emoji name."))
     elif emoji_type == "unicode_emoji":
         if emoji_code not in codepoint_to_name:
-            raise JsonableError(_("No unicode emoji with this emoji code found."))
+            raise JsonableError(_("Invalid emoji code."))
         if name_to_codepoint.get(emoji_name) != emoji_code:
             raise JsonableError(_("Invalid emoji name."))
     else:
