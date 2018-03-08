@@ -22,7 +22,7 @@ var other_notification_settings = [
     "realm_name_in_notifications",
 ];
 
-var notification_settings = other_notification_settings.concat(
+exports.notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
     _.map(stream_notification_settings, function (item) {
         return item.setting;
@@ -91,7 +91,7 @@ exports.set_up = function () {
 };
 
 function _update_page() {
-    _.each(notification_settings, function (setting) {
+    _.each(exports.notification_settings, function (setting) {
         $("#" + setting).prop('checked', page_params[setting]);
     });
 }
