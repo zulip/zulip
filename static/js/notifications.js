@@ -658,28 +658,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // Update the global settings checked when determining if we should notify
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
-    if (notification_name === "enable_stream_desktop_notifications") {
-        page_params.enable_stream_desktop_notifications = setting;
-    } else if (notification_name === "enable_stream_push_notifications") {
-        page_params.enable_stream_push_notifications = setting;
-    } else if (notification_name === "enable_stream_sounds") {
-        page_params.enable_stream_sounds = setting;
-    } else if (notification_name === "enable_desktop_notifications") {
-        page_params.enable_desktop_notifications = setting;
-    } else if (notification_name === "enable_sounds") {
-        page_params.enable_sounds = setting;
-    } else if (notification_name === "enable_offline_email_notifications") {
-        page_params.enable_offline_email_notifications = setting;
-    } else if (notification_name === "enable_offline_push_notifications") {
-        page_params.enable_offline_push_notifications = setting;
-    } else if (notification_name === "enable_online_push_notifications") {
-        page_params.enable_online_push_notifications = setting;
-    } else if (notification_name === "enable_digest_emails") {
-        page_params.enable_digest_emails = setting;
-    } else if (notification_name === "pm_content_in_desktop_notifications") {
-        page_params.pm_content_in_desktop_notifications = setting;
-    } else if (notification_name === "realm_name_in_notifications") {
-        page_params.realm_name_in_notifications = setting;
+    if (settings_notifications.notification_settings.indexOf(notification_name) !== -1) {
+        page_params[notification_name] = setting;
     }
 };
 
