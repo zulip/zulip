@@ -1247,7 +1247,7 @@ class FetchAPIKeyTest(ZulipTestCase):
         result = self.client_post("/api/v1/fetch_api_key",
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
-        self.assert_json_error_contains(result, "Your realm has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
@@ -1284,7 +1284,7 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         do_deactivate_realm(self.user_profile.realm)
         result = self.client_post("/api/v1/dev_fetch_api_key",
                                   dict(username=self.email))
-        self.assert_json_error_contains(result, "Your realm has been deactivated", 403)
+        self.assert_json_error_contains(result, "This organization has been deactivated", 403)
 
     def test_dev_auth_disabled(self) -> None:
         with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
