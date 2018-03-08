@@ -27,7 +27,7 @@
     "jquery-validation": "1.16.0",
     "katex": "0.8.3",
     "moment": "2.21.0",
-    "moment-timezone": "0.5.13",
+    "moment-timezone": "0.5.14",
     "perfect-scrollbar": "0.7.1",
     "plotly.js": "1.19.2",
     "script-loader": "0.7.2",
