@@ -202,6 +202,13 @@ var event_fixtures = {
         value: false,
     },
 
+    realm__update__disallow_disposable_email_addresses: {
+        type: 'realm',
+        op: 'update',
+        property: 'disallow_disposable_email_addresses',
+        value: false,
+    },
+
     realm__update_dict__default: {
         type: 'realm',
         op: 'update_dict',
@@ -573,8 +580,11 @@ with_overrides(function (override) {
     event = event_fixtures.realm__update__restricted_to_domain;
     test_realm_boolean(event, 'realm_restricted_to_domain');
 
-    event = event_fixtures.realm__update__create_stream_by_admins_only;
-    test_realm_boolean(event, 'realm_create_stream_by_admins_only');
+    event = event_fixtures.realm__update__disallow_disposable_email_addresses;
+    test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
+
+    event = event_fixtures.realm__update__create_generic_bot_by_admins_only;
+    test_realm_boolean(event, 'realm_create_generic_bot_by_admins_only');
 
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;

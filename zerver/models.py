@@ -33,6 +33,8 @@ from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, check_string, \
     check_short_string
+from zerver.lib.name_restrictions import is_disposable_domain
+
 from django.utils.encoding import force_text
 
 from bitfield import BitField
@@ -149,6 +151,7 @@ class Realm(models.Model):
     show_digest_email = models.BooleanField(default=True)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
+    disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
 
@@ -187,6 +190,7 @@ class Realm(models.Model):
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
+        disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,
         invite_required=bool,
         invite_by_admins_only=bool,
@@ -366,6 +370,11 @@ def email_allowed_for_realm(email: Text, realm: Realm) -> bool:
             if query.filter(domain=domain).exists():
                 return True
     return False
+
+def disposable_email_check(realm: Realm, email: Text) -> None:
+    if not realm.restricted_to_domain and realm.disallow_disposable_email_addresses:
+        if is_disposable_domain(email_to_domain(email)):
+            raise ValidationError("Please use your real email address.")
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, Text]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))

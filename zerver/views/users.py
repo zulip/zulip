@@ -8,6 +8,7 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from django.shortcuts import redirect, render
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from zerver.decorator import require_realm_admin, zulip_login_required
 from zerver.forms import CreateUserForm
@@ -30,7 +31,8 @@ from zerver.lib.users import check_valid_bot_type, \
     check_full_name, check_short_name, check_valid_interface_type
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
-    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
+    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
+    disposable_email_check
 from zerver.lib.create_user import random_api_key
 
 
@@ -455,6 +457,11 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     if not email_allowed_for_realm(email, user_profile.realm):
         return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
                           {'email': email, 'realm': realm.string_id})
+
+    try:
+        disposable_email_check(realm, email)
+    except ValidationError:
+        return json_error(_("Disposable emails are not allowed for realm '{}'".format(realm.string_id)))
 
     try:
         get_user(email, user_profile.realm)
