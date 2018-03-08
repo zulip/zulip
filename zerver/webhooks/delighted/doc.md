@@ -10,7 +10,7 @@ about updates in feedback responses organized by Delighted.
    and click on **Webhooks**.
 
 1. Under **Send webhook notifications for**, set **Webhook URL**
-   to the URL you created above. Click **Save and turn on**.
+   to the URL constructed above. Click **Save and turn on**.
 
 {!congrats.md!}
 
