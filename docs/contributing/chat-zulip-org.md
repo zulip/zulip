@@ -14,7 +14,7 @@ minutes to a few hours, depending on the time of day.
 
 * Send test messages to
   [#test here](https://chat.zulip.org/#narrow/stream/test.20here) or
-  as a PM to yourself to avoid disrupting others.
+  as a PM to yourself to avoid disturbing others.
 * When asking for help, provide the details needed for others to help
   you.  E.g. include the full traceback in a code block (not a
   screenshot), a link to the code or a WIP PR you're having trouble
