@@ -120,7 +120,7 @@ class RealmTest(ZulipTestCase):
 
         req = dict(name=ujson.dumps(new_name))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_unauthorized_name_change(self) -> None:
         data = {'full_name': 'Sir Hamlet'}
@@ -291,7 +291,7 @@ class RealmTest(ZulipTestCase):
         self.assertFalse(realm.deactivated)
 
         result = self.client_post('/json/realm/deactivate')
-        self.assert_json_error(result, "Must be a realm administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
         realm = get_realm('zulip')
         self.assertFalse(realm.deactivated)
 

@@ -23,9 +23,9 @@ def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
                          ) -> HttpResponse:
 
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
-        return json_error(_("Must be a realm administrator"))
+        return json_error(_("Must be an organization administrator"))
     if invite_as_admin and not user_profile.is_realm_admin:
-        return json_error(_("Must be a realm administrator"))
+        return json_error(_("Must be an organization administrator"))
     if not invitee_emails_raw:
         return json_error(_("You must specify at least one email address."))
 
@@ -102,7 +102,7 @@ def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserPro
                                      stream_ids: List[int]=REQ(validator=check_list(check_int),
                                                                default=[])) -> HttpResponse:
     if not user_profile.is_realm_admin:
-        return json_error(_("Must be a realm administrator"))
+        return json_error(_("Must be an organization administrator"))
 
     streams = []
     for stream_id in stream_ids:

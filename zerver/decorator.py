@@ -125,7 +125,7 @@ def require_realm_admin(func: ViewFuncT) -> ViewFuncT:
     @wraps(func)
     def wrapper(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
         if not user_profile.is_realm_admin:
-            raise JsonableError(_("Must be a realm administrator"))
+            raise JsonableError(_("Must be an organization administrator"))
         return func(request, user_profile, *args, **kwargs)
     return wrapper  # type: ignore # https://github.com/python/mypy/issues/1927
 

@@ -252,7 +252,7 @@ class StreamAdminTest(ZulipTestCase):
 
         stream_id = get_stream('new_stream', user_profile.realm).id
         result = self.client_delete('/json/streams/%d' % (stream_id,))
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_private_stream_live_updates(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -399,7 +399,7 @@ class StreamAdminTest(ZulipTestCase):
         stream_id = get_stream('stream_name1', user_profile.realm).id
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'new_name': ujson.dumps('stream_name2')})
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_change_stream_description(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -447,7 +447,7 @@ class StreamAdminTest(ZulipTestCase):
         stream_id = get_stream('stream_name1', user_profile.realm).id
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'description': ujson.dumps('Test description')})
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
                                    subscribed: bool=True) -> Stream:
@@ -528,7 +528,7 @@ class StreamAdminTest(ZulipTestCase):
         stream = self.make_stream('other_realm_stream', realm=other_realm)
 
         result = self.client_delete('/json/streams/' + str(stream.id))
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
         # Even becoming a realm admin doesn't help us for an out-of-realm
         # stream.

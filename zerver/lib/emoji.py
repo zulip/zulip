@@ -94,7 +94,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[Text]=None
     if user_profile.is_realm_admin:
         return
     if user_profile.realm.add_emoji_by_admins_only:
-        raise JsonableError(_("Must be a realm administrator"))
+        raise JsonableError(_("Must be an organization administrator"))
 
     # Otherwise, normal users can add emoji
     if emoji_name is None:
@@ -106,7 +106,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[Text]=None
                               emoji.author is not None and
                               emoji.author.id == user_profile.id)
     if not user_profile.is_realm_admin and not current_user_is_author:
-        raise JsonableError(_("Must be a realm administrator or emoji author"))
+        raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name: Text) -> None:
     if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):

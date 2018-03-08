@@ -508,7 +508,7 @@ class InviteUserTest(InviteUserBase):
         self.login(self.example_email('hamlet'))
         invitee = self.nonreg_email('alice')
         response = self.invite(invitee, ["Denmark"], invite_as_admin="true")
-        self.assert_json_error(response, "Must be a realm administrator")
+        self.assert_json_error(response, "Must be an organization administrator")
 
     def test_successful_invite_user_with_name(self) -> None:
         """
@@ -549,7 +549,7 @@ class InviteUserTest(InviteUserBase):
         email2 = "bob-test@zulip.com"
         invitee = "Alice Test <{}>, {}".format(email, email2)
         self.assert_json_error(self.invite(invitee, ["Denmark"]),
-                               "Must be a realm administrator")
+                               "Must be an organization administrator")
 
         # Now verify an administrator can do it
         self.login("iago@zulip.com")
@@ -1150,7 +1150,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
         self.login(self.example_email('hamlet'))
         result = self.client_post('/json/invites/multiuse')
-        self.assert_json_error(result, "Must be a realm administrator")
+        self.assert_json_error(result, "Must be an organization administrator")
 
     def test_create_multiuse_link_invalid_stream_api_call(self) -> None:
         self.login(self.example_email('iago'))

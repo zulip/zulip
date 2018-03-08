@@ -57,9 +57,9 @@ class RealmFilterTest(ZulipTestCase):
         email = self.example_email('hamlet')
         self.login(email)
         result = self.client_post("/json/realm/filters")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_delete("/json/realm/filters/15")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_delete(self) -> None:
         email = self.example_email('iago')

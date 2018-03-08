@@ -31,11 +31,11 @@ class RealmDomainTest(ZulipTestCase):
     def test_not_realm_admin(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/json/realm/domains")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_patch("/json/realm/domains/15")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
         result = self.client_delete("/json/realm/domains/15")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_create_realm_domain(self) -> None:
         self.login(self.example_email("iago"))

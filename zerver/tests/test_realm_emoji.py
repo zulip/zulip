@@ -91,7 +91,7 @@ class RealmEmojiTest(ZulipTestCase):
         with get_test_image_file('img.png') as fp1:
             emoji_data = {'f1': fp1}
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_upload_anyone(self) -> None:
         email = self.example_email('othello')
@@ -128,7 +128,7 @@ class RealmEmojiTest(ZulipTestCase):
         realm.save()
         check_add_realm_emoji(realm, "my_emoji", "my_emoji.png")
         result = self.client_delete("/json/realm/emoji/my_emoji")
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_delete_admin_or_author(self) -> None:
         # If any user in a realm can upload the emoji then the user who
@@ -152,7 +152,7 @@ class RealmEmojiTest(ZulipTestCase):
         check_add_realm_emoji(realm, "my_emoji_3", "my_emoji.png", author)
         self.login('cordelia@zulip.com')
         result = self.client_delete("/json/realm/emoji/my_emoji_3")
-        self.assert_json_error(result, 'Must be a realm administrator or emoji author')
+        self.assert_json_error(result, 'Must be an organization administrator or emoji author')
 
     def test_delete_exception(self) -> None:
         email = self.example_email('iago')
