@@ -135,6 +135,9 @@ jobs:
             pip install codecov && codecov \
               || echo "Error in uploading coverage reports to codecov.io."
 
+      -  store_test_results:
+          path: var/xunit-test-results
+
 workflows:
   version: 2
   build:
