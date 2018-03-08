@@ -118,6 +118,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_data.deactivate(event.bot.user_id);
             event.bot.is_active = false;
             settings_users.update_user_data(event.bot.user_id, event.bot);
+        } else if (event.op === 'delete') {
+            bot_data.delete(event.bot.user_id);
+            settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
             if (_.has(event.bot, 'owner_id')) {
                 event.bot.owner = people.get_person_from_user_id(event.bot.owner_id).email;

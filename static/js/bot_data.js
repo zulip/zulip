@@ -40,6 +40,12 @@ var bot_data = (function () {
         send_change_event();
     };
 
+    exports.delete = function bot_data__delete(bot_id) {
+        delete bots[bot_id];
+        delete services[bot_id];
+        send_change_event();
+    };
+
     exports.update = function bot_data__update(bot_id, bot_update) {
         var bot = bots[bot_id];
         _.extend(bot, _.pick(bot_update, bot_fields));
