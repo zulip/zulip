@@ -2,6 +2,16 @@ var message_fetch = (function () {
 
 var exports = {};
 
+var consts = {
+    backfill_idle_time: 10*1000,
+    error_retry_time: 5000,
+    backfill_batch_size: 1000,
+    num_before_pointer: 200,
+    num_after_pointer: 200,
+    backward_batch_size: 100,
+    catch_up_batch_size: 1000,
+};
+
 // If the browser hasn't scrolled away from the top of the page
 // since the last time that we ran load_more_messages(), we do
 // not load_more_messages().
@@ -116,7 +126,7 @@ exports.load_old_messages = function load_old_messages(opts) {
             $('#connection-error').addClass("show");
             setTimeout(function () {
                 exports.load_old_messages(opts);
-            }, 5000);
+            }, consts.error_retry_time);
         },
     });
 };
@@ -124,7 +134,6 @@ exports.load_old_messages = function load_old_messages(opts) {
 
 exports.load_more_messages = function (opts) {
     var msg_list = opts.msg_list;
-    var batch_size = 100;
     var oldest_message_id;
     if (!load_more_enabled) {
         return;
@@ -136,6 +145,9 @@ exports.load_more_messages = function (opts) {
     } else {
         oldest_message_id = msg_list.first().id;
     }
+
+    var batch_size = consts.backward_batch_size;
+
     exports.load_old_messages({
         anchor: oldest_message_id.toFixed(),
         num_before: batch_size,
@@ -172,7 +184,7 @@ exports.initialize = function () {
                 exports.load_old_messages({
                     anchor: latest_id.toFixed(),
                     num_before: 0,
-                    num_after: 1000,
+                    num_after: consts.catch_up_batch_size,
                     msg_list: home_msg_list,
                     cont: load_more,
                 });
@@ -183,13 +195,12 @@ exports.initialize = function () {
         server_events.home_view_loaded();
 
         // backfill more messages after the user is idle
-        var backfill_batch_size = 1000;
-        $(document).idle({idle: 1000*10,
+        $(document).idle({idle: consts.backfill_idle_time,
                           onIdle: function () {
                               var first_id = message_list.all.first().id;
                               exports.load_old_messages({
                                   anchor: first_id,
-                                  num_before: backfill_batch_size,
+                                  num_before: consts.backfill_batch_size,
                                   num_after: 0,
                                   msg_list: home_msg_list,
                               });
@@ -199,8 +210,8 @@ exports.initialize = function () {
     if (page_params.have_initial_messages) {
         exports.load_old_messages({
             anchor: page_params.pointer,
-            num_before: 200,
-            num_after: 200,
+            num_before: consts.num_before_pointer,
+            num_after: consts.num_after_pointer,
             msg_list: home_msg_list,
             cont: load_more,
         });
@@ -208,7 +219,6 @@ exports.initialize = function () {
         server_events.home_view_loaded();
     }
 };
-
 
 return exports;
 
