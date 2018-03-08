@@ -4,6 +4,7 @@ import datetime
 import mock
 import time
 
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import create_stream_if_needed, do_create_user
@@ -12,6 +13,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import get_client, get_realm, Realm, UserActivity, UserProfile
 
 class TestDigestEmailMessages(ZulipTestCase):
+
     @mock.patch('zerver.lib.digest.enough_traffic')
     @mock.patch('zerver.lib.digest.send_future_email')
     def test_receive_digest_email_messages(self, mock_send_future_email: mock.MagicMock,
@@ -37,6 +39,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=True)
     def test_inactive_users_queued_for_digest(self, mock_django_timezone: mock.MagicMock,
                                               mock_queue_digest_recipient: mock.MagicMock) -> None:
         cutoff = timezone_now()
@@ -61,8 +64,19 @@ class TestDigestEmailMessages(ZulipTestCase):
         enqueue_emails(cutoff)
         self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
 
+    @mock.patch('zerver.lib.digest.queue_digest_recipient')
+    @mock.patch('zerver.lib.digest.timezone_now')
+    def test_disabled(self, mock_django_timezone: mock.MagicMock,
+                      mock_queue_digest_recipient: mock.MagicMock) -> None:
+        cutoff = timezone_now()
+        # A Tuesday
+        mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
+        enqueue_emails(cutoff)
+        mock_queue_digest_recipient.assert_not_called()
+
     @mock.patch('zerver.lib.digest.enough_traffic', return_value=True)
     @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=True)
     def test_active_users_not_enqueued(self, mock_django_timezone: mock.MagicMock,
                                        mock_enough_traffic: mock.MagicMock) -> None:
         cutoff = timezone_now()
@@ -84,6 +98,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=True)
     def test_only_enqueue_on_valid_day(self, mock_django_timezone: mock.MagicMock,
                                        mock_queue_digest_recipient: mock.MagicMock) -> None:
         # Not a Tuesday
@@ -96,6 +111,7 @@ class TestDigestEmailMessages(ZulipTestCase):
 
     @mock.patch('zerver.lib.digest.queue_digest_recipient')
     @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=True)
     def test_no_email_digest_for_bots(self, mock_django_timezone: mock.MagicMock,
                                       mock_queue_digest_recipient: mock.MagicMock) -> None:
         cutoff = timezone_now()
@@ -116,6 +132,7 @@ class TestDigestEmailMessages(ZulipTestCase):
             self.assertNotEqual(user.id, bot.id)
 
     @mock.patch('zerver.lib.digest.timezone_now')
+    @override_settings(SEND_DIGEST_EMAILS=True)
     def test_new_stream_link(self, mock_django_timezone: mock.MagicMock) -> None:
         cutoff = datetime.datetime(year=2017, month=11, day=1)
         mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5)

@@ -168,7 +168,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_presence_disabled'] = realm.presence_disabled
-        state['realm_show_digest_email'] = realm.show_digest_email
+        state['realm_show_digest_email'] = realm.show_digest_email and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
