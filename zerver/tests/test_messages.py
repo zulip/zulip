@@ -1246,7 +1246,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "realm_str": "non-existing"})
         user.is_api_super_user = False
         user.save()
-        self.assert_json_error(result, "Unknown realm non-existing")
+        self.assert_json_error(result, "Unknown organization 'non-existing'")
 
     def test_send_message_when_sender_is_not_set(self) -> None:
         self.login(self.mit_email("starnine"), realm=get_realm("zephyr"))
@@ -1295,7 +1295,7 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "zephyr_mirror",
                                                      "to": email},
                                   subdomain="notzephyr")
-        self.assert_json_error(result, "Invalid mirrored realm")
+        self.assert_json_error(result, "Zephyr mirroring is not allowed in this organization")
 
     def test_send_message_irc_mirror(self) -> None:
         self.login(self.example_email('hamlet'))

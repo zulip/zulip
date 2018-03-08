@@ -972,7 +972,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
             return json_error(_("User not authorized for this query"))
         realm = get_realm(realm_str)
         if not realm:
-            return json_error(_("Unknown realm %s") % (realm_str,))
+            return json_error(_("Unknown organization '%s'") % (realm_str,))
 
     if client.name in ["zephyr_mirror", "irc_mirror", "jabber_mirror", "JabberMirror"]:
         # Here's how security works for mirroring:
@@ -998,7 +998,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
         if not valid_input:
             return json_error(_("Invalid mirrored message"))
         if client.name == "zephyr_mirror" and not user_profile.realm.is_zephyr_mirror_realm:
-            return json_error(_("Invalid mirrored realm"))
+            return json_error(_("Zephyr mirroring is not allowed in this organization"))
         sender = mirror_sender
     else:
         sender = user_profile
