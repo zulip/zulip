@@ -28,27 +28,31 @@ exports.actively_scrolling = function () {
 exports.scroll_finished = function () {
     actively_scrolling = false;
 
-    if ($('#home').hasClass('active')) {
-        if (!pointer.suppress_scroll_pointer_update) {
-            message_viewport.keep_pointer_in_view();
-        } else {
-            pointer.suppress_scroll_pointer_update = false;
-        }
-        floating_recipient_bar.update();
-        if (message_viewport.scrollTop() === 0) {
-            message_fetch.load_more_messages({
-                msg_list: current_msg_list,
-                show_loading: exports.show_loading_more_messages_indicator,
-                hide_loading: exports.hide_loading_more_messages_indicator,
-            });
-        }
-
-        // When the window scrolls, it may cause some messages to
-        // enter the screen and become read.  Calling
-        // unread_ops.process_visible will update necessary
-        // data structures and DOM elements.
-        setTimeout(unread_ops.process_visible, 0);
+    if (!$('#home').hasClass('active')) {
+        return;
     }
+
+    if (!pointer.suppress_scroll_pointer_update) {
+        message_viewport.keep_pointer_in_view();
+    } else {
+        pointer.suppress_scroll_pointer_update = false;
+    }
+
+    floating_recipient_bar.update();
+
+    if (message_viewport.scrollTop() === 0) {
+        message_fetch.load_more_messages({
+            msg_list: current_msg_list,
+            show_loading: exports.show_loading_more_messages_indicator,
+            hide_loading: exports.hide_loading_more_messages_indicator,
+        });
+    }
+
+    // When the window scrolls, it may cause some messages to
+    // enter the screen and become read.  Calling
+    // unread_ops.process_visible will update necessary
+    // data structures and DOM elements.
+    setTimeout(unread_ops.process_visible, 0);
 };
 
 var scroll_timer;
