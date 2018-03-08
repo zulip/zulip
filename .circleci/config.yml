@@ -113,6 +113,9 @@ jobs:
           path: ../../../tmp/zulip-test-event-log/
           destination: test-reports
 
+      - store_test_results:
+            path: ./var/xunit-test-results/casper/
+
   "bionic-backend-python3.6":
     docker:
       # This is built from tools/circleci/images/bionic/Dockerfile .
