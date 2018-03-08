@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
+    rm_tree,
     allocate_ids,
     get_user_data,
     build_zerver_realm,
@@ -492,11 +493,21 @@ class SlackImporter(ZulipTestCase):
     def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
                                                mock_build_avatar_url: mock.Mock,
                                                mock_build_avatar: mock.Mock) -> None:
-        test_slack_zip_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
-                                           "slack_fixtures", "test_slack_importer.zip")
+        test_slack_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+                                      "slack_fixtures")
+        test_slack_zip_file = os.path.join(test_slack_dir, "test_slack_importer.zip")
+        test_slack_unzipped_file = os.path.join(test_slack_dir, "test_slack_importer")
+
         test_realm_subdomain = 'test-slack-import'
         output_dir = '/tmp/test-slack-importer-data'
         token = 'valid-token'
+
+        # If the test fails, the 'output_dir' would not be deleted and hence it would give an
+        # error when we run the tests next time, as 'do_convert_data' expects an empty 'output_dir'
+        # hence we remove it before running 'do_convert_data'
+        rm_tree(output_dir)
+        # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
+        rm_tree(test_slack_unzipped_file)
 
         user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                          "slack_fixtures", "user_data.json")
