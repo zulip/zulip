@@ -104,6 +104,19 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         assert.equal(bot.is_active, false);
     }());
 
+    (function test_delete() {
+        var bot;
+
+        bot_data.add(_.extend({}, test_bot, {is_active: true}));
+
+        bot = bot_data.get(43);
+        assert.equal('Bot 1', bot.full_name);
+        assert(bot.is_active);
+        bot_data.delete(43);
+        bot = bot_data.get(43);
+        assert.equal(bot, undefined);
+    }());
+
     (function test_owner_can_admin() {
         var bot;
 

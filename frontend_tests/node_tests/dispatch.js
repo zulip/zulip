@@ -225,6 +225,15 @@ var event_fixtures = {
         },
     },
 
+    realm_bot__delete: {
+        type: 'realm_bot',
+        op: 'delete',
+        bot: {
+            email: 'the-bot@example.com',
+            user_id: '42',
+        },
+    },
+
     realm_bot__update: {
         type: 'realm_bot',
         op: 'update',
@@ -601,6 +610,19 @@ with_overrides(function (override) {
             dispatch(event);
             var args = bot_stub.get_args('user_id');
             assert_same(args.user_id, event.bot.user_id);
+
+            admin_stub.get_args('update_user_id', 'update_bot_data');
+        });
+    });
+
+    event = event_fixtures.realm_bot__delete;
+    global.with_stub(function (bot_stub) {
+        global.with_stub(function (admin_stub) {
+            override('bot_data.delete', bot_stub.f);
+            override('settings_users.update_user_data', admin_stub.f);
+            dispatch(event);
+            var args = bot_stub.get_args('bot_id');
+            assert_same(args.bot_id, event.bot.user_id);
 
             admin_stub.get_args('update_user_id', 'update_bot_data');
         });
