@@ -135,6 +135,7 @@ exports.set_up = function () {
             var interface_type = $('#create_interface_type').val();
             var service_name = $('#select_service_name :selected').val();
             var formData = new FormData();
+            var spinner = $('.create_bot_spinner');
 
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('bot_type', bot_type);
@@ -156,7 +157,7 @@ exports.set_up = function () {
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
-            $('#create_bot_button').val('Adding bot...').prop('disabled', true);
+            loading.make_indicator(spinner, {text: 'Creating bot'});
             channel.post({
                 url: '/json/bots',
                 data: formData,
@@ -186,7 +187,7 @@ exports.set_up = function () {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
                 },
                 complete: function () {
-                    $('#create_bot_button').val('Create bot').prop('disabled', false);
+                    loading.destroy_indicator(spinner);
                 },
             });
         },

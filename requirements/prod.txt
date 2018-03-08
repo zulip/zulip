@@ -12,7 +12,7 @@
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip==0.4.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip_bots==0.4.1+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@192e9e101d934a3171677ada511a11c26899cc96#egg=zulip_bots&subdirectory=zulip_bots
 apns2==0.3.0
 argon2-cffi==18.1.0
 asn1crypto==0.23.0        # via cryptography
