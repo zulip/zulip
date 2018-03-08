@@ -87,3 +87,5 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
+
+THUMBOR_URL = 'http://127.0.0.1:9995'

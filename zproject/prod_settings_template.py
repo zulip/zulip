@@ -485,9 +485,9 @@ CAMO_URI = '/external_content/'
 # By default, Zulip connects to the thumbor (the thumbnailing software
 # we use) service running locally on the machine.  If you're running
 # thumbor on a different server, you can configure that by setting
-# THUMBOR_HOST here.  Setting THUMBOR_HOST='' will disable
+# THUMBOR_URL here.  Setting THUMBOR_URL='' will disable
 # thumbnailing in Zulip.
-#THUMBOR_HOST = '127.0.0.1:9995'
+#THUMBOR_URL = 'http://127.0.0.1:9995'
 
 # Controls the Jitsi video call integration.  By default, the
 # integration uses the SaaS meet.jit.si server.  You can specify

@@ -114,7 +114,12 @@ exports.open = function (image, options) {
             $source = $parent.attr("data-id");
         } else {
             $type = "image";
-            $source = $image.attr("src");
+            // thumbor supplies the src as thumbnail, data-original as full-sized.
+            if ($image.attr("data-original")) {
+                $source = $image.attr("data-original");
+            } else {
+                $source = $image.attr("src");
+            }
         }
         var message = message_store.get($message.attr("zid"));
         if (message === undefined) {
