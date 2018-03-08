@@ -40,7 +40,7 @@ exports.scroll_finished = function () {
 
     floating_recipient_bar.update();
 
-    if (message_viewport.scrollTop() === 0) {
+    if (message_viewport.at_top()) {
         message_fetch.load_more_messages({
             msg_list: current_msg_list,
             show_loading: exports.show_loading_more_messages_indicator,
