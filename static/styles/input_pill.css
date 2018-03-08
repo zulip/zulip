@@ -96,7 +96,7 @@
     opacity: 0.5;
 }
 
-.pm_recipient .pill-container .pill + .input:empty::before {
+.pm_recipient .pill-container .pill + .input:focus:empty::before {
     content: attr(data-some-recipients-text);
     opacity: 0.5;
 }
