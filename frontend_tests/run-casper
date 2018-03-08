@@ -38,6 +38,9 @@ parser.add_argument('--remote-debug',
                     help='Whether or not to enable remote debugging on port 7777',
                     action="store_true",
                     default=False)
+parser.add_argument('--xunit-export', dest='xunit_export',
+                    action="store_true",
+                    default=False, help='Export the results of the test suite to an XUnit XML file,')
 parser.add_argument('tests', nargs=argparse.REMAINDER,
                     help='Specific tests to run; by default, runs all tests')
 options = parser.parse_args()
@@ -89,6 +92,10 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if options.remote_debug:
         remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
 
+    xunit_export = ""
+    if options.xunit_export:
+        xunit_export = "--xunit=var/xunit-test-results/casper/result.xml"
+
     with test_server_running(options.force, external_host):
         # Important: do this next call inside the `with` block, when Django
         #            will be pointing at the test database.
@@ -97,7 +104,7 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         ret = 1
         for test_file in test_files:
             test_name = os.path.basename(test_file)
-            cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
+            cmd = "node_modules/.bin/casperjs %s %s test %s" % (remote_debug, xunit_export, test_file)
             print("\n\n===================== %s\nRunning %s\n\n" % (test_name, cmd))
             ret = subprocess.call(cmd, shell=True)
             if ret != 0:

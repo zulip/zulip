@@ -8,7 +8,7 @@ set -x
 ./tools/lint --frontend --no-gitlint  # gitlint disabled because flaky
 
 # Run the node tests first, since they're fast and deterministic
-./tools/test-js-with-node --coverage
+./tools/test-js-with-node --coverage --xunit-export
 
 # Check capitalization of strings
 ./manage.py makemessages --locale en
