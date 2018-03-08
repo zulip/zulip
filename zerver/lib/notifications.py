@@ -299,7 +299,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     context = common_context(user_profile)
     context.update({
         'name': user_profile.full_name,
-        'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
         'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
@@ -318,12 +317,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     else:
         context.update({
             'reply_warning': True,
-            'reply_to_zulip': False,
-        })
-
-    # If there is no content in message, it's not clear what user would be replying to.
-    if not user_profile.message_content_in_email_notifications:
-        context.update({
             'reply_to_zulip': False,
         })
 
@@ -365,10 +358,21 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                                                       flags=UserMessage.flags.mentioned).exists()))
         context.update({'at_mention': True})
 
-    context.update({
-        'sender_str': ", ".join(sender.full_name for sender in senders),
-        'realm_str': user_profile.realm.name,
-    })
+    # If message content is disabled, then flush all information we pass to email.
+    if not user_profile.message_content_in_email_notifications:
+        context.update({
+            'reply_to_zulip': False,
+            'messages': [],
+            'sender_str': "",
+            'realm_str': user_profile.realm.name,
+            'huddle_display_name': "",
+        })
+    else:
+        context.update({
+            'messages': build_message_list(user_profile, missed_messages),
+            'sender_str': ", ".join(sender.full_name for sender in senders),
+            'realm_str': user_profile.realm.name,
+        })
 
     from_name = "Zulip missed messages"  # type: Text
     from_address = FromAddress.NOREPLY
