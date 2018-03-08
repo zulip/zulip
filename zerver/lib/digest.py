@@ -61,9 +61,9 @@ def queue_digest_recipient(user_profile: UserProfile, cutoff: datetime.datetime)
     queue_json_publish("digest_emails", event)
 
 def enqueue_emails(cutoff: datetime.datetime) -> None:
-    # To be really conservative while we don't have user timezones or
-    # special-casing for companies with non-standard workweeks, only
-    # try to send mail on Tuesdays.
+    if not settings.SEND_DIGEST_EMAILS:
+        return
+
     if timezone_now().weekday() != VALID_DIGEST_DAY:
         return
 
