@@ -91,7 +91,7 @@
     height: 20px;
 }
 
-.pm_recipient .pill-container .input:empty::before {
+.pm_recipient .pill-container .input:first-child:empty::before {
     content: attr(data-no-recipients-text);
     opacity: 0.5;
 }
