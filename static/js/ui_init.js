@@ -260,6 +260,7 @@ $(function () {
     unread.initialize();
     bot_data.initialize(); // Must happen after people.initialize()
     message_fetch.initialize();
+    message_scroll.initialize();
     emoji.initialize();
     markdown.initialize(); // Must happen after emoji.initialize()
     compose.initialize();

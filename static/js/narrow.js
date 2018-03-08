@@ -234,7 +234,7 @@ exports.activate = function (raw_operators, opts) {
         message_fetch.reset_load_more_status();
         maybe_select_closest();
     } else {
-        ui.show_loading_more_messages_indicator();
+        message_scroll.show_loading_more_messages_indicator();
     }
 
     // Put the narrow operators in the URL fragment.
@@ -442,7 +442,7 @@ exports.deactivate = function () {
     unnarrow_times = {start_time: new Date()};
     blueslip.debug("Unnarrowed");
 
-    if (ui.actively_scrolling()) {
+    if (message_scroll.actively_scrolling()) {
         // There is no way to intercept in-flight scroll events, and they will
         // cause you to end up in the wrong place if you are actively scrolling
         // on an unnarrow. Wait a bit and try again once the scrolling is over.
