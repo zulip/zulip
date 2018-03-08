@@ -9,7 +9,6 @@ var load_more_enabled = true;
 
 exports.reset_load_more_status = function reset_load_more_status() {
     load_more_enabled = true;
-    ui.have_scrolled_away_from_top = true;
     ui.hide_loading_more_messages_indicator();
 };
 
