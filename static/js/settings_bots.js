@@ -83,6 +83,57 @@ exports.generate_flaskbotrc_content = function (email, api_key) {
            "\n";
 };
 
+exports.bot_creation_policy_values = {};
+
+exports.setup_bot_creation_policy_values = function () {
+    exports.bot_creation_policy_values = {
+        everyone: {
+            code: 1,
+            description: i18n.t("Everyone"),
+        },
+        admins_only: {
+            code: 3,
+            description: i18n.t("Admins only"),
+        },
+        restricted: {
+            code: 2,
+            description: i18n.t("Everyone, but only admins can add generic bots"),
+        },
+    };
+};
+
+exports.update_bot_settings_tip = function () {
+    var permission_type = exports.bot_creation_policy_values;
+    var current_permission = page_params.realm_bot_creation_policy;
+    var tip_text;
+    if (current_permission === permission_type.admins_only.code) {
+        tip_text = i18n.t("Only organization administrators can add bots to this organization");
+    } else if (current_permission === permission_type.restricted.code) {
+        tip_text = i18n.t("Only orgainzation administrators can add generic bots");
+    } else {
+        tip_text = i18n.t("Anyone in this organization can add bots");
+    }
+    $(".bot-settings-tip").text(tip_text);
+};
+
+exports.update_bot_permissions_ui = function () {
+    exports.update_bot_settings_tip();
+    $('#bot_table_error').hide();
+    $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
+    if (page_params.realm_bot_creation_policy ===
+        exports.bot_creation_policy_values.admins_only.code &&
+        !page_params.is_admin) {
+        $('#create_bot_form').hide();
+        $('.add-a-new-bot-tab').hide();
+        $('.account-api-key-section').hide();
+        $("#bots_lists_navbar .active-bots-tab").click();
+    } else {
+        $('#create_bot_form').show();
+        $('.add-a-new-bot-tab').show();
+        $('.account-api-key-section').show();
+    }
+};
+
 exports.set_up = function () {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
@@ -393,6 +444,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
     });
 
     $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {

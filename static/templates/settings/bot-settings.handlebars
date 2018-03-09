@@ -3,6 +3,7 @@
         <div class="tip">
             {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
         </div>
+        <div class="tip bot-settings-tip"></div>
 
         <div>
             <span>{{t 'Download config of all active outgoing webhook bots in Zulip Botserver format.' }}</span>
@@ -14,7 +15,7 @@
         <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
             <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
             <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
-            <li class="add-a-new-bot-tab"><a>{{t "Add a new bot" }}</a></li>
+            <li class="add-a-new-bot-tab {{#unless admin_only_bot_creation}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
         </ul>
 
         <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
@@ -26,7 +27,8 @@
         <div id="bot_table_error" class="alert alert-error hide"></div>
 
         <div id="add-a-new-bot-form">
-            <form id="create_bot_form" class="form-horizontal no-padding">
+            <form id="create_bot_form"
+                class="form-horizontal no-padding {{#unless admin_only_bot_creation}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
                         <label for="bot_type">

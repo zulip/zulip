@@ -295,6 +295,19 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertFalse(realm.deactivated)
 
+    def test_change_bot_creation_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(bot_creation_policy = ujson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_add_bot_permission = 4
+        req = dict(bot_creation_policy = ujson.dumps(invalid_add_bot_permission))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid bot creation policy')
+
 
 class RealmAPITest(ZulipTestCase):
 
@@ -329,6 +342,7 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            bot_creation_policy=[1, 2],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:
