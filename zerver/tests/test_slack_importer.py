@@ -501,7 +501,7 @@ class SlackImporter(ZulipTestCase):
         test_slack_unzipped_file = os.path.join(test_slack_dir, "test_slack_importer")
 
         test_realm_subdomain = 'test-slack-import'
-        output_dir = '/tmp/test-slack-importer-data'
+        output_dir = os.path.join(settings.DEPLOY_ROOT, "var", "test-slack-importer-data")
         token = 'valid-token'
 
         # If the test fails, the 'output_dir' would not be deleted and hence it would give an
