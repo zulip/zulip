@@ -107,6 +107,7 @@ class HomeTest(ZulipTestCase):
             "queue_id",
             "realm_add_emoji_by_admins_only",
             "realm_allow_edit_history",
+            "realm_allow_message_deleting_by_admin",
             "realm_allow_message_deleting_by_user",
             "realm_allow_message_editing",
             "realm_authentication_methods",

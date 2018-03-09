@@ -251,6 +251,11 @@ function _set_up() {
                 checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
                 unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
             },
+            allow_message_deleting_by_admin: {
+                type: 'bool',
+                checked_msg: i18n.t("Administrators can delete any messages!"),
+                unchecked_msg: i18n.t("Administrators can no longer delete their messages!"),
+            },
             allow_message_deleting_by_user: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can delete their messages!"),

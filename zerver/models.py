@@ -150,7 +150,7 @@ class Realm(models.Model):
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
-
+    allow_message_deleting_by_admin = models.BooleanField(default=False)  # type: bool
     allow_message_deleting_by_user = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js

@@ -2476,8 +2476,19 @@ class DeleteMessageTest(ZulipTestCase):
         self.assert_json_error(result, "You don't have permission to edit this message")
 
     def test_delete_message_by_realm_admin(self) -> None:
+
+        def change_allow_message_deleting_setting(value: bool) -> None:
+            self.login("iago@zulip.com")
+            admin_user = self.example_user("iago")
+            admin_user.realm.allow_message_deleting_by_admin = value
+
+        change_allow_message_deleting_setting(False)
         self.login("iago@zulip.com")
         msg_id = self.send_stream_message("hamlet@zulip.com", "Scotland")
+        result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
+        self.assert_json_error(result, "You don't have permission to edit this message")
+
+        change_allow_message_deleting_setting(True)
         result = self.client_delete('/json/messages/{msg_id}'.format(msg_id=msg_id))
         self.assert_json_success(result)
 
