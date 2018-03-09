@@ -43,7 +43,7 @@ function process_result(messages, opts) {
         message_util.add_messages(messages, message_list.all, {messages_are_new: false});
     }
 
-    if (messages.length !== 0 && !opts.cont_will_add_messages) {
+    if (messages.length !== 0) {
         message_util.add_messages(messages, opts.msg_list, {messages_are_new: false});
     }
 
@@ -77,8 +77,6 @@ function get_messages_success(data, opts) {
 
 
 exports.load_messages = function (opts) {
-    opts = _.extend({cont_will_add_messages: false}, opts);
-
     var data = {anchor: opts.anchor,
                 num_before: opts.num_before,
                 num_after: opts.num_after};
