@@ -132,7 +132,10 @@ exports.load_messages = function (opts) {
 };
 
 
-exports.load_more_messages = function (opts) {
+exports.maybe_load_older_messages = function (opts) {
+    // This function gets called when you scroll to the top
+    // of your window, and you want to get messages older
+    // than what the browers originally fetched.
     var msg_list = opts.msg_list;
     var oldest_message_id;
     if (!load_more_enabled) {

@@ -41,7 +41,7 @@ exports.scroll_finished = function () {
     floating_recipient_bar.update();
 
     if (message_viewport.at_top()) {
-        message_fetch.load_more_messages({
+        message_fetch.maybe_load_older_messages({
             msg_list: current_msg_list,
             show_loading: exports.show_loading_more_messages_indicator,
             hide_loading: exports.hide_loading_more_messages_indicator,
