@@ -6,6 +6,8 @@ var consts = {
     backfill_idle_time: 10*1000,
     error_retry_time: 5000,
     backfill_batch_size: 1000,
+    narrow_before: 50,
+    narrow_after: 50,
     num_before_pointer: 200,
     num_after_pointer: 200,
     backward_batch_size: 100,
@@ -129,6 +131,19 @@ exports.load_messages = function (opts) {
     });
 };
 
+exports.load_messages_for_narrow = function (opts) {
+    message_fetch.load_messages({
+        anchor: opts.then_select_id.toFixed(),
+        num_before: consts.narrow_before,
+        num_after: consts.narrow_after,
+        msg_list: message_list.narrowed,
+        use_first_unread_anchor: opts.use_initial_narrow_pointer,
+        cont: function () {
+            exports.reset_for_new_narrow();
+            opts.cont();
+        },
+    });
+};
 
 exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
