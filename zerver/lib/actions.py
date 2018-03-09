@@ -60,7 +60,7 @@ from zerver.lib.topic_mutes import (
 from zerver.lib.users import bulk_get_users, check_full_name
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, \
+    RealmDomain, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
@@ -1196,6 +1196,22 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
             if Message.content_has_attachment(message['message'].content):
                 do_claim_attachments(message['message'])
 
+        # HACK! turn on widget features
+        for message in messages:
+            content = message['message'].content
+            sender_id = message['message'].sender_id
+            message_id = message['message'].id
+
+            if content in ['/poll', '/tictactoe', '/trivia']:
+                submessage = SubMessage(
+                    sender_id=sender_id,
+                    message_id=message_id,
+                    msg_type='widget',
+                    content=ujson.dumps(content[1:]),
+                )
+                submessage.save()
+                message['submessages'] = SubMessage.get_raw_db_rows([message_id])
+
     for message in messages:
         # Deliver events to the real-time push system, as well as
         # enqueuing any additional processing triggered by the message.
@@ -1381,6 +1397,32 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
 
     with connection.cursor() as cursor:
         cursor.execute(query)
+
+def do_add_submessage(sender_id: int,
+                      message_id: int,
+                      msg_type: str,
+                      content: str,
+                      data: Any,
+                      ) -> None:
+    submessage = SubMessage(
+        sender_id=sender_id,
+        message_id=message_id,
+        msg_type=msg_type,
+        content=content,
+    )
+    submessage.save()
+
+    event = dict(
+        type="submessage",
+        msg_type=msg_type,
+        message_id=message_id,
+        sender_id=sender_id,
+        data=data,
+    )
+    ums = UserMessage.objects.filter(message_id=message_id)
+    target_user_ids = [um.user_profile_id for um in ums]
+
+    send_event(event, target_user_ids)
 
 def notify_reaction_update(user_profile: UserProfile, message: Message,
                            reaction: Reaction, op: Text) -> None:

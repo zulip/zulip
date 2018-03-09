@@ -160,6 +160,8 @@
         "unread_ops": false,
         "upload": false,
         "user_events": false,
+        "widgetize": false,
+        "submessage": false,
         "Plotly": false,
         "emoji_codes": false,
         "drafts": false,

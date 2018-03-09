@@ -456,6 +456,13 @@ def flush_message(sender: Any, **kwargs: Any) -> None:
     message = kwargs['instance']
     cache_delete(to_dict_cache_key_id(message.id))
 
+def flush_submessage(sender: Any, **kwargs: Any) -> None:
+    submessage = kwargs['instance']
+    # submessages are not cached directly, they are part of their
+    # parent messages
+    message_id = submessage.message_id
+    cache_delete(to_dict_cache_key_id(message_id))
+
 DECORATOR = Callable[[Callable[..., Any]], Callable[..., Any]]
 
 def ignore_unhashable_lru_cache(maxsize: int=128, typed: bool=False) -> DECORATOR:

@@ -1,0 +1,13 @@
+<h3>Tic Tac Toe</h3>
+
+{{ move_status }}
+<br />
+
+{{#each squares}}
+    {{#each this}}
+    <button {{#if this.disabled}}disabled{{/if}} class="tictactoe-square" data-idx="{{ idx }}">
+        {{ this.val }}
+    </button>
+    {{/each}}
+    <br />
+{{/each}}
