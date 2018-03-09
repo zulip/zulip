@@ -213,7 +213,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
-    message_fetch.load_old_messages({
+    message_fetch.load_messages({
         anchor: then_select_id.toFixed(),
         num_before: 50,
         num_after: 50,
