@@ -19,7 +19,7 @@ var load_more_enabled = true;
 
 exports.reset_for_new_narrow = function () {
     load_more_enabled = true;
-    message_scroll.hide_loading_more_messages_indicator();
+    message_scroll.hide_loading_older();
 };
 
 function process_result(messages, opts) {

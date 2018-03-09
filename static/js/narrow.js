@@ -234,7 +234,7 @@ exports.activate = function (raw_operators, opts) {
         message_fetch.reset_for_new_narrow();
         maybe_select_closest();
     } else {
-        message_scroll.show_loading_more_messages_indicator();
+        message_scroll.show_loading_older();
     }
 
     // Put the narrow operators in the URL fragment.
