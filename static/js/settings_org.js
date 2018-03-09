@@ -380,12 +380,23 @@ function _set_up() {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
+    $("#id_realm_allow_message_deleting").change(function () {
+        if (this.checked) {
+            $("#id_realm_message_content_delete_limit_minutes").prop("disabled", false);
+            $("#id_realm_message_content_delete_limit_minutes_label").parent().removeClass("control-label-disabled");
+        } else {
+            $("#id_realm_message_content_delete_limit_minutes").attr("disabled", true);
+            $("#id_realm_message_content_delete_limit_minutes_label").parent().addClass("control-label-disabled");
+        }
+    });
+
     exports.save_organization_settings = function () {
         _.each(property_types.settings, function (v, k) {
             property_type_status_element(k).hide();
         });
 
         var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
+        var message_deleting_status = $("#admin-realm-allow-message-deleting-status").expectOne();
         // grab the first alert available and use it for the status.
         var $alerts = $(".settings-section.show .alert").hide();
         // grab the first alert available and use it for the status.
@@ -393,11 +404,15 @@ function _set_up() {
 
         var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+        var compose_textarea_delete_limit_minutes =  $("#id_realm_message_content_delete_limit_minutes").val();
+        var new_allow_message_deleting = $("#id_realm_allow_message_deleting").prop("checked");
 
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
         // is irrelevant.  Hence if allow_message_editing is unchecked, and
         // message_content_edit_limit_minutes is poorly formed, we set the latter to
         // a default value to prevent the server from returning an error.
+        // Same logic will be applied to allow_message_deleting and
+        // message_content_delete_limit_minutes settings.
         if (!new_allow_message_editing) {
             if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
                  compose_textarea_edit_limit_minutes) ||
@@ -407,12 +422,24 @@ function _set_up() {
             }
         }
 
+        if (!new_allow_message_deleting) {
+            if ((parseInt(compose_textarea_delete_limit_minutes, 10).toString() !==
+                 compose_textarea_delete_limit_minutes) ||
+                compose_textarea_delete_limit_minutes < 0) {
+            // Realm.DEFAULT_MESSAGE_CONTENT_DELETE_LIMIT_SECONDS / 60
+            compose_textarea_delete_limit_minutes = 10;
+            }
+        }
+
         var url = "/json/realm";
         var data = {};
         data = populate_data_for_request({
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
+            allow_message_deleting: JSON.stringify(new_allow_message_deleting),
+            message_content_delete_limit_seconds:
+                JSON.stringify(parseInt(compose_textarea_delete_limit_minutes, 10) * 60),
         }, 'settings');
 
         channel.patch({
@@ -441,6 +468,24 @@ function _set_up() {
                     // message_content_edit_limit_seconds could have been changed earlier
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
+                }
+
+                if (response_data.allow_message_deleting !== undefined) {
+                    var data_message_content_delete_limit_minutes =
+                        Math.ceil(response_data.message_content_delete_limit_seconds / 60);
+                    if (response_data.allow_message_deleting) {
+                        if (response_data.message_content_delete_limit_seconds > 0) {
+                            ui_report.success(
+                                i18n.t("Users can now delete the content of messages which are less than __num_minutes__ minutes old.",
+                                       {num_minutes : data_message_content_delete_limit_minutes}),
+                                message_deleting_status);
+                        } else {
+                            ui_report.success(i18n.t("Users can now delete the content of all their past messages!"), message_deleting_status);
+                        }
+                    } else {
+                        ui_report.success(i18n.t("Users can no longer delete their past messages!"), message_deleting_status);
+                    }
+                    $("#id_realm_message_content_delete_limit_minutes").val(data_message_content_delete_limit_minutes);
                 }
 
                 process_response_data(response_data, 'settings');

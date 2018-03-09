@@ -509,6 +509,11 @@ input[type=checkbox].inline-block {
     text-align: right;
 }
 
+.admin-realm-message-content-delete-limit-minutes {
+    width: 5ch;
+    text-align: right;
+}
+
 .admin-realm-message-retention-days {
     width: 5ch;
     text-align: right;

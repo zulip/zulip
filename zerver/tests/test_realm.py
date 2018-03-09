@@ -361,3 +361,18 @@ class RealmAPITest(ZulipTestCase):
         realm = self.update_with_api('message_content_edit_limit_seconds', 200)
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+
+    def test_update_realm_allow_message_deleting(self) -> None:
+        """Tests updating the realm property 'allow_message_deleting'."""
+        self.set_up_db('allow_message_deleting', True)
+        self.set_up_db('message_content_delete_limit_seconds', 0)
+        realm = self.update_with_api('allow_message_deleting', False)
+        self.assertEqual(realm.allow_message_deleting, False)
+        self.assertEqual(realm.message_content_delete_limit_seconds, 0)
+        realm = self.update_with_api('allow_message_deleting', True)
+        realm = self.update_with_api('message_content_delete_limit_seconds', 100)
+        self.assertEqual(realm.allow_message_deleting, True)
+        self.assertEqual(realm.message_content_delete_limit_seconds, 100)
+        realm = self.update_with_api('message_content_delete_limit_seconds', 600)
+        self.assertEqual(realm.allow_message_deleting, True)
+        self.assertEqual(realm.message_content_delete_limit_seconds, 600)

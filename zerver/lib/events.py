@@ -148,7 +148,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         realm = user_profile.realm
         state['realm_authentication_methods'] = realm.authentication_methods_dict()
         state['realm_allow_message_editing'] = realm.allow_message_editing
+        state['realm_allow_message_deleting'] = realm.allow_message_deleting
         state['realm_message_content_edit_limit_seconds'] = realm.message_content_edit_limit_seconds
+        state['realm_message_content_delete_limit_seconds'] = realm.message_content_delete_limit_seconds
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
