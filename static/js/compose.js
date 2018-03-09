@@ -834,6 +834,17 @@ exports.initialize = function () {
             return;
         }
 
+        var compose_stream = stream_data.get_sub(compose_state.stream_name());
+        if (compose_stream.subscribers && data.stream.subscribers) {
+            var compose_stream_sub = compose_stream.subscribers.keys();
+            var mentioned_stream_sub = data.stream.subscribers.keys();
+            // Don't warn if subscribers list of current compose_stream is a subset of
+            // mentioned_stream subscribers list.
+            if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
+                return;
+            }
+        }
+
         // data.stream refers to the stream we're linking to in
         // typeahead.  If it's not invite-only, then it's public, and
         // there is no need to warn about it, since all users can already
