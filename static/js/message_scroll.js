@@ -21,6 +21,10 @@ exports.hide_loading_older = function () {
     }
 };
 
+exports.hide_indicators = function () {
+    exports.hide_loading_older();
+};
+
 exports.actively_scrolling = function () {
     return actively_scrolling;
 };

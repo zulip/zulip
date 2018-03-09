@@ -227,6 +227,7 @@ exports.activate = function (raw_operators, opts) {
 
     if (! defer_selecting_closest) {
         message_fetch.reset_for_new_narrow();
+        message_scroll.hide_indicators();
         maybe_select_closest();
     } else {
         message_scroll.show_loading_older();
@@ -461,6 +462,7 @@ exports.deactivate = function () {
 
     $('#search_query').val('');
     message_fetch.reset_for_new_narrow();
+    message_scroll.hide_indicators();
     hashchange.save_narrow();
 
     if (current_msg_list.selected_id() !== -1) {

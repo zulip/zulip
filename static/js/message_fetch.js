@@ -21,7 +21,6 @@ var load_more_enabled = true;
 
 exports.reset_for_new_narrow = function () {
     load_more_enabled = true;
-    message_scroll.hide_loading_older();
 };
 
 function process_result(messages, opts) {
@@ -140,6 +139,7 @@ exports.load_messages_for_narrow = function (opts) {
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
         cont: function () {
             exports.reset_for_new_narrow();
+            message_scroll.hide_indicators();
             opts.cont();
         },
     });
