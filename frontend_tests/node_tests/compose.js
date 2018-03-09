@@ -1135,10 +1135,14 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_stream_name_completed_triggered() {
         var handler = $(document).get_on_handler('streamname_completed.zulip');
+        stream_data.add_sub(compose_state.stream_name(), {
+            subscribers: Dict.from_array([1, 2]),
+        });
 
         var data = {
             stream: {
                 name: 'Denmark',
+                subscribers: Dict.from_array([1, 2, 3]),
             },
         };
 
@@ -1150,6 +1154,9 @@ function test_raw_file_drop(raw_drop_func) {
         }
 
         test_noop_case(false);
+        // invite_only=true and current compose stream subscribers are a subset
+        // of mentioned_stream subscribers.
+        test_noop_case(true);
 
         $("#compose_private").hide();
         compose_state.set_message_type('stream');
@@ -1180,6 +1187,7 @@ function test_raw_file_drop(raw_drop_func) {
            stream: {
                invite_only: true,
                name: 'Denmark',
+               subscribers: Dict.from_array([1]),
            },
         };
 
