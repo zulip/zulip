@@ -14,7 +14,7 @@
 * [Use 24-hour time](/help/change-the-date-and-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Logging in](/help/logging-in)
-* [Signing out](/help/signing-out)
+* [Logging out](/help/logging-out)
 <!-- Find your Zulip organization -->
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
