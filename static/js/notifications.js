@@ -167,6 +167,10 @@ exports.redraw_title = function () {
         // which icon to show.
         window.bridge.updateCount(new_message_count);
     }
+
+    if (window.electron_bridge === undefined) {
+        window.electron_bridge.send_event('total_unread_count', new_message_count);
+    }
 };
 
 function flash_pms() {

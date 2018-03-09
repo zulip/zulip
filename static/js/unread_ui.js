@@ -93,6 +93,13 @@ function consider_bankruptcy() {
                                            {unread_count: page_params.unread_msgs.count});
         $('#bankruptcy-unread-count').html(unread_info);
         $('#bankruptcy').modal('show');
+
+        if (window.electron_bridge === undefined) {
+            // normally this is handle in notifications.js but
+            // in this case we don't change the title so let the desktop
+            // app know the count.
+            window.electron_bridge.send_event('total_unread_count', page_params.unread_msgs.count);
+        }
     } else {
         exports.enable();
     }
