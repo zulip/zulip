@@ -760,15 +760,15 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     attachment = {"zerver_attachment": zerver_attachment}
 
     # IO realm.json
-    create_converted_data_files(realm, output_dir, '/realm.json', False)
+    create_converted_data_files(realm, output_dir, '/realm.json')
     # IO message.json
-    create_converted_data_files(message_json, output_dir, '/messages-000001.json', False)
+    create_converted_data_files(message_json, output_dir, '/messages-000001.json')
     # IO avatar records
-    create_converted_data_files(avatar_records, output_dir, '/avatars/records.json', False)
+    create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
     # IO uploads TODO
-    create_converted_data_files(uploads_records, output_dir, '/uploads/records.json', False)
+    create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
     # IO attachments
-    create_converted_data_files(attachment, output_dir, '/attachment.json', False)
+    create_converted_data_files(attachment, output_dir, '/attachment.json')
 
     # remove slack dir
     rm_tree(slack_data_dir)
@@ -848,10 +848,6 @@ def get_user_data(token: str) -> List[ZerverFieldsT]:
     else:
         raise Exception('Enter a valid token!')
 
-def create_converted_data_files(data: Any, output_dir: str, file_path: str,
-                                make_new_dir: bool) -> None:
+def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
-    if make_new_dir:
-        new_directory = os.path.dirname(file_path)
-        os.makedirs(output_dir + new_directory, exist_ok=True)
     json.dump(data, open(output_file, 'w'))
