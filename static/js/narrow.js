@@ -226,7 +226,6 @@ exports.activate = function (raw_operators, opts) {
     });
 
     if (! defer_selecting_closest) {
-        message_fetch.reset_for_new_narrow();
         message_scroll.hide_indicators();
         maybe_select_closest();
     } else {
@@ -461,7 +460,6 @@ exports.deactivate = function () {
     condense.condense_and_collapse($("#zhome tr.message_row"));
 
     $('#search_query').val('');
-    message_fetch.reset_for_new_narrow();
     message_scroll.hide_indicators();
     hashchange.save_narrow();
 

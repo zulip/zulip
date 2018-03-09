@@ -14,15 +14,6 @@ var consts = {
     catch_up_batch_size: 1000,
 };
 
-// If the browser hasn't scrolled away from the top of the page
-// since the last time that we ran load_more_messages(), we do
-// not load_more_messages().
-var load_more_enabled = true;
-
-exports.reset_for_new_narrow = function () {
-    load_more_enabled = true;
-};
-
 function process_result(messages, opts) {
     $('#connection-error').removeClass("show");
 
@@ -138,7 +129,9 @@ exports.load_messages_for_narrow = function (opts) {
         msg_list: message_list.narrowed,
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
         cont: function () {
-            exports.reset_for_new_narrow();
+            // TODO: if we know we got all the messages for this
+            // narrow, call message_list.narrow.fetch_status
+            // to prevent more fetching
             message_scroll.hide_indicators();
             opts.cont();
         },
@@ -151,11 +144,13 @@ exports.maybe_load_older_messages = function (opts) {
     // than what the browers originally fetched.
     var msg_list = opts.msg_list;
     var oldest_message_id;
-    if (!load_more_enabled) {
+    if (!msg_list.fetch_status.can_load_older_messages()) {
+        // We may already be loading old messages or already
+        // got the oldest one.
         return;
     }
     opts.show_loading();
-    load_more_enabled = false;
+    msg_list.fetch_status.start_older_batch();
     if (msg_list.first() === undefined) {
         oldest_message_id = page_params.pointer;
     } else {
@@ -171,9 +166,10 @@ exports.maybe_load_older_messages = function (opts) {
         msg_list: msg_list,
         cont: function (messages) {
             opts.hide_loading();
-            if (messages.length >= batch_size) {
-                load_more_enabled = true;
-            }
+            var found_oldest = messages.length < batch_size;
+            msg_list.fetch_status.finish_older_batch({
+                found_oldest: found_oldest,
+            });
         },
     });
 };
