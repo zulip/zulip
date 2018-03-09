@@ -1026,6 +1026,7 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/fetch_status.js',
             'js/message_list_view.js',
             'js/message_list.js',
             'js/message_live_update.js',

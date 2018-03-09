@@ -91,6 +91,7 @@
         "gear_menu": false,
         "hashchange": false,
         "hash_util": false,
+        "FetchStatus": false,
         "message_list": false,
         "Filter": false,
         "flatpickr": false,
