@@ -13,7 +13,7 @@
 * [Change your default language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-date-and-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
-* [Signing in](/help/signing-in)
+* [Logging in](/help/logging-in)
 * [Signing out](/help/signing-out)
 <!-- Find your Zulip organization -->
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
