@@ -152,11 +152,11 @@ exports.set_color = function (stream_id, color) {
 exports.rerender_subscribers_count = function (sub) {
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
-    if (sub.can_add_subscribers) {
-        stream_row.find(".subscriber-count-text").text(sub.subscriber_count);
-    } else {
+    if (!sub.can_add_subscribers) {
         var sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(sub_count);
+    } else {
+        stream_row.find(".subscriber-count-text").text(sub.subscriber_count);
     }
 };
 
