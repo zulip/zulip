@@ -444,7 +444,7 @@ paths:
 
                        * `realm_add_emoji_by_admins_only`:
 
-                       * `realm_allow_message_deleting`:
+                       * `realm_allow_message_deleting_by_user`:
 
                        * `realm_allow_message_editing`:
 
@@ -975,7 +975,7 @@ definitions:
         type: string
       realm_add_emoji_by_admins_only:
         type: boolean
-      realm_allow_message_deleting:
+      realm_allow_message_deleting_by_user:
         type: boolean
       realm_allow_message_editing:
         type: boolean

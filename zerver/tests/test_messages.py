@@ -2494,7 +2494,7 @@ class DeleteMessageTest(ZulipTestCase):
         def change_allow_message_deleting_setting(value: bool) -> None:
             self.login("iago@zulip.com")
             admin_user = self.example_user("iago")
-            admin_user.realm.allow_message_deleting = value
+            admin_user.realm.allow_message_deleting_by_user = value
 
         change_allow_message_deleting_setting(False)
         self.login("hamlet@zulip.com")
