@@ -125,7 +125,7 @@ exports.update_stream_name = function (sub, new_name) {
     stream_edit.update_stream_name(sub, new_name);
 
     // Update the subscriptions page
-    var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
+    var sub_row = row_for_stream_id(stream_id);
     sub_row.find(".stream-name").text(new_name);
 
     // Update the message feed.
@@ -136,7 +136,7 @@ exports.update_stream_description = function (sub, description) {
     sub.description = description;
 
     // Update stream row
-    var sub_row = $('.stream-row[data-stream-id=' + sub.stream_id + ']');
+    var sub_row = row_for_stream_id(sub.stream_id);
     stream_data.render_stream_description(sub);
     sub_row.find(".description").html(sub.rendered_description);
 
@@ -150,13 +150,12 @@ exports.set_color = function (stream_id, color) {
 };
 
 exports.rerender_subscribers_count = function (sub) {
-    var id = parseInt(sub.stream_id, 10);
+    var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
     if (sub.can_add_subscribers) {
-        $(".stream-row[data-stream-id='" + id + "'] .subscriber-count-text").text(sub.subscriber_count);
+        stream_row.find(".subscriber-count-text").text(sub.subscriber_count);
     } else {
         var sub_count = templates.render("subscription_count", sub);
-        var stream_row = row_for_stream_id(sub.stream_id);
         stream_row.find('.subscriber-count').expectOne().html(sub_count);
     }
 };
@@ -179,11 +178,6 @@ function add_email_hint(row, email_address_hint_content) {
     });
 }
 
-// The `stream_create.get_name()` value tells us whether the stream was just
-// created in this browser window; it's a hack to work around the
-// server_events code flow not having a good way to associate with
-// this request.  These should be appended to the top of the list so
-// they are more visible.
 exports.add_sub_to_table = function (sub) {
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
@@ -198,8 +192,13 @@ exports.add_sub_to_table = function (sub) {
     add_email_hint(sub, email_address_hint_content);
 
     if (stream_create.get_name() === sub.name) {
-        var created_stream = stream_create.get_name();
-        $(".stream-row[data-stream-id='" + stream_data.get_sub(created_stream).stream_id + "']").click();
+        // This `stream_create.get_name()` check tells us whether the
+        // stream was just created in this browser window; it's a hack
+        // to work around the server_events code flow not having a
+        // good way to associate with this request because the stream
+        // ID isn't known yet.  These are appended to the top of the
+        // list, so they are more visible.
+        row_for_stream_id(sub.stream_id).click();
         stream_create.reset_created_stream();
     }
 };
@@ -260,7 +259,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     // Remove private streams from subscribed streams list.
     if ($("#subscriptions_table .search-container .tab-switcher .first").hasClass("selected")
         && sub.invite_only) {
-        var sub_row = $('#subscriptions_table .stream-row[data-stream-id=' + sub.stream_id + ']');
+        var sub_row = row_for_stream_id(sub.stream_id);
         sub_row.addClass("notdisplayed");
     }
 
@@ -303,7 +302,8 @@ exports.filter_table = function (query) {
     var selected_row = get_hash_safe().split(/\//)[1];
 
     if (parseFloat(selected_row)) {
-        $(".stream-row[data-stream-id='" + selected_row + "']").addClass("active");
+        var sub_row = row_for_stream_id(selected_row);
+        sub_row.addClass("active");
     }
 
     exports.stream_name_match_stream_ids = [];
@@ -501,7 +501,7 @@ exports.change_state = (function () {
                 components.toggle.lookup("stream-filter-toggle").goto("subscribed");
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
-                var stream_row = $(".stream-row[data-stream-id='" + hash.arguments[0] + "']");
+                var stream_row = row_for_stream_id(hash.arguments[0]);
                 var streams_list = $(".streams-list")[0];
 
                 get_active_data().row.removeClass("active");
