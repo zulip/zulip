@@ -14,9 +14,10 @@
     Hello {{ name }},
 
     <p>
-        While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+        While you were away you received {{ message_count }} new{% if group_pm %} group{% elif private_message %} private{% endif %} message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
     </p>
 
+    {% if show_message_content %}
     <div id='messages' style="width: 600px;font-size: 12px;font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;overflow-y: auto;">
         {% for recipient_block in messages %}
         <div class='recipient_block' style="{% if not recipient_block.header.stream_message %}background-color: #f0f4f5;{% endif %}border: 1px solid black;margin-bottom: 4px;">
@@ -34,11 +35,12 @@
         </div>
         {% endfor %}
     </div>
+    {% endif %}
 
 
     <p>
         <a href="{{ realm_uri }}">Click here to log in to Zulip and view your new messages.</a>
-        {% if reply_to_zulip  %}
+        {% if reply_to_zulip %}
         Or just reply to this email.
         {% endif %}
     </p>
