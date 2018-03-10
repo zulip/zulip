@@ -1,7 +1,7 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
-                    Optional, Set, Text, Tuple, TypeVar, Union)
+                    Optional, Set, Text, Tuple, TypeVar, Union, cast)
 from mypy_extensions import TypedDict
 from typing.re import Match
 
@@ -172,7 +172,9 @@ def walk_tree_with_family(root: Element,
             result = processor(child)
             if result is not None:
                 if currElementPair['parent']:
-                    grandparent = currElementPair['parent']['value']
+                    grandparent_element = cast(Dict[str, Optional[Element]],
+                                               currElementPair['parent'])
+                    grandparent = grandparent_element['value']
                 else:
                     grandparent = None
                 family = ElementFamily(
