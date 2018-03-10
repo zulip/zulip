@@ -156,7 +156,7 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
         var sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(sub_count);
     } else {
-        stream_row.find(".subscriber-count-text").text(sub.subscriber_count);
+        stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
     }
 };
 
