@@ -191,6 +191,16 @@ initialize();
 
 initialize();
 
+(function test_set_custom_profile_field_data() {
+    var person = people.get_by_email(me.email);
+    me.profile_data = {};
+    var field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value'};
+    people.set_custom_profile_field_data(person.user_id, {});
+    assert.deepEqual(person.profile_data, {});
+    people.set_custom_profile_field_data(person.user_id, field);
+    assert.equal(person.profile_data[field.id], 'Field value');
+}());
+
 (function test_get_rest_of_realm() {
     var alice1 = {
         email: 'alice1@example.com',
