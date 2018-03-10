@@ -1845,7 +1845,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         self.assertEqual(create_event['event']['type'], 'stream')
         self.assertEqual(create_event['event']['op'], 'create')
-        self.assertEqual(create_event['users'], [user_profile.id])
+        # Send stream creation event to subscribed users and all realm admin users.
+        self.assertEqual(create_event['users'], [user_profile.id, self.example_user('iago').id])
         self.assertEqual(create_event['event']['streams'][0]['name'], stream_name)
 
         self.assertEqual(add_event['event']['type'], 'subscription')
