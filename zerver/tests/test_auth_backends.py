@@ -800,7 +800,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         user_profile = self.example_user('hamlet')
@@ -817,7 +818,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         with mock.patch('logging.warning') as mock_warning:
             result = self.get_log_into_subdomain(data, key='nonsense')
             mock_warning.assert_called_with("Subdomain cookie: Bad signature.")
@@ -827,7 +829,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         with mock.patch('django.core.signing.time.time', return_value=time.time() - 45):
             token = signing.dumps(data, salt=_subdomain_token_salt)
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
@@ -840,7 +843,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('hamlet@zulip.com already has an account', result)
@@ -850,7 +854,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().first()
@@ -872,7 +877,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
 
         realm = get_realm("zulip")
         realm.invite_required = True
@@ -930,7 +936,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': None,
                 'email': None,
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
 
         with mock.patch('logging.warning'):
             result = self.get_log_into_subdomain(data)
