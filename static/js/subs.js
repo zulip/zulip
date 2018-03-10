@@ -179,7 +179,6 @@ function add_email_hint(row, email_address_hint_content) {
 // this request.  These should be appended to the top of the list so
 // they are more visible.
 function add_sub_to_table(sub) {
-    stream_data.update_calculated_fields(sub);
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (stream_create.get_name() === sub.name) {
@@ -248,7 +247,6 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     // If user unsubscribed from private stream then user can not subscribe to
     // stream without invitation. So hide subscribe button.
-    stream_data.update_calculated_fields(sub);
     if (!sub.should_display_subscription_button) {
         settings_button.hide();
     }
