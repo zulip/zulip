@@ -1,21 +1,26 @@
 See your Travis CI build notifications in Zulip!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
+   By default, pull request events are ignored since most people
+   don't want notifications for new pushes to pull requests.  To
+   enable notifications for pull request builds, just
+   append `&ignore_pull_requests=false` to the end of the URL.
 
-Finally, set up a webhook in your `.travis.yml` file:
+1. Add the following to the bottom of your `.travis.yml` file:
 
-```
-notifications:
-webhooks:
-- {{ api_url }}/v1/external/travis?stream=travis&topic=build-status&api_key=abcdefgh
-```
+    ```
+    notifications:
+      webhooks:
+        - <URL constructed above>
+    ```
 
-By default, pull request events are ignored since most people
-don't want notifications for new pushes to pull requests.  To
-enable notifications for pull request builds, just
-add `&ignore_pull_requests=false` at the end of the URL.
+    Push this change to your repository. To further configure which
+    specific events should trigger a notification, see
+    [Travis CI's webhook documentation][1].
+
+[1]: https://docs.travis-ci.com/user/notifications/#Configuring-webhook-notifications
 
 {!congrats.md!}
 
