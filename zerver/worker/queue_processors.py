@@ -101,14 +101,11 @@ def check_and_send_restart_signal() -> None:
         pass
 
 def retry_send_email_failures(
-        func: Callable[[Any, Dict[str, Any]], None]
+        func: Callable[[ConcreteQueueWorker, Dict[str, Any]], None]
 ) -> Callable[['QueueProcessingWorker', Dict[str, Any]], None]:
-    # If we don't use cast() and use QueueProcessingWorker instead of Any in
-    # function type annotation then mypy complains.
-    func = cast(Callable[[QueueProcessingWorker, Dict[str, Any]], None], func)
 
     @wraps(func)
-    def wrapper(worker: 'QueueProcessingWorker', data: Dict[str, Any]) -> None:
+    def wrapper(worker: ConcreteQueueWorker, data: Dict[str, Any]) -> None:
         try:
             func(worker, data)
         except (smtplib.SMTPServerDisconnected, socket.gaierror, EmailNotDeliveredException):
