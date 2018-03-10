@@ -149,10 +149,10 @@ exports.set_color = function (stream_id, color) {
     stream_edit.set_stream_property(sub, 'color', color);
 };
 
-exports.rerender_subscribers_count = function (sub) {
+exports.rerender_subscribers_count = function (sub, just_subscribed) {
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
-    if (!sub.can_add_subscribers) {
+    if (!sub.can_add_subscribers || (just_subscribed && sub.invite_only)) {
         var sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(sub_count);
     } else {
@@ -215,7 +215,7 @@ exports.update_settings_for_subscribed = function (sub) {
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed");
 
     if (button.length !== 0) {
-        exports.rerender_subscribers_count(sub);
+        exports.rerender_subscribers_count(sub, true);
 
         button.toggleClass("checked");
         settings_button.text(i18n.t("Unsubscribe"));
