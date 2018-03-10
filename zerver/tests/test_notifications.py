@@ -148,7 +148,7 @@ class TestMissedMessages(ZulipTestCase):
             subject = 'Othello, the Moor of Venice sent you a message'
             verify_body_does_not_include = []
         else:
-            body = 'While you were away you received 1 new message!'
+            body = 'While you were away you received 1 new private message!'
             subject = 'New missed message'
             verify_body_does_not_include = ['Othello, the Moor of Venice', 'Extremely personal message!',
                                             'mentioned', 'group', 'Or just reply to this email.']
@@ -208,10 +208,10 @@ class TestMissedMessages(ZulipTestCase):
             subject = 'Group PMs with Iago and Othello, the Moor of Venice'
             verify_body_does_not_include = []
         else:
-            body = 'While you were away you received 1 new message!'
+            body = 'While you were away you received 1 new group private message!'
             subject = 'New missed message'
             verify_body_does_not_include = ['Iago', 'Othello, the Moor of Venice Othello, the Moor of Venice',
-                                            'Group personal message!', 'private', 'mentioned',
+                                            'Group personal message!', 'mentioned',
                                             'Or just reply to this email.']
         self._test_cases(tokens, msg_id, body, subject, send_as_user,
                          show_message_content=show_message_content,

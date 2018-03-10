@@ -14,7 +14,7 @@
     Hello {{ name }},
 
     <p>
-        While you were away you received {{ message_count }} new message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
+        While you were away you received {{ message_count }} new{% if group_pm %} group private{% elif private_message %} private{% endif %} message{{ message_count|pluralize }}{% if mention %} in which you were mentioned{% endif %}!
     </p>
 
     {% if show_message_content %}
@@ -37,9 +37,10 @@
     </div>
     {% endif %}
 
+
     <p>
         <a href="{{ realm_uri }}">Click here to log in to Zulip and view your new messages.</a>
-        {% if reply_to_zulip  %}
+        {% if reply_to_zulip %}
         Or just reply to this email.
         {% endif %}
     </p>
