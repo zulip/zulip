@@ -158,28 +158,32 @@ ResultWithFamily = NamedTuple('ResultWithFamily', [
     ('result', Any)
 ])
 
+ElementPair = NamedTuple('ElementPair', [
+    ('parent', Optional[Element]),
+    ('value', Element)
+])
+
 def walk_tree_with_family(root: Element,
                           processor: Callable[[Element], Optional[_T]]
                           ) -> List[ResultWithFamily]:
     results = []
 
-    queue = deque([{'parent': None, 'value': root}])
+    queue = deque([ElementPair(parent=None, value=root)])
     while queue:
         currElementPair = queue.popleft()
-        for child in currElementPair['value'].getchildren():
+        for child in currElementPair.value.getchildren():
             if child.getchildren():
-                queue.append({'parent': currElementPair, 'value': child})  # type: ignore  # Lack of Deque support in typing module for Python 3.4.3
+                queue.append(ElementPair(parent=currElementPair, value=child))  # type: ignore  # Lack of Deque support in typing module for Python 3.4.3
             result = processor(child)
             if result is not None:
-                if currElementPair['parent']:
-                    grandparent_element = cast(Dict[str, Optional[Element]],
-                                               currElementPair['parent'])
-                    grandparent = grandparent_element['value']
+                if currElementPair.parent is not None:
+                    grandparent_element = cast(ElementPair, currElementPair.parent)
+                    grandparent = grandparent_element.value
                 else:
                     grandparent = None
                 family = ElementFamily(
                     grandparent=grandparent,
-                    parent=currElementPair['value'],
+                    parent=currElementPair.value,
                     child=child
                 )
 
