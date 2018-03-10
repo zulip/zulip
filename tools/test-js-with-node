@@ -93,6 +93,12 @@ os.environ['TZ'] = 'UTC'
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 
+# Add ".js" to the end of all the file arguments, so index.js
+# can actually verify if the file exists or not.
+for index, arg in enumerate(options.args):
+    if not arg.endswith('.js'):
+        options.args[index] = arg + '.js'
+
 # The index.js test runner is the real "driver" here, and we launch
 # with either istanbul or node, depending on whether we want coverage
 # reports.  Running under istanbul is slower and creates funny
