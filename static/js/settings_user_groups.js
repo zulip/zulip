@@ -77,31 +77,34 @@ exports.populate_user_groups = function () {
 
         var input = pill_container.children('.input');
 
-        input.typeahead({
-            items: 5,
-            fixed: true,
-            dropup: true,
-            source: function () {
-                return user_pill.typeahead_source(pills);
-            },
-            highlighter: function (item) {
-                return typeahead_helper.render_person(item);
-            },
-            matcher: function (item) {
-                var query = this.query.toLowerCase();
-                return (item.email.toLowerCase().indexOf(query) !== -1
-                        || item.full_name.toLowerCase().indexOf(query) !== -1);
-            },
-            sorter: function (matches) {
-                return typeahead_helper.sort_recipientbox_typeahead(
-                    this.query, matches, "");
-            },
-            updater: function (user) {
-                append_user(user);
-                update_save_state();
-            },
-            stopAdvance: true,
-        });
+        (function set_up_typeahead() {
+            // We will early-exit here in a later commit.
+            input.typeahead({
+                items: 5,
+                fixed: true,
+                dropup: true,
+                source: function () {
+                    return user_pill.typeahead_source(pills);
+                },
+                highlighter: function (item) {
+                    return typeahead_helper.render_person(item);
+                },
+                matcher: function (item) {
+                    var query = this.query.toLowerCase();
+                    return (item.email.toLowerCase().indexOf(query) !== -1
+                            || item.full_name.toLowerCase().indexOf(query) !== -1);
+                },
+                sorter: function (matches) {
+                    return typeahead_helper.sort_recipientbox_typeahead(
+                        this.query, matches, "");
+                },
+                updater: function (user) {
+                    append_user(user);
+                    update_save_state();
+                },
+                stopAdvance: true,
+            });
+        }());
 
         pills.onPillCreate(function () {
             update_save_state();
