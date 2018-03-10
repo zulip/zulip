@@ -214,6 +214,12 @@ exports.new_stream_clicked = function (stream_name) {
     window.location.hash = "#streams/new";
 };
 
+function clear_error_display() {
+    stream_name_error.clear_errors();
+    $(".stream_create_info").hide();
+    stream_subscription_error.clear_errors();
+}
+
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
@@ -237,10 +243,7 @@ exports.show_new_stream_modal = function () {
     } else {
         $('#announce-new-stream').hide();
     }
-
-    stream_name_error.clear_errors();
-    $(".stream_create_info").hide();
-    stream_subscription_error.clear_errors();
+    clear_error_display();
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
         var elem = $(this);
@@ -335,6 +338,8 @@ $(function () {
 
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
+        clear_error_display();
+
         var stream_name = $.trim($("#create_stream_name").val());
         var name_ok = stream_name_error.validate_for_submit(stream_name);
 
