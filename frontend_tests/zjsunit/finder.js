@@ -33,7 +33,7 @@ exports.find_files_to_run = function () {
     }
 
     testsDifference.forEach(function (filename) {
-        console.log(filename + " does not exist");
+        throw (filename + ".js does not exist");
     });
 
     tests.sort();
