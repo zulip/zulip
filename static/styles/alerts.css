@@ -11,6 +11,10 @@
     margin: 20px;
 }
 
+.alert.stream_create_info {
+    margin: 10px 10px 0px 10px;
+}
+
 /* alert box compoent changes */
 .alert-box {
     position: absolute;
