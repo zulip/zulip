@@ -40,6 +40,7 @@ from zerver.lib.actions import (
     get_owned_bot_dicts,
 )
 from zerver.lib.user_groups import user_groups_in_realm_serialized
+from zerver.lib.stream_subscription import get_stream_subscriptions_for_user
 from zerver.tornado.event_queue import request_event_queue, get_user_events
 from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
     get_user_profile_by_id, \
@@ -145,7 +146,11 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['muted_topics'] = get_topic_mutes(user_profile)
 
     if want('locked_topics'):
-        state['locked_topics'] = get_locked_topics()
+        locked_topics = get_locked_topics()
+        subscriptions = get_stream_subscriptions_for_user(user_profile)
+        subscriptions = list(map(lambda stream: stream.recipient.type_id, subscriptions))
+        locked_topics = list(filter(lambda topic: topic['stream_id'] in subscriptions, locked_topics))
+        state['locked_topics'] = locked_topics
 
     if want('pointer'):
         state['pointer'] = user_profile.pointer
@@ -585,7 +590,11 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "muted_topics":
         state['muted_topics'] = event["muted_topics"]
     elif event['type'] == "locked_topics":
-        state['locked_topics'] = event["locked_topics"]
+        subscriptions = get_stream_subscriptions_for_user(user_profile)
+        subscriptions = list(map(lambda stream: stream.recipient.type_id, subscriptions))
+        locked_topics = list(filter(lambda topic: topic['stream_id'] in subscriptions,
+                                    event['locked_topics']))
+        state['locked_topics'] = locked_topics
     elif event['type'] == "realm_filters":
         state['realm_filters'] = event["realm_filters"]
     elif event['type'] == "update_display_settings":

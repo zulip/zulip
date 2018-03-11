@@ -1184,16 +1184,21 @@ class EventsRegisterTest(ZulipTestCase):
                 ('topic', check_string)
             ]))),
         ])
-        stream = get_stream('Denmark', self.user_profile.realm)
+        subscribedStream = get_stream('Denmark', self.user_profile.realm)
+        unsubscribedStream = get_stream('Scotland', self.user_profile.realm)
         events = self.do_test(lambda: do_lock_topic(
-            self.user_profile, stream, "topic"))
+            self.user_profile, subscribedStream, "topic"))
         error = locked_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         events = self.do_test(lambda: do_unlock_topic(
-            self.user_profile, stream, "topic"))
+            self.user_profile, subscribedStream, "topic"))
         error = locked_topics_checker('events[0]', events[0])
         self.assert_on_error(error)
+
+        events = self.do_test(lambda: do_lock_topic(
+            self.user_profile, unsubscribedStream, "topic"),
+            state_change_expected=False)
 
     def test_change_avatar_fields(self) -> None:
         schema_checker = self.check_events_dict([
@@ -2776,7 +2781,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 30)
+        self.assert_length(queries, 33)
 
         expected_counts = dict(
             alert_words=0,
@@ -2785,7 +2790,7 @@ class FetchQueriesTest(ZulipTestCase):
             default_streams=1,
             default_stream_groups=1,
             hotspots=0,
-            locked_topics=1,
+            locked_topics=4,
             message=1,
             muted_topics=1,
             pointer=0,
