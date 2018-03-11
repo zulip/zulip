@@ -70,9 +70,7 @@ body.dark-mode #tab_list li.stream:not(.dark_background) {
 
 /* these are converting grey things to "new grey" */
 body.dark-mode .sidebar-title,
-body.dark-mode .recipient_row_date,
-body.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
-body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
+body.dark-mode .recipient_row_date {
     color: inherit;
     opacity: 0.5;
 }
