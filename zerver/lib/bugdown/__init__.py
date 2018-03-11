@@ -440,14 +440,12 @@ class InlineHttpsProcessor(markdown.treeprocessors.Treeprocessor):
 
 class BacktickPattern(markdown.inlinepatterns.Pattern):
     """ Return a `<code>` element containing the matching text. """
-    def __init__(self, pattern):
-        # type: (Text) -> None
+    def __init__(self, pattern: Text) -> None:
         markdown.inlinepatterns.Pattern.__init__(self, pattern)
         self.ESCAPED_BSLASH = '%s%s%s' % (markdown.util.STX, ord('\\'), markdown.util.ETX)
         self.tag = 'code'
 
-    def handleMatch(self, m):
-        # type: (Match[Text]) -> Union[Text, Element]
+    def handleMatch(self, m: Match[Text]) -> Union[Text, Element]:
         if m.group(4):
             el = markdown.util.etree.Element(self.tag)
             # Modified to not strip whitespace
@@ -1280,8 +1278,7 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
     RE = re.compile(r'^([ ]*)(\d+)\.[ ]+(.*)')
     TAB_LENGTH = 2
 
-    def run(self, lines):
-        # type: (List[Text]) -> List[Text]
+    def run(self, lines: List[Text]) -> List[Text]:
         new_lines = []  # type: List[Text]
         current_list = []  # type: List[Match[Text]]
         current_indent = 0
@@ -1313,8 +1310,7 @@ class AutoNumberOListPreprocessor(markdown.preprocessors.Preprocessor):
 
         return new_lines
 
-    def renumber(self, mlist):
-        # type: (List[Match[Text]]) -> List[Text]
+    def renumber(self, mlist: List[Match[Text]]) -> List[Text]:
         if not mlist:
             return []
 
