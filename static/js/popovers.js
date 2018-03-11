@@ -43,7 +43,7 @@ function load_medium_avatar(user, elt) {
     });
 }
 
-function user_last_seen_time_status(user_id) {
+function user_last_online_time(user_id, full_time_format) {
     var status = presence.get_status(user_id);
     if (status === "active") {
         return i18n.t("Active now");
@@ -64,6 +64,12 @@ function user_last_seen_time_status(user_id) {
     if (last_active_date === undefined) {
         return i18n.t("Unknown");
     }
+
+    if (full_time_format) {
+        return i18n.t("Last online: __last_active_date__",
+                  {last_active_date: last_active_date.toString("MMM\xa0dd\xa0yyyy,\xa0HH:MM")});
+    }
+
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
@@ -112,13 +118,15 @@ function show_user_info_popover(element, user, message) {
             user_id: user.user_id,
             user_time: people.get_user_time(user.user_id),
             presence_status: presence.get_status(user.user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            user_last_online_time: user_last_online_time(user.user_id),
+            user_last_online_full_time: user_last_online_time(user.user_id, true),
             pm_with_uri: narrow.pm_with_uri(user.email),
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
             private_message_class: "respond_personal_button",
             is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
+            is_online_and_active: presence.get_status(user.user_id) === "active",
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
             is_sender_popover: message.sender_id === user.user_id,
         };
@@ -152,7 +160,8 @@ function fetch_group_members(member_ids) {
             return Object.assign({}, p, {
                 presence_status: presence.get_status(p.user_id),
                 is_active: people.is_active_user_for_popover(p.user_id),
-                user_last_seen_time_status: user_last_seen_time_status(p.user_id),
+                user_last_online_time: user_last_online_time(p.user_id),
+                user_last_online_full_time: user_last_online_time(p.user_id, true),
             });
         });
 }
@@ -611,11 +620,13 @@ exports.register_click_handlers = function () {
             user_id: user_id,
             user_time: people.get_user_time(user_id),
             presence_status: presence.get_status(user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user_id),
+            user_last_online_time: user_last_online_time(user.user_id),
+            user_last_online_full_time: user_last_online_time(user.user_id, true),
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
+            is_online_and_active: presence.get_status(user.user_id) === "active",
             is_bot: user.is_bot,
             is_sender_popover: false,
         };

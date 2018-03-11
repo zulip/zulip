@@ -7,7 +7,7 @@
                 {{#if is_bot}}
                 <i class="zulip-icon bot" aria-hidden="true"></i>
                 {{else}}
-                <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
+                <span class="user-status-indicator popover_user_presence" title="{{user_last_online_full_time}}"></span>
                 {{/if}}
             {{/if}}
         </li>
@@ -26,6 +26,12 @@
         {{#if user_time}}
         <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
         {{/if}}
+
+        {{#unless is_online_and_active }}
+            {{#unless is_bot }}
+            <li>{{user_last_online_time}} </li>
+            {{/unless}}
+        {{/unless}}
     </div>
     <hr />
     {{#if is_active}}
