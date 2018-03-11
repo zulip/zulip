@@ -172,7 +172,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('tr#emoji_mouseface', function () {
         casper.test.assertSelectorHasText('tr#emoji_mouseface .emoji_name', 'mouseface');
-        casper.test.assertExists('.emoji_row img[src="/user_avatars/1/emoji/mouseface.png"]');
+        casper.test.assertExists('tr#emoji_mouseface img');
         casper.click('tr#emoji_mouseface button.delete');
     });
 });

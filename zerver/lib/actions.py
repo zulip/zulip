@@ -11,6 +11,7 @@ from django.utils.html import escape
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.core import validators
+from django.core.files import File
 from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
     RealmCount
 
@@ -34,7 +35,7 @@ from zerver.lib.cache import (
     to_dict_cache_key_id,
 )
 from zerver.lib.context_managers import lockfile
-from zerver.lib.emoji import emoji_name_to_emoji_code
+from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -117,7 +118,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
-    claim_attachment, delete_message_image
+    claim_attachment, delete_message_image, upload_emoji_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
 from zerver.tornado.event_queue import request_event_queue, send_event
 
@@ -4285,15 +4286,29 @@ def notify_realm_emoji(realm: Realm) -> None:
 
 def check_add_realm_emoji(realm: Realm,
                           name: Text,
-                          file_name: Text,
-                          author: Optional[UserProfile]=None) -> None:
-    emoji = RealmEmoji(realm=realm, name=name, file_name=file_name, author=author)
-    emoji.full_clean()
-    emoji.save()
-    notify_realm_emoji(realm)
+                          author: UserProfile,
+                          image_file: File) -> Optional[RealmEmoji]:
+    realm_emoji = RealmEmoji(realm=realm, name=name, author=author)
+    realm_emoji.full_clean()
+    realm_emoji.save()
+
+    emoji_file_name = get_emoji_file_name(image_file.name, realm_emoji.id)
+    emoji_uploaded_successfully = False
+    try:
+        upload_emoji_image(image_file, emoji_file_name, author)
+        emoji_uploaded_successfully = True
+    finally:
+        if not emoji_uploaded_successfully:
+            realm_emoji.delete()
+            return None
+        else:
+            realm_emoji.file_name = emoji_file_name
+            realm_emoji.save(update_fields=['file_name'])
+            notify_realm_emoji(realm_emoji.realm)
+    return realm_emoji
 
 def do_remove_realm_emoji(realm: Realm, name: Text) -> None:
-    emoji = RealmEmoji.objects.get(realm=realm, name=name)
+    emoji = RealmEmoji.objects.get(realm=realm, name=name, deactivated=False)
     emoji.deactivated = True
     emoji.save(update_fields=['deactivated'])
     notify_realm_emoji(realm)
