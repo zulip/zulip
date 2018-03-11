@@ -11,7 +11,7 @@ from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
     try_add_realm_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
@@ -280,16 +280,8 @@ class Command(BaseCommand):
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
-        UPLOADED_EMOJI_FILE_NAME = 'green_tick.png'
         with open(IMAGE_FILE_PATH, 'rb') as fp:
-            upload_backend.upload_emoji_image(fp, UPLOADED_EMOJI_FILE_NAME, iago)
-            RealmEmoji.objects.create(
-                name='green_tick',
-                author=iago,
-                realm=zulip_realm,
-                deactivated=False,
-                file_name=UPLOADED_EMOJI_FILE_NAME,
-            )
+            check_add_realm_emoji(zulip_realm, 'green_tick', iago, fp)
 
         if not options["test_suite"]:
             # Populate users with some bar data

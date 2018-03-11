@@ -108,12 +108,16 @@ function get_user_list_for_message_reaction(message, local_id) {
 }
 
 exports.toggle_emoji_reaction = function (message_id, emoji_name) {
-    // This toggles the current user's reaction to the clicked emoji.
+    // This codepath doesn't support toggling a deactivated realm emoji.
+    // Since an user can interact with a deactivated realm emoji only by
+    // clicking on a reaction and that is handled by `process_reaction_click()`
+    // method. This codepath is to be used only where there is no chance of an
+    // user interacting with a deactivated realm emoji like emoji picker.
     var reaction_info = {
         emoji_name: emoji_name,
     };
 
-    if (emoji.all_realm_emojis.hasOwnProperty(emoji_name)) {
+    if (emoji.active_realm_emojis.hasOwnProperty(emoji_name)) {
         if (emoji_name === 'zulip') {
             reaction_info.reaction_type = 'zulip_extra_emoji';
         } else {
@@ -270,7 +274,7 @@ exports.view.insert_new_reaction = function (opts) {
 
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
-        context.url = emoji.all_realm_emojis[emoji_name].emoji_url;
+        context.url = emoji.all_realm_emojis[emoji_code].emoji_url;
     }
 
     context.count = 1;
@@ -410,7 +414,7 @@ exports.get_message_reactions = function (message) {
 
         if (reaction.reaction_type !== 'unicode_emoji') {
             reaction.is_realm_emoji = true;
-            reaction.url = emoji.all_realm_emojis[reaction.emoji_name].emoji_url;
+            reaction.url = emoji.all_realm_emojis[reaction.emoji_code].emoji_url;
         }
         if (reaction.user_ids.indexOf(page_params.user_id) !== -1) {
             reaction.class = "message_reaction reacted";

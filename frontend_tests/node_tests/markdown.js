@@ -24,8 +24,11 @@ set_global('window', {
 set_global('page_params', {
     realm_users: [],
     realm_emoji: {
-        burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
-                  source_url: '/static/generated/emoji/images/emoji/burrito.png'},
+        1: {id: 1,
+            name: 'burrito',
+            source_url: '/static/generated/emoji/images/emoji/burrito.png',
+            deactivated: false,
+        },
     },
     realm_filters: [
         [

@@ -37,6 +37,7 @@ from zerver.models import (
     Message,
     Stream,
     Realm,
+    RealmEmoji,
     RealmFilter,
     Recipient,
     UserProfile,
@@ -600,7 +601,10 @@ class BugdownTest(ZulipTestCase):
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
         converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', 'green_tick.png', realm.id)))
+        realm_emoji = RealmEmoji.objects.filter(realm=realm,
+                                                name='green_tick',
+                                                deactivated=False).get()
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id)))
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
