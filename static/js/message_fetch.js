@@ -11,6 +11,7 @@ var consts = {
     num_before_pointer: 200,
     num_after_pointer: 200,
     backward_batch_size: 100,
+    forward_batch_size: 100,
     catch_up_batch_size: 1000,
 };
 
@@ -163,6 +164,20 @@ exports.get_backfill_anchor = function (msg_list) {
     return oldest_message_id;
 };
 
+exports.get_frontfill_anchor = function (msg_list) {
+    if (msg_list === home_msg_list) {
+        msg_list = message_list.all;
+    }
+
+    var last_msg = msg_list.last();
+
+    if (last_msg) {
+        return last_msg.id;
+    }
+
+    return page_params.pointer;
+};
+
 exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
@@ -210,6 +225,43 @@ exports.do_backfill = function (opts) {
             }
             if (opts.cont) {
                 opts.cont();
+            }
+        },
+    });
+};
+
+exports.maybe_load_newer_messages = function (opts) {
+    // This function gets called when you scroll to the top
+    // of your window, and you want to get messages newer
+    // than what the browers originally fetched.
+    var msg_list = opts.msg_list;
+
+    if (!msg_list.fetch_status.can_load_newer_messages()) {
+        // We may already be loading new messages or already
+        // got the newest one.
+        return;
+    }
+
+    msg_list.fetch_status.start_newer_batch();
+    if (msg_list === home_msg_list) {
+        message_list.all.fetch_status.start_newer_batch();
+    }
+
+    var anchor = exports.get_frontfill_anchor(msg_list).toFixed();
+
+    exports.load_messages({
+        anchor: anchor,
+        num_before: 0,
+        num_after: consts.forward_batch_size,
+        msg_list: msg_list,
+        cont: function (data) {
+            msg_list.fetch_status.finish_newer_batch({
+                found_newest: data.found_newest,
+            });
+            if (msg_list === home_msg_list) {
+                message_list.all.fetch_status.finish_newer_batch({
+                    found_newest: data.found_newest,
+                });
             }
         },
     });
