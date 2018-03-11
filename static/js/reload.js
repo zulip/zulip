@@ -104,7 +104,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
 
 // Check if we're doing a compose-preserving reload.  This must be
 // done before the first call to get_events
-exports.initialize = function reload__initialize() {
+exports.initialize = function () {
     var location = window.location.toString();
     var hash_fragment = location.substring(location.indexOf('#') + 1);
 
@@ -140,13 +140,19 @@ exports.initialize = function reload__initialize() {
     if (vars.msg !== undefined) {
         var send_now = parseInt(vars.send_after_reload, 10);
 
-        // TODO: preserve focus
-        compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                      subject: vars.subject || '',
-                                      private_message_recipient: vars.recipient || '',
-                                      content: vars.msg || ''});
-        if (send_now) {
-            compose.finish();
+        try {
+            // TODO: preserve focus
+            compose_actions.start(vars.msg_type, {stream: vars.stream || '',
+                                          subject: vars.subject || '',
+                                          private_message_recipient: vars.recipient || '',
+                                          content: vars.msg || ''});
+            if (send_now) {
+                compose.finish();
+            }
+        } catch (err) {
+            // We log an error if we can't open the compose box, but otherwise
+            // we continue, since this is not critical.
+            blueslip.warn(err.toString());
         }
     }
 

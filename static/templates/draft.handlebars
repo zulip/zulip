@@ -13,6 +13,7 @@
                         {{topic}}
                     </div>
                 </span>
+                <div class="recipient_row_date" title="{{t 'Last modified'}}">{{ time_stamp }}</div>
             </div>
         </div>
         {{else}}
@@ -21,7 +22,9 @@
                 <div class="message_label_clickable stream_label">
                     {{#tr this}}You and __recipients__{{/tr}}
                 </div>
+                <div class="recipient_row_date" title="{{t 'Last modified'}}">{{ time_stamp }}</div>
             </div>
+
         </div>
         {{/if}}
         <div class="message_row{{^is_stream}} private-message{{/is_stream}}">

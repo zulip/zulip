@@ -24,16 +24,24 @@ function get_email_of_subscribers(subscribers) {
 }
 
 exports.rerender_subscribers_list = function (sub) {
-    var emails = get_email_of_subscribers(sub.subscribers);
-    var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
+    if (!sub.can_add_subscribers) {
+        // It is also possible that user don't have rights to access subscribers.
+        // If user can't add subscribers, user can't access subscribers.
+        var html = templates.render('subscription_members', sub);
+        var stream_settings = settings_for_sub(sub);
+        stream_settings.find('.subscription-members-setting').expectOne().html(html);
+    } else {
+        var emails = get_email_of_subscribers(sub.subscribers);
+        var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
 
-    // Changing the data clears the rendered list and the list needs to be re-rendered.
-    // Perform re-rendering only when the stream settings form of the corresponding
-    // stream is open.
-    if (subscribers_list) {
-        subscribers_list.data(emails);
-        subscribers_list.render();
-        ui.update_scrollbar($(".subscriber_list_container"));
+        // Changing the data clears the rendered list and the list needs to be re-rendered.
+        // Perform re-rendering only when the stream settings form of the corresponding
+        // stream is open.
+        if (subscribers_list) {
+            subscribers_list.data(emails);
+            subscribers_list.render();
+            ui.update_scrollbar($(".subscriber_list_container"));
+        }
     }
 };
 
@@ -156,7 +164,7 @@ function show_subscription_settings(sub_row) {
     var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
-    if (!sub.render_subscribers) {
+    if (!sub.render_subscribers || !sub.can_add_subscribers) {
         return;
     }
     // fetch subscriber list from memory.
@@ -165,12 +173,6 @@ function show_subscription_settings(sub_row) {
 
     var emails = get_email_of_subscribers(sub.subscribers);
 
-    // If user can not access subscribers no need for search widget.
-    if (!sub.can_add_subscribers) {
-        $("[data-stream-id='" + stream_id + "'] .search").hide();
-    } else {
-        $("[data-stream-id='" + stream_id + "'] .search").show();
-    }
     list_render(list, emails.sort(), {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
@@ -583,6 +585,39 @@ $(function () {
         setup_subscriptions_stream_hash(sub);
         e.preventDefault();
         e.stopPropagation();
+    });
+
+    $("#subscriptions_table").on("click", ".deactivate", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var stream_id = get_stream_id(e.target);
+        if (!stream_id) {
+            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), 'alert-error');
+            return;
+        }
+        var stream_name = stream_data.maybe_get_stream_name(stream_id);
+        var deactivate_stream_modal = templates.render("deactivation-stream-modal", {stream_name: stream_name});
+        $(".subscription_settings").append(deactivate_stream_modal);
+        overlays.open_modal('deactivation_stream_modal');
+    });
+
+    $("#subscriptions_table").on("click", "#do_deactivate_stream_button", function (e) {
+        var stream_id = get_stream_id(e.target);
+        overlays.close_modal('deactivation_stream_modal');
+        $("#deactivation_stream_modal").remove();
+        if (!stream_id) {
+            ui_report.message(i18n.t("Invalid stream id"), $(".stream_change_property_info"), 'alert-error');
+            return;
+        }
+        var row = $(".stream-row.active");
+        settings_streams.delete_stream(stream_id, $(".stream_change_property_info"), row);
+        $(".settings").hide();
+        $(".nothing-selected").show();
+    });
+
+    $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", function () {
+        $("#deactivation_stream_modal").remove();
     });
 
     $("#subscriptions_table").on("click", ".stream-row", function (e) {

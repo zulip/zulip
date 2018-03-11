@@ -144,12 +144,12 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
     create_stream_by_admins_only = models.BooleanField(default=False)  # type: bool
     add_emoji_by_admins_only = models.BooleanField(default=False)  # type: bool
-    create_generic_bot_by_admins_only = models.BooleanField(default=False)  # type: bool
     mandatory_topics = models.BooleanField(default=False)  # type: bool
     show_digest_email = models.BooleanField(default=True)  # type: bool
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
+    send_welcome_emails = models.BooleanField(default=True)  # type: bool
 
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
@@ -163,6 +163,13 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
 
+    # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
+    # On updating it here, update it there as well.
+    BOT_CREATION_EVERYONE = 1
+    BOT_CREATION_LIMIT_GENERIC_BOTS = 2
+    BOT_CREATION_ADMINS_ONLY = 3
+    bot_creation_policy = models.PositiveSmallIntegerField(default=BOT_CREATION_EVERYONE)  # type: int
+
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
     signup_notifications_stream = models.ForeignKey('Stream', related_name='+', null=True, blank=True, on_delete=CASCADE)  # type: Optional[Stream]
@@ -175,14 +182,14 @@ class Realm(models.Model):
     max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
-    upload_quota_gb = models.IntegerField(null=True)  # type: int
+    upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
     # Define the types of the various automatically managed properties
     property_types = dict(
         add_emoji_by_admins_only=bool,
         allow_edit_history=bool,
         allow_message_deleting=bool,
-        create_generic_bot_by_admins_only=bool,
+        bot_creation_policy=int,
         create_stream_by_admins_only=bool,
         default_language=Text,
         description=Text,
@@ -196,6 +203,7 @@ class Realm(models.Model):
         name=Text,
         name_changes_disabled=bool,
         restricted_to_domain=bool,
+        send_welcome_emails=bool,
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 
@@ -211,6 +219,12 @@ class Realm(models.Model):
 
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
     INITIAL_PRIVATE_STREAM_NAME = u'core team'
+
+    BOT_CREATION_POLICY_TYPES = [
+        BOT_CREATION_EVERYONE,
+        BOT_CREATION_LIMIT_GENERIC_BOTS,
+        BOT_CREATION_ADMINS_ONLY,
+    ]
 
     def authentication_methods_dict(self) -> Dict[Text, bool]:
         """Returns the a mapping from authentication flags to their status,
@@ -233,7 +247,7 @@ class Realm(models.Model):
         return "<Realm: %s %s>" % (self.string_id, self.id)
 
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
-    def get_emoji(self) -> Dict[Text, Optional[Dict[str, Iterable[Text]]]]:
+    def get_emoji(self) -> Dict[Text, Dict[str, Iterable[Text]]]:
         return get_realm_emoji_uncached(self)
 
     def get_admin_users(self) -> Sequence['UserProfile']:
@@ -397,7 +411,8 @@ def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
                 'id': row.author.id,
                 'email': row.author.email,
                 'full_name': row.author.full_name}
-        d[row.name] = dict(source_url=get_emoji_url(row.file_name, row.realm_id),
+        d[row.name] = dict(id=str(row.id),
+                           source_url=get_emoji_url(row.file_name, row.realm_id),
                            deactivated=row.deactivated,
                            author=author)
     return d
@@ -557,6 +572,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     pm_content_in_desktop_notifications = models.BooleanField(default=True)  # type: bool
     enable_sounds = models.BooleanField(default=True)  # type: bool
     enable_offline_email_notifications = models.BooleanField(default=True)  # type: bool
+    message_content_in_email_notifications = models.BooleanField(default=True)  # type: bool
     enable_offline_push_notifications = models.BooleanField(default=True)  # type: bool
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
@@ -586,6 +602,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: Text
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
+    translate_emoticons = models.BooleanField(default=False)  # type: bool
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
@@ -648,6 +665,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         twenty_four_hour_time=bool,
         high_contrast_mode=bool,
         night_mode=bool,
+        translate_emoticons=bool,
     )
 
     notification_setting_types = dict(
@@ -661,6 +679,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         enable_stream_email_notifications=bool,
         enable_stream_push_notifications=bool,
         enable_stream_sounds=bool,
+        message_content_in_email_notifications=bool,
         pm_content_in_desktop_notifications=bool,
         realm_name_in_notifications=bool,
     )
@@ -720,7 +739,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     def allowed_bot_types(self):
         # type: () -> List[int]
         allowed_bot_types = []
-        if self.is_realm_admin or not self.realm.create_generic_bot_by_admins_only:
+        if self.is_realm_admin or \
+                not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS:
             allowed_bot_types.append(UserProfile.DEFAULT_BOT)
         allowed_bot_types += [
             UserProfile.INCOMING_WEBHOOK_BOT,
@@ -759,7 +779,7 @@ class UserGroup(models.Model):
     name = models.CharField(max_length=100)
     members = models.ManyToManyField(UserProfile, through='UserGroupMembership')
     realm = models.ForeignKey(Realm, on_delete=CASCADE)
-    description = models.CharField(max_length=1024, default=u'')  # type: Text
+    description = models.TextField(default=u'')  # type: Text
 
     class Meta:
         unique_together = (('realm', 'name'),)
@@ -1445,31 +1465,6 @@ def active_user_ids(realm_id: int) -> List[int]:
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
 
-def get_owned_bot_dicts(user_profile: UserProfile,
-                        include_all_realm_bots_if_admin: bool=True) -> List[Dict[str, Any]]:
-    if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
-        result = get_bot_dicts_in_realm(user_profile.realm)
-    else:
-        result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
-                                            bot_owner=user_profile).values(*bot_dict_fields)
-    # TODO: Remove this import cycle
-    from zerver.lib.avatar import avatar_url_from_dict
-
-    return [{'email': botdict['email'],
-             'user_id': botdict['id'],
-             'full_name': botdict['full_name'],
-             'bot_type': botdict['bot_type'],
-             'is_active': botdict['is_active'],
-             'api_key': botdict['api_key'],
-             'default_sending_stream': botdict['default_sending_stream__name'],
-             'default_events_register_stream': botdict['default_events_register_stream__name'],
-             'default_all_public_streams': botdict['default_all_public_streams'],
-             'owner': botdict['bot_owner__email'],
-             'avatar_url': avatar_url_from_dict(botdict),
-             'services': get_service_dicts_for_bots(botdict['id']),
-             }
-            for botdict in result]
-
 def is_cross_realm_bot_email(email: Text) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
 
@@ -1925,14 +1920,6 @@ def get_realm_outgoing_webhook_services_name(realm: Realm) -> List[Any]:
 
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
-
-def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
-    services = get_bot_services(user_profile_id)
-    service_dicts = [{'base_url': service.base_url,
-                      'interface': service.interface,
-                      }
-                     for service in services]
-    return service_dicts
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)

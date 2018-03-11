@@ -56,11 +56,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_edit_history: noop,
             allow_message_deleting: noop,
             allow_message_editing: noop,
-            create_generic_bot_by_admins_only: noop,
+            bot_creation_policy: settings_bots.update_bot_permissions_ui,
             create_stream_by_admins_only: noop,
             default_language: settings_org.reset_realm_default_language,
             description: settings_org.update_realm_description,
-            email_changes_disabled: settings_org.toggle_email_change_display,
+            email_changes_disabled: settings_account.update_email_change_display,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,
@@ -68,8 +68,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             mandatory_topics: noop,
             message_retention_days: settings_org.update_message_retention_days,
             name: notifications.redraw_title,
-            name_changes_disabled: settings_org.toggle_name_change_display,
+            name_changes_disabled: settings_account.update_name_change_display,
             notifications_stream_id: noop,
+            send_welcome_emails: noop,
             signup_notifications_stream_id: noop,
             restricted_to_domain: noop,
             waiting_period_threshold: noop,
@@ -93,7 +94,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
-                    settings_org.toggle_allow_message_editing_pencil();
+                    message_edit.update_message_topic_editing_pencil();
                 }
             });
             if (event.data.authentication_methods !== undefined) {
@@ -103,6 +104,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+        } else if (event.op === 'deactivated') {
+            window.location.href = "/accounts/deactivated/";
         }
 
         break;
@@ -114,6 +117,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         } else if (event.op === 'remove') {
             bot_data.deactivate(event.bot.user_id);
             event.bot.is_active = false;
+            settings_users.update_user_data(event.bot.user_id, event.bot);
+        } else if (event.op === 'delete') {
+            bot_data.delete(event.bot.user_id);
             settings_users.update_user_data(event.bot.user_id, event.bot);
         } else if (event.op === 'update') {
             if (_.has(event.bot, 'owner_id')) {
@@ -183,6 +189,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_streams.update_default_streams_table();
         } else if (event.op === 'create') {
             stream_data.create_streams(event.streams);
+            _.each(event.streams, function (stream) {
+                var sub = stream_data.get_sub_by_id(stream.stream_id);
+                stream_data.update_calculated_fields(sub);
+                subs.add_sub_to_table(sub);
+            });
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
                 var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
@@ -285,9 +296,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             'left_side_userlist',
             'timezone',
             'twenty_four_hour_time',
+            'translate_emoticons',
         ];
         if (_.contains(user_display_settings, event.setting_name)) {
             page_params[event.setting_name] = event.setting;
+        }
+        if (event.setting_name === 'default_language') {
+            // We additionally need to set the language name.
+            page_params.default_language_name = event.language_name;
         }
         if (event.setting_name === 'twenty_four_hour_time') {
             // Rerender the whole message list UI
@@ -327,17 +343,13 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 message_list.narrowed.rerender();
             }
         }
-        if ($("#settings.tab-pane.active").length) {
-            settings_display.update_page();
-        }
+        settings_display.update_page();
         break;
 
     case 'update_global_notifications':
         notifications.handle_global_notification_updates(event.notification_name,
                                                          event.setting);
-        if ($("#settings.tab-pane.active").length) {
-            settings_notifications.update_page();
-        }
+        settings_notifications.update_page();
         break;
 
     case 'update_message_flags':
@@ -356,16 +368,31 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'delete_message':
         var msg_id = event.message_id;
+        var message = message_store.get(msg_id);
+        // message is passed to unread.get_unread_messages,
+        // which returns all the unread messages out of a given list.
+        // So double marking something as read would not occur
+        unread_ops.mark_message_as_read(message);
+        if (message.type === 'stream') {
+            topic_data.remove_message({
+                stream_id: message.stream_id,
+                topic_name: message.subject,
+            });
+            stream_list.update_streams_sidebar();
+        }
         ui.remove_message(msg_id);
         break;
 
     case 'user_group':
         if (event.op === 'add') {
             user_groups.add(event.group);
-            settings_user_groups.reload();
+        } else if (event.op === 'add_members') {
+            user_groups.add_members(event.group_id, event.user_ids);
+        } else if (event.op === 'remove_members') {
+            user_groups.remove_members(event.group_id, event.user_ids);
         }
+        settings_user_groups.reload();
         break;
-
     }
 };
 

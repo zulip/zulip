@@ -7,7 +7,7 @@ class zulip::apache_sso {
   $apache_former_packages = [ "apache2", "libapache2-mod-wsgi", ]
   package { $apache_legacy_packages: ensure => "absent" }
 
-  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "ssl", ]:
+  apache2mod { [ "headers", "proxy", "proxy_http", "rewrite", "ssl", "wsgi", ]:
     ensure  => present,
     require => Package['apache2'],
   }

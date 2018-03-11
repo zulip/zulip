@@ -105,6 +105,7 @@ exports.mark_subscribed = function (sub, subscribers, color) {
     if (subscribers) {
         stream_data.set_subscribers(sub, subscribers);
     }
+    stream_data.update_calculated_fields(sub);
 
     if (overlays.streams_open()) {
         subs.update_settings_for_subscribed(sub);
@@ -128,7 +129,7 @@ exports.mark_unsubscribed = function (sub) {
         return;
     } else if (sub.subscribed) {
         stream_data.unsubscribe_myself(sub);
-
+        stream_data.update_calculated_fields(sub);
         if (overlays.streams_open()) {
             subs.update_settings_for_unsubscribed(sub);
         }

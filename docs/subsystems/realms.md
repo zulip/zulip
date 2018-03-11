@@ -33,7 +33,7 @@ within 7 days. The expiration period can be changed by modifying
 If you want anyone to be able to create new realms on your server, you
 can enable Open Realm Creation.  This will add a **Create new
 organization** link to your Zulip homepage footer, and anyone can
-create a new realm by visiting this link (**/create_realm**).  This
+create a new realm by visiting this link (**/new**).  This
 feature is disabled by default in production instances, and can be
 enabled by setting `OPEN_REALM_CREATION = True` in settings.py.
 

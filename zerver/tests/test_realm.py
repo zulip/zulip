@@ -120,7 +120,7 @@ class RealmTest(ZulipTestCase):
 
         req = dict(name=ujson.dumps(new_name))
         result = self.client_patch('/json/realm', req)
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_unauthorized_name_change(self) -> None:
         data = {'full_name': 'Sir Hamlet'}
@@ -133,6 +133,12 @@ class RealmTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         # Since the setting fails silently, no message is returned
         self.assert_in_response("", result)
+        # Realm admins can change their name even setting is disabled.
+        data = {'full_name': 'New Iago'}
+        self.login(self.example_email("iago"))
+        url = '/json/settings'
+        result = self.client_patch(url, data)
+        self.assert_in_success_response(['"full_name":"New Iago"'], result)
 
     def test_do_deactivate_realm_clears_user_realm_cache(self) -> None:
         """The main complicated thing about deactivating realm names is
@@ -267,6 +273,41 @@ class RealmTest(ZulipTestCase):
         realm = get_realm('zulip')
         self.assertNotEqual(realm.default_language, invalid_lang)
 
+    def test_deactivate_realm_by_admin(self) -> None:
+        email = self.example_email('iago')
+        self.login(email)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+        result = self.client_post('/json/realm/deactivate')
+        self.assert_json_success(result)
+        realm = get_realm('zulip')
+        self.assertTrue(realm.deactivated)
+
+    def test_deactivate_realm_by_non_admin(self) -> None:
+        email = self.example_email('hamlet')
+        self.login(email)
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+        result = self.client_post('/json/realm/deactivate')
+        self.assert_json_error(result, "Must be an organization administrator")
+        realm = get_realm('zulip')
+        self.assertFalse(realm.deactivated)
+
+    def test_change_bot_creation_policy(self) -> None:
+        # We need an admin user.
+        email = 'iago@zulip.com'
+        self.login(email)
+        req = dict(bot_creation_policy = ujson.dumps(Realm.BOT_CREATION_LIMIT_GENERIC_BOTS))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+
+        invalid_add_bot_permission = 4
+        req = dict(bot_creation_policy = ujson.dumps(invalid_add_bot_permission))
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, 'Invalid bot creation policy')
+
 
 class RealmAPITest(ZulipTestCase):
 
@@ -301,6 +342,7 @@ class RealmAPITest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            bot_creation_policy=[1, 2],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:

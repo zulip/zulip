@@ -210,6 +210,12 @@ exports.get_full_time = function (timestamp) {
     return new XDate(timestamp * 1000).toISOString();
 };
 
+exports.stringify_time = function (time) {
+    if (page_params.twenty_four_hour_time) {
+        return time.toString('HH:mm');
+    }
+    return time.toString('h:mm TT');
+};
 
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".

@@ -35,7 +35,8 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
-    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled
+    ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled, \
+    remote_auth_enabled
 from version import ZULIP_VERSION
 
 import hashlib
@@ -91,8 +92,7 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
             del request.session["multiuse_object_key"]
             request.session.modified = True
             if streams_to_subscribe is not None:
-                prereg_user.streams = streams_to_subscribe
-            prereg_user.save()
+                prereg_user.streams.set(streams_to_subscribe)
 
         return redirect("".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
@@ -177,10 +177,14 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
     return HttpResponseRedirect(user_profile.realm.uri)
 
 @log_view_func
-def remote_user_sso(request: HttpRequest) -> HttpResponse:
+@has_request_variables
+def remote_user_sso(request: HttpRequest,
+                    mobile_flow_otp: Optional[str]=REQ(default=None)) -> HttpResponse:
     try:
         remote_user = request.META["REMOTE_USER"]
     except KeyError:
+        # TODO: Arguably the JsonableError values here should be
+        # full-page HTML configuration errors instead.
         raise JsonableError(_("No REMOTE_USER set."))
 
     # Django invokes authenticate methods by matching arguments, and this
@@ -189,12 +193,20 @@ def remote_user_sso(request: HttpRequest) -> HttpResponse:
     # enabled.
     validate_login_email(remote_user_to_email(remote_user))
 
+    # Here we support the mobile flow for REMOTE_USER_BACKEND; we
+    # validate the data format and then pass it through to
+    # login_or_register_remote_user if appropriate.
+    if mobile_flow_otp is not None:
+        if not is_valid_otp(mobile_flow_otp):
+            raise JsonableError(_("Invalid OTP"))
+
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
     user_profile = authenticate(remote_user=remote_user, realm=realm)
-    return login_or_register_remote_user(request, remote_user, user_profile)
+    return login_or_register_remote_user(request, remote_user, user_profile,
+                                         mobile_flow_otp=mobile_flow_otp)
 
 @csrf_exempt
 @log_view_func
@@ -219,7 +231,7 @@ def remote_user_jwt(request: HttpRequest) -> HttpResponse:
         raise JsonableError(_("No user specified in JSON web token claims"))
     email_domain = payload.get('realm', None)
     if email_domain is None:
-        raise JsonableError(_("No realm specified in JSON web token claims"))
+        raise JsonableError(_("No organization specified in JSON web token claims"))
 
     email = "%s@%s" % (remote_user, email_domain)
 
@@ -533,6 +545,9 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             # only if it actually exists.
             return HttpResponseRedirect(realm.uri)
 
+    if 'username' in request.POST:
+        extra_context['email'] = request.POST['username']
+
     try:
         template_response = django_login_page(
             request, authentication_form=OurAuthenticationForm,
@@ -568,13 +583,13 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if (not dev_auth_enabled()) or settings.PRODUCTION:
         # This check is probably not required, since authenticate would fail without
         # an enabled DevAuthBackend.
-        raise Exception('Direct login not supported.')
+        return HttpResponseRedirect(reverse('dev_not_supported'))
     email = request.POST['direct_email']
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)
     user_profile = authenticate(dev_auth_username=email, realm=realm)
     if user_profile is None:
-        raise Exception("User cannot login")
+        return HttpResponseRedirect(reverse('dev_not_supported'))
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri)
 
@@ -603,7 +618,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
                                 realm=realm,
                                 return_data=return_data)
     if return_data.get("inactive_realm"):
-        return json_error(_("Your realm has been deactivated."),
+        return json_error(_("This organization has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
     if return_data.get("inactive_user"):
         return json_error(_("Your account has been disabled."),
@@ -648,7 +663,7 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
         return json_error(_("Your account has been disabled."),
                           data={"reason": "user disable"}, status=403)
     if return_data.get("inactive_realm"):
-        return json_error(_("Your realm has been deactivated."),
+        return json_error(_("This organization has been deactivated."),
                           data={"reason": "realm deactivated"}, status=403)
     if return_data.get("password_auth_disabled"):
         return json_error(_("Password auth is disabled in your team."),
@@ -698,6 +713,7 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         "email": email_auth_enabled(realm),
         "github": github_auth_enabled(realm),
         "google": google_auth_enabled(realm),
+        "remoteuser": remote_auth_enabled(realm),
         "ldap": ldap_auth_enabled(realm),
     }
 

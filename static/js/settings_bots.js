@@ -83,17 +83,62 @@ exports.generate_flaskbotrc_content = function (email, api_key) {
            "\n";
 };
 
+exports.bot_creation_policy_values = {};
+
+exports.setup_bot_creation_policy_values = function () {
+    exports.bot_creation_policy_values = {
+        everyone: {
+            code: 1,
+            description: i18n.t("Everyone"),
+        },
+        admins_only: {
+            code: 3,
+            description: i18n.t("Admins only"),
+        },
+        restricted: {
+            code: 2,
+            description: i18n.t("Everyone, but only admins can add generic bots"),
+        },
+    };
+};
+
+exports.update_bot_settings_tip = function () {
+    var permission_type = exports.bot_creation_policy_values;
+    var current_permission = page_params.realm_bot_creation_policy;
+    var tip_text;
+    if (current_permission === permission_type.admins_only.code) {
+        tip_text = i18n.t("Only organization administrators can add bots to this organization");
+    } else if (current_permission === permission_type.restricted.code) {
+        tip_text = i18n.t("Only orgainzation administrators can add generic bots");
+    } else {
+        tip_text = i18n.t("Anyone in this organization can add bots");
+    }
+    $(".bot-settings-tip").text(tip_text);
+};
+
+exports.update_bot_permissions_ui = function () {
+    exports.update_bot_settings_tip();
+    $('#bot_table_error').hide();
+    $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
+    if (page_params.realm_bot_creation_policy ===
+        exports.bot_creation_policy_values.admins_only.code &&
+        !page_params.is_admin) {
+        $('#create_bot_form').hide();
+        $('.add-a-new-bot-tab').hide();
+        $('.account-api-key-section').hide();
+        $("#bots_lists_navbar .active-bots-tab").click();
+    } else {
+        $('#create_bot_form').show();
+        $('.add-a-new-bot-tab').show();
+        $('.account-api-key-section').show();
+    }
+};
+
 exports.set_up = function () {
     $('#payload_url_inputbox').hide();
     $('#create_payload_url').val('');
     $('#service_name_list').hide();
     $('#config_inputbox').hide();
-    page_params.realm_embedded_bots.forEach(function (bot) {
-        $('#select_service_name').append($('<option>', {
-            value: bot.name,
-            text: bot.name,
-        }));
-    });
     var selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $('#config_inputbox').children().hide();
@@ -141,6 +186,7 @@ exports.set_up = function () {
             var interface_type = $('#create_interface_type').val();
             var service_name = $('#select_service_name :selected').val();
             var formData = new FormData();
+            var spinner = $('.create_bot_spinner');
 
             formData.append('csrfmiddlewaretoken', csrf_token);
             formData.append('bot_type', bot_type);
@@ -162,7 +208,7 @@ exports.set_up = function () {
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
                 formData.append('file-'+i, file);
             });
-            $('#create_bot_button').val('Adding bot...').prop('disabled', true);
+            loading.make_indicator(spinner, {text: i18n.t('Creating bot')});
             channel.post({
                 url: '/json/bots',
                 data: formData,
@@ -192,7 +238,7 @@ exports.set_up = function () {
                     $('#bot_table_error').text(JSON.parse(xhr.responseText).msg).show();
                 },
                 complete: function () {
-                    $('#create_bot_button').val('Create bot').prop('disabled', false);
+                    loading.destroy_indicator(spinner);
                 },
             });
         },
@@ -285,11 +331,16 @@ exports.set_up = function () {
         var errors = form.find('.bot_edit_errors');
 
         $("#settings_page .edit_bot .edit-bot-owner select").val(bot.owner);
+        var service = bot_data.get_services(bot_id)[0];
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
-            var services = bot_data.get_services(bot_id);
             $("#service_data").append(templates.render("edit-outgoing-webhook-service",
-                                                       {service: services[0]}));
+                                                       {service: service}));
         }
+        if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
+            $("#service_data").append(templates.render("edit-embedded-bot-service",
+                                                       {service: service}));
+        }
+
         avatar_widget.clear();
 
         form.validate({
@@ -318,6 +369,12 @@ exports.set_up = function () {
                     var service_interface = $("#edit_service_interface :selected").val();
                     formData.append('service_payload_url', JSON.stringify(service_payload_url));
                     formData.append('service_interface', service_interface);
+                } else if (type === EMBEDDED_BOT_TYPE) {
+                    var config_data = {};
+                    $("#config_edit_inputbox input").each(function () {
+                        config_data[$(this).attr('name')] = $(this).val();
+                    });
+                    formData.append('config_data', JSON.stringify(config_data));
                 }
                 jQuery.each(file_input[0].files, function (i, file) {
                     formData.append('file-'+i, file);
@@ -387,6 +444,7 @@ exports.set_up = function () {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
     });
 
     $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {

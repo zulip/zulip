@@ -5,27 +5,25 @@ zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {
-    emojis_name_to_css_class: {
-        frown: 'frown-css',
-        octopus: 'octopus-css',
-        smile: 'smile-css',
-    },
     emojis_by_name: {
         alien: '1f47d',
         smile: '1f604',
     },
     all_realm_emojis: {
         realm_emoji: {
+            id: '991',
             emoji_name: 'realm_emoji',
             emoji_url: 'TBD',
             deactivated: false,
         },
         inactive_realm_emoji: {
+            id: '992',
             emoji_name: 'inactive_realm_emoji',
             emoji_url: 'TBD',
             deactivated: true,
         },
         zulip: {
+            id: 'zulip',
             emoji_name: 'zulip',
             emoji_url: 'TBD',
             deactivated: false,
@@ -33,10 +31,12 @@ set_global('emoji', {
     },
     active_realm_emojis: {
         realm_emoji: {
+            id: '991',
             emoji_name: 'realm_emoji',
             emoji_url: 'TBD',
         },
         zulip: {
+            id: 'zulip',
             emoji_name: 'zulip',
             emoji_url: 'TBD',
         },
@@ -95,7 +95,7 @@ var message = {
         {emoji_name: 'smile', user: {id: 6}, reaction_type: 'unicode_emoji', emoji_code: '1f604'},
         {emoji_name: 'frown', user: {id: 7}, reaction_type: 'unicode_emoji', emoji_code: '1f626'},
         {emoji_name: 'inactive_realm_emoji', user: {id: 5}, reaction_type: 'realm_emoji',
-         emoji_code: 'inactive_realm_emoji'},
+         emoji_code: '992'},
 
         // add some bogus user_ids
         {emoji_name: 'octopus', user: {id: 8888}, reaction_type: 'unicode_emoji', emoji_code: '1f419'},
@@ -172,8 +172,8 @@ set_global('current_msg_list', {
       {
          emoji_name: 'inactive_realm_emoji',
          reaction_type: 'realm_emoji',
-         emoji_code: 'inactive_realm_emoji',
-         local_id: 'realm_emoji,inactive_realm_emoji,inactive_realm_emoji',
+         emoji_code: '992',
+         local_id: 'realm_emoji,inactive_realm_emoji,992',
          count: 1,
          user_ids: [5],
          title: 'You (click to remove) reacted with :inactive_realm_emoji:',
@@ -237,16 +237,20 @@ set_global('current_msg_list', {
         });
     });
 
-    emoji_name = 'inactive_realm_emoji'; // Test removing a deactivated realm emoji.
+    emoji_name = 'inactive_realm_emoji';
     global.with_stub(function (stub) {
+        // Test removing a deactivated realm emoji. An user can interact with a
+        // deactivated realm emoji only by clicking on a reaction, hence, only
+        // `process_reaction_click()` codepath supports deleting/adding a deactivated
+        // realm emoji.
         global.channel.del = stub.f;
-        reactions.toggle_emoji_reaction(message_id, emoji_name);
+        reactions.process_reaction_click(message_id, 'realm_emoji,inactive_realm_emoji,992');
         var args = stub.get_args('args').args;
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, {
             reaction_type: 'realm_emoji',
             emoji_name: 'inactive_realm_emoji',
-            emoji_code: 'inactive_realm_emoji',
+            emoji_code: '992',
         });
     });
 
@@ -427,7 +431,7 @@ set_global('current_msg_list', {
         message_id: 1001,
         reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
-        emoji_code: 'realm_emoji',
+        emoji_code: '991',
         user: {
             user_id: cali.user_id,
         },
@@ -455,14 +459,14 @@ set_global('current_msg_list', {
         message_id: 1001,
         reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
-        emoji_code: 'realm_emoji',
+        emoji_code: '991',
         user: {
             user_id: alice.user_id,
         },
     };
 
     message_reactions.find = function (selector) {
-        assert.equal(selector, "[data-reaction-id='realm_emoji,realm_emoji,realm_emoji']");
+        assert.equal(selector, "[data-reaction-id='realm_emoji,realm_emoji,991']");
         return reaction_element;
     };
     reaction_element.prop = function () {};
@@ -657,7 +661,9 @@ set_global('current_msg_list', {
 
     var bogus_event  = {
         message_id: 55,
+        reaction_type: 'realm_emoji',
         emoji_name: 'realm_emoji',
+        emoji_code: '991',
         user: {
             user_id: 99,
         },

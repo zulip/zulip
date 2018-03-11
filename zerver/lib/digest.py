@@ -10,7 +10,7 @@ from django.template import loader
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.notifications import build_message_list, hash_util_encode, \
+from zerver.lib.notifications import build_message_list, encode_stream, \
     one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
@@ -170,7 +170,7 @@ def gather_new_streams(user_profile: UserProfile,
     streams_plain = []
 
     for stream in new_streams:
-        narrow_url = base_url + hash_util_encode(stream.name)
+        narrow_url = base_url + encode_stream(stream.id, stream.name)
         stream_link = "<a href='%s'>%s</a>" % (narrow_url, stream.name)
         streams_html.append(stream_link)
         streams_plain.append(stream.name)

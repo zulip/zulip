@@ -44,6 +44,10 @@
                         {% endif %}
                     {% endif %}
 
+                    {% if dev_not_supported_error %}
+                    {{ render_markdown_path('zerver/dev-not-supported-error.md', {"settings_path": settings_path}) }}
+                    {% endif %}
+
                     {% if google_error %}
                     {{ render_markdown_path('zerver/google-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}

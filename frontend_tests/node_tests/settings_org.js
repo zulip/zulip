@@ -2,7 +2,9 @@ set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
 zrequire('stream_data');
+zrequire('settings_account');
 zrequire('settings_org');
+zrequire('settings_ui');
 
 var noop = function () {};
 
@@ -35,9 +37,6 @@ set_global('templates', {
     settings_org.reset();
     settings_org.populate_realm_domains();
     settings_org.reset_realm_default_language();
-    settings_org.toggle_allow_message_editing_pencil();
-    settings_org.toggle_name_change_display();
-    settings_org.toggle_email_change_display();
     settings_org.update_realm_description();
     settings_org.update_message_retention_days();
     settings_org.populate_auth_methods();
@@ -108,12 +107,7 @@ function simulate_realm_domains_table() {
 }
 
 function test_realms_domain_modal(add_realm_domain) {
-    var info = $.create('domains-info-stub');
-
-    $('#realm_domains_modal').set_find_results(
-        '.realm_domains_info',
-        info
-    );
+    var info = $('.realm_domains_info');
 
     $('#add-realm-domain-widget').set_find_results(
         '.new-realm-domain',
@@ -334,11 +328,11 @@ function test_change_message_editing(change_message_editing) {
 
     change_message_editing.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), true);
+    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), 'disabled');
 
     change_message_editing.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').prop('disabled'), false);
+    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), false);
 }
 
 function test_change_invite_required(change_invite_required) {
@@ -348,11 +342,11 @@ function test_change_invite_required(change_invite_required) {
 
     change_invite_required.apply({checked: false});
     assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), true);
+    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), 'disabled');
 
     change_invite_required.apply({checked: true});
     assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').prop('disabled'), false);
+    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), false);
 }
 
 function test_disable_notifications_stream(disable_notifications_stream) {
@@ -410,7 +404,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         stopPropagation: noop,
     };
 
-    var info = $.create('realm-domain-info-stub');
+    var info = $('.realm_domains_info');
     var domain = 'example.com';
     var allow = true;
 
@@ -422,11 +416,6 @@ function test_change_allow_subdomains(change_allow_subdomains) {
         success_callback = req.success;
         error_callback = req.error;
     };
-
-    $('#realm_domains_modal').set_find_results(
-        '.realm_domains_info',
-        info
-    );
 
     var domain_obj = $.create('domain object');
     domain_obj.text(domain);
@@ -535,31 +524,31 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     settings_org.reset_realm_default_language();
     assert.equal($('#id_realm_default_language').val(), 'es');
 
-    var name_toggled;
-    $('.change_name_tooltip').toggle = function () {
-        name_toggled = true;
-    };
+    page_params.is_admin = false;
 
-    name_toggled = false;
+    page_params.realm_name_changes_disabled = false;
+    settings_account.update_name_change_display();
+    assert.equal($('#full_name').attr('disabled'), false);
 
-    $('#full_name').attr('disabled', 'disabled');
-    settings_org.toggle_name_change_display();
-    assert.equal($('#full_name').prop('disabled'), false);
-    assert(name_toggled);
-
-    settings_org.toggle_name_change_display();
+    page_params.realm_name_changes_disabled = true;
+    settings_account.update_name_change_display();
     assert.equal($('#full_name').attr('disabled'), 'disabled');
-    assert(name_toggled);
 
-    var email_tooltip_toggled;
-    $('.change_email_tooltip').toggle = function () {
-        email_tooltip_toggled = true;
-    };
+    page_params.realm_email_changes_disabled = false;
+    settings_account.update_email_change_display();
+    assert.equal($("#change_email .button").attr('disabled'), false);
 
-    $('#change_email .button').attr('disabled', false);
-    settings_org.toggle_email_change_display();
+    page_params.realm_email_changes_disabled = true;
+    settings_account.update_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), 'disabled');
-    assert(email_tooltip_toggled);
+
+    // If organization admin, these UI elements are never disabled.
+    page_params.is_admin = true;
+    settings_account.update_name_change_display();
+    assert.equal($('#full_name').attr('disabled'), false);
+
+    settings_account.update_email_change_display();
+    assert.equal($("#change_email .button").attr('disabled'), false);
 
     page_params.realm_description = 'realm description';
     settings_org.update_realm_description();

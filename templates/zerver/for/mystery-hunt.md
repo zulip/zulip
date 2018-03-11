@@ -41,7 +41,7 @@ it's easy to write bots that send things into or out of Zulip.
 
 **Where can I test it out?**
 
-[Click here](https://zulipchat.com/create_realm) to create an organization; it
+[Click here](https://zulipchat.com/new) to create an organization; it
 only takes only about 30 seconds. If you decide to continue using it, just email
 support@zulipchat.com to tell us you're a mystery hunt team.
 

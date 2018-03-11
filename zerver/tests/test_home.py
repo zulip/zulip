@@ -89,6 +89,7 @@ class HomeTest(ZulipTestCase):
             "max_icon_file_size",
             "max_message_id",
             "maxfilesize",
+            "message_content_in_email_notifications",
             "muted_topics",
             "narrow",
             "narrow_stream",
@@ -109,9 +110,9 @@ class HomeTest(ZulipTestCase):
             "realm_allow_message_deleting",
             "realm_allow_message_editing",
             "realm_authentication_methods",
+            "realm_bot_creation_policy",
             "realm_bot_domain",
             "realm_bots",
-            "realm_create_generic_bot_by_admins_only",
             "realm_create_stream_by_admins_only",
             "realm_default_language",
             "realm_default_stream_groups",
@@ -141,6 +142,7 @@ class HomeTest(ZulipTestCase):
             "realm_password_auth_enabled",
             "realm_presence_disabled",
             "realm_restricted_to_domain",
+            "realm_send_welcome_emails",
             "realm_show_digest_email",
             "realm_signup_notifications_stream_id",
             "realm_uri",
@@ -155,6 +157,7 @@ class HomeTest(ZulipTestCase):
             "subscriptions",
             "test_suite",
             "timezone",
+            "translate_emoticons",
             "twenty_four_hour_time",
             "unread_msgs",
             "unsubscribed",
@@ -185,8 +188,8 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 41)
-        self.assert_length(cache_mock.call_args_list, 7)
+        self.assert_length(queries, 43)
+        self.assert_length(cache_mock.call_args_list, 8)
 
         html = result.content.decode('utf-8')
 
@@ -250,7 +253,7 @@ class HomeTest(ZulipTestCase):
         with queries_captured() as queries2:
             result = self._get_home_page()
 
-        self.assert_length(queries2, 34)
+        self.assert_length(queries2, 35)
 
         # Do a sanity check that our new streams were in the payload.
         html = result.content.decode('utf-8')

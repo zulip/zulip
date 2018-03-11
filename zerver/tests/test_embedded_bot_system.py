@@ -4,9 +4,12 @@ from unittest import mock
 from mock import patch
 from typing import Any, Dict, Tuple, Text, Optional
 
-from zerver.lib.bot_lib import EmbeddedBotQuitException
+from zerver.lib.bot_lib import EmbeddedBotQuitException, EmbeddedBotHandler
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import UserProfile, Recipient, get_display_recipient
+from zerver.models import (
+    UserProfile, Recipient, get_display_recipient,
+    get_service_profile, get_user, get_realm
+)
 
 import ujson
 
@@ -49,6 +52,14 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         last_message = self.get_last_message()
         self.assertEqual(last_message.content, "foo")
 
+    def test_message_to_embedded_bot_with_initialize(self) -> None:
+        with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.initialize',
+                   create=True) as mock_initialize:
+            self.send_stream_message(self.user_profile.email, "Denmark",
+                                     content="@**{}** foo".format(self.bot_profile.full_name),
+                                     topic_name="bar")
+            mock_initialize.assert_called_once()
+
     def test_embedded_bot_quit_exception(self) -> None:
         with patch('zulip_bots.bots.helloworld.helloworld.HelloWorldHandler.handle_message',
                    side_effect=EmbeddedBotQuitException("I'm quitting!")):
@@ -59,11 +70,19 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
                 mock_logging.assert_called_once_with("I'm quitting!")
 
 class TestEmbeddedBotFailures(ZulipTestCase):
-    @mock.patch("logging.error")
-    def test_invalid_embedded_bot_service(self, logging_error_mock: mock.Mock) -> None:
+    def test_message_embedded_bot_with_invalid_service(self) -> None:
         user_profile = self.example_user("othello")
         self.create_test_bot(short_name='embedded', user_profile=user_profile,
-                             assert_json_error_msg="Invalid embedded bot name.",
-                             full_name='Embedded bot',
                              bot_type=UserProfile.EMBEDDED_BOT,
-                             service_name='nonexistent_service')
+                             service_name='helloworld')
+        bot_profile = get_user("embedded-bot@zulip.testserver",
+                               get_realm('zulip'))
+        service_profile = get_service_profile(bot_profile.id, 'helloworld')
+        service_profile.name = 'invalid'
+        service_profile.save()
+        with patch('logging.error') as logging_error_mock:
+            self.send_stream_message(user_profile.email, "Denmark",
+                                     content="@**{}** foo".format(bot_profile.full_name),
+                                     topic_name="bar")
+            logging_error_mock.assert_called_once_with(
+                "Error: User {} has bot with invalid embedded bot service invalid".format(bot_profile.id))

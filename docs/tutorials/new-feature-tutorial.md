@@ -604,8 +604,8 @@ function you created to the following object with `noop` as the value:
 
     set_global('settings_org', {
         reset_realm_default_language: noop,
-        toggle_email_change_display: noop,
-        toggle_name_change_display: noop,
+        update_email_change_display: noop,
+        update_name_change_display: noop,
         update_message_retention_days: noop,
         update_realm_description: noop,
     });

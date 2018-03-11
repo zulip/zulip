@@ -1,8 +1,7 @@
 # Default configuration for a Zulip app frontend
 class zulip::app_frontend {
   include zulip::app_frontend_base
-  # For a single-server setup, run analytics on that server
-  include zulip::analytics
+  include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
     require => Package["nginx-full"],
@@ -27,15 +26,6 @@ class zulip::app_frontend {
     notify => Service["nginx"],
   }
 
-  # Trigger daily digest e-mails
-  file { "/etc/cron.d/send-digest-emails":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/send-digest-emails",
-  }
-
   # Trigger 2x a day certbot renew
   file { "/etc/cron.d/certbot-renew":
     ensure => file,
@@ -52,29 +42,5 @@ class zulip::app_frontend {
     group  => "root",
     mode => 644,
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
-  }
-
-  file { "/etc/cron.d/soft-deactivate-users":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/soft-deactivate-users",
-  }
-
-  file { "/etc/cron.d/check-analytics-state":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/check-analytics-state",
-  }
-
-  file { "/etc/cron.d/calculate-first-visible-message-id":
-    ensure => file,
-    owner  => "root",
-    group  => "root",
-    mode => 644,
-    source => "puppet:///modules/zulip/cron.d/calculate-first-visible-message-id",
   }
 }

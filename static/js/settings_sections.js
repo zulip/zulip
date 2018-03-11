@@ -6,6 +6,7 @@ var load_func_dict = new Dict(); // section -> function
 var is_loaded = new Dict(); // section -> bool
 
 exports.initialize = function () {
+    settings_ui.initialize();
     load_func_dict.set('your-account', settings_account.set_up);
     load_func_dict.set('display-settings', settings_display.set_up);
     load_func_dict.set('notifications', settings_notifications.set_up);

@@ -284,9 +284,9 @@ function hashchanged(from_reload, e) {
         changing_hash = false;
         return ret;
     // once we unignore the hash, we have to set the hash back to what it was
-    // originally (eg. '#narrow/stream/Denmark' instead of '#settings'). We
+    // originally (eg. '#narrow/stream/999-Denmark' instead of '#settings'). We
     // therefore ignore the hash change once more while we change it back for
-    // no iterruptions.
+    // no interruptions.
     } else if (ignore.flag) {
         ignore.flag = false;
     }

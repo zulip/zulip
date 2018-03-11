@@ -1,6 +1,7 @@
 <div class="hide" id="stream-creation" tabindex="-1" role="dialog"
     aria-label="{{t 'Stream creation' }}">
     <form id="stream_creation_form" class="form-inline">
+        <div class="alert stream_create_info"></div>
         <div id="stream_creating_indicator"></div>
         <div class="stream-creation-body">
             <section class="block">
@@ -9,7 +10,7 @@
                 </div>
                 <input type="text" name="stream_name" id="create_stream_name"
                      placeholder="{{t 'Stream name' }}" value="" autocomplete="off" />
-                <div id="stream_name_error"></div>
+                <div id="stream_name_error" class="stream_creation_error"></div>
             </section>
             <section class="block">
                 <div class="stream-title">
@@ -59,6 +60,7 @@
                 <label class="stream-title" for="people_to_add">
                     {{t "People to add" }}
                 </label>
+                <div id="stream_subscription_error" class="stream_creation_error"></div>
                 <div class="controls" id="people_to_add"></div>
             </section>
         </div>

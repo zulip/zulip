@@ -11,16 +11,16 @@ exports.reset = function () {
 };
 
 exports.reload = function () {
+    if (!meta.loaded) {
+        return;
+    }
+
     var user_groups_section = $('#user-groups').expectOne();
     user_groups_section.html('');
     exports.populate_user_groups();
 };
 
 exports.populate_user_groups = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
 
@@ -34,20 +34,36 @@ exports.populate_user_groups = function () {
         }));
 
         var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
-        var pills = input_pill(pill_container);
+        var pills = input_pill.create({
+            container: pill_container,
+            create_item_from_text: user_pill.create_item_from_email,
+            get_text_from_item: user_pill.get_email_from_item,
+        });
 
-        data.members.forEach(function (user_id) {
+        function get_pill_user_ids() {
+            return user_pill.get_user_ids(pills);
+        }
+
+        function append_user(user) {
+            user_pill.append_person({
+                pill_widget: pills,
+                person: user,
+            });
+        }
+
+        data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
             if (user) {
-                pills.pill.append(user.full_name, user_id);
+                append_user(user);
             } else {
                 blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
             }
         });
 
-        function update_save_state(draft_group) {
-            var original_group = user_groups.get_user_group_from_id(data.id).members;
+        function update_save_state() {
+            var draft_group = get_pill_user_ids();
+            var original_group = user_groups.get_user_group_from_id(data.id).members.keys();
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             var save_changes = pill_container.siblings('.save-member-changes');
             var save_hidden = save_changes.css('display') === 'none';
@@ -65,14 +81,13 @@ exports.populate_user_groups = function () {
             items: 5,
             fixed: true,
             dropup: true,
-            source: people.get_realm_persons,
+            source: function () {
+                return user_pill.typeahead_source(pills);
+            },
             highlighter: function (item) {
                 return typeahead_helper.render_person(item);
             },
             matcher: function (item) {
-                if (pills.keys().includes(item.user_id)) {
-                    return false;
-                }
                 var query = this.query.toLowerCase();
                 return (item.email.toLowerCase().indexOf(query) !== -1
                         || item.full_name.toLowerCase().indexOf(query) !== -1);
@@ -82,35 +97,24 @@ exports.populate_user_groups = function () {
                     this.query, matches, "");
             },
             updater: function (user) {
-                pills.pill.append(user.full_name, user.user_id);
-                input.text('');
-                update_save_state(pills.keys());
+                append_user(user);
+                update_save_state();
             },
             stopAdvance: true,
         });
 
-        pills.onPillCreate(function (value, reject) {
-            var person = people.get_by_email(value);
-            var draft_group = pills.keys();
-
-            if (!person || draft_group.includes(person.user_id)) {
-                return reject();
-            }
-
-            draft_group.push(person.user_id);
-            update_save_state(draft_group);
-
-            return { key: person.user_id, value: person.full_name };
+        pills.onPillCreate(function () {
+            update_save_state();
         });
 
         pills.onPillRemove(function () {
-            update_save_state(pills.keys());
+            update_save_state();
         });
 
         $('#user-groups #' + data.id).on('click', '.save-member-changes', function () {
-            var draft_group = pills.keys();
+            var draft_group = get_pill_user_ids();
             var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members;
+            var original_group = group_data.members.keys();
             var added = _.difference(draft_group, original_group);
             var removed = _.difference(original_group, draft_group);
             var btn = $(this);
@@ -122,13 +126,6 @@ exports.populate_user_groups = function () {
                     delete: JSON.stringify(removed),
                 },
                 success: function () {
-                    original_group = _.reject(original_group, function (e) {
-                        return removed.includes(e);
-                    });
-                    original_group = original_group.concat(added);
-                    group_data.members = original_group;
-                    user_groups.remove(group_data);
-                    user_groups.add(group_data);
                     btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
                         $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
                     });

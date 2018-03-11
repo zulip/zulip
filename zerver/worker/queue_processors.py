@@ -1,5 +1,5 @@
 # Documented in https://zulip.readthedocs.io/en/latest/subsystems/queuing.html
-from typing import Any, Callable, Dict, List, Mapping, Optional, cast
+from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, Type
 
 import copy
 import signal
@@ -63,10 +63,12 @@ logger = logging.getLogger(__name__)
 class WorkerDeclarationException(Exception):
     pass
 
+ConcreteQueueWorker = TypeVar('ConcreteQueueWorker', bound='QueueProcessingWorker')
+
 def assign_queue(queue_name, enabled=True, queue_type="consumer"):
-    # type: (str, bool, str) -> Callable[[QueueProcessingWorker], QueueProcessingWorker]
+    # type: (str, bool, str) -> Callable[[Type[ConcreteQueueWorker]], Type[ConcreteQueueWorker]]
     def decorate(clazz):
-        # type: (QueueProcessingWorker) -> QueueProcessingWorker
+        # type: (Type[ConcreteQueueWorker]) -> Type[ConcreteQueueWorker]
         clazz.queue_name = queue_name
         if enabled:
             register_worker(queue_name, clazz, queue_type)
@@ -74,9 +76,9 @@ def assign_queue(queue_name, enabled=True, queue_type="consumer"):
     return decorate
 
 worker_classes = {}  # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
-queues = {}  # type: Dict[str, Dict[str, QueueProcessingWorker]]
+queues = {}  # type: Dict[str, Dict[str, Type[QueueProcessingWorker]]]
 def register_worker(queue_name, clazz, queue_type):
-    # type: (str, QueueProcessingWorker, str) -> None
+    # type: (str, Type[QueueProcessingWorker], str) -> None
     if queue_type not in queues:
         queues[queue_type] = {}
     queues[queue_type][queue_name] = clazz
@@ -167,7 +169,7 @@ class QueueProcessingWorker:
         self.q.register_json_consumer(self.queue_name, self.consume_wrapper)
         self.q.start_consuming()
 
-    def stop(self):
+    def stop(self):  # nocoverage
         # type: () -> None
         self.q.stop_consuming()
 
@@ -309,7 +311,7 @@ class EmailSendingWorker(QueueProcessingWorker):
         send_email_from_dict(copied_event)
 
 @assign_queue('missedmessage_email_senders')
-class MissedMessageSendingWorker(EmailSendingWorker):
+class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
     """
     Note: Class decorators are not inherited.
 
@@ -322,7 +324,7 @@ class MissedMessageSendingWorker(EmailSendingWorker):
     pass
 
 @assign_queue('missedmessage_mobile_notifications')
-class PushNotificationsWorker(QueueProcessingWorker):
+class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, data):
         # type: (Mapping[str, Any]) -> None
         handle_push_notification(data['user_profile_id'], data)
@@ -430,7 +432,7 @@ class MessageSenderWorker(QueueProcessingWorker):
                            respond_send_message)
 
 @assign_queue('digest_emails')
-class DigestWorker(QueueProcessingWorker):
+class DigestWorker(QueueProcessingWorker):  # nocoverage
     # Who gets a digest is entirely determined by the enqueue_digest_emails
     # management command, not here.
     def consume(self, event):
@@ -537,8 +539,7 @@ class EmbeddedBotWorker(QueueProcessingWorker):
                         message=message,
                         client=self.get_bot_api_client(user_profile),
                     )
-                    if message['content'] is None:
-                        return
+                    assert message['content'] is not None
                 bot_handler.handle_message(
                     message=message,
                     bot_handler=self.get_bot_api_client(user_profile)

@@ -1231,6 +1231,7 @@ class EventsRegisterTest(ZulipTestCase):
             message_retention_days=[10, 20],
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
+            bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)
@@ -1435,7 +1436,17 @@ class EventsRegisterTest(ZulipTestCase):
                 ('user', check_string),
                 ('setting', validator),
             ])
-            error = schema_checker('events[0]', events[0])
+            language_schema_checker = self.check_events_dict([
+                ('type', equals('update_display_settings')),
+                ('language_name', check_string),
+                ('setting_name', equals(setting_name)),
+                ('user', check_string),
+                ('setting', validator),
+            ])
+            if setting_name == "default_language":
+                error = language_schema_checker('events[0]', events[0])
+            else:
+                error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
             timezone_schema_checker = self.check_events_dict([
@@ -1540,9 +1551,17 @@ class EventsRegisterTest(ZulipTestCase):
 
         def get_bot_created_checker(bot_type: str) -> Validator:
             if bot_type == "GENERIC_BOT":
-                bot_services_count = 0
+                check_services = check_list(sub_validator=None, length=0)
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
-                bot_services_count = 1
+                check_services = check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                    ('base_url', check_url),
+                    ('interface', check_int),
+                ]), length=1)
+            elif bot_type == "EMBEDDED_BOT":
+                check_services = check_list(check_dict_only([  # type: ignore  # See above.
+                    ('service_name', check_string),
+                    ('config_data', check_dict(value_validator=check_string)),
+                ]), length=1)
             return self.check_events_dict([
                 ('type', equals('realm_bot')),
                 ('op', equals('add')),
@@ -1558,10 +1577,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('default_all_public_streams', check_bool),
                     ('avatar_url', check_string),
                     ('owner', check_string),
-                    ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
-                        ('base_url', check_url),
-                        ('interface', check_int),
-                    ]), length=bot_services_count)),
+                    ('services', check_services),
                 ])),
             ])
         action = lambda: self.create_bot('test')
@@ -1577,6 +1593,14 @@ class EventsRegisterTest(ZulipTestCase):
         # The third event is the second call of notify_created_bot, which contains additional
         # data for services (in contrast to the first call).
         error = get_bot_created_checker(bot_type="OUTGOING_WEBHOOK_BOT")('events[2]', events[2])
+        self.assert_on_error(error)
+
+        action = lambda: self.create_bot('test_embedded',
+                                         service_name='helloworld',
+                                         config_data=ujson.dumps({'foo': 'bar'}),
+                                         bot_type=UserProfile.EMBEDDED_BOT)
+        events = self.do_test(action, num_events=3)
+        error = get_bot_created_checker(bot_type="EMBEDDED_BOT")('events[2]', events[2])
         self.assert_on_error(error)
 
     def test_change_bot_full_name(self) -> None:
@@ -1666,6 +1690,49 @@ class EventsRegisterTest(ZulipTestCase):
         owner = self.example_user('hamlet')
         bot = self.create_bot('test')
         action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        events = self.do_test(action)
+        error = change_bot_owner_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        change_bot_owner_checker = self.check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('delete')),
+            ('bot', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+            ])),
+        ])
+        self.user_profile = self.example_user('aaron')
+        owner = self.example_user('hamlet')
+        bot = self.create_bot('test1')
+        action = lambda: do_change_bot_owner(bot, owner, self.user_profile)
+        events = self.do_test(action)
+        error = change_bot_owner_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        check_services = check_list(sub_validator=None, length=0)
+        change_bot_owner_checker = self.check_events_dict([
+            ('type', equals('realm_bot')),
+            ('op', equals('add')),
+            ('bot', check_dict_only([
+                ('email', check_string),
+                ('user_id', check_int),
+                ('bot_type', check_int),
+                ('full_name', check_string),
+                ('is_active', check_bool),
+                ('api_key', check_string),
+                ('default_sending_stream', check_none_or(check_string)),
+                ('default_events_register_stream', check_none_or(check_string)),
+                ('default_all_public_streams', check_bool),
+                ('avatar_url', check_string),
+                ('owner', check_string),
+                ('services', check_services),
+            ])),
+        ])
+        previous_owner = self.example_user('aaron')
+        self.user_profile = self.example_user('hamlet')
+        bot = self.create_test_bot('test2', previous_owner)
+        action = lambda: do_change_bot_owner(bot, self.user_profile, previous_owner)
         events = self.do_test(action)
         error = change_bot_owner_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -2684,7 +2751,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 28)
+        self.assert_length(queries, 29)
 
         expected_counts = dict(
             alert_words=0,
@@ -2706,7 +2773,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_user=2,
             realm_user_groups=2,
             stream=2,
-            subscription=5,
+            subscription=6,
             update_display_settings=0,
             update_global_notifications=0,
             update_message_flags=5,

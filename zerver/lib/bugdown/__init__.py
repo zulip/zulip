@@ -1,7 +1,7 @@
 # Zulip's main markdown implementation.  See docs/subsystems/markdown.md for
 # detailed documentation on our markdown syntax.
 from typing import (Any, Callable, Dict, Iterable, List, NamedTuple,
-                    Optional, Set, Text, Tuple, TypeVar, Union)
+                    Optional, Set, Text, Tuple, TypeVar, Union, cast)
 from mypy_extensions import TypedDict
 from typing.re import Match
 
@@ -32,8 +32,10 @@ from markdown.extensions import codehilite
 from zerver.lib.bugdown import fenced_code
 from zerver.lib.bugdown.fenced_code import FENCE_RE
 from zerver.lib.camo import get_camo_url
+from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
+from zerver.lib.notifications import encode_stream
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache
 from zerver.lib.url_preview import preview as link_preview
@@ -170,7 +172,9 @@ def walk_tree_with_family(root: Element,
             result = processor(child)
             if result is not None:
                 if currElementPair['parent']:
-                    grandparent = currElementPair['parent']['value']
+                    grandparent_element = cast(Dict[str, Optional[Element]],
+                                               currElementPair['parent'])
+                    grandparent = grandparent_element['value']
                 else:
                     grandparent = None
                 family = ElementFamily(
@@ -451,6 +455,7 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
+    INLINE_PREVIEW_LIMIT_PER_MESSAGE = 5
 
     def __init__(self, md: markdown.Markdown, bugdown: 'Bugdown') -> None:
         # Passing in bugdown for access to config to check if realm is zulip.com
@@ -820,12 +825,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             if uncle_link not in parent_links:
                 return insertion_index
 
+    def is_absolute_url(self, url: Text) -> bool:
+        return bool(urllib.parse.urlparse(url).netloc)
+
     def run(self, root: Element) -> None:
         # Get all URLs from the blob
         found_urls = walk_tree_with_family(root, self.get_url_data)
-
-        # If there are more than 5 URLs in the message, don't do inline previews
-        if len(found_urls) == 0 or len(found_urls) > 5:
+        if len(found_urls) == 0 or len(found_urls) > self.INLINE_PREVIEW_LIMIT_PER_MESSAGE:
             return
 
         processed_urls = []  # type: List[str]
@@ -839,8 +845,13 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             else:
                 continue
 
-            dropbox_image = self.dropbox_image(url)
+            if not self.is_absolute_url(url):
+                if self.is_image(url):
+                    self.handle_image_inlining(root, found_url)
+                # We don't have a strong use case for doing url preview for relative links.
+                continue
 
+            dropbox_image = self.dropbox_image(url)
             if dropbox_image is not None:
                 class_attr = "message_inline_ref"
                 is_image = dropbox_image["is_image"]
@@ -1003,6 +1014,19 @@ def unicode_emoji_to_codepoint(unicode_emoji: Text) -> Text:
     while len(codepoint) < 4:
         codepoint = '0' + codepoint
     return codepoint
+
+class EmoticonTranslation(markdown.inlinepatterns.Pattern):
+    """ Translates emoticons like `:)` into emoji like `:smile:`. """
+    def handleMatch(self, match: Match[Text]) -> Optional[Element]:
+        # If there is `db_data` and it is false, then don't do translating.
+        # If there is no `db_data`, such as during tests, translate.
+        if db_data is not None and not db_data['translate_emoticons']:
+            return None
+
+        emoticon = match.group('emoticon')
+        translated = translate_emoticons(emoticon)
+        name = translated[1:-1]
+        return make_emoji(name_to_codepoint[name], translated)
 
 class UnicodeEmoji(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[Text]) -> Optional[Element]:
@@ -1376,11 +1400,9 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             if wildcard:
                 current_message.mentions_wildcard = True
-                email = '*'
                 user_id = "*"
             elif user:
                 current_message.mentions_user_ids.add(user['id'])
-                email = user['email']
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -1389,7 +1411,6 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
 
             el = markdown.util.etree.Element("span")
             el.set('class', 'user-mention')
-            el.set('data-user-email', email)
             el.set('data-user-id', user_id)
             el.text = "@%s" % (name,)
             return el
@@ -1439,8 +1460,8 @@ class StreamPattern(VerbosePattern):
             # href here and instead having the browser auto-add the
             # href when it processes a message with one of these, to
             # provide more clarity to API clients.
-            el.set('href', '/#narrow/stream/{stream_name}'.format(
-                stream_name=urllib.parse.quote(name)))
+            stream_url = encode_stream(stream['id'], name)
+            el.set('href', '/#narrow/stream/{stream_url}'.format(stream_url=stream_url))
             el.text = '#{stream_name}'.format(stream_name=name)
             return el
         return None
@@ -1584,6 +1605,7 @@ class Bugdown(markdown.Extension):
             Tex(r'\B(?<!\$)\$\$(?P<body>[^\n_$](\\\$|[^$\n])*)\$\$(?!\$)\B'),
             '>backtick')
         md.inlinePatterns.add('emoji', Emoji(EMOJI_REGEX), '_end')
+        md.inlinePatterns.add('translate_emoticons', EmoticonTranslation(emoticon_regex), '>emoji')
         md.inlinePatterns.add('unicodeemoji', UnicodeEmoji(unicode_emoji_regex), '_end')
         md.inlinePatterns.add('link', AtomicLinkPattern(markdown.inlinepatterns.LINK_RE, md), '>avatar')
 
@@ -1962,6 +1984,7 @@ def do_convert(content: Text,
             'realm_uri': message_realm.uri,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,
+            'translate_emoticons': message.sender.translate_emoticons,
         }
 
     try:

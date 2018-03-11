@@ -1,82 +1,86 @@
 {
   "bg": {
     "not_translated": 0,
-    "total": 129
+    "total": 132
   },
   "cs": {
-    "not_translated": 21,
-    "total": 129
+    "not_translated": 5,
+    "total": 132
   },
   "de": {
-    "not_translated": 19,
-    "total": 129
+    "not_translated": 8,
+    "total": 132
   },
   "es": {
-    "not_translated": 43,
-    "total": 129
+    "not_translated": 49,
+    "total": 132
   },
   "fr": {
-    "not_translated": 19,
-    "total": 129
+    "not_translated": 0,
+    "total": 132
   },
   "hi": {
-    "not_translated": 56,
-    "total": 129
+    "not_translated": 3,
+    "total": 132
   },
   "hu": {
-    "not_translated": 114,
-    "total": 129
+    "not_translated": 116,
+    "total": 132
   },
   "id_ID": {
-    "not_translated": 25,
-    "total": 129
+    "not_translated": 0,
+    "total": 132
   },
   "it": {
-    "not_translated": 119,
-    "total": 129
+    "not_translated": 121,
+    "total": 132
   },
   "ja": {
-    "not_translated": 22,
-    "total": 129
+    "not_translated": 28,
+    "total": 132
   },
   "ko": {
-    "not_translated": 0,
-    "total": 129
+    "not_translated": 1,
+    "total": 132
   },
   "ml": {
-    "not_translated": 106,
-    "total": 129
+    "not_translated": 109,
+    "total": 132
   },
   "nl": {
-    "not_translated": 83,
-    "total": 129
+    "not_translated": 87,
+    "total": 132
   },
   "pl": {
-    "not_translated": 58,
-    "total": 129
+    "not_translated": 26,
+    "total": 132
   },
   "pt": {
-    "not_translated": 119,
-    "total": 129
+    "not_translated": 113,
+    "total": 132
   },
   "ru": {
-    "not_translated": 94,
-    "total": 129
+    "not_translated": 97,
+    "total": 132
   },
   "sr": {
-    "not_translated": 112,
-    "total": 129
+    "not_translated": 115,
+    "total": 132
   },
   "ta": {
-    "not_translated": 60,
-    "total": 129
+    "not_translated": 66,
+    "total": 132
+  },
+  "tr": {
+    "not_translated": 0,
+    "total": 132
   },
   "zh_Hans": {
-    "not_translated": 22,
-    "total": 129
+    "not_translated": 28,
+    "total": 132
   },
   "zh_Hant": {
-    "not_translated": 99,
-    "total": 129
+    "not_translated": 103,
+    "total": 132
   }
 }

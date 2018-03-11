@@ -127,6 +127,12 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(result.status_code, 400)
         self.assert_in_response("Email address changes are disabled in this organization.",
                                 result)
+        # Realm admins can change their email address even setting is disabled.
+        data = {'email': 'iago-new@zulip.com'}
+        self.login(self.example_email("iago"))
+        url = '/json/settings'
+        result = self.client_patch(url, data)
+        self.assert_in_success_response(['Check your email for a confirmation link.'], result)
 
     def test_email_change_already_taken(self) -> None:
         data = {'email': 'cordelia@zulip.com'}

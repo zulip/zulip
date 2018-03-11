@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
+from zerver.lib.notifications import encode_stream
 from zerver.lib.queue import retry_event
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
@@ -148,9 +149,10 @@ def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> Text
     bot_user = get_user_profile_by_id(event['user_profile_id'])
     message = event['message']
     if message['type'] == 'stream':
+        stream_url_frag = encode_stream(message.get('stream_id'), message['display_recipient'])
         message_url = ("%(server)s/#narrow/stream/%(stream)s/subject/%(subject)s/near/%(id)s"
                        % {'server': bot_user.realm.uri,
-                          'stream': message['display_recipient'],
+                          'stream': stream_url_frag,
                           'subject': message['subject'],
                           'id': str(message['id'])})
     else:

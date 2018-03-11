@@ -1,13 +1,22 @@
 {
-   "entry":[
-      {
-         "time":1514912190,
-         "id":"0",
-         "changed_fields":[
-            "ads_management"
-         ],
-         "uid":"0"
-      }
-   ],
-   "object":"permissions"
+    "entry": [
+        {
+            "changes": [
+                {
+                    "field": "ads_management",
+                    "value": {
+                        "target_ids": [
+                            "123123123123123",
+                            "321321321321321"
+                        ],
+                        "verb": "granted"
+                    }
+                }
+            ],
+            "id": "0",
+            "time": 1515252883,
+            "uid": "0"
+        }
+    ],
+    "object": "permissions"
 }

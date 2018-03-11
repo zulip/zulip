@@ -129,6 +129,14 @@ exports.save = function (row, from_topic_edited_only) {
     // The message will automatically get replaced via message_list.update_message.
 };
 
+exports.update_message_topic_editing_pencil = function () {
+    if (page_params.realm_allow_message_editing) {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").show();
+    } else {
+        $(".on_hover_topic_edit, .always_visible_topic_edit").hide();
+    }
+};
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
@@ -195,6 +203,8 @@ function edit_message(row, raw_content) {
     current_msg_list.show_edit_message(row, edit_obj);
 
     form.keydown(_.partial(handle_edit_keydown, false));
+
+    upload.feature_check($('#attach_files_' + rows.id(row)));
 
     var message_edit_content = row.find('textarea.message_edit_content');
     var message_edit_topic = row.find('input.message_edit_topic');
@@ -325,6 +335,13 @@ function start_edit_with_content(row, content, edit_box_open_callback) {
     if (edit_box_open_callback) {
         edit_box_open_callback();
     }
+
+    row.find('#message_edit_form').filedrop(
+        upload.options({
+            mode: 'edit',
+            row: rows.id(row),
+        })
+    );
 }
 
 exports.start = function (row, edit_box_open_callback) {

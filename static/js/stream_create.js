@@ -16,6 +16,27 @@ exports.get_name = function () {
     return created_stream;
 };
 
+var stream_subscription_error = (function () {
+    var self = {};
+
+    self.report_no_subs_to_stream = function () {
+        $("#stream_subscription_error").text(i18n.t("You cannot create a stream with no subscribers!"));
+        $("#stream_subscription_error").show();
+    };
+
+    self.cant_create_stream_without_susbscribing = function () {
+        $("#stream_subscription_error").text(i18n.t("You must be a realm administrator to create a stream without subscribing."));
+        $("#stream_subscription_error").show();
+    };
+
+    self.clear_errors = function () {
+        $("#stream_subscription_error").hide();
+    };
+
+    return self;
+
+}());
+
 var stream_name_error = (function () {
     var self = {};
 
@@ -87,9 +108,9 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                announce: JSON.stringify(announce),
         },
         success: function () {
-            $(".stream_change_property_info").hide();
             $("#create_stream_name").val("");
             $("#create_stream_description").val("");
+            ui_report.success(i18n.t("Stream successfully created!"), $(".stream_create_info"));
             loading.destroy_indicator($('#stream_creating_indicator'));
             // The rest of the work is done via the subscribe event we will get
         },
@@ -102,7 +123,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                 stream_name_error.select();
             }
 
-            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_change_property_info"));
+            ui_report.error(i18n.t("Error creating stream"), xhr, $(".stream_create_info"));
             loading.destroy_indicator($('#stream_creating_indicator'));
         },
     });
@@ -198,6 +219,12 @@ exports.new_stream_clicked = function (stream_name) {
     window.location.hash = "#streams/new";
 };
 
+function clear_error_display() {
+    stream_name_error.clear_errors();
+    $(".stream_create_info").hide();
+    stream_subscription_error.clear_errors();
+}
+
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
@@ -208,6 +235,7 @@ exports.show_new_stream_modal = function () {
     $('#people_to_add').html(templates.render('new_stream_users', {
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
+        is_admin: page_params.is_admin,
     }));
 
     // Make the options default to the same each time:
@@ -221,8 +249,7 @@ exports.show_new_stream_modal = function () {
     } else {
         $('#announce-new-stream').hide();
     }
-
-    stream_name_error.clear_errors();
+    clear_error_display();
 
     $("#stream-checkboxes label.checkbox").on('change', function (e) {
         var elem = $(this);
@@ -260,7 +287,12 @@ $(function () {
 
     $(document).on('click', '.subs_unset_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
-            if  (li.style.display !== "none") {
+            if (li.style.display !== "none") {
+                // The first checkbox is the one for ourself; this is the code path for:
+                // `stream_subscription_error.cant_create_stream_without_susbscribing`
+                if (idx === 0 && !page_params.is_admin) {
+                    return;
+                }
                 $(li.firstElementChild).prop('checked', false);
             }
         });
@@ -317,6 +349,8 @@ $(function () {
 
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
+        clear_error_display();
+
         var stream_name = $.trim($("#create_stream_name").val());
         var name_ok = stream_name_error.validate_for_submit(stream_name);
 
@@ -325,6 +359,15 @@ $(function () {
         }
 
         var principals = get_principals();
+        if (principals.length === 0) {
+            stream_subscription_error.report_no_subs_to_stream();
+            return;
+        }
+        if (principals.indexOf(people.my_current_email()) < 0 && !page_params.is_admin) {
+            stream_subscription_error.cant_create_stream_without_susbscribing();
+            return;
+        }
+
         if (principals.length >= 50) {
             var invites_warning_modal = templates.render('subscription_invites_warning_modal',
                                                          {stream_name: stream_name,

@@ -32,13 +32,6 @@ function mention_button_refers_to_me(elem) {
     return false;
 }
 
-function stringify_time(time) {
-    if (page_params.twenty_four_hour_time) {
-        return time.toString('HH:mm');
-    }
-    return time.toString('h:mm TT');
-}
-
 function same_day(earlier_msg, later_msg) {
     if (earlier_msg === undefined || later_msg === undefined) {
         return false;
@@ -81,16 +74,14 @@ function add_display_time(group, message_container, prev) {
     }
 
     if (message_container.timestr === undefined) {
-        message_container.timestr = stringify_time(time);
+        message_container.timestr = timerender.stringify_time(time);
     }
 }
 
 function set_topic_edit_properties(group, message) {
+    group.realm_allow_message_editing = page_params.realm_allow_message_editing;
     group.always_visible_topic_edit = false;
     group.on_hover_topic_edit = false;
-    if (!page_params.realm_allow_message_editing) {
-        return;
-    }
 
     // Messages with no topics should always have an edit icon visible
     // to encourage updating them. Admins can also edit any topic.
@@ -153,7 +144,7 @@ MessageListView.prototype = {
             var today = new XDate();
             message_container.last_edit_timestr =
                 (timerender.render_date(last_edit_time, undefined, today))[0].textContent
-                + " at " + stringify_time(last_edit_time);
+                + " at " + timerender.stringify_time(last_edit_time);
         }
     },
 

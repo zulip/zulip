@@ -1,6 +1,8 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-
+set_global('page_params' , {
+    twenty_four_hour_time: true,
+});
 zrequire('XDate', 'xdate');
 zrequire('timerender');
 
@@ -261,4 +263,22 @@ zrequire('timerender');
     assert_same(function (d) { return d.addYears(-3); },
                 i18n.t("Last seen on Mar 01, 2013"));
 
+}());
+
+(function test_set_full_datetime() {
+    var time = new XDate(1549958107000); // Tuesday 2/12/2019 07:55:07 AM (UTC+0)
+    var time_str = timerender.stringify_time(time);
+    var expected = '07:55';
+    assert.equal(expected, time_str);
+
+    page_params.twenty_four_hour_time = false;
+    time_str = timerender.stringify_time(time);
+    expected = '7:55 AM';
+    assert.equal(expected, time_str);
+
+    time = new XDate(1549979707000); // Tuesday 2/12/2019 13:55:07 PM (UTC+0)
+    page_params.twenty_four_hour_time = false;
+    time_str = timerender.stringify_time(time);
+    expected = '1:55 PM';
+    assert.equal(expected, time_str);
 }());

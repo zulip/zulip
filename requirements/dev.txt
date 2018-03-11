@@ -7,11 +7,12 @@
 #
 # For details, see requirements/README.md .
 #
+--no-binary psycopg2
+
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/virtualenv-clone.git@44e831da39ffb6b9bb5c7d103d98babccdca0456#egg=virtualenv-clone==0.2.6.zulip1
 git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip==0.4.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip_bots==0.4.1+git&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@192e9e101d934a3171677ada511a11c26899cc96#egg=zulip_bots&subdirectory=zulip_bots
 alabaster==0.7.10
 apns2==0.3.0
 argon2-cffi==18.1.0
@@ -41,7 +42,7 @@ cssselect==1.0.1          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
-django-auth-ldap==1.2.16
+django-auth-ldap==1.3.0
 django-bitfield==1.9.3
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.4.1.1       # via django-two-factor-auth
@@ -86,7 +87,7 @@ markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
 moto==1.2.0
-mypy==0.560
+mypy==0.570
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.4
 oauth2client==4.1.2
@@ -99,14 +100,13 @@ pbr==3.1.1                # via mock
 pexpect==4.3.0            # via ipython
 phonenumberslite==8.8.6   # via django-phonenumber-field
 pickleshare==0.7.4        # via ipython
-pika==0.11.2
+pika==0.11.0
 pillow==5.0.0
 pip-tools==1.11.0
 polib==1.1.0
 premailer==3.1.1
 prompt-toolkit==1.0.15    # via ipython
-psutil==5.4.1             # via mypy
-psycopg2==2.7.3.2
+psycopg2==2.7.4
 ptyprocess==0.5.2         # via pexpect
 py3dns==3.1.0
 pyaml==17.10.0            # via moto
@@ -156,7 +156,7 @@ sourcemap==0.2.1
 sphinx-rtd-theme==0.2.4
 sphinx==1.7.0
 sphinxcontrib-websupport==1.0.1  # via sphinx
-sqlalchemy==1.1.14
+sqlalchemy==1.2.4
 statsd==3.2.1             # via django-statsd-mozilla
 stripe==1.77.2
 tblib==1.3.2
@@ -169,6 +169,7 @@ typed-ast==1.1.0          # via mypy
 typing==3.6.4
 uritemplate==3.0.0
 urllib3==1.22             # via requests, transifex-client
+virtualenv-clone==0.3.0
 w3lib==1.18.0             # via parsel, scrapy
 wcwidth==0.1.7            # via prompt-toolkit
 websocket-client==0.44.0  # via docker

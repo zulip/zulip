@@ -31,6 +31,7 @@ import zerver.views.user_groups
 import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
+import zerver.views.realm
 
 from zerver.lib.rest import rest_dispatch
 
@@ -70,6 +71,9 @@ v1_api_and_json_patterns = [
     url(r'generate_204$', zerver.views.registration.generate_204,
         name='zerver.views.registration.generate_204'),
 
+    url(r'realm/subdomain/(?P<subdomain>\S+)$', zerver.views.realm.check_subdomain_available,
+        name='zerver.views.realm.check_subdomain_available'),
+
     # realm/domains -> zerver.views.realm_domains
     url(r'^realm/domains$', rest_dispatch,
         {'GET': 'zerver.views.realm_domains.list_realm_domains',
@@ -106,6 +110,10 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
          'DELETE': 'zerver.views.custom_profile_fields.delete_realm_custom_profile_field'}),
 
+    # realm/deactivate -> zerver.views.deactivate_realm
+    url(r'^realm/deactivate$', rest_dispatch,
+        {'POST': 'zerver.views.realm.deactivate_realm'}),
+
     # users -> zerver.views.users
     #
     # Since some of these endpoints do something different if used on
@@ -141,6 +149,9 @@ v1_api_and_json_patterns = [
     url(r'^invites/(?P<prereg_id>[0-9]+)/resend$', rest_dispatch,
         {'POST': 'zerver.views.invite.resend_user_invite_email'}),
 
+    # invites/multiuse -> zerver.views.invite
+    url(r'^invites/multiuse$', rest_dispatch,
+        {'POST': 'zerver.views.invite.generate_multiuse_invite_backend'}),
     # mark messages as read (in bulk)
     url(r'^mark_all_as_read$', rest_dispatch,
         {'POST': 'zerver.views.messages.mark_all_as_read'}),
@@ -432,9 +443,9 @@ i18n_urls = [
         name='zerver.views.registration.find_account'),
 
     # Realm Creation
-    url(r'^create_realm/$', zerver.views.registration.create_realm,
+    url(r'^new/$', zerver.views.registration.create_realm,
         name='zerver.views.create_realm'),
-    url(r'^create_realm/(?P<creation_key>[\w]+)$',
+    url(r'^new/(?P<creation_key>[\w]+)$',
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Login/registration
@@ -484,6 +495,10 @@ i18n_urls = [
         template_name='zerver/config_error.html',),
         {'ldap_error_realm_is_none': True},
         name='ldap_error_realm_is_none'),
+    url(r'^config-error/dev$', TemplateView.as_view(
+        template_name='zerver/config_error.html',),
+        {'dev_not_supported_error': True},
+        name='dev_not_supported'),
 ]
 
 # Make a copy of i18n_urls so that they appear without prefix for english

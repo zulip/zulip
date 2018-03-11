@@ -8,8 +8,7 @@ Get Zulip notifications for your Airbrake bug tracker!
    **Integration** section, and select **Webhook**.
 
 1. Enter the URL constructed above, and check **Enabled**.
-
-1. Click **Save**.
+   Click **Save**.
 
 {!congrats.md!}
 

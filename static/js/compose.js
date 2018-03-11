@@ -19,7 +19,6 @@ exports.announce_warn_threshold = 60;
 exports.uploads_domain = document.location.protocol + '//' + document.location.host;
 exports.uploads_path = '/user_uploads';
 exports.uploads_re = new RegExp("\\]\\(" + exports.uploads_domain + "(" + exports.uploads_path + "[^\\)]+)\\)", 'g');
-exports.clone_file_input = undefined;
 
 function make_uploads_relative(content) {
     // Rewrite uploads in markdown links back to domain-relative form
@@ -188,46 +187,6 @@ function nonexistent_stream_reply_error() {
 
 exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 
-function send_message_ajax(request, success, error) {
-    channel.post({
-        url: '/json/messages',
-        data: request,
-        success: success,
-        error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && reload.is_pending()) {
-                // The error might be due to the server changing
-                reload.initiate({immediate: true,
-                                 save_pointer: true,
-                                 save_narrow: true,
-                                 save_compose: true,
-                                 send_after_reload: true});
-                return;
-            }
-
-            var response = channel.xhr_error_message("Error sending message", xhr);
-            error(response);
-        },
-    });
-}
-
-var socket;
-if (page_params.use_websockets) {
-    socket = new Socket("/sockjs");
-}
-// For debugging.  The socket will eventually move out of this file anyway.
-exports._socket = socket;
-
-function send_message_socket(request, success, error) {
-    request.socket_user_agent = navigator.userAgent;
-    socket.send(request, success, function (type, resp) {
-        var err_msg = "Error sending message";
-        if (type === 'response') {
-            err_msg += ": " + resp.msg;
-        }
-        error(err_msg);
-    });
-}
-
 function clear_compose_box() {
     $("#compose-textarea").val('').focus();
     drafts.delete_draft_after_send();
@@ -244,24 +203,6 @@ exports.send_message_success = function (local_id, message_id, locally_echoed) {
     }
 
     echo.reify_message_id(local_id, message_id);
-};
-
-exports.transmit_message = function (request, on_success, error) {
-
-    function success(data) {
-        // Call back to our callers to do things like closing the compose
-        // box and turning off spinners and reifying locally echoed messages.
-        on_success(data);
-
-        // Once everything is done, get ready to report times to the server.
-        sent_messages.report_server_ack(request.local_id);
-    }
-
-    if (page_params.use_websockets) {
-        send_message_socket(request, success, error);
-    } else {
-        send_message_ajax(request, success, error);
-    }
 };
 
 exports.send_message = function send_message(request) {
@@ -317,7 +258,7 @@ exports.send_message = function send_message(request) {
         echo.message_send_error(local_id, response);
     }
 
-    exports.transmit_message(request, success, error);
+    transmit.send_message(request, success, error);
     server_events.assert_get_events_running("Restarting get_events because it was not running during send");
 
     if (locally_echoed) {
@@ -418,7 +359,7 @@ exports.schedule_message = function schedule_message(request, success, error) {
        return;
     }
 
-    exports.transmit_message(request, success, error);
+    transmit.send_message(request, success, error);
 };
 
 exports.enter_with_preview_open = function () {
@@ -557,17 +498,13 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-exports.validate_stream_message_address_info = function (stream_name) {
-    if (stream_data.is_subscribed(stream_name)) {
-        return true;
-    }
-
+exports.validation_error = function (error_type, stream_name) {
     var response;
 
     var context = {};
     context.stream_name = Handlebars.Utils.escapeExpression(stream_name);
-    switch (check_unsubscribed_stream_for_send(stream_name,
-                                               page_params.narrow_stream !== undefined)) {
+
+    switch (error_type) {
     case "does-not-exist":
         response = i18n.t("<p>The stream <b>__stream_name__</b> does not exist.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
         compose_error(response, $('#stream'));
@@ -581,6 +518,15 @@ exports.validate_stream_message_address_info = function (stream_name) {
         return false;
     }
     return true;
+};
+
+exports.validate_stream_message_address_info = function (stream_name) {
+    if (stream_data.is_subscribed(stream_name)) {
+        return true;
+    }
+    var autosubscribe = page_params.narrow_stream !== undefined;
+    var error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
+    return exports.validation_error(error_type, stream_name);
 };
 
 function validate_stream_message() {
@@ -621,8 +567,8 @@ function validate_stream_message() {
 // The function checks whether the recipients are users of the realm or cross realm users (bots
 // for now)
 function validate_private_message() {
-    if (compose_state.recipient() === "") {
-        compose_error(i18n.t("Please specify at least one recipient"), $("#private_message_recipient"));
+    if (compose_state.recipient().length === 0) {
+        compose_error(i18n.t("Please specify at least one valid recipient"), $("#private_message_recipient"));
         return false;
     } else if (page_params.realm_is_zephyr_mirror_realm) {
         // For Zephyr mirroring realms, the frontend doesn't know which users exist
@@ -677,7 +623,10 @@ exports.handle_keydown = function (event) {
     var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
 
-    if ((isBold || isItalic || isLink) && (event.ctrlKey || event.metaKey)) {
+    // detect command and ctrl key
+    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? event.metaKey : event.ctrlKey;
+
+    if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         function add_markdown(markdown) {
             var textarea = $("#compose-textarea");
             var range = textarea.range();
@@ -885,6 +834,17 @@ exports.initialize = function () {
             return;
         }
 
+        var compose_stream = stream_data.get_sub(compose_state.stream_name());
+        if (compose_stream.subscribers && data.stream.subscribers) {
+            var compose_stream_sub = compose_stream.subscribers.keys();
+            var mentioned_stream_sub = data.stream.subscribers.keys();
+            // Don't warn if subscribers list of current compose_stream is a subset of
+            // mentioned_stream subscribers list.
+            if (_.difference(compose_stream_sub, mentioned_stream_sub).length === 0) {
+                return;
+            }
+        }
+
         // data.stream refers to the stream we're linking to in
         // typeahead.  If it's not invite-only, then it's public, and
         // there is no need to warn about it, since all users can already
@@ -919,9 +879,6 @@ exports.initialize = function () {
 
     $("#compose").on("click", "#attach_files", function (e) {
         e.preventDefault();
-        if (exports.clone_file_input === undefined) {
-            exports.clone_file_input = $('#file_input').clone(true);
-        }
         $("#compose #file_input").trigger("click");
     });
 
@@ -935,6 +892,7 @@ exports.initialize = function () {
         } else {
             preview_html = rendered_content;
         }
+
         $("#preview_content").html(preview_html);
         if (page_params.emojiset === "text") {
             $("#preview_content").find(".emoji").replaceWith(function () {

@@ -37,6 +37,7 @@ target_fully_covered = {path for target in [
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
+    'zerver/worker/queue_processor.py',
 ] for path in glob.glob(target)}
 
 not_yet_fully_covered = {

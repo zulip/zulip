@@ -124,19 +124,20 @@ casper.then(function create_bot() {
 });
 
 var bot_email = '1-bot@zulip.zulipdev.com';
+var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
 
 casper.then(function () {
-    var button_sel = '.download_bot_zuliprc[data-email="' + bot_email + '"]';
-
     casper.waitUntilVisible(button_sel, function () {
         casper.click(button_sel);
+    });
+});
 
-        casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
-            casper.test.assertMatch(
-                decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
-                regex_zuliprc,
-                'Looks like a bot ~/.zuliprc file');
-        });
+casper.then(function () {
+    casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
+        casper.test.assertMatch(
+            decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
+            regex_zuliprc,
+            'Looks like a bot ~/.zuliprc file');
     });
 });
 
@@ -262,8 +263,8 @@ casper.waitUntilVisible('#default_language_modal');
 
 casper.thenClick('a[data-code="zh-hans"]');
 
-casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', '简体中文 is now the default language');
+casper.waitUntilVisible('#language-settings-status a', function () {
+    casper.test.assertSelectorHasText('#language-settings-status', 'Saved. Please reload for the change to take effect.');
     casper.test.info("Reloading the page.");
     casper.reload();
 });
@@ -300,8 +301,8 @@ casper.thenClick('a[data-code="en"]');
 /*
  * Changing the language back to English so that subsequent tests pass.
  */
-casper.waitUntilVisible('#display-settings-status', function () {
-    casper.test.assertSelectorHasText('#display-settings-status', 'English ist die neue Standardsprache!  Du musst das Fenster neu laden um die Änderungen anzuwenden');
+casper.waitUntilVisible('#language-settings-status a', function () {
+    casper.test.assertSelectorHasText('#language-settings-status', 'Saved. Please reload for the change to take effect.');
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");

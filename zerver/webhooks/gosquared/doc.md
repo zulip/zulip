@@ -1,24 +1,21 @@
-{!create-stream.md!}
+Receive GoSquared notifications in Zulip!
 
-The integration will automatically use the default stream `gosquared`
-if no stream is supplied, though you will still need to create the
-stream manually even though it's the default.
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
+   {!append-topic.md!}
 
-{!append-topic.md!}
+1. Go to your project's **Settings** and click on **Services**.
+   Scroll down and next to **Webhook**, click on **Connect**. Click
+   on **Add new**.
 
-Go to the account settings page of your GoSquared account and under
-**Project Settings > Services > Webhook > Add New**, add the above
-URL under the section **Enter a URL to receive requests:** and name
-the integration, Zulip.
+1. Set **Webhook URL** to the URL constructed above. Set **Name** to
+   a name of your choice, such as `Zulip`. Click on **Save Integration**.
 
-![](/static/images/integrations/gosquared/001.png)
-
-Under notifications of your GoSquared account page, press
-**Add New Notification** and select when and why you want to be
-notified through Zulip. After you're done, remember to check the box
-of the webhook corresponding to Zulip.
+1. In your project's **Settings**, click on **Notifications**. Click on
+   **Add new notification**. Under **Trigger**, you may configure when
+   notifications are triggered. Under **Delivery**, check the **Webhook**
+   checkbox, and click **Add**.
 
 {!congrats.md!}
 

@@ -6,16 +6,28 @@ exports.emojis = [];
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
 exports.emojis_by_name = {};
-exports.emojis_name_to_css_class = {};
 exports.default_emoji_aliases = {};
 
 var default_emojis = [];
 
 var zulip_emoji = {
+    id: 'zulip',
     emoji_name: 'zulip',
     emoji_url: '/static/generated/emoji/images/emoji/unicode/zulip.png',
     is_realm_emoji: true,
     deactivated: false,
+};
+
+// Emoticons, and which emoji they should become (without colons). Duplicate
+// emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
+// and `templates/zerver/help/enable-emoticon-translations.md`.
+var EMOTICON_CONVERSIONS = {
+    ':)': 'smiley',
+    '(:': 'smiley',
+    ':(': 'slightly_frowning_face',
+    '<3': 'heart',
+    ':|': 'expressionless',
+    ':/': 'confused',
 };
 
 exports.update_emojis = function update_emojis(realm_emojis) {
@@ -28,7 +40,8 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
     _.each(realm_emojis, function (data, name) {
-        exports.all_realm_emojis[name] = {emoji_name: name,
+        exports.all_realm_emojis[name] = {id: data.id,
+                                          emoji_name: name,
                                           emoji_url: data.source_url,
                                           deactivated: data.deactivated};
         if (data.deactivated !== true) {
@@ -37,7 +50,9 @@ exports.update_emojis = function update_emojis(realm_emojis) {
             exports.emojis.push({emoji_name: name,
                                  emoji_url: data.source_url,
                                  is_realm_emoji: true});
-            exports.active_realm_emojis[name] = {emoji_name: name, emoji_url: data.source_url};
+            exports.active_realm_emojis[name] = {id: data.id,
+                                                 emoji_name: name,
+                                                 emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list
@@ -46,10 +61,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.active_realm_emojis.zulip = zulip_emoji;
 
     exports.emojis_by_name = {};
-    exports.emojis_name_to_css_class = {};
     _.each(default_emojis, function (emoji) {
-        var css_class = emoji_codes.name_to_codepoint[emoji.emoji_name];
-        exports.emojis_name_to_css_class[emoji.emoji_name] = css_class;
         exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
     });
 };
@@ -107,6 +119,22 @@ exports.get_canonical_name = function (emoji_name) {
     var codepoint = emoji_codes.name_to_codepoint[emoji_name];
 
     return emoji_codes.codepoint_to_name[codepoint];
+};
+
+// Translates emoticons in a string to their colon syntax.
+exports.translate_emoticons_to_names = function translate_emoticons_to_names(text) {
+    var translated = text;
+
+    for (var emoticon in EMOTICON_CONVERSIONS) {
+        if (EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
+            var emoticon_reg_ex = new RegExp(util.escape_regexp(emoticon), "g");
+            translated = translated.replace(
+                emoticon_reg_ex,
+                ':' + EMOTICON_CONVERSIONS[emoticon] + ':');
+        }
+    }
+
+    return translated;
 };
 
 return exports;

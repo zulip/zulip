@@ -1,7 +1,7 @@
 class zulip_ops::prod_app_frontend {
   include zulip_ops::base
   include zulip_ops::app_frontend
-  include zulip::analytics
+  include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip":
     require => Package["nginx-full"],

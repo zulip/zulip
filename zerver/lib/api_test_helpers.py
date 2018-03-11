@@ -1,4 +1,6 @@
 from typing import Dict, Any, Optional, Iterable
+from io import StringIO
+
 import os
 import ujson
 
@@ -47,6 +49,53 @@ def add_subscriptions(client):
     assert result['result'] == 'success'
     assert 'newbie@zulip.com' in result['subscribed']
 
+def test_add_subscriptions_already_subscribed(client):
+    # type: (Client) -> None
+    result = client.add_subscriptions(
+        streams=[
+            {'name': 'new stream', 'description': 'New stream for testing'}
+        ],
+        principals=['newbie@zulip.com']
+    )
+
+    fixture = FIXTURES['add-subscriptions']['already_subscribed']
+    test_against_fixture(result, fixture)
+
+def test_authorization_errors_fatal(client, nonadmin_client):
+    # type: (Client, Client) -> None
+    client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+    )
+
+    stream_id = client.get_stream_id('private_stream')['stream_id']
+    client.call_endpoint(
+        'streams/{}'.format(stream_id),
+        method='PATCH',
+        request={'is_private': True}
+    )
+
+    result = nonadmin_client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+        authorization_errors_fatal=False,
+    )
+
+    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_false']
+    test_against_fixture(result, fixture)
+
+    result = nonadmin_client.add_subscriptions(
+        streams=[
+            {'name': 'private_stream'}
+        ],
+        authorization_errors_fatal=True,
+    )
+
+    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_true']
+    test_against_fixture(result, fixture)
+
 def create_user(client):
     # type: (Client) -> None
 
@@ -61,7 +110,13 @@ def create_user(client):
     result = client.create_user(request)
     # {code_example|end}
 
-    fixture = FIXTURES['create-user']
+    fixture = FIXTURES['create-user']['successful_response']
+    test_against_fixture(result, fixture)
+
+    # Test "Email already used error"
+    result = client.create_user(request)
+
+    fixture = FIXTURES['create-user']['email_already_used_error']
     test_against_fixture(result, fixture)
 
 def get_members(client):
@@ -151,6 +206,13 @@ def get_streams(client):
     test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
                          check_if_exists=['streams'])
     assert len(result['streams']) == 4
+
+def test_user_not_authorized_error(nonadmin_client):
+    # type: (Client) -> None
+    result = nonadmin_client.get_streams(include_all_active=True)
+
+    fixture = FIXTURES['user-not-authorized-error']
+    test_against_fixture(result, fixture)
 
 def get_subscribers(client):
     # type: (Client) -> None
@@ -251,6 +313,19 @@ def stream_message(client):
 
     return message_id
 
+def test_nonexistent_stream_error(client):
+    # type: (Client) -> None
+    request = {
+        "type": "stream",
+        "to": "nonexistent_stream",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }
+    result = client.send_message(request)
+
+    fixture = FIXTURES['nonexistent-stream-error']
+    test_against_fixture(result, fixture)
+
 def private_message(client):
     # type: (Client) -> None
 
@@ -277,6 +352,18 @@ def private_message(client):
     )
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
+
+def test_private_message_invalid_recipient(client):
+    # type: (Client) -> None
+    request = {
+        "type": "private",
+        "to": "eeshan@zulip.com",
+        "content": "I come not, friends, to steal away your hearts."
+    }
+    result = client.send_message(request)
+
+    fixture = FIXTURES['invalid-pm-recipient-error']
+    test_against_fixture(result, fixture)
 
 def update_message(client, message_id):
     # type: (Client, int) -> None
@@ -305,6 +392,25 @@ def update_message(client, message_id):
     )
     assert result['result'] == 'success'
     assert result['raw_content'] == request['content']
+
+def test_update_message_edit_permission_error(client, nonadmin_client):
+    # type: (Client, Client) -> None
+    request = {
+        "type": "stream",
+        "to": "Denmark",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }
+    result = client.send_message(request)
+
+    request = {
+        "message_id": result["id"],
+        "content": "New content"
+    }
+    result = nonadmin_client.update_message(request)
+
+    fixture = FIXTURES['update-message-edit-permission-error']
+    test_against_fixture(result, fixture)
 
 def register_queue(client):
     # type: (Client) -> str
@@ -341,8 +447,33 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     # {code_example|end}
 
-    fixture = FIXTURES['delete-queue']
+    fixture = FIXTURES['delete-queue']['successful_response']
     test_against_fixture(result, fixture)
+
+    # Test "BAD_EVENT_QUEUE_ID" error
+    result = client.deregister(queue_id)
+    fixture = FIXTURES['delete-queue']['bad_event_queue_id_error']
+    test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
+                         check_if_exists=['queue_id', 'msg'])
+
+def upload_file(client):
+    # type: (Client) -> None
+    fp = StringIO("zulip")
+    fp.name = "zulip.txt"
+
+    # {code_example|start}
+    # Upload a file
+    # (Make sure that 'fp' is a file object)
+    result = client.call_endpoint(
+        'user_uploads',
+        method='POST',
+        files=[fp]
+    )
+    # {code_example|end}
+
+    fixture = FIXTURES['upload-file']
+    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
+                         check_if_exists=['uri'])
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
@@ -350,6 +481,19 @@ def test_invalid_api_key(client_with_invalid_key):
     fixture = FIXTURES['invalid-api-key']
     test_against_fixture(result, fixture)
 
+def test_missing_request_argument(client):
+    # type: (Client) -> None
+    result = client.render_message({})
+
+    fixture = FIXTURES['missing-request-argument-error']
+    test_against_fixture(result, fixture)
+
+def test_invalid_stream_error(client):
+    # type: (Client) -> None
+    result = client.get_stream_id('nonexistent')
+
+    fixture = FIXTURES['invalid-stream-error']
+    test_against_fixture(result, fixture)
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
@@ -366,6 +510,7 @@ TEST_FUNCTIONS = {
     'get-all-users': get_members,
     'register-queue': register_queue,
     'delete-queue': deregister_queue,
+    'upload-file': upload_file,
 }
 
 # SETUP METHODS FOLLOW
@@ -394,17 +539,22 @@ def test_messages(client):
     update_message(client, message_id)
     private_message(client)
 
+    test_nonexistent_stream_error(client)
+    test_private_message_invalid_recipient(client)
+
 def test_users(client):
     # type: (Client) -> None
 
     create_user(client)
     get_members(client)
     get_profile(client)
+    upload_file(client)
 
 def test_streams(client):
     # type: (Client) -> None
 
     add_subscriptions(client)
+    test_add_subscriptions_already_subscribed(client)
     list_subscriptions(client)
     get_stream_id(client)
     get_streams(client)
@@ -421,6 +571,11 @@ def test_queues(client):
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
+def test_errors(client):
+    # type: (Client) -> None
+    test_missing_request_argument(client)
+    test_invalid_stream_error(client)
+
 def test_the_api(client):
     # type: (Client) -> None
 
@@ -429,3 +584,4 @@ def test_the_api(client):
     test_streams(client)
     test_messages(client)
     test_queues(client)
+    test_errors(client)

@@ -296,6 +296,7 @@
 .new-style input[type=text] {
     border-radius: 5px;
     box-shadow: none;
+    margin: 0px;
 }
 
 .clear_search_button:hover {

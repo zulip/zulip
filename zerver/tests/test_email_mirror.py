@@ -368,9 +368,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = datetime.datetime(year=2017, month=11, day=1)
         mock_django_timezone.return_value = datetime.datetime(year=2017, month=11, day=5)
         cordelia = self.example_user('cordelia')
-        create_stream_if_needed(cordelia.realm, 'New stream')
+        stream_id = create_stream_if_needed(cordelia.realm, 'New stream')[0].id
         new_stream = gather_new_streams(cordelia, cutoff)[1]
-        expected_html = "<a href='http://zulip.testserver/#narrow/stream/New.20stream'>New stream</a>"
+        expected_html = "<a href='http://zulip.testserver/#narrow/stream/{stream_id}-New-stream'>New stream</a>".format(stream_id=stream_id)
         self.assertIn(expected_html, new_stream['html'])
 
 class TestReplyExtraction(ZulipTestCase):

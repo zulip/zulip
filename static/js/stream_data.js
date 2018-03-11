@@ -97,6 +97,37 @@ exports.get_sub_by_name = function (name) {
     return subs_by_stream_id.get(stream_id);
 };
 
+exports.name_to_slug = function (name) {
+    var stream_id = exports.get_stream_id(name);
+
+    if (!stream_id) {
+        return name;
+    }
+
+    // The name part of the URL doesn't really matter, so we try to
+    // make it pretty.
+    name = name.replace(' ', '-');
+
+    return stream_id + '-' + name;
+};
+
+exports.slug_to_name = function (slug) {
+    var m = /^([\d]+)-/.exec(slug);
+    if (m) {
+        var stream_id = m[1];
+        var sub = subs_by_stream_id.get(stream_id);
+        if (sub) {
+            return sub.name;
+        }
+        // if nothing was found above, we try to match on the stream
+        // name in the somewhat unlikely event they had a historical
+        // link to a stream like 4-horsemen
+    }
+
+    return slug;
+};
+
+
 exports.delete_sub = function (stream_id) {
     var sub = subs_by_stream_id.get(stream_id);
     if (!sub) {
@@ -111,9 +142,6 @@ exports.get_non_default_stream_names = function () {
     var subs = stream_info.values();
     subs = _.reject(subs, function (sub) {
         return exports.is_default_stream_id(sub.stream_id);
-    });
-    subs = _.reject(subs, function (sub) {
-        return sub.invite_only;
     });
     var names = _.pluck(subs, 'name');
     return names;
@@ -459,10 +487,11 @@ exports.get_streams_for_admin = function () {
 };
 
 exports.initialize_from_page_params = function () {
-    function populate_subscriptions(subs, subscribed) {
+    function populate_subscriptions(subs, subscribed, previously_subscribed) {
         subs.forEach(function (sub) {
             var stream_name = sub.name;
             sub.subscribed = subscribed;
+            sub.previously_subscribed = previously_subscribed;
 
             exports.create_sub_from_server_data(stream_name, sub);
         });
@@ -470,9 +499,9 @@ exports.initialize_from_page_params = function () {
 
     exports.set_realm_default_streams(page_params.realm_default_streams);
 
-    populate_subscriptions(page_params.subscriptions, true);
-    populate_subscriptions(page_params.unsubscribed, false);
-    populate_subscriptions(page_params.never_subscribed, false);
+    populate_subscriptions(page_params.subscriptions, true, true);
+    populate_subscriptions(page_params.unsubscribed, false, true);
+    populate_subscriptions(page_params.never_subscribed, false, false);
 
     // Migrate the notifications stream from the new API structure to
     // what the frontend expects.

@@ -9,6 +9,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
+from django.utils.timezone import timedelta as timezone_timedelta
 
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
     do_change_is_admin, do_send_messages
@@ -83,7 +84,7 @@ class Command(BaseCommand):
         parser.add_argument('--threads',
                             dest='threads',
                             type=int,
-                            default=10,
+                            default=1,
                             help='The number of threads to use.')
 
         parser.add_argument('--percent-huddles',
@@ -509,7 +510,25 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
             message.subject = stream.name + Text(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
-        message.pub_date = timezone_now()
+        # Spoofing time not supported with threading
+        if options['threads'] != 1:
+            message.pub_date = timezone_now()
+        else:
+            # Distrubutes 80% of messages starting from 5 days ago, over a period
+            # of 3 days. Then, distributes remaining messages over past 24 hours.
+            spoofed_date = timezone_now() - timezone_timedelta(days = 5)
+            if (num_messages < tot_messages * 0.8):
+                # Maximum of 3 days ahead, convert to minutes
+                time_ahead = 3 * 24 * 60
+                time_ahead //= int(tot_messages * 0.8)
+            else:
+                time_ahead = 24 * 60
+                time_ahead //= int(tot_messages * 0.2)
+
+            spoofed_minute = random.randint(time_ahead * num_messages, time_ahead * (num_messages + 1))
+            spoofed_date += timezone_timedelta(minutes = spoofed_minute)
+            message.pub_date = spoofed_date
+
         # We disable USING_RABBITMQ here, so that deferred work is
         # executed in do_send_message_messages, rather than being
         # queued.  This is important, because otherwise, if run-dev.py

@@ -1,17 +1,15 @@
 Configuring the HelloSign integration is easy!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
+   {!append-topic.md!}
 
-{!append-topic.md!}
+1. Go to your HelloSign account **Settings**. Select **Integrations** and
+   click on **API**.
 
-Go to the account settings page of your HelloSign account and
-under the **Integrations** tab, go to **API** and **Account Callback**.
-Add the above URL with your modifications under the section
-**Account Callback**.
-
-![](/static/images/integrations/hellosign/000.png)
+1. Set **Account Callback** to the URL constructed above. Click **Test**
+   to send a test notification to your Zulip organization.
 
 {!congrats.md!}
 

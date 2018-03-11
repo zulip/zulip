@@ -51,7 +51,11 @@ exports.build_user_avatar_widget = function (upload_function) {
 
     if (page_params.avatar_source === 'G') {
         $("#user_avatar_delete_button").hide();
+        $("#user-avatar-source").show();
+    } else {
+        $("#user-avatar-source").hide();
     }
+
     $("#user_avatar_delete_button").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -60,6 +64,7 @@ exports.build_user_avatar_widget = function (upload_function) {
             success: function (data) {
               $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
               $("#user_avatar_delete_button").hide();
+              $("#user-avatar-source").show();
               // Need to clear input because of a small edge case
               // where you try to upload the same image you just deleted.
               get_file_input().val('');

@@ -8,6 +8,7 @@ set_global('Filter', noop);
 global.stub_out_jquery();
 set_global('document', null);
 
+zrequire('FetchStatus', 'js/fetch_status');
 zrequire('util');
 zrequire('muting');
 zrequire('MessageListView', 'js/message_list_view');

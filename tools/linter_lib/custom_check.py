@@ -352,6 +352,17 @@ def build_custom_checkers(by_lang):
          'description': 'Used % comprehension without a tuple',
          'good_lines': ['"foo %s bar" % ("baz",)"'],
          'bad_lines': ['"foo %s bar" % ("baz")']},
+        {'pattern': 'sudo',
+         'include_only': set(['scripts/']),
+         'exclude': set(['scripts/lib/setup_venv.py']),
+         'exclude_line': set([
+             ('scripts/lib/zulip_tools.py', '# We need sudo here, since the path will be under /srv/ in the'),
+             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "/bin/bash", "-c",'),
+             ('scripts/lib/zulip_tools.py', 'subprocess.check_call(["sudo", "rm", "-rf", directory])'),
+         ]),
+         'description': 'Most scripts are intended to run on systems without sudo.',
+         'good_lines': ['subprocess.check_call(["ls"])'],
+         'bad_lines': ['subprocess.check_call(["sudo", "ls"])']},
         {'pattern': 'django.utils.translation',
          'include_only': set(['test/']),
          'description': 'Test strings should not be tagged for translation',
@@ -455,12 +466,25 @@ def build_custom_checkers(by_lang):
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
     ]) + whitespace_rules + comma_whitespace_rule
-    bash_rules = [
+    bash_rules = cast(RuleList, [
         {'pattern': '#!.*sh [-xe]',
          'description': 'Fix shebang line with proper call to /usr/bin/env for Bash path, change -x|-e switches'
                         ' to set -x|set -e'},
-    ] + whitespace_rules[0:1]  # type: RuleList
+        {'pattern': 'sudo',
+         'description': 'Most scripts are intended to work on systems without sudo',
+         'include_only': set(['scripts/']),
+         'exclude': set([
+             'scripts/lib/install',
+             'scripts/lib/create-zulip-admin',
+             'scripts/setup/terminate-psql-sessions',
+             'scripts/setup/configure-rabbitmq'
+         ]), },
+    ]) + whitespace_rules[0:1]
     css_rules = cast(RuleList, [
+        {'pattern': 'calc\([^+]+\+[^+]+\)',
+         'description': "Avoid using calc with '+' operator. See #8403 : in CSS.",
+         'good_lines': ["width: calc(20% - -14px);"],
+         'bad_lines': ["width: calc(20% + 14px);"]},
         {'pattern': '^[^:]*:\S[^:]*;$',
          'description': "Missing whitespace after : in CSS",
          'good_lines': ["background-color: white;", "text-size: 16px;"],
@@ -510,18 +534,10 @@ def build_custom_checkers(by_lang):
          'description': "The S in Terms of Service is capitalized"},
     ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
-        {'pattern': 'placeholder="[^{]',
+        {'pattern': 'placeholder="[^{#](?:(?!\.com).)+$',
          'description': "`placeholder` value should be translatable.",
          'exclude_line': [('templates/zerver/register.html', 'placeholder="acme"'),
-                          ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"'),
-                          ('static/templates/settings/realm-domains-modal.handlebars',
-                           '<td><input type="text" class="new-realm-domain" placeholder="acme.com"></td>'),
-                          ("static/templates/user-groups-admin.handlebars",
-                           '<input type="text" name="name" id="user_group_name" placeholder="hamletcharacters" />')],
-         'exclude': set(["static/templates/settings/emoji-settings-admin.handlebars",
-                         "static/templates/settings/realm-filter-settings-admin.handlebars",
-                         "static/templates/settings/bot-settings.handlebars",
-                         "templates/zerver/email_log.html"]),
+                          ('templates/zerver/register.html', 'placeholder="Acme or Aκμή"')],
          'good_lines': ['<input class="stream-list-filter" type="text" placeholder="{{ _(\'Search streams\') }}" />'],
          'bad_lines': ['<input placeholder="foo">']},
         {'pattern': "placeholder='[^{]",
@@ -665,6 +681,9 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
+        {'pattern': ':[\"\[\{]',
+         'exclude': set(['zerver/webhooks/', 'zerver/fixtures/']),
+         'description': 'Require space after : in JSON'},
     ]  # type: RuleList
     markdown_rules = markdown_whitespace_rules + prose_style_rules + [
         {'pattern': '\[(?P<url>[^\]]+)\]\((?P=url)\)',

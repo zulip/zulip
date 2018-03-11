@@ -15,7 +15,8 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
     do_change_default_events_register_stream, do_change_default_sending_stream, \
     do_create_user, do_deactivate_user, do_reactivate_user, do_regenerate_api_key, \
-    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service
+    check_change_full_name, notify_created_bot, do_update_outgoing_webhook_service, \
+    do_update_bot_config_data
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
 from zerver.lib.exceptions import JsonableError
@@ -25,8 +26,8 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
-from zerver.lib.users import check_valid_bot_type, \
-    check_full_name, check_short_name, check_valid_interface_type
+from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
+    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm
@@ -156,6 +157,8 @@ def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, email: Text,
         full_name: Optional[Text]=REQ(default=None),
         bot_owner: Optional[Text]=REQ(default=None),
+        config_data: Optional[Dict[Text, Text]]=REQ(default=None,
+                                                    validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[Text]=REQ(validator=check_url, default=None),
         service_interface: Optional[int]=REQ(validator=check_int, default=1),
         default_sending_stream: Optional[Text]=REQ(default=None),
@@ -204,6 +207,9 @@ def patch_bot_backend(
         check_valid_interface_type(service_interface)
         do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
 
+    if config_data is not None:
+        do_update_bot_config_data(bot, config_data)
+
     if len(request.FILES) == 0:
         pass
     elif len(request.FILES) == 1:
@@ -219,6 +225,7 @@ def patch_bot_backend(
         avatar_url=avatar_url(bot),
         service_interface = service_interface,
         service_payload_url = service_payload_url,
+        config_data = config_data,
         default_sending_stream=get_stream_name(bot.default_sending_stream),
         default_events_register_stream=get_stream_name(bot.default_events_register_stream),
         default_all_public_streams=bot.default_all_public_streams,
@@ -292,6 +299,7 @@ def add_bot_backend(
         return json_error(_("Username already in use"))
     except UserProfile.DoesNotExist:
         pass
+    check_bot_creation_policy(user_profile, bot_type)
     check_valid_bot_type(user_profile, bot_type)
     check_valid_interface_type(interface_type)
 
@@ -311,6 +319,9 @@ def add_bot_backend(
     if default_events_register_stream_name is not None:
         (default_events_register_stream, ignored_rec, ignored_sub) = access_stream_by_name(
             user_profile, default_events_register_stream_name)
+
+    if bot_type == UserProfile.EMBEDDED_BOT:
+        check_valid_bot_config(service_name, config_data)
 
     bot_profile = do_create_user(email=email, password='',
                                  realm=user_profile.realm, full_name=full_name,
@@ -446,8 +457,8 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     # invited first.)
     realm = user_profile.realm
     if not email_allowed_for_realm(email, user_profile.realm):
-        return json_error(_("Email '%(email)s' not allowed for realm '%(realm)s'") %
-                          {'email': email, 'realm': realm.string_id})
+        return json_error(_("Email '%(email)s' not allowed in this organization") %
+                          {'email': email})
 
     try:
         get_user(email, user_profile.realm)

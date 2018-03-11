@@ -400,7 +400,7 @@ nav ul li.active::after {
 /* -- features page css -- */
 .portico-landing.features-app {
     position: relative;
-
+    overflow-x: hidden;
     padding-top: 0px;
 
     z-index: 2;
@@ -408,6 +408,10 @@ nav ul li.active::after {
 
 .portico-landing.features-app section {
     max-width: 1440px;
+    display: flex;
+    flex: 1 1 auto;
+    flex-flow: row wrap;
+    justify-content: space-around;
     margin: 40px auto;
     padding: 0px 30px;
     color: #2a3241;
@@ -476,7 +480,6 @@ nav ul li.active::after {
     position: absolute;
     top: -169px;
     right: 0;
-
     width: 685px;
     height: 170px;
 
@@ -553,6 +556,7 @@ nav ul li.active::after {
     top: 0;
     left: 0;
     width: 100%;
+    max-height: 40vw;
 }
 
 .portico-landing.features-app section.notifications h2 {
@@ -648,13 +652,15 @@ nav ul li.active::after {
 
 .portico-landing.features-app section h2 {
     font-size: 2.5em;
+    text-align: center;
     margin: 0px 10px;
     line-height: 1.6;
+    flex: 1 0 100%;
 }
 
 .portico-landing.features-app section > .feature-block {
-    margin: 10px;
-    width: calc(33% - 20px);
+    margin: 10px 20px;
+    flex: 1 1 320px;
 }
 
 .portico-landing.features-app .feature-block h3 {
@@ -2892,6 +2898,14 @@ nav ul li.active::after {
     .portico-landing.why-page .hero p br {
         display: none;
     }
+
+    .portico-landing.features-app section.notifications {
+        padding: 50px 10px;
+    }
+
+    .portico-landing.features-app section.notifications .image-block {
+        display: none;
+    }
 }
 
 @media (max-width: 830px) {
@@ -3370,6 +3384,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-lozenge {
         width: 120px;
+    }
+
+    .portico-landing.features-app section.keyboard-shortcuts::after {
+        left: 0;
     }
 }
 

@@ -70,41 +70,6 @@ exports.reset_realm_default_language = function () {
     $("#id_realm_default_language").val(page_params.realm_default_language);
 };
 
-
-exports.toggle_name_change_display = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    if ($('#full_name').attr('disabled')) {
-        $('#full_name').prop('disabled', false);
-    } else {
-        $('#full_name').attr('disabled', 'disabled');
-    }
-    $(".change_name_tooltip").toggle();
-};
-
-exports.toggle_email_change_display = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    if ($('#change_email .button').attr('disabled')) {
-        $('#change_email .button').prop('disabled', false);
-    } else {
-        $('#change_email .button').attr('disabled', 'disabled');
-    }
-    $(".change_email_tooltip").toggle();
-};
-
-exports.toggle_allow_message_editing_pencil = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $(".on_hover_topic_edit").toggle();
-};
-
 exports.update_realm_description = function () {
     if (!meta.loaded) {
         return;
@@ -281,6 +246,11 @@ function _set_up() {
                 type: 'text',
                 msg: i18n.t("Default language changed!"),
             },
+            send_welcome_emails: {
+                type: 'bool',
+                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
+                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
+            },
             allow_message_deleting: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can delete their messages!"),
@@ -339,10 +309,9 @@ function _set_up() {
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
                 unchecked_msg: i18n.t("Any user may now add new emoji!"),
             },
-            create_generic_bot_by_admins_only: {
-                type: 'bool',
-                checked_msg: i18n.t("Only administrators may now create new generic bots!"),
-                unchecked_msg: i18n.t("Any user may now create new generic bots!"),
+            bot_creation_policy: {
+                type: 'integer',
+                msg: i18n.t("Permissions changed"),
             },
         },
     };
@@ -391,7 +360,7 @@ function _set_up() {
                 return;
             }
 
-            if (setting_type === 'text') {
+            if (setting_type === 'text' || setting_type === 'integer') {
                 ui_report.success(field_info.msg,
                                   property_type_status_element(key));
                 return;
@@ -403,23 +372,11 @@ function _set_up() {
     exports.set_add_emoji_permission_dropdown();
 
     $("#id_realm_invite_required").change(function () {
-        if (this.checked) {
-            $("#id_realm_invite_by_admins_only").prop("disabled", false);
-            $("#id_realm_invite_by_admins_only_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#id_realm_invite_by_admins_only").attr("disabled", true);
-            $("#id_realm_invite_by_admins_only_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
     });
 
     $("#id_realm_allow_message_editing").change(function () {
-        if (this.checked) {
-            $("#id_realm_message_content_edit_limit_minutes").prop("disabled", false);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().removeClass("control-label-disabled");
-        } else {
-            $("#id_realm_message_content_edit_limit_minutes").attr("disabled", true);
-            $("#id_realm_message_content_edit_limit_minutes_label").parent().addClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
     exports.save_organization_settings = function () {
@@ -689,7 +646,7 @@ function _set_up() {
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         var domain = $(this).parents("tr").find(".domain").text();
         var url = "/json/realm/domains/" + domain;
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
 
         channel.del({
             url: url,
@@ -703,7 +660,7 @@ function _set_up() {
     });
 
     $("#submit-add-realm-domain").click(function () {
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var widget = $("#add-realm-domain-widget");
         var domain = widget.find(".new-realm-domain").val();
         var allow_subdomains = widget.find(".new-realm-domain-allow-subdomains").prop("checked");
@@ -728,7 +685,7 @@ function _set_up() {
 
     $("#realm_domains_table").on("change", ".allow-subdomains", function (e) {
         e.stopPropagation();
-        var realm_domains_info = $("#realm_domains_modal").find(".realm_domains_info");
+        var realm_domains_info = $(".realm_domains_info");
         var domain = $(this).parents("tr").find(".domain").text();
         var allow_subdomains = $(this).prop('checked');
         var url = '/json/realm/domains/' + domain;
@@ -870,6 +827,28 @@ function _set_up() {
 
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
+
+    $('#deactivate_realm_button').on('click', function (e) {
+        if (!overlays.is_modal_open()) {
+            e.preventDefault();
+            e.stopPropagation();
+            overlays.open_modal('deactivate-realm-modal');
+        }
+    });
+
+    $('#do_deactivate_realm_button').on('click', function () {
+        if (overlays.is_modal_open()) {
+            overlays.close_modal('deactivate-realm-modal');
+        }
+        channel.post({
+            url:'/json/realm/deactivate',
+            error: function (xhr) {
+                ui_report.error(
+                    i18n.t("Failed"), xhr, $('#admin-realm-deactivation-status').expectOne()
+                );
+            },
+        });
+    });
 
 }
 exports.set_up = function () {

@@ -162,10 +162,17 @@ exports.redraw_title = function () {
         favicon.set(current_favicon);
     }
 
+    // window.bridge is for the legacy QT desktop app; we'll likely
+    // remove this code soon.
     if (window.bridge !== undefined) {
         // We don't use 'n' because we want the exact count. The bridge handles
         // which icon to show.
         window.bridge.updateCount(new_message_count);
+    }
+
+    // Notify the current desktop app's UI about the new unread count.
+    if (window.electron_bridge !== undefined) {
+        window.electron_bridge.send_event('total_unread_count', new_message_count);
     }
 };
 
@@ -383,7 +390,7 @@ exports.close_notification = function (message) {
     });
 };
 
-function message_is_notifiable(message) {
+exports.message_is_notifiable = function (message) {
     // Independent of the user's notification settings, are there
     // properties of the message that unconditionally mean we
     // shouldn't notify about it.
@@ -419,7 +426,7 @@ function message_is_notifiable(message) {
     // Everything else is on the table; next filter based on notification
     // settings.
     return true;
-}
+};
 
 function should_send_desktop_notification(message) {
     // For streams, send if desktop notifications are enabled for this
@@ -492,7 +499,7 @@ exports.request_desktop_notifications_permission = function () {
 
 exports.received_messages = function (messages) {
     _.each(messages, function (message) {
-        if (!message_is_notifiable(message)) {
+        if (!exports.message_is_notifiable(message)) {
             return;
         }
         if (!unread.message_unread(message)) {
@@ -658,28 +665,8 @@ exports.handle_global_notification_updates = function (notification_name, settin
     // Update the global settings checked when determining if we should notify
     // for a given message. These settings do not affect whether or not a
     // particular stream should receive notifications.
-    if (notification_name === "enable_stream_desktop_notifications") {
-        page_params.enable_stream_desktop_notifications = setting;
-    } else if (notification_name === "enable_stream_push_notifications") {
-        page_params.enable_stream_push_notifications = setting;
-    } else if (notification_name === "enable_stream_sounds") {
-        page_params.enable_stream_sounds = setting;
-    } else if (notification_name === "enable_desktop_notifications") {
-        page_params.enable_desktop_notifications = setting;
-    } else if (notification_name === "enable_sounds") {
-        page_params.enable_sounds = setting;
-    } else if (notification_name === "enable_offline_email_notifications") {
-        page_params.enable_offline_email_notifications = setting;
-    } else if (notification_name === "enable_offline_push_notifications") {
-        page_params.enable_offline_push_notifications = setting;
-    } else if (notification_name === "enable_online_push_notifications") {
-        page_params.enable_online_push_notifications = setting;
-    } else if (notification_name === "enable_digest_emails") {
-        page_params.enable_digest_emails = setting;
-    } else if (notification_name === "pm_content_in_desktop_notifications") {
-        page_params.pm_content_in_desktop_notifications = setting;
-    } else if (notification_name === "realm_name_in_notifications") {
-        page_params.realm_name_in_notifications = setting;
+    if (settings_notifications.notification_settings.indexOf(notification_name) !== -1) {
+        page_params[notification_name] = setting;
     }
 };
 

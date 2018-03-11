@@ -26,7 +26,7 @@ import ujson
 from zerver.decorator import statsd_increment
 from zerver.lib.avatar import absolute_avatar_url
 from zerver.lib.exceptions import ErrorCode, JsonableError
-from zerver.lib.message import access_message
+from zerver.lib.message import access_message, huddle_users
 from zerver.lib.queue import retry_event
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
@@ -239,6 +239,7 @@ def send_notifications_to_bouncer(user_profile_id: int,
         'apns_payload': apns_payload,
         'gcm_payload': gcm_payload,
     }
+    # Calls zilencer.views.remote_server_notify_push
     send_json_to_push_bouncer('POST', 'notify', post_data)
 
 def send_json_to_push_bouncer(method: str, endpoint: str, post_data: Dict[str, Any]) -> None:
@@ -349,6 +350,7 @@ def add_push_device_token(user_profile: UserProfile,
             post_data['ios_app_id'] = ios_app_id
 
         logging.info("Sending new push device to bouncer: %r", post_data)
+        # Calls zilencer.views.remote_server_register_push.
         send_to_push_bouncer('POST', 'register', post_data)
         return
 
@@ -372,7 +374,7 @@ def add_push_device_token(user_profile: UserProfile,
 def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: int) -> None:
 
     # If we're sending things to the push notification bouncer
-    # register this user with them here
+    # unregister this user with them here
     if uses_notification_bouncer():
         # TODO: Make this a remove item
         post_data = {
@@ -381,6 +383,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
             'token': token_str,
             'token_kind': kind,
         }
+        # Calls zilencer.views.remote_server_unregister_push.
         send_to_push_bouncer("POST", "unregister", post_data)
         return
 
@@ -479,11 +482,14 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     data['sender_id'] = message.sender.id
     data['sender_email'] = message.sender.email
 
-    if message.is_stream_message():
+    if message.recipient.type == Recipient.STREAM:
         data['recipient_type'] = "stream"
         data['stream'] = get_display_recipient(message.recipient)
         data['topic'] = message.subject
-    else:
+    elif message.recipient.type == Recipient.HUDDLE:
+        data['recipient_type'] = "private"
+        data['pm_users'] = huddle_users(message.recipient.id)
+    else:  # Recipient.PERSONAL
         data['recipient_type'] = "private"
 
     return data

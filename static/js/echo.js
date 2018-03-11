@@ -36,7 +36,7 @@ function resend_message(message, row) {
     }
 
     sent_messages.start_resend(local_id);
-    compose.transmit_message(message, on_success, on_error);
+    transmit.send_message(message, on_success, on_error);
 }
 
 function truncate_precision(float) {

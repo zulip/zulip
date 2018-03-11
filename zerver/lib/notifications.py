@@ -48,18 +48,24 @@ def hash_util_encode(string: Text) -> Text:
     return urllib.parse.quote(
         string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
 
+def encode_stream(stream_id: int, stream_name: Text) -> Text:
+    # We encode streams for urls as something like 99-Verona.
+    stream_name = stream_name.replace(' ', '-')
+    return str(stream_id) + '-' + hash_util_encode(stream_name)
+
 def pm_narrow_url(realm: Realm, participants: List[Text]) -> Text:
     participants.sort()
     base_url = "%s/#narrow/pm-with/" % (realm.uri,)
     return base_url + hash_util_encode(",".join(participants))
 
-def stream_narrow_url(realm: Realm, stream: Text) -> Text:
+def stream_narrow_url(realm: Realm, stream: Stream) -> Text:
     base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return base_url + hash_util_encode(stream)
+    return base_url + encode_stream(stream.id, stream.name)
 
-def topic_narrow_url(realm: Realm, stream: Text, topic: Text) -> Text:
+def topic_narrow_url(realm: Realm, stream: Stream, topic: Text) -> Text:
     base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return "%s%s/topic/%s" % (base_url, hash_util_encode(stream),
+    return "%s%s/topic/%s" % (base_url,
+                              encode_stream(stream.id, stream.name),
                               hash_util_encode(topic))
 
 def relative_to_full_url(base_url: Text, content: Text) -> Text:
@@ -187,12 +193,12 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                 'content': [build_message_payload(message)]}
 
     def message_header(user_profile: UserProfile, message: Message) -> Dict[str, Any]:
-        disp_recipient = get_display_recipient(message.recipient)
         if message.recipient.type == Recipient.PERSONAL:
             header = "You and %s" % (message.sender.full_name,)
             html_link = pm_narrow_url(user_profile.realm, [message.sender.email])
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         elif message.recipient.type == Recipient.HUDDLE:
+            disp_recipient = get_display_recipient(message.recipient)
             assert not isinstance(disp_recipient, Text)
             other_recipients = [r['full_name'] for r in disp_recipient
                                 if r['email'] != user_profile.email]
@@ -201,12 +207,12 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
                                       if r["email"] != user_profile.email])
             header_html = "<a style='color: #ffffff;' href='%s'>%s</a>" % (html_link, header)
         else:
-            assert isinstance(disp_recipient, Text)
-            header = "%s > %s" % (disp_recipient, message.topic_name())
-            stream_link = stream_narrow_url(user_profile.realm, disp_recipient)
-            topic_link = topic_narrow_url(user_profile.realm, disp_recipient, message.subject)
+            stream = Stream.objects.only('id', 'name').get(id=message.recipient.type_id)
+            header = "%s > %s" % (stream.name, message.topic_name())
+            stream_link = stream_narrow_url(user_profile.realm, stream)
+            topic_link = topic_narrow_url(user_profile.realm, stream, message.subject)
             header_html = "<a href='%s'>%s</a> > <a href='%s'>%s</a>" % (
-                stream_link, disp_recipient, topic_link, message.subject)
+                stream_link, stream.name, topic_link, message.subject)
         return {"plain": header,
                 "html": header_html,
                 "stream_message": message.recipient.type_name() == "stream"}
@@ -293,11 +299,11 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     context = common_context(user_profile)
     context.update({
         'name': user_profile.full_name,
-        'messages': build_message_list(user_profile, missed_messages),
         'message_count': message_count,
         'mention': missed_messages[0].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
+        'show_message_content': user_profile.message_content_in_email_notifications,
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -352,10 +358,21 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
                                                       flags=UserMessage.flags.mentioned).exists()))
         context.update({'at_mention': True})
 
-    context.update({
-        'sender_str': ", ".join(sender.full_name for sender in senders),
-        'realm_str': user_profile.realm.name,
-    })
+    # If message content is disabled, then flush all information we pass to email.
+    if not user_profile.message_content_in_email_notifications:
+        context.update({
+            'reply_to_zulip': False,
+            'messages': [],
+            'sender_str': "",
+            'realm_str': user_profile.realm.name,
+            'huddle_display_name': "",
+        })
+    else:
+        context.update({
+            'messages': build_message_list(user_profile, missed_messages),
+            'sender_str': ", ".join(sender.full_name for sender in senders),
+            'realm_str': user_profile.realm.name,
+        })
 
     from_name = "Zulip missed messages"  # type: Text
     from_address = FromAddress.NOREPLY

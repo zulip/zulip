@@ -88,6 +88,8 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
     out = io.BytesIO()
+    if im.mode == 'CMYK':
+        im = im.convert('RGB')
     im.save(out, format='png')
     return out.getvalue()
 
@@ -191,10 +193,11 @@ def currently_used_upload_space(realm: Realm) -> int:
     return used_space
 
 def check_upload_within_quota(realm: Realm, uploaded_file_size: int) -> None:
-    if realm.upload_quota_bytes() is None:
+    upload_quota = realm.upload_quota_bytes()
+    if upload_quota is None:
         return
     used_space = currently_used_upload_space(realm)
-    if (used_space + uploaded_file_size) > realm.upload_quota_bytes():
+    if (used_space + uploaded_file_size) > upload_quota:
         raise RealmUploadQuotaError(_("Upload would exceed your organization's upload quota."))
 
 def get_file_info(request: HttpRequest, user_file: File) -> Tuple[Text, int, Optional[Text]]:

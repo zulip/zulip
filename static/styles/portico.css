@@ -1169,7 +1169,7 @@ input#zulipbot:checked ~ #tab-zulipbot {
 .login-form {
     margin: auto;
     /* plus input padding. */
-    width: calc(300px + 28px);
+    width: calc(300px - -28px);
     margin-bottom: 10px;
 }
 
@@ -1696,7 +1696,7 @@ input.new-organization-button {
     margin-top: -240px;
     height: auto;
     width: calc(100% - 40px);
-    max-width: calc(768px + 20px);
+    max-width: calc(768px - -20px);
 }
 
 .error_page {
@@ -1742,9 +1742,14 @@ input.new-organization-button {
 
 .error_page .lead {
     color: #39a688;
-    font-size: 40px;
+    font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
+}
+
+.hourglass-img {
+    width: initial !important;
+    margin-bottom: 25px !important;
 }
 
 @media (max-width: 1000px) {
@@ -1784,7 +1789,6 @@ input.new-organization-button {
     .app.help .sidebar.show {
         padding-right: 20px;
         transform: translateX(280px);
-        overflow: auto !important;
     }
 
     .app.help .sidebar.show + .hamburger {
@@ -1793,6 +1797,10 @@ input.new-organization-button {
 
     .app.help .sidebar.show ~ .markdown {
         -webkit-filter: brightness(0.7);
+    }
+
+    .app.help .sidebar:not(.show) .ps__scrollbar-y-rail {
+        display: none; /* Hide y-scrollbar on collapsed sidebar view */
     }
 }
 

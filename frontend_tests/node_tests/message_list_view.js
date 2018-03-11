@@ -17,6 +17,12 @@ set_global('timerender', {
         }
         return [{outerHTML: String(time1.getTime()) + ' - ' + String(time2.getTime())}];
     },
+    stringify_time : function (time) {
+        if (page_params.twenty_four_hour_time) {
+            return time.toString('HH:mm');
+        }
+        return time.toString('h:mm TT');
+    },
 });
 
 (function test_merge_message_groups() {

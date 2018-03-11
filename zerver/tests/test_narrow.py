@@ -219,17 +219,21 @@ class NarrowBuilderTest(ZulipTestCase):
         self._do_add_term_test(term, 'WHERE id != :param_1')
 
     def test_add_term_using_group_pm_operator_and_not_the_same_user_as_operand(self) -> None:
+        # Test wtihout any such group PM threads existing
         term = dict(operator='group-pm-with', operand=self.example_email("othello"))
-        with mock.patch("sqlalchemy.util.warn") as mock_warn:
-            self._do_add_term_test(term, 'WHERE recipient_id != recipient_id')
+        self._do_add_term_test(term, 'WHERE 1 != 1')
 
-            # SQLalchemy warns because this query is a tautology.
-            mock_warn.assert_called_once()
+        # Test with at least one such group PM thread existing
+        self.send_huddle_message(self.user_profile.email, [self.example_email("othello"),
+                                                           self.example_email("cordelia")])
+
+        term = dict(operator='group-pm-with', operand=self.example_email("othello"))
+        self._do_add_term_test(term, 'WHERE recipient_id IN (:recipient_id_1)')
 
     def test_add_term_using_group_pm_operator_not_the_same_user_as_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='group-pm-with', operand=self.example_email("othello"), negated=True)
-        self._do_add_term_test(term, 'WHERE recipient_id = recipient_id')
+        self._do_add_term_test(term, 'WHERE 1 = 1')
 
     def test_add_term_using_group_pm_operator_with_non_existing_user_as_operand(self) -> None:
         term = dict(operator='group-pm-with', operand='non-existing@zulip.com')
@@ -327,7 +331,7 @@ class NarrowBuilderTest(ZulipTestCase):
         if params is not None:
             actual_params = query.compile().params
             self.assertEqual(actual_params, params)
-        self.assertTrue(where_clause in str(query))
+        self.assertIn(where_clause, str(query))
 
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
@@ -1868,6 +1872,6 @@ class GetOldMessagesTest(ZulipTestCase):
         othello = self.example_user('othello')
         self.assertEqual(
             meeting_message['match_content'],
-            ('<p>How are you doing, <span class="user-mention" data-user-email="%s" data-user-id="%s">' +
+            ('<p>How are you doing, <span class="user-mention" data-user-id="%s">' +
              '@<span class="highlight">Othello</span>, the Moor of Venice</span>?</p>') % (
-                 othello.email, othello.id))
+                 othello.id))

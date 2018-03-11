@@ -178,9 +178,11 @@ $(function () {
 
     $("#main_div").on("click", "a.stream", function (e) {
         e.preventDefault();
+        // Note that we may have an href here, but we trust the stream id more,
+        // so we re-encode the hash.
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
         if (stream) {
-            window.location.href = '/#narrow/stream/' + hash_util.encodeHashComponent(stream.name);
+            window.location.href = '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
             return;
         }
         window.location.href = $(this).attr('href');
@@ -252,6 +254,17 @@ $(function () {
         if (document.activeElement === this) {
             ui_util.blur_active_element();
         }
+    });
+    $('#message_edit_form .send-status-close').click(function () {
+        var row_id = rows.id($(this).closest(".message_row"));
+        var send_status = $('#message-edit-send-status-' + row_id);
+        $(send_status).stop(true).fadeOut(200);
+    });
+    $("body").on("click", "#message_edit_form [id^='attach_files_']", function (e) {
+        e.preventDefault();
+
+        var row_id = rows.id($(this).closest(".message_row"));
+        $("#message_edit_file_input_" + row_id).trigger("click");
     });
 
     // MUTING

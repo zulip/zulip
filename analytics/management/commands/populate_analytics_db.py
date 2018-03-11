@@ -9,9 +9,10 @@ from analytics.lib.counts import COUNT_STATS, \
     CountStat, do_drop_all_analytics_tables
 from analytics.lib.fixtures import generate_time_series_data
 from analytics.lib.time_utils import time_range
-from analytics.models import BaseCount, FillState, RealmCount, UserCount
+from analytics.models import BaseCount, FillState, RealmCount, UserCount, StreamCount
 from zerver.lib.timestamp import floor_to_day
-from zerver.models import Client, Realm, RealmAuditLog, UserProfile
+from zerver.models import Realm, UserProfile, Stream, Message, Client, \
+    RealmAuditLog, Recipient
 
 class Command(BaseCommand):
     help = """Populates analytics tables with randomly generated data."""
@@ -54,6 +55,9 @@ class Command(BaseCommand):
         realm = Realm.objects.create(
             string_id='analytics', name='Analytics', date_created=installation_time)
         shylock = self.create_user('shylock@analytics.ds', 'Shylock', True, installation_time, realm)
+        stream = Stream.objects.create(
+            name='all', realm=realm, date_created=installation_time)
+        Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
 
         def insert_fixture_data(stat: CountStat,
                                 fixture_data: Mapping[Optional[str], List[int]],
@@ -64,6 +68,9 @@ class Command(BaseCommand):
                 id_args = {'realm': realm}
             if table == UserCount:
                 id_args = {'realm': realm, 'user': shylock}
+            if table == StreamCount:
+                id_args = {'stream': stream, 'realm': realm}
+
             for subgroup, values in fixture_data.items():
                 table.objects.bulk_create([
                     table(property=stat.property, subgroup=subgroup, end_time=end_time,
@@ -132,4 +139,12 @@ class Command(BaseCommand):
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
-        # TODO: messages_sent_to_stream:is_bot
+        stat = COUNT_STATS['messages_in_stream:is_bot:day']
+        realm_data = {'false': self.generate_fixture_data(stat, 30, 5, 6, .6, 4),
+                      'true': self.generate_fixture_data(stat, 20, 2, 3, .2, 3)}
+        insert_fixture_data(stat, realm_data, RealmCount)
+        stream_data = {'false': self.generate_fixture_data(stat, 10, 7, 5, .6, 4),
+                       'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}
+        insert_fixture_data(stat, stream_data, StreamCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)

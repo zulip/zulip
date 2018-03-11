@@ -2,12 +2,6 @@ var ui = (function () {
 
 var exports = {};
 
-var actively_scrolling = false;
-
-exports.actively_scrolling = function () {
-    return actively_scrolling;
-};
-
 // What, if anything, obscures the home tab?
 
 exports.replace_emoji_with_text = function (element) {
@@ -191,23 +185,6 @@ exports.maybe_show_keyboard_shortcuts = function () {
     ui.show_info_overlay("keyboard-shortcuts");
 };
 
-var loading_more_messages_indicator_showing = false;
-exports.show_loading_more_messages_indicator = function () {
-    if (! loading_more_messages_indicator_showing) {
-        loading.make_indicator($('#loading_more_messages_indicator'),
-                                    {abs_positioned: true});
-        loading_more_messages_indicator_showing = true;
-        floating_recipient_bar.hide();
-    }
-};
-
-exports.hide_loading_more_messages_indicator = function () {
-    if (loading_more_messages_indicator_showing) {
-        loading.destroy_indicator($("#loading_more_messages_indicator"));
-        loading_more_messages_indicator_showing = false;
-    }
-};
-
 /* EXPERIMENTS */
 
 /* This method allows an advanced user to use the console
@@ -223,45 +200,11 @@ exports.switchToFullWidth = function () {
 
 /* END OF EXPERIMENTS */
 
-function scroll_finished() {
-    actively_scrolling = false;
-
-    if ($('#home').hasClass('active')) {
-        if (!pointer.suppress_scroll_pointer_update) {
-            message_viewport.keep_pointer_in_view();
-        } else {
-            pointer.suppress_scroll_pointer_update = false;
-        }
-        floating_recipient_bar.update();
-        if (message_viewport.scrollTop() === 0) {
-            message_fetch.load_more_messages(current_msg_list);
-        }
-
-        // When the window scrolls, it may cause some messages to
-        // enter the screen and become read.  Calling
-        // unread_ops.process_visible will update necessary
-        // data structures and DOM elements.
-        setTimeout(unread_ops.process_visible, 0);
-    }
-}
-
-var scroll_timer;
-function scroll_finish() {
-    actively_scrolling = true;
-    clearTimeout(scroll_timer);
-    scroll_timer = setTimeout(scroll_finished, 100);
-}
-
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
 
 $(function () {
-    message_viewport.message_pane.scroll($.throttle(50, function () {
-        unread_ops.process_visible();
-        scroll_finish();
-    }));
-
     $('#compose-textarea').blur(function () {
         saved_compose_cursor = $(this).caret();
     });

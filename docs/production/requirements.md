@@ -5,6 +5,20 @@ like, we recommend creating an account on the
 [Zulip community server](../contributing/chat-zulip-org.html), or creating a test
 organization on <https://zulipchat.com>.
 
+## Summary
+
+To run a Zulip server, you will need:
+* A dedicated machine or VM
+* A supported OS:
+  * Ubuntu 16.04 Xenial 64-bit
+  * Ubuntu 14.04 Trusty 64-bit (not recommended for new installations)
+* At least 2GB RAM, and 10GB disk space
+  * If you expect 100+ users: 4GB RAM, and 2 CPUs
+* A hostname in DNS
+* Credentials for sending email
+
+For details on each of these requirements, see below.
+
 ## Server
 
 #### General
@@ -75,15 +89,21 @@ A record to point to your production server.
 
 #### SSL Certificate
 
-* Your Zulip server will need an SSL certificate for the domain name
-  it uses.  For most Zulip servers, the recommended (and simplest) way
-  to get this is to just [use the `--certbot` option][doc-certbot] in
-  the Zulip installer, which will automatically get a certificate for
-  you and keep it renewed.  If you'd rather acquire an SSL certificate
-  another way, see our
-  [SSL certificate documentation](ssl-certificates.html).
+Your Zulip server will need an SSL certificate for the domain name it
+uses.  For most Zulip servers, the recommended (and simplest) way to
+get this is to just [use the `--certbot` option][doc-certbot] in the
+Zulip installer, which will automatically get a certificate for you
+and keep it renewed.
 
-[doc-certbot]: ../production/ssl-certificates.html#certbot-recommended
+For test installations, an even simpler alternative is always
+available: [the `--self-signed-cert` option][doc-self-signed] in the
+installer.
+
+If you'd rather acquire an SSL certificate another way, see our [SSL
+certificate documentation](ssl-certificates.html).
+
+[doc-certbot]: ssl-certificates.html#certbot-recommended
+[doc-self-signed]: ssl-certificates.html#self-signed-certificate
 
 #### Outgoing email
 

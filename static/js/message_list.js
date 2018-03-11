@@ -11,6 +11,8 @@ exports.MessageList = function (table_name, filter, opts) {
     }, opts);
     this.view = new MessageListView(this, table_name, this.collapse_messages);
 
+    this.fetch_status = FetchStatus();
+
     if (this.muting_enabled) {
         this._all_items = [];
     }

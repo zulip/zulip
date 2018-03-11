@@ -313,6 +313,17 @@ class PreviewTestCase(ZulipTestCase):
         msg = self._send_message_with_test_org_url(sender_email=self.example_email('prospero'), queue_should_run=False)
         self.assertEqual(msg.rendered_content, without_preview)
 
+    @override_settings(INLINE_URL_EMBED_PREVIEW=True)
+    def test_inline_relative_url_embed_preview(self) -> None:
+        # Relative urls should not be sent for url preview.
+        with mock.patch('zerver.lib.actions.queue_json_publish') as patched:
+            self.send_personal_message(
+                self.example_email('prospero'),
+                self.example_email('cordelia'),
+                content="http://zulip.testserver/api/",
+            )
+            patched.assert_not_called()
+
     def test_inline_url_embed_preview_with_relative_image_url(self) -> None:
         with_preview_relative = '<p><a href="http://test.org/" target="_blank" title="http://test.org/">http://test.org/</a></p>\n<div class="message_embed"><a class="message_embed_image" href="http://test.org/" style="background-image: url(http://test.org/images/rock.jpg)" target="_blank"></a><div class="data-container"><div class="message_embed_title"><a href="http://test.org/" target="_blank" title="The Rock">The Rock</a></div><div class="message_embed_description">Description text</div></div></div>'
         # Try case where the opengraph image is a relative url.

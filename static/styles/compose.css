@@ -79,34 +79,23 @@
 }
 
 .compose_table .pm_recipient {
+    margin: 0px 20px 0px 10px;
+    display: flex;
+}
+
+.compose_table #private-message .to_text {
+    width: 65px;
+    vertical-align: top;
+
+    font-weight: 600;
+}
+
+.compose_table #private-message .to_text span {
+    display: flex;
+    align-items: center;
+
     position: relative;
-    margin-right: 30px;
-    height: 25px;
-}
-
-.compose_table #private-message .you_text {
-    position: absolute;
-    height: 25px;
-    line-height: 25px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    width: 4em;
-    background: hsl(0, 0%, 27%);
-    color: hsl(0, 0%, 100%);
-}
-
-.compose_table .pm_recipient #private_message_recipient {
-    margin-left: 4em;
-    border-left: none;
-    border-radius: 0px 3px 3px 0px;
-    padding-top: 0px;
-    padding-bottom: 0px;
-    height: 23px;
-    line-height: 23px;
-}
-
-.compose_table #private-message .right_part {
-    padding-right: 4em;
+    top: -1px;
 }
 
 .compose_table #compose-lock-icon {
@@ -202,13 +191,18 @@ table.compose_table {
 }
 
 .compose_invite_user,
-.compose_private_stream_alert {
+.compose_private_stream_alert,
+.compose-all-everyone,
+.compose-announce {
     padding: 4px 0px 4px 0px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 .compose_invite_close,
 .compose_private_stream_alert_close {
-    display: inline;
+    display: inline-block;
     margin-top: 4px;
 
     width: 10px;
@@ -219,10 +213,13 @@ table.compose_table {
 .compose_invite_user_controls,
 .compose_private_stream_alert_controls {
     float: right;
-    -webkit-transform: translateY(-13%);
-    -ms-transform: translateY(-13%);
-    -o-transform: translateY(-13%);
-    transform: translateY(-13%);
+    position: relative;
+}
+
+.compose_invite_user p {
+    margin: 0px;
+    display: inline-block;
+    max-width: calc(100% - 100px);
 }
 
 .compose_invite_user_error {
@@ -231,6 +228,7 @@ table.compose_table {
 }
 
 /* Like .nav-tabs > li > a */
+div[id^="message-edit-send-status"],
 #compose-send-status {
     padding: 8px 14px 8px 14px;
     margin-bottom: 8px;
@@ -246,6 +244,7 @@ table.compose_table {
 }
 
 /* Like .alert .close */
+.send-status-close,
 .compose-send-status-close {
     font-size: 17px;
     font-weight: bold;
@@ -256,6 +255,7 @@ table.compose_table {
     float: right;
 }
 
+.send-status-close:hover,
 .compose-send-status-close:hover {
     cursor: pointer;
     opacity: .4;
@@ -336,7 +336,7 @@ input.recipient_box {
 }
 
 #subject.recipient_box {
-    width: calc(20% + 14px);
+    width: calc(20% - -14px);
     min-width: 140px;
     max-width: 165px;
 }
@@ -390,13 +390,10 @@ input.recipient_box {
 }
 
 #sending-indicator {
-    float: left;
+    top: 2px;
+    position: relative;
     font-weight: bold;
-    display: none;
-}
-
-#sending-indicator {
-    padding-top: 2px;
+    display: inline-block;
 }
 
 #compose a.message-control-button {

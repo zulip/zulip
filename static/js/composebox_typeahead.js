@@ -39,44 +39,70 @@ exports.topics_seen_for = function (stream) {
     return [];
 };
 
-function get_last_recipient_in_pm(query_string) {
-    var recipients = util.extract_pm_recipients(query_string);
-    return recipients[recipients.length-1];
-}
-
 function query_matches_language(query, lang) {
     query = query.toLowerCase();
     return lang.indexOf(query) !== -1;
 }
 
+// This function attempts to match a query with source's attributes.
+// * query is the user-entered search query
+// * Source is the object we're matching from, e.g. a user object
+// * match_attrs are the values associated with the target object that
+// the entered string might be trying to match, e.g. for a user
+// account, there might be 2 attrs: their full name and their email.
+// * split_char is the separator for this syntax (e.g. ' ').
+function query_matches_source_attrs(query, source, match_attrs, split_char) {
+    // If query doesn't contain a separator, we just want an exact
+    // match where query is a substring of one of the target characers.
+    return _.any(match_attrs, function (attr) {
+        var source_str = source[attr].toLowerCase();
+        if (query.indexOf(split_char) > 0) {
+            // If there's a whitespace character in the query, then we
+            // require a perfect prefix match (e.g. for 'ab cd ef',
+            // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
+            // ef', etc.).
+            var queries = query.split(split_char);
+            var sources = source_str.split(split_char);
+            var i;
+
+            for (i = 0; i < queries.length - 1; i += 1) {
+                if (sources[i] !== queries[i]) {
+                    return false;
+                }
+            }
+
+            // This block is effectively a final iteration of the last
+            // loop.  What differs is that for the last word, a
+            // partial match at the beginning of the word is OK.
+            if (sources[i] === undefined) {
+                return false;
+            }
+            return sources[i].indexOf(queries[i]) === 0;
+        }
+
+        // For a single token, the match can be anywhere in the string.
+        return source_str.indexOf(query) !== -1;
+    });
+}
+
 function query_matches_person(query, person) {
     // Case-insensitive.
     query = query.toLowerCase();
-
-    return (person.email.toLowerCase().indexOf(query) !== -1
-            || person.full_name.toLowerCase().indexOf(query) !== -1);
+    return query_matches_source_attrs(query, person, ["full_name", "email"], " ");
 }
 
-function query_matches_user_group(query, user_group) {
+function query_matches_user_group_or_stream(query, user_group_or_stream) {
     // Case-insensitive.
     query = query.toLowerCase();
-
-    return (user_group.name.toLowerCase().indexOf(query) !== -1
-            || user_group.description.toLowerCase().indexOf(query) !== -1);
-}
-
-function query_matches_stream(query, stream) {
-    query = query.toLowerCase();
-
-    return (stream.name.toLowerCase().indexOf(query) !== -1
-            || stream.description.toLowerCase().indexOf(query) !== -1);
+    return query_matches_source_attrs(query, user_group_or_stream, ["name", "description"], " ");
 }
 
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
+    query = query.toLowerCase();
     query = query.split(" ").join("_");
-    return (emoji.emoji_name.toLowerCase().indexOf(query.toLowerCase()) !== -1);
+    return query_matches_source_attrs(query, emoji, ["emoji_name"], "_");
 }
 
 // nextFocus is set on a keydown event to indicate where we should focus on keyup.
@@ -477,13 +503,13 @@ exports.compose_content_matcher = function (item) {
     } else if (this.completing === 'mention') {
         var matches;
         if (user_groups.is_user_group(item)) {
-            matches = query_matches_user_group(this.token, item);
+            matches = query_matches_user_group_or_stream(this.token, item);
         } else {
             matches = query_matches_person(this.token, item);
         }
         return matches;
     } else if (this.completing === 'stream') {
-        return query_matches_stream(this.token, item);
+        return query_matches_user_group_or_stream(this.token, item);
     } else if (this.completing === 'syntax') {
         return query_matches_language(this.token, item);
     }
@@ -607,7 +633,7 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: people.get_realm_persons, // This is a function.
+        source: compose_pm_pill.get_typeahead_items,
         items: 5,
         dropup: true,
         fixed: true,
@@ -615,34 +641,15 @@ exports.initialize = function () {
             return typeahead_helper.render_person(item);
         },
         matcher: function (item) {
-            var current_recipient = get_last_recipient_in_pm(this.query);
-            // If you type just a comma, there won't be any recipients.
-            if (!current_recipient) {
-                return false;
-            }
-            var recipients = util.extract_pm_recipients(this.query);
-            if (recipients.indexOf(item.email) > -1) {
-                return false;
-            }
-
-            return query_matches_person(current_recipient, item);
+            return query_matches_person(this.query, item);
         },
         sorter: function (matches) {
             // var current_stream = compose_state.stream_name();
             return typeahead_helper.sort_recipientbox_typeahead(
                 this.query, matches, "");
         },
-        updater: function (item, event) {
-            var previous_recipients = typeahead_helper.get_cleaned_pm_recipients(this.query);
-            previous_recipients.pop();
-            previous_recipients = previous_recipients.join(", ");
-            if (previous_recipients.length !== 0) {
-                previous_recipients += ", ";
-            }
-            if (event && event.type === 'click') {
-                ui_util.focus_on('private_message_recipient');
-            }
-            return previous_recipients + item.email + ", ";
+        updater: function (item) {
+            compose_pm_pill.set_from_typeahead(item);
         },
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });

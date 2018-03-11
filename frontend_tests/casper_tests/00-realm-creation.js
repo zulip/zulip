@@ -6,17 +6,17 @@ var organization_name = 'Awesome Organization';
 var host = "zulipdev.com:9981";
 var realm_host = "testsubdomain" + '.' + host;
 
-casper.start('http://' + host + '/create_realm/');
+casper.start('http://' + host + '/new/');
 
 casper.then(function () {
     // Submit the email for realm creation
-    this.waitUntilVisible('form[action^="/create_realm/"]', function () {
-        this.fill('form[action^="/create_realm/"]', {
+    this.waitUntilVisible('form[action^="/new/"]', function () {
+        this.fill('form[action^="/new/"]', {
             email: email,
         }, true);
     });
     // Make sure confirmation email is send
-    this.waitWhileVisible('form[action^="/create_realm/"]', function () {
+    this.waitWhileVisible('form[action^="/new/"]', function () {
          var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
          this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });

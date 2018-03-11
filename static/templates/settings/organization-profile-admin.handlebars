@@ -4,6 +4,7 @@
 
         <div class="alert" id="admin-realm-name-status"></div>
         <div class="alert" id="admin-realm-description-status"></div>
+        <div class="alert" id="admin-realm-deactivation-status"></div>
 
         <div class="inline-block organization-settings-parent">
             <div class="input-group admin-realm">
@@ -42,6 +43,16 @@
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                         id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
             </div>
+        </div>
+
+        <h3 class="light">{{t "Deactivate organization" }}</h3>
+        <div class="deactivate-realm-section">
+            <div class="input-group">
+                <button class="button rounded btn-danger" id="deactivate_realm_button">
+                    {{t 'Deactivate organization' }}
+                </button>
+            </div>
+            {{ partial "deactivate-realm-modal"}}
         </div>
     </form>
 </div>

@@ -1,5 +1,4 @@
 ## Guides
-
 * [Getting started with Zulip](/help/getting-started-with-zulip)
 * [Setting up your organization](/help/getting-your-organization-started-with-zulip)
 
@@ -14,8 +13,8 @@
 * [Change your default language](/help/change-your-language)
 * [Use 24-hour time](/help/change-the-date-and-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
-* [Signing in](/help/signing-in)
-* [Signing out](/help/signing-out)
+* [Logging in](/help/logging-in)
+* [Logging out](/help/logging-out)
 <!-- Find your Zulip organization -->
 * [Keyboard shortcuts](/help/keyboard-shortcuts)
 * [Deactivate your account](/help/deactivate-your-account)
@@ -25,7 +24,6 @@
 ## Sending messages
 * [Send a stream message](/help/send-a-stream-message)
 * [Private messages](/help/send-a-private-message)
-* [Send a private message](/help/send-someone-a-private-message)
 * [Group private messages](/help/send-a-group-of-people-a-private-message)
 * [Format messages using Markdown](/help/format-your-message-using-markdown)
 * [Preview messages before sending](/help/preview-your-message-before-sending)
@@ -40,18 +38,19 @@
 <!-- What to do if the server returns an error -->
 * [Status messages](/help/format-your-message-using-markdown#status-messages)
 * [@-mention a user](/help/at-mention-a-team-member)
-* [Make an announcement](/help/make-an-announcement)
 * [Write in a different language](/help/send-a-message-in-a-different-language)
 * [Reply to a message](/help/reply-to-a-message)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
 * [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
 ## Reading messages
 * [Navigation and unread counts](/help/unread-counter-and-pointer)
 * [View the Markdown source of a message](/help/view-the-markdown-source-of-a-message)
 * [View the exact time a message was sent](/help/view-the-exact-time-a-message-was-sent)
 * [View an image at full size](/help/view-an-image-at-full-size)
+* [See all images in a narrow](/help/view-an-image-at-full-size)
 * [Collapse a message](/help/collapse-a-message)
 * [Star a message](/help/star-a-message)
 * [Emoji reactions](/help/add-an-emoji-reaction-to-a-message)
@@ -76,15 +75,16 @@
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
+* [Make a private stream public](/help/change-the-privacy-of-a-stream#make-a-private-stream-public)
+* [Make a public stream private](/help/change-the-privacy-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
 
 ## Notifications
-* [Mute a stream](/help/mute-a-stream)
-* [Mute a topic](/help/mute-a-topic)
+* [Mute or unmute a stream](/help/mute-a-stream)
+* [Mute or unmute a topic](/help/mute-a-topic)
 * [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
 * [Desktop notifications](/help/configure-desktop-notifications)
 * [Audible notifications](/help/configure-audible-notifications)
@@ -97,6 +97,7 @@
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Enable high contrast mode](/help/enable-high-contrast-mode)
 * [Enable night mode](/help/enable-night-mode)
+* [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 

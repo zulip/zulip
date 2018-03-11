@@ -278,7 +278,7 @@ class JsonErrorHandler(MiddlewareMixin):
         if isinstance(exception, JsonableError):
             return json_response_from_error(exception)
         if request.error_format == "JSON":
-            logging.error(traceback.format_exc())
+            logging.error(traceback.format_exc(), extra=dict(request=request))
             return json_error(_("Internal server error"), status=500)
         return None
 

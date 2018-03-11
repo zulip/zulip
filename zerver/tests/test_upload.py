@@ -411,7 +411,9 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # The size of StringIO("zulip!") is 6 bytes. Setting the size of
         # d1_attachment to realm.upload_quota_bytes() - 11 should allow
         # us to upload only one more attachment.
-        d1_attachment.size = realm.upload_quota_bytes() - 11
+        quota = realm.upload_quota_bytes()
+        assert(quota is not None)
+        d1_attachment.size = quota - 11
         d1_attachment.save(update_fields=['size'])
 
         d2 = StringIO("zulip!")
@@ -652,7 +654,8 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         ('img.png', 'png_resized.png'),
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
-        ('img.tif', 'tif_resized.png')
+        ('img.tif', 'tif_resized.png'),
+        ('cmyk.jpg', None)
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -819,7 +822,8 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         ('img.png', 'png_resized.png'),
         ('img.jpg', None),  # jpeg resizing is platform-dependent
         ('img.gif', 'gif_resized.png'),
-        ('img.tif', 'tif_resized.png')
+        ('img.tif', 'tif_resized.png'),
+        ('cmyk.jpg', None)
     ]
     corrupt_files = ['text.txt', 'corrupt.png', 'corrupt.gif']
 
@@ -827,7 +831,7 @@ class RealmIconTest(UploadSerializeMixin, ZulipTestCase):
         self.login(self.example_email("hamlet"))
         with get_test_image_file(self.correct_files[0][0]) as fp:
             result = self.client_post("/json/realm/icon", {'file': fp})
-        self.assert_json_error(result, 'Must be a realm administrator')
+        self.assert_json_error(result, 'Must be an organization administrator')
 
     def test_get_gravatar_icon(self) -> None:
         self.login(self.example_email("hamlet"))

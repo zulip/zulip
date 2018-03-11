@@ -185,8 +185,22 @@ exports.setup_page = function (callback) {
 
     function format_drafts(data) {
         var drafts = {};
+        var data_array = [];
         _.each(data, function (draft, id) {
+            data_array.push([id, data[id]]);
+        });
+        var data_sorted = data_array.sort(function (draft_a,draft_b) {
+            return draft_a[1].updatedAt-draft_b[1].updatedAt;
+        });
+        _.each(data_sorted, function (data_element) {
+            var draft = data_element[1];
+            var id = data_element[0];
             var formatted;
+            var time = new XDate(draft.updatedAt);
+            var time_stamp = timerender.render_now(time).time_str;
+            if (time_stamp === "Today") {
+                time_stamp = timerender.stringify_time(time);
+            }
             if (draft.type === "stream") {
                 // In case there is no stream for the draft, we need a
                 // single space char for proper rendering of the stream label
@@ -202,7 +216,7 @@ exports.setup_page = function (callback) {
                     stream_color: stream_data.get_color(draft.stream),
                     topic: draft_topic,
                     raw_content: draft.content,
-
+                    time_stamp: time_stamp,
                 };
             } else {
                 var emails = util.extract_pm_recipients(draft.private_message_recipient);
@@ -220,6 +234,7 @@ exports.setup_page = function (callback) {
                     is_stream: false,
                     recipients: recipients,
                     raw_content: draft.content,
+                    time_stamp: time_stamp,
                 };
             }
 
@@ -350,7 +365,7 @@ exports.drafts_handle_events = function (e, event_key) {
     var elt = document.activeElement;
     var focused_draft = $(elt.parentElement)[0].getAttribute("data-draft-id");
     // Allows user to delete drafts with backspace
-    if (event_key === "backspace") {
+    if (event_key === "backspace" || event_key === "delete") {
         if (elt.parentElement.hasAttribute("data-draft-id")) {
             var focus_draft_back_row = $(elt)[0].parentElement;
             var backnext_focus_draft_row = $(focus_draft_back_row).next();

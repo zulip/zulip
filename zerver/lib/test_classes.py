@@ -260,7 +260,7 @@ class ZulipTestCase(TestCase):
         else:
             self.assert_json_success(result)
             bot_email = '{}-bot@zulip.testserver'.format(short_name)
-            bot_profile = get_user(bot_email, self.user_profile.realm)
+            bot_profile = get_user(bot_email, user_profile.realm)
             return bot_profile
 
     def login_with_return(self, email: Text, password: Optional[Text]=None,

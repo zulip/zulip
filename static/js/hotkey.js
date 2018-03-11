@@ -65,6 +65,7 @@ var keydown_either_mappings = {
     // in other apps, but that's also slightly dubious.
     8: {name: 'backspace', message_view_only: true}, // backspace
     13: {name: 'enter', message_view_only: false}, // enter
+    46: {name: 'delete', message_view_only: false}, // delete
 };
 
 var keypress_mappings = {
@@ -94,6 +95,7 @@ var keypress_mappings = {
     106: {name: 'vim_down', message_view_only: true}, // 'j'
     107: {name: 'vim_up', message_view_only: true}, // 'k'
     110: {name: 'n_key', message_view_only: false}, // 'n'
+    112: {name: 'p_key', message_view_only: false}, // 'p'
     113: {name: 'query_streams', message_view_only: false}, // 'q'
     114: {name: 'reply_message', message_view_only: true}, // 'r'
     115: {name: 'narrow_by_recipient', message_view_only: true}, // 's'
@@ -435,6 +437,7 @@ exports.process_hotkey = function (e, hotkey) {
         case 'up_arrow':
         case 'down_arrow':
         case 'backspace':
+        case 'delete':
             if (overlays.drafts_open()) {
                 drafts.drafts_handle_events(e, event_name);
                 return true;
@@ -629,6 +632,9 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'n_key':
             narrow.narrow_to_next_topic();
+            return true;
+        case 'p_key':
+            narrow.narrow_to_next_pm_string();
             return true;
         case 'open_drafts':
             drafts.launch();

@@ -4,19 +4,24 @@ set -e
 usage() {
     cat <<EOF
 Usage:
-  install [--hostname=zulip.example.com] [--email=admin@example.com] [options...]
+  install --hostname=zulip.example.com --email=admin@example.com [options...]
   install --help
 
 Other options:
-  --certbot (requires --hostname and --email)
+  --certbot
   --self-signed-cert
+  --no-init-db
+
+The --hostname and --email options are required,
+unless --no-init-db is set and --certbot is not.
+
 EOF
     exit 0
 };
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,self-signed-cert,certbot,hostname:,email:,express -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,self-signed-cert,certbot,hostname:,email: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -25,8 +30,7 @@ while true; do
         --certbot) USE_CERTBOT=1; shift;;
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;
-        --express)  # experimental, not documented
-            EXPRESS_SETUP=1; shift;;
+        --no-init-db) NO_INIT_DB=1; shift;;
         --) shift; break;;
     esac
 done
@@ -55,14 +59,10 @@ if [ -n "$SELF_SIGNED_CERT" ] && [ -n "$USE_CERTBOT" ]; then
     usage
 fi
 
-if [ -n "$USE_CERTBOT" ] \
-       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
-    usage
-fi
-
-if [ -n "$EXPRESS_SETUP" ] \
-       && { [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; }; then
-    usage
+if [ -z "$EXTERNAL_HOST" ] || [ -z "$ZULIP_ADMINISTRATOR" ]; then
+    if [ -n "$USE_CERTBOT" ] || [ -z "$NO_INIT_DB" ]; then
+        usage
+    fi
 fi
 
 # Do set -x after option parsing is complete
@@ -72,6 +72,27 @@ ZULIP_PATH="$(readlink -f $(dirname $0)/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 export LC_ALL="en_US.UTF-8"
+
+# Check for a supported OS release.
+apt-get install -y lsb-release
+os_release="$(lsb_release -sc)"
+case "$os_release" in
+    trusty|xenial) ;;
+    *)
+        set +x
+        cat <<EOF
+
+Unsupported OS release: $os_release
+
+Zulip in production is supported only on:
+ - Ubuntu 14.04 LTS "trusty"
+ - Ubuntu 16.04 LTS "xenial"
+
+For more information, see:
+  https://zulip.readthedocs.io/en/latest/production/requirements.html
+EOF
+        exit 1
+esac
 
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
@@ -277,24 +298,19 @@ if [ -e "/var/run/supervisor.sock" ]; then
     chown zulip:zulip /var/run/supervisor.sock
 fi
 
-if [ -z "$EXPRESS_SETUP" ]; then
+if [ -n "$NO_INIT_DB" ]; then
     set +x
     cat <<EOF
 
- Installation complete!
+ Success!
 
- Now edit /etc/zulip/settings.py and fill in the mandatory values.
+ Stopping because --no-init-db was passed.  To complete the installation, run:
 
- Once you've done that, please run:
-
- su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
-
- To configure the initial database.
+   su zulip -c /home/zulip/deployments/current/scripts/setup/initialize-database
 EOF
     exit 0
 fi
 
-# TODO suppress instructions on success
-sudo -u zulip /home/zulip/deployments/current/scripts/setup/initialize-database
+su zulip -c '/home/zulip/deployments/current/scripts/setup/initialize-database --quiet'
 
-sudo -u zulip /home/zulip/deployments/current/manage.py generate_realm_creation_link
+su zulip -c '/home/zulip/deployments/current/manage.py generate_realm_creation_link'

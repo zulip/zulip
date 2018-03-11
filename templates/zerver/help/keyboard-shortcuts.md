@@ -35,6 +35,8 @@ below, and add more to your repertoire as needed.
 
 * **Next unread topic**: `n`
 
+* **Next unread private message**: `p`
+
 * **All private messages**: `P`
 
 * **Search messages**: `/`
@@ -65,6 +67,8 @@ below, and add more to your repertoire as needed.
 ## Narrowing
 
 * **Narrow to next unread topic**: `n`
+
+* **Narrow to next unread private message**: `p`
 
 * **Narrow to stream**: `s`
 

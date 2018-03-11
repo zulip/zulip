@@ -101,10 +101,6 @@ function test_create_bot_type_input_box_toggle(f) {
         }
     };
 
-    var embedded_bots_added = 0;
-    $('#select_service_name').append = function () {
-        embedded_bots_added += 1;
-    };
     $('#config_inputbox').children = function () {
         var mock_children = {
             hide: function () {
@@ -118,6 +114,5 @@ function test_create_bot_type_input_box_toggle(f) {
     avatar.build_bot_edit_widget = function () {};
 
     settings_bots.set_up();
-    assert(embedded_bots_added === page_params.realm_embedded_bots.length);
 }());
 

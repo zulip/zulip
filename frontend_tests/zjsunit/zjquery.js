@@ -26,7 +26,10 @@ exports.make_zjquery = function () {
                 on_functions.set(event_name, arg);
             } else {
                 var handler = on_functions.get(event_name);
-                assert(handler);
+                if (!handler) {
+                    var error = 'Cannot find ' + event_name + ' handler for ' + selector;
+                    throw Error(error);
+                }
                 handler(arg);
             }
         }

@@ -15,8 +15,7 @@ except ImportError:
     sys.exit(1)
 
 class ParserTestHappyPath(unittest.TestCase):
-    def test_basic_parse(self):
-        # type: () -> None
+    def test_basic_parse(self) -> None:
         my_selector = 'li.foo'
         my_block = '''{
                 color: red;
@@ -31,8 +30,7 @@ class ParserTestHappyPath(unittest.TestCase):
         self.assertEqual(declaration.css_property, 'color')
         self.assertEqual(declaration.css_value.text().strip(), 'red')
 
-    def test_same_line_comment(self):
-        # type: () -> None
+    def test_same_line_comment(self) -> None:
         my_css = '''
             li.hide {
                 display: none; /* comment here */
@@ -46,8 +44,7 @@ class ParserTestHappyPath(unittest.TestCase):
         declaration = block.declarations[0]
         self.assertIn('/* comment here */', declaration.text())
 
-    def test_no_semicolon(self):
-        # type: () -> None
+    def test_no_semicolon(self) -> None:
         my_css = '''
             p { color: red }
         '''
@@ -62,8 +59,7 @@ class ParserTestHappyPath(unittest.TestCase):
 
         self.assertFalse(section.declaration_block.declarations[0].semicolon)
 
-    def test_empty_block(self):
-        # type: () -> None
+    def test_empty_block(self) -> None:
         my_css = '''
             div {
             }'''
@@ -71,8 +67,7 @@ class ParserTestHappyPath(unittest.TestCase):
         with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
-    def test_multi_line_selector(self):
-        # type: () -> None
+    def test_multi_line_selector(self) -> None:
         my_css = '''
             h1,
             h2,
@@ -84,8 +79,7 @@ class ParserTestHappyPath(unittest.TestCase):
         selectors = section.selector_list.selectors
         self.assertEqual(len(selectors), 3)
 
-    def test_media_block(self):
-        # type: () -> None
+    def test_media_block(self) -> None:
         my_css = '''
             @media (max-width: 300px) {
                 h5 {
@@ -107,13 +101,11 @@ class ParserTestSadPath(unittest.TestCase):
     of selectors.  Some of this is just for expediency;
     some of this is to enforce consistent formatting.
     '''
-    def _assert_error(self, my_css, error):
-        # type: (str, str) -> None
+    def _assert_error(self, my_css: str, error: str) -> None:
         with self.assertRaisesRegex(CssParserException, error):
             parse(my_css)
 
-    def test_unexpected_end_brace(self):
-        # type: () -> None
+    def test_unexpected_end_brace(self) -> None:
         my_css = '''
             @media (max-width: 975px) {
                 body {
@@ -123,8 +115,7 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'unexpected }'
         self._assert_error(my_css, error)
 
-    def test_empty_section(self):
-        # type: () -> None
+    def test_empty_section(self) -> None:
         my_css = '''
 
             /* nothing to see here, move along */
@@ -132,8 +123,7 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'unexpected empty section'
         self._assert_error(my_css, error)
 
-    def test_missing_colon(self):
-        # type: () -> None
+    def test_missing_colon(self) -> None:
         my_css = '''
             .hide
             {
@@ -142,14 +132,12 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'We expect a colon here'
         self._assert_error(my_css, error)
 
-    def test_unclosed_comment(self):
-        # type: () -> None
+    def test_unclosed_comment(self) -> None:
         my_css = ''' /* comment with no end'''
         error = 'unclosed comment'
         self._assert_error(my_css, error)
 
-    def test_missing_selectors(self):
-        # type: () -> None
+    def test_missing_selectors(self) -> None:
         my_css = '''
             /* no selectors here */
             {
@@ -158,8 +146,7 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'Missing selector'
         self._assert_error(my_css, error)
 
-    def test_missing_value(self):
-        # type: () -> None
+    def test_missing_value(self) -> None:
         my_css = '''
             h1
             {
@@ -168,8 +155,7 @@ class ParserTestSadPath(unittest.TestCase):
         error = 'Missing value'
         self._assert_error(my_css, error)
 
-    def test_disallow_comments_in_selectors(self):
-        # type: () -> None
+    def test_disallow_comments_in_selectors(self) -> None:
         my_css = '''
             h1,
             h2, /* comment here not allowed by Zulip */

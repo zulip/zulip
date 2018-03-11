@@ -122,7 +122,7 @@ class DocPageTest(ZulipTestCase):
             self.assertNotIn('support+abcdefg@testserver', str(result.content))
             # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
             # be rendered instead
-            self._test('/integrations/', 'Over 80 native integrations.')
+            self._test('/integrations/', 'native integrations.')
 
 
 class IntegrationTest(TestCase):
@@ -230,3 +230,8 @@ class ConfigErrorTest(ZulipTestCase):
         result = self.client_get("/config-error/smtp")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["email configuration"], result)
+
+    def test_dev_direct_production_error(self) -> None:
+        result = self.client_get("/config-error/dev")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_success_response(["DevAuthBackend"], result)

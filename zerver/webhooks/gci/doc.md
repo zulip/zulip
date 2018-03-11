@@ -2,15 +2,14 @@ If you are a participating organization with
 [Google Code-in](https://developers.google.com/open-source/gci/),
 you can now get Task notifications in Zulip!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-To set up the webhook, send the URL you constructed above to
-gci-support@google.com to be configured.
+1. Send an email to `gci-support@google.com` asking them to enable webhooks
+   for your organization. They'll need the name of your organization, and
+   the URL constructed above.
 
-Note that the GCI outgoing webhook API itself is experimental, so this
-integration may suddenly require changes to continue working.
 
 {!congrats.md!}
 

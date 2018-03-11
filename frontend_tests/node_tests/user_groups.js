@@ -1,12 +1,14 @@
 set_global('blueslip', {});
 set_global('page_params', {});
 
+zrequire('dict');
 zrequire('user_groups');
 
 (function test_user_groups() {
     var students = {
         name: 'Students',
         id: 0,
+        members: [1, 2],
     };
     global.page_params.realm_user_groups = [students];
 
@@ -16,10 +18,12 @@ zrequire('user_groups');
     var admins = {
         name: 'Admins',
         id: 1,
+        members: [3],
     };
     var all = {
         name: 'Everyone',
         id: 2,
+        members: [1, 2, 3],
     };
 
     user_groups.add(admins);

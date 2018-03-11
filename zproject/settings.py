@@ -302,6 +302,11 @@ DEFAULT_SETTINGS.update({
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
+    # Limits to help prevent spam, in particular by sending invitations.
+    #
+    # A non-admin user who's joined an open realm this recently can't invite at all.
+    'INVITES_MIN_USER_AGE_DAYS': 3,
+
     # Controls for which links are published in portico footers/headers/etc.
     'EMAIL_DELIVERER_DISABLED': False,
     'REGISTER_LINK_DISABLED': None,
@@ -999,6 +1004,8 @@ JS_SPECS = {
             'js/localstorage.js',
             'js/drafts.js',
             'js/input_pill.js',
+            'js/user_pill.js',
+            'js/compose_pm_pill.js',
             'js/channel.js',
             'js/setup.js',
             'js/unread_ui.js',
@@ -1019,6 +1026,7 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/fetch_status.js',
             'js/message_list_view.js',
             'js/message_list.js',
             'js/message_live_update.js',
@@ -1033,6 +1041,7 @@ JS_SPECS = {
             'js/sent_messages.js',
             'js/compose_state.js',
             'js/compose_actions.js',
+            'js/transmit.js',
             'js/compose.js',
             'js/upload.js',
             'js/stream_color.js',
@@ -1050,6 +1059,7 @@ JS_SPECS = {
             'js/floating_recipient_bar.js',
             'js/lightbox.js',
             'js/ui_report.js',
+            'js/message_scroll.js',
             'js/ui.js',
             'js/night_mode.js',
             'js/ui_util.js',
@@ -1124,7 +1134,8 @@ JS_SPECS = {
             'js/ui_init.js',
             'js/emoji_picker.js',
             'js/compose_ui.js',
-            'js/panels.js'
+            'js/panels.js',
+            'js/settings_ui.js'
         ],
         'output_filename': 'min/app.js'
     },

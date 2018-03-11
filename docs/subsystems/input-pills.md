@@ -15,95 +15,62 @@ A pill container should have the following markup:
 
 The pills will automatically be inserted in before the ".input" in order.
 
-## Basic Example
+## Basic Usage
 
 ```js
-var pc = input_pill($("#input_container"));
+var pill_containter = $("#input_container");
+var pills = input_pill.create({
+    container: pill_container,
+    create_item_from_text: user_pill.create_item_from_email,
+    get_text_from_item: user_pill.get_email_from_item,
+});
 ```
 
-## Advanced Example
+You can look at `static/js/user_pill.js` to see how the above
+methods are implemented.  Essentially you just need to convert
+from raw data (like an email) to structured data (like an object
+with display_value, email, and user_id for a user), and vice
+versa.  The most important field to supply is `display_value`.
+For user pills `pill_item.display_value === user.full_name`.
 
-```html
-<div class="pill-container" id="input_container">
-    <div class="input" contenteditable="true"></div>
-</div>
-<button>Submit</button>
-```
+## Typeahead
+
+Pills almost always work in conjunction with typeahead, and
+you will want to provide a `source` function to typeahead
+that can exclude items from the prior pills.  Here is an
+example snippet from our user group settings code.
 
 ```js
-var pc = input_pill($("#input_container").eq(0));
+source: function () {
+    return user_pill.typeahead_source(pills);
+},
+```
 
-// this is a map of user emails to their IDs.
-var map = {
-    "user@gmail.com": 112,
-    "example@zulip.com": 18,
-    "test@example.com": 46,
-    "oh@oh.io": 2,
+And then in `user_pill.js`...
+
+```js
+exports.typeahead_source = function (pill_widget) {
+    var items = people.get_realm_persons();
+    var taken_user_ids = exports.get_user_ids(pill_widget);
+    items = _.filter(items, function (item) {
+        return taken_user_ids.indexOf(item.user_id) === -1;
+    });
+    return items;
 };
-
-// when a user tries to create a pill (by clicking enter), check if the map
-// contains an entry for the user email entered, and if not, reject the entry.
-// otherwise, return the ID of the user as a key.
-pc.onPillCreate(function (value, reject) {
-    var key = map[value];
-
-    if (typeof key === "undefined") reject();
-
-    return key;
-});
-
-// this is a submit button
-$("#input_container + button").click(function () {
-    // log both the keys and values.
-    // the keys would be the human-readable values, and the IDs the optional
-    // values that are returned in the `onPillCreate` method.
-    console.log(pc.keys(), pc.values());
-});
 ```
 
-### `onPillCreate` method
+### `onPillCreate` and `onPillRemove` methods
 
-The `onPillCreate` method can have a few different key actions. The function can
-work as a validator, where if the `reject` function is called, it will disable
-the pill from being added to the list. You can provide a validator function and
-call `reject` if the pill isn't valid.
+You can get notifications from the pill code that pills have been
+created/remove.
 
-The return type for your callback function should be what you want the key to be
-(this is not the displayed value, but rather than important ID of the pill). An
-example of a key vs. a value would be in the case of users. The value
-(human readable) would be the name of the user. We could show their name in the
-pill, but the key would represent their user ID. One could run a function like:
 
 ```js
-pc.onPillCreate(function (value, reject) {
-    var id = users.getIDByFullName(value);
-
-    // user does not exist.
-    if (typeof id === "undefined") {
-        reject();
-    }
-
-    // return the user ID to be the key for retrieval later.
-    return id;
+pills.onPillCreate(function () {
+    update_save_state();
 });
-```
 
-However sometimes, we want to modify the visible text on pill submission, which
-requires changing the value and setting the key. We can use the "object" return
-type in the `onPillCreate` method to return a new key and value.
-
-This could be useful in the case where a user enters a valid user email to send
-to, but we want the pill to display their full name, and the key to be the user ID.
-
-```js
-pc.onPillCreate(function (value, reject) {
-    var user = users.getByEmail(value);
-
-    // user does not exist.
-    if (typeof id === "undefined") {
-        reject();
-    }
-
-    return { key: user.id, value: user.full_name };
+pills.onPillRemove(function () {
+    update_save_state();
 });
 ```

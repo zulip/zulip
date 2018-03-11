@@ -263,7 +263,7 @@ EMBEDDED_BOTS = [
 WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('airbrake', ['monitoring']),
     WebhookIntegration('appfollow', ['customer-support'], display_name='AppFollow'),
-    WebhookIntegration('beanstalk', ['version-control']),
+    WebhookIntegration('beanstalk', ['version-control'], stream_name='commits'),
     WebhookIntegration('basecamp', ['project-management']),
     WebhookIntegration('beeminder', ['misc'], display_name='Beeminder'),
     WebhookIntegration(
@@ -294,6 +294,7 @@ WEBHOOK_INTEGRATIONS = [
     ),
     WebhookIntegration('dropbox', ['productivity'], display_name='Dropbox'),
     WebhookIntegration('freshdesk', ['customer-support']),
+    WebhookIntegration('front', ['customer-support'], display_name='Front'),
     GithubIntegration(
         'github',
         ['version-control'],
@@ -312,7 +313,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='github'
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
-    WebhookIntegration('gogs', ['version-control']),
+    WebhookIntegration('gogs', ['version-control'], stream_name='commits'),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),
     WebhookIntegration('groove', ['customer-support'], display_name='Groove'),
@@ -368,7 +369,8 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('zapier', ['meta-integration']),
     WebhookIntegration('zendesk', ['customer-support']),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
-                       stream_name='gci')
+                       stream_name='gci'),
+    WebhookIntegration('facebook', ['communication'], display_name='Facebook')
 ]  # type: List[WebhookIntegration]
 
 INTEGRATIONS = {

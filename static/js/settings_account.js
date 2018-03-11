@@ -25,6 +25,26 @@ exports.update_full_name = function (new_full_name) {
     }
 };
 
+exports.update_name_change_display = function () {
+    if (page_params.realm_name_changes_disabled && !page_params.is_admin) {
+        $('#full_name').attr('disabled', 'disabled');
+        $(".change_name_tooltip").show();
+    } else {
+        $('#full_name').attr('disabled', false);
+        $(".change_name_tooltip").hide();
+    }
+};
+
+exports.update_email_change_display = function () {
+    if (page_params.realm_email_changes_disabled && !page_params.is_admin) {
+        $('#change_email .button').attr('disabled', 'disabled');
+        $(".change_email_tooltip").show();
+    } else {
+        $('#change_email .button').attr('disabled', false);
+        $(".change_email_tooltip").hide();
+    }
+};
+
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
@@ -104,7 +124,7 @@ exports.set_up = function () {
     $("#change_full_name").on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (!page_params.realm_name_changes_disabled) {
+        if (!page_params.realm_name_changes_disabled || page_params.is_admin) {
             overlays.open_modal('change_full_name_modal');
         }
     });
@@ -245,7 +265,7 @@ exports.set_up = function () {
     $('#change_email').on('click', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (!page_params.realm_email_changes_disabled) {
+        if (!page_params.realm_email_changes_disabled || page_params.is_admin) {
             overlays.open_modal('change_email_modal');
             var email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
@@ -259,16 +279,27 @@ exports.set_up = function () {
     });
 
     $("#do_deactivate_self_button").on('click',function () {
-        $("#deactivate_self_modal").modal("hide");
-        channel.del({
-            url: '/json/users/me',
-            success: function () {
-                window.location.href = "/login";
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
-            },
+        $("#do_deactivate_self_button .loader").css('display', 'inline-block');
+        $("#do_deactivate_self_button span").hide();
+        $("#do_deactivate_self_button object").on("load", function () {
+            var doc = this.getSVGDocument();
+            var $svg = $(doc).find("svg");
+            $svg.find("rect").css("fill", "#000");
         });
+
+        setTimeout(function () {
+            channel.del({
+                url: '/json/users/me',
+                success: function () {
+                    $("#deactivate_self_modal").modal("hide");
+                    window.location.href = "/login";
+                },
+                error: function (xhr) {
+                    $("#deactivate_self_modal").modal("hide");
+                    ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+                },
+            });
+        }, 5000);
     });
 
 
@@ -279,6 +310,8 @@ exports.set_up = function () {
         jQuery.each(file_input[0].files, function (i, file) {
             form_data.append('file-'+i, file);
         });
+
+        $("#user-avatar-source").hide();
 
         var spinner = $("#upload_avatar_spinner").expectOne();
         loading.make_indicator(spinner, {text: 'Uploading avatar.'});
@@ -293,6 +326,12 @@ exports.set_up = function () {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
                 $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
+                $("#user-avatar-source").hide();
+            },
+            error: function () {
+                if (page_params.avatar_source === 'G') {
+                    $("#user-avatar-source").show();
+                }
             },
         });
 

@@ -99,12 +99,17 @@ function _setup_page() {
         return tab;
     }());
 
+    settings_bots.setup_bot_creation_policy_values();
+
     var settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
         flaskbotrc: 'flaskbotrc',
         timezones: moment.tz.names(),
+        admin_only_bot_creation: page_params.is_admin ||
+            page_params.realm_bot_creation_policy !==
+            settings_bots.bot_creation_policy_values.admins_only.code,
     });
 
     $(".settings-box").html(settings_tab);

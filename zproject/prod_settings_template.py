@@ -1,9 +1,13 @@
 from typing import Optional
 
-# Zulip Settings intended to be set by a system administrator.
+# Zulip server-level Settings (to be set by the system administrator).
 #
-# See https://zulip.readthedocs.io/en/latest/subsystems/settings.html for
-# detailed technical documentation on the Zulip settings system.
+# Remember to restart the server after changes here!  Documentation at:
+#
+#   https://zulip.readthedocs.io/en/latest/production/settings.html
+#
+# Developer documentation on the Zulip settings system is available at:
+#   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
 #
 ### MANDATORY SETTINGS
 #

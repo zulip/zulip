@@ -147,6 +147,7 @@ stream_data.add_sub('Frontend', frontend);
         subscribe_myself: noop,
         set_subscribers: noop,
         get_colors: noop,
+        update_calculated_fields: noop,
     });
     set_global('subs', { update_settings_for_subscribed: noop });
     set_global('narrow_state', { is_for_stream_id: noop });

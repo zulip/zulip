@@ -218,7 +218,7 @@ class TestGenerateRealmCreationLink(ZulipTestCase):
     @override_settings(OPEN_REALM_CREATION=False)
     def test_realm_creation_with_random_link(self) -> None:
         # Realm creation attempt with an invalid link should fail
-        random_link = "/create_realm/5e89081eb13984e0f3b130bf7a4121d153f1614b"
+        random_link = "/new/5e89081eb13984e0f3b130bf7a4121d153f1614b"
         result = self.client_get(random_link)
         self.assert_in_success_response(["The organization creation link has expired or is not valid."], result)
 

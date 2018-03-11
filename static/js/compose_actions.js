@@ -244,6 +244,7 @@ exports.cancel = function () {
     notifications.clear_compose_notifications();
     compose.abort_xhr();
     compose_state.set_message_type(false);
+    compose_pm_pill.clear();
     $(document).trigger($.Event('compose_canceled.zulip'));
 };
 
@@ -320,7 +321,7 @@ exports.reply_with_mention = function (opts) {
     exports.respond_to_message(opts);
     var message = current_msg_list.selected_message();
     var mention = '@**' + message.sender_full_name + '**';
-    $('#compose-textarea').val(mention + ' ');
+    compose_ui.insert_syntax_and_focus(mention);
 };
 
 exports.on_topic_narrow = function () {
@@ -384,7 +385,17 @@ exports.quote_and_reply = function (opts) {
     });
 };
 
-exports.on_narrow = function () {
+exports.on_narrow = function (opts) {
+    // We use force_close when jumping between PM narrows with the "p" key,
+    // so that we don't have an open compose box that makes it difficult
+    // to cycle quickly through unread messages.
+    if (opts.force_close) {
+        // This closes the compose box if it was already open, and it is
+        // basically a noop otherwise.
+        exports.cancel();
+        return;
+    }
+
     if (narrow_state.narrowed_by_topic_reply()) {
         exports.on_topic_narrow();
         return;

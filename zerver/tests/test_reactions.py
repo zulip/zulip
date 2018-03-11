@@ -98,16 +98,16 @@ class ReactionEmojiTest(ZulipTestCase):
         An emoji name is mapped canonically to emoji code.
         """
         realm = get_realm('zulip')
+        realm_emoji = RealmEmoji.objects.get(name="green_tick")
 
         # Test active realm emoji.
         emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'green_tick')
-        self.assertEqual(emoji_code, 'green_tick')
+        self.assertEqual(emoji_code, str(realm_emoji.id))
         self.assertEqual(reaction_type, 'realm_emoji')
 
         # Test deactivated realm emoji.
-        emoji = RealmEmoji.objects.get(name="green_tick")
-        emoji.deactivated = True
-        emoji.save(update_fields=['deactivated'])
+        realm_emoji.deactivated = True
+        realm_emoji.save(update_fields=['deactivated'])
         with self.assertRaises(JsonableError) as exc:
             emoji_name_to_emoji_code(realm, 'green_tick')
         self.assertEqual(str(exc.exception), "Emoji 'green_tick' does not exist")
@@ -126,7 +126,7 @@ class ReactionEmojiTest(ZulipTestCase):
         overriding_emoji = RealmEmoji.objects.create(
             name='astonished', realm=realm, file_name='astonished')
         emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'astonished')
-        self.assertEqual(emoji_code, 'astonished')
+        self.assertEqual(emoji_code, str(overriding_emoji.id))
         self.assertEqual(reaction_type, 'realm_emoji')
 
         # Test deactivate over-ridding realm emoji.
@@ -140,7 +140,7 @@ class ReactionEmojiTest(ZulipTestCase):
         overriding_emoji = RealmEmoji.objects.create(
             name='zulip', realm=realm, file_name='zulip')
         emoji_code, reaction_type = emoji_name_to_emoji_code(realm, 'zulip')
-        self.assertEqual(emoji_code, 'zulip')
+        self.assertEqual(emoji_code, str(overriding_emoji.id))
         self.assertEqual(reaction_type, 'realm_emoji')
 
         # Test non-existent emoji.
@@ -404,7 +404,7 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
             'emoji_code': 'TBD',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No unicode emoji with this emoji code found.')
+        self.assert_json_error(result, 'Invalid emoji code.')
 
     def test_add_default_emoji_invalid_name(self) -> None:
         reaction_info = {
@@ -550,7 +550,7 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
             'reaction_type': 'zulip_extra_emoji',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No such extra emoji found.')
+        self.assert_json_error(result, 'Invalid emoji code.')
 
     def test_add_invalid_emoji_name(self) -> None:
         reaction_info = {
@@ -573,84 +573,73 @@ class ZulipExtraEmojiReactionTest(EmojiReactionBase):
         self.assert_json_error(result, "Reaction doesn't exist.")
 
 class RealmEmojiReactionTests(EmojiReactionBase):
-    def test_add_realm_emoji(self) -> None:
-        reaction_info = {
+    def setUp(self) -> None:
+        green_tick_emoji = RealmEmoji.objects.get(name="green_tick")
+        self.default_reaction_info = {
             'emoji_name': 'green_tick',
-            'emoji_code': 'green_tick',
+            'emoji_code': str(green_tick_emoji.id),
         }
-        result = self.post_reaction(reaction_info)
+
+    def test_add_realm_emoji(self) -> None:
+        result = self.post_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
     def test_add_realm_emoji_invalid_code(self) -> None:
         reaction_info = {
             'emoji_name': 'green_tick',
-            'emoji_code': 'non_existent',
+            'emoji_code': '9999',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'No such realm emoji found.')
+        self.assert_json_error(result, 'Invalid custom emoji id.')
 
     def test_add_realm_emoji_invalid_name(self) -> None:
         reaction_info = {
             'emoji_name': 'bogus_name',
-            'emoji_code': 'green_tick',
+            'emoji_code': '1',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Invalid emoji name.')
+        self.assert_json_error(result, 'Invalid custom emoji.')
 
     def test_add_deactivated_realm_emoji(self) -> None:
         emoji = RealmEmoji.objects.get(name="green_tick")
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
 
-        reaction_info = {
-            'emoji_name': 'green_tick',
-            'emoji_code': 'green_tick',
-        }
-        result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'This realm emoji has been deactivated.')
+        result = self.post_reaction(self.default_reaction_info)
+        self.assert_json_error(result, 'This custom emoji has been deactivated.')
 
     def test_add_to_existing_deactivated_realm_emoji_reaction(self) -> None:
-        reaction_info = {
-            'emoji_name': 'green_tick',
-            'emoji_code': 'green_tick',
-        }
-        result = self.post_reaction(reaction_info)
+        result = self.post_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
         emoji = RealmEmoji.objects.get(name="green_tick")
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
 
-        result = self.post_reaction(reaction_info, sender='AARON')
+        result = self.post_reaction(self.default_reaction_info, sender='AARON')
         self.assert_json_success(result)
 
-        reactions = self.get_message_reactions(1, 'green_tick', 'realm_emoji')
+        reactions = self.get_message_reactions(1,
+                                               self.default_reaction_info['emoji_code'],
+                                               'realm_emoji')
         self.assertEqual(len(reactions), 2)
 
     def test_remove_realm_emoji_reaction(self) -> None:
-        reaction_info = {
-            'emoji_name': 'green_tick',
-            'emoji_code': 'green_tick',
-        }
-        result = self.post_reaction(reaction_info)
+        result = self.post_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
-        result = self.delete_reaction(reaction_info)
+        result = self.delete_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
     def test_remove_deactivated_realm_emoji_reaction(self) -> None:
-        reaction_info = {
-            'emoji_name': 'green_tick',
-            'emoji_code': 'green_tick',
-        }
-        result = self.post_reaction(reaction_info)
+        result = self.post_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
         emoji = RealmEmoji.objects.get(name="green_tick")
         emoji.deactivated = True
         emoji.save(update_fields=['deactivated'])
 
-        result = self.delete_reaction(reaction_info)
+        result = self.delete_reaction(self.default_reaction_info)
         self.assert_json_success(result)
 
     def test_remove_non_existent_realm_emoji_reaction(self) -> None:

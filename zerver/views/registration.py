@@ -304,8 +304,7 @@ def prepare_activation_url(email: str, request: HttpRequest,
     prereg_user = create_preregistration_user(email, request, realm_creation)
 
     if streams is not None:
-        prereg_user.streams = streams
-        prereg_user.save()
+        prereg_user.streams.set(streams)
 
     confirmation_type = Confirmation.USER_REGISTRATION
     if realm_creation:

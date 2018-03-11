@@ -46,7 +46,7 @@ exports.make_indicator = function (outer_container, opts) {
     // These width calculations are tied to the spinner width and
     // margins defined via CSS
     container.css({width: 38 + text_width,
-                   height: 38});
+                   height: 0});
 
     outer_container.data("destroying", false);
 };

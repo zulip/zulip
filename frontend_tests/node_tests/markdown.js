@@ -41,6 +41,7 @@ set_global('page_params', {
             "https://zone_%(zone)s.zulip.net/ticket/%(id)s",
         ],
     ],
+    translate_emoticons: false,
 });
 
 set_global('blueslip', {error: function () {}});
@@ -241,9 +242,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'These #* #*** are also not mentions',
          expected: '<p>These #* #*** are also not mentions</p>'},
         {input: 'This is a #**Denmark** stream link',
-         expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> stream link</p>'},
+         expected: '<p>This is a <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a> stream link</p>'},
         {input: 'This is #**Denmark** and #**social** stream links',
-         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/social">#social</a> stream links</p>'},
+         expected: '<p>This is <a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a> and <a class="stream" data-stream-id="2" href="http://zulip.zulipdev.com/#narrow/stream/2-social">#social</a> stream links</p>'},
         {input: 'And this is a #**wrong** stream link',
          expected: '<p>And this is a #**wrong** stream link</p>'},
         {input: 'mmm...:burrito:s',
@@ -272,7 +273,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'Test *italic*',
          expected: '<p>Test <em>italic</em></p>'},
         {input: 'T\n#**Denmark**',
-         expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/Denmark">#Denmark</a></p>'},
+         expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
           expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
         {input: 'T\n@hamletcharacters',
@@ -304,6 +305,17 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
         assert.equal(expected, output);
     });
+
+    // Here to arrange 100% test coverage for the new emoticons code
+    // path.  TODO: Have a better way to test this setting in both
+    // states, once we implement the local echo feature properly.
+    // Probably a good technique would be to support toggling the
+    // page_params setting inside the `test_cases.forEach` loop above.
+    page_params.translate_emoticons = true;
+    var message = {raw_content: ":)"};
+    markdown.apply_markdown(message);
+    assert.equal('<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>', message.content);
+    page_params.translate_emoticons = false;
 }());
 
 (function test_subject_links() {

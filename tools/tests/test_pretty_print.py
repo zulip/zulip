@@ -390,12 +390,10 @@ GOOD_HTML14 = """
 </div>
 """
 class TestPrettyPrinter(unittest.TestCase):
-    def compare(self, a, b):
-        # type: (str, str) -> None
+    def compare(self, a: str, b: str) -> None:
         self.assertEqual(a.split('\n'), b.split('\n'))
 
-    def test_pretty_print(self):
-        # type: () -> None
+    def test_pretty_print(self) -> None:
         self.compare(pretty_print_html(GOOD_HTML), GOOD_HTML)
         self.compare(pretty_print_html(BAD_HTML), GOOD_HTML)
         self.compare(pretty_print_html(BAD_HTML1), GOOD_HTML1)

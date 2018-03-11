@@ -1,28 +1,20 @@
-{!create-stream.md!}
+Receive GitLab notifications in Zulip!
 
-The integration will use the default stream `gitlab` if no stream
-is supplied in the URL; you still need to create the stream even
-if you are using this default.
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-{!git-webhook-url-with-branches.md!}
+   {!git-webhook-url-with-branches-indented.md!}
 
-By default, this integration will create many topics, however by providing
-a `topic` parameter, the integration will only post to one topic. You may specify a topic in the webhook URL, like so:
+    {!append-topic.md!}
 
-`{{ api_url }}{{ integration_url }}?api_key=abcdefgh&stream={{ recommended_stream_name }}&topic=specific%20topic`
+1. Go to your repository on GitLab and click **Settings** on the left
+   sidebar.  Click on **Integrations**.
 
-Next, go to your repository page and click the gear icon. From there,
-select **Webhooks**:
-
-![](/static/images/integrations/gitlab/001.png)
-
-In the URL field, enter a URL constructed like the one above.
-
-Select the actions that you want to result in a Zulip notification
-and click **Add Webhook**.
+1. Set **URL** to the URL constructed above. Select the events you
+   you would like to receive notifications for, and click
+   **Add Webhook**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/gitlab/002.png)
+![](/static/images/integrations/gitlab/001.png)
