@@ -5,10 +5,58 @@ var jwindow;
 var dimensions = {};
 var in_stoppable_autoscroll = false;
 
-
 // Includes both scroll and arrow events. Negative means scroll up,
 // positive means scroll down.
 exports.last_movement_direction = 1;
+
+exports.scrolling = (function () {
+    var self = {};
+
+    var scroll_handler;
+    var last_position = 0;
+
+    self.update_last_position = function () {
+        last_position = exports.scrollTop();
+    };
+
+    self.set_callback = function (opts) {
+        if (scroll_handler) {
+            blueslip.error('We only want one scroll_handler.');
+            return;
+        }
+
+        if (!opts.throttle_ms) {
+            blueslip.error('We expect throttling.');
+            return;
+        }
+
+        self.update_last_position();
+
+        function callback() {
+            var new_scroll_top = exports.scrollTop();
+
+            if (new_scroll_top === last_position) {
+                // We have a scroll event, but it was probably caused
+                // by re-drawing the message pane.
+                return;
+            }
+
+            var moving_down = new_scroll_top > last_position;
+
+            self.update_last_position();
+
+            opts.callback({
+                moving_down: moving_down,
+            });
+        }
+
+        scroll_handler = $.throttle(opts.throttle_ms, callback);
+
+        exports.message_pane.scroll(scroll_handler);
+    };
+
+    return self;
+}());
 
 exports.at_top = function () {
     return (exports.scrollTop() <= 0);
@@ -221,12 +269,14 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
                           "!  space_to_scroll was " + space_to_scroll);
         }
     }
+
     return ret;
 };
 
 exports.set_message_offset = function viewport_set_message_offset(offset) {
     var msg = current_msg_list.selected_row();
     exports.scrollTop(exports.scrollTop() + msg.offset().top - offset);
+    exports.scrolling.update_last_position();
 };
 
 function make_dimen_wrapper(dimen_name, dimen_func) {
