@@ -75,7 +75,7 @@ def assign_queue(
         return clazz
     return decorate
 
-worker_classes = {}  # type: Dict[str, Any] # Any here should be QueueProcessingWorker type
+worker_classes = {}  # type: Dict[str, Type[QueueProcessingWorker]]
 queues = {}  # type: Dict[str, Dict[str, Type[QueueProcessingWorker]]]
 def register_worker(queue_name: str, clazz: Type['QueueProcessingWorker'], queue_type: str) -> None:
     if queue_type not in queues:
