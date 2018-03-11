@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from django.test import RequestFactory, TestCase
 from django.utils.log import AdminEmailHandler
 from functools import wraps
-from mock import patch
+from mock import MagicMock, patch
 from mypy_extensions import NoReturn
 from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
@@ -61,7 +61,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             if isinstance(h, AdminNotifyHandler)
         ][0]
 
-    def test_basic(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_basic(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A random exception passes happily through AdminNotifyHandler"""
         handler = self.get_admin_zulip_handler()
         try:
@@ -92,7 +94,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             patched_notify.assert_called_once()
             return patched_notify.call_args[0][0]
 
-    def test_long_exception_request(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_long_exception_request(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A request with no stack and multi-line report.getMessage() is handled properly"""
         record = self.simulate_error()
         record.exc_info = None
@@ -105,7 +109,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
         self.assertEqual(report['message'], 'message')
 
-    def test_request(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_request(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A normal request is handled properly"""
         record = self.simulate_error()
 
