@@ -129,12 +129,14 @@ class CheckCapitalizationTestCase(TestCase):
                    "Some number 25MiB",
                    "Not Ignored Phrase",
                    "Not ignored phrase",
+                   "Some text with realm in it",
+                   "Realm in capital case",
                    ('<p class="bot-settings-note padded-container"> Looking for our '
                     '<a href="/integrations" target="_blank">Integrations</a> or '
                     '<a href="/api" target="_blank">API</a> '
                     'documentation? </p>'),
                    ]
-        errored, ignored = check_capitalization(strings)
+        errored, ignored, banned = check_capitalization(strings)
         self.assertEqual(errored, ['Not Ignored Phrase'])
         self.assertEqual(
             ignored,
@@ -148,3 +150,13 @@ class CheckCapitalizationTestCase(TestCase):
                      'Integrations</a> or <a href="/api" '
                      'target="_blank">API</a> documentation? </p>'),
                     ]))
+
+        self.assertEqual(banned,
+                         sorted(["realm found in 'Some text with realm in it'. "
+                                 "The term realm should not appear in user-facing "
+                                 "strings. Use organization instead.",
+
+                                 "realm found in 'Realm in capital case'. "
+                                 "The term realm should not appear in user-facing "
+                                 "strings. Use organization instead.",
+                                 ]))
