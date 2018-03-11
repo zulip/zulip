@@ -25,11 +25,7 @@ function get_email_of_subscribers(subscribers) {
 
 exports.rerender_subscribers_list = function (sub) {
     if (!sub.can_add_subscribers) {
-        // It is also possible that user don't have rights to access subscribers.
-        // If user can't add subscribers, user can't access subscribers.
-        var html = templates.render('subscription_members', sub);
-        var stream_settings = settings_for_sub(sub);
-        stream_settings.find('.subscription-members-setting').expectOne().html(html);
+        $(".subscriber_list_settings_container").hide();
     } else {
         var emails = get_email_of_subscribers(sub.subscribers);
         var subscribers_list = list_render.get("stream_subscribers/" + sub.stream_id);
@@ -42,6 +38,7 @@ exports.rerender_subscribers_list = function (sub) {
             subscribers_list.render();
             ui.update_scrollbar($(".subscriber_list_container"));
         }
+        $(".subscriber_list_settings_container").show();
     }
 };
 
@@ -164,7 +161,7 @@ function show_subscription_settings(sub_row) {
     var color = stream_data.get_color(sub.name);
     stream_color.set_colorpicker_color(colorpicker, color);
 
-    if (!sub.render_subscribers || !sub.can_add_subscribers) {
+    if (!sub.render_subscribers) {
         return;
     }
     // fetch subscriber list from memory.
