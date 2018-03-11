@@ -1,9 +1,5 @@
 global.stub_out_jquery();
 
-set_global('page_params', {
-    development: true,
-});
-
 var jsdom = require("jsdom");
 global.document = jsdom.jsdom('<!DOCTYPE html><p>Hello world</p>');
 var window = jsdom.jsdom().defaultView;
