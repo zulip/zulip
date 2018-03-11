@@ -1040,12 +1040,12 @@ class Emoji(markdown.inlinepatterns.Pattern):
         orig_syntax = match.group("syntax")
         name = orig_syntax[1:-1]
 
-        realm_emoji = {}  # type: Dict[Text, Dict[str, Text]]
+        active_realm_emoji = {}  # type: Dict[Text, Dict[str, Text]]
         if db_data is not None:
-            realm_emoji = db_data['realm_emoji']
+            active_realm_emoji = db_data['active_realm_emoji']
 
-        if current_message and name in realm_emoji and not realm_emoji[name]['deactivated']:
-            return make_realm_emoji(realm_emoji[name]['source_url'], orig_syntax)
+        if current_message and name in active_realm_emoji:
+            return make_realm_emoji(active_realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
         elif name in name_to_codepoint:
@@ -1969,15 +1969,15 @@ def do_convert(content: Text,
         stream_name_info = get_stream_name_info(message_realm, stream_names)
 
         if content_has_emoji_syntax(content):
-            realm_emoji = message_realm.get_emoji()
+            active_realm_emoji = message_realm.get_active_emoji()
         else:
-            realm_emoji = dict()
+            active_realm_emoji = dict()
 
         db_data = {
             'possible_words': possible_words,
             'email_info': email_info,
             'mention_data': mention_data,
-            'realm_emoji': realm_emoji,
+            'active_realm_emoji': active_realm_emoji,
             'realm_uri': message_realm.uri,
             'sent_by_bot': sent_by_bot,
             'stream_names': stream_name_info,

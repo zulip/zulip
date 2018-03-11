@@ -129,6 +129,9 @@ def get_display_recipient_remote_cache(recipient_id: int, recipient_type: int,
 def get_realm_emoji_cache_key(realm: 'Realm') -> Text:
     return u'realm_emoji:%s' % (realm.id,)
 
+def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
+    return u'active_realm_emoji:%s' % (realm.id,)
+
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
@@ -249,6 +252,10 @@ class Realm(models.Model):
     @cache_with_key(get_realm_emoji_cache_key, timeout=3600*24*7)
     def get_emoji(self) -> Dict[Text, Dict[str, Iterable[Text]]]:
         return get_realm_emoji_uncached(self)
+
+    @cache_with_key(get_active_realm_emoji_cache_key, timeout=3600*24*7)
+    def get_active_emoji(self) -> Dict[str, Dict[str, Iterable[str]]]:
+        return get_active_realm_emoji_uncached(self)
 
     def get_admin_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
@@ -421,10 +428,31 @@ def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
                            author=author)
     return d
 
+def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    d = {}
+    from zerver.lib.emoji import get_emoji_url
+    for row in RealmEmoji.objects.filter(realm=realm,
+                                         deactivated=False).select_related('author'):
+        author = None
+        if row.author:
+            author = {
+                'id': row.author.id,
+                'email': row.author.email,
+                'full_name': row.author.full_name}
+        d[row.name] = dict(id=str(row.id),
+                           name=row.name,
+                           source_url=get_emoji_url(row.file_name, row.realm_id),
+                           deactivated=row.deactivated,
+                           author=author)
+    return d
+
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
     realm = kwargs['instance'].realm
     cache_set(get_realm_emoji_cache_key(realm),
               get_realm_emoji_uncached(realm),
+              timeout=3600*24*7)
+    cache_set(get_active_realm_emoji_cache_key(realm),
+              get_active_realm_emoji_uncached(realm),
               timeout=3600*24*7)
 
 post_save.connect(flush_realm_emoji, sender=RealmEmoji)
