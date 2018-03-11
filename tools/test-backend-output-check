@@ -1,0 +1,34 @@
+#!/usr/bin/env python3
+
+import re
+
+valid_line_patterns = [
+    "^Running zerver",  # Example: Running zerver.tests.test_attachments.AttachmentsTests.test_delete_unauthenticated
+    "^Running analytics",  # Example: Running analytics.tests.test_counts.TestActiveUsersAudit.test_empty_realm_or_user_with_no_relevant_activity
+    "^\*\* Test is TOO slow: ",  # Example: ** Test is TOO slow: analytics.tests.test_counts.TestRealmActiveHumans.test_end_to_end (0.581 s)
+    "^----------------------------------------------------------------------",  # Example: ----------------------------------------------------------------------
+    "^INFO: URL coverage report is in",  # Example: INFO: URL coverage report is in var/url_coverage.txt
+    "^INFO: Try running:",  # Example: INFO: Try running: ./tools/create-test-api-docs
+    "^-- Running tests in",  # Example: -- Running tests in parallel mode with 4 processes
+    "^OK",  # Example: OK
+    "^Ran [0-9]+ tests in",  # Example: Ran 2139 tests in 115.659s
+    "^Testing management command:",  # Testing management command: sync_api_key
+    "^Running Slack Message Conversion test:",  # Running Slack Message Conversion test: bold_and_strike_conversion
+    "^Destroying test database for alias ",  # Destroying test database for alias 'default'...
+    "^Running Bugdown test"  # Running Bugdown test not_auto_renumbered_list
+]
+
+compiled_line_patterns = []
+
+for pattern in valid_line_patterns:
+    compiled_line_patterns.append(re.compile(pattern))
+
+with open("var/test-backend-output.txt") as file:
+    for line in file:
+        pattern_found = False
+        for compiled_pattern in compiled_line_patterns:
+            if compiled_pattern.match(line):
+                pattern_found = True
+
+        if not pattern_found:
+            print(line)
