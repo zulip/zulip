@@ -73,6 +73,9 @@ function user_last_online_time(user_id, full_time_format) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
+// exports for using in activity.js
+exports.user_last_online_time = user_last_online_time;
+
 function calculate_info_popover_placement(size, elt) {
   var ypos = elt.offset().top;
 

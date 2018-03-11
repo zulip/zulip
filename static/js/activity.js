@@ -276,6 +276,18 @@ function get_num_unread(user_id) {
     return unread.num_unread_for_person(user_id);
 }
 
+function get_user_status(user_id, status) {
+    if (status === "active") {
+        return "Online and active";
+    }
+
+    if (status === "idle") {
+        return "Online";
+    }
+
+    return popovers.user_last_online_time(user_id);
+}
+
 function info_for(user_id) {
     var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
@@ -292,6 +304,7 @@ function info_for(user_id) {
         num_unread: get_num_unread(user_id),
         type: status,
         type_desc: presence_descriptions[status],
+        user_status: get_user_status(user_id, status),
     };
 }
 
