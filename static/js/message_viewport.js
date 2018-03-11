@@ -193,6 +193,7 @@ exports.visible_messages = function (require_fully_visible) {
     return _visible_divs(selected_row, 25, row_to_id, "message_row", require_fully_visible);
 };
 
+
 exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     var orig_scrollTop = exports.message_pane.scrollTop();
     if (target_scrollTop === undefined) {
