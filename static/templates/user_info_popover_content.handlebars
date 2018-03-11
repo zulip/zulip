@@ -24,7 +24,7 @@
         {{/if}}
 
         {{#if user_time}}
-        <li>{{ user_time }} {{#tr this}}Local time{{/tr}}</li>
+        <li>{{#tr this}}Local time{{/tr}}: {{ user_time }} </li>
         {{/if}}
 
         {{#unless is_online_and_active }}
