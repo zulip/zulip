@@ -212,7 +212,7 @@ exports.setup_page = function (callback) {
             var formatted;
             var time = new XDate(draft.updatedAt);
             var time_stamp = timerender.render_now(time).time_str;
-            if (time_stamp === "Today") {
+            if (time_stamp === i18n.t("Today")) {
                 time_stamp = timerender.stringify_time(time);
             }
             if (draft.type === "stream") {
