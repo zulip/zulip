@@ -21,10 +21,8 @@
                 {{#if is_admin}}
                 <button class="button small rounded btn-danger deactivate" type="button" name="delete_button" title="{{t 'Delete stream'}}">{{t 'Delete' }} <i class="icon-vector-trash" aria-hidden="true"></i></button>
                 {{/if}}
-                {{#if should_display_subscription_button}}
-                <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)">
+                <button class="button small rounded subscribe-button sub_unsub_button {{#unless subscribed }}unsubscribed{{/unless}}" type="button" name="button" title="{{t 'Toggle subscription'}} (S)" {{#unless should_display_subscription_button}}style="display: none"{{/unless}}>
                     {{#if subscribed }}{{#tr oneself }}Unsubscribe{{/tr}}{{else}}{{#tr oneself }}Subscribe{{/tr}}{{/if}}</button>
-                {{/if}}
                 {{#if invite_only}}
                     {{#if subscribed}}
                         <a href="{{preview_url}}" class="button small rounded" id="preview-stream-button" role="button" title="{{t 'View stream'}} (V)">{{t "View stream"}}</a>
