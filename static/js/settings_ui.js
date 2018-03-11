@@ -25,23 +25,42 @@ exports.initialize = function () {
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
-exports.do_settings_change = function (url, data, status_element, success_msg) {
+exports.do_settings_change = function (url, data, status_element, opts) {
+    var success;
+    var success_msg;
+    var success_continuation;
+    var error;
     var spinner = $(status_element).expectOne();
-    loading.make_indicator(spinner, {text: exports.strings.saving});
+    if (opts !== undefined) {
+        success = opts.success;
+        success_msg = opts.success_msg;
+        success_continuation = opts.success_continuation;
+        error = opts.error;
+    }
     if (success_msg === undefined) {
         success_msg = exports.strings.success;
+    }
+    if (success === undefined) {
+        loading.make_indicator(spinner, {text: exports.strings.saving});
+        success = function (reponse_data) {
+            ui_report.success(success_msg, $(status_element).expectOne());
+            settings_ui.display_checkmark(spinner);
+            if (success_continuation !== undefined) {
+                success_continuation(reponse_data);
+            }
+        };
+    }
+    if (error === undefined) {
+        error = function (xhr) {
+            ui_report.error(exports.strings.failure, xhr, $(status_element).expectOne());
+        };
     }
 
     channel.patch({
         url: url,
         data: data,
-        success: function () {
-            ui_report.success(success_msg, $(status_element).expectOne());
-            settings_ui.display_checkmark(spinner);
-        },
-        error: function (xhr) {
-            ui_report.error(exports.strings.failure, xhr, $(status_element).expectOne());
-        },
+        success: success,
+        error: error,
     });
 };
 

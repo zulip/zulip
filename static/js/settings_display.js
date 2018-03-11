@@ -7,7 +7,10 @@ var meta = {
 };
 
 function change_display_setting(data, status_element, success_msg) {
-    settings_ui.do_settings_change('/json/settings/display', data, status_element, success_msg);
+    var opts = {
+        success_msg: success_msg,
+    };
+    settings_ui.do_settings_change('/json/settings/display', data, status_element, opts);
 }
 
 exports.set_night_mode = function (bool) {
