@@ -27,7 +27,7 @@ function row_for_stream_id(stream_id) {
 
 function settings_button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
+    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button").expectOne();
 }
 
 function get_row_data(row) {
@@ -212,7 +212,7 @@ exports.remove_stream = function (stream_id) {
 
 exports.update_settings_for_subscribed = function (sub) {
     var button = button_for_sub(sub);
-    var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed");
+    var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
 
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub, true);
@@ -236,7 +236,7 @@ exports.update_settings_for_subscribed = function (sub) {
 
 exports.update_settings_for_unsubscribed = function (sub) {
     var button = button_for_sub(sub);
-    var settings_button = settings_button_for_sub(sub).addClass("unsubscribed");
+    var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
 
     button.toggleClass("checked");
     settings_button.text(i18n.t("Subscribe"));
