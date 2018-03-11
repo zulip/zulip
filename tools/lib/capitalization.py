@@ -130,6 +130,11 @@ DISALLOWED_REGEXES = [re.compile(regex) for regex in [
     # after a lower case character when the first character is in upper case.
 ]]
 
+BANNED_WORDS = {
+    'realm': ('The term realm should not appear in user-facing strings. '
+              'Use organization instead.'),
+}
+
 def get_safe_phrase(phrase):
     # type: (str) -> str
     """
@@ -194,10 +199,22 @@ def is_capitalized(safe_text):
 
     return True
 
+def check_banned_words(text: str) -> List[str]:
+    lower_cased_text = text.lower()
+    errors = []
+    for word, reason in BANNED_WORDS.items():
+        if word in lower_cased_text:
+            kwargs = dict(word=word, text=text, reason=reason)
+            msg = "{word} found in '{text}'. {reason}".format(**kwargs)
+            errors.append(msg)
+
+    return errors
+
 def check_capitalization(strings):
-    # type: (List[str]) -> Tuple[List[str], List[str]]
+    # type: (List[str]) -> Tuple[List[str], List[str], List[str]]
     errors = []
     ignored = []
+    banned_word_errors = []
     for text in strings:
         text = ' '.join(text.split())  # Remove extra whitespaces.
         safe_text = get_safe_text(text)
@@ -208,4 +225,6 @@ def check_capitalization(strings):
         elif capitalized and has_ignored_phrase:
             ignored.append(text)
 
-    return sorted(errors), sorted(ignored)
+        banned_word_errors.extend(check_banned_words(text))
+
+    return sorted(errors), sorted(ignored), sorted(banned_word_errors)
