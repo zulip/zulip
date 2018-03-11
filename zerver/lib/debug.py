@@ -39,8 +39,7 @@ def interactive_debug_listen() -> None:
     signal.signal(signal.SIGUSR1, lambda sig, stack: traceback.print_stack(stack))
     signal.signal(signal.SIGUSR2, interactive_debug)
 
-def tracemalloc_dump():
-    # type: () -> None
+def tracemalloc_dump() -> None:
     if not tracemalloc.is_tracing():
         logger.warning("pid {}: tracemalloc off, nothing to dump"
                        .format(os.getpid()))
@@ -63,8 +62,7 @@ def tracemalloc_dump():
                         rss_pages // 256,
                         basename))
 
-def tracemalloc_listen_sock(sock):
-    # type: (socket.socket) -> None
+def tracemalloc_listen_sock(sock: socket.socket) -> None:
     logger.debug('pid {}: tracemalloc_listen_sock started!'.format(os.getpid()))
     while True:
         sock.recv(1)
@@ -72,8 +70,7 @@ def tracemalloc_listen_sock(sock):
 
 listener_pid = None  # Optional[int]
 
-def tracemalloc_listen():
-    # type: () -> None
+def tracemalloc_listen() -> None:
     global listener_pid
     if listener_pid == os.getpid():
         # Already set up -- and in this process, not just its parent.
@@ -90,8 +87,7 @@ def tracemalloc_listen():
     logger.debug('pid {}: tracemalloc_listen done: {}'.format(
         os.getpid(), path))
 
-def maybe_tracemalloc_listen():
-    # type: () -> None
+def maybe_tracemalloc_listen() -> None:
     '''If tracemalloc tracing enabled, listen for requests to dump a snapshot.
 
     To trigger once this is listening:
