@@ -25,7 +25,7 @@ exports.initialize = function () {
 // Generic function for informing users about changes to the settings
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
-exports.do_settings_change = function (url, data, status_element, opts) {
+exports.do_settings_change = function (request_method, url, data, status_element, opts) {
     var success;
     var success_msg;
     var success_continuation;
@@ -56,7 +56,7 @@ exports.do_settings_change = function (url, data, status_element, opts) {
         };
     }
 
-    channel.patch({
+    request_method({
         url: url,
         data: data,
         success: success,

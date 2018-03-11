@@ -48,7 +48,7 @@ function maybe_bulk_update_stream_notification_setting(notification_checkbox,
 function change_notification_setting(setting, setting_data, status_element) {
     var data = {};
     data[setting] = JSON.stringify(setting_data);
-    settings_ui.do_settings_change('/json/settings/notifications', data, status_element);
+    settings_ui.do_settings_change(channel.patch, '/json/settings/notifications', data, status_element);
 }
 
 exports.set_up = function () {
