@@ -32,6 +32,7 @@ import time
 import traceback
 import unittest
 
+import xmlrunner
 from multiprocessing.sharedctypes import Synchronized
 
 _worker_id = 0  # Used to identify the worker process.
@@ -366,6 +367,32 @@ class Runner(DiscoverRunner):
     test_loader = TestLoader()
     parallel_test_suite = ParallelTestSuite
 
+    test_runner = xmlrunner.XMLTestRunner
+
+    def get_resultclass(self):
+        # Django provides `DebugSQLTextTestResult` if `debug_sql` argument is True
+        # To use `xmlrunner.result._XMLTestResult` we supress default behavior
+        return None
+
+    def get_test_runner_kwargs(self):
+        # We use separate verbosity setting for our runner
+        verbosity = getattr(settings, 'TEST_OUTPUT_VERBOSE', 1)
+        if isinstance(verbosity, bool):
+            verbosity = (1, 2)[verbosity]
+        verbosity = verbosity  # not self.verbosity
+
+        output_dir = getattr(settings, 'TEST_OUTPUT_DIR', 'var/xunit-test-results')
+
+        output = output_dir
+
+        return dict(
+            verbosity=verbosity,
+            descriptions=getattr(settings, 'TEST_OUTPUT_DESCRIPTIONS', False),
+            failfast=self.failfast,
+            resultclass=self.get_resultclass(),
+            output=output,
+        )
+
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         DiscoverRunner.__init__(self, *args, **kwargs)
 
@@ -377,9 +404,6 @@ class Runner(DiscoverRunner):
         self.shallow_tested_templates = set()  # type: Set[str]
         template_rendered.connect(self.on_template_rendered)
         self.database_id = random.randint(1, 10000)
-
-    def get_resultclass(self) -> Type[TestResult]:
-        return TextTestResult
 
     def on_template_rendered(self, sender: Any, context: Dict[str, Any], **kwargs: Any) -> None:
         if hasattr(sender, 'template'):
@@ -477,6 +501,14 @@ class Runner(DiscoverRunner):
         if not failed:
             write_instrumentation_reports(full_suite=full_suite)
         return failed, result.failed_tests
+
+    def run_suite(self, suite, **kwargs):
+        runner_kwargs = self.get_test_runner_kwargs()
+        runner = xmlrunner.XMLTestRunner(**runner_kwargs)
+        results = runner.run(suite)
+        if hasattr(runner_kwargs['output'], 'close'):
+            runner_kwargs['output'].close()
+        return results
 
 def get_test_names(suite: unittest.TestSuite) -> List[str]:
     if isinstance(suite, ParallelTestSuite):
