@@ -1366,6 +1366,20 @@ function render(template_name, args) {
 
 }());
 
+(function unsubscribe_stream_modal() {
+    var args = {
+        stream_name: "Public stream",
+    };
+    var html = render('unsubscribe-stream-modal', args);
+    global.write_handlebars_output("unsubscribe-stream-modal", html);
+
+    var modal_header = $(html).find("#unsubscribe_stream_modal_label");
+    assert.equal(modal_header.text(), "translated: Unsubscribe to #" + args.stream_name);
+
+    var button = $(html).find("#do_unsubscribe_stream_button");
+    assert.equal(button.text(), "translated: Yes,unsubscribe");
+}());
+
 (function user_group_info_popover() {
     var html = render('user_group_info_popover');
     global.write_handlebars_output("user_group_info_popover", html);
