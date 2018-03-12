@@ -671,14 +671,7 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
         sanitize_name(fileinfo['name'])
     ])
     attachment_path = ('/user_uploads/%s' % (s3_path))
-
-    # change the default upload message: 'uploaded this file: <file_name>' in Slack
-    # to '<file_comment> <file_name>'
-    if fileinfo['comments_count'] != 0:
-        file_comment = fileinfo['initial_comment'].get("comment", '')
-    else:
-        file_comment = ''
-    content = '%s [%s](%s)' % (file_comment, fileinfo['name'], attachment_path)
+    content = '[%s](%s)' % (fileinfo['title'], attachment_path)
 
     return s3_path, content
 
