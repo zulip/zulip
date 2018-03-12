@@ -773,10 +773,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.bot_type == UserProfile.EMBEDDED_BOT
 
     @property
-    def is_service_bot(self) -> bool:
-        return self.is_bot and self.bot_type in UserProfile.SERVICE_BOT_TYPES
-
-    @property
     def allowed_bot_types(self) -> List[int]:
         allowed_bot_types = []
         if self.is_realm_admin or \
