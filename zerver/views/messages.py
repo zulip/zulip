@@ -596,7 +596,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         inner_msg_id_col = column("message_id")
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    query = query.where(inner_msg_id_col >= first_visible_message_id)
+    if first_visible_message_id > 0:
+        query = query.where(inner_msg_id_col >= first_visible_message_id)
 
     num_extra_messages = 1
     is_search = False
@@ -675,6 +676,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     before_query = None
     after_query = None
+
     if num_before > 0:
         before_query = query
 
@@ -686,9 +688,14 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             before_query = before_query.where(inner_msg_id_col <= before_anchor)
 
         before_query = before_query.order_by(inner_msg_id_col.desc()).limit(num_before)
+
     if num_after > 0:
-        after_query = query.where(inner_msg_id_col >= anchor) \
-                           .order_by(inner_msg_id_col.asc()).limit(num_after)
+        after_query = query
+
+        if anchor > 0:
+            after_query = after_query.where(inner_msg_id_col >= anchor)
+
+        after_query = after_query.order_by(inner_msg_id_col.asc()).limit(num_after)
 
     if before_query is not None:
         if after_query is not None:
