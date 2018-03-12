@@ -231,6 +231,7 @@ class SocialAuthMixin(ZulipAuthMixin):
         email_address = self.get_email_address(*args, **kwargs)
         full_name = self.get_full_name(*args, **kwargs)
         is_signup = strategy.session_get('is_signup') == '1'
+        redirect_to = strategy.session_get('next')
 
         mobile_flow_otp = strategy.session_get('mobile_flow_otp')
         subdomain = strategy.session_get('subdomain')
@@ -247,12 +248,14 @@ class SocialAuthMixin(ZulipAuthMixin):
                                                  user_profile, full_name,
                                                  invalid_subdomain=bool(invalid_subdomain),
                                                  mobile_flow_otp=mobile_flow_otp,
-                                                 is_signup=is_signup)
+                                                 is_signup=is_signup,
+                                                 redirect_to=redirect_to)
         realm = get_realm(subdomain)
         if realm is None:
             return redirect_to_subdomain_login_url()
         return redirect_and_log_into_subdomain(realm, full_name, email_address,
-                                               is_signup=is_signup)
+                                               is_signup=is_signup,
+                                               redirect_to=redirect_to)
 
     def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
         """

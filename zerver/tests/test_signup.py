@@ -76,14 +76,16 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         email = self.example_email("hamlet")
         response = redirect_and_log_into_subdomain(realm, name, email)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
                                                    is_signup=True)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True})
 
@@ -2612,7 +2614,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_id = get_session_dict_user(getattr(request, 'session'))
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://zulip.testserver', response.url)
+        self.assertEqual('http://zulip.testserver', response.url)
 
 class FollowupEmailTest(ZulipTestCase):
     def test_followup_day2_email(self) -> None:
