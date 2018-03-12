@@ -26,6 +26,10 @@ exports.update_scrollbar = function (element) {
     element.perfectScrollbar('update');
 };
 
+exports.destroy_scrollbar = function (element) {
+    element.perfectScrollbar('destroy');
+};
+
 function update_message_in_all_views(message_id, callback) {
     _.each([message_list.all, home_msg_list, message_list.narrowed], function (list) {
         if (list === undefined) {
