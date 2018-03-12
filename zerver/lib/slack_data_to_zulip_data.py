@@ -230,12 +230,19 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     return zerver_userprofile, avatar_list, added_users
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
-    if 'email' not in user['profile']:
-        email = (hashlib.sha256(user['real_name'].encode()).hexdigest() +
-                 "@%s" % (domain_name))
-    else:
-        email = user['profile']['email']
-    return email
+    if 'email' in user['profile']:
+        return user['profile']['email']
+    if 'bot_id' in user['profile']:
+        if 'real_name_normalized' in user['profile']:
+            slack_bot_name = user['profile']['real_name_normalized']
+        elif 'first_name' in user['profile']:
+            slack_bot_name = user['profile']['first_name']
+        else:
+            raise AssertionError("Could not identify bot type")
+        return slack_bot_name.replace("Bot", "").replace(" ", "") + "-bot@%s" % (domain_name,)
+    # TODO: Do we need this fallback case at all?
+    return (hashlib.sha256(user['real_name'].encode()).hexdigest() +
+            "@%s" % (domain_name,))
 
 def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
     avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format(team_id, slack_user_id,
