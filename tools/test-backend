@@ -64,7 +64,6 @@ not_yet_fully_covered = {
     'zerver/lib/send_email.py',
     'zerver/lib/soft_deactivation.py',
     'zerver/lib/upload.py',
-    'zerver/models.py',
     # Other lib files that ideally would coverage, but aren't sorted
     'zerver/__init__.py',
     'zerver/apps.py',
