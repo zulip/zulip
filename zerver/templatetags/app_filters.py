@@ -18,16 +18,14 @@ from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
 
-def and_n_others(values, limit):
-    # type: (List[str], int) -> str
+def and_n_others(values: List[str], limit: int) -> str:
     # A helper for the commonly appended "and N other(s)" string, with
     # the appropriate pluralization.
     return " and %d other%s" % (len(values) - limit,
                                 "" if len(values) == limit + 1 else "s")
 
 @register.filter(name='display_list', is_safe=True)
-def display_list(values, display_limit):
-    # type: (List[str], int) -> str
+def display_list(values: List[str], display_limit: int) -> str:
     """
     Given a list of values, return a string nicely formatting those values,
     summarizing when you have more than `display_limit`. Eg, for a
@@ -70,8 +68,7 @@ docs_without_macros = [
 # the results when called if none of the arguments are unhashable.
 @ignore_unhashable_lru_cache(512)
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path, context=None):
-    # type: (str, Optional[Dict[Any, Any]]) -> str
+def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, Any]]=None) -> str:
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is
