@@ -633,7 +633,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     # specified to ensure that the resulting list always contains the
     # anchor message.  If a narrow was specified, the anchor message
     # might not match the narrow anyway.
-    if num_after != 0:
+    if num_after > 0:
         num_after += num_extra_messages
     else:
         num_before += num_extra_messages
@@ -672,14 +672,14 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     before_query = None
     after_query = None
-    if num_before != 0:
+    if num_before > 0:
         before_anchor = anchor
-        if num_after != 0:
+        if num_after > 0:
             # Don't include the anchor in both the before query and the after query
             before_anchor = anchor - 1
         before_query = query.where(inner_msg_id_col <= before_anchor) \
                             .order_by(inner_msg_id_col.desc()).limit(num_before)
-    if num_after != 0:
+    if num_after > 0:
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
 
