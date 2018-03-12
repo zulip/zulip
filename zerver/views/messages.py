@@ -668,24 +668,27 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         if len(first_unread_result) > 0:
             anchor = first_unread_result[0][0]
         else:
+            # Set values that will be used to short circuit the after_query
+            # altogether and avoid needless conditions in the before_query.
             anchor = LARGER_THAN_MAX_MESSAGE_ID
+            num_after = 0
 
     before_query = None
     after_query = None
     if num_before > 0:
-        before_anchor = anchor
-        if num_after > 0:
-            # Don't include the anchor in both the before query and the after query
-            before_anchor = anchor - 1
-        before_query = query.where(inner_msg_id_col <= before_anchor) \
-                            .order_by(inner_msg_id_col.desc()).limit(num_before)
+        before_query = query
+
+        if anchor < LARGER_THAN_MAX_MESSAGE_ID:
+            before_anchor = anchor
+            if num_after > 0:
+                # Don't include the anchor in both the before query and the after query
+                before_anchor -= 1
+            before_query = before_query.where(inner_msg_id_col <= before_anchor)
+
+        before_query = before_query.order_by(inner_msg_id_col.desc()).limit(num_before)
     if num_after > 0:
         after_query = query.where(inner_msg_id_col >= anchor) \
                            .order_by(inner_msg_id_col.asc()).limit(num_after)
-
-    if anchor == LARGER_THAN_MAX_MESSAGE_ID:
-        # There's no need for an after_query if we're targeting just the target message.
-        after_query = None
 
     if before_query is not None:
         if after_query is not None:
