@@ -78,7 +78,9 @@ if not options.force:
 if options.interface is None:
     user_id = os.getuid()
     user_name = pwd.getpwuid(user_id).pw_name
-    if user_name in ["vagrant", "zulipdev"]:
+    # Check if vagrant-placeholder exists, a file created when the machine is provisioned by vagrant
+    vagrant = True if os.path.isfile("/srv/zulip/var/vagrant-placeholder") else False
+    if vagrant is True or user_name == "zulipdev":
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
         # exposing certain guest ports (by default just 9991) to the

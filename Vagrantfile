@@ -156,6 +156,9 @@ set -o pipefail
 # something that we don't want to happen when running provision in a
 # development environment not using Vagrant.
 
+# Empty file for run-dev to identify it's running inside vagrant
+touch /srv/zulip/var/vagrant-placeholder
+
 # Set the MOTD on the system to have Zulip instructions
 sudo rm -f /etc/update-motd.d/*
 sudo bash -c 'cat << EndOfMessage > /etc/motd
