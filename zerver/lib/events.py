@@ -39,7 +39,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.user_groups import user_groups_in_realm_serialized
 from zerver.tornado.event_queue import request_event_queue, get_user_events
-from zerver.models import Client, Message, Realm, UserPresence, UserProfile, \
+from zerver.models import Client, Message, Realm, UserPresence, UserProfile, CustomProfileFieldValue, \
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
     custom_profile_fields_for_realm, get_realm_domains, \
@@ -50,6 +50,14 @@ from version import ZULIP_VERSION
 
 def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, Text]]:
     user_dicts = get_realm_user_dicts(realm_id)
+    # TODO: Consider optimizing this query away with caching.
+    custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile_id__in=[
+        row['id'] for row in user_dicts
+    ])
+    for profile_field in custom_profile_field_values:  # nocoverage # TODO: Fix this.
+        if 'profile' not in user_dicts[profile_field.user_profile_id]:
+            user_dicts[profile_field.user_profile_id]['profile'] = {}
+        user_dicts[profile_field.user_profile_id]['profile'][profile_field.field_id] = profile_field.value
 
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
@@ -63,17 +71,20 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
         )
 
         is_admin = row['is_realm_admin']
-
-        return dict(
+        is_bot = row['is_bot']
+        result = dict(
             email=row['email'],
             user_id=row['id'],
             avatar_url=avatar_url,
             is_admin=is_admin,
-            is_bot=row['is_bot'],
+            is_bot=is_bot,
             full_name=row['full_name'],
             timezone=row['timezone'],
             is_active = row['is_active'],
         )
+        if not is_bot:
+            result['profile_data'] = row.get('profile', {})
+        return result
 
     return {
         row['id']: user_data(row)
@@ -322,6 +333,8 @@ def apply_event(state: Dict[str, Any],
                 if 'gravatar.com' in person['avatar_url']:
                     person['avatar_url'] = None
             person['is_active'] = True
+            if not person['is_bot']:
+                person['profile_data'] = {}
             state['raw_users'][person_user_id] = person
         elif event['op'] == "remove":
             state['raw_users'][person_user_id]['is_active'] = False
