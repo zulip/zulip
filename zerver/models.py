@@ -1884,6 +1884,9 @@ class CustomProfileField(models.Model):
             'type': self.field_type,
         }
 
+    def __str__(self):
+        return "<CustomProfileField: %s %s %s>" % (self.realm, self.name, self.field_type)
+
 def custom_profile_fields_for_realm(realm_id: int) -> List[CustomProfileField]:
     return CustomProfileField.objects.filter(realm=realm_id).order_by('name')
 
@@ -1894,6 +1897,9 @@ class CustomProfileFieldValue(models.Model):
 
     class Meta:
         unique_together = ('user_profile', 'field')
+
+    def __str__(self):
+        return "<CustomProfileFieldValue: %s %s %s>" % (self.user_profile, self.field, self.value)
 
 # Interfaces for services
 # They provide additional functionality like parsing message to obtain query url, data to be sent to url,
