@@ -212,7 +212,7 @@ exports.resize_stream_filters_container = function (h) {
     h = narrow_window ? left_userlist_get_new_heights() : get_new_heights();
     exports.resize_bottom_whitespace(h);
     $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
-    $('#stream-filters-container').perfectScrollbar('update');
+    ui.update_scrollbar($("#stream-filters-container"));
 };
 
 exports.resize_page_components = function () {
@@ -255,10 +255,8 @@ exports.resize_page_components = function () {
     $("#user_presences").css('max-height', h.user_presences_max_height);
     $("#group-pms").css('max-height', h.group_pms_max_height);
 
-    $("#stream-filters-container")
-        .css('max-height', h.stream_filters_max_height)
-        // the `.css` method returns `$this`, so we can chain `perfectScrollbar`.
-        .perfectScrollbar('update');
+    $("#stream-filters-container").css('max-height', h.stream_filters_max_height);
+    ui.update_scrollbar($("#stream-filters-container"));
 
     activity.update_scrollbar.users();
     activity.update_scrollbar.group_pms();
