@@ -53,7 +53,7 @@ function copy_email_handler(e) {
 }
 
 function init_email_clipboard() {
-    $('.my_email').each(function () {
+    $('.user_popover_email').each(function () {
         if (this.clientWidth < this.scrollWidth) {
             var email_el = $(this);
             var copy_email_icon = email_el.find('i');
@@ -669,7 +669,7 @@ exports.register_click_handlers = function () {
         current_user_sidebar_popover = target.data('popover');
     });
 
-    $('body').on("mouseenter", ".my_email", function () {
+    $('body').on("mouseenter", ".user_popover_email", function () {
         var tooltip_holder = $(this).find('div');
 
         if (this.offsetWidth < this.scrollWidth) {

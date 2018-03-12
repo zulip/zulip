@@ -2702,25 +2702,25 @@ button.topic_edit_cancel {
     -ms-user-select: none;
 }
 
-.my_email {
+.user_popover_email {
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
     transition: all 0.4s ease;
 }
 
-.my_email .tooltip_holder {
+.user_popover_email .tooltip_holder {
     display: none;
     position: absolute;
     left: 50%;
 }
 
-.my_email i {
+.user_popover_email i {
     cursor: pointer;
 }
 
 .email_copied,
-.my_email i:hover {
+.user_popover_email i:hover {
     color: #53c1ae;
 }
 
@@ -2757,12 +2757,12 @@ button.topic_edit_cancel {
     border-bottom: #4c4c4c solid 7px;
 }
 
-.my_email:hover .email_tooltip {
+.user_popover_email:hover .email_tooltip {
     visibility: visible;
     opacity: 1;
 }
 
-.my_email i.hide_copy_icon {
+.user_popover_email i.hide_copy_icon {
     display: none;
 }
 

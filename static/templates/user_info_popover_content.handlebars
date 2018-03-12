@@ -13,7 +13,7 @@
         </li>
 
         {{#if is_active }}
-        <li class="my_email">
+        <li class="user_popover_email">
             <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
             {{ user_email }}
             <div class="tooltip_holder">
@@ -21,7 +21,7 @@
             </div>
         </li>
         {{else}}
-        <li class='my_email half-opacity italic'>{{#tr this}}(This user has been deactivated){{/tr}}</li>
+        <li class="user_popover_email half-opacity italic">{{#tr this}}(This user has been deactivated){{/tr}}</li>
         {{/if}}
 
         {{#if user_time}}
