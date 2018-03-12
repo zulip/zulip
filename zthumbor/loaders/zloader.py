@@ -19,9 +19,9 @@ def get_not_found_result():
     result.successful = False
     return result
 
-@return_future  # type: ignore # This was giving mypy error for missing generic datatype?
+@return_future
 def load(context, url, callback):
-    # type: (Context, str, Callable) -> None
+    # type: (Context, str, Callable[..., Any]) -> None
     url = urllib.parse.unquote(url)
     url_params = get_url_params(url)
     source_type = url_params.get('source_type')
