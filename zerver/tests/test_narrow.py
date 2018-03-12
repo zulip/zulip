@@ -1590,21 +1590,28 @@ class GetOldMessagesTest(ZulipTestCase):
         with queries_captured() as all_queries:
             get_messages_backend(request, user_profile)
 
-        # Next, verify the use_first_unread_anchor setting invokes
-        # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id <= %d' % (LARGER_THAN_MAX_MESSAGE_ID - 1,), queries[0]['sql'])
-        self.assertIn('AND message_id >= %d' % (get_first_visible_message_id(user_profile.realm),), queries[0]['sql'])
-        # There should not be an after_query in this case, since it'd be useless
-        self.assertNotIn('AND message_id >= %d' % (LARGER_THAN_MAX_MESSAGE_ID,), queries[0]['sql'])
+
+        sql = queries[0]['sql']
+
+        # An upper limit is not needed here.
+        self.assertNotIn('AND message_id <=', sql)
+
+        # We should only have one lower bound.
+        first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+        m = re.findall('AND message_id >= (\d+)', str(sql))
+        self.assertEqual(m, [str(first_visible_message_id)])
 
         first_visible_message_id = 5
         with mock.patch("zerver.views.messages.get_first_visible_message_id", return_value=first_visible_message_id):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
             queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
-            self.assertIn('AND message_id >= %d' % (first_visible_message_id,), queries[0]['sql'])
+            sql = queries[0]['sql']
+
+            m = re.findall('AND message_id >= (\d+)', str(sql))
+            self.assertEqual(m, [str(first_visible_message_id)])
 
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:
         """
