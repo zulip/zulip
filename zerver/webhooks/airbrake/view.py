@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Text
+from typing import Any, Dict, Text, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -17,8 +17,13 @@ AIRBRAKE_MESSAGE_TEMPLATE = '[{error_class}]({error_url}): "{error_message}" occ
 @has_request_variables
 def api_airbrake_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any] = REQ(argument_type='body'),
+                         topic: Optional[Text]=REQ(default=None),
                          stream: Text = REQ(default='airbrake')) -> HttpResponse:
-    subject = get_subject(payload)
+    if topic is not None:
+        subject = topic
+    else:
+        subject = get_subject(payload)
+
     body = get_body(payload)
     check_send_stream_message(user_profile, request.client,
                               stream, subject, body)

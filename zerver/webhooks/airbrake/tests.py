@@ -10,3 +10,9 @@ class AirbrakeHookTests(WebhookTestCase):
         expected_subject = u"ZulipIntegrationTest"
         expected_message = u"[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): \"Error message from logger\" occurred."
         self.send_and_test_stream_message('error_message', expected_subject, expected_message)
+
+    def test_airbrake_custom_topic(self) -> None:
+        self.url = self.build_webhook_url(topic="Custom Topic")
+        expected_subject = u"Custom Topic"
+        expected_message = u"[ZeroDivisionError](https://zulip.airbrake.io/projects/125209/groups/1705190192091077626): \"Error message from logger\" occurred."
+        self.send_and_test_stream_message('error_message', expected_subject, expected_message)
