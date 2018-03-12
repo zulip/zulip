@@ -1959,11 +1959,6 @@ class Service(models.Model):
         return self._interfaces[self.interface]
 
 
-def get_realm_outgoing_webhook_services_name(realm: Realm) -> List[Any]:
-    return list(Service.objects.filter(
-        user_profile__realm=realm, user_profile__is_bot=True,
-        user_profile__bot_type=UserProfile.OUTGOING_WEBHOOK_BOT).values('name'))
-
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
 
