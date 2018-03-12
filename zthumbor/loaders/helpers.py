@@ -35,7 +35,7 @@ else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
 def get_secret(key):
-    # type: (str) -> Any
+    # type: (str) -> Optional[Text]
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return None
