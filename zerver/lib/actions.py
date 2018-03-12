@@ -2542,6 +2542,13 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                                   if stream.invite_only]
     new_vacant_public_streams = [stream for stream in new_vacant_streams
                                  if not stream.invite_only]
+
+    altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
+    streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
+    for (sub, stream) in subs_to_deactivate:
+        streams_by_user[sub.user_profile_id].append(stream)
+        altered_user_dict[stream.id].append(sub.user_profile)
+
     if new_vacant_public_streams:
         event = dict(type="stream", op="vacate",
                      streams=[stream.to_dict()
@@ -2550,13 +2557,11 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     if new_vacant_private_streams:
         # Deactivate any newly-vacant private streams
         for stream in new_vacant_private_streams:
+            stream_dict = stream.to_dict()
             do_deactivate_stream(stream)
-
-    altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
-    streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
-    for (sub, stream) in subs_to_deactivate:
-        streams_by_user[sub.user_profile_id].append(stream)
-        altered_user_dict[stream.id].append(sub.user_profile)
+            # send delete stream event to last user unsubscribed
+            event = dict(type="stream", op="delete", streams=[stream_dict])
+            send_event(event, [u.id for u in altered_user_dict[stream.id]])
 
     for user_profile in users:
         if len(streams_by_user[user_profile.id]) == 0:

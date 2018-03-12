@@ -670,12 +670,17 @@ function ajaxSubscribe(stream) {
     });
 }
 
-function ajaxUnsubscribe(sub) {
+function ajaxUnsubscribe(stream_name, is_last_user) {
     // TODO: use stream_id when backend supports it
     return channel.del({
         url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name]) },
+        data: {subscriptions: JSON.stringify([stream_name]) },
         success: function () {
+            if (is_last_user) {
+                $(".active_stream_row").remove();
+                $(".settings").hide();
+                $(".nothing-selected").show();
+            }
             $(".stream_change_property_info").hide();
             // The rest of the work is done via the unsubscribe event we will get
         },
@@ -699,9 +704,29 @@ exports.new_stream_clicked = function () {
     stream_create.new_stream_clicked(stream);
 };
 
+exports.display_unsubscribe_prompt = function (sub) {
+    var unsubscribe_stream_modal = templates.render('unsubscribe-stream-modal', {stream_name: sub.name});
+    $(".subscription_settings").append(unsubscribe_stream_modal);
+    overlays.open_modal("unsubscribe_stream_modal");
+    $("#unsubscribe_stream_modal").on("click", "#do_unsubscribe_stream_button", function () {
+        var stream_name = $("#do_unsubscribe_stream_button").data("stream");
+        overlays.close_modal("unsubscribe_stream_modal");
+        $("#unsubscribe_stream_modal").remove();
+        ajaxUnsubscribe(stream_name, true);
+    });
+
+    $(".subscription_settings").on("hide.bs.modal", "#unsubscribe_stream_modal", function () {
+        $("#unsubscribe_stream_modal").remove();
+    });
+};
+
 exports.sub_or_unsub = function (sub) {
     if (sub.subscribed) {
-        ajaxUnsubscribe(sub);
+        if (sub.invite_only && Object.keys(sub.subscribers._items).length === 1) {
+            exports.display_unsubscribe_prompt(sub);
+        } else {
+            ajaxUnsubscribe(sub.name);
+        }
     } else {
         ajaxSubscribe(sub.name);
     }
