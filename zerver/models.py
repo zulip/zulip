@@ -765,14 +765,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.bot_type == UserProfile.INCOMING_WEBHOOK_BOT
 
     @property
-    def is_outgoing_webhook_bot(self) -> bool:
-        return self.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT
-
-    @property
-    def is_embedded_bot(self) -> bool:
-        return self.bot_type == UserProfile.EMBEDDED_BOT
-
-    @property
     def allowed_bot_types(self) -> List[int]:
         allowed_bot_types = []
         if self.is_realm_admin or \
