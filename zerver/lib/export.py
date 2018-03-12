@@ -1274,11 +1274,11 @@ def convert_to_id_fields(data: TableData, table: TableName, field_name: Field) -
         item[field_name + "_id"] = item[field_name]
         del item[field_name]
 
-def re_map_foreign_keys(data: TableData,
-                        table: TableName,
+def re_map_foreign_keys(data_table: List[Record],
                         field_name: Field,
                         related_table: TableName,
-                        verbose: bool=False) -> None:
+                        verbose: bool=False,
+                        id_field: bool=False) -> None:
     '''
     We occasionally need to assign new ids to rows during the
     import/export process, to accommodate things like existing rows
@@ -1289,19 +1289,22 @@ def re_map_foreign_keys(data: TableData,
     the re-mapping.  (It also appends `_id` to the field.)
     '''
     lookup_table = id_maps[related_table]
-    for item in data[table]:
+    for item in data_table:
         old_id = item[field_name]
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
             if verbose:
-                logging.info('Remapping %s%s from %s to %s' % (table,
+                logging.info('Remapping %s%s from %s to %s' % (data_table,
                                                                field_name + '_id',
                                                                old_id,
                                                                new_id))
         else:
             new_id = old_id
-        item[field_name + "_id"] = new_id
-        del item[field_name]
+        if not id_field:
+            item[field_name + "_id"] = new_id
+            del item[field_name]
+        else:
+            item[field_name] = new_id
 
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
@@ -1501,7 +1504,7 @@ def do_import_realm(import_dir: Path) -> Realm:
 
     fix_datetime_fields(data, 'zerver_userprofile')
     convert_to_id_fields(data, 'zerver_userprofile', 'realm')
-    re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_userprofile'], 'bot_owner', related_table="user_profile")
     convert_to_id_fields(data, 'zerver_userprofile', 'default_sending_stream')
     convert_to_id_fields(data, 'zerver_userprofile', 'default_events_register_stream')
     for user_profile_dict in data['zerver_userprofile']:
@@ -1519,22 +1522,22 @@ def do_import_realm(import_dir: Path) -> Realm:
         bulk_import_model(data, Huddle, 'zerver_huddle')
 
     bulk_import_model(data, Recipient, 'zerver_recipient')
-    re_map_foreign_keys(data, 'zerver_subscription', 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_subscription'], 'user_profile', related_table="user_profile")
     convert_to_id_fields(data, 'zerver_subscription', 'recipient')
     bulk_import_model(data, Subscription, 'zerver_subscription')
 
     fix_datetime_fields(data, 'zerver_userpresence')
-    re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
-    re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
+    re_map_foreign_keys(data['zerver_userpresence'], 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_userpresence'], 'client', related_table='client')
     bulk_import_model(data, UserPresence, 'zerver_userpresence')
 
     fix_datetime_fields(data, 'zerver_useractivity')
-    re_map_foreign_keys(data, 'zerver_useractivity', 'user_profile', related_table="user_profile")
-    re_map_foreign_keys(data, 'zerver_useractivity', 'client', related_table='client')
+    re_map_foreign_keys(data['zerver_useractivity'], 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_useractivity'], 'client', related_table='client')
     bulk_import_model(data, UserActivity, 'zerver_useractivity')
 
     fix_datetime_fields(data, 'zerver_useractivityinterval')
-    re_map_foreign_keys(data, 'zerver_useractivityinterval', 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_useractivityinterval'], 'user_profile', related_table="user_profile")
     bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
 
     # Import uploaded files and avatars
@@ -1588,9 +1591,9 @@ def import_message_data(import_dir: Path) -> None:
             data = ujson.load(f)
 
         logging.info("Importing message dump %s" % (message_filename,))
-        re_map_foreign_keys(data, 'zerver_message', 'sender', related_table="user_profile")
+        re_map_foreign_keys(data['zerver_message'], 'sender', related_table="user_profile")
         convert_to_id_fields(data, 'zerver_message', 'recipient')
-        re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
+        re_map_foreign_keys(data['zerver_message'], 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
         bulk_import_model(data, Message, 'zerver_message')
 
@@ -1598,7 +1601,7 @@ def import_message_data(import_dir: Path) -> None:
         # guaranteed to have already imported all the Message objects
         # for this batch of UserMessage objects.
         convert_to_id_fields(data, 'zerver_usermessage', 'message')
-        re_map_foreign_keys(data, 'zerver_usermessage', 'user_profile', related_table="user_profile")
+        re_map_foreign_keys(data['zerver_usermessage'], 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
 
@@ -1609,7 +1612,7 @@ def import_attachments(data: TableData) -> None:
     # Clean up the data in zerver_attachment that is not
     # relevant to our many-to-many import.
     fix_datetime_fields(data, 'zerver_attachment')
-    re_map_foreign_keys(data, 'zerver_attachment', 'owner', related_table="user_profile")
+    re_map_foreign_keys(data['zerver_attachment'], 'owner', related_table="user_profile")
     convert_to_id_fields(data, 'zerver_attachment', 'realm')
 
     # Configure ourselves.  Django models many-to-many (m2m)
