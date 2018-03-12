@@ -346,15 +346,12 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject()) {
-        // If the user has filled in a subject, we have
-        // a risk of a mix, and we can't reliably guess
-        // whether the old topic is appropriate (otherwise,
-        // why did they narrow?) or the new one is
-        // appropriate (after all, they were starting to
-        // compose on the old topic and may now be looking
-        // for info), so we punt and cancel.
-        exports.cancel();
+    if (compose_state.subject() && $("#new_message_content").val().length > 0) {
+        // if the length of the message is greater than 0,
+        // we want to keep the compose box open still, but
+        // we want to make sure that the topic remains the
+        // same to avoid spilling information to the wrong
+        // topic.
         return;
     }
 
