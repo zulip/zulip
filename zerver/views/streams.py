@@ -25,7 +25,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -63,7 +63,7 @@ def principal_to_user_profile(agent, principal):
 @require_realm_admin
 def deactivate_stream_backend(request, user_profile, stream_id):
     # type: (HttpRequest, UserProfile, int) -> HttpResponse
-    stream = access_stream_for_delete(user_profile, stream_id)
+    stream = access_stream_for_delete_or_update(user_profile, stream_id)
     do_deactivate_stream(stream)
     return json_success()
 
@@ -148,8 +148,8 @@ def update_stream_backend(
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[Text]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
 
+    stream = access_stream_for_delete_or_update(user_profile, stream_id)
     if description is not None:
         do_change_stream_description(stream, description)
     if new_name is not None:
@@ -161,7 +161,10 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name)
+    # We allow realm admin to update unsubscribed private stream name and description.
+    # But can not change unsubscribed private stream type.
     if is_private is not None:
+        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
         do_change_stream_invite_only(stream, is_private)
     return json_success()
 
@@ -217,6 +220,8 @@ def remove_subscriptions_backend(
 
     removing_someone_else = principals and \
         set(principals) != set((user_profile.email,))
+    # Realm admin can remove people from any stream, even if it's private
+    # stream and realm admin is not subscribed to it.
     if removing_someone_else and not user_profile.is_realm_admin:
         # You can only unsubscribe other people from a stream if you are a realm
         # admin.
@@ -227,13 +232,6 @@ def remove_subscriptions_backend(
         streams_as_dict.append({"name": stream_name.strip()})
 
     streams, __ = list_to_streams(streams_as_dict, user_profile)
-
-    for stream in streams:
-        if removing_someone_else and stream.invite_only and \
-                not subscribed_to_stream(user_profile, stream.id):
-            # Even as an admin, you can't remove other people from an
-            # invite-only stream you're not on.
-            return json_error(_("Cannot administer invite-only streams this way"))
 
     if principals:
         people_to_unsub = set(principal_to_user_profile(
@@ -412,7 +410,7 @@ def add_subscriptions_backend(
 @has_request_variables
 def get_subscribers_backend(request: HttpRequest, user_profile: UserProfile,
                             stream_id: int=REQ('stream', converter=to_non_negative_int)) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
     subscribers = get_subscriber_emails(stream, user_profile)
 
     return json_success({'subscribers': subscribers})
