@@ -1589,7 +1589,7 @@ class UserPresence(models.Model):
             return 'active'
         elif status == UserPresence.IDLE:
             return 'idle'
-        else:
+        else:  # nocoverage # TODO: Add a presence test to cover this.
             raise ValueError('Unknown status: %s' % (status,))
 
     @staticmethod
@@ -1605,7 +1605,8 @@ class UserPresence(models.Model):
         presence_rows = list(query)
 
         mobile_user_ids = set()  # type: Set[int]
-        if PushDeviceToken.objects.filter(user=user_profile).exists():
+        if PushDeviceToken.objects.filter(user=user_profile).exists():  # nocoverage
+            # TODO: Add a test, though this is low priority, since we don't use mobile_user_ids yet.
             mobile_user_ids.add(user_profile.id)
 
         return UserPresence.get_status_dicts_for_rows(presence_rows, mobile_user_ids)
