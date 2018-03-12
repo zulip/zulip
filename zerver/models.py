@@ -1884,7 +1884,7 @@ class CustomProfileField(models.Model):
             'type': self.field_type,
         }
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "<CustomProfileField: %s %s %s>" % (self.realm, self.name, self.field_type)
 
 def custom_profile_fields_for_realm(realm_id: int) -> List[CustomProfileField]:
@@ -1898,7 +1898,7 @@ class CustomProfileFieldValue(models.Model):
     class Meta:
         unique_together = ('user_profile', 'field')
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "<CustomProfileFieldValue: %s %s %s>" % (self.user_profile, self.field, self.value)
 
 # Interfaces for services
