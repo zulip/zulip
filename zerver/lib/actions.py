@@ -196,8 +196,26 @@ def realm_user_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
 
 def get_topic_history_for_stream(user_profile: UserProfile,
-                                 recipient: Recipient) -> List[Dict[str, Any]]:
-    query = '''
+                                 recipient: Recipient,
+                                 public_history: bool) -> List[Dict[str, Any]]:
+    cursor = connection.cursor()
+    if public_history:
+        query = '''
+        SELECT
+            "zerver_message"."subject" as topic,
+            max("zerver_message".id) as max_message_id
+        FROM "zerver_message"
+        WHERE (
+            "zerver_message"."recipient_id" = %s
+        )
+        GROUP BY (
+            "zerver_message"."subject"
+        )
+        ORDER BY max("zerver_message".id) DESC
+        '''
+        cursor.execute(query, [recipient.id])
+    else:
+        query = '''
         SELECT
             "zerver_message"."subject" as topic,
             max("zerver_message".id) as max_message_id
@@ -213,9 +231,8 @@ def get_topic_history_for_stream(user_profile: UserProfile,
             "zerver_message"."subject"
         )
         ORDER BY max("zerver_message".id) DESC
-    '''
-    cursor = connection.cursor()
-    cursor.execute(query, [user_profile.id, recipient.id])
+        '''
+        cursor.execute(query, [user_profile.id, recipient.id])
     rows = cursor.fetchall()
     cursor.close()
 

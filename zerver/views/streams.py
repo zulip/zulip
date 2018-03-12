@@ -440,6 +440,7 @@ def get_topics_backend(request: HttpRequest, user_profile: UserProfile,
     result = get_topic_history_for_stream(
         user_profile=user_profile,
         recipient=recipient,
+        public_history=not stream.invite_only,
     )
 
     return json_success(dict(topics=result))

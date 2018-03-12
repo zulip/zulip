@@ -24,6 +24,7 @@ from zerver.lib.actions import (
     do_create_user,
     get_client,
     do_add_alert_words,
+    do_change_stream_invite_only,
 )
 
 from zerver.lib.message import (
@@ -87,6 +88,7 @@ class TopicHistoryTest(ZulipTestCase):
         recipient = get_stream_recipient(stream.id)
 
         def create_test_message(topic: str) -> int:
+            # TODO: Clean this up to send messages the normal way.
 
             hamlet = self.example_user('hamlet')
             message = Message.objects.create(
@@ -143,6 +145,46 @@ class TopicHistoryTest(ZulipTestCase):
             topic1_msg_id,
             topic2_msg_id,
         ])
+
+        # Now try as cordelia, who we imagine as a totally new user in
+        # that she doesn't have UserMessage rows.  We should see the
+        # same results for a public stream.
+        self.login(self.example_email("cordelia"))
+        result = self.client_get(endpoint, dict())
+        self.assert_json_success(result)
+        history = result.json()['topics']
+
+        # We only look at the most recent three topics, because
+        # the prior fixture data may be unreliable.
+        history = history[:3]
+
+        self.assertEqual([topic['name'] for topic in history], [
+            'topic0',
+            'topic1',
+            'topic2',
+        ])
+        self.assertIn('topic0', [topic['name'] for topic in history])
+
+        self.assertEqual([topic['max_id'] for topic in history], [
+            topic0_msg_id,
+            topic1_msg_id,
+            topic2_msg_id,
+        ])
+
+        # Now make stream private, but subscribe cordelia
+        do_change_stream_invite_only(stream, True)
+        self.subscribe(self.example_user("cordelia"), stream.name)
+
+        result = self.client_get(endpoint, dict())
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        history = history[:3]
+
+        # Cordelia doesn't have these recent history items when we
+        # wasn't subscribed in her results.
+        self.assertNotIn('topic0', [topic['name'] for topic in history])
+        self.assertNotIn('topic1', [topic['name'] for topic in history])
+        self.assertNotIn('topic2', [topic['name'] for topic in history])
 
     def test_bad_stream_id(self) -> None:
         email = self.example_email("iago")
