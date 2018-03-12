@@ -16,8 +16,8 @@ from zerver.models import UserProfile
 from typing import Dict, List, Optional
 
 @has_request_variables
-def update_storage(request, user_profile, storage=REQ(validator=check_dict([]))):
-    # type: (HttpRequest, UserProfile, Dict[str, str]) -> HttpResponse
+def update_storage(request: HttpRequest, user_profile: UserProfile,
+                   storage: Dict[str, str]=REQ(validator=check_dict([]))) -> HttpResponse:
     try:
         set_bot_storage(user_profile, list(storage.items()))
     except StateError as e:
@@ -25,8 +25,11 @@ def update_storage(request, user_profile, storage=REQ(validator=check_dict([])))
     return json_success()
 
 @has_request_variables
-def get_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
+def get_storage(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None)
+) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:
         storage = {key: get_bot_storage(user_profile, key) for key in keys}
@@ -35,8 +38,11 @@ def get_storage(request, user_profile, keys=REQ(validator=check_list(check_strin
     return json_success({'storage': storage})
 
 @has_request_variables
-def remove_storage(request, user_profile, keys=REQ(validator=check_list(check_string), default=None)):
-    # type: (HttpRequest, UserProfile, Optional[List[str]]) -> HttpResponse
+def remove_storage(
+        request: HttpRequest,
+        user_profile: UserProfile,
+        keys: Optional[List[str]]=REQ(validator=check_list(check_string), default=None)
+) -> HttpResponse:
     keys = keys or get_keys_in_bot_storage(user_profile)
     try:
         remove_bot_storage(user_profile, keys)

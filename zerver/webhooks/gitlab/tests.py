@@ -407,8 +407,7 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Pipeline Hook"
         )
 
-    def test_issue_type_test_payload(self):
-        # type: () -> None
+    def test_issue_type_test_payload(self) -> None:
         expected_subject = u'public-repo'
         expected_message = u"Webhook for **public-repo** has been configured successfully! :tada:"
 

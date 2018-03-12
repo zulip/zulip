@@ -465,6 +465,14 @@ def build_custom_checkers(by_lang):
          'description': "Use `id` instead of `pk`.",
          'good_lines': ['if my_django_model.id == 42', 'self.user_profile._meta.pk'],
          'bad_lines': ['if my_django_model.pk == 42']},
+        {'pattern': '^[ ]*# type: \(',
+         'exclude': set(['scripts/', 'tools/', 'puppet/', 'zerver/tests', 'zerver/lib/api_test_helpers.py',
+                         'zerver/lib/cache.py', 'zerver/models.py', 'zerver/lib/stream_subscription.py',
+                         'zerver/tornado/descriptors.py', 'zerver/views/streams.py',
+                         'zthumbor/'  # thumbor is (currently) python2 only
+                         ]),
+         'description': 'Python2 function type annotation. Use Python3-style annotation instead.',
+         },
     ]) + whitespace_rules + comma_whitespace_rule
     bash_rules = cast(RuleList, [
         {'pattern': '#!.*sh [-xe]',

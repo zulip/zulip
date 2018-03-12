@@ -4,19 +4,15 @@ from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.template import Library, Node, TemplateSyntaxError
 
-if False:
-    # no need to add dependency
-    from django.template.base import Parser, Token
+from django.template.base import Parser, Token
 
 register = Library()
 
 class MinifiedJSNode(Node):
-    def __init__(self, sourcefile):
-        # type: (str) -> None
+    def __init__(self, sourcefile: str) -> None:
         self.sourcefile = sourcefile
 
-    def render(self, context):
-        # type: (Dict[str, Any]) -> str
+    def render(self, context: Dict[str, Any]) -> str:
         if settings.DEBUG:
             source_files = settings.JS_SPECS[self.sourcefile]
             normal_source = source_files['source_filenames']
@@ -34,8 +30,7 @@ class MinifiedJSNode(Node):
 
 
 @register.tag
-def minified_js(parser, token):
-    # type: (Parser, Token) -> MinifiedJSNode
+def minified_js(parser: Parser, token: Token) -> MinifiedJSNode:
     try:
         tag_name, sourcefile = token.split_contents()
     except ValueError:

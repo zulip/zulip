@@ -14,7 +14,7 @@ from zerver.lib.exceptions import JsonableError, ErrorCode
 
 from django.http import HttpRequest, HttpResponse
 
-from typing import Any, Callable, Type
+from typing import Any, Callable, Type, TypeVar
 
 class RequestVariableMissingError(JsonableError):
     code = ErrorCode.REQUEST_VARIABLE_MISSING
@@ -101,8 +101,10 @@ class REQ:
 # Note that this can't be used in helper functions which are not
 # expected to call json_error or json_success, as it uses json_error
 # internally when it encounters an error
-def has_request_variables(view_func):
-    # type: (Callable[[HttpRequest, Any, Any], HttpResponse]) -> Callable[[HttpRequest, *Any, **Any], HttpResponse]
+
+ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
+
+def has_request_variables(view_func: ViewFuncT) -> ViewFuncT:
     num_params = view_func.__code__.co_argcount
     if view_func.__defaults__ is None:
         num_default_params = 0

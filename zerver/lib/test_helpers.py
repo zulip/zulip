@@ -115,8 +115,7 @@ def simulated_empty_cache() -> Generator[
         cache_queries.append(('get', key, cache_name))
         return None
 
-    def my_cache_get_many(keys, cache_name=None):  # nocoverage -- simulated code doesn't use this
-        # type: (List[Text], Optional[str]) -> Dict[Text, Any]
+    def my_cache_get_many(keys: List[Text], cache_name: Optional[str]=None) -> Dict[Text, Any]:  # nocoverage -- simulated code doesn't use this
         cache_queries.append(('getmany', keys, cache_name))
         return {}
 

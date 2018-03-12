@@ -777,8 +777,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return self.is_bot and self.bot_type in UserProfile.SERVICE_BOT_TYPES
 
     @property
-    def allowed_bot_types(self):
-        # type: () -> List[int]
+    def allowed_bot_types(self) -> List[int]:
         allowed_bot_types = []
         if self.is_realm_admin or \
                 not self.realm.bot_creation_policy == Realm.BOT_CREATION_LIMIT_GENERIC_BOTS:

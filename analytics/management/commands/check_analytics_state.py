@@ -29,8 +29,7 @@ class Command(BaseCommand):
 
     Run as a cron job that runs every hour."""
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         fill_state = self.get_fill_state()
         status = fill_state['status']
         message = fill_state['message']
@@ -43,8 +42,7 @@ class Command(BaseCommand):
                 int(time.time()), status, states[status], message))
         subprocess.check_call(["mv", state_file_tmp, state_file_path])
 
-    def get_fill_state(self):
-        # type: () -> Dict[str, Any]
+    def get_fill_state(self) -> Dict[str, Any]:
         if not Realm.objects.exists():
             return {'status': 0, 'message': 'No realms exist, so not checking FillState.'}
 
