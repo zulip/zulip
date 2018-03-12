@@ -164,7 +164,9 @@
         $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
         $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
         $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
-        $("#sso-login").attr('href', $("#sso-login").attr('href') + window.location.hash.slice(1));
+
+        var sso_address = $("#sso-login").attr('href');
+        $("#sso-login").attr('href', sso_address + window.location.hash);
     }
     </script>
 

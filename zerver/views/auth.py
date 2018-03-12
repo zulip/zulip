@@ -218,12 +218,6 @@ def remote_user_sso(request: HttpRequest,
     user_profile = authenticate(remote_user=remote_user, realm=realm)
 
     redirect_to = request.GET.get('next', '')
-    # We decide whether the next link is a narrow or not based on the fact that
-    # either the path will be relative and hence begin with a '/' or be a narrow
-    # in which case it should have had a '#' in the start but we removed that
-    # using Js so that the narrow path could make it to the backend.
-    if not redirect_to.startswith('/') and redirect_to != '':
-        redirect_to = '/#' + redirect_to
 
     return login_or_register_remote_user(request, remote_user, user_profile,
                                          mobile_flow_otp=mobile_flow_otp,

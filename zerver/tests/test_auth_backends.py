@@ -1709,8 +1709,13 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertEqual('http://zulip.testserver', res.url)
         res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
         self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
-        res = test_with_redirect_to_param_set_as_next('narrow/stream/7-test-here')
-        self.assertEqual('http://zulip.testserver/#narrow/stream/7-test-here', res.url)
+
+        # In SSO based auth we never make browser send the hash to the backend.
+        # Rather we depend upon the browser's behaviour of persisting hash anchors
+        # in between redirect requests. See below stackoverflow conversation
+        # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
+        res = test_with_redirect_to_param_set_as_next('#narrow/stream/7-test-here')
+        self.assertEqual('http://zulip.testserver', res.url)
 
 class TestJWTLogin(ZulipTestCase):
     """
