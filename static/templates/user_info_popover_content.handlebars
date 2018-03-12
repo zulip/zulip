@@ -13,7 +13,8 @@
         </li>
 
         {{#if is_active }}
-        <li class='my_email'>
+        <li class="my_email">
+            <i class="fa fa-clone hide_copy_icon" data-clipboard-text="{{ user_email }}"></i>
             {{ user_email }}
             <div class="tooltip_holder">
                 <span class="email_tooltip">{{ user_email }}</span>

@@ -34,6 +34,37 @@ var list_of_popovers = [];
     }
 }($.fn.popover));
 
+function copy_email_handler(e) {
+    var email_el = $(e.trigger.parentElement);
+    var copy_icon = email_el.find('i');
+
+    // only change the parent element's text back to email
+    // and not overwrite the tooltip.
+    var email_textnode = email_el[0].childNodes[2];
+
+    email_el.addClass('email_copied');
+    email_textnode.nodeValue = i18n.t('Email copied');
+
+    setTimeout(function () {
+      email_el.removeClass('email_copied');
+      email_textnode.nodeValue = copy_icon.attr('data-clipboard-text');
+    }, 1500);
+    e.clearSelection();
+}
+
+function init_email_clipboard() {
+    $('.my_email').each(function () {
+        if (this.clientWidth < this.scrollWidth) {
+            var email_el = $(this);
+            var copy_email_icon = email_el.find('i');
+            copy_email_icon.removeClass('hide_copy_icon');
+
+            var copy_email_clipboard = new Clipboard(copy_email_icon[0]);
+            copy_email_clipboard.on('success', copy_email_handler);
+        }
+    });
+}
+
 function load_medium_avatar(user, elt) {
     var user_avatar_url = "avatar/" + user.user_id + "/medium";
     var sender_avatar_medium = new Image();
@@ -134,6 +165,7 @@ function show_user_info_popover(element, user, message) {
         });
         elt.popover("show");
 
+        init_email_clipboard();
         load_medium_avatar(user, $(".popover-avatar"));
 
         current_message_info_popover_elem = elt;
@@ -630,6 +662,7 @@ exports.register_click_handlers = function () {
         });
         target.popover("show");
 
+        init_email_clipboard();
         load_medium_avatar(user, $(".popover-avatar"));
 
         current_user_sidebar_user_id = user_id;
@@ -827,7 +860,6 @@ exports.register_click_handlers = function () {
             last_scroll = date;
         });
     }());
-
 };
 
 exports.any_active = function () {
