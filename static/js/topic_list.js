@@ -258,11 +258,11 @@ exports.zoom_in = function () {
             active_widget.show_no_more_topics();
         }
 
-        $('#stream-filters-container').perfectScrollbar('update');
+        ui.update_scrollbar($("#stream-filters-container"));
     }
 
     $('#stream-filters-container').scrollTop(0);
-    $('#stream-filters-container').perfectScrollbar('update');
+    ui.update_scrollbar($("#stream-filters-container"));
     active_widget.show_spinner();
     topic_data.get_server_history(stream_id, on_success);
 };
