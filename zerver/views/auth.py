@@ -16,6 +16,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.utils.translation import ugettext as _
+from django.utils.http import is_safe_url
 from django.core import signing
 import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
@@ -46,6 +47,13 @@ import logging
 import requests
 import time
 import ujson
+
+def get_safe_redirect_to(url: Text, redirect_host: Text) -> Text:
+    is_url_safe = is_safe_url(url=url, host=redirect_host)
+    if is_url_safe:
+        return urllib.parse.urljoin(redirect_host, url)
+    else:
+        return redirect_host
 
 def create_preregistration_user(email: Text, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True) -> HttpResponse:
@@ -591,7 +599,10 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if user_profile is None:
         return HttpResponseRedirect(reverse('dev_not_supported'))
     do_login(request, user_profile)
-    return HttpResponseRedirect(user_profile.realm.uri)
+
+    next = request.GET.get('next', '')
+    redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
+    return HttpResponseRedirect(redirect_to)
 
 @csrf_exempt
 @require_post

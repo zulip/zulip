@@ -17,7 +17,7 @@
                         <h2>{{ _('Administrators') }}</h2>
                         {% if direct_admins %}
                             {% for direct_admin in direct_admins %}
-                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.email }}" /></p>
                             {% endfor %}
                         {% else %}
@@ -29,7 +29,7 @@
                         <h2>{{ _('Normal users') }}</h2>
                         {% if direct_users %}
                             {% for direct_user in direct_users %}
-                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.email }}" /></p>
                             {% endfor %}
                         {% else %}

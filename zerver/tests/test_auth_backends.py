@@ -1459,6 +1459,20 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_redirect_to_next_url(self) -> None:
+        def do_local_login(formaction: Text) -> HttpResponse:
+            user_email = self.example_email('hamlet')
+            data = {'direct_email': user_email}
+            return self.client_post(formaction, data)
+
+        res = do_local_login('/accounts/login/local/')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver')
+
+        res = do_local_login('/accounts/login/local/?next=/user_uploads/path_to_image')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver/user_uploads/path_to_image')
+
     def test_login_with_subdomain(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
