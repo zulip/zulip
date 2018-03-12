@@ -1219,6 +1219,7 @@ id_maps = {
     'client': {},
     'user_profile': {},
     'realm': {},
+    'stream': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1279,7 +1280,8 @@ def re_map_foreign_keys(data_table: List[Record],
                         field_name: Field,
                         related_table: TableName,
                         verbose: bool=False,
-                        id_field: bool=False) -> None:
+                        id_field: bool=False,
+                        recipient_field: bool=False) -> None:
     '''
     We occasionally need to assign new ids to rows during the
     import/export process, to accommodate things like existing rows
@@ -1291,6 +1293,13 @@ def re_map_foreign_keys(data_table: List[Record],
     '''
     lookup_table = id_maps[related_table]
     for item in data_table:
+        if recipient_field:
+            if related_table == "stream" and item['type'] == 2:
+                pass
+            elif related_table == "user_profile" and item['type'] == 1:
+                pass
+            else:
+                continue
         old_id = item[field_name]
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
@@ -1467,7 +1476,12 @@ def do_import_realm(import_dir: Path) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
-    convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
+    stream_id_list = current_table_ids(data, 'zerver_stream')
+    allocated_stream_id_list = allocate_ids(Stream, len(data['zerver_stream']))
+    for item in range(len(data['zerver_stream'])):
+        update_id_map('stream', stream_id_list[item], allocated_stream_id_list[item])
+    re_map_foreign_keys(data['zerver_realm'], 'notifications_stream', related_table="stream")
+
     fix_datetime_fields(data, 'zerver_realm')
     fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
     realm_id_list = current_table_ids(data, 'zerver_realm')
@@ -1489,12 +1503,13 @@ def do_import_realm(import_dir: Path) -> Realm:
     # Stream objects are created by Django.
     fix_datetime_fields(data, 'zerver_stream')
     re_map_foreign_keys(data['zerver_stream'], 'realm', related_table="realm")
+    re_map_foreign_keys(data['zerver_stream'], 'id', related_table="stream", id_field=True)
     bulk_import_model(data, Stream, 'zerver_stream')
 
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
 
-    convert_to_id_fields(data, "zerver_defaultstream", 'stream')
+    re_map_foreign_keys(data['zerver_defaultstream'], 'stream', related_table="stream")
     for (table, model) in realm_tables:
         re_map_foreign_keys(data[table], 'realm', related_table="realm")
         bulk_import_model(data, model, table)
@@ -1514,8 +1529,9 @@ def do_import_realm(import_dir: Path) -> Realm:
     fix_datetime_fields(data, 'zerver_userprofile')
     re_map_foreign_keys(data['zerver_userprofile'], 'realm', related_table="realm")
     re_map_foreign_keys(data['zerver_userprofile'], 'bot_owner', related_table="user_profile")
-    convert_to_id_fields(data, 'zerver_userprofile', 'default_sending_stream')
-    convert_to_id_fields(data, 'zerver_userprofile', 'default_events_register_stream')
+    re_map_foreign_keys(data['zerver_userprofile'], 'default_sending_stream', related_table="stream")
+    re_map_foreign_keys(data['zerver_userprofile'], 'default_events_register_stream',
+                        related_table="stream")
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
         user_profile_dict['api_key'] = random_api_key()
@@ -1530,6 +1546,8 @@ def do_import_realm(import_dir: Path) -> Realm:
     if 'zerver_huddle' in data:
         bulk_import_model(data, Huddle, 'zerver_huddle')
 
+    re_map_foreign_keys(data['zerver_recipient'], 'type_id', related_table="stream",
+                        recipient_field=True, id_field=True)
     bulk_import_model(data, Recipient, 'zerver_recipient')
     re_map_foreign_keys(data['zerver_subscription'], 'user_profile', related_table="user_profile")
     convert_to_id_fields(data, 'zerver_subscription', 'recipient')
