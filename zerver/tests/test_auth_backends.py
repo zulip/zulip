@@ -642,6 +642,12 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.assertIn('is_signup=0', result.url)
         self.assertIn('image_path', result.url)
 
+        result = self.client_get('/accounts/login/social/github',
+                                 {'next': '/#narrow/stream/7-test-here'})
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+        self.assertIn('narrow', result.url)
+
     def test_signup_url(self) -> None:
         result = self.client_get('/accounts/register/social/github')
         self.assertIn(reverse('social:begin', args=['github']), result.url)
@@ -829,6 +835,10 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         res = test_redirect_to_next_url('/user_uploads/path_to_image')
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.url, 'http://zulip.testserver/user_uploads/path_to_image')
+
+        res = test_redirect_to_next_url('/#narrow/stream/7-test-here')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
 
     def test_log_into_subdomain(self) -> None:
         data = {'name': 'Full Name',
@@ -1506,6 +1516,14 @@ class TestDevAuthBackend(ZulipTestCase):
         res = do_local_login('/accounts/login/local/?next=/user_uploads/path_to_image')
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.url, 'http://zulip.testserver/user_uploads/path_to_image')
+
+        # In local Email based authentication we never make browser send the hash
+        # to the backend. Rather we depend upon the browser's behaviour of persisting
+        # hash anchors in between redirect requests. See below stackoverflow conversation
+        # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
+        res = do_local_login('/accounts/login/local/?next=#narrow/stream/7-test-here')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver')
 
     def test_login_with_subdomain(self) -> None:
         user_profile = self.example_user('hamlet')
