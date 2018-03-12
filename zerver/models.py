@@ -1619,8 +1619,13 @@ class UserPresence(models.Model):
         ).order_by('id').values_list('id', flat=True)
 
         user_profile_ids = list(user_profile_ids)
-
-        if not user_profile_ids:
+        if not user_profile_ids:  # nocoverage
+            # This conditional is necessary because query_for_ids
+            # throws an exception if passed an empty list.
+            #
+            # It's not clear this condition is actually possible,
+            # though, because it shouldn't be possible to end up with
+            # a realm with 0 active users.
             return {}
 
         two_weeks_ago = timezone_now() - datetime.timedelta(weeks=2)
