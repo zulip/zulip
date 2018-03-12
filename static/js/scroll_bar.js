@@ -1,9 +1,5 @@
 $(function () {
-    $("#stream-filters-container").perfectScrollbar({
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.5,
-    });
+    ui.set_up_scrollbar($("#stream-filters-container"));
 });
 
 
