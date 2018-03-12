@@ -1235,6 +1235,33 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
             if item[field_name] is not None:
                 item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
+def current_table_ids(data: TableData, table: TableName) -> List[int]:
+    """
+    Returns the ids present in the current table
+    """
+    id_list = []
+    for item in data[table]:
+        id_list.append(item["id"])
+    return id_list
+
+def idseq(model_class: Any) -> str:
+    return '{}_id_seq'.format(model_class._meta.db_table)
+
+def allocate_ids(model_class: Any, count: int) -> List[int]:
+    """
+    Increases the sequence number for a given table by the amount of objects being
+    imported into that table. Hence, this gives a reserved range of ids to import the
+    converted slack objects into the tables.
+    """
+    conn = connection.cursor()
+    sequence = idseq(model_class)
+    conn.execute("select nextval('%s') from generate_series(1,%s)" %
+                 (sequence, str(count)))
+    query = conn.fetchall()  # Each element in the result is a tuple like (5,)
+    conn.close()
+    # convert List[Tuple[int]] to List[int]
+    return [item[0] for item in query]
+
 def convert_to_id_fields(data: TableData, table: TableName, field_name: Field) -> None:
     '''
     When Django gives us dict objects via model_to_dict, the foreign
