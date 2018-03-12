@@ -1218,6 +1218,7 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path, chu
 id_maps = {
     'client': {},
     'user_profile': {},
+    'realm': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1345,6 +1346,7 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
 
+    re_map_foreign_keys(records, 'realm_id', related_table="realm", id_field=True)
     for record in records:
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
@@ -1384,6 +1386,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
 
+    re_map_foreign_keys(records, 'realm_id', related_table="realm", id_field=True)
     for record in records:
         key = Key(bucket)
 
@@ -1467,6 +1470,12 @@ def do_import_realm(import_dir: Path) -> Realm:
     convert_to_id_fields(data, 'zerver_realm', 'notifications_stream')
     fix_datetime_fields(data, 'zerver_realm')
     fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
+    realm_id_list = current_table_ids(data, 'zerver_realm')
+    allocated_realm_id_list = allocate_ids(Realm, len(data['zerver_realm']))
+    for item in range(len(data['zerver_realm'])):
+        update_id_map('realm', realm_id_list[item], allocated_realm_id_list[item])
+    re_map_foreign_keys(data['zerver_realm'], 'id', related_table="realm", id_field=True)
+
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
         notifications_stream_id = int(realm.notifications_stream_id)  # type: Optional[int]
@@ -1479,7 +1488,7 @@ def do_import_realm(import_dir: Path) -> Realm:
     # Email tokens will automatically be randomly generated when the
     # Stream objects are created by Django.
     fix_datetime_fields(data, 'zerver_stream')
-    convert_to_id_fields(data, 'zerver_stream', 'realm')
+    re_map_foreign_keys(data['zerver_stream'], 'realm', related_table="realm")
     bulk_import_model(data, Stream, 'zerver_stream')
 
     realm.notifications_stream_id = notifications_stream_id
@@ -1487,7 +1496,7 @@ def do_import_realm(import_dir: Path) -> Realm:
 
     convert_to_id_fields(data, "zerver_defaultstream", 'stream')
     for (table, model) in realm_tables:
-        convert_to_id_fields(data, table, 'realm')
+        re_map_foreign_keys(data[table], 'realm', related_table="realm")
         bulk_import_model(data, model, table)
 
     # Remap the user IDs for notification_bot and friends to their
@@ -1503,7 +1512,7 @@ def do_import_realm(import_dir: Path) -> Realm:
     data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
     fix_datetime_fields(data, 'zerver_userprofile')
-    convert_to_id_fields(data, 'zerver_userprofile', 'realm')
+    re_map_foreign_keys(data['zerver_userprofile'], 'realm', related_table="realm")
     re_map_foreign_keys(data['zerver_userprofile'], 'bot_owner', related_table="user_profile")
     convert_to_id_fields(data, 'zerver_userprofile', 'default_sending_stream')
     convert_to_id_fields(data, 'zerver_userprofile', 'default_events_register_stream')
@@ -1613,7 +1622,7 @@ def import_attachments(data: TableData) -> None:
     # relevant to our many-to-many import.
     fix_datetime_fields(data, 'zerver_attachment')
     re_map_foreign_keys(data['zerver_attachment'], 'owner', related_table="user_profile")
-    convert_to_id_fields(data, 'zerver_attachment', 'realm')
+    re_map_foreign_keys(data['zerver_attachment'], 'realm', related_table="realm")
 
     # Configure ourselves.  Django models many-to-many (m2m)
     # relations asymmetrically. The parent here refers to the
