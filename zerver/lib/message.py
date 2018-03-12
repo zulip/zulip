@@ -264,24 +264,23 @@ class MessageDict:
 
     @staticmethod
     def build_message_dict(
-            message,
-            message_id,
-            last_edit_time,
-            edit_history,
-            content,
-            subject,
-            pub_date,
-            rendered_content,
-            rendered_content_version,
-            sender_id,
-            sender_realm_id,
-            sending_client_name,
-            recipient_id,
-            recipient_type,
-            recipient_type_id,
-            reactions
-    ):
-        # type: (Optional[Message], int, Optional[datetime.datetime], Optional[Text], Text, Text, datetime.datetime, Optional[Text], Optional[int], int, int, Text, int, int, int, List[Dict[str, Any]]) -> Dict[str, Any]
+            message: Optional[Message],
+            message_id: int,
+            last_edit_time: Optional[datetime.datetime],
+            edit_history: Optional[Text],
+            content: Text,
+            subject: Text,
+            pub_date: datetime.datetime,
+            rendered_content: Optional[Text],
+            rendered_content_version: Optional[int],
+            sender_id: int,
+            sender_realm_id: int,
+            sending_client_name: Text,
+            recipient_id: int,
+            recipient_type: int,
+            recipient_type_id: int,
+            reactions: List[Dict[str, Any]]
+    ) -> Dict[str, Any]:
 
         obj = dict(
             id                = message_id,

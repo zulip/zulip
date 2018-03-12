@@ -281,8 +281,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
         return self.cleaned_data
 
-    def add_prefix(self, field_name):
-        # type: (Text) -> Text
+    def add_prefix(self, field_name: Text) -> Text:
         """Disable prefix, since Zulip doesn't use this Django forms feature
         (and django-two-factor does use it), and we'd like both to be
         happy with this form.

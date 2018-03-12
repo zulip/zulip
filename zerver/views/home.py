@@ -64,8 +64,7 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-def get_bot_types(user_profile):
-    # type: (UserProfile) -> List[Dict[Text, object]]
+def get_bot_types(user_profile: UserProfile) -> List[Dict[Text, object]]:
     bot_types = []
     for type_id, name in UserProfile.BOT_TYPES.items():
         bot_types.append({
