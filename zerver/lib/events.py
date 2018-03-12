@@ -4,6 +4,7 @@
 import copy
 import ujson
 
+from collections import defaultdict
 from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
@@ -54,10 +55,10 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile_id__in=[
         row['id'] for row in user_dicts
     ])
+    profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
     for profile_field in custom_profile_field_values:  # nocoverage # TODO: Fix this.
-        if 'profile' not in user_dicts[profile_field.user_profile_id]:
-            user_dicts[profile_field.user_profile_id]['profile'] = {}
-        user_dicts[profile_field.user_profile_id]['profile'][profile_field.field_id] = profile_field.value
+        user_id = profile_field.user_profile_id
+        profiles_by_user_id[user_id][profile_field.field_id] = profile_field.value
 
     def user_data(row: Dict[str, Any]) -> Dict[str, Any]:
         avatar_url = get_avatar_field(
@@ -83,7 +84,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
             is_active = row['is_active'],
         )
         if not is_bot:
-            result['profile_data'] = row.get('profile', {})
+            result['profile_data'] = profiles_by_user_id.get(row['id'], {})
         return result
 
     return {
