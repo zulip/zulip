@@ -87,11 +87,11 @@
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
 * [Desktop notifications](/help/configure-desktop-notifications)
-* [Audible notifications](/help/configure-audible-notifications)
 * [Email notifications](/help/configure-email-notifications)
 * [Mobile notifications](/help/configure-mobile-notifications)
 * [Digest emails](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/add-an-alert-word)
+* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
@@ -114,9 +114,7 @@
 # Zulip administration
 
 ## Organization basics
-* [Change your organization name](/help/change-your-organizations-name)
-* [Change your organization description](/help/change-your-organizations-description)
-* [Change your organization avatar](/help/change-your-organizations-avatar)
+* [Create your organization's profile](/help/create-your-organization-profile)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import data from Slack](/help/import-data-from-slack)
