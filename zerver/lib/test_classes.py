@@ -116,8 +116,7 @@ class ZulipTestCase(TestCase):
         return django_client.patch(url, encoded, **kwargs)
 
     @instrument_url
-    def client_patch_multipart(self, url, info={}, **kwargs):
-        # type: (Text, Dict[str, Any], **Any) -> HttpResponse
+    def client_patch_multipart(self, url: Text, info: Dict[str, Any]={}, **kwargs: Any) -> HttpResponse:
         """
         Use this for patch requests that have file uploads or
         that need some sort of multi-part content.  In the future

@@ -270,8 +270,8 @@ class Bitbucket2HookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
-    def test_bitbucket2_on_push_without_changes_ignore(self, check_send_stream_message_mock):
-        # type: (MagicMock) -> None
+    def test_bitbucket2_on_push_without_changes_ignore(
+            self, check_send_stream_message_mock: MagicMock) -> None:
         payload = self.get_body('push_without_changes')
         result = self.client_post(self.url, payload, content_type="application/json")
         self.assertFalse(check_send_stream_message_mock.called)

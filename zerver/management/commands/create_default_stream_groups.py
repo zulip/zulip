@@ -13,8 +13,7 @@ Create default stream groups which the users can choose during sign up.
 ./manage.py create_default_stream_groups -s gsoc-1,gsoc-2,gsoc-3 -d "Google summer of code"  -r zulip
 """
 
-    def add_arguments(self, parser):
-        # type: (ArgumentParser) -> None
+    def add_arguments(self, parser: ArgumentParser) -> None:
         self.add_realm_args(parser, True)
 
         parser.add_argument(
@@ -40,8 +39,7 @@ Create default stream groups which the users can choose during sign up.
             required=True,
             help='A comma-separated list of stream names.')
 
-    def handle(self, *args, **options):
-        # type: (*Any, **Any) -> None
+    def handle(self, *args: Any, **options: Any) -> None:
         realm = self.get_realm(options)
         assert realm is not None  # Should be ensured by parser
 

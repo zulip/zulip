@@ -4517,8 +4517,9 @@ def do_update_user_group_description(user_group: UserGroup, description: Text) -
     user_group.save(update_fields=['description'])
     do_send_user_group_update_event(user_group, dict(description=description))
 
-def do_update_outgoing_webhook_service(bot_profile, service_interface, service_payload_url):
-    # type: (UserProfile, int, Text) -> None
+def do_update_outgoing_webhook_service(bot_profile: UserProfile,
+                                       service_interface: int,
+                                       service_payload_url: Text) -> None:
     # TODO: First service is chosen because currently one bot can only have one service.
     # Update this once multiple services are supported.
     service = get_bot_services(bot_profile.id)[0]
