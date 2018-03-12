@@ -182,15 +182,6 @@ var generate_emoji_picker_content = function (id) {
     });
 };
 
-function add_scrollbar(element) {
-    $(element).perfectScrollbar({
-        suppressScrollX: true,
-        useKeyboard: false,
-        // Picked so that each mousewheel bump moves 1 emoji down.
-        wheelSpeed: 0.68,
-    });
-}
-
 function refill_section_head_offsets(popover) {
     section_head_offsets = [];
     popover.find('.emoji-popover-subheading').each(function () {
@@ -209,8 +200,8 @@ exports.hide_emoji_popover = function () {
     $('.has_popover').removeClass('has_popover has_emoji_popover');
     if (exports.reactions_popped()) {
         var orig_title = current_message_emoji_popover_elem.data("original-title");
-        $(".emoji-popover-emoji-map").perfectScrollbar("destroy");
-        $(".emoji-search-results-container").perfectScrollbar("destroy");
+        ui.destroy_scrollbar($(".emoji-popover-emoji-map"));
+        ui.destroy_scrollbar($(".emoji-search-results-container"));
         current_message_emoji_popover_elem.popover("destroy");
         current_message_emoji_popover_elem.prop("title", orig_title);
         current_message_emoji_popover_elem.removeClass("reaction_button_visible");
@@ -261,7 +252,7 @@ function filter_emojis() {
             message_id: message_id,
         });
         $('.emoji-search-results').html(search_results_rendered);
-        $(".emoji-search-results-container").perfectScrollbar("update");
+        ui.update_scrollbar($(".emoji-search-results-container"));
         if (!search_results_visible) {
             show_search_results();
         }
@@ -626,8 +617,8 @@ exports.render_emoji_popover = function (elt, id) {
     elt.popover("show");
     elt.prop("title", i18n.t("Add emoji reaction (:)"));
     $('.emoji-popover-filter').focus();
-    add_scrollbar($(".emoji-popover-emoji-map"));
-    add_scrollbar($(".emoji-search-results-container"));
+    ui.set_up_scrollbar($(".emoji-popover-emoji-map"));
+    ui.set_up_scrollbar($(".emoji-search-results-container"));
     current_message_emoji_popover_elem = elt;
 
     emoji_catalog_last_coordinates = {
