@@ -22,6 +22,6 @@ def update_pointer_backend(request: HttpRequest, user_profile: UserProfile,
 
     request._log_data["extra"] = "[%s]" % (pointer,)
     update_flags = (request.client.name.lower() in ['android', "zulipandroid"])
-    do_update_pointer(user_profile, pointer, update_flags=update_flags)
+    do_update_pointer(user_profile, request.client, pointer, update_flags=update_flags)
 
     return json_success()

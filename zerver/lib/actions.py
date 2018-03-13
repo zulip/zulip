@@ -3532,7 +3532,8 @@ def update_user_presence(user_profile: UserProfile, client: Client, log_time: da
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
 
-def do_update_pointer(user_profile: UserProfile, pointer: int, update_flags: bool=False) -> None:
+def do_update_pointer(user_profile: UserProfile, client: Client,
+                      pointer: int, update_flags: bool=False) -> None:
     prev_pointer = user_profile.pointer
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])

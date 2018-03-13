@@ -1129,7 +1129,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('pointer')),
             ('pointer', check_int)
         ])
-        events = self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
+        events = self.do_test(lambda: do_update_pointer(self.user_profile, get_client("website"), 1500))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
