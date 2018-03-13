@@ -7,6 +7,7 @@ import shutil
 import subprocess
 import re
 import logging
+import random
 import requests
 
 from django.conf import settings
@@ -19,6 +20,7 @@ from zerver.forms import check_subdomain_available
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -435,7 +437,7 @@ def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
     sub = dict(
         recipient=recipient_id,
         notifications=False,
-        color="#c2c2c2",
+        color=random.choice(stream_colors),
         desktop_notifications=True,
         pin_to_top=False,
         in_home_view=True,
@@ -453,7 +455,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
         sub = dict(
             recipient=recipient_id,
             notifications=False,
-            color="#c2c2c2",
+            color=random.choice(stream_colors),
             desktop_notifications=True,
             pin_to_top=False,
             in_home_view=True,
