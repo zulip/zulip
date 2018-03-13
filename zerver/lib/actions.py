@@ -3551,7 +3551,7 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
-def do_mark_all_as_read(user_profile: UserProfile) -> int:
+def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event('bankruptcy')
 
     msgs = UserMessage.objects.filter(

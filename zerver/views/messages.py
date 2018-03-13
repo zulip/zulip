@@ -986,7 +986,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def mark_all_as_read(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    count = do_mark_all_as_read(user_profile)
+    count = do_mark_all_as_read(user_profile, request.client)
 
     log_data_str = "[%s updated]" % (count,)
     request._log_data["extra"] = log_data_str
