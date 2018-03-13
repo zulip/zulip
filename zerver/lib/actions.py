@@ -1877,6 +1877,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         elif sender.email == settings.WELCOME_BOT:
             # The welcome bot welcomes folks to the stream.
             pass
+        elif sender.email == settings.NOTIFICATION_BOT:
+            # The notification bot sends various notifications.
+            pass
         elif sender.email == settings.NEW_USER_BOT:
             pass
         else:
