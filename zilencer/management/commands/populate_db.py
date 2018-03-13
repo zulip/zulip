@@ -181,15 +181,19 @@ class Command(BaseCommand):
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
+            zoe = get_user("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
+            # If a stream is not supplied in the webhook URL, the webhook
+            # will (in some cases) send the notification as a PM to the
+            # owner of the webhook bot, so bot_owner can't be None
             create_users(zulip_realm, zulip_webhook_bots,
-                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT)
+                         bot_type=UserProfile.INCOMING_WEBHOOK_BOT, bot_owner=zoe)
+            aaron = get_user("AARON@zulip.com", zulip_realm)
             zulip_outgoing_bots = [
                 ("Outgoing Webhook", "outgoing-webhook@zulip.com")
             ]
-            aaron = get_user("AARON@zulip.com", zulip_realm)
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
             # TODO: Clean up this initial bot creation code

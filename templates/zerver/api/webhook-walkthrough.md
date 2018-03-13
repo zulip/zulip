@@ -58,23 +58,25 @@ python file, `zerver/webhooks/mywebhook/view.py`.
 The Hello World integration is in `zerver/webhooks/helloworld/view.py`:
 
 ```
-from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_stream_message
-from zerver.lib.response import json_success, json_error
-from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
-from zerver.lib.validator import check_dict, check_string
-
-from zerver.models import Client, UserProfile
+from typing import Any, Dict, Iterable, Optional, Text
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
+from django.utils.translation import ugettext as _
+
+from zerver.decorator import api_key_only_webhook_view
+from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.response import json_error, json_success
+from zerver.lib.validator import check_dict, check_string
+from zerver.models import UserProfile
 
 @api_key_only_webhook_view('HelloWorld')
 @has_request_variables
-def api_helloworld_webhook(request: HttpRequest, user_profile: UserProfile,
-                           payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
-                           stream: Text=REQ(default='test'),
-                           topic: Text=REQ(default='Hello World')) -> HttpResponse:
+def api_helloworld_webhook(
+        request: HttpRequest, user_profile: UserProfile,
+        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body')
+) -> HttpResponse:
+
     # construct the body of the message
     body = 'Hello! I am happy to be here! :smile:'
 
@@ -82,11 +84,11 @@ def api_helloworld_webhook(request: HttpRequest, user_profile: UserProfile,
     body_template = '\nThe Wikipedia featured article for today is **[{featured_title}]({featured_url})**'
     body += body_template.format(**payload)
 
-    # send the message
-    check_send_stream_message(user_profile, request.client,
-                              stream, topic, body)
+    topic = "Hello World"
 
-    # return json result
+    # send the message
+    check_send_webhook_message(request, user_profile, topic, body)
+
     return json_success()
 ```
 
@@ -136,8 +138,13 @@ link to the Wikipedia article of the day as provided by the json payload.
   integration checks for. In such a case, any `KeyError` thrown is handled by the server
   backend and will create an appropriate response.
 
-Then we send a public (stream) message with `check_send_stream_message` which will
-validate the message and then send it.
+Then we send a message with `check_send_webhook_message`, which will
+validate the message and do the following:
+
+* Send a public (stream) message if the `stream` query parameter is
+  specified in the webhook URL.
+* If the `stream` query parameter isn't specified, it will send a private
+  message to the owner of the webhook bot.
 
 Finally, we return a 200 http status with a JSON format success message via
 `json_success()`.
