@@ -345,9 +345,9 @@ function _set_up() {
         permissions: get_property_types(org_permissions),
     };
 
-    function populate_data_for_request(data, category) {
-        _.each(property_types[category], function (v, k) {
-            var field = property_types[category][k];
+    function populate_data_for_request(data, changing_property_types) {
+        _.each(changing_property_types, function (v, k) {
+            var field = changing_property_types[k];
             if (field.type === 'bool') {
                 data[k] = JSON.stringify($('#id_realm_'+k).prop('checked'));
                 return;
@@ -451,7 +451,7 @@ function _set_up() {
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
-        }, 'settings');
+        }, property_types.settings);
 
         channel.patch({
             url: url,
@@ -551,7 +551,7 @@ function _set_up() {
         // take the existing object and apply the rest of the properties.
         var data = populate_data_for_request({
             message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-        }, 'permissions');
+        }, property_types.permissions);
 
         if (add_emoji_permission === "by_admins_only") {
             data.add_emoji_by_admins_only = true;
@@ -611,7 +611,7 @@ function _set_up() {
         // grab the first alert available and use it for the status.
         var status = $("#admin-realm-name-status");
 
-        var data = populate_data_for_request({}, 'profile');
+        var data = populate_data_for_request({}, org_profile);
 
         channel.patch({
             url: "/json/realm",
