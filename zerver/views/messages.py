@@ -673,58 +673,16 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     anchored_to_left = (anchor == 0)
 
-    need_before_query = (not anchored_to_left) and (num_before > 0)
-    need_after_query = (not anchored_to_right) and (num_after > 0)
-
-    need_both_sides = need_before_query and need_after_query
-
-    # We add 1 to the number of messages requested if no narrow was
-    # specified to ensure that the resulting list always contains the
-    # anchor message.  If a narrow was specified, the anchor message
-    # might not match the narrow anyway.
-    if narrow is None:
-        if need_after_query:
-            num_after += 1
-        elif need_before_query:
-            num_before += 1
-
-    if need_both_sides:
-        before_anchor = anchor - 1
-    elif need_before_query:
-        before_anchor = anchor
-
-    if need_before_query:
-        before_query = query
-
-        if not anchored_to_right:
-            before_query = before_query.where(inner_msg_id_col <= before_anchor)
-
-        before_query = before_query.order_by(inner_msg_id_col.desc()).limit(num_before)
-
-    if need_after_query:
-        after_query = query
-
-        if not anchored_to_left:
-            after_query = after_query.where(inner_msg_id_col >= anchor)
-
-        after_query = after_query.order_by(inner_msg_id_col.asc()).limit(num_after)
-
-    if need_both_sides:
-        query = union_all(before_query.self_group(), after_query.self_group())
-    elif need_before_query:
-        query = before_query
-    elif need_after_query:
-        query = after_query
-    else:
-        # If we don't have either a before_query or after_query, it's because
-        # some combination of num_before/num_after/anchor are zero or
-        # use_first_unread_anchor logic found no unread messages.
-        #
-        # The most likely reason is somebody is doing an id search, so searching
-        # for something like `message_id = 42` is exactly what we want.  In other
-        # cases, which could possibly be buggy API clients, at least we will
-        # return at most one row here.
-        query = query.where(inner_msg_id_col == anchor)
+    query = limit_query_to_range(
+        query=query,
+        num_before=num_before,
+        num_after=num_after,
+        anchor=anchor,
+        anchored_to_left=anchored_to_left,
+        anchored_to_right=anchored_to_right,
+        narrow=narrow,
+        id_col=inner_msg_id_col,
+    )
 
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
@@ -790,6 +748,73 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if use_first_unread_anchor:
         ret['anchor'] = anchor
     return json_success(ret)
+
+def limit_query_to_range(query: Query,
+                         num_before: int,
+                         num_after: int,
+                         anchor: int,
+                         anchored_to_left: bool,
+                         anchored_to_right: bool,
+                         narrow: Any,
+                         id_col: ColumnElement) -> Query:
+    '''
+    This code is actually generic enough that we could move it to a
+    library, but our only caller for now is message search.
+    '''
+    need_before_query = (not anchored_to_left) and (num_before > 0)
+    need_after_query = (not anchored_to_right) and (num_after > 0)
+
+    need_both_sides = need_before_query and need_after_query
+
+    # We add 1 to the number of messages requested if no narrow was
+    # specified to ensure that the resulting list always contains the
+    # anchor row.  If a narrow was specified, the anchor row
+    # might not match the narrow anyway.
+    if narrow is None:
+        if need_after_query:
+            num_after += 1
+        elif need_before_query:
+            num_before += 1
+
+    if need_both_sides:
+        before_anchor = anchor - 1
+    elif need_before_query:
+        before_anchor = anchor
+
+    if need_before_query:
+        before_query = query
+
+        if not anchored_to_right:
+            before_query = before_query.where(id_col <= before_anchor)
+
+        before_query = before_query.order_by(id_col.desc()).limit(num_before)
+
+    if need_after_query:
+        after_query = query
+
+        if not anchored_to_left:
+            after_query = after_query.where(id_col >= anchor)
+
+        after_query = after_query.order_by(id_col.asc()).limit(num_after)
+
+    if need_both_sides:
+        query = union_all(before_query.self_group(), after_query.self_group())
+    elif need_before_query:
+        query = before_query
+    elif need_after_query:
+        query = after_query
+    else:
+        # If we don't have either a before_query or after_query, it's because
+        # some combination of num_before/num_after/anchor are zero or
+        # use_first_unread_anchor logic found no unread messages.
+        #
+        # The most likely reason is somebody is doing an id search, so searching
+        # for something like `message_id = 42` is exactly what we want.  In other
+        # cases, which could possibly be buggy API clients, at least we will
+        # return at most one row here.
+        query = query.where(id_col == anchor)
+
+    return query
 
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
