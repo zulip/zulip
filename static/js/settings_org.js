@@ -228,29 +228,19 @@ function _set_up() {
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
 
-    // create property_types object
-    var property_types = {
-        profile: {
-            name: {
-                type: 'text',
-                msg: i18n.t("Name changed!"),
-            },
-            description: {
-                type: 'text',
-                msg: i18n.t("Description changed!"),
-            },
+    var org_profile = {
+        name: {
+            type: 'text',
+            msg: i18n.t("Name changed!"),
         },
+        description: {
+            type: 'text',
+            msg: i18n.t("Description changed!"),
+        },
+    };
 
-        settings: {
-            default_language: {
-                type: 'text',
-                msg: i18n.t("Default language changed!"),
-            },
-            send_welcome_emails: {
-                type: 'bool',
-                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
-                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
-            },
+    var org_settings = {
+        msg_editing: {
             allow_message_deleting: {
                 type: 'bool',
                 checked_msg: i18n.t("Users can delete their messages!"),
@@ -261,11 +251,8 @@ function _set_up() {
                 checked_msg: i18n.t("Users can view message edit history!"),
                 unchecked_msg: i18n.t("Users can no longer view message edit history!"),
             },
-            mandatory_topics: {
-                type: 'bool',
-                checked_msg: i18n.t("Topics are required in messages to streams!"),
-                unchecked_msg: i18n.t("Topics are not required in messages to streams!"),
-            },
+        },
+        msg_feed: {
             inline_image_preview: {
                 type: 'bool',
                 checked_msg: i18n.t("Previews of uploaded and linked images will be shown!"),
@@ -276,9 +263,27 @@ function _set_up() {
                 checked_msg: i18n.t("Previews for linked websites will be shown!"),
                 unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
             },
+            mandatory_topics: {
+                type: 'bool',
+                checked_msg: i18n.t("Topics are required in messages to streams!"),
+                unchecked_msg: i18n.t("Topics are not required in messages to streams!"),
+            },
         },
+        language_notify: {
+            default_language: {
+                type: 'text',
+                msg: i18n.t("Default language changed!"),
+            },
+            send_welcome_emails: {
+                type: 'bool',
+                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
+                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
+            },
+        },
+    };
 
-        permissions: {
+    var org_permissions = {
+        org_join: {
             restricted_to_domain: {
                 type: 'bool',
                 checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
@@ -299,6 +304,8 @@ function _set_up() {
                 checked_msg: i18n.t("New users must be invited by an admin!"),
                 unchecked_msg: i18n.t("Any user may now invite new users!"),
             },
+        },
+        user_identity: {
             name_changes_disabled: {
                 type: 'bool',
                 checked_msg: i18n.t("Users cannot change their name!"),
@@ -309,6 +316,8 @@ function _set_up() {
                 checked_msg: i18n.t("Users cannot change their email!"),
                 unchecked_msg: i18n.t("Users may now change their email!"),
             },
+        },
+        other_permissions: {
             add_emoji_by_admins_only: {
                 type: 'bool',
                 checked_msg: i18n.t("Only administrators may now add new emoji!"),
@@ -319,6 +328,21 @@ function _set_up() {
                 msg: i18n.t("Permissions changed"),
             },
         },
+    };
+
+    function get_property_types(settings) {
+        var setting_property = {};
+        _.each(_.values(settings), function (t) {
+            setting_property = _.extend(setting_property, t);
+        });
+        return setting_property;
+    }
+
+    // create property_types object
+    var property_types = {
+        profile: org_profile,
+        settings: get_property_types(org_settings),
+        permissions: get_property_types(org_permissions),
     };
 
     function populate_data_for_request(data, category) {
