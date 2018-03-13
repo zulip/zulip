@@ -368,9 +368,6 @@ def email_to_username(email: Text) -> Text:
 def email_to_domain(email: Text) -> Text:
     return email.split("@")[-1].lower()
 
-class GetRealmByDomainException(Exception):
-    pass
-
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
 # So for invite-only realms, this is the test for whether a user can be invited,

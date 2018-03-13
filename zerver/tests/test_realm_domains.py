@@ -10,7 +10,7 @@ from zerver.lib.actions import do_change_is_admin, \
 from zerver.lib.domains import validate_domain
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import email_allowed_for_realm, get_realm, \
-    GetRealmByDomainException, RealmDomain
+    RealmDomain
 
 import ujson
 
