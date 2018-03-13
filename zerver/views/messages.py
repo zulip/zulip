@@ -599,7 +599,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if first_visible_message_id > 0:
         query = query.where(inner_msg_id_col >= first_visible_message_id)
 
-    num_extra_messages = 1
     is_search = False
 
     if narrow is not None:
@@ -613,7 +612,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
         # Build the query for the narrow
-        num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
         search_term = {}  # type: Dict[str, Any]
         for term in narrow:
@@ -629,15 +627,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 query = builder.add_term(query, term)
         if is_search:
             query = builder.add_term(query, search_term)
-
-    # We add 1 to the number of messages requested if no narrow was
-    # specified to ensure that the resulting list always contains the
-    # anchor message.  If a narrow was specified, the anchor message
-    # might not match the narrow anyway.
-    if num_after > 0:
-        num_after += num_extra_messages
-    else:
-        num_before += num_extra_messages
 
     sa_conn = get_sqlalchemy_connection()
 
@@ -688,6 +677,16 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     need_after_query = (not anchored_to_right) and (num_after > 0)
 
     need_both_sides = need_before_query and need_after_query
+
+    # We add 1 to the number of messages requested if no narrow was
+    # specified to ensure that the resulting list always contains the
+    # anchor message.  If a narrow was specified, the anchor message
+    # might not match the narrow anyway.
+    if narrow is None:
+        if need_after_query:
+            num_after += 1
+        elif need_before_query:
+            num_before += 1
 
     if need_both_sides:
         before_anchor = anchor - 1
