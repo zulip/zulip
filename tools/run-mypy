@@ -78,10 +78,10 @@ files_dict = cast(Dict[str, List[str]],
                                     use_shebang=True, modified_only=args.modified,
                                     exclude=exclude, group_by_ftype=True,
                                     extless_only=args.scripts_only))
-pyi_files = set(files_dict['pyi'])
+pyi_files = list(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
-if not python_files:
+if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
@@ -105,7 +105,7 @@ if args.ignore_missing_imports:
 if args.quick:
     extra_args.append("--quick")
 
-rc = subprocess.call([mypy_command] + extra_args + python_files)
+rc = subprocess.call([mypy_command] + extra_args + python_files + pyi_files)
 
 if args.linecoverage_report:
     # Move the coverage report to where codecov will look for it.
