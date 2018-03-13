@@ -7,14 +7,13 @@
 # types.
 
 from typing import Any, Callable, Text, TypeVar, Optional, Union, Type
-from django.http import HttpResponse
+from zerver.lib.types import ViewFuncT
 
 from zerver.lib.exceptions import JsonableError as JsonableError
 
 Validator = Callable[[str, Any], Optional[str]]
 
 ResultT = TypeVar('ResultT')
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 class RequestVariableMissingError(JsonableError): ...
 class RequestVariableConversionError(JsonableError): ...
