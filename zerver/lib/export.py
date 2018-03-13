@@ -1220,6 +1220,7 @@ id_maps = {
     'user_profile': {},
     'realm': {},
     'stream': {},
+    'recipient': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1559,9 +1560,15 @@ def do_import_realm(import_dir: Path) -> Realm:
                         recipient_field=True, id_field=True)
     re_map_foreign_keys(data['zerver_recipient'], 'type_id', related_table="user_profile",
                         recipient_field=True, id_field=True)
+    recipient_id_list = current_table_ids(data, 'zerver_recipient')
+    allocated_recipient_id_list = allocate_ids(Recipient, len(data['zerver_recipient']))
+    for item in range(len(data['zerver_recipient'])):
+        update_id_map('recipient', recipient_id_list[item], allocated_recipient_id_list[item])
+    re_map_foreign_keys(data['zerver_recipient'], 'id', related_table="recipient", id_field=True)
     bulk_import_model(data, Recipient, 'zerver_recipient')
+
     re_map_foreign_keys(data['zerver_subscription'], 'user_profile', related_table="user_profile")
-    convert_to_id_fields(data, 'zerver_subscription', 'recipient')
+    re_map_foreign_keys(data['zerver_subscription'], 'recipient', related_table="recipient")
     bulk_import_model(data, Subscription, 'zerver_subscription')
 
     fix_datetime_fields(data, 'zerver_userpresence')
@@ -1630,7 +1637,7 @@ def import_message_data(import_dir: Path) -> None:
 
         logging.info("Importing message dump %s" % (message_filename,))
         re_map_foreign_keys(data['zerver_message'], 'sender', related_table="user_profile")
-        convert_to_id_fields(data, 'zerver_message', 'recipient')
+        re_map_foreign_keys(data['zerver_message'], 'recipient', related_table="recipient")
         re_map_foreign_keys(data['zerver_message'], 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
         bulk_import_model(data, Message, 'zerver_message')
