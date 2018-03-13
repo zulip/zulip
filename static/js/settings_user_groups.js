@@ -51,7 +51,7 @@ exports.populate_user_groups = function () {
             });
         }
 
-        data.members.keys().forEach(function (user_id) {
+            data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
             if (user) {
@@ -61,19 +61,36 @@ exports.populate_user_groups = function () {
             }
         });
 
-        function update_save_state() {
-            var draft_group = get_pill_user_ids();
-            var original_group = user_groups.get_user_group_from_id(data.id).members.keys();
-            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            var save_changes = pill_container.siblings('.save-member-changes');
-            var save_hidden = save_changes.css('display') === 'none';
 
-            if ((!draft_group.length || same_groups) && !save_hidden) {
-                save_changes.fadeOut();
-            } else if (!same_groups && draft_group.length && save_hidden) {
-                save_changes.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1);
+        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
+            // Event generated from or inside the pill container.
+            if ($(event.relatedTarget).closest(".pill-container").length
+               && $(event.relatedTarget).parents('#user-groups #' + data.id)) {
+                return;
             }
-        }
+            // Event generated from or inside the typeahead.
+            if ($(event.relatedTarget).closest(".typeahead").length) {
+                return;
+            }
+
+            var draft_group = get_pill_user_ids();
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var original_group = group_data.members.keys();
+            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
+            if (!draft_group.length || same_groups) {
+                return;
+            }
+
+            var added = _.difference(draft_group, original_group);
+            var removed = _.difference(original_group, draft_group);
+            channel.post({
+                url: "/json/user_groups/" + data.id + '/members',
+                data: {
+                    add: JSON.stringify(added),
+                    delete: JSON.stringify(removed),
+                },
+            });
+        });
 
         var input = pill_container.children('.input');
 
@@ -98,43 +115,19 @@ exports.populate_user_groups = function () {
             },
             updater: function (user) {
                 append_user(user);
-                update_save_state();
+                input.focus();
             },
             stopAdvance: true,
         });
 
-        pills.onPillCreate(function () {
-            update_save_state();
-        });
-
         pills.onPillRemove(function () {
-            update_save_state();
+            // onPillRemove is fired before the pill is removed from
+            // the DOM.
+            setTimeout(function () {
+                input.focus();
+            }, 100);
         });
 
-        $('#user-groups #' + data.id).on('click', '.save-member-changes', function () {
-            var draft_group = get_pill_user_ids();
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members.keys();
-            var added = _.difference(draft_group, original_group);
-            var removed = _.difference(original_group, draft_group);
-            var btn = $(this);
-
-            channel.post({
-                url: "/json/user_groups/" + data.id + '/members',
-                data: {
-                    add: JSON.stringify(added),
-                    delete: JSON.stringify(removed),
-                },
-                success: function () {
-                    btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
-                        $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
-                    });
-                },
-                error: function () {
-                    btn.text(i18n.t("Failed!"));
-                },
-            });
-        });
     });
 };
 

@@ -117,8 +117,6 @@ set_global('people', {
 
     var input_typeahead_called = false;
     var sibling_context = {};
-    var fade_to_called = false;
-    var fade_out_called = false;
     input_field_stub.typeahead = function (config) {
         assert.equal(config.items, 5);
         assert(config.fixed);
@@ -179,22 +177,11 @@ set_global('people', {
             text_cleared = false;
             config.updater(alice);
             assert.equal(text_cleared, true);
-            assert.equal(pill_container_stub
-                .siblings('.save-member-changes')
-                .css('display'), 'inline-block');
         }());
-        assert(fade_to_called);
-        assert(!fade_out_called);
         input_typeahead_called = true;
     };
 
     sibling_context.display_val = 'none';
-    sibling_context.fadeOut = function () {
-        fade_out_called = true;
-    };
-    sibling_context.fadeTo = function () {
-        fade_to_called = true;
-    };
     sibling_context.css = function (prop) {
         if (typeof(prop)  === 'string') {
             assert.equal(prop, 'display');
@@ -242,12 +229,11 @@ set_global('people', {
     }
 
     pills.onPillRemove = function (handler) {
+        global.patch_builtin('setTimeout', function (func) {
+            func();
+        });
         realm_user_group.members = Dict.from_array([2, 31]);
-        fade_to_called = false;
-        fade_out_called = false;
         handler();
-        assert(!fade_to_called);
-        assert(fade_out_called);
     };
 
     set_global('input_pill', {
@@ -505,50 +491,71 @@ set_global('people', {
     }());
 
     (function test_user_groups_click_save_member_changes_triggered() {
-        var handler = $('#user-groups #1').get_on_handler("click", ".save-member-changes");
+        var handler = $('#user-groups #1').get_on_handler("blur", ".input");
         var realm_user_group = {
             id: 1,
             name: 'Mobile',
             description: 'All mobile people',
             members: Dict.from_array([2, 4]),
         };
-        var fake_this = $.create('fake-#user-groups_click_save_member_changes');
+
         user_groups.get_user_group_from_id = function (id) {
             assert.equal(id, 1);
             return realm_user_group;
         };
 
+        var api_endpoint_called = false;
         channel.post = function (opts) {
             assert.equal(opts.url, "/json/user_groups/1/members");
             assert.equal(opts.data.add, '[31]');
             assert.equal(opts.data.delete, '[4]');
-
-            (function test_post_success() {
-                fake_this.text(i18n.t('fake-text'));
-                fake_this.delay = function (time) {
-                    assert.equal(time, 200);
-                    return fake_this;
-                };
-                fake_this.html('');
-                var save_btn_fade_out_called = false;
-                fake_this.fadeOut = function (func) {
-                    assert.equal(typeof(func), 'function');
-                    save_btn_fade_out_called = true;
-                    func.call(fake_this);
-                };
-                opts.success();
-                assert(save_btn_fade_out_called);
-                assert.equal(fake_this.html(), '<i class="fa fa-check" aria-hidden="true"></i>');
-                assert.equal(fake_this.text(), 'translated: Saved!');
-            }());
-
-            (function test_post_error() {
-                fake_this.text(i18n.t('fake-text'));
-                opts.error();
-                assert.equal(fake_this.text(), 'translated: Failed!');
-            }());
+            api_endpoint_called = true;
         };
 
-        handler.call(fake_this);
+        var fake_this = $.create('fake-#user-groups_blur_input_valid');
+        fake_this.closest = function () {
+            return [];
+        };
+        var event = {
+            relatedTarget: fake_this,
+        };
+
+        api_endpoint_called = false;
+        handler.call(fake_this, event);
+        assert(api_endpoint_called);
+
+        api_endpoint_called = false;
+        fake_this.closest = function (class_name) {
+            if (class_name === '.typeahead') {
+                return [1];
+            }
+            return [];
+        };
+        handler.call(fake_this, event);
+        assert(!api_endpoint_called);
+
+
+        api_endpoint_called = false;
+        fake_this.closest = function (class_name) {
+            if (class_name === '.pill-container') {
+                return [1];
+            }
+            return [];
+        };
+        fake_this.parents = function () {
+            return true;
+        };
+        handler.call(fake_this, event);
+        assert(!api_endpoint_called);
+
+        api_endpoint_called = false;
+        fake_this.closest = function () {
+            return [];
+        };
+        user_groups.get_user_group_from_id = function () {
+            return {members: Dict.from_array([2, 31])};
+        };
+        handler.call(fake_this, event);
+        assert(!api_endpoint_called);
     }());
 }());
