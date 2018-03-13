@@ -16,7 +16,7 @@ function delete_attachments(attachment) {
     });
 }
 
-exports.bytes_to_size = function (bytes, kb_with_1024_bytes) {
+function bytes_to_size(bytes, kb_with_1024_bytes) {
     if (kb_with_1024_bytes === undefined) {
         kb_with_1024_bytes = false;
     }
@@ -40,7 +40,7 @@ exports.set_up_attachments = function () {
     _.each(attachments, function (attachment) {
         var time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
-        attachment.size_str = exports.bytes_to_size(attachment.size);
+        attachment.size_str = bytes_to_size(attachment.size);
     });
 
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
