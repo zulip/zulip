@@ -48,6 +48,7 @@ exports.stub_out_jquery = function () {
             on: function () {},
             trigger: function () {},
             hide: function () {},
+            removeClass: function () {},
         };
     });
     $.fn = {};
