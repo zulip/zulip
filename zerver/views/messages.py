@@ -640,6 +640,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         num_before += num_extra_messages
 
     sa_conn = get_sqlalchemy_connection()
+
+    anchored_to_right = False  # till we know better
+
     if use_first_unread_anchor:
         condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
 
@@ -671,41 +674,57 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         else:
             # Set values that will be used to short circuit the after_query
             # altogether and avoid needless conditions in the before_query.
+            anchored_to_right = True
+            num_after = None
+
+            # We only use LARGER_THAN_MAX_MESSAGE_ID for an edge case hack
+            # where num_before and num_after are 0, and it produces a query
+            # that returns zero results.
             anchor = LARGER_THAN_MAX_MESSAGE_ID
-            num_after = 0
 
-    before_query = None
-    after_query = None
+    anchored_to_left = (anchor == 0)
 
-    if num_before > 0:
+    need_before_query = (not anchored_to_left) and (num_before > 0)
+    need_after_query = (not anchored_to_right) and (num_after > 0)
+
+    need_both_sides = need_before_query and need_after_query
+
+    if need_both_sides:
+        before_anchor = anchor - 1
+    elif need_before_query:
+        before_anchor = anchor
+
+    if need_before_query:
         before_query = query
 
-        if anchor < LARGER_THAN_MAX_MESSAGE_ID:
-            before_anchor = anchor
-            if num_after > 0:
-                # Don't include the anchor in both the before query and the after query
-                before_anchor -= 1
+        if not anchored_to_right:
             before_query = before_query.where(inner_msg_id_col <= before_anchor)
 
         before_query = before_query.order_by(inner_msg_id_col.desc()).limit(num_before)
 
-    if num_after > 0:
+    if need_after_query:
         after_query = query
 
-        if anchor > 0:
+        if not anchored_to_left:
             after_query = after_query.where(inner_msg_id_col >= anchor)
 
         after_query = after_query.order_by(inner_msg_id_col.asc()).limit(num_after)
 
-    if before_query is not None:
-        if after_query is not None:
-            query = union_all(before_query.self_group(), after_query.self_group())
-        else:
-            query = before_query
-    elif after_query is not None:
+    if need_both_sides:
+        query = union_all(before_query.self_group(), after_query.self_group())
+    elif need_before_query:
+        query = before_query
+    elif need_after_query:
         query = after_query
     else:
-        # This can happen when a narrow is specified.
+        # If we don't have either a before_query or after_query, it's because
+        # some combination of num_before/num_after/anchor are zero or
+        # use_first_unread_anchor logic found no unread messages.
+        #
+        # The most likely reason is somebody is doing an id search, so searching
+        # for something like `message_id = 42` is exactly what we want.  In other
+        # cases, which could possibly be buggy API clients, at least we will
+        # return at most one row here.
         query = query.where(inner_msg_id_col == anchor)
 
     main_query = alias(query)
