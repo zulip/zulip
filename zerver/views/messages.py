@@ -974,7 +974,7 @@ def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
                          operation: str=REQ('op'), flag: str=REQ()) -> HttpResponse:
 
-    count = do_update_message_flags(user_profile, operation, flag, messages)
+    count = do_update_message_flags(user_profile, request.client, operation, flag, messages)
 
     target_count_str = str(len(messages))
     log_data_str = "[%s %s/%s] actually %s" % (operation, flag, target_count_str, count)
