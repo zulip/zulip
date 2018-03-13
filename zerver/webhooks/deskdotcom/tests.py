@@ -15,7 +15,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class DeskDotComHookTests(WebhookTestCase):
     STREAM_NAME = 'deskdotcom'
-    URL_TEMPLATE = "/api/v1/external/deskdotcom"
+    URL_TEMPLATE = "/api/v1/external/deskdotcom?stream={stream}"
     FIXTURE_DIR_NAME = 'deskdotcom'
 
     def test_static_text_message(self) -> None:

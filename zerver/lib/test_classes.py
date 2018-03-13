@@ -669,7 +669,7 @@ class WebhookTestCase(ZulipTestCase):
 
         has_arguments = kwargs or args
         if has_arguments and url.find('?') == -1:
-            url = "{}?".format(url)
+            url = "{}?".format(url)  # nocoverage
         else:
             url = "{}&".format(url)
 

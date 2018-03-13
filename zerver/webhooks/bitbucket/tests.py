@@ -53,25 +53,25 @@ class BitbucketHookTests(WebhookTestCase):
         self.api_stream_message(self.TEST_USER_EMAIL, fixture_name, self.EXPECTED_SUBJECT,
                                 expected_message)
 
-    @patch('zerver.webhooks.bitbucket.view.check_send_stream_message')
-    def test_bitbucket_on_push_event_filtered_by_branches_ignore(self, check_send_stream_message_mock: MagicMock) -> None:
+    @patch('zerver.webhooks.bitbucket.view.check_send_webhook_message')
+    def test_bitbucket_on_push_event_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         fixture_name = 'push'
         payload = self.get_body(fixture_name)
         self.url = self.build_webhook_url(payload=payload,
                                           branches='changes,development')
         result = self.api_post(self.TEST_USER_EMAIL, self.url, payload, content_type="application/json,")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket.view.check_send_webhook_message')
     def test_bitbucket_push_commits_above_limit_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         fixture_name = 'push_commits_above_limit'
         payload = self.get_body(fixture_name)
         self.url = self.build_webhook_url(payload=payload,
                                           branches='changes,development')
         result = self.api_post(self.TEST_USER_EMAIL, self.url, payload, content_type="application/json,")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
     def get_body(self, fixture_name: Text) -> Union[Text, Dict[str, Text]]:
