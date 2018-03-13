@@ -120,7 +120,8 @@
 }
 
 /* -- button states -- */
-.new-style .button:hover {
+.new-style .button:hover,
+.new-style .button:focus {
     border-color: hsl(0, 0%, 60%);
 }
 
@@ -130,7 +131,8 @@
     background-color: hsl(0, 0%, 95%);
 }
 
-.new-style .button.sea-green:hover {
+.new-style .button.sea-green:hover,
+.new-style .button.sea-green:focus {
     border-color: hsl(156, 30%, 50%);
 }
 
@@ -140,7 +142,8 @@
     background-color: hsl(154, 33%, 96%);
 }
 
-.new-style .button.btn-danger:hover {
+.new-style .button.btn-danger:hover,
+.new-style .button.btn-danger:focus {
     border-color: hsl(2, 46%, 68%);
 }
 
