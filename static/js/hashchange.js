@@ -85,7 +85,7 @@ exports.parse_narrow = function (hash) {
             }
             operators.push({negated: negated, operator: operator, operand: operand});
         } catch (err) {
-            return undefined;
+            return;
         }
     }
     return operators;

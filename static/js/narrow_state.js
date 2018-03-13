@@ -41,7 +41,7 @@ exports.update_email = function (user_id, new_email) {
 /* Operators we should send to the server. */
 exports.public_operators = function () {
     if (current_filter === undefined) {
-        return undefined;
+        return;
     }
     return current_filter.public_operators();
 };
@@ -96,7 +96,7 @@ exports.set_compose_defaults = function () {
 
 exports.stream = function () {
     if (current_filter === undefined) {
-        return undefined;
+        return;
     }
     var stream_operands = current_filter.operands("stream");
     if (stream_operands.length === 1) {
@@ -106,18 +106,18 @@ exports.stream = function () {
         // name (considering renames and capitalization).
         return stream_data.get_name(name);
     }
-    return undefined;
+    return;
 };
 
 exports.topic = function () {
     if (current_filter === undefined) {
-        return undefined;
+        return;
     }
     var operands = current_filter.operands("topic");
     if (operands.length === 1) {
         return operands[0];
     }
-    return undefined;
+    return;
 };
 
 exports.pm_string = function () {

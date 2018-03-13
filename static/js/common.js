@@ -26,7 +26,7 @@ exports.autofocus = function (selector) {
 exports.password_quality = function (password, bar, password_field) {
     // We load zxcvbn.js asynchronously, so the variable might not be set.
     if (typeof zxcvbn === 'undefined') {
-        return undefined;
+        return;
     }
 
     var min_length = password_field.data('minLength');
@@ -58,7 +58,7 @@ exports.password_quality = function (password, bar, password_field) {
 
 exports.password_warning = function (password, password_field) {
     if (typeof zxcvbn === 'undefined') {
-        return undefined;
+        return;
     }
 
     var min_length = password_field.data('minLength');

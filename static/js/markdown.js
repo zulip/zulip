@@ -63,7 +63,7 @@ exports.apply_markdown = function (message) {
                        '@' + name +
                        '</span>';
             }
-            return undefined;
+            return;
         },
         groupMentionHandler: function (name) {
             var group = user_groups.get_user_group_from_name(name);
@@ -75,7 +75,7 @@ exports.apply_markdown = function (message) {
                        '@' + group.name +
                        '</span>';
             }
-            return undefined;
+            return;
         },
     };
     message.content = marked(message.raw_content + '\n\n', options).trim();
@@ -165,7 +165,7 @@ function handleAvatar(email) {
 function handleStream(streamName) {
     var stream = stream_data.get_sub(streamName);
     if (stream === undefined) {
-        return undefined;
+        return;
     }
     var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
