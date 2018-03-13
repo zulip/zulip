@@ -26,95 +26,100 @@ def get_target_name(payload: Dict[Text, Any]) -> Text:
     last_name = payload['target']['data']['last_name']
     return "%s %s" % (first_name, last_name)
 
+def get_inbound_message_body(payload: Dict[Text, Any]) -> Text:
+    link, outbox, inbox, subject = get_message_data(payload)
+    return "[Inbound message]({link}) from **{outbox}** to **{inbox}**.\n" \
+           "```quote\n*Subject*: {subject}\n```" \
+        .format(link=link, outbox=outbox, inbox=inbox, subject=subject)
+
+def get_outbound_message_body(payload: Dict[Text, Any]) -> Text:
+    link, outbox, inbox, subject = get_message_data(payload)
+    return "[Outbound message]({link}) from **{inbox}** to **{outbox}**.\n" \
+           "```quote\n*Subject*: {subject}\n```" \
+        .format(link=link, inbox=inbox, outbox=outbox, subject=subject)
+
+def get_outbound_reply_body(payload: Dict[Text, Any]) -> Text:
+    link, outbox, inbox, subject = get_message_data(payload)
+    return "[Outbound reply]({link}) from **{inbox}** to **{outbox}**." \
+        .format(link=link, inbox=inbox, outbox=outbox)
+
+def get_comment_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    comment = payload['target']['data']['body']
+    return "**{name}** left a comment:\n```quote\n{comment}\n```" \
+        .format(name=name, comment=comment)
+
+def get_conversation_assigned_body(payload: Dict[Text, Any]) -> Text:
+    source_name = get_source_name(payload)
+    target_name = get_target_name(payload)
+
+    if source_name == target_name:
+        return "**{source_name}** assigned themselves." \
+            .format(source_name=source_name)
+
+    return "**{source_name}** assigned **{target_name}**." \
+        .format(source_name=source_name, target_name=target_name)
+
+def get_conversation_unassigned_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    return "Unassined by **{name}**.".format(name=name)
+
+def get_conversation_archived_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    return "Archived by **{name}**.".format(name=name)
+
+def get_conversation_reopened_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    return "Reopened by **{name}**.".format(name=name)
+
+def get_conversation_deleted_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    return "Deleted by **{name}**.".format(name=name)
+
+def get_conversation_restored_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    return "Restored by **{name}**.".format(name=name)
+
+def get_conversation_tagged_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    tag = payload['target']['data']['name']
+    return "**{name}** added tag **{tag}**.".format(name=name, tag=tag)
+
+def get_conversation_untagged_body(payload: Dict[Text, Any]) -> Text:
+    name = get_source_name(payload)
+    tag = payload['target']['data']['name']
+    return "**{name}** removed tag **{tag}**.".format(name=name, tag=tag)
+
+EVENT_FUNCTION_MAPPER = {
+    'inbound': get_inbound_message_body,
+    'outbound': get_outbound_message_body,
+    'out_reply': get_outbound_reply_body,
+    'comment': get_comment_body,
+    'mention': get_comment_body,
+    'assign': get_conversation_assigned_body,
+    'unassign': get_conversation_unassigned_body,
+    'archive': get_conversation_archived_body,
+    'reopen': get_conversation_reopened_body,
+    'trash': get_conversation_deleted_body,
+    'restore': get_conversation_restored_body,
+    'tag': get_conversation_tagged_body,
+    'untag': get_conversation_untagged_body
+}
+
+def get_body_based_on_event(event: Text) -> Any:
+    return EVENT_FUNCTION_MAPPER[event]
+
 @api_key_only_webhook_view('Front')
 @has_request_variables
 def api_front_webhook(request: HttpRequest, user_profile: UserProfile,
                       payload: Dict[Text, Any]=REQ(argument_type='body')) -> HttpResponse:
 
-    event_type = payload['type']
-    conversation_id = payload['conversation']['id']
-
-    # Each topic corresponds to a separate conversation in Front.
-    topic = conversation_id
-
-    # Inbound message
-    if event_type == 'inbound':
-        link, outbox, inbox, subject = get_message_data(payload)
-        body = "[Inbound message]({link}) from **{outbox}** to **{inbox}**.\n" \
-               "```quote\n*Subject*: {subject}\n```" \
-            .format(link=link, outbox=outbox, inbox=inbox, subject=subject)
-
-    # Outbound message
-    elif event_type == 'outbound':
-        link, outbox, inbox, subject = get_message_data(payload)
-        body = "[Outbound message]({link}) from **{inbox}** to **{outbox}**.\n" \
-               "```quote\n*Subject*: {subject}\n```" \
-            .format(link=link, inbox=inbox, outbox=outbox, subject=subject)
-
-    # Outbound reply
-    elif event_type == 'out_reply':
-        link, outbox, inbox, subject = get_message_data(payload)
-        body = "[Outbound reply]({link}) from **{inbox}** to **{outbox}**." \
-            .format(link=link, inbox=inbox, outbox=outbox)
-
-    # Comment or mention
-    elif event_type == 'comment' or event_type == 'mention':
-        name = get_source_name(payload)
-        comment = payload['target']['data']['body']
-        body = "**{name}** left a comment:\n```quote\n{comment}\n```" \
-            .format(name=name, comment=comment)
-
-    # Conversation assigned
-    elif event_type == 'assign':
-        source_name = get_source_name(payload)
-        target_name = get_target_name(payload)
-
-        if source_name == target_name:
-            body = "**{source_name}** assigned themselves." \
-                .format(source_name=source_name)
-        else:
-            body = "**{source_name}** assigned **{target_name}**." \
-                .format(source_name=source_name, target_name=target_name)
-
-    # Conversation unassigned
-    elif event_type == 'unassign':
-        name = get_source_name(payload)
-        body = "Unassined by **{name}**.".format(name=name)
-
-    # Conversation archived
-    elif event_type == 'archive':
-        name = get_source_name(payload)
-        body = "Archived by **{name}**.".format(name=name)
-
-    # Conversation reopened
-    elif event_type == 'reopen':
-        name = get_source_name(payload)
-        body = "Reopened by **{name}**.".format(name=name)
-
-    # Conversation deleted
-    elif event_type == 'trash':
-        name = get_source_name(payload)
-        body = "Deleted by **{name}**.".format(name=name)
-
-    # Conversation restored
-    elif event_type == 'restore':
-        name = get_source_name(payload)
-        body = "Restored by **{name}**.".format(name=name)
-
-    # Conversation tagged
-    elif event_type == 'tag':
-        name = get_source_name(payload)
-        tag = payload['target']['data']['name']
-        body = "**{name}** added tag **{tag}**.".format(name=name, tag=tag)
-
-    # Conversation untagged
-    elif event_type == 'untag':
-        name = get_source_name(payload)
-        tag = payload['target']['data']['name']
-        body = "**{name}** removed tag **{tag}**.".format(name=name, tag=tag)
-    else:
+    event = payload['type']
+    if event not in EVENT_FUNCTION_MAPPER:
         return json_error(_("Unknown webhook request"))
 
+    topic = payload['conversation']['id']
+    body = get_body_based_on_event(event)(payload)
     check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
