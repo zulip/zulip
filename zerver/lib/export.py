@@ -1222,6 +1222,7 @@ id_maps = {
     'stream': {},
     'recipient': {},
     'subscription': {},
+    'message': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1647,12 +1648,17 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data['zerver_message'], 'recipient', related_table="recipient")
         re_map_foreign_keys(data['zerver_message'], 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
+        message_id_list = current_table_ids(data, 'zerver_message')
+        allocated_message_id_list = allocate_ids(Message, len(data['zerver_message']))
+        for item in range(len(data['zerver_message'])):
+            update_id_map('message', message_id_list[item], allocated_message_id_list[item])
+        re_map_foreign_keys(data['zerver_message'], 'id', related_table="message", id_field=True)
         bulk_import_model(data, Message, 'zerver_message')
 
         # Due to the structure of these message chunks, we're
         # guaranteed to have already imported all the Message objects
         # for this batch of UserMessage objects.
-        convert_to_id_fields(data, 'zerver_usermessage', 'message')
+        re_map_foreign_keys(data['zerver_usermessage'], 'message', related_table="message")
         re_map_foreign_keys(data['zerver_usermessage'], 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
@@ -1690,7 +1696,7 @@ def import_attachments(data: TableData) -> None:
         for fk_id in parent_row[child_plural]:
             m2m_row = {}  # type: Record
             m2m_row[parent_singular] = parent_row['id']
-            m2m_row[child_singular] = fk_id
+            m2m_row[child_singular] = id_maps['message'][fk_id]
             m2m_rows.append(m2m_row)
 
     # Create our table data for insert.
