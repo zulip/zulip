@@ -14,7 +14,8 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
+    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile, \
+    Client
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
@@ -41,7 +42,6 @@ from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
 from zerver.models import get_bot_services
-from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
 from zerver.lib.bot_lib import EmbeddedBotHandler, get_bot_handler, EmbeddedBotQuitException
 
@@ -522,6 +522,7 @@ class DeferredWorker(QueueProcessingWorker):
     def consume(self, event: Mapping[str, Any]) -> None:
         if event['type'] == 'mark_stream_messages_as_read':
             user_profile = get_user_profile_by_id(event['user_profile_id'])
+            client = Client.objects.get(id=event['client_id'])
 
             for stream_id in event['stream_ids']:
                 # Since the user just unsubscribed, we don't require
@@ -529,4 +530,4 @@ class DeferredWorker(QueueProcessingWorker):
                 # streams would never be accessible)
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
-                do_mark_stream_messages_as_read(user_profile, stream)
+                do_mark_stream_messages_as_read(user_profile, client, stream)
