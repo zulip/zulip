@@ -38,6 +38,9 @@ class TestZulipBaseCommand(ZulipTestCase):
         self.zulip_realm = get_realm("zulip")
         self.command = ZulipBaseCommand()
 
+    def test_get_client(self) -> None:
+        self.assertEqual(self.command.get_client().name, "ZulipServer")
+
     def test_get_realm(self) -> None:
         self.assertEqual(self.command.get_realm(dict(realm_id='zulip')), self.zulip_realm)
         self.assertEqual(self.command.get_realm(dict(realm_id=None)), None)
