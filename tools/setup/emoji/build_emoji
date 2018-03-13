@@ -21,7 +21,6 @@ TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
 EMOJI_SCRIPT_DIR_PATH = os.path.join(ZULIP_PATH, 'tools', 'setup', 'emoji')
 NODE_MODULES_PATH = os.path.join(ZULIP_PATH, 'node_modules')
-EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource')
 
 EMOJI_CODES_FILE_TEMPLATE = """\
 var emoji_codes = (function () {
@@ -47,7 +46,7 @@ div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet_%(emojiset)s_32.png');
+    background-image: url('sheet_%(emojiset)s_64.png');
     -webkit-background-size: 4900%%;
     -moz-background-size: 4900%%;
     background-size: 4900%%;
@@ -129,8 +128,9 @@ def setup_emoji_farm(cache_path, emoji_map, emoji_data):
         run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
 
         # Copy spritesheets.
-        input_sprite_sheet = os.path.join(EMOJI_DATA_PATH, 'img', emojiset, 'sheets', '32.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_32.png' % (emojiset,))
+        emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
+        input_sprite_sheet = os.path.join(emoji_data_path, 'img', emojiset, 'sheets-256', '64.png')
+        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_64.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])
 
     generate_sprite_css_files(cache_path, emoji_map, emoji_data)
@@ -231,7 +231,9 @@ def dump_emojis(cache_path):
     with open('emoji_map.json') as emoji_map_file:
         emoji_map = ujson.load(emoji_map_file)
 
-    EMOJI_DATA_FILE_PATH = os.path.join(EMOJI_DATA_PATH, 'emoji.json')
+    # `emoji.json` or any other data file can be sourced from any of the supported
+    # emojiset packages, they all contain the same data files.
+    EMOJI_DATA_FILE_PATH = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-google', 'emoji.json')
     with open(EMOJI_DATA_FILE_PATH) as emoji_data_file:
         emoji_data = ujson.load(emoji_data_file)
     emoji_catalog = generate_emoji_catalog(emoji_data)
