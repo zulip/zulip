@@ -122,13 +122,13 @@ exports.would_receive_message = function (email) {
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
             // yet, so don't fade.
-            return undefined;
+            return;
         }
 
         if (user && user.is_bot && !sub.invite_only) {
             // Bots may receive messages on public streams even if they are
             // not subscribed.
-            return undefined;
+            return;
         }
         return stream_data.user_is_subscribed(focused_recipient.stream, email);
     }

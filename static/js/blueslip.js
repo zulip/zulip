@@ -71,7 +71,7 @@ Logger.prototype = (function () {
             if (console[name] !== undefined) {
                 return console[name].apply(console, arguments);
             }
-            return undefined;
+            return;
         };
     }
 

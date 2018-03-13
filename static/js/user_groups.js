@@ -31,7 +31,7 @@ exports.remove = function (user_group) {
 exports.get_user_group_from_id = function (group_id) {
     if (!user_group_by_id_dict.has(group_id)) {
         blueslip.error('Unknown group_id in get_user_group_from_id: ' + group_id);
-        return undefined;
+        return;
     }
     return user_group_by_id_dict.get(group_id);
 };

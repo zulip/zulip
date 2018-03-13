@@ -107,7 +107,7 @@ people.initialize_current_user(me.user_id);
     assert(reply_to.indexOf('?') > -1);
 
     people.pm_with_user_ids = function () { return [42]; };
-    people.get_person_from_user_id = function () { return undefined; };
+    people.get_person_from_user_id = function () { return; };
     global.blueslip.error = function (msg) {
         assert.equal(msg, 'Unknown people in message');
     };

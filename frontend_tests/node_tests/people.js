@@ -2,7 +2,7 @@ zrequire('util');
 zrequire('people');
 
 set_global('blueslip', {
-    error: function () { return undefined; },
+    error: function () { return; },
 });
 set_global('page_params', {});
 set_global('md5', function (s) {
@@ -555,7 +555,7 @@ initialize();
     assert.equal(email, 'debbie71@example.com');
 
     // Test undefined slug
-    people.emails_strings_to_user_ids_string = function () { return undefined; };
+    people.emails_strings_to_user_ids_string = function () { return; };
     assert.equal(people.emails_to_slug(), undefined);
 }());
 

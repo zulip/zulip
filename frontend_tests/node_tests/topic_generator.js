@@ -174,7 +174,7 @@ function is_odd(i) { return i % 2 === 1; }
     assert.equal(gen.next(), undefined);
 
     var undef = function () {
-        return undefined;
+        return;
     };
 
     global.blueslip.error = function (msg) {
@@ -315,7 +315,7 @@ function is_odd(i) { return i % 2 === 1; }
 
     unread.num_unread_for_person = function (user_ids_string) {
         if (user_ids_string === 'unk') {
-            return undefined;
+            return;
         }
 
         if (user_ids_string === 'read') {

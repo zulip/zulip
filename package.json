@@ -50,6 +50,7 @@
     "cssstyle": "0.2.29",
     "difflib": "0.2.4",
     "eslint": "3.9.1",
+    "eslint-plugin-empty-returns": "1.0.2",
     "htmlparser2": "3.8.3",
     "istanbul": "0.4.5",
     "jsdom": "9.4.1",

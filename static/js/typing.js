@@ -24,7 +24,7 @@ function send_typing_notification_ajax(recipients, operation) {
 function get_recipient() {
     var compose_recipient = compose_state.recipient();
     if (compose_recipient === "") {
-        return undefined;
+        return;
     }
     return compose_recipient;
 }

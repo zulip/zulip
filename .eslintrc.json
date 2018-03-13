@@ -172,6 +172,9 @@
         "common": false,
         "panels": false
     },
+    "plugins": [
+        "eslint-plugin-empty-returns"
+    ],
     "rules": {
         "array-callback-return": "error",
         "array-bracket-spacing": "error",
@@ -191,6 +194,7 @@
         "complexity": [ 0, 4 ],
         "curly": 2,
         "dot-notation": [ "error", { "allowKeywords": true } ],
+        "empty-returns/main": "error",
         "eol-last": [ "error", "always" ],
         "eqeqeq": 2,
         "func-style": [ "off", "expression" ],

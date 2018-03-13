@@ -100,7 +100,7 @@ exports.MessageList.prototype = {
     get: function MessageList_get(id) {
         id = parseFloat(id);
         if (isNaN(id)) {
-            return undefined;
+            return;
         }
         return this._hash[id];
     },

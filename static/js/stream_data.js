@@ -370,7 +370,7 @@ exports.user_is_subscribed = function (stream_name, user_email) {
         // subscribed, we can't keep track of the subscriber list in general,
         // so we return undefined (treated as falsy if not explicitly handled).
         blueslip.warn("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
-        return undefined;
+        return;
     }
     var user_id = people.get_user_id(user_email);
     if (!user_id) {
@@ -529,7 +529,7 @@ exports.get_newbie_stream = function () {
         return page_params.notifications_stream;
     }
 
-    return undefined;
+    return;
 };
 
 exports.remove_default_stream = function (stream_id) {

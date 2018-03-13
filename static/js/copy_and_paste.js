@@ -11,7 +11,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // parent tr, we should let the browser handle the copy-paste
     // entirely on its own
     if (tr.length === 0) {
-        return undefined;
+        return;
     }
 
     // If the selection boundary is on a table row that does not have an
@@ -24,7 +24,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
         tr = iterate_row(tr);
     }
     if (j === 10) {
-        return undefined;
+        return;
     } else if (j !== 0) {
         // If we updated tr, then we are not dealing with a selection
         // that is entirely within one td, and we can skip the same td
