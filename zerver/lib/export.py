@@ -1356,6 +1356,7 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
         records = ujson.loads(records_file.read())
 
     re_map_foreign_keys(records, 'realm_id', related_table="realm", id_field=True)
+    re_map_foreign_keys(records, 'user_profile_id', related_table="user_profile", id_field=True)
     for record in records:
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
@@ -1396,6 +1397,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         records = ujson.loads(records_file.read())
 
     re_map_foreign_keys(records, 'realm_id', related_table="realm", id_field=True)
+    re_map_foreign_keys(records, 'user_profile_id', related_table="user_profile", id_field=True)
     for record in records:
         key = Key(bucket)
 
@@ -1538,6 +1540,13 @@ def do_import_realm(import_dir: Path) -> Realm:
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
+
+    user_id_list = current_table_ids(data, 'zerver_userprofile')
+    allocated_user_id_list = allocate_ids(UserProfile, len(data['zerver_userprofile']))
+    for item in range(len(data['zerver_userprofile'])):
+        update_id_map('user_profile', user_id_list[item], allocated_user_id_list[item])
+    re_map_foreign_keys(data['zerver_userprofile'], 'id', related_table="user_profile", id_field=True)
+
     user_profiles = [UserProfile(**item) for item in data['zerver_userprofile']]
     for user_profile in user_profiles:
         user_profile.set_unusable_password()
@@ -1547,6 +1556,8 @@ def do_import_realm(import_dir: Path) -> Realm:
         bulk_import_model(data, Huddle, 'zerver_huddle')
 
     re_map_foreign_keys(data['zerver_recipient'], 'type_id', related_table="stream",
+                        recipient_field=True, id_field=True)
+    re_map_foreign_keys(data['zerver_recipient'], 'type_id', related_table="user_profile",
                         recipient_field=True, id_field=True)
     bulk_import_model(data, Recipient, 'zerver_recipient')
     re_map_foreign_keys(data['zerver_subscription'], 'user_profile', related_table="user_profile")
