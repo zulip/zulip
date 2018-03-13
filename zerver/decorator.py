@@ -632,7 +632,6 @@ def flexible_boolean(boolean: Text) -> bool:
 def to_utc_datetime(timestamp: Text) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
-WrapperT = Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
 def statsd_increment(counter: Text, val: int=1,
                      ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Increments a statsd counter on completion of the
