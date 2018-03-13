@@ -41,6 +41,10 @@ the remote virtual machine, we recommend installing
 [Vagrant][install-vagrant] method so you can easily uninstall if you
 need to.
 
+For a direct install, also set `EXTERNAL_HOST=<REMOTE_IP>:9991` in your
+environment. This allows you to access Zulip running in your development
+environment using a browser on another host.
+
 ## Running the development server
 
 Once you have set up the development environment, you can start up the
