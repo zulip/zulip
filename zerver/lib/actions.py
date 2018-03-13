@@ -2682,6 +2682,7 @@ def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[St
 SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_remove_subscriptions(users: Iterable[UserProfile],
                               streams: Iterable[Stream],
+                              acting_client: Client,
                               acting_user: Optional[UserProfile]=None) -> SubAndRemovedT:
 
     users = list(users)

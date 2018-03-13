@@ -29,7 +29,7 @@ from zerver.worker import queue_processors
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
-    get_display_recipient, bulk_remove_subscriptions, get_stream_recipient,
+    get_display_recipient, get_stream_recipient,
 )
 
 from zerver.models import (

@@ -45,6 +45,7 @@ from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
     DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
     get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
+    get_client,
 )
 
 from zerver.lib.actions import (
@@ -851,7 +852,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=True, invite_only=False,
+            query_count=22, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -863,7 +864,7 @@ class StreamAdminTest(ZulipTestCase):
         are on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=True, invite_only=True,
+            query_count=22, is_admin=True, is_subbed=True, invite_only=True,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -875,7 +876,7 @@ class StreamAdminTest(ZulipTestCase):
         streams you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=False, invite_only=True,
+            query_count=22, is_admin=True, is_subbed=False, invite_only=True,
             other_user_subbed=True, other_sub_users=[self.example_user("othello")])
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -2272,8 +2273,9 @@ class SubscriptionAPITest(ZulipTestCase):
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             bulk_remove_subscriptions(
-                users=[user1, user2],
-                streams=[stream1, stream2, private]
+                [user1, user2],
+                [stream1, stream2, private],
+                get_client("website")
             )
 
         peer_events = [e for e in events
