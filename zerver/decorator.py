@@ -531,7 +531,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticate_log_and_execute_json(request: HttpRequest,
-                                      view_func: Callable[..., HttpResponse],
+                                      view_func: ViewFuncT,
                                       *args: Any, **kwargs: Any) -> HttpResponse:
     if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
@@ -669,12 +669,12 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> No
     request._ratelimit_remaining = calls_remaining
     request._ratelimit_secs_to_freedom = time_reset
 
-def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+def rate_limit(domain: Text='all') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 
     Returns a decorator"""
-    def wrapper(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def wrapper(func: ViewFuncT) -> ViewFuncT:
         @wraps(func)
         def wrapped_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
 
@@ -706,13 +706,13 @@ def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Ca
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
-        return wrapped_func
+        return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
     return wrapper
 
-def return_success_on_head_request(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if request.method == 'HEAD':
             return json_success()
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
