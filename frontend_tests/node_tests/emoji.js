@@ -33,7 +33,7 @@ zrequire('util');
     var image_stub = false;
     class Image {
         set src(data) {
-            assert.equal(data, '/static/generated/emoji/sheet_google_32.png');
+            assert.equal(data, '/static/generated/emoji/sheet_google_64.png');
             image_stub = true;
         }
     }
