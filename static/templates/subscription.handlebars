@@ -12,10 +12,14 @@
             <div class="stream-name">{{name}}</div>
             <div class="subscriber-count">
                 {{partial "subscription_count"}}
+                <div class="subscriber-count-hover-content">{{t "Subscriber count" }}</div>
             </div>
+        </div>
+        <div class="bottom-bar">
+            <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
             <div class="stream-message-count">
                 {{#if is_old_stream}}
-                    <i class="icon-vector-comments"></i>
+                    <i class="fa fa-bar-chart"></i>
                     {{#if can_access_subscribers}}
                     <span class="stream-message-count-text">{{stream_weekly_traffic}}</span>
                     <div class="stream-message-hover-content">{{t "Average weekly traffic" }}</div>
@@ -26,7 +30,6 @@
                 {{/if}}
             </div>
         </div>
-        <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
     </div>
 </div>
 {{/with}}
