@@ -8,13 +8,12 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
 from zerver.lib.actions import check_send_stream_message
+from zerver.lib.types import ViewFuncT
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile, get_client
 from zerver.webhooks.github.view import build_message_from_gitlog
-
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40

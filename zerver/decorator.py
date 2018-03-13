@@ -16,6 +16,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
+from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser
@@ -42,7 +43,6 @@ else:
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ReturnT = TypeVar('ReturnT')
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
