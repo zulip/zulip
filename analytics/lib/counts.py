@@ -488,6 +488,10 @@ count_stats_ = [
               sql_data_collector(StreamCount, count_message_by_stream_query, (UserProfile, 'is_bot')),
               CountStat.DAY),
 
+    # Messages Read Stats
+    # Messages Read by client
+    LoggingCountStat('messages_read_log:client:day', UserCount, CountStat.DAY),
+
     # Number of Users stats
     # Stats that count the number of active users in the UserProfile.is_active sense.
 

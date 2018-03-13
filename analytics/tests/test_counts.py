@@ -21,11 +21,12 @@ from analytics.models import Anomaly, BaseCount, \
 from zerver.lib.actions import do_activate_user, do_create_user, \
     do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
     do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
-    InvitationError
+    InvitationError, do_update_pointer, do_mark_all_as_read, \
+    do_mark_stream_messages_as_read, do_update_message_flags
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.models import Client, Huddle, Message, Realm, \
     RealmAuditLog, Recipient, Stream, UserActivityInterval, \
-    UserProfile, get_client, get_user, PreregistrationUser
+    UserProfile, get_client, get_user, PreregistrationUser, UserMessage
 
 class AnalyticsTestCase(TestCase):
     MINUTE = timedelta(seconds = 60)
@@ -89,6 +90,10 @@ class AnalyticsTestCase(TestCase):
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
         return Message.objects.create(**kwargs)
+
+    def create_user_message(self, sender: UserProfile, recipient: Recipient, **kwargs: Any) -> None:
+        msg = self.create_message(sender, recipient)
+        return UserMessage.objects.create(user_profile=sender, message = msg)
 
     # kwargs should only ever be a UserProfile or Stream.
     def assertCountEquals(self, table: Type[BaseCount], value: int, property: Optional[Text]=None,
@@ -748,6 +753,31 @@ class TestLoggingCountStats(AnalyticsTestCase):
         do_reactivate_user(user)
         self.assertEqual(1, RealmCount.objects.filter(property=property, subgroup=False)
                          .aggregate(Sum('value'))['value__sum'])
+
+    def test_messages_read_log_client_day(self) -> None:
+        property = 'messages_read_log:client:day'
+        user = self.create_user()
+        stream, recipient_stream = self.create_stream_with_recipient()
+
+        self.create_user_message(user, recipient_stream)
+        do_mark_all_as_read(user)
+        self.assertEqual(1, UserCount.objects.filter(property=property, subgroup=None)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        self.create_user_message(user, recipient_stream)
+        do_mark_stream_messages_as_read(user, stream)
+        self.assertEqual(2, UserCount.objects.filter(property=property, subgroup=None)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        self.create_user_message(user, recipient_stream)
+        do_update_pointer(user, 1, True)
+        self.assertEqual(4, UserCount.objects.filter(property=property, subgroup=None)
+                         .aggregate(Sum('value'))['value__sum'])
+
+        # message = self.create_user_message(user, recipient_stream)
+        # do_update_message_flags(user, 'add', 'read', [message.id])
+        # self.assertEqual(5, UserCount.objects.filter(property=property, subgroup=None)
+        #                  .aggregate(Sum('value'))['value__sum'])
 
     def test_invites_sent(self) -> None:
         property = 'invites_sent::day'
