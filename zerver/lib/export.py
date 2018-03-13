@@ -1221,6 +1221,7 @@ id_maps = {
     'realm': {},
     'stream': {},
     'recipient': {},
+    'subscription': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1569,6 +1570,12 @@ def do_import_realm(import_dir: Path) -> Realm:
 
     re_map_foreign_keys(data['zerver_subscription'], 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data['zerver_subscription'], 'recipient', related_table="recipient")
+    subscription_id_list = current_table_ids(data, 'zerver_subscription')
+    allocated_subscription_id_list = allocate_ids(Subscription, len(data['zerver_subscription']))
+    for item in range(len(data['zerver_subscription'])):
+        update_id_map('subscription', subscription_id_list[item],
+                      allocated_subscription_id_list[item])
+    re_map_foreign_keys(data['zerver_subscription'], 'id', related_table="subscription", id_field=True)
     bulk_import_model(data, Subscription, 'zerver_subscription')
 
     fix_datetime_fields(data, 'zerver_userpresence')
