@@ -295,11 +295,10 @@ body:
     webhook_logger.exception(message)
 
 # Use this for webhook views that don't get an email passed in.
-WrappedViewFuncT = Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
+def api_key_only_webhook_view(client_name: Text) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
@@ -339,13 +338,13 @@ def redirect_to_login(next: Text, login_url: Optional[Text]=None,
 
 # From Django 1.8
 def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optional[Text]=None,
-                     redirect_field_name: Text=REDIRECT_FIELD_NAME) -> WrappedViewFuncT:
+                     redirect_field_name: Text=REDIRECT_FIELD_NAME) -> Callable[[ViewFuncT], ViewFuncT]:
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
     that takes the user object and returns True if the user passes.
     """
-    def decorator(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def decorator(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             if test_func(request):
@@ -361,7 +360,7 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                 path = request.get_full_path()
             return redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
-        return _wrapped_view
+        return _wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
 def logged_in_and_active(request: HttpRequest) -> bool:
@@ -436,8 +435,8 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
 # versions.
-def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @require_post
         @has_request_variables
@@ -470,8 +469,8 @@ def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
 
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
-def authenticated_rest_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def authenticated_rest_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -583,13 +582,13 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
             (is_local_addr(request.META['REMOTE_ADDR']) or
              settings.DEBUG_RATE_LIMITING))
 
-def internal_notify_view(is_tornado_view: bool) -> WrappedViewFuncT:
+def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFuncT]:
     # The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @require_post
         @wraps(view_func)
