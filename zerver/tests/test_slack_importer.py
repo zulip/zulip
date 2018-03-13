@@ -312,8 +312,7 @@ class SlackImporter(ZulipTestCase):
         # stream mapping
         self.assertEqual(zerver_stream[0]['name'], channel_data[0]['name'])
         self.assertEqual(zerver_stream[0]['deactivated'], channel_data[0]['is_archived'])
-        self.assertEqual(zerver_stream[0]['description'],
-                         "topic: {}\npurpose: {}".format('random', 'no purpose'))
+        self.assertEqual(zerver_stream[0]['description'], 'no purpose')
         self.assertEqual(zerver_stream[0]['invite_only'], False)
         self.assertEqual(zerver_stream[0]['realm'], realm_id)
         self.assertEqual(zerver_stream[2]['id'],

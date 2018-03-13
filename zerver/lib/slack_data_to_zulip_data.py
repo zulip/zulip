@@ -328,8 +328,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         # map Slack's topic and purpose content into Zulip's stream description.
         # WARN This mapping is lossy since the topic.creator, topic.last_set,
         # purpose.creator, purpose.last_set fields are not preserved.
-        description = "topic: {}\npurpose: {}".format(channel["topic"]["value"],
-                                                      channel["purpose"]["value"])
+        description = channel["purpose"]["value"]
         stream_id = stream_id_list[stream_id_count]
         recipient_id = recipient_id_list[recipient_id_count]
 
