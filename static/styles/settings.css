@@ -116,7 +116,9 @@ label {
 
 .admin-realm-description {
     height: 16em;
-    width: 36em;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
 }
 
 .padded-container {
