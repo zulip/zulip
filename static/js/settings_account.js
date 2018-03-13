@@ -324,7 +324,7 @@ exports.set_up = function () {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+                $("#user-avatar-block").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
                 $("#user-avatar-source").hide();
             },
