@@ -26,6 +26,11 @@ if EXTERNAL_HOST is None:
         REALM_HOSTS = {
             'zulip': 'localhost:9991'
         }
+else:
+    REALM_HOSTS = {
+        'zulip': EXTERNAL_HOST,
+    }
+
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
