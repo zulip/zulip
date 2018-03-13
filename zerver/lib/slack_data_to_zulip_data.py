@@ -586,7 +586,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             sending_client=1,
             rendered_content_version=1,  # This is Zulip-specific
             has_image=message.get('has_image', False),
-            subject='from slack',  # This is Zulip-specific
+            subject='imported from slack',  # This is Zulip-specific
             pub_date=float(message['ts']),
             id=message_id,
             has_attachment=has_attachment,  # attachment will be posted in the subsequent message;

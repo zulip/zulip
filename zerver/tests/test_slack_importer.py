@@ -448,9 +448,9 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]['content'], 'http://journals.plos.org/plosone/article')
         self.assertEqual(zerver_message[2]['has_link'], True)
 
-        self.assertEqual(zerver_message[3]['subject'], 'from slack')
+        self.assertEqual(zerver_message[3]['subject'], 'imported from slack')
         self.assertEqual(zerver_message[4]['recipient'], added_recipient['general'])
-        self.assertEqual(zerver_message[2]['subject'], 'from slack')
+        self.assertEqual(zerver_message[2]['subject'], 'imported from slack')
         self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])
 
         self.assertEqual(zerver_message[1]['id'], 4)
