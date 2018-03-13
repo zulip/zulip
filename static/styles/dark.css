@@ -227,6 +227,16 @@ body.dark-mode .floating_recipient .recipient_row {
     border-top: none;
 }
 
+body.dark-mode .message_list .recipient_row,
+body.dark-mode .message_list .recipient_row > div:nth-of-type(2),
+body.dark-mode .message_row {
+    border-color: hsla(0, 0%, 0%, 0.3);
+}
+
+body.dark-mode .floating_recipient .message_header {
+    box-shadow: inset 0px -1px hsla(0, 0%, 0%, 0.5);
+}
+
 body.dark-mode .stream-row.active,
 body.dark-mode .emoji-showcase-container,
 body.dark-mode .emoji-popover-category-tabs,
