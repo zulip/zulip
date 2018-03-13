@@ -23,7 +23,6 @@ exports.reload = function () {
 exports.populate_user_groups = function () {
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
-
     _.each(user_groups_array, function (data) {
         user_groups_section.append(templates.render('admin_user_group_list', {
             user_group: {
@@ -197,49 +196,50 @@ exports.populate_user_groups = function () {
         });
 
         var input = pill_container.children('.input');
+        (function set_up_typeahead() {
+            input.typeahead({
+                items: 5,
+                fixed: true,
+                dropup: true,
+                source: function () {
+                    return user_pill.typeahead_source(pills);
+                },
+                highlighter: function (item) {
+                    return typeahead_helper.render_person(item);
+                },
+                matcher: function (item) {
+                    var query = this.query.toLowerCase();
+                    return (item.email.toLowerCase().indexOf(query) !== -1
+                            || item.full_name.toLowerCase().indexOf(query) !== -1);
+                },
+                sorter: function (matches) {
+                    return typeahead_helper.sort_recipientbox_typeahead(
+                        this.query, matches, "");
+                },
+                updater: function (user) {
+                    append_user(user);
+                    input.focus();
+                    update_cancel_button();
+                },
+                stopAdvance: true,
+            });
+        }());
 
-        input.typeahead({
-            items: 5,
-            fixed: true,
-            dropup: true,
-            source: function () {
-                return user_pill.typeahead_source(pills);
-            },
-            highlighter: function (item) {
-                return typeahead_helper.render_person(item);
-            },
-            matcher: function (item) {
-                var query = this.query.toLowerCase();
-                return (item.email.toLowerCase().indexOf(query) !== -1
-                        || item.full_name.toLowerCase().indexOf(query) !== -1);
-            },
-            sorter: function (matches) {
-                return typeahead_helper.sort_recipientbox_typeahead(
-                    this.query, matches, "");
-            },
-            updater: function (user) {
-                append_user(user);
-                input.focus();
+        (function pill_remove() {
+            pills.onPillRemove(function () {
+                // onPillRemove is fired before the pill is removed from
+                // the DOM.
                 update_cancel_button();
-            },
-            stopAdvance: true,
-        });
-
-        pills.onPillRemove(function () {
-            // onPillRemove is fired before the pill is removed from
-            // the DOM.
-            update_cancel_button();
-            setTimeout(function () {
-                input.focus();
-            }, 100);
-        });
-
+                setTimeout(function () {
+                    input.focus();
+                }, 100);
+            });
+        }());
     });
 };
 
 exports.set_up = function () {
     meta.loaded = true;
-
     exports.populate_user_groups();
 
     $(".organization").on("submit", "form.admin-user-group-form", function (e) {
