@@ -593,11 +593,13 @@ class StreamAdminTest(ZulipTestCase):
                                          other_sub_users: List[UserProfile]=None) -> HttpResponse:
 
         # Set up the main user, who is in most cases an admin.
-        user_profile = self.example_user('hamlet')
+        if is_admin:
+            user_profile = self.example_user('iago')
+        else:
+            user_profile = self.example_user('hamlet')
+
         email = user_profile.email
         self.login(email)
-        if is_admin:
-            do_change_is_admin(user_profile, True)
 
         # Set up the stream.
         stream_name = u"hümbüǵ"
