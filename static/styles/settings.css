@@ -359,6 +359,21 @@ input[type=checkbox] + .inline-block {
     margin-top: 0px;
 }
 
+.org-settings-form .subsection-header h3 {
+    display: inline;
+}
+
+.org-settings-form .subsection-header div[class*="subsection-changes"] {
+    display: inline;
+}
+
+.org-settings-form .subsection-header div[class*="subsection-changes"] button {
+    display: inline-block;
+    margin-top: -4px;
+    min-width: 80px;
+    line-height: 10px;
+}
+
 #default_language {
     margin-left: 20px;
 }
