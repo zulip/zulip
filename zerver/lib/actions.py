@@ -78,7 +78,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_bot_services, get_bot_dicts_in_realm
+    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -4092,7 +4092,9 @@ def validate_email(user_profile: UserProfile, email: Text) -> Tuple[Optional[str
     except ValidationError:
         return _("Invalid address."), None
 
-    if not email_allowed_for_realm(email, user_profile.realm):
+    try:
+        email_allowed_for_realm(email, user_profile.realm)
+    except DomainNotAllowedForRealmError:
         return _("Outside your domain."), None
 
     try:
