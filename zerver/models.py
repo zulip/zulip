@@ -1036,6 +1036,8 @@ def stream_name_in_use(stream_name: Text, realm_id: int) -> bool:
     ).exists()
 
 def get_active_streams(realm: Optional[Realm]) -> QuerySet:
+    # TODO: Change return type to QuerySet[Stream]
+    # NOTE: Return value is used as a QuerySet, so cannot currently be Sequence[QuerySet]
     """
     Return all streams (including invite-only streams) that have not been deactivated.
     """
@@ -1249,8 +1251,7 @@ def pre_save_message(sender: Any, **kwargs: Any) -> None:
         message = kwargs['instance']
         message.update_calculated_fields()
 
-def get_context_for_message(message):
-    # type: (Message) -> QuerySet[Message]
+def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
