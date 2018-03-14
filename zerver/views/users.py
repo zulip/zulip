@@ -32,7 +32,7 @@ from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
-    disposable_email_check, DomainNotAllowedForRealmError
+    DomainNotAllowedForRealmError, DisposableEmailError
 from zerver.lib.create_user import random_api_key
 
 
@@ -463,10 +463,7 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
     except DomainNotAllowedForRealmError:
         return json_error(_("Email '%(email)s' not allowed in this organization") %
                           {'email': email})
-
-    try:
-        disposable_email_check(realm, email)
-    except ValidationError:
+    except DisposableEmailError:
         return json_error(_("Disposable emails are not allowed for realm '{}'".format(realm.string_id)))
 
     try:
