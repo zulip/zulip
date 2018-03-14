@@ -213,6 +213,7 @@ exports.remove_stream = function (stream_id) {
 exports.update_settings_for_subscribed = function (sub) {
     var button = button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
+    $('.add_subscribers_container').show();
 
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub, true);
@@ -250,9 +251,10 @@ exports.update_settings_for_unsubscribed = function (sub) {
         stream_edit.rerender_subscribers_list(sub);
 
         // If user unsubscribed from private stream then user can not subscribe to
-        // stream without invitation. So hide subscribe button.
+        // stream without invitation and can not add subscribers to stream.
         if (!sub.should_display_subscription_button) {
             settings_button.hide();
+            $('.add_subscribers_container').hide();
         }
     }
 
