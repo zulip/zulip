@@ -368,7 +368,7 @@ EVENT_FUNCTION_MAPPER = {
 @api_key_only_webhook_view('GitHub')
 @has_request_variables
 def api_github_webhook(
-        request: HttpResponse, user_profile: UserProfile, payload: Dict[str, Any]=REQ(argument_type='body'),
+        request: HttpRequest, user_profile: UserProfile, payload: Dict[str, Any]=REQ(argument_type='body'),
         stream: Text=REQ(default='github'), branches: Text=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
