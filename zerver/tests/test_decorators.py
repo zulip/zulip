@@ -225,7 +225,7 @@ class DecoratorTestCase(TestCase):
         request.POST['api_key'] = 'not_existing_api_key'
 
         with self.assertRaisesRegex(JsonableError, "Invalid API key"):
-            my_webhook(request)
+            my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Start a valid request here
         request.POST['api_key'] = webhook_bot_api_key
@@ -233,7 +233,7 @@ class DecoratorTestCase(TestCase):
         with mock.patch('logging.warning') as mock_warning:
             with self.assertRaisesRegex(JsonableError,
                                         "Account is not associated with this subdomain"):
-                api_result = my_webhook(request)
+                api_result = my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
@@ -243,7 +243,7 @@ class DecoratorTestCase(TestCase):
             with self.assertRaisesRegex(JsonableError,
                                         "Account is not associated with this subdomain"):
                 request.host = "acme." + settings.EXTERNAL_HOST
-                api_result = my_webhook(request)
+                api_result = my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             mock_warning.assert_called_with(
                 "User {} ({}) attempted to access API on wrong "
@@ -257,7 +257,7 @@ class DecoratorTestCase(TestCase):
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "{}"
                 request.content_type = 'application/json'
-                my_webhook_raises_exception(request)
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Test when content_type is not application/json; exception raised
         # in the webhook function should be re-raised
@@ -265,7 +265,7 @@ class DecoratorTestCase(TestCase):
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "notjson"
                 request.content_type = 'text/plain'
-                my_webhook_raises_exception(request)
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Test when content_type is application/json but request.body
         # is not valid JSON; invalid JSON should be logged and the
@@ -274,7 +274,7 @@ class DecoratorTestCase(TestCase):
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
-                my_webhook_raises_exception(request)
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             message = """
 user: {email} ({realm})
@@ -297,7 +297,7 @@ body:
 
         with self.settings(RATE_LIMITING=True):
             with mock.patch('zerver.decorator.rate_limit_user') as rate_limit_mock:
-                api_result = my_webhook(request)
+                api_result = my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Verify rate limiting was attempted.
         self.assertTrue(rate_limit_mock.called)
@@ -314,7 +314,7 @@ body:
         webhook_bot.is_active = False
         webhook_bot.save()
         with self.assertRaisesRegex(JsonableError, "Account not active"):
-            my_webhook(request)
+            my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Reactive the user, but deactivate their realm.
         webhook_bot.is_active = True
@@ -322,7 +322,7 @@ body:
         webhook_bot.realm.deactivated = True
         webhook_bot.realm.save()
         with self.assertRaisesRegex(JsonableError, "Realm for account has been deactivated"):
-            my_webhook(request)
+            my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
     def test_authenticated_api_view_logging(self) -> None:
         @authenticated_api_view(is_webhook=True)
@@ -345,7 +345,7 @@ body:
                 request.body = '{}'
                 request.POST['payload'] = '{}'
                 request.content_type = 'text/plain'
-                my_webhook_raises_exception(request)
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             message = """
 user: {email} ({realm})
