@@ -680,7 +680,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         anchor=anchor,
         anchored_to_left=anchored_to_left,
         anchored_to_right=anchored_to_right,
-        narrow=narrow,
         id_col=inner_msg_id_col,
     )
 
@@ -755,7 +754,6 @@ def limit_query_to_range(query: Query,
                          anchor: int,
                          anchored_to_left: bool,
                          anchored_to_right: bool,
-                         narrow: Any,
                          id_col: ColumnElement) -> Query:
     '''
     This code is actually generic enough that we could move it to a
@@ -766,20 +764,31 @@ def limit_query_to_range(query: Query,
 
     need_both_sides = need_before_query and need_after_query
 
-    # We add 1 to the number of messages requested if no narrow was
-    # specified to ensure that the resulting list always contains the
-    # anchor row.  If a narrow was specified, the anchor row
-    # might not match the narrow anyway.
-    if narrow is None:
-        if need_after_query:
-            num_after += 1
-        elif need_before_query:
-            num_before += 1
-
+    # The semantics of our flags are as follows:
+    #
+    # num_after = number of rows < anchor
+    # num_after = number of rows > anchor
+    #
+    # But we also want the row where id == anchor (if it exists),
+    # and we don't want to union up to 3 queries.  So in some cases
+    # we do things like `after_limit = num_after + 1` to grab the
+    # anchor row in the "after" query.
+    #
+    # Note that in some cases, if the anchor row isn't found, we
+    # actually may fetch an extra row at one of the extremes.
     if need_both_sides:
         before_anchor = anchor - 1
+        after_anchor = anchor
+        before_limit = num_before
+        after_limit = num_after + 1
     elif need_before_query:
         before_anchor = anchor
+        before_limit = num_before
+        if not anchored_to_right:
+            before_limit += 1
+    elif need_after_query:
+        after_anchor = anchor
+        after_limit = num_after + 1
 
     if need_before_query:
         before_query = query
@@ -787,15 +796,17 @@ def limit_query_to_range(query: Query,
         if not anchored_to_right:
             before_query = before_query.where(id_col <= before_anchor)
 
-        before_query = before_query.order_by(id_col.desc()).limit(num_before)
+        before_query = before_query.order_by(id_col.desc())
+        before_query = before_query.limit(before_limit)
 
     if need_after_query:
         after_query = query
 
         if not anchored_to_left:
-            after_query = after_query.where(id_col >= anchor)
+            after_query = after_query.where(id_col >= after_anchor)
 
-        after_query = after_query.order_by(id_col.asc()).limit(num_after)
+        after_query = after_query.order_by(id_col.asc())
+        after_query = after_query.limit(after_limit)
 
     if need_both_sides:
         query = union_all(before_query.self_group(), after_query.self_group())
