@@ -371,13 +371,20 @@ def email_to_domain(email: Text) -> Text:
 class DomainNotAllowedForRealmError(Exception):
     pass
 
+class DisposableEmailError(Exception):
+    pass
+
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email: Text, realm: Realm) -> None:
     if not realm.restricted_to_domain:
+        if realm.disallow_disposable_email_addresses and \
+                is_disposable_domain(email_to_domain(email)):
+            raise DisposableEmailError
         return
+
     domain = email_to_domain(email)
     query = RealmDomain.objects.filter(realm=realm)
     if query.filter(domain=domain).exists():
@@ -389,11 +396,6 @@ def email_allowed_for_realm(email: Text, realm: Realm) -> None:
             if query.filter(domain=domain).exists():
                 return
     raise DomainNotAllowedForRealmError
-
-def disposable_email_check(realm: Realm, email: Text) -> None:
-    if not realm.restricted_to_domain and realm.disallow_disposable_email_addresses:
-        if is_disposable_domain(email_to_domain(email)):
-            raise ValidationError("Please use your real email address.")
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, Text]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
