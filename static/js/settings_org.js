@@ -418,6 +418,71 @@ function _set_up() {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
+    function property_value_element_refers(property_name) {
+        if (property_name === 'realm_message_content_edit_limit_minutes') {
+            return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60);
+        }
+        return;
+    }
+
+    exports.extract_property_name = function (elem) {
+        return elem.attr('id').split('-').join('_').replace("id_", "");
+    };
+
+    function check_property_changed(elem) {
+        elem = $(elem);
+        var property_name = exports.extract_property_name(elem);
+        var current_val = page_params[property_name];
+        var changed_val;
+        if (typeof current_val === 'boolean') {
+            changed_val = elem.prop('checked');
+        } else if (typeof current_val === 'string') {
+            changed_val = elem.val().trim();
+        } else if (typeof current_val === 'number') {
+            current_val = current_val.toString();
+            changed_val = elem.val().trim();
+        } else {
+            // Check whether the id refers to a property whose name we can't
+            // extract from element's id.
+            current_val = property_value_element_refers(property_name);
+
+            if (current_val !== undefined) {
+                current_val = current_val.toString();
+                changed_val = elem.val().trim();
+            } else {
+                blueslip.error('Element refers to unknown property ' + property_name);
+            }
+        }
+        return current_val !== changed_val;
+    }
+
+    function get_subsection_property_elements(element) {
+        var subsection = $(element).closest('.org-subsection-parent');
+        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_']");
+    }
+
+    $('.organization').on('change input', 'input, select', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var subsection = $(this).closest('.org-subsection-parent');
+        var properties_elements = get_subsection_property_elements(subsection);
+        var show_change_process_button = false;
+        _.each(properties_elements , function (elem) {
+            if (check_property_changed(elem)) {
+                show_change_process_button = true;
+            }
+        });
+
+        var change_process_button = subsection.find('.subsection-header .button');
+        change_process_button.first().text(i18n.t("Save"));
+        if (show_change_process_button) {
+            change_process_button.removeClass('hide').addClass('show');
+        } else {
+            change_process_button.removeClass('show').addClass('hide');
+        }
+    });
+
     exports.save_organization_settings = function (data, save_button, success_continuation) {
         var failed_alert_elem = $('#admin-realm-failed-change-status');
         save_button.text(i18n.t("Saving"));
@@ -427,8 +492,9 @@ function _set_up() {
             data: data,
             success: function (response_data) {
                 failed_alert_elem.hide();
-                save_button.text(i18n.t("Saved"));
                 save_button.attr("data-status", "saved");
+                save_button.text(i18n.t("Saved"));
+                save_button.removeClass('hide').addClass('show').stop(true).fadeTo(0, 1);
                 if (success_continuation !== undefined) {
                     success_continuation(response_data);
                 }
