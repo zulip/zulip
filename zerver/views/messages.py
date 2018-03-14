@@ -688,7 +688,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_messages */")
-    query_result = list(sa_conn.execute(query).fetchall())
+    rows = list(sa_conn.execute(query).fetchall())
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -700,7 +700,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     message_ids = []  # type: List[int]
     user_message_flags = {}  # type: Dict[int, List[str]]
     if include_history:
-        message_ids = [row[0] for row in query_result]
+        message_ids = [row[0] for row in rows]
 
         # TODO: This could be done with an outer join instead of two queries
         um_rows = UserMessage.objects.filter(user_profile=user_profile,
@@ -711,7 +711,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             if message_id not in user_message_flags:
                 user_message_flags[message_id] = ["read", "historical"]
     else:
-        for row in query_result:
+        for row in rows:
             message_id = row[0]
             flags = row[1]
             user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
@@ -719,7 +719,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     search_fields = dict()  # type: Dict[int, Dict[str, Text]]
     if is_search:
-        for row in query_result:
+        for row in rows:
             message_id = row[0]
             (subject, rendered_content, content_matches, subject_matches) = row[-4:]
 
