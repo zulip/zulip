@@ -317,9 +317,6 @@ casper.then(function () {
     });
 });
 
-function submit_org_settings_change() {
-    casper.click('form.org-settings-form button.button');
-}
 
 casper.then(function () {
     casper.click("li[data-section='organization-settings']");
@@ -328,14 +325,15 @@ casper.then(function () {
         casper.evaluate(function () {
             $('#id_realm_default_language').val('de').change();
         });
-        submit_org_settings_change();
+        casper.test.assertSelectorHasText('#org-submit-language-notify', "Save");
+        casper.click('#org-submit-language-notify');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin-realm-default-language-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-default-language-status',
-                                          'Default language changed!');
+    casper.waitUntilVisible('#org-submit-language-notify[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-language-notify',
+                                          'Saved');
     });
 });
 

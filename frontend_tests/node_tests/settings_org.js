@@ -180,6 +180,7 @@ function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
+        target: '#org-submit-msg-editing',
     };
 
     $('#id_realm_default_language').val('fr');
@@ -190,13 +191,20 @@ function test_submit_settings_form(submit_form) {
     channel.patch = function (req) {
         patched = true;
         assert.equal(req.url, '/json/realm');
-
-        var data = req.data;
-
-        assert.equal(data.default_language, '"fr"');
-
         success_callback = req.success;
     };
+
+    var stub_save_button = $('#org-submit-msg-editing');
+    stub_save_button.attr = function () {
+        return 'org-submit-msg-editing';
+    };
+    var stub_save_button_header = $('.subsection-header');
+    stub_save_button.closest = function () {
+        return stub_save_button_header;
+    };
+    stub_save_button_header.set_find_results(
+        '.subsection-changes-discard button', $.create('#org-discard-msg-editing')
+    );
 
     submit_form(ev);
     assert(patched);
@@ -208,26 +216,19 @@ function test_submit_settings_form(submit_form) {
 
     success_callback(response_data);
 
-    var editing_status = $('#admin-realm-message-editing-status').val();
-    assert(editing_status.indexOf('content of messages which are less than') > 0);
+    var updated_value_from_response = $('#id_realm_message_content_edit_limit_minutes').val();
+    assert(updated_value_from_response, 3);
+
+    $('#id_realm_message_content_edit_limit_minutes').val = function (time_limit) {
+        updated_value_from_response = time_limit;
+    };
 
     response_data = {
         allow_message_editing: true,
-        message_content_edit_limit_seconds: 0,
+        message_content_edit_limit_seconds: 10,
     };
     success_callback(response_data);
-
-    assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can now edit the content and topics ' +
-                 'of all their past messages!');
-
-    response_data = {
-        allow_message_editing: false,
-    };
-    success_callback(response_data);
-
-    assert.equal($('#admin-realm-message-editing-status').val(),
-          'translated: Users can no longer edit their past messages!');
+    assert(updated_value_from_response, 0);
 }
 
 function test_submit_permissions_form(submit_form) {
@@ -469,7 +470,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     var submit_permissions_form;
     var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
-        if (selector === 'button.save-message-org-settings') {
+        if (selector === '.subsection-header .subsection-changes-save button') {
             assert.equal(action, 'click');
             submit_settings_form = f;
         }

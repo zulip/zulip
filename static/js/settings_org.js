@@ -418,104 +418,76 @@ function _set_up() {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
-    exports.save_organization_settings = function () {
-        _.each(property_types.settings, function (v, k) {
-            property_type_status_element(k).hide();
-        });
-
-        var message_editing_status = $("#admin-realm-message-editing-status").expectOne();
-        // grab the first alert available and use it for the status.
-        var $alerts = $(".settings-section.show .alert").hide();
-        // grab the first alert available and use it for the status.
-        var status = $("#admin-realm-notifications-stream-status");
-
-        var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
-        var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
-
-        // If allow_message_editing is unchecked, message_content_edit_limit_minutes
-        // is irrelevant.  Hence if allow_message_editing is unchecked, and
-        // message_content_edit_limit_minutes is poorly formed, we set the latter to
-        // a default value to prevent the server from returning an error.
-        if (!new_allow_message_editing) {
-            if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
-                 compose_textarea_edit_limit_minutes) ||
-                compose_textarea_edit_limit_minutes < 0) {
-            // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
-            compose_textarea_edit_limit_minutes = 10;
-            }
-        }
-
-        var url = "/json/realm";
-        var data = {};
-        data = populate_data_for_request({
-            allow_message_editing: JSON.stringify(new_allow_message_editing),
-            message_content_edit_limit_seconds:
-                JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
-        }, property_types.settings);
-
+    exports.save_organization_settings = function (data, save_button, success_continuation) {
+        var failed_alert_elem = $('#admin-realm-failed-change-status');
+        save_button.text(i18n.t("Saving"));
+        save_button.attr("data-status", "saving");
         channel.patch({
-            url: url,
+            url: "/json/realm",
             data: data,
-
             success: function (response_data) {
-                $alerts.hide();
-                if (response_data.allow_message_editing !== undefined) {
-                    // We expect message_content_edit_limit_seconds was sent in the
-                    // response as well
-                    var data_message_content_edit_limit_minutes =
-                        Math.ceil(response_data.message_content_edit_limit_seconds / 60);
-                    if (response_data.allow_message_editing) {
-                        if (response_data.message_content_edit_limit_seconds > 0) {
-                            ui_report.success(
-                                i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
-                                       {num_minutes : data_message_content_edit_limit_minutes}),
-                                message_editing_status);
-                        } else {
-                            ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
-                        }
-                    } else {
-                        ui_report.success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
-                    }
-                    // message_content_edit_limit_seconds could have been changed earlier
-                    // in this function, so update the field just in case
-                    $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
-                }
-
-                process_response_data(response_data, 'settings');
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), status);
+                failed_alert_elem.hide();
+                save_button.text(i18n.t("Saved"));
+                save_button.attr("data-status", "saved");
+                if (success_continuation !== undefined) {
+                    success_continuation(response_data);
                 }
             },
             error: function (xhr) {
-                $alerts.hide();
-                ui_report.error(i18n.t("Failed"), xhr, status);
+                save_button.attr("data-status", "failed");
+                save_button.text(i18n.t("Save"));
+                ui_report.error(i18n.t("Failed"), xhr, failed_alert_elem);
             },
         });
     };
 
-    // For historical reasons, the save_organization_settings() function handles
-    // saving data for two different sections of the "Organization settings" panel.
-    // TODO: Make two separate click handlers, so that we only save changes that
-    //       make sense for the individual buttons.
-    $(".organization").on("click", "button.save-message-org-settings", function (e) {
+    $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
         e.preventDefault();
         e.stopPropagation();
+        var save_button = $(e.target);
+        var subsection_id = save_button.attr('id').replace("org-submit-", "");
+        var subsection = subsection_id.split('-').join('_');
 
-        exports.save_organization_settings(e);
-    });
+        var data = {};
+        var success_continuation;
 
-    $(".organization").on("click", "button.save-language-org-settings", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+        if (subsection === 'msg_editing') {
+            var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+            var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
+            // If allow_message_editing is unchecked, message_content_edit_limit_minutes
+            // is irrelevant.  Hence if allow_message_editing is unchecked, and
+            // message_content_edit_limit_minutes is poorly formed, we set the latter to
+            // a default value to prevent the server from returning an error.
+            if (!new_allow_message_editing) {
+                if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
+                     compose_textarea_edit_limit_minutes) ||
+                    compose_textarea_edit_limit_minutes < 0) {
+                // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
+                compose_textarea_edit_limit_minutes = 10;
+                }
+            }
 
-        exports.save_organization_settings(e);
+            data = {
+                allow_message_editing: JSON.stringify(new_allow_message_editing),
+                message_content_edit_limit_seconds:
+                    JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
+            };
+
+            success_continuation = function (response_data) {
+                if (response_data.allow_message_editing !== undefined) {
+                   // We expect message_content_edit_limit_seconds was sent in the
+                   // response as well
+                   var data_message_content_edit_limit_minutes =
+                   Math.ceil(response_data.message_content_edit_limit_seconds / 60);
+                   // message_content_edit_limit_seconds could have been changed earlier
+                   // in this function, so update the field just in case
+                   $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
+                }
+            };
+        }
+
+        data = populate_data_for_request(data, org_settings[subsection]);
+        exports.save_organization_settings(data, save_button, success_continuation);
     });
 
     $("#id_realm_create_stream_permission").change(function () {
