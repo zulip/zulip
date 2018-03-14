@@ -953,6 +953,10 @@ input[type=checkbox].inline-block {
     opacity: 0;
 }
 
+#user-groups .delete {
+    float: right;
+}
+
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;

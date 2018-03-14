@@ -300,12 +300,14 @@ function render(template_name, args) {
     global.write_handlebars_output('admin_user_group_list', html);
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_description = $(html).find('.user-group:first h4').text().trim().replace(/\s+/g, ' ');
+    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name, 'uranohoshi');
-    assert.equal(group_description, 'uranohoshi — Students at Uranohoshi Academy');
+    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_name_display, 'uranohoshi');
+    assert.equal(group_description, 'Students at Uranohoshi Academy');
 }());
 
 (function admin_user_list() {
