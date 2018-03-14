@@ -446,6 +446,28 @@ function test_change_allow_subdomains(change_allow_subdomains) {
                  'translated: Update successful: Subdomains no longer allowed for example.com');
 }
 
+function test_extract_property_name() {
+    $('#id_realm_allow_message_editing').attr('id', 'id_realm_allow_message_editing');
+    assert.equal(
+        settings_org.extract_property_name($('#id_realm_allow_message_editing')),
+        'realm_allow_message_editing'
+    );
+
+    $('#id_realm_message_content_edit_limit_minutes_label').attr(
+        'id', 'id_realm_message_content_edit_limit_minutes_label');
+    assert.equal(
+        settings_org.extract_property_name($('#id_realm_message_content_edit_limit_minutes_label')),
+        'realm_message_content_edit_limit_minutes_label'
+    );
+
+    $('#id-realm-allow-message-deleting').attr(
+        'id', 'id-realm-allow-message-deleting');
+    assert.equal(
+        settings_org.extract_property_name($('#id-realm-allow-message-deleting')),
+        'realm_allow_message_deleting'
+    );
+}
+
 (function test_set_up() {
     var callbacks = {};
 
@@ -519,6 +541,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
+    test_extract_property_name();
 }());
 
 (function test_misc() {

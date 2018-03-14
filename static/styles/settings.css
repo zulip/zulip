@@ -367,7 +367,7 @@ input[type=checkbox] + .inline-block {
     display: inline;
 }
 
-.org-settings-form .subsection-header div[class*="subsection-changes"] button {
+.org-settings-form .subsection-header div[class*="subsection-changes"] button.show {
     display: inline-block;
     margin-top: -4px;
     min-width: 80px;
