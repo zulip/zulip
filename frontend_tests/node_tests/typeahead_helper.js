@@ -24,11 +24,11 @@ stream_data.create_streams([
     }};
 
     var test_streams = [
-        {name: 'Dev', pin_to_top: false, subscribers: unpopular},
-        {name: 'Docs', pin_to_top: false, subscribers: popular},
-        {name: 'Derp', pin_to_top: false, subscribers: unpopular},
-        {name: 'Denmark', pin_to_top: true, subscribers: popular},
-        {name: 'dead', pin_to_top: false, subscribers: unpopular},
+        {name: 'Dev', pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {name: 'Docs', pin_to_top: false, subscribers: popular, subscribed: true},
+        {name: 'Derp', pin_to_top: false, subscribers: unpopular, subscribed: true},
+        {name: 'Denmark', pin_to_top: true, subscribers: popular, subscribed: true},
+        {name: 'dead', pin_to_top: false, subscribers: unpopular, subscribed: true},
     ];
 
     global.stream_data.is_active = function (sub) {
@@ -44,11 +44,11 @@ stream_data.create_streams([
 
     // Test sort streams with description
     test_streams = [
-        {name: 'Dev', description: 'development help', subscribers: unpopular},
-        {name: 'Docs', description: 'writing docs', subscribers: popular},
-        {name: 'Derp', description: 'derping around', subscribers: unpopular},
-        {name: 'Denmark', description: 'visiting Denmark', subscribers: popular},
-        {name: 'dead', description: 'dead stream', subscribers: unpopular},
+        {name: 'Dev', description: 'development help', subscribers: unpopular, subscribed: true},
+        {name: 'Docs', description: 'writing docs', subscribers: popular, subscribed: true},
+        {name: 'Derp', description: 'derping around', subscribers: unpopular, subscribed: true},
+        {name: 'Denmark', description: 'visiting Denmark', subscribers: popular, subscribed: true},
+        {name: 'dead', description: 'dead stream', subscribers: unpopular, subscribed: true},
     ];
     test_streams = th.sort_streams(test_streams, 'wr');
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
@@ -56,6 +56,24 @@ stream_data.create_streams([
     assert.deepEqual(test_streams[2].name, "Derp"); // Less subscribers
     assert.deepEqual(test_streams[3].name, "Dev"); // Alphabetically last
     assert.deepEqual(test_streams[4].name, "dead"); // Inactive streams last
+
+    // Test sort both subscribed and unsubscribed streams.
+    test_streams = [
+        {name: 'Dev', description: 'Some devs', subscribed: true},
+        {name: 'East', description: 'Developing east', subscribed: true},
+        {name: 'New', description: 'No match', subscribed: true},
+        {name: 'Derp', description: 'Always Derping', subscribed: false},
+        {name: 'Ether', description: 'Destroying ether', subscribed: false},
+        {name: 'Mew', description: 'Cat mews', subscribed: false},
+    ];
+
+    test_streams = th.sort_streams(test_streams, 'd');
+    assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query
+    assert.deepEqual(test_streams[1].name, "Derp"); // Unsubscribed and stream name starts with query
+    assert.deepEqual(test_streams[2].name, "East"); // Subscribed and description starts with query
+    assert.deepEqual(test_streams[3].name, "Ether"); // Unsubscribed and description starts with query
+    assert.deepEqual(test_streams[4].name, "New"); // Subscribed and no match
+    assert.deepEqual(test_streams[5].name, "Mew"); // Unsubscribed and no match
 }());
 
 (function test_sort_languages() {

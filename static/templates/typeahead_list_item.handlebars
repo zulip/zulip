@@ -14,4 +14,9 @@
 <small class="autocomplete_secondary">
     {{~ secondary ~}}
 </small>
+{{#if is_unsubscribed}}
+&nbsp;
+<span class="fa fa-exclamation-triangle unsubscribed_icon"
+title="{{t 'You are not subscribed to this stream, but can still mention it'}}"></span>
+{{/if}}
 {{~/if}}
