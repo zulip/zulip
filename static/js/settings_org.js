@@ -483,14 +483,49 @@ function _set_up() {
         }
     });
 
+    $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        var properties_elements = get_subsection_property_elements(this);
+        _.each(properties_elements, function (elem) {
+            elem = $(elem);
+            var property_name = exports.extract_property_name(elem);
+            if (typeof page_params[property_name] === 'boolean') {
+                // Trigger a click event because of dependent sub-settings
+                if (elem.prop('checked') !== page_params[property_name]) {
+                    elem.click();
+                }
+            } else if (typeof page_params[property_name] === 'string' || typeof page_params[property_name] === 'number') {
+                elem.val(page_params[property_name]);
+            } else {
+                // Check whether the id refers to a property whose name we can't
+                // extract from element's id.
+                var property_value = property_value_element_refers(property_name);
+
+                if (property_value !== undefined) {
+                    elem.val(property_value);
+                } else {
+                    blueslip.error('Element refers to unknown property ' + property_name);
+                }
+            }
+        });
+
+        var subsection = $(this).closest('.org-subsection-parent');
+        var change_process_buttons = subsection.find('.subsection-header .button');
+        change_process_buttons.removeClass('show').addClass('hide');
+    });
+
     exports.save_organization_settings = function (data, save_button, success_continuation) {
         var failed_alert_elem = $('#admin-realm-failed-change-status');
+        var discard_button = save_button.closest('.subsection-header').find('.subsection-changes-discard button');
         save_button.text(i18n.t("Saving"));
         save_button.attr("data-status", "saving");
         channel.patch({
             url: "/json/realm",
             data: data,
             success: function (response_data) {
+                discard_button.removeClass('show').addClass('hide');
                 failed_alert_elem.hide();
                 save_button.attr("data-status", "saved");
                 save_button.text(i18n.t("Saved"));
