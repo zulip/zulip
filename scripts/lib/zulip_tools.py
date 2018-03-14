@@ -272,14 +272,15 @@ def generate_sha1sum_emoji(zulip_path):
         with open(file_path, 'rb') as reader:
             sha.update(reader.read())
 
-    # Take into account the version of `emoji-datasource` package while generating success stamp.
+    # Take into account the version of `emoji-datasource-google` package
+    # while generating success stamp.
     PACKAGE_FILE_PATH = os.path.join(zulip_path, 'package.json')
     with open(PACKAGE_FILE_PATH, 'r') as fp:
         parsed_package_file = json.load(fp)
     dependency_data = parsed_package_file['dependencies']
 
-    if 'emoji-datasource' in dependency_data:
-        emoji_datasource_version = dependency_data['emoji-datasource'].encode('utf-8')
+    if 'emoji-datasource-google' in dependency_data:
+        emoji_datasource_version = dependency_data['emoji-datasource-google'].encode('utf-8')
     else:
         emoji_datasource_version = b"0"
     sha.update(emoji_datasource_version)
