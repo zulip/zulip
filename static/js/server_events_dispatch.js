@@ -391,6 +391,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             user_groups.add_members(event.group_id, event.user_ids);
         } else if (event.op === 'remove_members') {
             user_groups.remove_members(event.group_id, event.user_ids);
+        } else if (event.op === "update") {
+            user_groups.update(event);
         }
         settings_user_groups.reload();
         break;

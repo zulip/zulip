@@ -36,6 +36,16 @@ exports.get_user_group_from_id = function (group_id) {
     return user_group_by_id_dict.get(group_id);
 };
 
+exports.update = function (event) {
+    var group = exports.get_user_group_from_id(event.group_id);
+    if (event.data.name !== undefined) {
+        group.name = event.data.name;
+    }
+    if (event.data.description !== undefined) {
+        group.description = event.data.description;
+    }
+};
+
 exports.get_user_group_from_name = function (name) {
     return user_group_name_dict.get(name);
 };

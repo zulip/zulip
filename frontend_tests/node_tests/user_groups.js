@@ -29,6 +29,15 @@ zrequire('user_groups');
     user_groups.add(admins);
     assert.equal(user_groups.get_user_group_from_id(admins.id), admins);
 
+    var update_event = {
+        group_id: admins.id,
+        data: {
+            name: "new admins",
+        },
+    };
+    user_groups.update(update_event);
+    assert.equal(user_groups.get_user_group_from_id(admins.id).name, "new admins");
+
     var called = false;
     global.blueslip.error = function (msg) {
         assert.equal(msg, "Unknown group_id in get_user_group_from_id: " + all.id);

@@ -502,8 +502,6 @@ set_global('people', {
         };
 
         handler.call(fake_this);
-        assert.equal(group_data.name, 'translated: mobile');
-        assert.equal(group_data.description, 'translated: All mobile members');
     }());
 
     (function test_user_groups_click_save_member_changes_triggered() {
