@@ -543,7 +543,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.logout()
 
     def test_serve_local(self) -> None:
-        def check_xsend_links(name: Text, name_str_for_test: Text) -> None:
+        def check_xsend_links(name: Text, name_str_for_test: Text,
+                              content_disposition: Text='') -> None:
             with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx'):
                 _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
                 self.login(self.example_email("hamlet"))
@@ -559,9 +560,20 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
                 self.assertEqual(response['X-Accel-Redirect'],
                                  '/serve_uploads/../../'  + test_upload_dir +
                                  '/files/' + fp_path + '/' + name_str_for_test)
+                if content_disposition != '':
+                    self.assertIn('attachment;', response['Content-disposition'])
+                    self.assertIn(content_disposition, response['Content-disposition'])
+                else:
+                    self.assertEqual(response.get('Content-disposition'), None)
 
-        check_xsend_links('zulip.txt', 'zulip.txt')
-        check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt')
+        check_xsend_links('zulip.txt', 'zulip.txt', "filename*=UTF-8''zulip.txt")
+        check_xsend_links('áéБД.txt', '%C3%A1%C3%A9%D0%91%D0%94.txt',
+                          "filename*=UTF-8''%C3%A1%C3%A9%D0%91%D0%94.txt")
+        check_xsend_links('zulip.html', 'zulip.html', "filename*=UTF-8''zulip.html")
+        check_xsend_links('zulip.sh', 'zulip.sh', "filename*=UTF-8''zulip.sh")
+        check_xsend_links('zulip.jpeg', 'zulip.jpeg')
+        check_xsend_links('áéБД.pdf', '%C3%A1%C3%A9%D0%91%D0%94.pdf')
+        check_xsend_links('zulip', 'zulip', "filename*=UTF-8''zulip")
 
     def tearDown(self) -> None:
         destroy_uploads()

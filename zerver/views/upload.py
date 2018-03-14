@@ -13,6 +13,7 @@ from zerver.lib.validator import check_bool
 from zerver.models import UserProfile, validate_attachment_request
 from django.conf import settings
 from sendfile import sendfile
+from mimetypes import guess_type
 
 def serve_s3(request: HttpRequest, url_path: str) -> HttpResponse:
     uri = get_signed_upload_url(url_path)
@@ -22,7 +23,22 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
     local_path = get_local_file_path(path_id)
     if local_path is None:
         return HttpResponseNotFound('<p>File not found</p>')
-    return sendfile(request, local_path)
+
+    # To force browser to trigger a file download instead of trying to open files
+    # inline in the browser it self we as django sendfile to add
+    # Content-Disposition header for all files except images and pdf's.
+    # This results in response['Content-disposition'] being packed with value as
+    # this: `attachment; filename="b'zulip.txt'"; filename*=UTF-8''zulip.txt`
+    # In these filename might not always be correct due to py2/3 compatibility
+    # but filename* will always loaded with correct urlquoted filenames.
+    # For more details on filename* and filename see below docs:
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Disposition
+    attachment = True
+    file_type = guess_type(local_path)[0]
+    if file_type is not None and ('image' in file_type or 'pdf' in file_type):
+        attachment = False
+
+    return sendfile(request, local_path, attachment=attachment)
 
 @has_request_variables
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
