@@ -406,11 +406,10 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(
-        function: Optional[Callable[..., HttpResponse]]=None,
+        function: Optional[ViewFuncT]=None,
         redirect_field_name: Text=REDIRECT_FIELD_NAME,
         login_url: Text=settings.HOME_NOT_LOGGED_IN,
-) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]],
-           Callable[..., HttpResponse]]:
+) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
     actual_decorator = user_passes_test(
         logged_in_and_active,
         login_url=login_url,
