@@ -15,14 +15,14 @@
     margin: 10px 10px 0px 10px;
 }
 
-/* alert box compoent changes */
+/* alert box component changes */
 .alert-box {
     position: absolute;
     top: 0px;
     left: 0px;
     width: 900px;
     margin-left: calc(50% - 450px);
-    z-index: 102;
+    z-index: 220;
 
     -webkit-font-smoothing: antialiased;
 }
