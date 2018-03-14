@@ -251,8 +251,6 @@ set_global('people', {
     assert.equal(typeof($('.organization').get_on_handler("submit", "form.admin-user-group-form")), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('click', '.delete')), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
-    assert.equal(typeof($('#user-groups').get_on_handler('input', '.user-group h4 > span')), 'function');
-    assert.equal(typeof($('#user-groups').get_on_handler('click', '.save-group-changes')), 'function');
 }());
 
 (function test_reload() {
@@ -375,122 +373,100 @@ set_global('people', {
         assert(default_action_for_enter_stopped);
     }());
 
-    (function test_user_groups_title_description_input_triggered() {
-        var handler = $('#user-groups').get_on_handler("input", ".user-group h4 > span");
-        var sib_span = $.create('fake-input-span');
-        var sib_save = $.create('fake-input-save');
-        var sib_save_display = 'none';
-        $('.user-group').attr('id', '2');
-        sib_span.attr('class', 'description');
-        sib_span.text(i18n.t('All mobile members'));
-        var fake_this = $.create('fake-#user-groups_input');
-        fake_this.className = 'name';
-        fake_this.text(i18n.t('mobile'));
-        fake_this.siblings = function (sel) {
-            function first() {
-                return this;
-            }
-            sib_span.first = first;
-            sib_save.first = first;
-            if (sel === 'span') {
-                return sib_span;
-            } else if (sel === '.save-group-changes') {
-                return sib_save;
-            }
+    (function test_do_not_blur() {
+        var blur_event_classes = [".name", ".description", ".input"];
+        var api_endpoint_called = false;
+        channel.post = function () {
+            api_endpoint_called = true;
         };
-        fake_this.set_parents_result('.user-group', $('.user-group'));
-        sib_save.css = function (data) {
-            if (typeof(data) === 'string') {
-                assert.equal(data, 'display');
-                return sib_save_display;
-            }
-            assert.equal(typeof(data), 'object');
-            assert.equal(data.display, 'inline');
-            assert.equal(data.opacity, '0');
-            sib_save_display = 'inline';
-            return sib_save;
-        };
-        var save_btn_fade_out_called = false;
-        sib_save.fadeOut = function () {
-            save_btn_fade_out_called = true;
-            sib_save_display = 'none';
+        var fake_this = $.create('fake-#user-groups_do_not_blur');
+        fake_this.set_parents_result('#user-groups #1', $('#user-groups #1'));
+        var event = {
+            relatedTarget: fake_this,
         };
 
-        user_groups.get_user_group_from_id = function () {
-            return {
-                name: 'mob',
-                description: 'all mob members',
-            };
-        };
-        handler.call(fake_this);
-        assert(!save_btn_fade_out_called);
+        _.each(blur_event_classes, function (class_name) {
+            var handler = $('#user-groups #1').get_on_handler("blur", class_name);
+            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+                                            class_name);
+            _.each(blur_exceptions, function (blur_exception) {
+                api_endpoint_called = false;
+                fake_this.closest = function (except_class) {
+                    if (except_class === blur_exception) {
+                        return [1];
+                    }
+                    return [];
+                };
+                handler.call(fake_this, event);
+                assert(!api_endpoint_called);
+            });
 
-        user_groups.get_user_group_from_id = function () {
-            return {
-                name: 'translated: mobile',
-                description: 'translated: All mobile members',
+            // Check do_not_blur returns false if current user group is not a parent.
+            channel.patch = noop;
+            fake_this.parents = function () {return false;};
+            api_endpoint_called = false;
+            fake_this.closest = function (except_class) {
+                if (except_class === ".typeahead") {
+                    return [1];
+                }
+                return [];
             };
-        };
-        handler.call(fake_this);
-        assert(save_btn_fade_out_called);
+            handler.call(fake_this, event);
+            assert(!api_endpoint_called);
+        });
+
     }());
 
-    (function test_user_groups_click_save_group_changes_triggered() {
-        var handler = $('#user-groups').get_on_handler("click", ".save-group-changes");
-        var sib_name = $.create('.name');
-        var sib_des = $.create('.description');
-        var fake_this = $.create('fake-#user-groups_click_save');
-        $('.user-group').attr('id', '3');
+    (function test_user_groups_save_group_changes_triggered() {
+        var handler_name = $('#user-groups #1').get_on_handler("blur", ".name");
+        var handler_desc = $('#user-groups #1').get_on_handler("blur", ".description");
+        var sib_des = $('#user-groups #1 .description');
+        var sib_name = $('#user-groups #1 .name');
         sib_name.text(i18n.t('mobile'));
         sib_des.text(i18n.t('All mobile members'));
-        fake_this.set_parents_result('.user-group', $('.user-group'));
-        fake_this.siblings = function (sel) {
-            if (sel === '.description') {
-                return sib_des;
-            } else if (sel === '.name') {
-                return sib_name;
-            }
-        };
-        var group_data = {};
+
+        var group_data = {members: Dict.from_array([2, 31])};
         user_groups.get_user_group_from_id = function () {
             return group_data;
         };
-
+        var api_endpoint_called = false;
         channel.patch = function (opts) {
-            assert.equal(opts.url, "/json/user_groups/3");
+            assert.equal(opts.url, "/json/user_groups/1");
             assert.equal(opts.data.name, 'translated: mobile');
             assert.equal(opts.data.description, 'translated: All mobile members');
-
+            api_endpoint_called = true;
             (function test_post_success() {
-                fake_this.text(i18n.t('fake-text'));
-                fake_this.delay = function (time) {
-                    assert.equal(time, 200);
-                    return fake_this;
-                };
-                fake_this.html('');
-                var save_btn_fade_out_called = false;
-                fake_this.fadeOut = function (func) {
-                    assert.equal(typeof(func), 'function');
-                    save_btn_fade_out_called = true;
-                    func.call(fake_this);
-                };
                 opts.success();
-                assert(save_btn_fade_out_called);
-                assert.equal(fake_this.html(), '<i class="fa fa-check" aria-hidden="true"></i>');
-                assert.equal(fake_this.text(), 'translated: Saved!');
-            }());
-
-            (function test_post_error() {
-                fake_this.text(i18n.t('fake-text'));
-                opts.error();
-                assert.equal(fake_this.text(), 'translated: Failed!');
             }());
         };
 
-        handler.call(fake_this);
+        var fake_this = $.create('fake-#user-groups_blur_name');
+        fake_this.closest = function () {
+            return [];
+        };
+        fake_this.set_parents_result('#user-groups #1', $('#user-groups #1'));
+        var event = {
+            relatedTarget: fake_this,
+        };
+
+        api_endpoint_called = false;
+        handler_name.call(fake_this, event);
+        assert(api_endpoint_called);
+
+        // Check API endpoint isn't called if name and desc haven't changed.
+        group_data.name = "translated: mobile";
+        group_data.description = "translated: All mobile members";
+        api_endpoint_called = false;
+        handler_name.call(fake_this, event);
+        assert(!api_endpoint_called);
+
+        // Reset group_data and check if handler_desc works.
+        api_endpoint_called = false;
+        handler_desc.call(fake_this, event);
+        assert(!api_endpoint_called);
     }());
 
-    (function test_user_groups_click_save_member_changes_triggered() {
+    (function test_user_groups_save_member_changes_triggered() {
         var handler = $('#user-groups #1').get_on_handler("blur", ".input");
         var realm_user_group = {
             id: 1,
@@ -512,7 +488,8 @@ set_global('people', {
             api_endpoint_called = true;
         };
 
-        var fake_this = $.create('fake-#user-groups_blur_input_valid');
+        var fake_this = $.create('fake-#user-groups_blur_input');
+        fake_this.set_parents_result('#user-groups #1', $('#user-groups #1'));
         fake_this.closest = function () {
             return [];
         };
@@ -523,39 +500,5 @@ set_global('people', {
         api_endpoint_called = false;
         handler.call(fake_this, event);
         assert(api_endpoint_called);
-
-        api_endpoint_called = false;
-        fake_this.closest = function (class_name) {
-            if (class_name === '.typeahead') {
-                return [1];
-            }
-            return [];
-        };
-        handler.call(fake_this, event);
-        assert(!api_endpoint_called);
-
-
-        api_endpoint_called = false;
-        fake_this.closest = function (class_name) {
-            if (class_name === '.pill-container') {
-                return [1];
-            }
-            return [];
-        };
-        fake_this.parents = function () {
-            return true;
-        };
-        handler.call(fake_this, event);
-        assert(!api_endpoint_called);
-
-        api_endpoint_called = false;
-        fake_this.closest = function () {
-            return [];
-        };
-        user_groups.get_user_group_from_id = function () {
-            return {members: Dict.from_array([2, 31])};
-        };
-        handler.call(fake_this, event);
-        assert(!api_endpoint_called);
     }());
 }());

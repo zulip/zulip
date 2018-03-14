@@ -61,18 +61,7 @@ exports.populate_user_groups = function () {
             }
         });
 
-
-        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
-            // Event generated from or inside the pill container.
-            if ($(event.relatedTarget).closest(".pill-container").length
-               && $(event.relatedTarget).parents('#user-groups #' + data.id)) {
-                return;
-            }
-            // Event generated from or inside the typeahead.
-            if ($(event.relatedTarget).closest(".typeahead").length) {
-                return;
-            }
-
+        function save_members() {
             var draft_group = get_pill_user_ids();
             var group_data = user_groups.get_user_group_from_id(data.id);
             var original_group = group_data.members.keys();
@@ -90,6 +79,66 @@ exports.populate_user_groups = function () {
                     delete: JSON.stringify(removed),
                 },
             });
+        }
+
+        function save_name_desc() {
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var description = $('#user-groups #' + data.id + ' .description').text().trim();
+            var name = $('#user-groups #' + data.id + ' .name').text().trim();
+
+            if (group_data.description === description && group_data.name === name) {
+                return;
+            }
+
+            channel.patch({
+                url: "/json/user_groups/" + data.id,
+                data: {
+                    name: name,
+                    description: description,
+                },
+                success: function () {
+                },
+            });
+        }
+
+        function do_not_blur(except_class, event) {
+            // Event generated from or inside the typeahead.
+            if ($(event.relatedTarget).closest(".typeahead").length) {
+                return true;
+            }
+
+            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+                                            except_class);
+            if ($(event.relatedTarget).parents('#user-groups #' + data.id)) {
+                return _.some(blur_exceptions, function (class_name) {
+                    return $(event.relatedTarget).closest(class_name).length;
+                });
+            }
+            return false;
+        }
+
+        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
+            if (do_not_blur('.input', event)) {
+                return;
+            }
+            save_name_desc();
+            save_members();
+        });
+
+        $('#user-groups #' + data.id).on('blur', '.name', function (event) {
+            if (do_not_blur('.name', event)) {
+                return;
+            }
+            save_name_desc();
+            save_members();
+        });
+
+        $('#user-groups #' + data.id).on('blur', '.description', function (event) {
+            if (do_not_blur('.description', event)) {
+                return;
+            }
+            save_name_desc();
+            save_members();
         });
 
         var input = pill_container.children('.input');
@@ -193,51 +242,6 @@ exports.set_up = function () {
         if (e.which === 13) {
             e.preventDefault();
         }
-    });
-
-    $('#user-groups').on('input', '.user-group h4 > span', function () {
-        var element = this.className;
-        var current_text = $(this).text();
-        var sibling_element = $(this).siblings('span').first().attr('class');
-        var sibling_text = $(this).siblings('span').first().text();
-        var group_id = $(this).parents('.user-group').attr('id');
-        var user_group = user_groups.get_user_group_from_id(group_id);
-        var saved_text = user_group[element];
-        var saved_sibling_text = user_group[sibling_element];
-
-        var has_changes = saved_text !== current_text || saved_sibling_text !== sibling_text;
-        var save_changes = $(this).siblings('.save-group-changes');
-        var save_hidden = save_changes.css('display') === 'none';
-        var has_content = current_text.trim() !== '' && sibling_text.trim() !== '';
-
-        if (has_changes && save_hidden && has_content) {
-            save_changes.css({display: 'inline', opacity: '0'}).fadeTo(400, 1);
-        } else if ((!has_changes || !has_content) && !save_hidden) {
-            save_changes.fadeOut();
-        }
-    });
-
-    $('#user-groups').on('click', '.save-group-changes', function () {
-        var group_id = $(this).parents('.user-group').attr('id');
-        var description = $(this).siblings('.description').text().trim();
-        var name = $(this).siblings('.name').text().trim();
-        var btn = $(this);
-
-        channel.patch({
-            url: "/json/user_groups/" + group_id,
-            data: {
-                name: name,
-                description: description,
-            },
-            success: function () {
-                btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
-                    $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
-                });
-            },
-            error: function () {
-                btn.text(i18n.t("Failed!"));
-            },
-        });
     });
 };
 
