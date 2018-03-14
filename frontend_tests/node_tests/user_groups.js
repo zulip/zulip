@@ -43,4 +43,9 @@ zrequire('user_groups');
         assert.equal(msg, "Unknown group_id in get_user_group_from_id: " + students.id);
     };
     assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
+    user_groups.add(students);
+    assert.deepEqual([user_groups.get_realm_user_groups()[0].id,
+                        user_groups.get_realm_user_groups()[1].id], [0, 1]);
+    assert.equal(user_groups.get_realm_user_groups()[1].name, 'Admins');
+    assert.deepEqual(user_groups.get_realm_user_groups()[0].members, Dict.from_array([1, 2]));
 }());

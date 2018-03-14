@@ -17,8 +17,9 @@ exports.init();
 
 exports.add = function (user_group) {
     // Reformat the user group members structure to be a dict.
-    user_group.members = Dict.from_array(user_group.members);
-
+    if (user_group.members instanceof Array) {
+        user_group.members = Dict.from_array(user_group.members);
+    }
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
@@ -41,7 +42,9 @@ exports.get_user_group_from_name = function (name) {
 };
 
 exports.get_realm_user_groups = function () {
-    return user_group_name_dict.values();
+    return user_group_by_id_dict.values().sort(function (a, b) {
+        return (a.id - b.id);
+    });
 };
 
 exports.is_member_of = function (user_group_id, user_id) {
