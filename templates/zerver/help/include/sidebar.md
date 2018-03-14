@@ -100,13 +100,13 @@
 * [View organization statistics](/help/analytics)
 
 ## Apps
-* [Installation guides](/help/desktop-app-install-guide)
+* [Desktop installation guides](/help/desktop-app-install-guide)
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
+* [Zulip in a Terminal](/help/zulip-in-a-terminal)
 <!-- Zulip on macOS -->
 <!-- Zulip on Linux -->
 <!-- Zulip on iOS -->
-<!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
 # Zulip administration
