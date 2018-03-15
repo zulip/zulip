@@ -15,6 +15,8 @@ zrequire('subs');
 var jsdom = require("jsdom");
 var window = jsdom.jsdom().defaultView;
 global.$ = require('jquery')(window);
+set_global('window', window);
+zrequire('bootstrap', 'third/bootstrap/js/bootstrap');
 
 subs.stream_name_match_stream_ids = [];
 subs.stream_description_match_stream_ids = [];
