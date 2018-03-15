@@ -827,6 +827,49 @@ def limit_query_to_range(query: Query,
 
     return query
 
+def post_process_limited_query(rows: List[Any],
+                               num_before: int,
+                               num_after: int,
+                               anchor: int,
+                               anchored_to_left: bool,
+                               anchored_to_right: bool) -> Dict[str, Any]:
+    # Our queries may have fetched extra rows if they added
+    # "headroom" to the limits, but we want to truncate those
+    # rows.
+    #
+    # Also, in cases where we had non-zero values of num_before or
+    # num_after, we want to know found_oldest and found_newest, so
+    # that the clients will know that they got complete results.
+
+    if anchored_to_right:
+        num_after = 0
+        before_rows = rows[:]
+        anchor_rows = []  # type: List[Any]
+        after_rows = []  # type: List[Any]
+    else:
+        before_rows = [r for r in rows if r[0] < anchor]
+        anchor_rows = [r for r in rows if r[0] == anchor]
+        after_rows = [r for r in rows if r[0] > anchor]
+
+    if num_before:
+        before_rows = before_rows[-1 * num_before:]
+
+    if num_after:
+        after_rows = after_rows[:num_after]
+
+    rows = before_rows + anchor_rows + after_rows
+
+    found_anchor = len(anchor_rows) == 1
+    found_oldest = anchored_to_left or (len(before_rows) < num_before)
+    found_newest = anchored_to_right or (len(after_rows) < num_after)
+
+    return dict(
+        rows=rows,
+        found_anchor=found_anchor,
+        found_newest=found_newest,
+        found_oldest=found_oldest,
+    )
+
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
                          messages: List[int]=REQ(validator=check_list(check_int)),
