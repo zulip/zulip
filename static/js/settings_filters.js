@@ -84,6 +84,8 @@ exports.set_up = function () {
             url: "/json/realm/filters",
             data: $(this).serialize(),
             success: function (data) {
+                $('#filter_pattern').val('');
+                $('#filter_format_string').val('');
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
             },
