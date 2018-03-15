@@ -343,6 +343,10 @@ exports.filter_table = function (query) {
             $(row).addClass("notdisplayed");
             others.push($(row).detach());
         }
+
+        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+            placement: 'left', animation: false,
+        });
     });
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
