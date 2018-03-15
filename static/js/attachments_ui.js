@@ -31,7 +31,7 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
     return size + ' ' + sizes[i];
- };
+ }
 
 exports.set_up_attachments = function () {
     // The settings page must be rendered before this function gets called.
