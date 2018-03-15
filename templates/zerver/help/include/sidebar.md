@@ -83,6 +83,7 @@
 ## Notifications
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
+* [Mute a user](/help/mute-a-user)
 * [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
 * [Desktop notifications](/help/configure-desktop-notifications)
 * [Email notifications](/help/configure-email-notifications)
