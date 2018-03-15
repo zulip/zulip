@@ -72,6 +72,8 @@ exports.set_up = function () {
         var filter_status = $('#admin-filter-status');
         var pattern_status = $('#admin-filter-pattern-status');
         var format_status = $('#admin-filter-format-status');
+        var add_filter_button = $('.new-filter-form button');
+        add_filter_button.attr("disabled", "disabled");
         filter_status.hide();
         pattern_status.hide();
         format_status.hide();
@@ -86,11 +88,13 @@ exports.set_up = function () {
             success: function (data) {
                 $('#filter_pattern').val('');
                 $('#filter_format_string').val('');
+                add_filter_button.removeAttr("disabled");
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
             },
             error: function (xhr) {
                 var errors = JSON.parse(xhr.responseText).errors;
+                add_filter_button.removeAttr("disabled");
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});
                     ui_report.error(i18n.t("Failed"), xhr, pattern_status);
