@@ -19,14 +19,12 @@
             <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
             <div class="stream-message-count">
                 {{#if is_old_stream}}
-                    <i class="fa fa-bar-chart"></i>
-                    {{#if can_access_subscribers}}
-                    <span class="stream-message-count-text">{{stream_weekly_traffic}}</span>
-                    <div class="stream-message-hover-content">{{t "Average weekly traffic" }}</div>
-                    {{/if}}
+                <i class="fa fa-bar-chart"></i>
+                <span class="stream-message-count-text">{{stream_weekly_traffic}}</span>
+                <div class="stream-message-hover-content">{{t "Average weekly traffic" }}</div>
                 {{else}}
-                    <span class="stream-message-count-text">{{t "New" }}</span>
-                    <div class="stream-message-hover-content">{{t "Recently created stream" }}</div>
+                <span class="stream-message-count-text">{{t "New" }}</span>
+                <div class="stream-message-hover-content">{{t "Recently created stream" }}</div>
                 {{/if}}
             </div>
         </div>
