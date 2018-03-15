@@ -689,6 +689,17 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     query = query.prefix_with("/* get_messages */")
     rows = list(sa_conn.execute(query).fetchall())
 
+    query_info = post_process_limited_query(
+        rows=rows,
+        num_before=num_before,
+        num_after=num_after,
+        anchor=anchor,
+        anchored_to_left=anchored_to_left,
+        anchored_to_right=anchored_to_right,
+    )
+
+    rows = query_info['rows']
+
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
     # 'user_messages' dictionary maps each message to the user's
