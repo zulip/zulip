@@ -39,9 +39,13 @@ exports.update = function (event) {
     var group = exports.get_user_group_from_id(event.group_id);
     if (event.data.name !== undefined) {
         group.name = event.data.name;
+        user_group_name_dict.del(group.name);
+        user_group_name_dict.set(group.name, group);
     }
     if (event.data.description !== undefined) {
         group.description = event.data.description;
+        user_group_name_dict.del(group.name);
+        user_group_name_dict.set(group.name, group);
     }
 };
 
