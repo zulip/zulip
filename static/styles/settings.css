@@ -947,10 +947,32 @@ input[type=checkbox].inline-block {
     vertical-align: 1px;
 }
 
-#user-groups .save-group-changes,
-#user-groups .save-member-changes {
+#user-groups .save-status {
+    vertical-align: middle;
+    height: auto;
+    width: auto;
+    background: transparent;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+#user-groups .save-status.saved {
     display: none;
     opacity: 0;
+    border: 1px solid hsl(178, 100%, 40%);
+    color: hsl(178, 100%, 40%);
+}
+
+#user-groups .save-status.cancel {
+    display: none;
+    opacity: 0;
+    border: 1px solid #333;
+    color: #333;
+}
+
+#user-groups .checkmark {
+    width: 13px;
 }
 
 #user-groups .delete {
