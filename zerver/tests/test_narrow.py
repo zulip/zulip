@@ -594,7 +594,7 @@ class GetOldMessagesTest(ZulipTestCase):
 
     def message_visibility_test(self, narrow: List[Dict[str, str]],
                                 message_ids: List[int], pivot_index: int) -> None:
-        num_before = len(message_ids) - 1
+        num_before = len(message_ids)
 
         post_params = dict(narrow=ujson.dumps(narrow), num_before=num_before,
                            num_after=0, anchor=LARGER_THAN_MAX_MESSAGE_ID)
@@ -1485,7 +1485,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with first_visible_id_as(message_ids[2]):
             messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
 
-        messages_matches_ids(messages, message_ids[2:8])
+        messages_matches_ids(messages, message_ids[2:7])
 
         with first_visible_id_as(message_ids[9] + 1):
             messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
