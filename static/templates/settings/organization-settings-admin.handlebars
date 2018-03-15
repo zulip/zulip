@@ -8,7 +8,8 @@
         <div class="alert" id="admin-realm-inline-image-preview-status"></div>
         <div class="alert" id="admin-realm-inline-url-embed-preview-status"></div>
         <div class="alert" id="admin-realm-allow-edit-history-status"></div>
-        <div class="alert" id="admin-realm-allow-message-deleting-status"></div>
+        <div class="alert" id="admin-realm-allow-message-deleting-by-admin-status"></div>
+        <div class="alert" id="admin-realm-allow-message-deleting-by-user-status"></div>
         <div class="alert" id="admin-realm-message-editing-status"></div>
         <div class="alert" id="admin-realm-mandatory-topics-status"></div>
 
@@ -39,15 +40,24 @@
 
             <div class="input-group">
                 <label class="checkbox">
-                    <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"
-                           {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
+                    <input type="checkbox" id="id_realm_allow_message_deleting_by_admin" name="id_realm_allow_message_deleting_by_admin"
+                           {{#if realm_allow_message_deleting_by_admin}}checked="checked"{{/if}} />
                     <span></span>
                 </label>
-                <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block">
+                <label for="id_realm_allow_message_deleting_by_admin" id="id_realm_allow_message_deleting_by_admin_label" class="inline-block">
+                    {{t "Administrators can delete any messages" }}
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" id="id_realm_allow_message_deleting_by_user" name="id_realm_allow_message_deleting_by_user"
+                           {{#if realm_allow_message_deleting_by_user}}checked="checked"{{/if}} />
+                    <span></span>
+                </label>
+                <label for="id_realm_allow_message_deleting_by_user" id="id_realm_allow_message_deleting_by_user_label" class="inline-block">
                     {{t "Users can delete their messages" }}
                 </label>
-                <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                title="{{t 'Administrators can always delete any message.' }}"/>
             </div>
 
             <div class="input-group">

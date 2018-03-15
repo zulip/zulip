@@ -275,8 +275,9 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_edit_history_option = _.any(message.edit_history, function (entry) {
             return entry.prev_content !== undefined;
         }) && page_params.realm_allow_edit_history;
-        var should_display_delete_option = page_params.is_admin ||
-            (message.sent_by_me && page_params.realm_allow_message_deleting);
+        var should_display_delete_option = (page_params.is_admin &&
+            page_params.realm_allow_message_deleting_by_admin) ||
+            (message.sent_by_me && page_params.realm_allow_message_deleting_by_user);
 
         var should_display_collapse = !message.locally_echoed && !message.collapsed;
         var should_display_uncollapse = !message.locally_echoed && message.collapsed;
