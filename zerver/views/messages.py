@@ -752,11 +752,16 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     )
 
     statsd.incr('loaded_old_messages', len(message_list))
-    ret = {'messages': message_list,
-           "result": "success",
-           "msg": ""}
-    if use_first_unread_anchor:
-        ret['anchor'] = anchor
+
+    ret = dict(
+        messages=message_list,
+        result='success',
+        msg='',
+        found_anchor=query_info['found_anchor'],
+        found_oldest=query_info['found_oldest'],
+        found_newest=query_info['found_newest'],
+        anchor=anchor,
+    )
     return json_success(ret)
 
 def limit_query_to_range(query: Query,

@@ -1457,70 +1457,127 @@ class GetOldMessagesTest(ZulipTestCase):
         for i in range(10):
             message_ids.append(self.send_stream_message(self.example_email("cordelia"), "Verona"))
 
-        messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+        data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
+
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids)
 
         with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+            data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[2]):
-            messages = self.get_messages(anchor=message_ids[6], num_before=9, num_after=0)
+            data = self.get_messages_response(anchor=message_ids[6], num_before=9, num_after=0)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids[2:7])
 
         with first_visible_id_as(message_ids[9] + 1):
-            messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
-            self.assert_length(messages, 0)
+            data = self.get_messages_response(anchor=message_ids[9], num_before=9, num_after=0)
 
-        messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
+        messages = data['messages']
+        self.assert_length(messages, 0)
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
+
+        data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=5)
+
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], True)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[7]):
-            messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
+            data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=5)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], True)
         messages_matches_ids(messages, message_ids[7:])
 
         with first_visible_id_as(message_ids[2]):
-            messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
+            data = self.get_messages_response(anchor=message_ids[0], num_before=0, num_after=5)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids[2:7])
 
         with first_visible_id_as(message_ids[9] + 1):
-            messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
-            self.assert_length(messages, 0)
+            data = self.get_messages_response(anchor=message_ids[0], num_before=0, num_after=5)
 
-        messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], True)
+        self.assert_length(messages, 0)
+
+        data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
+
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids)
 
         with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+            data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+            data = self.get_messages_response(anchor=message_ids[2], num_before=10, num_after=10)
 
-        messages_matches_ids(messages, message_ids[5:])
-
-        with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[2], num_before=10, num_after=10)
-
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], True)
         messages_matches_ids(messages, message_ids[5:])
 
         with first_visible_id_as(message_ids[9] + 1):
-            messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
-            self.assert_length(messages, 0)
+            data = self.get_messages_response(anchor=message_ids[5], num_before=5, num_after=4)
+
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], True)
+        self.assertEqual(data['found_newest'], True)
+        self.assert_length(messages, 0)
 
         with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=0)
+            data = self.get_messages_response(anchor=message_ids[5], num_before=0, num_after=0)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], True)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
         messages_matches_ids(messages, message_ids[5:6])
 
         with first_visible_id_as(message_ids[5]):
-            messages = self.get_messages(anchor=message_ids[2], num_before=0, num_after=0)
+            data = self.get_messages_response(anchor=message_ids[2], num_before=0, num_after=0)
 
+        messages = data['messages']
+        self.assertEqual(data['found_anchor'], False)
+        self.assertEqual(data['found_oldest'], False)
+        self.assertEqual(data['found_newest'], False)
         self.assert_length(messages, 0)
 
     def test_missing_params(self) -> None:
