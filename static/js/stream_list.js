@@ -440,7 +440,7 @@ exports.handle_narrow_activated = function (filter) {
         exports.scroll_stream_into_view(stream_li);
     }
     // Update scrollbar size.
-    $("#stream-filters-container").perfectScrollbar("update");
+    ui.update_scrollbar($("#stream-filters-container"));
 };
 
 exports.handle_narrow_deactivated = function () {

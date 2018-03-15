@@ -240,9 +240,13 @@ function initialize_stream_data() {
     stream_list.scroll_element_into_container = noop;
 
     var scrollbar_updated = false;
-    $.stub_selector("#stream-filters-container", {
-        perfectScrollbar: function () { scrollbar_updated = true; },
+
+    set_global('ui', {
+        update_scrollbar: function () {scrollbar_updated = true;},
     });
+    ui.update_scrollbar(
+        $.stub_selector("#stream-filters-container")
+    );
 
     assert(!$('<devel sidebar row html>').hasClass('active-filter'));
 
