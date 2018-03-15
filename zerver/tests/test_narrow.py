@@ -65,6 +65,12 @@ def mute_stream(realm: Realm, user_profile: Text, stream_name: Text) -> None:
     subscription.in_home_view = False
     subscription.save()
 
+def first_visible_id_as(message_id: int) -> Any:
+    return mock.patch(
+        'zerver.views.messages.get_first_visible_message_id',
+        return_value=message_id,
+    )
+
 class NarrowBuilderTest(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm('zulip')
@@ -440,8 +446,10 @@ class GetOldMessagesTest(ZulipTestCase):
             assert(message["id"] in message_ids)
 
         post_params.update({"num_before": len(message_ids[pivot_index:])})
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[pivot_index]):
+
+        with first_visible_id_as(message_ids[pivot_index]):
             payload = self.client_get("/json/messages", dict(post_params))
+
         self.assert_json_success(payload)
         result = ujson.loads(payload.content)
 
@@ -1291,59 +1299,68 @@ class GetOldMessagesTest(ZulipTestCase):
         messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
         messages_matches_ids(messages, message_ids)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
+
         messages_matches_ids(messages, message_ids[5:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[2]):
+        with first_visible_id_as(message_ids[2]):
             messages = self.get_messages(anchor=message_ids[6], num_before=9, num_after=0)
+
         messages_matches_ids(messages, message_ids[2:7])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+        with first_visible_id_as(message_ids[9] + 1):
             messages = self.get_messages(anchor=message_ids[9], num_before=9, num_after=0)
             self.assert_length(messages, 0)
 
         messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
         messages_matches_ids(messages, message_ids[5:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[7]):
+        with first_visible_id_as(message_ids[7]):
             messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=5)
+
         messages_matches_ids(messages, message_ids[7:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[2]):
+        with first_visible_id_as(message_ids[2]):
             messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
+
         messages_matches_ids(messages, message_ids[2:8])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+        with first_visible_id_as(message_ids[9] + 1):
             messages = self.get_messages(anchor=message_ids[0], num_before=0, num_after=5)
             self.assert_length(messages, 0)
 
         messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
         messages_matches_ids(messages, message_ids)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+
         messages_matches_ids(messages, message_ids[5:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
+
         messages_matches_ids(messages, message_ids[5:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[2], num_before=10, num_after=10)
+
         messages_matches_ids(messages, message_ids[5:])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[9] + 1):
+        with first_visible_id_as(message_ids[9] + 1):
             messages = self.get_messages(anchor=message_ids[5], num_before=5, num_after=4)
             self.assert_length(messages, 0)
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[5], num_before=0, num_after=0)
+
         messages_matches_ids(messages, message_ids[5:6])
 
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=message_ids[5]):
+        with first_visible_id_as(message_ids[5]):
             messages = self.get_messages(anchor=message_ids[2], num_before=0, num_after=0)
-            self.assert_length(messages, 0)
+
+        self.assert_length(messages, 0)
 
     def test_missing_params(self) -> None:
         """
@@ -1557,7 +1574,7 @@ class GetOldMessagesTest(ZulipTestCase):
         request = POSTRequestMock(query_params, user_profile)
 
         first_visible_message_id = first_unread_message_id + 2
-        with mock.patch('zerver.views.messages.get_first_visible_message_id', return_value=first_visible_message_id):
+        with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
 
@@ -1605,7 +1622,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertNotIn('AND message_id >=', sql)
 
         first_visible_message_id = 5
-        with mock.patch("zerver.views.messages.get_first_visible_message_id", return_value=first_visible_message_id):
+        with first_visible_id_as(first_visible_message_id):
             with queries_captured() as all_queries:
                 get_messages_backend(request, user_profile)
             queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
