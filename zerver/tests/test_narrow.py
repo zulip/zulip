@@ -37,6 +37,7 @@ from zerver.views.messages import (
     exclude_muting_conditions,
     get_messages_backend, ok_to_include_history,
     NarrowBuilder, BadNarrowOperator, Query,
+    post_process_limited_query,
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
@@ -411,6 +412,164 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator='search', operand='needle in haystack'),
         ]
         self.assertTrue(ok_to_include_history(narrow, realm))
+
+class PostProcessTest(ZulipTestCase):
+    def test_basics(self) -> None:
+        def verify(in_ids: List[int],
+                   num_before: int,
+                   num_after: int,
+                   anchor: int,
+                   anchored_to_left: bool,
+                   anchored_to_right: bool,
+                   out_ids: List[int],
+                   found_anchor: bool,
+                   found_oldest: bool,
+                   found_newest: bool) -> None:
+            in_rows = [[row_id] for row_id in in_ids]
+            out_rows = [[row_id] for row_id in out_ids]
+
+            info = post_process_limited_query(
+                rows=in_rows,
+                num_before=num_before,
+                num_after=num_after,
+                anchor=anchor,
+                anchored_to_left=anchored_to_left,
+                anchored_to_right=anchored_to_right,
+            )
+
+            self.assertEqual(info['rows'], out_rows)
+            self.assertEqual(info['found_anchor'], found_anchor)
+            self.assertEqual(info['found_newest'], found_newest)
+
+        # typical 2-sided query
+        anchor = 10
+        verify(
+            in_ids=[8, 9, anchor, 11, 12],
+            num_before=2, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[8, 9, 10, 11, 12],
+            found_anchor=True, found_oldest=False, found_newest=False,
+        )
+
+        # typical 2-sided query missing anchor and grabbing an extra row
+        anchor = 10
+        verify(
+            in_ids=[7, 9, 11, 13, 15],
+            num_before=2, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[7, 9, 11, 13],
+            found_anchor=False, found_oldest=False, found_newest=False,
+        )
+
+        # 2-sided query with old anchor
+        anchor = 100
+        verify(
+            in_ids=[50, anchor, 150, 200],
+            num_before=2, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[50, 100, 150, 200],
+            found_anchor=True, found_oldest=True, found_newest=False,
+        )
+
+        # 2-sided query with new anchor
+        anchor = 900
+        verify(
+            in_ids=[700, 800, anchor, 1000],
+            num_before=2, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[700, 800, 900, 1000],
+            found_anchor=True, found_oldest=False, found_newest=True,
+        )
+
+        # left-sided query with old anchor
+        anchor = 100
+        verify(
+            in_ids=[50, anchor],
+            num_before=2, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[50, 100],
+            found_anchor=True, found_oldest=True, found_newest=False,
+        )
+
+        # left-sided query with new anchor
+        anchor = 900
+        verify(
+            in_ids=[700, 800, anchor],
+            num_before=2, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[700, 800, 900],
+            found_anchor=True, found_oldest=False, found_newest=False,
+        )
+
+        # left-sided query with new anchor and extra row
+        anchor = 900
+        verify(
+            in_ids=[600, 700, 800, anchor],
+            num_before=2, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[700, 800, 900],
+            found_anchor=True, found_oldest=False, found_newest=False,
+        )
+
+        # left-sided query anchored to the right
+        anchor = None
+        verify(
+            in_ids=[900, 1000],
+            num_before=2, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=True,
+            out_ids=[900, 1000],
+            found_anchor=False, found_oldest=False, found_newest=True,
+        )
+
+        # right-sided query with old anchor
+        anchor = 100
+        verify(
+            in_ids=[anchor, 200, 300, 400],
+            num_before=0, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[100, 200, 300],
+            found_anchor=True, found_oldest=False, found_newest=False,
+        )
+
+        # right-sided query with new anchor
+        anchor = 900
+        verify(
+            in_ids=[anchor, 1000],
+            num_before=0, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[900, 1000],
+            found_anchor=True, found_oldest=False, found_newest=True,
+        )
+
+        # right-sided query with non-matching anchor
+        anchor = 903
+        verify(
+            in_ids=[1000, 1100, 1200],
+            num_before=0, num_after=2,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1000, 1100],
+            found_anchor=False, found_oldest=False, found_newest=False,
+        )
+
+        # targeted query that finds row
+        anchor = 1000
+        verify(
+            in_ids=[1000],
+            num_before=0, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[1000],
+            found_anchor=True, found_oldest=False, found_newest=False,
+        )
+
+        # targeted query that finds nothing
+        anchor = 903
+        verify(
+            in_ids=[],
+            num_before=0, num_after=0,
+            anchor=anchor, anchored_to_left=False, anchored_to_right=False,
+            out_ids=[],
+            found_anchor=False, found_oldest=False, found_newest=False,
+        )
 
 class GetOldMessagesTest(ZulipTestCase):
 
