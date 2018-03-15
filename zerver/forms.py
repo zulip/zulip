@@ -153,7 +153,7 @@ class HomepageForm(forms.Form):
                   "that are allowed to register for accounts in this organization.").format(
                       string_id=realm.string_id, email=email))
         except DisposableEmailError:
-            raise ValidationError("Please use your real email address.")
+            raise ValidationError(_("Please use your real email address."))
 
         validate_email_for_realm(realm, email)
 
