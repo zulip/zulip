@@ -979,6 +979,13 @@ input[type=checkbox].inline-block {
     float: right;
 }
 
+#user-groups .save-instructions {
+    display: none;
+    opacity: 0;
+    color: #333;
+    font-size: 0.9em;
+}
+
 /* -- new settings overlay -- */
 #settings_page {
     height: 95vh;
