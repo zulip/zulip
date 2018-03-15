@@ -9,6 +9,6 @@ from .github_webhook.view import api_github_webhook
 @csrf_exempt
 def api_github_webhook_dispatch(request: HttpRequest) -> HttpResponse:
     if request.META.get('HTTP_X_GITHUB_EVENT'):
-        return api_github_webhook(request)
+        return api_github_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
     else:
-        return api_github_landing(request)
+        return api_github_landing(request)  # type: ignore # mypy doesn't seem to apply the decorator
