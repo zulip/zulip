@@ -601,8 +601,8 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             if subtype in ["channel_join", "channel_leave", "channel_name"]:
                 continue
 
-            # For attachments
-            elif subtype == "file_share":
+            # For attachments with slack download link
+            elif subtype == "file_share" and 'files.slack.com' in message['file']['url_private']:
                 fileinfo = message['file']
 
                 has_attachment = has_link = True
@@ -621,6 +621,17 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 build_zerver_attachment(realm_id, message_id, attachment_id, added_users[user],
                                         fileinfo, s3_path, zerver_attachment)
                 attachment_id_count += 1
+
+            # For attachments with link not from slack
+            # Example: Google drive integration
+            elif subtype == "file_share":
+                fileinfo = message['file']
+                has_link = True
+                if 'title' in fileinfo:
+                    file_name = fileinfo['title']
+                else:
+                    file_name = fileinfo['name']
+                content = '[%s](%s)' % (file_name, fileinfo['url_private'])
 
         # construct message
         zulip_message = dict(
