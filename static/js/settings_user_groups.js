@@ -61,6 +61,43 @@ exports.populate_user_groups = function () {
             }
         });
 
+        function is_user_group_changed() {
+            var draft_group = get_pill_user_ids();
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var original_group = group_data.members.keys();
+            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
+            var description = $('#user-groups #' + data.id + ' .description').text().trim();
+            var name = $('#user-groups #' + data.id + ' .name').text().trim();
+
+            if ((group_data.description === description && group_data.name === name) &&
+                (!draft_group.length || same_groups)) {
+                return false;
+            }
+            return true;
+        }
+
+        function update_cancel_button() {
+            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
+            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            if (is_user_group_changed() &&
+               !cancel_button.is(':visible')) {
+                saved_button.fadeOut(0);
+                cancel_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+            } else if (!is_user_group_changed() &&
+                cancel_button.is(':visible')) {
+                    cancel_button.fadeOut();
+                }
+        }
+
+        function show_saved_button() {
+            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
+            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            if (!saved_button.is(':visible')) {
+                cancel_button.fadeOut(0);
+                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+            }
+        }
+
         function save_members() {
             var draft_group = get_pill_user_ids();
             var group_data = user_groups.get_user_group_from_id(data.id);
@@ -77,6 +114,9 @@ exports.populate_user_groups = function () {
                 data: {
                     add: JSON.stringify(added),
                     delete: JSON.stringify(removed),
+                },
+                success: function () {
+                    show_saved_button();
                 },
             });
         }
@@ -97,6 +137,7 @@ exports.populate_user_groups = function () {
                     description: description,
                 },
                 success: function () {
+                    setTimeout(show_saved_button, 100);
                 },
             });
         }
@@ -109,7 +150,7 @@ exports.populate_user_groups = function () {
 
             var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
                                             except_class);
-            if ($(event.relatedTarget).parents('#user-groups #' + data.id)) {
+            if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
                 return _.some(blur_exceptions, function (class_name) {
                     return $(event.relatedTarget).closest(class_name).length;
                 });
@@ -117,28 +158,35 @@ exports.populate_user_groups = function () {
             return false;
         }
 
-        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
-            if (do_not_blur('.input', event)) {
+        function auto_save(class_name, event) {
+            if (do_not_blur(class_name, event)) {
                 return;
+            }
+            if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
+                $(event.relatedTarget).closest('.cancel').length) {
+                    settings_user_groups.reload();
+                    return;
             }
             save_name_desc();
             save_members();
+        }
+
+        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
+            auto_save('.input', event);
         });
 
         $('#user-groups #' + data.id).on('blur', '.name', function (event) {
-            if (do_not_blur('.name', event)) {
-                return;
-            }
-            save_name_desc();
-            save_members();
+            auto_save('.name', event);
+        });
+        $('#user-groups #' + data.id).on('input', '.name', function () {
+            update_cancel_button();
         });
 
         $('#user-groups #' + data.id).on('blur', '.description', function (event) {
-            if (do_not_blur('.description', event)) {
-                return;
-            }
-            save_name_desc();
-            save_members();
+            auto_save('.description', event);
+        });
+        $('#user-groups #' + data.id).on('input', '.description', function () {
+            update_cancel_button();
         });
 
         var input = pill_container.children('.input');
@@ -165,6 +213,7 @@ exports.populate_user_groups = function () {
             updater: function (user) {
                 append_user(user);
                 input.focus();
+                update_cancel_button();
             },
             stopAdvance: true,
         });
@@ -172,6 +221,7 @@ exports.populate_user_groups = function () {
         pills.onPillRemove(function () {
             // onPillRemove is fired before the pill is removed from
             // the DOM.
+            update_cancel_button();
             setTimeout(function () {
                 input.focus();
             }, 100);
