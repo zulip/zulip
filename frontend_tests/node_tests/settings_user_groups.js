@@ -29,6 +29,7 @@ var cancel_selector = "#user-groups #1 .cancel";
 var saved_selector = "#user-groups #1 .saved";
 var name_selector = "#user-groups #1 .name";
 var description_selector = "#user-groups #1 .description";
+var instructions_selector = "#user-groups #1 .save-instructions";
 
 (function test_populate_user_groups() {
     var realm_user_group = {
@@ -178,6 +179,7 @@ var description_selector = "#user-groups #1 .description";
 
             var saved_fade_out_called = false;
             var cancel_fade_to_called = false;
+            var instructions_fade_to_called = false;
             $(saved_selector).fadeOut = function () {
                 saved_fade_out_called = true;
             };
@@ -193,12 +195,25 @@ var description_selector = "#user-groups #1 .description";
             $(cancel_selector).fadeTo = function () {
                 cancel_fade_to_called = true;
             };
+            $(instructions_selector).css = function (data) {
+                if (typeof(data) === 'string') {
+                    assert.equal(data, 'display');
+                }
+                assert.equal(typeof(data), 'object');
+                assert.equal(data.display, 'block');
+                assert.equal(data.opacity, '0');
+                return $(instructions_selector);
+            };
+            $(instructions_selector).fadeTo = function () {
+                instructions_fade_to_called = true;
+            };
 
             text_cleared = false;
             config.updater(alice);
             // update_cancel_button is called.
             assert(saved_fade_out_called);
             assert(cancel_fade_to_called);
+            assert(instructions_fade_to_called);
             assert.equal(text_cleared, true);
         }());
         input_typeahead_called = true;
@@ -458,20 +473,27 @@ var description_selector = "#user-groups #1 .description";
         };
 
         var cancel_fade_out_called = false;
+        var instructions_fade_out_called = false;
         $(cancel_selector).show();
         $(cancel_selector).fadeOut = function () {
             cancel_fade_out_called = true;
+        };
+        $(instructions_selector).fadeOut = function () {
+            instructions_fade_out_called = true;
         };
 
         // Cancel button removed if user group if user group has no changes.
         var fake_this = $.create('fake-#update_cancel_button');
         handler_name.call(fake_this);
         assert(cancel_fade_out_called);
+        assert(instructions_fade_out_called);
 
         // Check for handler_desc to achieve 100% coverage.
         cancel_fade_out_called = false;
+        instructions_fade_out_called = false;
         handler_desc.call(fake_this);
         assert(cancel_fade_out_called);
+        assert(instructions_fade_out_called);
     }());
 
     (function test_user_groups_save_group_changes_triggered() {
@@ -489,6 +511,10 @@ var description_selector = "#user-groups #1 .description";
         var api_endpoint_called = false;
         var cancel_fade_out_called = false;
         var saved_fade_to_called = false;
+        var instructions_fade_out_called = false;
+        $(instructions_selector).fadeOut = function () {
+            instructions_fade_out_called = true;
+        };
         $(cancel_selector).fadeOut = function () {
             cancel_fade_out_called = true;
         };
@@ -516,6 +542,7 @@ var description_selector = "#user-groups #1 .description";
                 });
                 opts.success();
                 assert(cancel_fade_out_called);
+                assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
             }());
         };
@@ -562,6 +589,10 @@ var description_selector = "#user-groups #1 .description";
 
         var cancel_fade_out_called = false;
         var saved_fade_to_called = false;
+        var instructions_fade_out_called = false;
+        $(instructions_selector).fadeOut = function () {
+            instructions_fade_out_called = true;
+        };
         $(cancel_selector).fadeOut = function () {
             cancel_fade_out_called = true;
         };
@@ -582,6 +613,7 @@ var description_selector = "#user-groups #1 .description";
             (function test_post_success() {
                 opts.success();
                 assert(cancel_fade_out_called);
+                assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
             }());
         };

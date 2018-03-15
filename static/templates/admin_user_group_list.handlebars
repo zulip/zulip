@@ -9,7 +9,7 @@
             {{t 'Saved' }}
         </button>
         <button class="save-status cancel">
-            {{t 'Cancel' }}
+            {{t 'Discard changes' }}
         </button>
         <button class="button rounded small delete btn-danger">
             {{t 'Delete' }}
@@ -19,6 +19,9 @@
         {{t 'Subscribers' }}
         <div class="pill-container" data-group-pills="{{name}}">
             <div class="input" contenteditable="true" data-placeholder="{{t 'Add member...' }}"></div>
+        </div>
+        <div class="save-instructions">
+            {{t 'Click outside the input box to save. We\'ll automatically notify anyone that was added or removed.'}}
         </div>
     </p>
 </div>

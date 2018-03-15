@@ -51,7 +51,7 @@ exports.populate_user_groups = function () {
             });
         }
 
-            data.members.keys().forEach(function (user_id) {
+        data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
             if (user) {
@@ -79,21 +79,28 @@ exports.populate_user_groups = function () {
         function update_cancel_button() {
             var cancel_button = $('#user-groups #' + data.id + ' .cancel');
             var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+
             if (is_user_group_changed() &&
                !cancel_button.is(':visible')) {
                 saved_button.fadeOut(0);
                 cancel_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+                save_instructions.css({display: 'block', opacity: 0}).fadeTo(400, 1);
             } else if (!is_user_group_changed() &&
                 cancel_button.is(':visible')) {
                     cancel_button.fadeOut();
+                    save_instructions.fadeOut();
                 }
         }
 
         function show_saved_button() {
             var cancel_button = $('#user-groups #' + data.id + ' .cancel');
             var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
+                save_instructions.fadeOut(0);
                 saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
             }
         }
