@@ -1,4 +1,4 @@
-const Ps = require('perfect-scrollbar');
+const perfectScrollbar = require('perfect-scrollbar');
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -99,7 +99,7 @@ function scrollToHash(container) {
 
         if ($next.is("ul")) {
             $next.slideToggle("fast", "swing", function () {
-                Ps.update($(".markdown")[0]);
+                perfectScrollbar.update($(".markdown")[0]);
             });
         }
     });
@@ -124,7 +124,7 @@ function scrollToHash(container) {
 
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
-            Ps.update(container);
+            perfectScrollbar.update(container);
             render_code_sections();
             scrollToHash(container);
         } else {
@@ -134,7 +134,7 @@ function scrollToHash(container) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
-                Ps.update(container);
+                perfectScrollbar.update(container);
                 scrollToHash(container);
             });
         }
@@ -155,20 +155,20 @@ function scrollToHash(container) {
         window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
     });
 
-    Ps.initialize($(".markdown")[0], {
+    perfectScrollbar.initialize($(".markdown")[0], {
         suppressScrollX: true,
         useKeyboard: false,
         wheelSpeed: 0.68,
     });
 
-    Ps.initialize($(".sidebar")[0], {
+    perfectScrollbar.initialize($(".sidebar")[0], {
         suppressScrollX: true,
         useKeyboard: false,
         wheelSpeed: 0.68,
     });
 
     window.onresize = function () {
-        Ps.update($(".markdown")[0]);
+        perfectScrollbar.update($(".markdown")[0]);
     };
 
     window.addEventListener("popstate", function () {
