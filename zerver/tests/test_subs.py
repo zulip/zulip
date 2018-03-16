@@ -2731,8 +2731,10 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertFalse('invite_only' in name)
             self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
+        # Send private stream subscribers to all realm admins.
         def test_admin_case() -> None:
             self.user_profile.is_realm_admin = True
+            # Test realm admins can get never subscribed private stream's subscribers.
             never_subscribed = get_never_subscribed()
 
             self.assertEqual(
@@ -2740,13 +2742,34 @@ class GetSubscribersTest(ZulipTestCase):
                 len(public_streams) + len(private_streams)
             )
             for stream_dict in never_subscribed:
-                name = stream_dict['name']
-                if 'invite_only' in name:
-                    self.assertFalse('subscribers' in stream_dict)
-                else:
-                    self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
+                self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
         test_admin_case()
+
+    def test_previously_subscribed_private_streams(self) -> None:
+        admin_user = self.example_user("iago")
+        non_admin_user = self.example_user("cordelia")
+        stream_name = "private_stream"
+
+        self.make_stream(stream_name, realm=get_realm("zulip"), invite_only=True)
+        self.subscribe(admin_user, stream_name)
+        self.subscribe(non_admin_user, stream_name)
+        self.subscribe(self.example_user("othello"), stream_name)
+
+        self.unsubscribe(admin_user, stream_name)
+        self.unsubscribe(non_admin_user, stream_name)
+
+        # Test non admin user shouldn't get previously subscribed private stream's subscribers.
+        sub_data = gather_subscriptions_helper(admin_user)
+        unsubscribed_streams = sub_data[1]
+        self.assertEqual(len(unsubscribed_streams), 1)
+        self.assertEqual(len(unsubscribed_streams[0]["subscribers"]), 1)
+
+        # Test admin users can get previously subscribed private stream's subscribers.
+        sub_data = gather_subscriptions_helper(non_admin_user)
+        unsubscribed_streams = sub_data[1]
+        self.assertEqual(len(unsubscribed_streams), 1)
+        self.assertFalse('subscribers' in unsubscribed_streams)
 
     def test_gather_subscriptions_mit(self) -> None:
         """
