@@ -318,9 +318,6 @@ def user_profile_by_id_cache_key(user_profile_id: int) -> Text:
 def user_profile_by_api_key_cache_key(api_key: Text) -> Text:
     return "user_profile_by_api_key:%s" % (api_key,)
 
-# TODO: Refactor these cache helpers into another file that can import
-# models.py so that python v3 style type annotations can also work.
-
 realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
