@@ -25,7 +25,7 @@ var stream_subscription_error = (function () {
     };
 
     self.cant_create_stream_without_susbscribing = function () {
-        $("#stream_subscription_error").text(i18n.t("You must be a realm administrator to create a stream without subscribing."));
+        $("#stream_subscription_error").text(i18n.t("You must be an organization administrator to create a stream without subscribing."));
         $("#stream_subscription_error").show();
     };
 
