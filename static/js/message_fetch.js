@@ -127,16 +127,21 @@ exports.load_messages = function (opts) {
 };
 
 exports.load_messages_for_narrow = function (opts) {
+    var msg_list = message_list.narrowed;
+
+    msg_list.fetch_status.start_initial_narrow();
+
     message_fetch.load_messages({
         anchor: opts.then_select_id.toFixed(),
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
-        msg_list: message_list.narrowed,
+        msg_list: msg_list,
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
-        cont: function () {
-            // TODO: if we know we got all the messages for this
-            // narrow, call message_list.narrow.fetch_status
-            // to prevent more fetching
+        cont: function (data) {
+            msg_list.fetch_status.finish_initial_narrow({
+                found_oldest: data.found_oldest,
+                found_newest: data.found_newest,
+            });
             message_scroll.hide_indicators();
             opts.cont();
         },
