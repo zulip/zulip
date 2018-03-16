@@ -6,9 +6,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
     get_pull_request_event_message, get_push_commits_event_message
@@ -63,7 +63,6 @@ def format_pull_request_event(payload: Dict[str, Any]) -> Text:
 @has_request_variables
 def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      payload: Dict[str, Any]=REQ(argument_type='body'),
-                     stream: Text=REQ(default='commits'),
                      branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
 
     repo = payload['repository']['name']
@@ -94,5 +93,5 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         return json_error(_('Invalid event "{}" in request headers').format(event))
 
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

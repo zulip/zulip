@@ -4,9 +4,9 @@ from typing import Text, Dict, Any, List, Tuple, Union
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile, get_client
 
 subject_types = {
@@ -99,12 +99,8 @@ def format_object(
 
 @api_key_only_webhook_view("Opbeat")
 @has_request_variables
-def api_opbeat_webhook(
-    request: HttpRequest,
-    user_profile: UserProfile,
-    payload: Dict[str, Any]=REQ(argument_type='body'),
-    stream: str=REQ(default="opbeat")
-) -> HttpResponse:
+def api_opbeat_webhook(request: HttpRequest, user_profile: UserProfile,
+                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     """
     This uses the subject name from opbeat to make the subject,
     and the summary from Opbeat as the message body, with
@@ -115,6 +111,5 @@ def api_opbeat_webhook(
 
     message = format_object(payload, 'base', '')
 
-    check_send_stream_message(user_profile, get_client('ZulipOpbeatWebhook'),
-                              stream, message_subject, message)
+    check_send_webhook_message(request, user_profile, message_subject, message)
     return json_success()

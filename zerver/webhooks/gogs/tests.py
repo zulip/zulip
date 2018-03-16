@@ -8,7 +8,7 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 
 class GogsHookTests(WebhookTestCase):
     STREAM_NAME = 'commits'
-    URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/gogs?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'gogs'
 
     def test_push(self) -> None:
@@ -81,31 +81,31 @@ from `feature` to `master`"""
 from `feature` to `master`"""
         self.send_and_test_stream_message('pull_request_merged', expected_subject, expected_message, HTTP_X_GOGS_EVENT='pull_request')
 
-    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
-    def test_push_filtered_by_branches_ignore(self, check_send_stream_message_mock: MagicMock) -> None:
+    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
+    def test_push_filtered_by_branches_ignore(self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
+    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
     def test_push_commits_more_than_limits_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_more_than_limits')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gogs.view.check_send_stream_message')
+    @patch('zerver.webhooks.gogs.view.check_send_webhook_message')
     def test_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,development')
         payload = self.get_body('push_commits_multiple_committers')
         result = self.client_post(self.url, payload, HTTP_X_GOGS_EVENT='push',
                                   content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

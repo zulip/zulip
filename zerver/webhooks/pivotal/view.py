@@ -10,13 +10,12 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile,
-                           stream: Text) -> Tuple[Text, Text]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[Text, Text]:
     payload = xml_fromstring(request.body)
 
     def get_text(attrs: List[str]) -> str:
@@ -69,8 +68,7 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile,
             more_info)
     return subject, content
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile,
-                           stream: Text) -> Tuple[Text, Text]:
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[Text, Text]:
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -160,16 +158,16 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile,
 
 @api_key_only_webhook_view("Pivotal")
 @has_request_variables
-def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ()) -> HttpResponse:
+def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     subject = content = None
     try:
-        subject, content = api_pivotal_webhook_v3(request, user_profile, stream)
+        subject, content = api_pivotal_webhook_v3(request, user_profile)
     except Exception:
         # Attempt to parse v5 JSON payload
-        subject, content = api_pivotal_webhook_v5(request, user_profile, stream)
+        subject, content = api_pivotal_webhook_v5(request, user_profile)
 
     if subject is None or content is None:
         return json_error(_("Unable to handle Pivotal payload"))
 
-    check_send_stream_message(user_profile, request.client, stream, subject, content)
+    check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

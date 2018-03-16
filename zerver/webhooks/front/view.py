@@ -4,9 +4,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 def get_message_data(payload: Dict[Text, Any]) -> Optional[Tuple[Text, Text, Text, Text]]:
@@ -57,9 +57,7 @@ def get_tag(payload: Dict[Text, Any]) -> Optional[Text]:
 @api_key_only_webhook_view('Front')
 @has_request_variables
 def api_front_webhook(request: HttpRequest, user_profile: UserProfile,
-                      payload: Dict[Text, Any]=REQ(argument_type='body'),
-                      stream: Text=REQ(default='front'),
-                      topic: Optional[Text]=REQ(default='cnv_id')) -> HttpResponse:
+                      payload: Dict[Text, Any]=REQ(argument_type='body')) -> HttpResponse:
     try:
         event_type = payload['type']
         conversation_id = payload['conversation']['id']
@@ -183,6 +181,6 @@ def api_front_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         return json_error(_("Unknown webhook request"))
 
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()

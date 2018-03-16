@@ -1,6 +1,6 @@
 from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success, json_error
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.decorator import REQ, has_request_variables, \
     api_key_only_webhook_view
 from zerver.lib.validator import check_dict, check_string
@@ -17,9 +17,7 @@ import time
 @has_request_variables
 def api_insping_webhook(
         request: HttpRequest, user_profile: UserProfile,
-        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body'),
-        stream: Text=REQ(default='test'),
-        topic: Text=REQ(default='insping')
+        payload: Dict[str, Dict[str, Any]]=REQ(argument_type='body')
 ) -> HttpResponse:
 
     data = payload['webhook_event_data']
@@ -37,8 +35,8 @@ URL: {}
 Response time: {} ms
 Timestamp: {}
 """.format(state_name, url_tested, response_time, time_formatted)
+    topic = 'insping'
 
-    check_send_stream_message(user_profile, request.client,
-                              stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()

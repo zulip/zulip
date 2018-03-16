@@ -7,7 +7,7 @@ from zerver.webhooks.opbeat.view import get_value
 
 class OpbeatHookTests(WebhookTestCase):
     STREAM_NAME = 'opbeat'
-    URL_TEMPLATE = u"/api/v1/external/opbeat?api_key={api_key}"
+    URL_TEMPLATE = u"/api/v1/external/opbeat?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'opbeat'
 
     def test_comment(self) -> None:

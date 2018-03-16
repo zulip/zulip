@@ -3,9 +3,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile, get_client
 
 PUBLISH_POST_OR_PAGE_TEMPLATE = 'New {type} published.\n[{title}]({url})'
@@ -15,8 +15,6 @@ WP_LOGIN_TEMPLATE = 'User {name} logged in.'
 @api_key_only_webhook_view("Wordpress")
 @has_request_variables
 def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
-                          stream: str=REQ(default="wordpress"),
-                          topic: str=REQ(default="WordPress Notification"),
                           hook: str=REQ(default="WordPress Action"),
                           post_title: str=REQ(default="New WordPress Post"),
                           post_type: str=REQ(default="post"),
@@ -39,6 +37,7 @@ def api_wordpress_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         return json_error(_("Unknown WordPress webhook action: " + hook))
 
-    check_send_stream_message(user_profile, get_client("ZulipWordPressWebhook"),
-                              stream, topic, data)
+    topic = 'WordPress Notification'
+
+    check_send_webhook_message(request, user_profile, topic, data)
     return json_success()

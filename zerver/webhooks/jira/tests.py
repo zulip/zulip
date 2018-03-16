@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
-    URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}"
+    URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}&stream={stream}"
 
     def test_unknown(self) -> None:
         url = self.build_webhook_url()

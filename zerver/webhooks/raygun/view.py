@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional, Text
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 import time
@@ -14,9 +14,7 @@ import time
 @api_key_only_webhook_view('Raygun')
 @has_request_variables
 def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any] = REQ(argument_type='body'),
-                       stream: Text = REQ(default='raygun'),
-                       topic: Optional[Text] = REQ(default='test')) -> HttpResponse:
+                       payload: Dict[str, Any] = REQ(argument_type='body')) -> HttpResponse:
     # The payload contains 'event' key. This 'event' key has a value of either
     # 'error_notification' or 'error_activity'. 'error_notification' happens
     # when an error is caught in an application, where as 'error_activity'
@@ -35,8 +33,9 @@ def api_raygun_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         message = "Unsupported event type: {}".format(event)
 
-    check_send_stream_message(user_profile, request.client, stream, topic,
-                              message)
+    topic = 'test'
+
+    check_send_webhook_message(request, user_profile, topic, message)
 
     return json_success()
 

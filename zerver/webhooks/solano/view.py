@@ -6,20 +6,19 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Client, UserProfile
 
 @api_key_only_webhook_view('SolanoLabs')
 @has_request_variables
 def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
-                       stream: str=REQ(default='solano labs'),
-                       topic: str=REQ(default='build update'),
                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = payload.get('event')
+    topic = 'build update'
     if event == 'test':
-        return handle_test_event(user_profile, request.client, stream, topic)
+        return handle_test_event(request, user_profile, topic)
     try:
         author = payload['committers'][0]
     except KeyError:
@@ -60,11 +59,11 @@ def api_solano_webhook(request: HttpRequest, user_profile: UserProfile,
 
     body = template.format(author, commit_id, commit_url, status, emoji, build_log)
 
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()
 
-def handle_test_event(user_profile: UserProfile, client: Client, stream: str,
+def handle_test_event(request: HttpRequest, user_profile: UserProfile,
                       topic: str) -> HttpResponse:
     body = 'Solano webhook set up correctly'
-    check_send_stream_message(user_profile, client, stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

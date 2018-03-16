@@ -88,20 +88,20 @@ class TrelloHookTests(WebhookTestCase):
         expected_message = u"TomaszKolek renamed the board from Welcome Board to [New name](https://trello.com/b/iqXXzYEj)."
         self.send_and_test_stream_message('renaming_board', u"New name", expected_message)
 
-    @patch('zerver.webhooks.trello.view.check_send_stream_message')
+    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
     def test_trello_webhook_when_card_is_moved_within_single_list_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body('moving_card_within_single_list')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.trello.view.check_send_stream_message')
+    @patch('zerver.webhooks.trello.view.check_send_webhook_message')
     def test_trello_webhook_when_board_background_is_changed_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body('change_board_background_image')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
     def test_trello_webhook_when_description_was_added_to_card(self) -> None:
