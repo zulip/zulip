@@ -107,15 +107,18 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
         return djcache
     return caches[cache_name]
 
-def get_cache_with_key(keyfunc: Any, cache_name: Optional[str]=None) -> Any:
+def get_cache_with_key(
+        keyfunc: Callable[..., Text],
+        cache_name: Optional[str]=None
+) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """
     The main goal of this function getting value from the cache like in the "cache_with_key".
     A cache value can contain any data including the "None", so
     here used exception for case if value isn't found in the cache.
     """
-    def decorator(func: Callable[..., Any]) -> (Callable[..., Any]):
+    def decorator(func: Callable[..., ReturnT]) -> (Callable[..., ReturnT]):
         @wraps(func)
-        def func_with_caching(*args: Any, **kwargs: Any) -> Callable[..., Any]:
+        def func_with_caching(*args: Any, **kwargs: Any) -> Callable[..., ReturnT]:
             key = keyfunc(*args, **kwargs)
             val = cache_get(key, cache_name=cache_name)
             if val is not None:
@@ -126,8 +129,10 @@ def get_cache_with_key(keyfunc: Any, cache_name: Optional[str]=None) -> Any:
 
     return decorator
 
-def cache_with_key(keyfunc, cache_name=None, timeout=None, with_statsd_key=None):
-    # type: (Callable[..., Text], Optional[str], Optional[int], Optional[str]) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
+def cache_with_key(
+        keyfunc: Callable[..., Text], cache_name: Optional[str]=None,
+        timeout: Optional[int]=None, with_statsd_key: Optional[str]=None
+) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Decorator which applies Django caching to a function.
 
        Decorator argument is a function which computes a cache key
