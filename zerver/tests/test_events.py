@@ -1553,12 +1553,12 @@ class EventsRegisterTest(ZulipTestCase):
             if bot_type == "GENERIC_BOT":
                 check_services = check_list(sub_validator=None, length=0)
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
-                check_services = check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                check_services = check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]), length=1)
             elif bot_type == "EMBEDDED_BOT":
-                check_services = check_list(check_dict_only([  # type: ignore  # See above.
+                check_services = check_list(check_dict_only([
                     ('service_name', check_string),
                     ('config_data', check_dict(value_validator=check_string)),
                 ]), length=1)
@@ -1745,7 +1745,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('bot', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]))),
@@ -1795,7 +1795,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
                 ('owner', check_none_or(check_string)),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]))),
