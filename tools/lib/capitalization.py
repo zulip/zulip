@@ -205,6 +205,10 @@ def check_banned_words(text: str) -> List[str]:
     errors = []
     for word, reason in BANNED_WORDS.items():
         if word in lower_cased_text:
+            # Hack: Should move this into BANNED_WORDS framework; for
+            # now, just hand-code the skips:
+            if 'realm_name' in lower_cased_text:
+                continue
             kwargs = dict(word=word, text=text, reason=reason)
             msg = "{word} found in '{text}'. {reason}".format(**kwargs)
             errors.append(msg)
