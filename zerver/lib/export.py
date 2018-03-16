@@ -1233,6 +1233,7 @@ id_maps = {
     'useractivity': {},
     'useractivityinterval': {},
     'usermessage': {},
+    'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
 path_maps = {
@@ -1747,6 +1748,7 @@ def import_attachments(data: TableData) -> None:
     parent_id = 'attachment_id'
     child_id = 'message_id'
 
+    update_model_ids(parent_model, data, parent_db_table_name, 'attachment')
     # First, build our list of many-to-many (m2m) rows.
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
