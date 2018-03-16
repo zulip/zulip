@@ -4022,6 +4022,7 @@ def filter_presence_idle_user_ids(user_ids: Set[int]) -> List[int]:
     recent = timezone_now() - datetime.timedelta(seconds=140)
     rows = UserPresence.objects.filter(
         user_profile_id__in=user_ids,
+        status=UserPresence.ACTIVE,
         timestamp__gte=recent
     ).distinct('user_profile_id').values('user_profile_id')
     active_user_ids = {row['user_profile_id'] for row in rows}

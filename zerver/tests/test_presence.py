@@ -171,6 +171,17 @@ class UserPresenceTests(ZulipTestCase):
         self.assertEqual(json['presences'][email][client]['status'], 'active')
         self.assertEqual(json['presences'][self.example_email("hamlet")][client]['status'], 'idle')
 
+    def test_filter_presence_idle_user_ids(self) -> None:
+        user_profile = self.example_user("hamlet")
+        from zerver.lib.actions import filter_presence_idle_user_ids
+        self.login(self.example_email("hamlet"))
+
+        self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [user_profile.id])
+        self.client_post("/json/users/me/presence", {'status': 'idle'})
+        self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [user_profile.id])
+        self.client_post("/json/users/me/presence", {'status': 'active'})
+        self.assertEqual(filter_presence_idle_user_ids({user_profile.id}), [])
+
     def test_no_mit(self) -> None:
         """Zephyr mirror realms such as MIT never get a list of users"""
         self.login(self.mit_email("espuser"), realm=get_realm("zephyr"))
