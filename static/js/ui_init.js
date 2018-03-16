@@ -283,6 +283,7 @@ $(function () {
     hotspots.initialize();
     ui.initialize();
     panels.initialize();
+    typing.initialize();
 });
 
 
