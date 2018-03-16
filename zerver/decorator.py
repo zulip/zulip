@@ -229,7 +229,7 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
         raise JsonableError(_("Account not active"))
 
     if user_profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
+        raise JsonableError(_("This organization has been deactivated"))
 
     # Either the subdomain matches, or processing a websockets message
     # in the message_sender worker (which will have already had the

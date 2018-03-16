@@ -321,7 +321,7 @@ body:
         webhook_bot.save()
         webhook_bot.realm.deactivated = True
         webhook_bot.realm.save()
-        with self.assertRaisesRegex(JsonableError, "Realm for account has been deactivated"):
+        with self.assertRaisesRegex(JsonableError, "This organization has been deactivated"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
     def test_authenticated_api_view_logging(self) -> None:
@@ -1124,7 +1124,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         # we deactivate user's realm manually because do_deactivate_user removes user session
         user_profile.realm.deactivated = True
         user_profile.realm.save()
-        self.assert_json_error_contains(self._do_test(user_email), "Realm for account has been deactivated")
+        self.assert_json_error_contains(self._do_test(user_email), "This organization has been deactivated")
         do_reactivate_realm(user_profile.realm)
 
     def _do_test(self, user_email: Text) -> HttpResponse:
