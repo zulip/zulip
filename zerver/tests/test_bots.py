@@ -1153,7 +1153,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # invalid URL test case.
         bot_info['payload_url'] = ujson.dumps('http://127.0.0.:5002/bots/followup')
         result = self.client_post("/json/bots", bot_info)
-        self.assert_json_error(result, "Enter a valid URL.")
+        self.assert_json_error(result, "payload_url is not a URL")
 
     def test_get_bot_handler(self) -> None:
         # Test for valid service.

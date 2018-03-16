@@ -634,14 +634,16 @@ class ValidatorTestCase(TestCase):
 
     def test_check_url(self) -> None:
         url = "http://127.0.0.1:5002/"  # type: Any
-        check_url('url', url)
+        self.assertEqual(check_url('url', url), None)
 
         url = "http://zulip-bots.example.com/"
-        check_url('url', url)
+        self.assertEqual(check_url('url', url), None)
 
         url = "http://127.0.0"
-        with self.assertRaises(JsonableError):
-            check_url('url', url)
+        self.assertEqual(check_url('url', url), 'url is not a URL')
+
+        url = 99.3
+        self.assertEqual(check_url('url', url), 'url is not a string')
 
 class DeactivatedRealmTest(ZulipTestCase):
     def test_send_deactivated_realm(self) -> None:
