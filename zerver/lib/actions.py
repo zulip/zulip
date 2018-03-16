@@ -2579,7 +2579,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
         altered_users = altered_user_dict[stream.id]
         altered_user_ids = [u.id for u in altered_users]
-
+        altered_user_names = [u.full_name for u in altered_users]
         subscribed_user_ids = all_subscribers_by_stream[stream.id]
 
         peer_user_ids = get_peer_user_ids_for_stream_change(
@@ -2587,6 +2587,12 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
             altered_user_ids=altered_user_ids,
             subscribed_user_ids=subscribed_user_ids,
         )
+
+        # send message to private stream on unsubscription of user
+        if stream.invite_only:
+            unsubcription_message = _("%s left %s." % (", ".join(altered_user_names), stream.name))  # type: Text
+            internal_send_message(users[0].realm, settings.NOTIFICATION_BOT,
+                                  "stream", stream.name, "hello", unsubcription_message)
 
         if peer_user_ids:
             for removed_user in altered_users:

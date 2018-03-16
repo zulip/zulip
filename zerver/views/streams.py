@@ -399,6 +399,24 @@ def add_subscriptions_backend(
         for stream in created_streams:
             notifications.append(prep_stream_welcome_message(stream))
 
+    # send message to private stream on new subscription of users
+    private_stream_subscribers = defaultdict(list)  # type: Dict[Any, List[UserProfile]]
+    for (subscriber, stream) in subscribed:
+        if stream.invite_only and subscriber != user_profile:
+            private_stream_subscribers[stream.name].append(subscriber)
+
+    for stream in private_stream_subscribers:
+        new_user_names = [u.full_name for u in private_stream_subscribers[stream]]
+        msg = _("%s added %s to %s." % (user_profile.full_name, ", ".join(new_user_names), stream))
+        sender = get_system_bot(settings.NOTIFICATION_BOT)
+        notifications.append(
+            internal_prep_stream_message(
+                realm=user_profile.realm,
+                sender=sender,
+                stream_name=stream,
+                topic="hello",
+                content=msg))
+
     if len(notifications) > 0:
         do_send_messages(notifications)
 
