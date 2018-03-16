@@ -6,9 +6,9 @@ from typing import Any, Callable, Dict, Optional, Text
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
@@ -368,13 +368,14 @@ EVENT_FUNCTION_MAPPER = {
 @api_key_only_webhook_view('GitHub')
 @has_request_variables
 def api_github_webhook(
-        request: HttpRequest, user_profile: UserProfile, payload: Dict[str, Any]=REQ(argument_type='body'),
-        stream: Text=REQ(default='github'), branches: Text=REQ(default=None)) -> HttpResponse:
+        request: HttpRequest, user_profile: UserProfile,
+        payload: Dict[str, Any]=REQ(argument_type='body'),
+        branches: Text=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
         body = get_body_function_based_on_type(event)(payload)
-        check_send_stream_message(user_profile, request.client, stream, subject, body)
+        check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> Optional[str]:

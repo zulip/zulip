@@ -7,16 +7,15 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile, get_client
 
 @api_key_only_webhook_view('Semaphore')
 @has_request_variables
 def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Any]=REQ(argument_type='body'),
-                          stream: str=REQ(default='builds')) -> HttpResponse:
+                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     # semaphore only gives the last commit, even if there were multiple commits
     # since the last build
@@ -50,5 +49,5 @@ def api_semaphore_webhook(request: HttpRequest, user_profile: UserProfile,
                                                commit_url, message)
     subject = u"%s/%s" % (project_name, branch_name)
 
-    check_send_stream_message(user_profile, request.client, stream, subject, content)
+    check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

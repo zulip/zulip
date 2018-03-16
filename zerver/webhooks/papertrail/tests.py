@@ -4,7 +4,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class PapertrailHookTests(WebhookTestCase):
     STREAM_NAME = 'papertrail'
-    URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/papertrail?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'papertrail'
 
     # Note: Include a test function per each distinct message condition your integration supports

@@ -7,7 +7,7 @@ from zerver.models import get_realm, get_user
 
 class TravisHookTests(WebhookTestCase):
     STREAM_NAME = 'travis'
-    URL_TEMPLATE = u"/api/v1/external/travis?stream={stream}&api_key={api_key}&topic=builds"
+    URL_TEMPLATE = u"/api/v1/external/travis?stream={stream}&api_key={api_key}"
     FIXTURE_DIR_NAME = 'travis'
     TOPIC = 'builds'
 

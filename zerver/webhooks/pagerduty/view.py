@@ -7,9 +7,9 @@ import ujson
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import Client, UserProfile
 
 PAGER_DUTY_EVENT_NAMES = {
@@ -69,26 +69,22 @@ def build_pagerduty_formatdict(message: Dict[str, Any]) -> Dict[str, Any]:
     return format_dict
 
 
-def send_raw_pagerduty_json(user_profile: UserProfile,
-                            client: Client,
-                            stream: Text,
-                            message: Dict[str, Any],
-                            topic: Optional[Text]) -> None:
-    subject = topic or 'pagerduty'
+def send_raw_pagerduty_json(request: HttpRequest,
+                            user_profile: UserProfile,
+                            message: Dict[str, Any]) -> None:
+    subject = 'pagerduty'
     body = (
         u'Unknown pagerduty message\n'
         u'```\n'
         u'%s\n'
         u'```') % (ujson.dumps(message, indent=2),)
-    check_send_stream_message(user_profile, client, stream, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body)
 
 
-def send_formated_pagerduty(user_profile: UserProfile,
-                            client: Client,
-                            stream: Text,
+def send_formated_pagerduty(request: HttpRequest,
+                            user_profile: UserProfile,
                             message_type: Text,
-                            format_dict: Dict[str, Any],
-                            topic: Optional[Text]) -> None:
+                            format_dict: Dict[str, Any]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '
                     u'[{incident_num}]({incident_url}) {action} by '
@@ -106,29 +102,29 @@ def send_formated_pagerduty(user_profile: UserProfile,
         template = (u':no_good: Incident [{incident_num}]({incident_url}) '
                     u'{action} by [{assigned_to_username}@]({assigned_to_url})\n\n>{trigger_message}')
 
-    subject = topic or u'incident {incident_num}'.format(**format_dict)
+    subject = u'incident {incident_num}'.format(**format_dict)
     body = template.format(**format_dict)
 
-    check_send_stream_message(user_profile, client, stream, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body)
 
 
 @api_key_only_webhook_view('PagerDuty')
 @has_request_variables
-def api_pagerduty_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
-                          stream: Text=REQ(default='pagerduty'),
-                          topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
+def api_pagerduty_webhook(
+        request: HttpRequest, user_profile: UserProfile,
+        payload: Dict[str, Iterable[Dict[str, Any]]]=REQ(argument_type='body'),
+) -> HttpResponse:
     for message in payload['messages']:
         message_type = message['type']
 
         if message_type not in PAGER_DUTY_EVENT_NAMES:
-            send_raw_pagerduty_json(user_profile, request.client, stream, message, topic)
+            send_raw_pagerduty_json(request, user_profile, message)
 
         try:
             format_dict = build_pagerduty_formatdict(message)
         except Exception:
-            send_raw_pagerduty_json(user_profile, request.client, stream, message, topic)
+            send_raw_pagerduty_json(request, user_profile, message)
         else:
-            send_formated_pagerduty(user_profile, request.client, stream, message_type, format_dict, topic)
+            send_formated_pagerduty(request, user_profile, message_type, format_dict)
 
     return json_success()

@@ -6,9 +6,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 PINGDOM_SUBJECT_TEMPLATE = '{name} status.'
@@ -34,8 +34,7 @@ SUPPORTED_CHECK_TYPES = (
 @api_key_only_webhook_view('Pingdom')
 @has_request_variables
 def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
-                        payload: Dict[str, Any]=REQ(argument_type='body'),
-                        stream: Text=REQ(default='pingdom')) -> HttpResponse:
+                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     check_type = get_check_type(payload)
 
     if check_type in SUPPORTED_CHECK_TYPES:
@@ -44,7 +43,7 @@ def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
     else:
         return json_error(_('Unsupported check_type: {check_type}').format(check_type=check_type))
 
-    check_send_stream_message(user_profile, request.client, stream, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
 

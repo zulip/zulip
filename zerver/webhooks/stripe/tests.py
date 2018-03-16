@@ -7,7 +7,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class StripeHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
-    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/stripe?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'stripe'
 
     def test_charge_dispute_closed(self) -> None:

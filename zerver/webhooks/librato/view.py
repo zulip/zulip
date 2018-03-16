@@ -7,9 +7,9 @@ from django.utils.timezone import utc as timezone_utc
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 ALERT_CLEAR = 'clear'
@@ -144,8 +144,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
 @api_key_only_webhook_view('Librato')
 @has_request_variables
 def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
-                        payload: Dict[str, Any]=REQ(converter=ujson.loads, default={}),
-                        stream: Text=REQ(default='librato'), topic: Text=REQ(default=None)) -> HttpResponse:
+                        payload: Dict[str, Any]=REQ(converter=ujson.loads, default={})) -> HttpResponse:
     try:
         attachments = ujson.loads(request.body).get('attachments', [])
     except ValueError:
@@ -155,14 +154,12 @@ def api_librato_webhook(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Malformed JSON input"))
 
     message_handler = LibratoWebhookHandler(payload, attachments)
-
-    if not topic:
-        topic = message_handler.generate_topic()
+    topic = message_handler.generate_topic()
 
     try:
         content = message_handler.handle()
     except Exception as e:
         return json_error(_(str(e)))
 
-    check_send_stream_message(user_profile, request.client, stream, topic, content)
+    check_send_webhook_message(request, user_profile, topic, content)
     return json_success()
