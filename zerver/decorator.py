@@ -294,8 +294,13 @@ body:
     message = message.strip(' ')
     webhook_logger.exception(message)
 
+def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
+    if raw_client_name is None:
+        return None
+    return "Zulip{}Webhook".format(raw_client_name)
+
 # Use this for webhook views that don't get an email passed in.
-def api_key_only_webhook_view(client_name: Text) -> Callable[[ViewFuncT], ViewFuncT]:
+def api_key_only_webhook_view(webhook_client_name: Text) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
@@ -305,7 +310,7 @@ def api_key_only_webhook_view(client_name: Text) -> Callable[[ViewFuncT], ViewFu
         def _wrapped_func_arguments(request: HttpRequest, api_key: Text=REQ(),
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, is_webhook=True,
-                                            client_name="Zulip{}Webhook".format(client_name))
+                                            client_name=full_webhook_client_name(webhook_client_name))
 
             if settings.RATE_LIMITING:
                 rate_limit_user(request, user_profile, domain='all')
@@ -468,7 +473,11 @@ def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], View
 
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
-def authenticated_rest_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+#
+# If webhook_client_name is specific, the request is a webhook view
+# with that string as the basis for the client string.
+def authenticated_rest_api_view(*, webhook_client_name: str=None,
+                                is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
     def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @wraps(view_func)
@@ -490,7 +499,9 @@ def authenticated_rest_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT],
             # Now we try to do authentication or die
             try:
                 # profile is a Union[UserProfile, RemoteZulipServer]
-                profile = validate_api_key(request, role, api_key, is_webhook)
+                profile = validate_api_key(request, role, api_key,
+                                           is_webhook=is_webhook or webhook_client_name is not None,
+                                           client_name=full_webhook_client_name(webhook_client_name))
             except JsonableError as e:
                 return json_unauthorized(e.msg)
             # Apply rate limiting

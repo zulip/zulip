@@ -103,7 +103,7 @@ def format_freshdesk_ticket_creation_message(ticket: TicketDict) -> str:
 
     return content
 
-@authenticated_rest_api_view(is_webhook=True)
+@authenticated_rest_api_view(webhook_client_name="Freshdesk")
 @has_request_variables
 def api_freshdesk_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:

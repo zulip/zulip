@@ -11,7 +11,7 @@ from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     get_push_commits_event_message
 from zerver.models import UserProfile, get_client
 
-@authenticated_rest_api_view(is_webhook=True)
+@authenticated_rest_api_view(webhook_client_name="Bitbucket")
 @has_request_variables
 def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Mapping[Text, Any]=REQ(validator=check_dict([])),

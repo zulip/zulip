@@ -14,7 +14,7 @@ from zerver.models import UserProfile, get_client
 # There's no raw JSON for us to work from. Thus, it makes sense to just write
 # a template Zulip message within Desk.com and have the webhook extract that
 # from the "data" param and post it, which this does.
-@authenticated_rest_api_view(is_webhook=True)
+@authenticated_rest_api_view(webhook_client_name="Desk")
 @has_request_variables
 def api_deskdotcom_webhook(request: HttpRequest, user_profile: UserProfile,
                            data: Text=REQ()) -> HttpResponse:

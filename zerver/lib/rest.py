@@ -99,7 +99,7 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
             view_kwargs = {}
             if 'allow_incoming_webhooks' in view_flags:
                 view_kwargs['is_webhook'] = True
-            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)
+            target_function = authenticated_rest_api_view(**view_kwargs)(target_function)  # type: ignore # likely mypy bug
         # Pick a way to tell user they're not authed based on how the request was made
         else:
             # If this looks like a request from a top-level page in a
