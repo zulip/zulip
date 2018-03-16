@@ -1,12 +1,8 @@
-# Zulip overview
-
-Zulip is a powerful, open source group chat application that combines the
-immediacy of real-time chat with the productivity benefits of threaded
-conversations. Zulip is used by open source projects, Fortune 500 companies,
-large standards bodies, and others who need a real-time chat system that
-allows users to easily process hundreds or thousands of messages a day. With
-over 300 contributors merging over 500 commits a month, Zulip is also the
-largest and fastest growing open source group chat project.
+<p align="center"> 
+  <img src="./static/images/logo/zulip-icon-128x128.png" />
+  <h1 align="center">Zulip</h1>
+  <br>
+</p>
 
 [![CircleCI Build Status](https://circleci.com/gh/zulip/zulip.svg?style=svg)](https://circleci.com/gh/zulip/zulip)
 [![Travis Build Status](https://travis-ci.org/zulip/zulip.svg?branch=master)](https://travis-ci.org/zulip/zulip)
@@ -17,6 +13,17 @@ largest and fastest growing open source group chat project.
 [![Twitter](https://img.shields.io/badge/twitter-@zulip-blue.svg?style=flat)](https://twitter.com/zulip)
 
 [mypy-coverage]: https://blog.zulip.org/2016/10/13/static-types-in-python-oh-mypy/
+
+
+## overview
+Zulip is a powerful, open source group chat application that combines the
+immediacy of real-time chat with the productivity benefits of threaded
+conversations. Zulip is used by open source projects, Fortune 500 companies,
+large standards bodies, and others who need a real-time chat system that
+allows users to easily process hundreds or thousands of messages a day. With
+over 300 contributors merging over 500 commits a month, Zulip is also the
+largest and fastest growing open source group chat project.
+
 
 ## Getting started
 
