@@ -81,6 +81,8 @@ sudo apt-get update
 sudo apt-get install postgresql-9.3-pgroonga
 # On 16.04
 sudo apt-get install postgresql-9.5-pgroonga
+# On 17.04 or 17.10
+sudo apt-get install postgresql-9.6-pgroonga
 
 # If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
 
@@ -110,7 +112,7 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
 # If on 16.04 or stretch
 wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.2_amd64.deb
-sudo dpkg -i postgresql-9.5-tsearch-extras_0.2_amd64.deb
+sudo dpkg -i postgresql-9.5-tsearch-extras_0.3_amd64.deb
 ```
 
 Alternatively, you can always build the package from [tsearch-extras
