@@ -63,7 +63,7 @@ if __name__ == '__main__':
         print(WARNING + "Strings which were ignored: " + ENDC)
         print('\n'.join(frontend_ignored + backend_ignored))
 
-    if frontend_errors or backend_errors:
+    if frontend_errors or backend_errors or banned_errors_back or banned_errors_front:
         # Point the user to the documentation on what the policy is.
         docs_url = "https://zulip.readthedocs.io/en/latest/translating/translating.html#capitalization"
         print(WARNING + "See " + docs_url + ENDC)
