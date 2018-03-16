@@ -3911,8 +3911,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         subscribers = subscriber_map[stream["id"]]  # type: Optional[List[int]]
 
         # Important: don't show the subscribers if the stream is invite only
-        # and this user isn't on it anymore.
-        if stream["invite_only"] and not sub["active"]:
+        # and this user isn't on it anymore (or a realm administrator).
+        if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
             subscribers = None
 
         stream_dict = {'name': stream["name"],
@@ -3957,7 +3957,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                                                                                       stream["date_created"],
                                                                                       recent_traffic),
                            'description': stream['description']}
-            if is_public:
+            if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]
                 if subscribers is not None:
                     stream_dict['subscribers'] = subscribers
