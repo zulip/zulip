@@ -303,12 +303,10 @@ def user_profile_by_email_cache_key(email: Text) -> Text:
     # with high likelihood be ASCII-only for the foreseeable future.
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
-def user_profile_cache_key_id(email, realm_id):
-    # type: (Text, int) -> Text
+def user_profile_cache_key_id(email: Text, realm_id: int) -> Text:
     return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
 
-def user_profile_cache_key(email, realm):
-    # type: (Text, Realm) -> Text
+def user_profile_cache_key(email: Text, realm: 'Realm') -> Text:
     return user_profile_cache_key_id(email, realm.id)
 
 def bot_profile_cache_key(email: Text) -> Text:
@@ -342,16 +340,14 @@ bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'bot_owner__email', 'avatar_source',
                    'avatar_version']  # type: List[str]
 
-def bot_dicts_in_realm_cache_key(realm):
-    # type: (Realm) -> Text
+def bot_dicts_in_realm_cache_key(realm: 'Realm') -> Text:
     return "bot_dicts_in_realm:%s" % (realm.id,)
 
 def get_stream_cache_key(stream_name: Text, realm_id: int) -> Text:
     return "stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
-def delete_user_profile_caches(user_profiles):
-    # type: (Iterable[UserProfile]) -> None
+def delete_user_profile_caches(user_profiles: Iterable['UserProfile']) -> None:
     keys = []
     for user_profile in user_profiles:
         keys.append(user_profile_by_email_cache_key(user_profile.email))
@@ -361,8 +357,7 @@ def delete_user_profile_caches(user_profiles):
 
     cache_delete_many(keys)
 
-def delete_display_recipient_cache(user_profile):
-    # type: (UserProfile) -> None
+def delete_display_recipient_cache(user_profile: 'UserProfile') -> None:
     from zerver.models import Subscription  # We need to import here to avoid cyclic dependency.
     recipient_ids = Subscription.objects.filter(user_profile=user_profile)
     recipient_ids = recipient_ids.values_list('recipient_id', flat=True)
@@ -427,12 +422,10 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
 
-def realm_alert_words_cache_key(realm):
-    # type: (Realm) -> Text
+def realm_alert_words_cache_key(realm: 'Realm') -> Text:
     return "realm_alert_words:%s" % (realm.string_id,)
 
-def realm_first_visible_message_id_cache_key(realm):
-    # type: (Realm) -> Text
+def realm_first_visible_message_id_cache_key(realm: 'Realm') -> Text:
     return u"realm_first_visible_message_id:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
@@ -453,8 +446,7 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
 def to_dict_cache_key_id(message_id: int) -> Text:
     return 'message_dict:%d' % (message_id,)
 
-def to_dict_cache_key(message):
-    # type: (Message) -> Text
+def to_dict_cache_key(message: 'Message') -> Text:
     return to_dict_cache_key_id(message.id)
 
 def flush_message(sender: Any, **kwargs: Any) -> None:
