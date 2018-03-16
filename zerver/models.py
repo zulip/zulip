@@ -1275,7 +1275,7 @@ class Reaction(models.Model):
     REALM_EMOJI         = u'realm_emoji'
     ZULIP_EXTRA_EMOJI   = u'zulip_extra_emoji'
     REACTION_TYPES      = ((UNICODE_EMOJI, _("Unicode emoji")),
-                           (REALM_EMOJI, _("Realm emoji")),
+                           (REALM_EMOJI, _("Custom emoji")),
                            (ZULIP_EXTRA_EMOJI, _("Zulip extra emoji")))
 
     reaction_type = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)  # type: Text
