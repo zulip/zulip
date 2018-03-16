@@ -14,7 +14,9 @@ var consts = {
     catch_up_batch_size: 1000,
 };
 
-function process_result(messages, opts) {
+function process_result(data, opts) {
+    var messages = data.messages;
+
     $('#connection-error').removeClass("show");
 
     if ((messages.length === 0) && (current_msg_list === message_list.narrowed) &&
@@ -44,7 +46,7 @@ function process_result(messages, opts) {
     pm_list.update_private_messages();
 
     if (opts.cont !== undefined) {
-        opts.cont(messages);
+        opts.cont(data);
     }
 }
 
@@ -63,7 +65,7 @@ function get_messages_success(data, opts) {
         return;
     }
 
-    process_result(data.messages, opts);
+    process_result(data, opts);
     resize.resize_bottom_whitespace();
 }
 
@@ -108,7 +110,10 @@ exports.load_messages = function (opts) {
                 // retry or display a connection error.
                 //
                 // FIXME: Warn the user when this has happened?
-                process_result([], opts);
+                var data = {
+                    messages: [],
+                };
+                process_result(data, opts);
                 return;
             }
 
@@ -164,11 +169,10 @@ exports.maybe_load_older_messages = function (opts) {
         num_before: batch_size,
         num_after: 0,
         msg_list: msg_list,
-        cont: function (messages) {
+        cont: function (data) {
             opts.hide_loading();
-            var found_oldest = messages.length < batch_size;
             msg_list.fetch_status.finish_older_batch({
-                found_oldest: found_oldest,
+                found_oldest: data.found_oldest,
             });
         },
     });
@@ -176,7 +180,8 @@ exports.maybe_load_older_messages = function (opts) {
 
 exports.initialize = function () {
     // get the initial message list
-    function load_more(messages) {
+    function load_more(data) {
+        var messages = data.messages;
 
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
