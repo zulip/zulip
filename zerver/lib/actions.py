@@ -1554,6 +1554,9 @@ def create_stream_if_needed(realm: Realm,
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
             send_stream_creation_event(stream, active_user_ids(stream.realm_id))
+        else:
+            realm_admin_ids = [user.id for user in stream.realm.get_admin_users()]
+            send_stream_creation_event(stream, realm_admin_ids)
     return stream, created
 
 def create_streams_if_needed(realm: Realm,
@@ -2402,15 +2405,16 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
     # that the stream exists.
     for stream in streams:
         if not stream.is_public():
-            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams]
-
-            # Users newly added to invite-only streams and all realm
-            # administrators need a `create` notification.  The
-            # former, because they need the stream to exist before
+            # Users newly added to invite-only streams
+            # need a `create` notification.  The former, because
+            # they need the stream to exist before
             # they get the "subscribe" notification, and the latter so
             # they can manage the new stream.
-            realm_admin_user_ids = [user.id for user in user_profile.realm.get_admin_users()]
-            send_stream_creation_event(stream, list(set(new_users_ids + realm_admin_user_ids)))
+            # Realm admins already have all created private streams.
+            realm_admin_ids = [user.id for user in user_profile.realm.get_admin_users()]
+            new_users_ids = [user.id for user in users if (user.id, stream.id) in new_streams and
+                             user.id not in realm_admin_ids]
+            send_stream_creation_event(stream, new_users_ids)
 
     recent_traffic = get_streams_traffic(streams)
     # The second batch is events for the users themselves that they
