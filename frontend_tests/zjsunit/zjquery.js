@@ -126,6 +126,12 @@ exports.make_zjquery = function () {
                 }
                 return html;
             },
+            is: function (arg) {
+                if (arg === ':visible') {
+                    return shown;
+                }
+                return self;
+            },
             is_focused: function () {
                 // is_focused is not a jQuery thing; this is
                 // for our testing

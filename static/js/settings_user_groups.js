@@ -61,19 +61,140 @@ exports.populate_user_groups = function () {
             }
         });
 
-        function update_save_state() {
+        function is_user_group_changed() {
             var draft_group = get_pill_user_ids();
-            var original_group = user_groups.get_user_group_from_id(data.id).members.keys();
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var original_group = group_data.members.keys();
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
-            var save_changes = pill_container.siblings('.save-member-changes');
-            var save_hidden = save_changes.css('display') === 'none';
+            var description = $('#user-groups #' + data.id + ' .description').text().trim();
+            var name = $('#user-groups #' + data.id + ' .name').text().trim();
 
-            if ((!draft_group.length || same_groups) && !save_hidden) {
-                save_changes.fadeOut();
-            } else if (!same_groups && draft_group.length && save_hidden) {
-                save_changes.css({display: 'inline-block', opacity: '0'}).fadeTo(400, 1);
+            if ((group_data.description === description && group_data.name === name) &&
+                (!draft_group.length || same_groups)) {
+                return false;
+            }
+            return true;
+        }
+
+        function update_cancel_button() {
+            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
+            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+
+            if (is_user_group_changed() &&
+               !cancel_button.is(':visible')) {
+                saved_button.fadeOut(0);
+                cancel_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+                save_instructions.css({display: 'block', opacity: 0}).fadeTo(400, 1);
+            } else if (!is_user_group_changed() &&
+                cancel_button.is(':visible')) {
+                    cancel_button.fadeOut();
+                    save_instructions.fadeOut();
+                }
+        }
+
+        function show_saved_button() {
+            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
+            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
+
+            if (!saved_button.is(':visible')) {
+                cancel_button.fadeOut(0);
+                save_instructions.fadeOut(0);
+                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
             }
         }
+
+        function save_members() {
+            var draft_group = get_pill_user_ids();
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var original_group = group_data.members.keys();
+            var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
+            if (!draft_group.length || same_groups) {
+                return;
+            }
+
+            var added = _.difference(draft_group, original_group);
+            var removed = _.difference(original_group, draft_group);
+            channel.post({
+                url: "/json/user_groups/" + data.id + '/members',
+                data: {
+                    add: JSON.stringify(added),
+                    delete: JSON.stringify(removed),
+                },
+                success: function () {
+                    show_saved_button();
+                },
+            });
+        }
+
+        function save_name_desc() {
+            var group_data = user_groups.get_user_group_from_id(data.id);
+            var description = $('#user-groups #' + data.id + ' .description').text().trim();
+            var name = $('#user-groups #' + data.id + ' .name').text().trim();
+
+            if (group_data.description === description && group_data.name === name) {
+                return;
+            }
+
+            channel.patch({
+                url: "/json/user_groups/" + data.id,
+                data: {
+                    name: name,
+                    description: description,
+                },
+                success: function () {
+                    setTimeout(show_saved_button, 100);
+                },
+            });
+        }
+
+        function do_not_blur(except_class, event) {
+            // Event generated from or inside the typeahead.
+            if ($(event.relatedTarget).closest(".typeahead").length) {
+                return true;
+            }
+
+            var blur_exceptions = _.without([".pill-container", ".name", ".description", ".input", ".delete"],
+                                            except_class);
+            if ($(event.relatedTarget).closest('#user-groups #' + data.id).length) {
+                return _.some(blur_exceptions, function (class_name) {
+                    return $(event.relatedTarget).closest(class_name).length;
+                });
+            }
+            return false;
+        }
+
+        function auto_save(class_name, event) {
+            if (do_not_blur(class_name, event)) {
+                return;
+            }
+            if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
+                $(event.relatedTarget).closest('.cancel').length) {
+                    settings_user_groups.reload();
+                    return;
+            }
+            save_name_desc();
+            save_members();
+        }
+
+        $('#user-groups #' + data.id).on('blur', '.input', function (event) {
+            auto_save('.input', event);
+        });
+
+        $('#user-groups #' + data.id).on('blur', '.name', function (event) {
+            auto_save('.name', event);
+        });
+        $('#user-groups #' + data.id).on('input', '.name', function () {
+            update_cancel_button();
+        });
+
+        $('#user-groups #' + data.id).on('blur', '.description', function (event) {
+            auto_save('.description', event);
+        });
+        $('#user-groups #' + data.id).on('input', '.description', function () {
+            update_cancel_button();
+        });
 
         var input = pill_container.children('.input');
 
@@ -98,43 +219,21 @@ exports.populate_user_groups = function () {
             },
             updater: function (user) {
                 append_user(user);
-                update_save_state();
+                input.focus();
+                update_cancel_button();
             },
             stopAdvance: true,
         });
 
-        pills.onPillCreate(function () {
-            update_save_state();
-        });
-
         pills.onPillRemove(function () {
-            update_save_state();
+            // onPillRemove is fired before the pill is removed from
+            // the DOM.
+            update_cancel_button();
+            setTimeout(function () {
+                input.focus();
+            }, 100);
         });
 
-        $('#user-groups #' + data.id).on('click', '.save-member-changes', function () {
-            var draft_group = get_pill_user_ids();
-            var group_data = user_groups.get_user_group_from_id(data.id);
-            var original_group = group_data.members.keys();
-            var added = _.difference(draft_group, original_group);
-            var removed = _.difference(original_group, draft_group);
-            var btn = $(this);
-
-            channel.post({
-                url: "/json/user_groups/" + data.id + '/members',
-                data: {
-                    add: JSON.stringify(added),
-                    delete: JSON.stringify(removed),
-                },
-                success: function () {
-                    btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
-                        $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
-                    });
-                },
-                error: function () {
-                    btn.text(i18n.t("Failed!"));
-                },
-            });
-        });
     });
 };
 
@@ -200,51 +299,6 @@ exports.set_up = function () {
         if (e.which === 13) {
             e.preventDefault();
         }
-    });
-
-    $('#user-groups').on('input', '.user-group h4 > span', function () {
-        var element = this.className;
-        var current_text = $(this).text();
-        var sibling_element = $(this).siblings('span').first().attr('class');
-        var sibling_text = $(this).siblings('span').first().text();
-        var group_id = $(this).parents('.user-group').attr('id');
-        var user_group = user_groups.get_user_group_from_id(group_id);
-        var saved_text = user_group[element];
-        var saved_sibling_text = user_group[sibling_element];
-
-        var has_changes = saved_text !== current_text || saved_sibling_text !== sibling_text;
-        var save_changes = $(this).siblings('.save-group-changes');
-        var save_hidden = save_changes.css('display') === 'none';
-        var has_content = current_text.trim() !== '' && sibling_text.trim() !== '';
-
-        if (has_changes && save_hidden && has_content) {
-            save_changes.css({display: 'inline', opacity: '0'}).fadeTo(400, 1);
-        } else if ((!has_changes || !has_content) && !save_hidden) {
-            save_changes.fadeOut();
-        }
-    });
-
-    $('#user-groups').on('click', '.save-group-changes', function () {
-        var group_id = $(this).parents('.user-group').attr('id');
-        var description = $(this).siblings('.description').text().trim();
-        var name = $(this).siblings('.name').text().trim();
-        var btn = $(this);
-
-        channel.patch({
-            url: "/json/user_groups/" + group_id,
-            data: {
-                name: name,
-                description: description,
-            },
-            success: function () {
-                btn.text(i18n.t("Saved!")).delay(200).fadeOut(function () {
-                    $(this).html('<i class="fa fa-check" aria-hidden="true"></i>');
-                });
-            },
-            error: function () {
-                btn.text(i18n.t("Failed!"));
-            },
-        });
     });
 };
 
