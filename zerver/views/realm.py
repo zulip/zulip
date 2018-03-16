@@ -60,9 +60,9 @@ def update_realm(
     if default_language is not None and default_language not in get_available_language_codes():
         raise JsonableError(_("Invalid language '%s'" % (default_language,)))
     if description is not None and len(description) > 1000:
-        return json_error(_("Realm description is too long."))
+        return json_error(_("Organization description is too long."))
     if name is not None and len(name) > Realm.MAX_REALM_NAME_LENGTH:
-        return json_error(_("Realm name is too long."))
+        return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
     if signup_notifications_stream_id is not None and settings.NEW_USER_BOT is None:
