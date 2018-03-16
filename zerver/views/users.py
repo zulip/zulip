@@ -464,7 +464,7 @@ def create_user_backend(request: HttpRequest, user_profile: UserProfile,
         return json_error(_("Email '%(email)s' not allowed in this organization") %
                           {'email': email})
     except DisposableEmailError:
-        return json_error(_("Disposable emails are not allowed for realm '{}'".format(realm.string_id)))
+        return json_error(_("Disposable email addresses are not allowed in this organization"))
 
     try:
         get_user(email, user_profile.realm)
