@@ -496,13 +496,7 @@ $(function () {
 
             if (data.subscribed.hasOwnProperty(principal)) {
                 stream_subscription_info_elem.text(i18n.t("Subscribed successfully!"));
-                if (people.is_current_user(principal)) {
-                    // mark_subscribed adds the user to the member list
-                    // TODO: We should really let the event system
-                    //       handle this, as mark_subscribed has
-                    //       lots of side effects.
-                    stream_events.mark_subscribed(sub);
-                }
+                // The rest of the work is done via the subscription -> add event we will get
             } else {
                 stream_subscription_info_elem.text(i18n.t("User already subscribed."));
             }
@@ -538,15 +532,7 @@ $(function () {
                 // Remove the user from the subscriber list.
                 list_entry.remove();
                 stream_subscription_info_elem.text(i18n.t("Unsubscribed successfully!"));
-
-                if (people.is_current_user(principal)) {
-                    // If you're unsubscribing yourself, mark whole
-                    // stream entry as you being unsubscribed.
-                    // TODO: We should really let the event system
-                    //       handle this, as mark_unsubscribed has
-                    //       lots of side effects.
-                    stream_events.mark_unsubscribed(sub);
-                }
+                // The rest of the work is done via the subscription -> remove event we will get
             } else {
                 stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
             }

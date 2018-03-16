@@ -82,6 +82,29 @@ class TestCreateStreams(ZulipTestCase):
         stream_descriptions = [u'des1', u'des2', u'des3']
         realm = get_realm('zulip')
 
+        # Test stream creation events.
+        events = []  # type: List[Mapping[str, Any]]
+        with tornado_redirected_to_list(events):
+            create_stream_if_needed(realm, "Public stream", invite_only=False)
+        self.assert_length(events, 1)
+
+        self.assertEqual(events[0]['event']['type'], 'stream')
+        self.assertEqual(events[0]['event']['op'], 'create')
+        # Send public stream creation event to all active users.
+        self.assertEqual(events[0]['users'], active_user_ids(realm.id))
+        self.assertEqual(events[0]['event']['streams'][0]['name'], "Public stream")
+
+        events = []
+        with tornado_redirected_to_list(events):
+            create_stream_if_needed(realm, "Private stream", invite_only=True)
+        self.assert_length(events, 1)
+
+        self.assertEqual(events[0]['event']['type'], 'stream')
+        self.assertEqual(events[0]['event']['op'], 'create')
+        # Send private stream creation event to only realm admins.
+        self.assertEqual(events[0]['users'], [self.example_user("iago").id])
+        self.assertEqual(events[0]['event']['streams'][0]['name'], "Private stream")
+
         new_streams, existing_streams = create_streams_if_needed(
             realm,
             [{"name": stream_name,
@@ -1876,8 +1899,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         self.assertEqual(create_event['event']['type'], 'stream')
         self.assertEqual(create_event['event']['op'], 'create')
-        # Send stream creation event to subscribed users and all realm admin users.
-        self.assertEqual(create_event['users'], [user_profile.id, self.example_user('iago').id])
+        self.assertEqual(create_event['users'], [user_profile.id])
         self.assertEqual(create_event['event']['streams'][0]['name'], stream_name)
 
         self.assertEqual(add_event['event']['type'], 'subscription')
@@ -1895,6 +1917,24 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)
+
+        # Do not send stream creation event to realm admin users
+        # even if realm admin is subscribed to stream cause realm admin already get
+        # private stream creation event on stream creation.
+        (new_stream, _) = create_stream_if_needed(realm, "private stream", invite_only=True)
+        events = []
+        with tornado_redirected_to_list(events):
+            bulk_add_subscriptions([new_stream], [self.example_user("iago")])
+
+        self.assert_length(events, 2)
+        create_event, add_event = events
+        self.assertEqual(create_event['event']['type'], 'stream')
+        self.assertEqual(create_event['event']['op'], 'create')
+        self.assertEqual(create_event['users'], [])
+
+        self.assertEqual(add_event['event']['type'], 'subscription')
+        self.assertEqual(add_event['event']['op'], 'add')
+        self.assertEqual(add_event['users'], [self.example_user("iago").id])
 
     def test_users_getting_add_peer_event(self) -> None:
         """
@@ -2691,8 +2731,10 @@ class GetSubscribersTest(ZulipTestCase):
             self.assertFalse('invite_only' in name)
             self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
+        # Send private stream subscribers to all realm admins.
         def test_admin_case() -> None:
             self.user_profile.is_realm_admin = True
+            # Test realm admins can get never subscribed private stream's subscribers.
             never_subscribed = get_never_subscribed()
 
             self.assertEqual(
@@ -2700,13 +2742,34 @@ class GetSubscribersTest(ZulipTestCase):
                 len(public_streams) + len(private_streams)
             )
             for stream_dict in never_subscribed:
-                name = stream_dict['name']
-                if 'invite_only' in name:
-                    self.assertFalse('subscribers' in stream_dict)
-                else:
-                    self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
+                self.assertTrue(len(stream_dict["subscribers"]) == len(users_to_subscribe))
 
         test_admin_case()
+
+    def test_previously_subscribed_private_streams(self) -> None:
+        admin_user = self.example_user("iago")
+        non_admin_user = self.example_user("cordelia")
+        stream_name = "private_stream"
+
+        self.make_stream(stream_name, realm=get_realm("zulip"), invite_only=True)
+        self.subscribe(admin_user, stream_name)
+        self.subscribe(non_admin_user, stream_name)
+        self.subscribe(self.example_user("othello"), stream_name)
+
+        self.unsubscribe(admin_user, stream_name)
+        self.unsubscribe(non_admin_user, stream_name)
+
+        # Test non admin user shouldn't get previously subscribed private stream's subscribers.
+        sub_data = gather_subscriptions_helper(admin_user)
+        unsubscribed_streams = sub_data[1]
+        self.assertEqual(len(unsubscribed_streams), 1)
+        self.assertEqual(len(unsubscribed_streams[0]["subscribers"]), 1)
+
+        # Test admin users can get previously subscribed private stream's subscribers.
+        sub_data = gather_subscriptions_helper(non_admin_user)
+        unsubscribed_streams = sub_data[1]
+        self.assertEqual(len(unsubscribed_streams), 1)
+        self.assertFalse('subscribers' in unsubscribed_streams)
 
     def test_gather_subscriptions_mit(self) -> None:
         """
