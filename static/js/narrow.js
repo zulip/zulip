@@ -187,6 +187,11 @@ exports.activate = function (raw_operators, opts) {
 
             var then_scroll = !preserve_pre_narrowing_screen_position;
 
+            // Select the first unread if it's above the current message ID
+            if (then_select_id > message_list.narrowed.first_unread_message_id()) {
+                then_select_id = message_list.narrowed.first_unread_message_id();
+            }
+
             message_list.narrowed.select_id(then_select_id, {then_scroll: then_scroll,
                                                          use_closest: true,
                                                          force_rerender: true,
