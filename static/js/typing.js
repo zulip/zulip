@@ -73,25 +73,27 @@ function notify_server_stop(recipients) {
     send_typing_notification_ajax(recipients, "stop");
 }
 
-var worker = {
-    get_recipient: get_recipient,
-    is_valid_conversation: is_valid_conversation,
-    get_current_time: get_current_time,
-    notify_server_start: notify_server_start,
-    notify_server_stop: notify_server_stop,
+exports.initialize = function () {
+    var worker = {
+        get_recipient: get_recipient,
+        is_valid_conversation: is_valid_conversation,
+        get_current_time: get_current_time,
+        notify_server_start: notify_server_start,
+        notify_server_stop: notify_server_stop,
+    };
+
+    $(document).on('input', '#compose-textarea', function () {
+        // If our previous state was no typing notification, send a
+        // start-typing notice immediately.
+        typing_status.handle_text_input(worker);
+    });
+
+    // We send a stop-typing notification immediately when compose is
+    // closed/cancelled
+    $(document).on('compose_canceled.zulip compose_finished.zulip', function () {
+        typing_status.stop(worker);
+    });
 };
-
-$(document).on('input', '#compose-textarea', function () {
-    // If our previous state was no typing notification, send a
-    // start-typing notice immediately.
-    typing_status.handle_text_input(worker);
-});
-
-// We send a stop-typing notification immediately when compose is
-// closed/cancelled
-$(document).on('compose_canceled.zulip compose_finished.zulip', function () {
-    typing_status.stop(worker);
-});
 
 return exports;
 }());
