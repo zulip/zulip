@@ -1231,6 +1231,7 @@ id_maps = {
     'useractivity': {},
     'useractivityinterval': {},
     'usermessage': {},
+    'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
@@ -1686,17 +1687,21 @@ def import_attachments(data: TableData) -> None:
     parent_id = 'attachment_id'
     child_id = 'message_id'
 
+    update_model_ids(parent_model, data, parent_db_table_name, 'attachment')
     # First, build our list of many-to-many (m2m) rows.
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
 
     m2m_rows = []  # type: List[Record]
     for parent_row in data[parent_db_table_name]:
+        messages = []
         for fk_id in parent_row[child_plural]:
+            messages.append(id_maps['message'][fk_id])
             m2m_row = {}  # type: Record
             m2m_row[parent_singular] = parent_row['id']
             m2m_row[child_singular] = id_maps['message'][fk_id]
             m2m_rows.append(m2m_row)
+        parent_row[child_plural] = messages
 
     # Create our table data for insert.
     m2m_data = {m2m_table_name: m2m_rows}  # type: TableData
