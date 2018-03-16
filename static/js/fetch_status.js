@@ -7,6 +7,18 @@ var FetchStatus = function () {
     var found_oldest = false;
     var found_newest = false;
 
+    self.start_initial_narrow = function () {
+        loading_newer = true;
+        loading_older = true;
+    };
+
+    self.finish_initial_narrow = function (opts) {
+        loading_newer = false;
+        loading_older = false;
+        found_oldest = opts.found_oldest;
+        found_newest = opts.found_newest;
+    };
+
     self.start_older_batch = function () {
         loading_older = true;
     };
