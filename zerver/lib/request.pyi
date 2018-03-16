@@ -7,11 +7,9 @@
 # types.
 
 from typing import Any, Callable, Text, TypeVar, Optional, Union, Type
-from zerver.lib.types import ViewFuncT
+from zerver.lib.types import ViewFuncT, Validator
 
 from zerver.lib.exceptions import JsonableError as JsonableError
-
-Validator = Callable[[str, Any], Optional[str]]
 
 ResultT = TypeVar('ResultT')
 
