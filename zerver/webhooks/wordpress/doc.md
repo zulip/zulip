@@ -17,8 +17,6 @@ bottom of this page.
 
 {!create-bot-construct-url.md!}
 
-{!append-topic.md!}
-
 ***Important:** the HookPress plugin requires URL parameters to
 be delimited by semicolons instead of ampersands. If you have a
 self-installed blog, separate parameters with `;` instead of `&`.*
