@@ -34,6 +34,10 @@ from zerver.lib.stream_subscription import (
     num_subscribers_for_stream_id,
 )
 
+from zerver.lib.stream_topic import (
+    STREAM_TOPIC_HELLO
+)
+
 from zerver.lib.test_runner import (
     slow
 )
@@ -1783,7 +1787,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # verify that a welcome message was sent to the stream
         msg = self.get_last_message()
         self.assertEqual(msg.recipient.type, msg.recipient.STREAM)
-        self.assertEqual(msg.subject, u'hello')
+        self.assertEqual(msg.subject, STREAM_TOPIC_HELLO)
         self.assertEqual(msg.sender.email, settings.WELCOME_BOT)
         self.assertIn('Welcome to #**', msg.content)
 

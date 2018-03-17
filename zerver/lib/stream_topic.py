@@ -1,5 +1,6 @@
 from typing import (Dict, List, Text, Set)
 from django.db.models.query import QuerySet
+from django.utils.translation import ugettext as _
 
 from zerver.lib.stream_subscription import (
     get_active_subscriptions_for_stream_id,
@@ -8,6 +9,9 @@ from zerver.lib.stream_subscription import (
 from zerver.models import (
     MutedTopic,
 )
+
+# constant for hello stream topic
+STREAM_TOPIC_HELLO = _("hello")
 
 class StreamTopicTarget:
     '''

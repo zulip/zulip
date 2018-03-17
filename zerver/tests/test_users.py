@@ -35,7 +35,7 @@ from zerver.lib.actions import (
     do_create_user,
 )
 from zerver.lib.topic_mutes import add_topic_mute
-from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.stream_topic import StreamTopicTarget, STREAM_TOPIC_HELLO
 from zerver.lib.users import user_ids_to_users
 
 from django.conf import settings
@@ -531,7 +531,7 @@ class GetProfileTest(ZulipTestCase):
     def common_get_profile(self, user_id: str) -> Dict[Text, Any]:
         # Assumes all users are example users in realm 'zulip'
         user_profile = self.example_user(user_id)
-        self.send_stream_message(user_profile.email, "Verona", "hello")
+        self.send_stream_message(user_profile.email, "Verona", STREAM_TOPIC_HELLO)
 
         result = self.api_get(user_profile.email, "/api/v1/users/me")
 

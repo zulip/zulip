@@ -52,7 +52,7 @@ from zerver.lib.stream_subscription import (
     get_stream_subscriptions_for_users,
     num_subscribers_for_stream_id,
 )
-from zerver.lib.stream_topic import StreamTopicTarget
+from zerver.lib.stream_topic import StreamTopicTarget, STREAM_TOPIC_HELLO
 from zerver.lib.topic_mutes import (
     get_topic_mutes,
     add_topic_mute,
@@ -1519,14 +1519,13 @@ def stream_welcome_message(stream: Stream) -> Text:
 def prep_stream_welcome_message(stream: Stream) -> Optional[Dict[str, Any]]:
     realm = stream.realm
     sender = get_system_bot(settings.WELCOME_BOT)
-    topic = _('hello')
     content = stream_welcome_message(stream)
 
     message = internal_prep_stream_message(
         realm=realm,
         sender=sender,
         stream_name=stream.name,
-        topic=topic,
+        topic=STREAM_TOPIC_HELLO,
         content=content)
 
     return message
