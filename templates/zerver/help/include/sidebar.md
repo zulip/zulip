@@ -132,7 +132,7 @@
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
-
+* [Welcome email settings](/help/welcome-email-settings)
 
 ## Server settings
 * [Add a link preview](/help/add-a-link-preview)
