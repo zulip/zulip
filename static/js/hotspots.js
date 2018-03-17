@@ -207,6 +207,15 @@ exports.is_open = function () {
     return $('.hotspot.overlay').hasClass('show');
 };
 
+exports.close_hotspot_icon = function (elem) {
+    $(elem).animate({ opacity: 0 }, {
+        duration: 300,
+        done: function () {
+            $(elem).css({ display: 'none' });
+        }.bind(elem),
+    });
+};
+
 exports.load_new = function (new_hotspots) {
     new_hotspots.forEach(function (hotspot) {
         hotspot.location = HOTSPOT_LOCATIONS[hotspot.name];
