@@ -44,7 +44,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='reaction',
             name='reaction_type',
-            field=models.CharField(choices=[('unicode_emoji', 'Unicode emoji'), ('realm_emoji', 'Realm emoji'), ('zulip_extra_emoji', 'Zulip extra emoji')], default='unicode_emoji', max_length=30),
+            field=models.CharField(choices=[('unicode_emoji', 'Unicode emoji'), ('realm_emoji', 'Custom emoji'), ('zulip_extra_emoji', 'Zulip extra emoji')], default='unicode_emoji', max_length=30),
         ),
         migrations.RunPython(populate_new_fields,
                              reverse_code=migrations.RunPython.noop),
