@@ -60,7 +60,8 @@ function status_from_timestamp(baseline_time, info) {
         if (is_mobile(device)) {
             mobileAvailable = device_presence.pushable || mobileAvailable;
         }
-        if (age < OFFLINE_THRESHOLD_SECS) {
+        if ((age < OFFLINE_THRESHOLD_SECS) ||
+             page_params.dont_update_presence && page_params.development_environment) {
             switch (device_presence.status) {
                 case 'active':
                     if (is_mobile(device)) {

@@ -87,3 +87,6 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
+
+# Set the presence info of users in the database, and have that persist
+DONT_UPDATE_PRESENCE = False  # type: bool

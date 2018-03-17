@@ -3,6 +3,9 @@ zrequire('presence');
 
 set_global('server_events', {});
 set_global('blueslip', {});
+set_global('page_params', {
+    dont_update_presence: false,
+});
 
 var OFFLINE_THRESHOLD_SECS = 140;
 
