@@ -3,7 +3,6 @@ Get Dropbox notifications in Zulip!
 1. {!create-stream.md!}
 
 1. {!create-bot-construct-url-indented.md!}
-   {!append-topic.md!}
 
 1. Go to your [Dropbox apps page](https://www.dropbox.com/developers/apps).
    Click on **Create app** near the top-right corner, and follow the on-screen
