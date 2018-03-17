@@ -21,6 +21,7 @@ from tornado.wsgi import WSGIContainer
 
 from zerver.decorator import RespondAsynchronously
 from zerver.lib.response import json_response
+from zerver.lib.types import ViewFuncT
 from zerver.middleware import async_request_restart, async_request_stop
 from zerver.tornado.descriptors import get_descriptor_by_handler_id
 
@@ -109,7 +110,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
         system code doesn't change.
         """
         self._request_middleware = []  # type: Optional[List[Callable[[HttpRequest], HttpResponse]]]
-        self._view_middleware = []  # type: List[Callable[[HttpRequest, Callable[..., HttpResponse], List[str], Dict[str, Any]], Optional[HttpResponse]]]
+        self._view_middleware = []  # type: List[Callable[[HttpRequest, ViewFuncT, List[str], Dict[str, Any]], Optional[HttpResponse]]]
         self._template_response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
         self._response_middleware = []  # type: List[Callable[[HttpRequest, HttpResponse], HttpResponse]]
         self._exception_middleware = []  # type: List[Callable[[HttpRequest, Exception], Optional[HttpResponse]]]

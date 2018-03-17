@@ -14,6 +14,7 @@ from mypy_extensions import NoReturn
 from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
 from zerver.lib.request import JsonableError
+from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
 from zerver.middleware import JsonErrorHandler
@@ -22,9 +23,8 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
-def capture_and_throw(
-        domain: Optional[Text]=None) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    def wrapper(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def capture_and_throw(domain: Optional[Text]=None) -> Callable[[ViewFuncT], ViewFuncT]:
+    def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
         def wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> NoReturn:
             global captured_request
@@ -35,7 +35,7 @@ def capture_and_throw(
                 global captured_exc_info
                 captured_exc_info = sys.exc_info()
                 raise e
-        return wrapped_view
+        return wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return wrapper
 
 class AdminNotifyHandlerTest(ZulipTestCase):
