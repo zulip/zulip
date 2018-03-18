@@ -433,39 +433,34 @@ class RealmEmoji(models.Model):
                                                   self.deactivated,
                                                   self.file_name)
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
+def get_realm_emoji_dicts(realm: Realm,
+                          only_active_emojis: bool=False) -> Dict[str, Dict[str, Any]]:
+    query = RealmEmoji.objects.filter(realm=realm).select_related('author')
+    if only_active_emojis:
+        query = query.filter(deactivated=False)
     d = {}
     from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+
+    for realm_emoji in query.all():
         author = None
-        if row.author:
+        if realm_emoji.author:
             author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
+                'id': realm_emoji.author.id,
+                'email': realm_emoji.author.email,
+                'full_name': realm_emoji.author.full_name}
+        emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
+        d[realm_emoji.name] = dict(id=str(realm_emoji.id),
+                                   name=realm_emoji.name,
+                                   source_url=emoji_url,
+                                   deactivated=realm_emoji.deactivated,
+                                   author=author)
     return d
 
+def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    return get_realm_emoji_dicts(realm)
+
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
-    d = {}
-    from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm,
-                                         deactivated=False).select_related('author'):
-        author = None
-        if row.author:
-            author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           name=row.name,
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
-    return d
+    return get_realm_emoji_dicts(realm, only_active_emojis=True)
 
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
     realm = kwargs['instance'].realm
