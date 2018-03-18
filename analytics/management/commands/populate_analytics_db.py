@@ -80,6 +80,14 @@ class Command(BaseCommand):
                           value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
+        stat = COUNT_STATS['1day_actives::day']
+        realm_data = {
+            None: self.generate_fixture_data(stat, .08, .02, 3, .3, 6, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, realm_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
         stat = COUNT_STATS['realm_active_humans::day']
         realm_data = {
             None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
