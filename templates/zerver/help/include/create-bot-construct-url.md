@@ -10,5 +10,5 @@ of your Zulip bot, and `stream` is the stream name you want the
 notifications sent to. If you do not specify a `stream`, the bot will
 send notifications via PMs to the creator of the bot.
 
-To change the topic used by the bot, simply append `&topic=name`
-to the end of the above URL, where `name` is your topic.
+If you'd like this integration to always send to the topic
+`your_topic`, just add `&topic=your_topic` to the end of the URL.
