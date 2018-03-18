@@ -11,10 +11,12 @@ from zerver.lib.actions import queue_json_publish
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockPythonResponse
 from zerver.worker.queue_processors import FetchLinksEmbedData
-from zerver.lib.url_preview.preview import get_link_embed_data
+from zerver.lib.url_preview.preview import (
+    get_link_embed_data, link_embed_data_from_cache)
 from zerver.lib.url_preview.oembed import get_oembed_data
 from zerver.lib.url_preview.parsers import (
     OpenGraphParser, GenericParser)
+from zerver.lib.cache import cache_set, NotFoundInCache
 
 
 TEST_CACHES = {
@@ -357,3 +359,14 @@ class PreviewTestCase(ZulipTestCase):
         with self.settings(INLINE_URL_EMBED_PREVIEW=True, TEST_SUITE=False, CACHES=TEST_CACHES):
             self.assertIsNone(get_link_embed_data('com.notvalidlink'))
             self.assertIsNone(get_link_embed_data(u'μένει.com.notvalidlink'))
+
+    def test_link_embed_data_from_cache(self) -> None:
+        url = 'http://test.org/'
+        link_embed_data = 'test data'
+
+        with self.assertRaises(NotFoundInCache):
+            link_embed_data_from_cache(url)
+
+        with self.settings(CACHES=TEST_CACHES):
+            cache_set(url, link_embed_data, 'database')
+            self.assertEqual(link_embed_data, link_embed_data_from_cache(url))
