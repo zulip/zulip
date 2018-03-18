@@ -15,6 +15,7 @@ import ujson
 import shutil
 import subprocess
 import tempfile
+from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.avatar_hash import user_avatar_hash, user_avatar_path_from_ids
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
 from zerver.lib.create_user import random_api_key
@@ -1234,6 +1235,10 @@ id_maps = {
     'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
+path_maps = {
+    'attachment_path': {},
+}  # type: Dict[str, Dict[str, str]]
+
 def update_id_map(table: TableName, old_id: int, new_id: int) -> None:
     if table not in id_maps:
         raise Exception('''
@@ -1389,7 +1394,15 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
             else:
                 file_path += '.png'
         else:
-            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", record['s3_path'])
+            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
+            # function 'upload_message_image'
+            s3_file_name = "/".join([
+                str(record['realm_id']),
+                random_name(18),
+                sanitize_name(os.path.basename(record['path']))
+            ])
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "files", s3_file_name)
+            path_maps['attachment_path'][record['path']] = s3_file_name
 
         orig_file_path = os.path.join(import_dir, record['path'])
         if not os.path.exists(os.path.dirname(file_path)):
@@ -1430,7 +1443,15 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
             if record['s3_path'].endswith('.original'):
                 key.key += '.original'
         else:
-            key.key = record['s3_path']
+            # Should be kept in sync with its equivalent in zerver/lib/uploads in the
+            # function 'upload_message_image'
+            s3_file_name = "/".join([
+                str(record['realm_id']),
+                random_name(18),
+                sanitize_name(os.path.basename(record['path']))
+            ])
+            key.key = s3_file_name
+            path_maps['attachment_path'][record['path']] = s3_file_name
 
         user_profile_id = int(record['user_profile_id'])
         # Support email gateway bot and other cross-realm messages
@@ -1712,6 +1733,10 @@ def import_attachments(data: TableData) -> None:
     # Next, delete out our child data from the parent rows.
     for parent_row in data[parent_db_table_name]:
         del parent_row[child_plural]
+
+    # Update 'path_id' for the attachments
+    for attachment in data[parent_db_table_name]:
+        attachment['path_id'] = path_maps['attachment_path'][attachment['path_id']]
 
     # Next, load the parent rows.
     bulk_import_model(data, parent_model, parent_db_table_name)
