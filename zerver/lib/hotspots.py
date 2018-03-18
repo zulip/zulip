@@ -28,9 +28,8 @@ ALL_HOTSPOTS = {
 }  # type: Dict[str, Dict[str, Text]]
 
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
-    # For manual testing, it can be convenient to set
-    # ALWAYS_SEND_ALL_HOTSPOTS=True in `zproject/dev_settings.py` to
-    # make it easy to click on all of the hotspots.
+    # Only used for manual testing
+    # set this value True in zproject/dev_settings.py
     if settings.ALWAYS_SEND_ALL_HOTSPOTS:
         return [{
             'name': hotspot,
