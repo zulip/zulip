@@ -13,15 +13,6 @@ class SlackWebhookTests(WebhookTestCase):
         self.send_and_test_stream_message('message_info', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def test_slack_channel_to_stream(self) -> None:
-
-        self.STREAM_NAME = 'general'
-        self.url = "{}{}".format(self.url, "&channels_map_to_topics=0")
-        expected_subject = u"Message from Slack"
-        expected_message = u"**slack_user**: `test\n`"
-        self.send_and_test_stream_message('message_info', expected_subject, expected_message,
-                                          content_type="application/x-www-form-urlencoded")
-
     def test_missing_data_user_name(self) -> None:
 
         payload = self.get_body('message_info_missing_user_name')
@@ -42,13 +33,6 @@ class SlackWebhookTests(WebhookTestCase):
         url = self.build_webhook_url()
         result = self.client_post(url, payload, content_type="application/x-www-form-urlencoded")
         self.assert_json_error(result, "Missing 'text' argument")
-
-    def test_invalid_channels_map_to_topics(self) -> None:
-
-        payload = self.get_body('message_info')
-        url = "{}{}".format(self.url, "&channels_map_to_topics=abc")
-        result = self.client_post(url, payload, content_type="application/x-www-form-urlencoded")
-        self.assert_json_error(result, 'Error: channels_map_to_topics parameter other than 0 or 1')
 
     def get_body(self, fixture_name: str) -> str:
 

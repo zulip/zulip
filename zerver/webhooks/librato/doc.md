@@ -4,8 +4,6 @@ Get Zulip notifications for your Librato alerts or snapshots!
 
 {!create-bot-construct-url.md!}
 
-{!append-topic.md!}
-
 The default stream name is **librato** and default topic name is
 **Alert alert_name**.
 

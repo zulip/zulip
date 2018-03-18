@@ -4,8 +4,6 @@ See your Splunk Search alerts in Zulip!
 
 {!create-bot-construct-url.md!}
 
-{!append-topic.md!}
-
 Next, in the Splunk search app, execute the search you'd like to be
 alerted on and then save it as an alert:
 

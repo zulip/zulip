@@ -10,8 +10,6 @@ Add a webhook to your Stripe account by going to **Your account** >
 
 {!webhook-url-with-bot-email.md!}
 
-{!append-topic.md!}
-
 {!append-stream-name.md!}
 
 {% if 'http:' in external_uri_scheme %}

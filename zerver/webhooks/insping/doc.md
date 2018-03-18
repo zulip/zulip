@@ -6,8 +6,6 @@ a website or service is up and running or down.
 
 1. {!create-bot-construct-url-indented.md!}
 
-    {!append-topic.md!}
-
 1. On your Insping **Dashboard**, click on **Integrations**. Click
    on **Create Webhook**.
 
