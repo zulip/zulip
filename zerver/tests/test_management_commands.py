@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
+from zerver.lib.actions import do_create_user
 from zerver.lib.management import ZulipBaseCommand, CommandError
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
@@ -47,7 +48,11 @@ class TestZulipBaseCommand(ZulipTestCase):
 
         with self.assertRaisesRegex(CommandError, "server does not contain a user with email"):
             self.command.get_user('invalid_email@example.com', None)
-        # TODO: Add a test for the MultipleObjectsReturned case once we make that possible.
+
+        do_create_user(email, 'password', mit_realm, 'full_name', 'short_name')
+
+        with self.assertRaisesRegex(CommandError, "server contains multiple users with that email"):
+            self.command.get_user(email, None)
 
     def test_get_user_profile_by_email(self) -> None:
         user_profile = self.example_user("hamlet")
