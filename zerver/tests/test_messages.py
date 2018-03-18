@@ -34,6 +34,7 @@ from zerver.lib.message import (
     get_first_visible_message_id,
     update_first_visible_message_id,
     maybe_update_first_visible_message_id,
+    get_raw_unread_data,
 )
 
 from zerver.lib.test_helpers import (
@@ -753,6 +754,31 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assert_stream_message(non_ascii_stream_name, topic_name=u"hümbüǵ",
                                    content=u"hümbüǵ")
+
+    def test_get_raw_unread_data_for_huddle_messages(self) -> None:
+        users = [
+            self.example_user('hamlet'),
+            self.example_user('cordelia'),
+            self.example_user('iago'),
+            self.example_user('prospero'),
+            self.example_user('othello'),
+        ]
+
+        message1_id = self.send_huddle_message(users[0].email,
+                                               [user.email for user in users],
+                                               "test content 1")
+        message2_id = self.send_huddle_message(users[0].email,
+                                               [user.email for user in users],
+                                               "test content 2")
+
+        msg_data = get_raw_unread_data(users[1])
+
+        # both the messages are present in msg_data
+        self.assertIn(message1_id, msg_data["huddle_dict"].keys())
+        self.assertIn(message2_id, msg_data["huddle_dict"].keys())
+
+        # only these two messages are present in msg_data
+        self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
 
 class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
