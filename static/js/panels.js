@@ -40,14 +40,17 @@ exports.open = function ($process) {
         // event show the banners. This prevents trying to access things that
         // don't exist like `Notification.permission`.
         !util.is_mobile() &&
-        // if the user said to never show banner on this computer again, it will
-        // be stored as `true` so we want to negate that.
-        !ls.get("dontAskForNotifications") &&
         // if permission has not been granted yet.
         !notifications.granted_desktop_notifications_permission() &&
         // if permission is allowed to be requested (e.g. not in "denied" state).
         notifications.permission_state() !== "denied"
     );
+
+    if (localstorage.supported()) {
+        // if the user said to never show banner on this computer again, it will
+        // be stored as `true` so we want to negate that.
+        should_show_notifications = should_show_notifications && !ls.get("dontAskForNotifications");
+    }
 
     if (should_show_notifications) {
         $process.show();
