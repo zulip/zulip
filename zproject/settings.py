@@ -202,6 +202,10 @@ DEFAULT_SETTINGS = {
 
     # Two Factor Authentication is not yet implementation-complete
     'TWO_FACTOR_AUTHENTICATION_ENABLED': False,
+
+    # This is used to send all hotspots for convenient manual testing
+    # in development mode.
+    'ALWAYS_SEND_ALL_HOTSPOTS': False,
 }
 
 # These settings are not documented in prod_settings_template.py.

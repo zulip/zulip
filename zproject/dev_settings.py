@@ -85,3 +85,6 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
+# Set this True to send all hotspots in development
+ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
