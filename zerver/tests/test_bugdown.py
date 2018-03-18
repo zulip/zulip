@@ -24,6 +24,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib import mdiff
+from zerver.lib.tex import render_tex
 from zerver.models import (
     realm_in_local_realm_filters_cache,
     flush_per_request_caches,
@@ -215,6 +216,12 @@ class BugdownMiscTest(ZulipTestCase):
         user = mention_data.get_user('king hamLET')
         assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
+
+    def test_invalid_katex_path(self) -> None:
+        with self.settings(STATIC_ROOT="/invalid/path"):
+            with mock.patch('logging.error') as mock_logger:
+                render_tex("random text")
+                mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
 class BugdownTest(ZulipTestCase):
     def assertEqual(self, first: Any, second: Any, msg: Text = "") -> None:
