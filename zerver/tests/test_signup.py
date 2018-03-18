@@ -136,6 +136,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
         self.send_stream_message(self.example_email('hamlet'), streams[0].name, "test")
         add_new_user_history(user_profile, streams)
 
+class InitialPasswordTest(ZulipTestCase):
+    def test_none_initial_password_salt(self) -> None:
+        with self.settings(INITIAL_PASSWORD_SALT=None):
+            self.assertIsNone(initial_password('test@test.com'))
+
 class PasswordResetTest(ZulipTestCase):
     """
     Log in, reset password, log out, log in with new password.
