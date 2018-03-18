@@ -46,9 +46,9 @@ with open(CODEPOINT_TO_NAME_PATH) as fp:
     codepoint_to_name = ujson.load(fp)
 
 def emoji_name_to_emoji_code(realm: Realm, emoji_name: Text) -> Tuple[Text, Text]:
-    realm_emojis = realm.get_emoji()
+    realm_emojis = realm.get_active_emoji()
     realm_emoji = realm_emojis.get(emoji_name)
-    if realm_emoji is not None and not realm_emoji['deactivated']:
+    if realm_emoji is not None:
         return str(realm_emojis[emoji_name]['id']), Reaction.REALM_EMOJI
     if emoji_name == 'zulip':
         return emoji_name, Reaction.ZULIP_EXTRA_EMOJI
