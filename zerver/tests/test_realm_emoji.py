@@ -2,7 +2,8 @@
 
 import mock
 
-from zerver.lib.actions import get_realm, check_add_realm_emoji
+from zerver.lib.actions import do_create_realm, do_create_user, \
+    do_remove_realm_emoji, get_realm, check_add_realm_emoji
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import get_test_image_file, get_user
 from zerver.models import Realm, RealmEmoji, UserProfile
@@ -246,3 +247,36 @@ class RealmEmojiTest(ZulipTestCase):
                 emoji_data = {'f1': fp1}
                 result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_error(result, "Image file upload failed.")
+
+    def test_check_admin_realm_emoji(self) -> None:
+        # Test that an user A is able to remove a realm emoji uploaded by him
+        # and having same name as a deactivated realm emoji uploaded by some
+        # other user B.
+        emoji_author_1 = self.example_user('cordelia')
+        self.create_test_emoji('test_emoji', emoji_author_1)
+        self.login(emoji_author_1.email)
+        result = self.client_delete('/json/realm/emoji/test_emoji')
+        self.assert_json_success(result)
+
+        emoji_author_2 = self.example_user('othello')
+        self.create_test_emoji('test_emoji', emoji_author_2)
+        self.login(emoji_author_2.email)
+        result = self.client_delete('/json/realm/emoji/test_emoji')
+        self.assert_json_success(result)
+
+    def test_check_admin_different_realm_emoji(self) -> None:
+        # Test that two different realm emojis in two different realms but
+        # having same name can be administered independently.
+        realm_1 = do_create_realm('test_realm', 'test_realm')
+        emoji_author_1 = do_create_user('abc@example.com',
+                                        password='abc',
+                                        realm=realm_1,
+                                        full_name='abc',
+                                        short_name='abc')
+        self.create_test_emoji('test_emoji', emoji_author_1)
+
+        emoji_author_2 = self.example_user('othello')
+        self.create_test_emoji('test_emoji', emoji_author_2)
+        self.login(emoji_author_2.email)
+        result = self.client_delete('/json/realm/emoji/test_emoji')
+        self.assert_json_success(result)
