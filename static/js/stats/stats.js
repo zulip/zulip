@@ -686,20 +686,72 @@ function populate_number_of_users(data) {
 
     var text = end_dates.map(format_date);
 
-    var trace = {
-        x: end_dates,
-        y: data.realm.human,
-        type: 'scatter',
-        name: "Active users",
-        hoverinfo: 'none',
-        text: text,
-        visible: true,
-    };
+    // Helper function
+    function make_traces(values, type) {
+        return {
+            x: end_dates,
+            y: values,
+            type: type,
+            name: i18n.t("Active users"),
+            hoverinfo: 'none',
+            text: text,
+            visible: true,
+        };
+    }
 
-    $('#id_number_of_users > div').removeClass("spinner");
+    var _1day_actives_trace = make_traces(data.realm._1day_actives, 'bar');
+    var _15day_actives_trace = make_traces(data.realm._15day_actives, 'scatter');
+    var total_users_traces = make_traces(data.realm.total_users, 'scatter');
 
-    Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
+    // Functions to draw and interact with the plot
 
+    // We need to redraw plot entirely if switching from (the cumulative) line
+    // graph to any bar graph, since otherwise the rangeselector shows both (plotly bug)
+    var clicked_cumulative = false;
+
+    function draw_or_update_plot(traces, initial_draw) {
+        $('#1day_active_button, #15day_active_button, #total_button').removeClass("selected");
+        $('#id_number_of_users > div').removeClass("spinner");
+        if (clicked_cumulative || initial_draw) {
+            Plotly.newPlot('id_number_of_users',
+                            [traces], layout, {displayModeBar: false});
+        } else {
+            Plotly.deleteTraces('id_number_of_users', [0]);
+            Plotly.addTraces('id_number_of_users', [traces]);
+            Plotly.relayout('id_number_of_users', layout);
+        }
+    }
+
+    // Click handlers for aggregation buttons
+    $('#1day_active_button').click(function () {
+        draw_or_update_plot(_1day_actives_trace, false);
+        $(this).addClass("selected");
+        clicked_cumulative = false;
+    });
+
+    $('#15day_active_button').click(function () {
+        clicked_cumulative = false;
+        draw_or_update_plot(_15day_actives_trace, false);
+        $(this).addClass("selected");
+        clicked_cumulative = false;
+    });
+
+    $('#total_button').click(function () {
+        clicked_cumulative = false;
+        draw_or_update_plot(total_users_traces, false);
+        $(this).addClass("selected");
+        clicked_cumulative = true;
+    });
+
+    // Initial drawing of plot
+    if (data.realm._15day_actives.length < 12) {
+        draw_or_update_plot(_1day_actives_trace, true);
+        $('#1day_active_button').addClass("selected");
+    } else {
+        draw_or_update_plot(_15day_actives_trace, true);
+        $('#15day_active_button').addClass("selected");
+    }
+    // Hover handler
     document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
         $("#users_hover_info").show();
         $("#users_hover_date").text(data.points[0].data.text[data.points[0].pointNumber]);

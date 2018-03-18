@@ -50,7 +50,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
-        subgroup_to_label = {None: 'human'}  # type: Dict[Optional[str], str]
+        subgroup_to_label = {None: '_15day_actives'}  # type: Dict[Optional[str], str]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
@@ -101,11 +101,19 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
     end_times = time_range(start, end, stat.frequency, min_length)
-    data = {'end_times': end_times, 'frequency': stat.frequency}
+    data = {'end_times': end_times, 'frequency': stat.frequency}  # type: Dict[Any, Any]
     for table in tables:
         if table == RealmCount:
             data['realm'] = get_time_series_by_subgroup(
                 stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
+            # HACK: to add daily actives
+            if stat == COUNT_STATS['realm_active_humans::day']:
+                data['realm'].update(get_time_series_by_subgroup(
+                    COUNT_STATS['1day_actives::day'], RealmCount, realm.id, end_times,
+                    {None: '_1day_actives'}, include_empty_subgroups))
+                data['realm'].update(get_time_series_by_subgroup(
+                    COUNT_STATS['active_users_audit:is_bot:day'], RealmCount, realm.id, end_times,
+                    {None: 'total_users'}, include_empty_subgroups))
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
                 stat, UserCount, user_profile.id, end_times, subgroup_to_label, include_empty_subgroups)

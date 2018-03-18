@@ -85,6 +85,22 @@ class Command(BaseCommand):
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
 
+        stat = COUNT_STATS['1day_actives::day']
+        _1day_active_data = {
+            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, _1day_active_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        _15day_active_data = {
+            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
+        }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, _15day_active_data, RealmCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
         stat = COUNT_STATS['messages_sent:is_bot:hour']
         user_data = {'false': self.generate_fixture_data(
             stat, 2, 1, 1.5, .6, 8, holiday_rate=.1)}  # type: Mapping[Optional[str], List[int]]
