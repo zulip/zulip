@@ -116,15 +116,6 @@
                     </div>
                 </div>
             </form>
-
-            <form class="deactivate_account grid">
-                <div class="input-group">
-                    <label for="" class="inline-block"></label>
-                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
-                        {{t 'Deactivate account' }}
-                    </button>
-                </div>
-            </form>
         </div>
 
         <div class="inline-block user-avatar-section">
@@ -216,6 +207,15 @@
             <div id="user_api_key_error text-error">
             </div>
         </div>
-
+        <div class="inline-block">
+            <h3>{{t "Deactivate account" }}</h3>
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
