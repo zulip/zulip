@@ -259,6 +259,11 @@ ul.remind_me_popover .remind_icon {
     padding: 0;
 }
 
+.popover-right-chevron {
+    margin-left: 10px;
+    margin-right: -10px !important;
+}
+
 @media (max-width: 768px) {
     .message-info-popover {
         display: flex !important;
