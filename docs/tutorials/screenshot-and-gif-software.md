@@ -34,13 +34,17 @@ to checkout your branch.
 
 ### macOS
 - [GIPHY](https://giphy.com/apps/giphycapture)
-- [GIF Brewery](http://gifbrewery.com/)
+- [CloudApp](https://www.getcloudapp.com)
+- [GIF Brewery](http://gifbrewery.com)
+- [Kap](https://getkap.co)
+- [Gifski](https://sindresorhus.com/gifski)]
 - [Gyazo GIF](https://gyazo.com/en)
 
 ### Windows
-- [ScreenToGif](http://www.screentogif.com/)
+- [ScreenToGif](http://www.screentogif.com)
 - [Gyazo GIF](https://gyazo.com/en)
+- [Monosnap](https://www.monosnap.com/welcome)
 
 ### Linux
-- [SilentCast](https://github.com/colinkeenan/silentcast)
 - [Peek](https://github.com/phw/peek)
+- [SilentCast](https://github.com/colinkeenan/silentcast)
