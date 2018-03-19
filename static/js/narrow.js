@@ -191,6 +191,7 @@ exports.activate = function (raw_operators, opts) {
                                                          use_closest: true,
                                                          force_rerender: true,
                                                         });
+            message_viewport.scrolling.update_last_position();
 
             if (preserve_pre_narrowing_screen_position) {
                 // Scroll so that the selected message is in the same
@@ -496,6 +497,7 @@ exports.deactivate = function () {
             message_id_to_select = current_msg_list.selected_id();
         }
         current_msg_list.select_id(message_id_to_select, select_opts);
+        message_viewport.scrolling.update_last_position();
     }
 
     compose_fade.update_message_list();
@@ -587,6 +589,7 @@ function pick_empty_narrow_banner() {
 exports.show_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
+    message_viewport.scrolling.update_last_position();
 };
 
 exports.hide_empty_narrow_message = function () {

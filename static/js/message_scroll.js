@@ -60,17 +60,31 @@ exports.scroll_finished = function () {
 };
 
 var scroll_timer;
-function scroll_finish() {
+function scroll_finish(opts) {
     actively_scrolling = true;
     clearTimeout(scroll_timer);
-    scroll_timer = setTimeout(exports.scroll_finished, 100);
+
+    function finish() {
+        exports.scroll_finished(opts);
+    }
+
+    // TODO: consider removing the 100ms timeout here, since
+    //       we are already on a 50ms throttle
+    scroll_timer = setTimeout(finish, 100);
 }
 
 exports.initialize = function () {
-    message_viewport.message_pane.scroll($.throttle(50, function () {
+    function on_scroll_callback(opts) {
         unread_ops.process_visible();
-        scroll_finish();
-    }));
+        scroll_finish({
+            moving_down: opts.moving_down,
+        });
+    }
+
+    message_viewport.scrolling.set_callback({
+        throttle_ms: 50,
+        callback: on_scroll_callback,
+    });
 };
 
 

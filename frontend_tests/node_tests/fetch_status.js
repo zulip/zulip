@@ -25,6 +25,36 @@ function blocked_older() {
 (function test_basics() {
     reset();
 
+    fetch_status.start_initial_narrow();
+
+    blocked_newer();
+    blocked_older();
+
+    fetch_status.finish_initial_narrow({
+        found_oldest: true,
+        found_newest: true,
+    });
+
+    blocked_newer();
+    blocked_older();
+
+    reset();
+
+    fetch_status.start_initial_narrow();
+
+    blocked_newer();
+    blocked_older();
+
+    fetch_status.finish_initial_narrow({
+        found_oldest: false,
+        found_newest: false,
+    });
+
+    can_load_older();
+    can_load_newer();
+
+    reset();
+
     can_load_older();
 
     fetch_status.start_older_batch();

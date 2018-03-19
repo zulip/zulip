@@ -7,6 +7,14 @@ zrequire('Filter', 'js/filter');
 
 zrequire('narrow');
 
+var noop = function () {};
+
+set_global('message_viewport', {
+    scrolling: {
+        update_last_position: noop,
+    },
+});
+
 function set_filter(operators) {
     operators = _.map(operators, function (op) {
         return {operator: op[0], operand: op[1]};
