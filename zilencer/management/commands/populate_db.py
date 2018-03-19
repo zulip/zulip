@@ -249,27 +249,26 @@ class Command(BaseCommand):
             Subscription.objects.bulk_create(subscriptions_to_add)
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
-            if not options['test_suite']:
-                # Create custom profile field data
-                phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
-                                                                  CustomProfileField.SHORT_TEXT)
-                biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
-                                                               CustomProfileField.LONG_TEXT)
-                favorite_integer = try_add_realm_custom_profile_field(zulip_realm, "Favorite integer",
-                                                                      CustomProfileField.INTEGER)
+            # Create custom profile field data
+            phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
+                                                              CustomProfileField.SHORT_TEXT)
+            biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
+                                                           CustomProfileField.LONG_TEXT)
+            favorite_integer = try_add_realm_custom_profile_field(zulip_realm, "Favorite integer",
+                                                                  CustomProfileField.INTEGER)
 
-                # Fill in values for Iago and Hamlet
-                hamlet = get_user("hamlet@zulip.com", zulip_realm)
-                do_update_user_custom_profile_data(iago, [
-                    {"id": phone_number.id, "value": "+1-234-567-8901"},
-                    {"id": biography.id, "value": "Betrayer of Othello."},
-                    {"id": favorite_integer.id, "value": 17},
-                ])
-                do_update_user_custom_profile_data(hamlet, [
-                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
-                    {"id": biography.id, "value": "Prince of Denmark, and other things!"},
-                    {"id": favorite_integer.id, "value": 12},
-                ])
+            # Fill in values for Iago and Hamlet
+            hamlet = get_user("hamlet@zulip.com", zulip_realm)
+            do_update_user_custom_profile_data(iago, [
+                {"id": phone_number.id, "value": "+1-234-567-8901"},
+                {"id": biography.id, "value": "Betrayer of Othello."},
+                {"id": favorite_integer.id, "value": 17},
+            ])
+            do_update_user_custom_profile_data(hamlet, [
+                {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                {"id": biography.id, "value": "Prince of Denmark, and other things!"},
+                {"id": favorite_integer.id, "value": 12},
+            ])
         else:
             zulip_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
