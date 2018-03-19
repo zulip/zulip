@@ -168,6 +168,7 @@ zrequire('marked', 'third/marked/lib/marked');
     people.add(george);
 
     stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
+    stream_data.update_calculated_fields(sub);
     assert(stream_data.user_is_subscribed('Rome', 'FRED@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'fred@zulip.com'));
     assert(stream_data.user_is_subscribed('Rome', 'george@zulip.com'));
@@ -247,8 +248,17 @@ zrequire('marked', 'third/marked/lib/marked');
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
+    stream_data.update_calculated_fields(sub);
     ok = stream_data.add_subscriber('Rome', brutus.user_id);
     assert(ok);
+    assert.equal(stream_data.user_is_subscribed('Rome', email), true);
+    stream_data.remove_subscriber('Rome', brutus.user_id);
+    assert.equal(stream_data.user_is_subscribed('Rome', email), false);
+    stream_data.add_subscriber('Rome', brutus.user_id);
+    assert.equal(stream_data.user_is_subscribed('Rome', email), true);
+
+    sub.invite_only = true;
+    stream_data.update_calculated_fields(sub);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
     stream_data.remove_subscriber('Rome', brutus.user_id);
     assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
