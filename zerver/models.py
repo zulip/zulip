@@ -271,7 +271,9 @@ class Realm(models.Model):
 
     def get_active_users(self) -> Sequence['UserProfile']:
         # TODO: Change return type to QuerySet[UserProfile]
-        return UserProfile.objects.filter(realm=self, is_active=True).select_related()
+        return UserProfile.objects.filter(
+            realm=self,
+            is_active=True).exclude(bot_type=UserProfile.SYSTEM_BOT).select_related()
 
     def get_bot_domain(self) -> str:
         # Remove the port. Mainly needed for development environment.
@@ -567,12 +569,18 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     embedded_bots queue and then handled by a QueueProcessingWorker.
     """
     EMBEDDED_BOT = 4
+    """
+    System bots are used by zulip to send automatted messages to users.
+    (eg. deliver reminders)
+    """
+    SYSTEM_BOT = 5
 
     BOT_TYPES = {
         DEFAULT_BOT: 'Generic bot',
         INCOMING_WEBHOOK_BOT: 'Incoming webhook',
         OUTGOING_WEBHOOK_BOT: 'Outgoing webhook',
         EMBEDDED_BOT: 'Embedded bot',
+        SYSTEM_BOT: 'System bot',
     }
 
     SERVICE_BOT_TYPES = [
@@ -1494,19 +1502,22 @@ def get_system_bot(email: Text) -> UserProfile:
 def get_realm_user_dicts(realm_id: int) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(
         realm_id=realm_id,
-    ).values(*realm_user_dict_fields)
+    ).exclude(bot_type=UserProfile.SYSTEM_BOT).values(*realm_user_dict_fields)
 
 @cache_with_key(active_user_ids_cache_key, timeout=3600*24*7)
 def active_user_ids(realm_id: int) -> List[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
         is_active=True
-    ).values_list('id', flat=True)
+    ).exclude(bot_type=UserProfile.SYSTEM_BOT).values_list('id', flat=True)
     return list(query)
 
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
-    return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
+    return UserProfile.objects.filter(
+        realm=realm,
+        is_bot=True
+    ).exclude(bot_type=UserProfile.SYSTEM_BOT).values(*bot_dict_fields)
 
 def is_cross_realm_bot_email(email: Text) -> bool:
     return email.lower() in settings.CROSS_REALM_BOT_EMAILS
