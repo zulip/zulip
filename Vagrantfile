@@ -62,7 +62,9 @@ end
 # atlas.hashicorp.com, which means that removal broke the fetching and
 # updating of boxes (since the old URL doesn't work).  See
 # https://github.com/hashicorp/vagrant/issues/9442
-Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+if Vagrant::DEFAULT_SERVER_URL == "atlas.hashicorp.com"
+  Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
