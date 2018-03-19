@@ -150,6 +150,10 @@ exports.set_color = function (stream_id, color) {
 };
 
 exports.rerender_subscribers_count = function (sub, just_subscribed) {
+    if (!overlays.streams_open()) {
+        // If the streams overlay isn't open, we don't need to rerender anything.
+        return;
+    }
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
     if (!sub.can_access_subscribers || (just_subscribed && sub.invite_only)) {
