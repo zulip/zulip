@@ -79,7 +79,7 @@ If your client hasn't automatically configured a remote for zulip/zulip, you'll
 need to with:
 
 ```
-$ git remote add upstream https://github.com/zulip/zulip.git
+$ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 Finally, confirm that the new remote repository, upstream, has been configured:
