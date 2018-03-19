@@ -191,6 +191,19 @@ export SKIP_VENV_SHELL_WARNING=1
 # message after a successful run.
 set +x
 
+# Check if the zulip directory is writable
+if [ ! -w /srv/zulip ]; then
+    echo "The vagrant user is unable to write to the zulip directory."
+    echo "To fix this, run the following commands on the host machine:"
+    # sudo is required since our uid is not 1000
+    echo '    vagrant halt -f'
+    echo '    rm -rf /PATH/TO/ZULIP/CLONE/.vagrant'
+    echo '    sudo chown -R 1000:$(whoami) /PATH/TO/ZULIP/CLONE'
+    echo "Replace /PATH/TO/ZULIP/CLONE with the path to where zulip code is cloned."
+    echo "You can resume setting up your vagrant environment by running:"
+    echo "    vagrant up"
+    exit 1
+fi
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision
