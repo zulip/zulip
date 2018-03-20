@@ -35,6 +35,23 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+function construct_copy_div(div, start_id, end_id) {
+    for (var row = current_msg_list.get_row(start_id);
+         rows.id(row) <= end_id;
+         row = rows.next_visible(row)) {
+        if (row.prev().hasClass("message_header")) {
+            var content = $('<div>').text(row.prev().text()
+                                        .replace(/\s+/g, " ")
+                                        .replace(/^\s/, "").replace(/\s$/, ""));
+            div.append($('<p>').append($('<strong>').text(content.text())));
+        }
+        var message = current_msg_list.get(rows.id(row));
+        var message_firstp = $(message.content).slice(0, 1);
+        message_firstp.prepend(message.sender_full_name + ": ");
+        div.append(message_firstp);
+        div.append($(message.content).slice(1));
+    }
+}
 
 function copy_handler() {
     var selection = window.getSelection();
@@ -46,13 +63,10 @@ function copy_handler() {
     var initial_end_tr;
     var start_id;
     var end_id;
-    var row;
-    var message;
     var start_data;
     var end_data;
     var skip_same_td_check = false;
     var div = $('<div>');
-    var content;
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -96,22 +110,8 @@ function copy_handler() {
             return;
         }
 
-            // Construct a div for what we want to copy (div)
-        for (row = current_msg_list.get_row(start_id);
-             rows.id(row) <= end_id;
-             row = rows.next_visible(row)) {
-             if (row.prev().hasClass("message_header")) {
-                content = $('<div>').text(row.prev().text()
-                                            .replace(/\s+/g, " ")
-                                            .replace(/^\s/, "").replace(/\s$/, ""));
-                div.append($('<p>').append($('<strong>').text(content.text())));
-            }
-            message = current_msg_list.get(rows.id(row));
-            var message_firstp = $(message.content).slice(0, 1);
-            message_firstp.prepend(message.sender_full_name + ": ");
-            div.append(message_firstp);
-            div.append($(message.content).slice(1));
-        }
+        // Construct a div for what we want to copy (div)
+        construct_copy_div(div, start_id, end_id);
     }
 
     if (window.bridge !== undefined) {
