@@ -91,6 +91,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 settings_org.render_signup_notifications_stream_ui(
                     page_params.realm_signup_notifications_stream_id);
             }
+
+            if (event.property === 'name' && window.electron_bridge !== undefined) {
+                window.electron_bridge.send_event('realm_name', event.value);
+            }
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
