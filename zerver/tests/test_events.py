@@ -911,6 +911,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('custom_profile_fields')),
             ('fields', check_list(check_dict_only([
+                ('id', check_int),
                 ('type', check_int),
                 ('name', check_string),
             ]))),
