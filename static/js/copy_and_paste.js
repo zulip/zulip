@@ -35,15 +35,20 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+function construct_recipient_header(message_row) {
+    var message_header_content = rows.get_message_recipient_header(message_row)
+                                     .text()
+                                     .replace(/\s+/g, " ")
+                                     .replace(/^\s/, "").replace(/\s$/, "");
+    return $('<p>').append($('<strong>').text(message_header_content));
+}
+
 function construct_copy_div(div, start_id, end_id) {
     for (var row = current_msg_list.get_row(start_id);
          rows.id(row) <= end_id;
          row = rows.next_visible(row)) {
         if (row.prev().hasClass("message_header")) {
-            var content = $('<div>').text(row.prev().text()
-                                        .replace(/\s+/g, " ")
-                                        .replace(/^\s/, "").replace(/\s$/, ""));
-            div.append($('<p>').append($('<strong>').text(content.text())));
+            div.append(construct_recipient_header(row));
         }
         var message = current_msg_list.get(rows.id(row));
         var message_firstp = $(message.content).slice(0, 1);
