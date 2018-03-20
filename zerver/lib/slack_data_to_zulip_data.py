@@ -805,6 +805,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
     '.png' and '.original'
     """
     logging.info('######### GETTING AVATARS #########\n')
+    logging.info('DOWNLOADING AVATARS .......\n')
     avatar_original_list = []
     for avatar in avatar_list:
         avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
@@ -841,6 +842,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[Z
     This function gets the uploads and saves it in the realm's upload directory
     """
     logging.info('######### GETTING ATTACHMENTS #########\n')
+    logging.info('DOWNLOADING ATTACHMENTS .......\n')
     for upload in upload_list:
         upload_url = upload['path']
         upload_s3_path = upload['s3_path']
