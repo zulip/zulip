@@ -428,6 +428,8 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         sub.color = stream_color.pick_color(used_colors);
     }
 
+    exports.update_calculated_fields(sub);
+
     exports.add_sub(stream_name, sub);
 
     return sub;
