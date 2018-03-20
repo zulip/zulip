@@ -457,6 +457,10 @@ exports.initialize = function () {
         zoom_out: zoom_out,
     });
 
+    // Indirectly calling `stream_data.update_calculated_fields` for each stream
+    // to update attributes like `sub.can_access_subscribers`.
+    stream_data.get_streams_for_settings_page();
+
     $(document).on('subscription_add_done.zulip', function (event) {
         exports.create_sidebar_row(event.sub);
         exports.build_stream_list();

@@ -250,7 +250,10 @@ function initialize_stream_data() {
 
     assert(!$('<devel sidebar row html>').hasClass('active-filter'));
 
+    stream_data.get_streams_for_settings_page = noop;
+
     stream_list.initialize();
+
 
     var filter;
 
