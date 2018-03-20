@@ -1303,8 +1303,9 @@ if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
-# Used for test_logging_handlers
-LOGGING_NOT_DISABLED = True
+
+# This is disabled in a few tests.
+LOGGING_ENABLED = True
 
 DEFAULT_ZULIP_HANDLERS = (
     (['zulip_admins'] if ERROR_REPORTING else []) +
