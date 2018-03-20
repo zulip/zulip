@@ -217,8 +217,13 @@ class TornadoQueueClient(SimpleQueueClient):
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
-        self.connection.channel(
-            on_open_callback = self._on_channel_open)
+        try:
+            self.connection.channel(
+                on_open_callback = self._on_channel_open)
+        except pika.exceptions.ConnectionClosed:
+            # The connection didn't stay open long enough for this code to get to it.
+            # Let _on_connection_closed deal with trying again.
+            self.log.warning("TornadoQueueClient couldn't open channel: connection already closed")
 
     def _on_channel_open(self, channel: BlockingChannel) -> None:
         self.channel = channel
