@@ -544,16 +544,8 @@ function _set_up() {
         });
     };
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-        var save_button = $(e.target);
-        var subsection_id = save_button.attr('id').replace("org-submit-", "");
-        var subsection = subsection_id.split('-').join('_');
-
-        var data = {};
-        var success_continuation;
-
+    function get_complete_data_for_subsection(subsection) {
+        var opts = {};
         if (subsection === 'msg_editing') {
             var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
             var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
@@ -570,13 +562,13 @@ function _set_up() {
                 }
             }
 
-            data = {
+            opts.data = {
                 allow_message_editing: JSON.stringify(new_allow_message_editing),
                 message_content_edit_limit_seconds:
                     JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
             };
 
-            success_continuation = function (response_data) {
+            opts.success_continuation = function (response_data) {
                 if (response_data.allow_message_editing !== undefined) {
                    // We expect message_content_edit_limit_seconds was sent in the
                    // response as well
@@ -588,6 +580,19 @@ function _set_up() {
                 }
             };
         }
+        return opts;
+    }
+
+    $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var save_button = $(e.target);
+        var subsection_id = save_button.attr('id').replace("org-submit-", "");
+        var subsection = subsection_id.split('-').join('_');
+
+        var opts = get_complete_data_for_subsection(subsection);
+        var data = _.extend({}, opts.data);
+        var success_continuation = opts.success_continuation;
 
         data = populate_data_for_request(data, org_settings[subsection]);
         exports.save_organization_settings(data, save_button, success_continuation);
