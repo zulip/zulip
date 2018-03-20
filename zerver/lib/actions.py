@@ -3605,27 +3605,10 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         stream_id = message.recipient.type_id
         event['stream_name'] = Stream.objects.get(id=stream_id).name
 
-    # Set first_rendered_content to be the oldest version of the
-    # rendered content recorded; which is the current version if the
-    # content hasn't been edited before.  Note that because one could
-    # have edited just the topic_name, not every edit history event
-    # contains a prev_rendered_content element.
-    first_rendered_content = message.rendered_content
-    if message.edit_history is not None:
-        edit_history = ujson.loads(message.edit_history)
-        for old_edit_history_event in edit_history:
-            if 'prev_rendered_content' in old_edit_history_event:
-                first_rendered_content = old_edit_history_event['prev_rendered_content']
-
     ums = UserMessage.objects.filter(message=message.id)
 
     if content is not None:
         update_user_message_flags(message, ums)
-
-        # We are turning off diff highlighting everywhere until ticket #1532 is addressed.
-        if False:
-            # Don't highlight message edit diffs on prod
-            rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
         # One could imagine checking realm.allow_edit_history here and
         # modifying the events based on that setting, but doing so
@@ -3719,6 +3702,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     event['edit_timestamp'] = datetime_to_timestamp(message.last_edit_time)
     edit_history_event['timestamp'] = event['edit_timestamp']
     if message.edit_history is not None:
+        edit_history = ujson.loads(message.edit_history)
         edit_history.insert(0, edit_history_event)
     else:
         edit_history = [edit_history_event]
