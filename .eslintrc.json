@@ -170,7 +170,8 @@
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "panels": false
+        "panels": false,
+        "PerfectScrollbar": false
     },
     "plugins": [
         "eslint-plugin-empty-returns"

@@ -942,7 +942,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap.css',
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
-                'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
+                'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
             ),
             'output_filename': 'min/common.css'
         },
@@ -991,7 +991,7 @@ JS_SPECS = {
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
-            'node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js',
+            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/sockjs/sockjs-0.3.4.js',
