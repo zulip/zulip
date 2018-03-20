@@ -596,10 +596,18 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         recipient_id = added_recipient[message['channel_name']]
         message_id = message_id_list[message_id_count]
 
+        # Process different subtypes of slack messages
         if 'subtype' in message.keys():
             subtype = message['subtype']
             if subtype in ["channel_join", "channel_leave", "channel_name"]:
                 continue
+
+            # Subtypes which have only the action in the message should
+            # be rendered with '/me' in the content initially
+            # For example "sh_room_created" has the message 'started a call'
+            # which should be displayed as '/me started a call'
+            elif subtype in ["bot_add", "sh_room_created", "me_message"]:
+                content = ('/me %s' % (content))
 
             # For attachments with slack download link
             elif subtype == "file_share" and 'files.slack.com' in message['file']['url_private']:
@@ -797,6 +805,7 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
     '.png' and '.original'
     """
     logging.info('######### GETTING AVATARS #########\n')
+    logging.info('DOWNLOADING AVATARS .......\n')
     avatar_original_list = []
     for avatar in avatar_list:
         avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
@@ -833,6 +842,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[Z
     This function gets the uploads and saves it in the realm's upload directory
     """
     logging.info('######### GETTING ATTACHMENTS #########\n')
+    logging.info('DOWNLOADING ATTACHMENTS .......\n')
     for upload in upload_list:
         upload_url = upload['path']
         upload_s3_path = upload['s3_path']
