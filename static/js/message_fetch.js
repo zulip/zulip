@@ -200,8 +200,6 @@ exports.start_backfilling_messages = function () {
 exports.initialize = function () {
     // get the initial message list
     function load_more(data) {
-        var messages = data.messages;
-
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
@@ -213,27 +211,33 @@ exports.initialize = function () {
                                      target_scroll_offset: page_params.initial_offset});
         }
 
-        // catch the user up
-        if (messages.length !== 0) {
-            var latest_id = messages[messages.length-1].id;
-            if (latest_id < page_params.max_message_id) {
-                exports.load_messages({
-                    anchor: latest_id.toFixed(),
-                    num_before: 0,
-                    num_after: consts.catch_up_batch_size,
-                    msg_list: home_msg_list,
-                    cont: load_more,
-                });
-                return;
-            }
+        home_msg_list.fetch_status.finish_newer_batch({
+            found_newest: data.found_newest,
+        });
+
+        if (data.found_newest) {
+            server_events.home_view_loaded();
+            exports.start_backfilling_messages();
+            return;
         }
 
-        server_events.home_view_loaded();
+        // If we fall through here, we need to keep fetching more data, and
+        // we'll call back to the function we're in.
+        var messages = data.messages;
+        var latest_id = messages[messages.length-1].id;
 
-        exports.start_backfilling_messages();
+        exports.load_messages({
+            anchor: latest_id.toFixed(),
+            num_before: 0,
+            num_after: consts.catch_up_batch_size,
+            msg_list: home_msg_list,
+            cont: load_more,
+        });
+
     }
 
     if (page_params.have_initial_messages) {
+        home_msg_list.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,
