@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('zerver', '0146_userprofile_message_content_in_email_notifications'),
+        ('zerver', '0149_realm_emoji_drop_unique_constraint'),
     ]
 
     operations = [

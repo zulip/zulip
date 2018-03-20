@@ -2781,7 +2781,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 33)
+        self.assert_length(queries, 34)
 
         expected_counts = dict(
             alert_words=0,

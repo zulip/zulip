@@ -4,17 +4,17 @@ var exports = {};
 
 var locked_topics = new Dict();
 
-exports.add_locked_topic = function (stream, topic) {
-    var sub_dict = locked_topics.get(stream);
+exports.add_locked_topic = function (stream_id, topic) {
+    var sub_dict = locked_topics.get(stream_id);
     if (!sub_dict) {
         sub_dict = new Dict({fold_case: true});
-        locked_topics.set(stream, sub_dict);
+        locked_topics.set(stream_id, sub_dict);
     }
     sub_dict.set(topic, true);
 };
 
-exports.remove_locked_topic = function (stream, topic) {
-    var sub_dict = locked_topics.get(stream);
+exports.remove_locked_topic = function (stream_id, topic) {
+    var sub_dict = locked_topics.get(stream_id);
     if (sub_dict) {
         sub_dict.del(topic);
     }
@@ -31,28 +31,28 @@ exports.set_locked_topics = function (topics) {
     });
 };
 
-exports.can_lock_topic = function (stream, topic) {
-    if (stream === undefined || topic === undefined) {
+exports.can_lock_topic = function (stream_id, topic) {
+    if (stream_id === undefined || topic === undefined) {
         return false;
     }
     if (!page_params.is_admin) {
         return false;
     }
-    return !exports.is_topic_locked(stream, topic);
+    return !exports.is_topic_locked(stream_id, topic);
 };
 
-exports.can_unlock_topic = function (stream, topic) {
-    if (!page_params.is_admin || stream === undefined || topic === undefined) {
+exports.can_unlock_topic = function (stream_id, topic) {
+    if (!page_params.is_admin || stream_id === undefined || topic === undefined) {
         return false;
     }
-    return !exports.can_lock_topic(stream, topic);
+    return !exports.can_lock_topic(stream_id, topic);
 };
 
-exports.is_topic_locked = function (stream, topic) {
-    if (stream === undefined || topic === undefined) {
+exports.is_topic_locked = function (stream_id, topic) {
+    if (stream_id === undefined || topic === undefined) {
         return false;
     }
-    var sub_dict = locked_topics.get(stream);
+    var sub_dict = locked_topics.get(stream_id);
     return sub_dict && sub_dict.get(topic);
 };
 
