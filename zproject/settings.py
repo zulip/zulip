@@ -1446,8 +1446,19 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
-        'pika.adapters': {  # This library is super chatty on INFO.
+        'pika.adapters': {
+            # pika is super chatty on INFO.
             'level': 'WARNING',
+            # pika spews a lot of ERROR logs when a connection fails.
+            # We reconnect automatically, so those should be treated as WARNING --
+            # write to the log for use in debugging, but no error emails/Zulips.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
+        },
+        'pika.connection': {
+            # Leave `zulip_admins` out of the handlers.  See pika.adapters above.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
         },
         'requests': {
             'level': 'WARNING',
