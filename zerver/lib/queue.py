@@ -182,10 +182,8 @@ class TornadoQueueClient(SimpleQueueClient):
         self.rabbitmq_heartbeat = None
         self._on_open_cbs = []  # type: List[Callable[[], None]]
 
-    def _connect(self, on_open_cb: Optional[Callable[[], None]]=None) -> None:
+    def _connect(self) -> None:
         self.log.info("Beginning TornadoQueueClient connection")
-        if on_open_cb is not None:
-            self._on_open_cbs.append(on_open_cb)
         self.connection = ExceptionFreeTornadoConnection(
             self._get_parameters(),
             on_open_callback = self._on_open,
