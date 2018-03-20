@@ -183,6 +183,20 @@ exports.maybe_load_older_messages = function (opts) {
     });
 };
 
+exports.start_backfilling_messages = function () {
+    // backfill more messages after the user is idle
+    $(document).idle({idle: consts.backfill_idle_time,
+                      onIdle: function () {
+                          var first_id = message_list.all.first().id;
+                          exports.load_messages({
+                              anchor: first_id,
+                              num_before: consts.backfill_batch_size,
+                              num_after: 0,
+                              msg_list: home_msg_list,
+                          });
+                      }});
+};
+
 exports.initialize = function () {
     // get the initial message list
     function load_more(data) {
@@ -216,17 +230,7 @@ exports.initialize = function () {
 
         server_events.home_view_loaded();
 
-        // backfill more messages after the user is idle
-        $(document).idle({idle: consts.backfill_idle_time,
-                          onIdle: function () {
-                              var first_id = message_list.all.first().id;
-                              exports.load_messages({
-                                  anchor: first_id,
-                                  num_before: consts.backfill_batch_size,
-                                  num_after: 0,
-                                  msg_list: home_msg_list,
-                              });
-                          }});
+        exports.start_backfilling_messages();
     }
 
     if (page_params.have_initial_messages) {
