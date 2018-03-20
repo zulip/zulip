@@ -1213,11 +1213,13 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin.
+    # 3. This is a topic-only edit and you are an admin, OR:
+    # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
     elif (content is None) and ((message.topic_name() == "(no topic)") or
-                                user_profile.is_realm_admin):
+                                user_profile.is_realm_admin or
+                                user_profile.realm.allow_community_topic_editing is True):
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
@@ -1231,6 +1233,15 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has past"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If this is not the user who
+    # sent the message, they are not the admin, and the time limit for editing
+    # topics is passed, raise an error.
+    if content is None and message.sender != user_profile and not user_profile.is_realm_admin:
+        if (timezone_now() - message.pub_date) > datetime.timedelta(
+           seconds=Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer):
             raise JsonableError(_("The time limit for editing this message has past"))
 
     if subject is None and content is None:

@@ -225,7 +225,11 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
 
 exports.set_message_offset = function viewport_set_message_offset(offset) {
     var msg = current_msg_list.selected_row();
-    exports.scrollTop(exports.scrollTop() + msg.offset().top - offset);
+    if (msg.offset() !== undefined) {
+        exports.scrollTop(exports.scrollTop() + msg.offset().top - offset);
+    } else {
+        exports.scrollTop(exports.scrollTop() - offset);
+    }
 };
 
 function make_dimen_wrapper(dimen_name, dimen_func) {

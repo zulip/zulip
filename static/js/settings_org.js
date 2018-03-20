@@ -416,6 +416,7 @@ function _set_up() {
 
     $("#id_realm_allow_message_editing").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_allow_community_topic_editing", true);
     });
 
     exports.save_organization_settings = function () {
@@ -430,12 +431,13 @@ function _set_up() {
         var status = $("#admin-realm-notifications-stream-status");
 
         var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
+        var new_allow_community_topic_editing = $("#id_realm_allow_community_topic_editing").prop("checked");
         var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
 
         // If allow_message_editing is unchecked, message_content_edit_limit_minutes
-        // is irrelevant.  Hence if allow_message_editing is unchecked, and
-        // message_content_edit_limit_minutes is poorly formed, we set the latter to
-        // a default value to prevent the server from returning an error.
+        // and allow_community_topic_editing are irrelevant.  Hence if allow_message_editing
+        // is unchecked, and message_content_edit_limit_minutes is poorly formed,
+        // we set the latter to a default value to prevent the server from returning an error.
         if (!new_allow_message_editing) {
             if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
                  compose_textarea_edit_limit_minutes) ||
@@ -451,6 +453,7 @@ function _set_up() {
             allow_message_editing: JSON.stringify(new_allow_message_editing),
             message_content_edit_limit_seconds:
                 JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
+        allow_community_topic_editing: JSON.stringify(new_allow_community_topic_editing),
         }, property_types.settings);
 
         channel.patch({
@@ -459,6 +462,7 @@ function _set_up() {
 
             success: function (response_data) {
                 $alerts.hide();
+                var success_msg;
                 if (response_data.allow_message_editing !== undefined) {
                     // We expect message_content_edit_limit_seconds was sent in the
                     // response as well
@@ -466,12 +470,25 @@ function _set_up() {
                         Math.ceil(response_data.message_content_edit_limit_seconds / 60);
                     if (response_data.allow_message_editing) {
                         if (response_data.message_content_edit_limit_seconds > 0) {
+                            success_msg = "Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.";
+                            if (response_data.allow_community_topic_editing) {
+                                success_msg += " Users can edit the topic of any message.";
+                            } else {
+                                success_msg += " Only admins can edit the topic of any message.";
+                            }
                             ui_report.success(
-                                i18n.t("Users can now edit topics for all their messages, and the content of messages which are less than __num_minutes__ minutes old.",
-                                       {num_minutes : data_message_content_edit_limit_minutes}),
+                                i18n.t(success_msg,
+                                    {num_minutes : data_message_content_edit_limit_minutes}),
                                 message_editing_status);
                         } else {
-                            ui_report.success(i18n.t("Users can now edit the content and topics of all their past messages!"), message_editing_status);
+                            success_msg = "Users can now edit the content and topics of all their past messages, and ";
+                            if (response_data.allow_community_topic_editing) {
+                                success_msg += "users can edit the topic of any message.";
+                            } else {
+                                success_msg += "only admins can edit the topic of any message.";
+
+                            }
+                            ui_report.success(i18n.t(success_msg), message_editing_status);
                         }
                     } else {
                         ui_report.success(i18n.t("Users can no longer edit their past messages!"), message_editing_status);
@@ -479,6 +496,8 @@ function _set_up() {
                     // message_content_edit_limit_seconds could have been changed earlier
                     // in this function, so update the field just in case
                     $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
+                    $("#id_realm_allow_community_topic_editing").attr("checked", response_data.allow_community_topic_editing);
+
                 }
 
                 process_response_data(response_data, 'settings');

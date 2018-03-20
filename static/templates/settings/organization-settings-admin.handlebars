@@ -40,6 +40,19 @@
                     {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
                 </div>
 
+                <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
+                    <label class="checkbox">
+                        <input type="checkbox" name="realm_allow_community_topic_editing" id="id_realm_allow_community_topic_editing"
+                               {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}}
+                               {{#if realm_allow_community_topic_editing}}checked="checked"{{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="id_realm_allow_community_topic_editing" id="id_realm_allow_community_topic_editing_label" class="inline-block"
+                        title="{{t 'If checked, users can edit the topic of any message.' }}">
+                        {{t "Users can edit the topic of any message" }}
+                    </label>
+                </div>
+
                 <div class="input-group">
                     <label class="checkbox">
                         <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"

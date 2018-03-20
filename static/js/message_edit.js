@@ -18,7 +18,7 @@ exports.editability_types = editability_types;
 
 function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-    if (!(message && message.sent_by_me)) {
+    if (!(message && (message.sent_by_me || page_params.realm_allow_community_topic_editing))) {
         return editability_types.NO;
     }
     if (message.failed_request) {
@@ -40,14 +40,20 @@ function get_editability(message, edit_limit_seconds_buffer) {
         return editability_types.NO;
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds === 0) {
+    if (page_params.realm_message_content_edit_limit_seconds === 0 && message.sent_by_me) {
         return editability_types.FULL;
     }
 
     var now = new XDate();
-    if (page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
-        now.diffSeconds(message.timestamp * 1000) > 0) {
+    if ((page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
+        now.diffSeconds(message.timestamp * 1000) > 0) && message.sent_by_me) {
         return editability_types.FULL;
+    }
+
+    // TODO: Change hardcoded value (24 hrs) to be realm setting
+    if (!message.sent_by_me && (
+        86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) <= 0)) {
+        return editability_types.NO;
     }
     // time's up!
     if (message.type === 'stream') {

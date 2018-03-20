@@ -204,22 +204,36 @@ function test_submit_settings_form(submit_form) {
     var response_data = {
         allow_message_editing: true,
         message_content_edit_limit_seconds: 210,
+        allow_community_topic_editing: true,
     };
 
     success_callback(response_data);
 
     var editing_status = $('#admin-realm-message-editing-status').val();
     assert(editing_status.indexOf('content of messages which are less than') > 0);
+    assert(editing_status.indexOf('Users can edit the topic of any message') > 0);
 
     response_data = {
         allow_message_editing: true,
         message_content_edit_limit_seconds: 0,
+        allow_community_topic_editing: true,
     };
     success_callback(response_data);
 
     assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can now edit the content and topics ' +
-                 'of all their past messages!');
+                 'translated: Users can now edit the content and topics of all their past messages, and ' +
+                 'users can edit the topic of any message.');
+
+    response_data = {
+        allow_message_editing: true,
+        message_content_edit_limit_seconds: 0,
+        allow_community_topic_editing: false,
+    };
+    success_callback(response_data);
+
+    assert.equal($('#admin-realm-message-editing-status').val(),
+                 'translated: Users can now edit the content and topics of all their past messages, and ' +
+                 'only admins can edit the topic of any message.');
 
     response_data = {
         allow_message_editing: false,
@@ -322,17 +336,23 @@ function test_upload_realm_icon(upload_realm_icon) {
 }
 
 function test_change_message_editing(change_message_editing) {
-    var parent_elem = $.create('editing-parent-stub');
+    var parent_elem1 = $.create('editing-parent-stub-1');
+    var parent_elem2 = $.create('editing-parent-stub-2');
 
-    $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem);
+    $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem1);
+    $('#id_realm_allow_community_topic_editing_label').set_parent(parent_elem2);
 
     change_message_editing.apply({checked: false});
-    assert(parent_elem.hasClass('control-label-disabled'));
+    assert(parent_elem1.hasClass('control-label-disabled'));
+    assert(parent_elem2.hasClass('control-label-disabled'));
     assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), 'disabled');
+    assert.equal($('#id_realm_allow_community_topic_editing').attr('disabled'), 'disabled');
 
     change_message_editing.apply({checked: true});
-    assert(!parent_elem.hasClass('control-label-disabled'));
+    assert(!parent_elem1.hasClass('control-label-disabled'));
+    assert(!parent_elem2.hasClass('control-label-disabled'));
     assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), false);
+    assert.equal($('#id_realm_allow_community_topic_editing').attr('disabled'), false);
 }
 
 function test_change_invite_required(change_invite_required) {
