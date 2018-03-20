@@ -173,6 +173,7 @@ exports.redraw_title = function () {
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
         window.electron_bridge.send_event('total_unread_count', new_message_count);
+        window.electron_bridge.send_event('unread_count_data', unread.get_counts());
     }
 };
 
