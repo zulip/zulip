@@ -45,7 +45,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.handler = AdminNotifyHandler()
         # Prevent the exceptions we're going to raise from being printed
         # You may want to disable this when debugging tests
-        settings.LOGGING_NOT_DISABLED = False
+        settings.LOGGING_ENABLED = False
 
         global captured_exc_info
         global captured_request
@@ -53,7 +53,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         captured_exc_info = None
 
     def tearDown(self) -> None:
-        settings.LOGGING_NOT_DISABLED = True
+        settings.LOGGING_ENABLED = True
 
     def get_admin_zulip_handler(self) -> AdminNotifyHandler:
         return [
