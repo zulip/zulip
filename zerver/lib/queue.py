@@ -183,6 +183,7 @@ class TornadoQueueClient(SimpleQueueClient):
             # TornadoConnection can process heartbeats, so enable them.
             rabbitmq_heartbeat=None)
         self._on_open_cbs = []  # type: List[Callable[[], None]]
+        self._connection_failure_count = 0
 
     def _connect(self) -> None:
         self.log.info("Beginning TornadoQueueClient connection")
@@ -202,21 +203,40 @@ class TornadoQueueClient(SimpleQueueClient):
 
     CONNECTION_RETRY_SECS = 2
 
+    # When the RabbitMQ server is restarted, it's normal for it to
+    # take a few seconds to come back; we'll retry a few times and all
+    # will be well.  So for the first few failures, we report only at
+    # "warning" level, avoiding an email to the server admin.
+    #
+    # A loss of an existing connection starts a retry loop just like a
+    # failed connection attempt, so it counts as the first failure.
+    #
+    # On an unloaded test system, a RabbitMQ restart takes about 6s,
+    # potentially causing 4 failures.  We add some headroom above that.
+    CONNECTION_FAILURES_BEFORE_NOTIFY = 10
+
     def _on_connection_open_error(self, connection: pika.connection.Connection,
                                   message: Optional[str]=None) -> None:
+        self._connection_failure_count += 1
         retry_secs = self.CONNECTION_RETRY_SECS
-        self.log.critical("TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs..."
-                          % (retry_secs,))
+        message = ("TornadoQueueClient couldn't connect to RabbitMQ, retrying in %d secs..."
+                   % (retry_secs,))
+        if self._connection_failure_count > self.CONNECTION_FAILURES_BEFORE_NOTIFY:
+            self.log.critical(message)
+        else:
+            self.log.warning(message)
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_connection_closed(self, connection: pika.connection.Connection,
                               reply_code: int, reply_text: str) -> None:
+        self._connection_failure_count = 1
         retry_secs = self.CONNECTION_RETRY_SECS
         self.log.warning("TornadoQueueClient lost connection to RabbitMQ, reconnecting in %d secs..."
                          % (retry_secs,))
         ioloop.IOLoop.instance().call_later(retry_secs, self._reconnect)
 
     def _on_open(self, connection: pika.connection.Connection) -> None:
+        self._connection_failure_count = 0
         try:
             self.connection.channel(
                 on_open_callback = self._on_channel_open)
