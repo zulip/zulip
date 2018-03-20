@@ -31,8 +31,7 @@ exports.set_focused_recipient = function (msg_type) {
     } else {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_store.add_message_metadata()).
-        var reply_to = util.normalize_recipients(
-                $('#private_message_recipient').val());
+        var reply_to = util.normalize_recipients(compose_state.recipient());
         focused_recipient.reply_to = reply_to;
         focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
     }
