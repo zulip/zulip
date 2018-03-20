@@ -3622,8 +3622,7 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
     if content is not None:
         update_user_message_flags(message, ums)
 
-        # We are turning off diff highlighting everywhere until ticket #1532 is addressed.
-        if False:
+        if not settings.DEPLOYED or settings.STAGING_DEPLOYED:
             # Don't highlight message edit diffs on prod
             rendered_content = highlight_html_differences(first_rendered_content, rendered_content)
 
