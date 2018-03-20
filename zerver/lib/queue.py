@@ -23,13 +23,15 @@ Consumer = Callable[[BlockingChannel, Basic.Deliver, pika.BasicProperties, str],
 # interface for external files to put things into queues and take them
 # out from bots without having to import pika code all over our codebase.
 class SimpleQueueClient:
-    def __init__(self) -> None:
+    def __init__(self,
+                 # Disable RabbitMQ heartbeats by default because BlockingConnection can't process them
+                 rabbitmq_heartbeat: Optional[int] = 0,
+                 ) -> None:
         self.log = logging.getLogger('zulip.queue')
         self.queues = set()  # type: Set[str]
         self.channel = None  # type: Optional[BlockingChannel]
         self.consumers = defaultdict(set)  # type: Dict[str, Set[Consumer]]
-        # Disable RabbitMQ heartbeats since BlockingConnection can't process them
-        self.rabbitmq_heartbeat = 0  # type: Optional[int]
+        self.rabbitmq_heartbeat = rabbitmq_heartbeat
         self._connect()
 
     def _connect(self) -> None:
@@ -177,9 +179,9 @@ class TornadoQueueClient(SimpleQueueClient):
     # Based on:
     # https://pika.readthedocs.io/en/0.9.8/examples/asynchronous_consumer_example.html
     def __init__(self) -> None:
-        super().__init__()
-        # Enable rabbitmq heartbeat since TornadoConection can process them
-        self.rabbitmq_heartbeat = None
+        super().__init__(
+            # TornadoConnection can process heartbeats, so enable them.
+            rabbitmq_heartbeat=None)
         self._on_open_cbs = []  # type: List[Callable[[], None]]
 
     def _connect(self) -> None:
