@@ -568,6 +568,18 @@ function pick_empty_narrow_banner() {
         // You are narrowed to empty search results.
         return $("#empty_search_narrow_message");
     } else if (first_operator === "pm-with") {
+        var valid_op = false;
+        first_operand.split(',').forEach(function (op) {
+            if (people.get_by_email(op)) {
+                valid_op = true;
+            }
+        });
+        if (!valid_op) {
+            if (first_operand.indexOf(',') === -1) {
+                return $("#non_existing_user");
+            }
+            return $("#non_existing_users");
+        }
         if (first_operand.indexOf(',') === -1) {
             // You have no private messages with this person
             return $("#empty_narrow_private_message");
