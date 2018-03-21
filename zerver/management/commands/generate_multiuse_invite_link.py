@@ -3,7 +3,7 @@ from argparse import ArgumentParser
 from typing import Any, List, Text
 
 from confirmation.models import Confirmation, create_confirmation_link
-from zerver.lib.actions import create_stream_if_needed, do_create_multiuse_invite_link
+from zerver.lib.actions import ensure_stream, do_create_multiuse_invite_link
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import Stream
 
@@ -35,7 +35,7 @@ class Command(ZulipBaseCommand):
         if options["streams"]:
             stream_names = set([stream.strip() for stream in options["streams"].split(",")])
             for stream_name in set(stream_names):
-                stream, _ = create_stream_if_needed(realm, stream_name)
+                stream = ensure_stream(realm, stream_name)
                 streams.append(stream)
 
         referred_by = self.get_user(options['referred_by'], realm)

@@ -5,7 +5,7 @@ from typing import Any, Dict, List
 from django.core.management.base import BaseCommand
 
 from zerver.lib.actions import bulk_add_subscriptions, \
-    create_stream_if_needed, do_add_reaction_legacy, do_change_avatar_fields, \
+    ensure_stream, do_add_reaction_legacy, do_change_avatar_fields, \
     do_create_user, do_send_messages, internal_prep_stream_message
 from zerver.lib.upload import upload_avatar_image
 from zerver.models import Message, UserProfile, get_realm
@@ -36,7 +36,7 @@ From image editing program:
 
     def add_message_formatting_conversation(self) -> None:
         realm = get_realm('zulip')
-        stream, _ = create_stream_if_needed(realm, 'zulip features')
+        stream = ensure_stream(realm, 'zulip features')
 
         UserProfile.objects.filter(email__contains='stage').delete()
         starr = do_create_user('1@stage.example.com', 'password', realm, 'Ada Starr', '')

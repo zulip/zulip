@@ -24,7 +24,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_set_realm_authentication_methods,
-    create_stream_if_needed,
+    ensure_stream,
 )
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -931,7 +931,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream, _ = create_stream_if_needed(realm, stream_name)
+            stream = ensure_stream(realm, stream_name)
             streams.append(stream)
 
         # Without the invite link, we can't create an account due to invite_required
