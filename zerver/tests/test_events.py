@@ -97,7 +97,7 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    stub_event_queue_user_events, queries_captured
+    get_test_image_file, stub_event_queue_user_events, queries_captured
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -1488,8 +1488,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"), "my_emoji",
-                                                            "https://realm.com/my_emoji"))
+        author = self.example_user('iago')
+        with get_test_image_file('img.png') as img_file:
+            events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"),
+                                                                "my_emoji",
+                                                                author,
+                                                                img_file))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

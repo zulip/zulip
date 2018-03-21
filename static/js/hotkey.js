@@ -709,7 +709,12 @@ exports.process_hotkey = function (e, hotkey) {
             // Use canonical name.
             var thumbs_up_codepoint = '1f44d';
             var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_codepoint];
-            reactions.toggle_emoji_reaction(msg.id, canonical_name);
+            var reaction_info = {
+                emoji_name: canonical_name,
+                emoji_code: thumbs_up_codepoint,
+                reaction_type: 'unicode_emoji',
+            };
+            reactions.toggle_emoji_reaction(msg.id, reaction_info);
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);

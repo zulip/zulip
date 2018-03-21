@@ -65,11 +65,11 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
     # code is valid for new reactions, or not.
     if emoji_type == "realm_emoji":
         realm_emojis = realm.get_emoji()
-        realm_emoji = realm_emojis.get(emoji_name)
+        realm_emoji = realm_emojis.get(emoji_code)
         if realm_emoji is None:
             raise JsonableError(_("Invalid custom emoji."))
-        if realm_emoji["id"] != emoji_code:
-            raise JsonableError(_("Invalid custom emoji id."))
+        if realm_emoji["name"] != emoji_name:
+            raise JsonableError(_("Invalid custom emoji name."))
         if realm_emoji["deactivated"]:
             raise JsonableError(_("This custom emoji has been deactivated."))
     elif emoji_type == "zulip_extra_emoji":
@@ -101,7 +101,9 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[Text]=None
         return
 
     # Additionally, normal users can remove emoji they themselves added
-    emoji = RealmEmoji.objects.filter(name=emoji_name).first()
+    emoji = RealmEmoji.objects.filter(realm=user_profile.realm,
+                                      name=emoji_name,
+                                      deactivated=False).first()
     current_user_is_author = (emoji is not None and
                               emoji.author is not None and
                               emoji.author.id == user_profile.id)
@@ -117,6 +119,6 @@ def get_emoji_url(emoji_file_name: Text, realm_id: int) -> Text:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)
 
 
-def get_emoji_file_name(emoji_file_name: Text, emoji_name: Text) -> Text:
+def get_emoji_file_name(emoji_file_name: Text, emoji_id: int) -> Text:
     _, image_ext = os.path.splitext(emoji_file_name)
-    return ''.join((emoji_name, image_ext))
+    return ''.join((str(emoji_id), image_ext))
