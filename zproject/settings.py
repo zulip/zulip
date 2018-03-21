@@ -291,6 +291,11 @@ DEFAULT_SETTINGS.update({
     # TODO: Investigate whether this should be removed and set one way or other.
     'SAVE_FRONTEND_STACKTRACES': False,
 
+    # If True, disable rate-limiting and other filters on sending error messages
+    # to admins, and enable logging on the error-reporting itself.  Useful
+    # mainly in development.
+    'DEBUG_ERROR_REPORTING': False,
+
     # Whether to flush memcached after data migrations.  Because of
     # how we do deployments in a way that avoids reusing memcached,
     # this is disabled in production, but we need it in development.
@@ -1359,8 +1364,8 @@ LOGGING = {
         'zulip_admins': {
             'level': 'ERROR',
             'class': 'zerver.logging_handlers.AdminNotifyHandler',
-            # For manual testing of this handler, delete the `filters` line.
-            'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
+                        if not DEBUG_ERROR_REPORTING else []),
             'formatter': 'default'
         },
         'console': {

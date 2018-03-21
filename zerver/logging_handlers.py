@@ -122,6 +122,12 @@ class AdminNotifyHandler(logging.Handler):
             logging.warning(report['message'], exc_info=True)
             report['stack_trace'] = "See /var/log/zulip/errors.log"
 
+        if settings.DEBUG_ERROR_REPORTING:  # nocoverage
+            logging.warning("Reporting an error to admins...")
+            logging.warning("Reporting an error to admins: {} {} {} {} {}" .format(
+                record.levelname, report['logger_name'], report['log_module'],
+                report['message'], report['stack_trace']))
+
         try:
             if settings.STAGING_ERROR_NOTIFICATIONS:
                 # On staging, process the report directly so it can happen inside this
