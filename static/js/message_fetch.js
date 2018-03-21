@@ -148,12 +148,22 @@ exports.load_messages_for_narrow = function (opts) {
     });
 };
 
+exports.get_backfill_anchor = function (msg_list) {
+    var oldest_message_id;
+
+    if (msg_list.first() === undefined) {
+        oldest_message_id = page_params.pointer;
+    } else {
+        oldest_message_id = msg_list.first().id;
+    }
+    return oldest_message_id;
+};
+
 exports.maybe_load_older_messages = function (opts) {
     // This function gets called when you scroll to the top
     // of your window, and you want to get messages older
     // than what the browers originally fetched.
     var msg_list = opts.msg_list;
-    var oldest_message_id;
     if (!msg_list.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
@@ -161,16 +171,12 @@ exports.maybe_load_older_messages = function (opts) {
     }
     opts.show_loading();
     msg_list.fetch_status.start_older_batch();
-    if (msg_list.first() === undefined) {
-        oldest_message_id = page_params.pointer;
-    } else {
-        oldest_message_id = msg_list.first().id;
-    }
 
+    var anchor = exports.get_backfill_anchor(msg_list).toFixed();
     var batch_size = consts.backward_batch_size;
 
     exports.load_messages({
-        anchor: oldest_message_id.toFixed(),
+        anchor: anchor,
         num_before: batch_size,
         num_after: 0,
         msg_list: msg_list,
