@@ -1,4 +1,5 @@
 zrequire('muting');
+zrequire('muting_user');
 zrequire('people');
 zrequire('stream_data');
 zrequire('unread');
@@ -224,6 +225,83 @@ stream_data.get_stream_id = function () {
     assert.equal(unread.num_unread_for_stream(stream_id), 0);
 
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
+}());
+
+(function test_muting_user() {
+
+    unread.declare_bankruptcy();
+    var anybody = {
+        email: 'anybody@example.com',
+        user_id: 2,
+        full_name: 'Any Body',
+    };
+    people.add_in_realm(anybody);
+
+    muting_user.add_muted_user([anybody.user_id, anybody.full_name]);
+    var message = {
+        id: 15,
+        type: 'private',
+        display_recipient: [
+            {user_id: anybody.user_id},
+            {id: me.user_id},
+        ],
+        unread: true,
+        sender_id: 2,
+    };
+    unread.process_loaded_messages([message]);
+
+    var counts = unread.get_counts();
+    assert.equal(counts.private_message_count, 0);
+    assert.equal(counts.home_unread_messages, 0);
+
+    stream_data.is_subscribed = function () {
+        return true;
+    };
+
+    stream_data.in_home_view = function () {
+        return true;
+    };
+
+    stream_data.get_sub_by_id = function (stream_id) {
+        if (stream_id === 100) {
+            return {name: 'social'};
+        }
+    };
+
+    message = {
+        id: 9,
+        type: 'stream',
+        stream_id: 100,
+        subject: 'lunch',
+        mentioned: true,
+        mentioned_me_directly: false,
+        sender_id: 2,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message]);
+    counts = unread.get_counts();
+    assert.equal(counts.mentioned_message_count, 1);
+    assert.equal(counts.home_unread_messages, 1);
+    assert.equal(counts.stream_count.get(message.stream_id), 1);
+    unread.mark_as_read(message.id);
+
+    message = {
+        id: 11,
+        type: 'stream',
+        stream_id: 100,
+        subject: 'lunch',
+        mentioned: true,
+        mentioned_me_directly: true,
+        sender_id: 2,
+        unread: true,
+    };
+
+    unread.process_loaded_messages([message]);
+    counts = unread.get_counts();
+    assert.equal(counts.stream_count.get(message.stream_id), 0);
+    assert.equal(counts.mentioned_message_count, 0);
+    assert.equal(counts.home_unread_messages, 0);
 }());
 
 (function test_num_unread_for_topic() {

@@ -367,14 +367,16 @@ exports.process_loaded_messages = function (messages) {
         if (!message.unread) {
             return;
         }
-
         unread_messages.add(message.id);
-
-        if (message.type === 'private') {
+        var msg_id = message.sender_id;
+        var is_muted = muting_user.is_user_muted(msg_id);
+        if (message.type === 'private' &&
+                (message.display_recipient.length > 2 || !is_muted)) {
             exports.unread_pm_counter.add(message);
         }
 
-        if (message.type === 'stream') {
+        if (message.type === 'stream' &&
+                (!message.mentioned_me_directly || !is_muted)) {
             exports.unread_topic_counter.add(
                 message.stream_id,
                 message.subject,
@@ -382,7 +384,8 @@ exports.process_loaded_messages = function (messages) {
             );
         }
 
-        if (message.mentioned) {
+        if (message.mentioned &&
+                (!message.mentioned_me_directly || !is_muted)) {
             exports.unread_mentions_counter.add(message.id);
         }
     });
