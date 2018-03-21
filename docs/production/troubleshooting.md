@@ -118,6 +118,10 @@ problems and how to resolve them:
   ```
   service nginx restart
   ```
+  Note: Zulip uses nginx, therefore if a new set of certificates are
+  being generated and to replace the old certificates, the server
+  will still run the old certificates until the nginx is restarted.
+  **Restarting the Zulip server doesn't restart the nginx server.**
 
 * If your host is being port scanned by unauthorized users, you may see
   messages in `/var/log/zulip/server.log` like
