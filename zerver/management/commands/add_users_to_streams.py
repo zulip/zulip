@@ -3,7 +3,7 @@ from typing import Any
 
 from django.core.management.base import CommandParser
 
-from zerver.lib.actions import bulk_add_subscriptions, create_stream_if_needed
+from zerver.lib.actions import bulk_add_subscriptions, ensure_stream
 from zerver.lib.management import ZulipBaseCommand
 
 class Command(ZulipBaseCommand):
@@ -29,7 +29,7 @@ class Command(ZulipBaseCommand):
 
         for stream_name in set(stream_names):
             for user_profile in user_profiles:
-                stream, _ = create_stream_if_needed(realm, stream_name)
+                stream = ensure_stream(realm, stream_name)
                 _ignore, already_subscribed = bulk_add_subscriptions([stream], [user_profile])
                 was_there_already = user_profile.id in {tup[0].id for tup in already_subscribed}
                 print("%s %s to %s" % (

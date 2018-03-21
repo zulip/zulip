@@ -1950,7 +1950,7 @@ def _internal_prep_message(realm: Realm,
         raise RuntimeError("None is not a valid realm for internal_prep_message!")
 
     if addressee.is_stream():
-        stream, _ = create_stream_if_needed(realm, addressee.stream_name())
+        stream = ensure_stream(realm, addressee.stream_name())
 
     try:
         return check_message(sender, get_client("Internal"), addressee,
@@ -2981,10 +2981,10 @@ def do_create_realm(string_id: Text, name: Text, restricted_to_domain: Optional[
     realm.save()
 
     # Create stream once Realm object has been saved
-    notifications_stream, _ = create_stream_if_needed(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
+    notifications_stream = ensure_stream(realm, Realm.DEFAULT_NOTIFICATION_STREAM_NAME)
     realm.notifications_stream = notifications_stream
 
-    signup_notifications_stream, _ = create_stream_if_needed(
+    signup_notifications_stream = ensure_stream(
         realm, Realm.INITIAL_PRIVATE_STREAM_NAME, invite_only=True,
         stream_description="A private stream for core team members.")
     realm.signup_notifications_stream = signup_notifications_stream
@@ -3083,10 +3083,10 @@ def set_default_streams(realm: Realm, stream_dict: Dict[Text, Dict[Text, Any]]) 
     stream_names = []
     for name, options in stream_dict.items():
         stream_names.append(name)
-        stream, _ = create_stream_if_needed(realm,
-                                            name,
-                                            invite_only = options.get("invite_only", False),
-                                            stream_description = options.get("description", ''))
+        stream = ensure_stream(realm,
+                               name,
+                               invite_only = options.get("invite_only", False),
+                               stream_description = options.get("description", ''))
         DefaultStream.objects.create(stream=stream, realm=realm)
 
     # Always include the realm's default notifications streams, if it exists
