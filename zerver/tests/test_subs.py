@@ -849,7 +849,7 @@ class DefaultStreamTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
         stream_name = 'stream ADDED via api'
-        stream = ensure_stream(user_profile.realm, stream_name)
+        ensure_stream(user_profile.realm, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
