@@ -191,6 +191,15 @@ exports.start = function (msg_type, opts) {
     exports.expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
+
+    // If we are invoked by search and the PM recipient is empty then
+    // cancel the compose
+    if (opts.trigger === "search" && opts.message_type === "private"
+        && ! opts.private_message_recipient) {
+        exports.cancel();
+        return;
+    }
+
     // If we are invoked by a compose hotkey (c or x) or new topic button
     // or sidebar stream actions (in stream popover), do not assume that we know what
     // the message's topic or PM recipient should be.
@@ -415,7 +424,7 @@ exports.on_narrow = function (opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
-        exports.start('private');
+        exports.start('private', opts);
         return;
     }
 
