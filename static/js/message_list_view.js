@@ -597,6 +597,21 @@ MessageListView.prototype = {
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
             self._post_process_dom_messages(dom_messages.get());
+
+            // This next line is a workaround for a weird scrolling
+            // bug on Chrome.  Basically, in Chrome 64, we had a
+            // highly reproducible bug where if you hit the "End" key
+            // 5 times in a row in a `near:1` narrow (or any other
+            // narrow with enough content below to try this), the 5th
+            // time (because RENDER_WINDOW_SIZE / batch_size = 4,
+            // i.e. the first time we need to rerender to show the
+            // message "End" jumps to) would trigger an unexpected
+            // scroll, resulting in some chaotic scrolling and
+            // additional fetches (from bottom_whitespace ending up in
+            // the view).  During debugging, we found that this adding
+            // this next line seems to prevent the Chrome bug from firing.
+            message_viewport.scrollTop();
+
             table.append(rendered_groups);
             condense.condense_and_collapse(dom_messages);
         }
