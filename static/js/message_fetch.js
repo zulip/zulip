@@ -188,6 +188,9 @@ exports.do_backfill = function (opts) {
     var msg_list = opts.msg_list;
 
     msg_list.fetch_status.start_older_batch();
+    if (msg_list === home_msg_list) {
+        message_list.all.fetch_status.start_older_batch();
+    }
 
     var anchor = exports.get_backfill_anchor(msg_list).toFixed();
 
@@ -200,6 +203,11 @@ exports.do_backfill = function (opts) {
             msg_list.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
             });
+            if (msg_list === home_msg_list) {
+                message_list.all.fetch_status.finish_older_batch({
+                    found_oldest: data.found_oldest,
+                });
+            }
             if (opts.cont) {
                 opts.cont();
             }
