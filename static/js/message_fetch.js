@@ -173,22 +173,36 @@ exports.maybe_load_older_messages = function (opts) {
         // got the oldest one.
         return;
     }
+
     opts.show_loading();
+    exports.do_backfill({
+        msg_list: msg_list,
+        num_before: consts.backward_batch_size,
+        cont: function () {
+            opts.hide_loading();
+        },
+    });
+};
+
+exports.do_backfill = function (opts) {
+    var msg_list = opts.msg_list;
+
     msg_list.fetch_status.start_older_batch();
 
     var anchor = exports.get_backfill_anchor(msg_list).toFixed();
-    var batch_size = consts.backward_batch_size;
 
     exports.load_messages({
         anchor: anchor,
-        num_before: batch_size,
+        num_before: opts.num_before,
         num_after: 0,
         msg_list: msg_list,
         cont: function (data) {
-            opts.hide_loading();
             msg_list.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
             });
+            if (opts.cont) {
+                opts.cont();
+            }
         },
     });
 };
