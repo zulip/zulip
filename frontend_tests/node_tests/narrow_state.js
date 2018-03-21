@@ -148,7 +148,26 @@ function set_filter(operators) {
 
     set_filter([['pm-with', 'foo@bar.com']]);
     var pm_test = narrow_state.set_compose_defaults();
-    assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
+    assert.equal(pm_test.private_message_recipient, null);
+
+    var jack = {
+        email: 'jack@foo.com',
+        user_id: 123,
+        full_name: 'Jack',
+    };
+
+    var jill = {
+        email: 'jill@foo.com',
+        user_id: 456,
+        full_name: 'Jill',
+    };
+
+    people.add(jack);
+    people.add(jill);
+
+    set_filter([['pm-with', 'jack@foo.com,jill@foo.com']]);
+    pm_test = narrow_state.set_compose_defaults();
+    assert.equal(pm_test.private_message_recipient, 'jack@foo.com,jill@foo.com');
 
     set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
