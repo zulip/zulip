@@ -1950,7 +1950,7 @@ def _internal_prep_message(realm: Realm,
         raise RuntimeError("None is not a valid realm for internal_prep_message!")
 
     if addressee.is_stream():
-        stream = ensure_stream(realm, addressee.stream_name())
+        ensure_stream(realm, addressee.stream_name())
 
     try:
         return check_message(sender, get_client("Internal"), addressee,
