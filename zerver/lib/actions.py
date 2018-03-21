@@ -1561,6 +1561,12 @@ def create_stream_if_needed(realm: Realm,
             send_stream_creation_event(stream, realm_admin_ids)
     return stream, created
 
+def ensure_stream(realm: Realm,
+                  stream_name: Text,
+                  invite_only: bool=False,
+                  stream_description: Text="") -> Stream:
+    return create_stream_if_needed(realm, stream_name, invite_only, stream_description)[0]
+
 def create_streams_if_needed(realm: Realm,
                              stream_dicts: List[Mapping[str, Any]]) -> Tuple[List[Stream], List[Stream]]:
     """Note that stream_dict["name"] is assumed to already be stripped of
