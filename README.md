@@ -1,6 +1,5 @@
 <p align="center"> 
   <img src="./static/images/logo/zulip-icon-128x128.png" width=64/>
-  <br>
   <img src="./static/images/logo/textlogo@2x.png" width=64/>
 </p>
 
