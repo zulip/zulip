@@ -75,7 +75,14 @@ exports.handle_narrow_activated = function (filter) {
 
     var op_is = filter.operands('is');
     var op_pm = filter.operands('pm-with');
-    if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
+    var valid_op = false;
+    op_pm.forEach(function (op) {
+        if (people.get_by_email(op)) {
+            valid_op = true;
+        }
+    });
+    if (((op_is.length >= 1) && _.contains(op_is, "private")) ||
+        (op_pm.length >= 1 && valid_op)) {
         pm_list.expand(op_pm);
     } else {
         pm_list.close();
