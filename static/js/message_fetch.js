@@ -211,11 +211,8 @@ exports.start_backfilling_messages = function () {
     // backfill more messages after the user is idle
     $(document).idle({idle: consts.backfill_idle_time,
                       onIdle: function () {
-                          var first_id = message_list.all.first().id;
-                          exports.load_messages({
-                              anchor: first_id,
+                          exports.do_backfill({
                               num_before: consts.backfill_batch_size,
-                              num_after: 0,
                               msg_list: home_msg_list,
                           });
                       }});
