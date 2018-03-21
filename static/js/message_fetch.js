@@ -151,6 +151,10 @@ exports.load_messages_for_narrow = function (opts) {
 exports.get_backfill_anchor = function (msg_list) {
     var oldest_message_id;
 
+    if (msg_list === home_msg_list) {
+        msg_list = message_list.all;
+    }
+
     if (msg_list.first() === undefined) {
         oldest_message_id = page_params.pointer;
     } else {
