@@ -6,6 +6,7 @@ from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
 from zerver.decorator import statsd_increment
+from zerver.lib.mute_users import user_is_muted
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.queue import queue_json_publish
 from zerver.models import (
@@ -416,6 +417,8 @@ def handle_missedmessage_emails(user_profile_id: int,
 
     # Cancel missed-message emails for deleted messages
     messages = [um for um in messages if um.content != "(deleted)"]
+
+    messages = [m for m in messages if not user_is_muted(user_profile, get_user_profile_by_id(m.sender_id))]
 
     if not messages:
         return

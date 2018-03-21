@@ -19,6 +19,7 @@ from zerver.lib.actions import do_update_message, \
 from zerver.lib.message import access_message
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.send_email import FromAddress
+from zerver.lib.mute_users import add_user_mute
 from zerver.models import (
     get_realm,
     get_stream,
@@ -321,6 +322,46 @@ class TestMissedMessages(ZulipTestCase):
         handle_missedmessage_emails(iago.id, [{'message_id': msg_id}])
         self.assertEqual(len(mail.outbox), 0)
 
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _muted_user_message_in_personal_missed_messages(self, send_as_user: bool,
+                                                        mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+        msg_id = self.send_personal_message(self.example_email('hamlet'),
+                                            self.example_email('othello'),
+                                            'Extremely personal message! by a muted user!')
+
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        email = self.example_email('othello')
+        self.login(email)
+
+        add_user_mute(user_profile=othello,
+                      muted_user_profile=hamlet)
+
+        handle_missedmessage_emails(othello.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
+    def _muted_user_message_in_missed_stream_messages(self, send_as_user: bool,
+                                                      mock_random_token: MagicMock) -> None:
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+        msg_id = self.send_stream_message(
+            self.example_email('hamlet'), "denmark",
+            '@**Othello, the Moor of Venice** by muted user')
+
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        email = self.example_email('othello')
+        self.login(email)
+
+        add_user_mute(user_profile=othello,
+                      muted_user_profile=hamlet)
+
+        handle_missedmessage_emails(othello.id, [{'message_id': msg_id}])
+        self.assertEqual(len(mail.outbox), 0)
+
     def test_realm_name_in_notifications(self) -> None:
         # Test with realm_name_in_notifications for hamlet disabled.
         self._realm_name_in_missed_message_email_subject(False)
@@ -413,6 +454,20 @@ class TestMissedMessages(ZulipTestCase):
 
     def test_deleted_message_in_huddle_missed_stream_messages(self) -> None:
         self._deleted_message_in_huddle_missed_stream_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_muted_user_message_in_personal_missed_messages_as_user(self) -> None:
+        self._muted_user_message_in_personal_missed_messages(True)
+
+    def test_muted_user_message_in_personal_missed_messages(self) -> None:
+        self._muted_user_message_in_personal_missed_messages(False)
+
+    @override_settings(SEND_MISSED_MESSAGE_EMAILS_AS_USER=True)
+    def test_muted_user_message_in_missed_stream_messages_as_user(self) -> None:
+        self._muted_user_message_in_missed_stream_messages(True)
+
+    def test_muted_user_message_in_missed_stream_messages(self) -> None:
+        self._muted_user_message_in_missed_stream_messages(False)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def test_realm_emoji_in_missed_message(self, mock_random_token: MagicMock) -> None:
