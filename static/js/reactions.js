@@ -187,7 +187,7 @@ exports.get_add_reaction_button = function (message_id) {
 
 exports.set_reaction_count = function (reaction, count) {
     var count_element = reaction.find('.message_reaction_count');
-    count_element.html(count);
+    count_element.text(count);
 };
 
 exports.add_reaction = function (event) {

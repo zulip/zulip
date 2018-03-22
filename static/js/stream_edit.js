@@ -69,7 +69,7 @@ exports.show_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     if ($settings.find(".email-address").val().length === 0) {
         // Rerender stream email address, if not.
-        $settings.find(".email-address").html(sub.email_address);
+        $settings.find(".email-address").text(sub.email_address);
         $settings.find(".stream-email-box").show();
     }
     $settings.find(".regular_subscription_settings").addClass('in');

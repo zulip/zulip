@@ -188,6 +188,11 @@ def build_custom_checkers(by_lang):
          'description': 'Do not concatenate i18n strings'},
         {'pattern': '\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
+        {'pattern': '[.]html[(]',
+         'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|[$]error|[$][(]"<p>"[)])',
+         'exclude': ['static/js/portico', 'static/js/lightbox.js', 'static/js/ui_report.js',
+                     'frontend_tests/'],
+         'description': 'Setting HTML content with jQuery .html() can lead to XSS security bugs.  Consider .text() or using rendered_foo as a variable name if content comes from handlebars and thus is already sanitized.'},
         {'pattern': '["\']json/',
          'description': 'Relative URL for JSON route not supported by i18n'},
         # This rule is constructed with + to avoid triggering on itself
