@@ -3213,9 +3213,9 @@ i18next-parser@0.11.1:
     through2 "~2.0.3"
     vinyl "~2.0.1"
 
-i18next-xhr-backend@1.4.3:
-  version "1.4.3"
-  resolved "https://registry.yarnpkg.com/i18next-xhr-backend/-/i18next-xhr-backend-1.4.3.tgz#d72f70536a3bf6a3892261dde352bc77d708886a"
+i18next-xhr-backend@^1.5.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/i18next-xhr-backend/-/i18next-xhr-backend-1.5.1.tgz#50282610780c6a696d880dfa7f4ac1d01e8c3ad5"
 
 i18next@3.4.4:
   version "3.4.4"
@@ -3602,7 +3602,7 @@ jquery-validation@1.16.0:
   dependencies:
     jquery "^1.7 || ^2.0 || ^3.1"
 
-"jquery@^1.7 || ^2.0 || ^3.1", jquery@^3.3.1:
+jquery@3.3.1, "jquery@^1.7 || ^2.0 || ^3.1":
   version "3.3.1"
   resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.3.1.tgz#958ce29e81c9790f31be7792df5d4d95fc57fbca"
 
