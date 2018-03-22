@@ -481,37 +481,35 @@ function _set_up() {
         }
     });
 
+    function discard_subsection_changes(target) {
+        _.each(get_subsection_property_elements(target), function (elem) {
+            elem = $(elem);
+            var property_name = exports.extract_property_name(elem);
+            // Check whether the id refers to a property whose name we can't
+            // extract from element's id.
+            var property_value = property_value_element_refers(property_name);
+            if (property_value === undefined) {
+                property_value = page_params[property_name];
+            }
+
+            if (typeof property_value === 'boolean') {
+                elem.prop('checked', property_value);
+            } else if (typeof property_value === 'string' || typeof property_value === 'number') {
+                elem.val(property_value);
+            } else {
+                blueslip.error('Element refers to unknown property ' + property_name);
+            }
+            // Triggering a change event to handle fading and showing of
+            // dependent sub-settings correctly
+            elem.change();
+        });
+    }
+
     $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        var properties_elements = get_subsection_property_elements(this);
-        _.each(properties_elements, function (elem) {
-            elem = $(elem);
-            var property_name = exports.extract_property_name(elem);
-            if (typeof page_params[property_name] === 'boolean') {
-                // We trigger a click event rather than just changing
-                // the prop, because that handles dependent
-                // sub-settings correctly.
-                if (elem.prop('checked') !== page_params[property_name]) {
-                    elem.click();
-                }
-            } else if (typeof page_params[property_name] === 'string' || typeof page_params[property_name] === 'number') {
-                elem.val(page_params[property_name]);
-            } else {
-                // Check whether the id refers to a property whose name we can't
-                // extract from element's id.
-                var property_value = property_value_element_refers(property_name);
-
-                if (property_value !== undefined) {
-                    elem.val(property_value);
-                } else {
-                    blueslip.error('Element refers to unknown property ' + property_name);
-                }
-            }
-        });
-
-        var subsection = $(this).closest('.org-subsection-parent');
+        discard_subsection_changes(e.target);
+        var subsection = $(e.target).closest('.org-subsection-parent');
         var change_process_buttons = subsection.find('.subsection-header .button');
         change_process_buttons.removeClass('show').addClass('hide');
     });
