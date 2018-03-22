@@ -65,7 +65,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
                    base_query: 'QuerySet[UserProfile]'=None) -> Dict[str, UserProfile]:
     if base_query is None:
         assert realm is not None
-        base_query = UserProfile.objects.filter(realm=realm, is_active=True)
+        query = UserProfile.objects.filter(realm=realm, is_active=True)
         realm_id = realm.id
     else:
         # WARNING: Currently, this code path only really supports one
@@ -74,6 +74,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         # If you're using this flow, you'll need to re-do any filters
         # in base_query in the code itself; base_query is just a perf
         # optimization.
+        query = base_query
         realm_id = 0
 
     def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
@@ -89,7 +90,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
 
         upper_list = ", ".join(["UPPER(%s)"] * len(emails))
         where_clause = "UPPER(zerver_userprofile.email::text) IN (%s)" % (upper_list,)
-        return base_query.select_related("realm").extra(
+        return query.select_related("realm").extra(
             where=[where_clause],
             params=emails)
 
