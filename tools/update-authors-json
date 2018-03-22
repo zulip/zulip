@@ -103,7 +103,7 @@ def run_production() -> None:
         with open(duplicate_commits_file, 'r') as f:
             duplicate_commits = json.loads(f.read())
             for committer in duplicate_commits:
-                if contribs_list[committer].get('server'):
+                if committer in contribs_list and contribs_list[committer].get('server'):
                     total_commits = cast(int, contribs_list[committer]['server'])
                     duplicate_commits_count = duplicate_commits[committer]
                     original_commits = total_commits - duplicate_commits_count
