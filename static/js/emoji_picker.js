@@ -247,11 +247,11 @@ function filter_emojis() {
                 });
             });
         });
-        var search_results_rendered = templates.render('emoji_popover_search_results', {
+        var rendered_search_results = templates.render('emoji_popover_search_results', {
             search_results: search_results,
             message_id: message_id,
         });
-        $('.emoji-search-results').html(search_results_rendered);
+        $('.emoji-search-results').html(rendered_search_results);
         ui.update_scrollbar($(".emoji-search-results-container"));
         if (!search_results_visible) {
             show_search_results();
