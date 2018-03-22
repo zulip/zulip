@@ -124,7 +124,7 @@ function _setup_page() {
 
     setup_settings_label();
 
-    var settings_tab = templates.render('settings_tab', {
+    var rendered_settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
@@ -136,7 +136,7 @@ function _setup_page() {
         settings_label: settings.settings_label,
     });
 
-    $(".settings-box").html(settings_tab);
+    $(".settings-box").html(rendered_settings_tab);
 
     // Since we just swapped in a whole new settings widget, we need to
     // tell settings_sections nothing is loaded.

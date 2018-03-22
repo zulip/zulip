@@ -82,8 +82,8 @@ function _setup_page() {
     };
 
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
-    var admin_tab = templates.render('admin_tab', options);
-    $("#settings_content .organization-box").html(admin_tab);
+    var rendered_admin_tab = templates.render('admin_tab', options);
+    $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
