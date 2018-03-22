@@ -159,8 +159,8 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
     if (!sub.can_access_subscribers || (just_subscribed && sub.invite_only)) {
-        var sub_count = templates.render("subscription_count", sub);
-        stream_row.find('.subscriber-count').expectOne().html(sub_count);
+        var rendered_sub_count = templates.render("subscription_count", sub);
+        stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
     } else {
         stream_row.find(".subscriber-count-text").expectOne().text(sub.subscriber_count);
     }
