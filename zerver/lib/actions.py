@@ -1071,7 +1071,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
 
     return event_dict
 
-def do_schedule_messages(messages: Sequence[Optional[MutableMapping[str, Any]]]) -> List[int]:
+def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
     scheduled_messages = []  # type: List[ScheduledMessage]
 
     for message in messages:
