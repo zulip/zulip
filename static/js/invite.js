@@ -76,8 +76,8 @@ exports.initialize = function () {
             invitee_emails.val('');
 
             if (page_params.development_environment) {
-                var email_msg = templates.render('dev_env_email_access');
-                $('#dev_env_msg').html(email_msg).addClass('alert-info').show();
+                var rendered_email_msg = templates.render('dev_env_email_access');
+                $('#dev_env_msg').html(rendered_email_msg).addClass('alert-info').show();
             }
 
         },
