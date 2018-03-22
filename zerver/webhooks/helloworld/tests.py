@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from django.conf import settings
 from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.models import get_system_bot
 
 class HelloWorldHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
@@ -34,6 +36,16 @@ class HelloWorldHookTests(WebhookTestCase):
 
         self.send_and_test_private_message('goodbye', expected_message=expected_message,
                                            content_type="application/x-www-form-urlencoded")
+
+    def test_stream_error_pm_to_bot_owner(self) -> None:
+        # Note taht this is really just a test for check_send_webhook_message
+        self.STREAM_NAME = 'nonexistent'
+        self.url = self.build_webhook_url()
+        notification_bot = get_system_bot(settings.NOTIFICATION_BOT)
+        expected_message = "Hi there! We thought you'd like to know that your bot **Zulip Webhook Bot** just tried to send a message to stream `nonexistent`, but that stream does not yet exist. To create it, click the gear in the left-side stream list."
+        self.send_and_test_private_message('goodbye', expected_message=expected_message,
+                                           content_type='application/x-www-form-urlencoded',
+                                           sender=notification_bot)
 
     def test_custom_topic(self) -> None:
         # Note that this is really just a test for check_send_webhook_message

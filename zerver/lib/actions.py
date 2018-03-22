@@ -36,6 +36,7 @@ from zerver.lib.cache import (
 )
 from zerver.lib.context_managers import lockfile
 from zerver.lib.emoji import emoji_name_to_emoji_code, get_emoji_file_name
+from zerver.lib.exceptions import StreamDoesNotExistError
 from zerver.lib.hotspots import get_next_hotspots
 from zerver.lib.message import (
     access_message,
@@ -1869,8 +1870,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
         except Stream.DoesNotExist:
             send_pm_if_empty_stream(sender, None, stream_name, realm)
-            raise JsonableError(_("Stream '%(stream_name)s' "
-                                  "does not exist") % {'stream_name': escape(stream_name)})
+            raise StreamDoesNotExistError(escape(stream_name))
         recipient = get_stream_recipient(stream.id)
 
         if not stream.invite_only:
