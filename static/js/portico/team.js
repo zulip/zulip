@@ -2,7 +2,7 @@
 // eslint's error.
 /* global contributors_list */
 
-var repos = ['server', 'desktop', 'mobile', 'python-zulip-api', 'zulip-js', 'zulipbot'];
+var repos = ['server', 'desktop', 'mobile', 'python-zulip-api', 'zulip-js', 'zulipbot', 'terminal'];
 
 function contrib_total_commits(contrib) {
     var commits = 0;

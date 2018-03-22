@@ -950,7 +950,8 @@ input#desktop:checked ~ #tab-desktop,
 input#mobile:checked ~ #tab-mobile,
 input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
-input#zulipbot:checked ~ #tab-zulipbot {
+input#zulipbot:checked ~ #tab-zulipbot,
+input#terminal:checked ~ #tab-terminal {
     border-top: 1px solid #eee;
     padding-top: 20px;
     display: grid;

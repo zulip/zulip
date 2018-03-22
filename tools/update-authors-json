@@ -73,6 +73,7 @@ def run_production() -> None:
         'python-zulip-api': 'https://api.github.com/repos/zulip/python-zulip-api/stats/contributors',
         'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
         'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
+        'terminal': 'https://api.github.com/repos/zulip/zulip-terminal/stats/contributors',
     }
 
     data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
