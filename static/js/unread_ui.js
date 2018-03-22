@@ -88,10 +88,10 @@ function consider_bankruptcy() {
 
     var now = new XDate(true).getTime() / 1000;
     if ((page_params.unread_msgs.count > 500) &&
-        (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
-        var unread_info = templates.render('bankruptcy_modal',
-                                           {unread_count: page_params.unread_msgs.count});
-        $('#bankruptcy-unread-count').html(unread_info);
+            (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
+        var rendered_modal = templates.render('bankruptcy_modal', {
+            unread_count: page_params.unread_msgs.count});
+        $('#bankruptcy-unread-count').html(rendered_modal);
         $('#bankruptcy').modal('show');
     } else {
         exports.enable();
