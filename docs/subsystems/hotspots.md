@@ -45,8 +45,9 @@ However, if you would like to fix the orientation of a hotspot popover, a
 
 ### Step 3: Test manually
 
-To test your hotspot in the development environment, set `SEND_ALL = True` in
-`zerver/lib/hotspots.py`, and invoke `hotspots.initialize()` in your browser
+To test your hotspot in the development environment, set
+`ALWAYS_SEND_ALL_HOTSPOTS = True` in `zproject/dev_settings.py`,
+and invoke `hotspots.initialize()` in your browser
 console. Every hotspot should be displayed.
 
 Here are some visual characteristics to confirm:
