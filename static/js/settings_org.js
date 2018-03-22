@@ -459,7 +459,7 @@ function _set_up() {
         return subsection.find("input[id^='id_realm_'], select[id^='id_realm_']");
     }
 
-    $('.organization').on('change input', 'input, select', function (e) {
+    $('.org-settings-form').on('change input', 'input, select', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
