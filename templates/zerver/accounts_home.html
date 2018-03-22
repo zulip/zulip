@@ -59,17 +59,16 @@ $(function () {
                                 <div class="input-box no-validate">
                                     <input type="email" id="email" class="email" name="email" value="" required />
                                     <label for="email">Email</label>
-                                    <div class="alert alert-error"></div>
+                                    <div class="alert alert-error email-frontend-error"></div>
+                                    {% if form.email.errors %}
+                                        {% for error in form.email.errors %}
+                                        <div class="email-backend-error alert alert-error">{{ error }}</div>
+                                        {% endfor %}
+                                    {% endif %}
                                 </div>
 
                                 <button class="full-width" type="submit" name="">{{ _('Sign up') }}</button>
                             </form>
-
-                            {% if form.email.errors %}
-                                {% for error in form.email.errors %}
-                                <div class="alert alert-error">{{ error }}</div>
-                                {% endfor %}
-                            {% endif %}
 
                             {% if any_oauth_backend_enabled %}
                             <div class="or">or</div>
