@@ -652,7 +652,8 @@ class WebhookTestCase(ZulipTestCase):
         if content_type is not None:
             kwargs['content_type'] = content_type
 
-        msg = self.send_json_payload(self.test_user, self.url, payload,
+        sender = kwargs.get('sender', self.test_user)
+        msg = self.send_json_payload(sender, self.url, payload,
                                      stream_name=None, **kwargs)
         self.do_test_message(msg, expected_message)
 
