@@ -81,7 +81,8 @@ casper.then(function () {
 });
 
 function submit_permissions_change() {
-    casper.click('form.org-permissions-form button.button');
+    casper.test.assertSelectorHasText('#org-submit-other-permissions', "Save");
+    casper.click('#org-submit-other-permissions');
 }
 
 // Test setting limiting stream creation to administrators
@@ -97,9 +98,9 @@ casper.then(function () {
 
 casper.then(function () {
     // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-                                          'Stream creation permission changed!');
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
 
@@ -115,9 +116,9 @@ casper.then(function () {
 
 casper.then(function () {
     // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-            'Stream creation permission changed!');
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
 
@@ -145,12 +146,12 @@ casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-                                          'Stream creation permission changed!');
+    // Test setting was activated
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
-
 
 casper.then(function () {
     // Test custom realm emoji
