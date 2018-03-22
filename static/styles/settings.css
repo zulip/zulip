@@ -359,15 +359,15 @@ input[type=checkbox] + .inline-block {
     margin-top: 0px;
 }
 
-.org-settings-form .subsection-header h3 {
+.admin-realm-form .subsection-header h3 {
     display: inline;
 }
 
-.org-settings-form .subsection-header div[class*="subsection-changes"] {
+.admin-realm-form .subsection-header div[class*="subsection-changes"] {
     display: inline;
 }
 
-.org-settings-form .subsection-header div[class*="subsection-changes"] button.show {
+.admin-realm-form .subsection-header div[class*="subsection-changes"] button.show {
     display: inline-block;
     margin-top: -4px;
     min-width: 80px;
