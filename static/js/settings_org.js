@@ -519,8 +519,9 @@ function _set_up() {
     });
 
     exports.save_organization_settings = function (data, save_button, success_continuation) {
-        var failed_alert_elem = $('#admin-realm-failed-change-status');
-        var discard_button = save_button.closest('.subsection-header').find('.subsection-changes-discard button');
+        var subsection_parent = save_button.closest('.org-subsection-parent');
+        var discard_button = subsection_parent.find('.subsection-changes-discard button');
+        var failed_alert_elem = subsection_parent.prevAll('.admin-realm-failed-change-status:first').expectOne();
         save_button.text(i18n.t("Saving"));
         save_button.attr("data-status", "saving");
         channel.patch({

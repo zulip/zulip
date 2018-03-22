@@ -199,6 +199,9 @@ function test_submit_settings_form(submit_form) {
         return 'org-submit-msg-editing';
     };
     var stub_save_button_header = $('.subsection-header');
+    stub_save_button_header.prevAll = function () {
+        return $.create('<stub failed alert status element>');
+    };
     stub_save_button.closest = function () {
         return stub_save_button_header;
     };
