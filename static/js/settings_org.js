@@ -420,7 +420,7 @@ function _set_up() {
 
     function property_value_element_refers(property_name) {
         if (property_name === 'realm_message_content_edit_limit_minutes') {
-            return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60);
+            return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
         }
         return;
     }
@@ -432,8 +432,14 @@ function _set_up() {
     function check_property_changed(elem) {
         elem = $(elem);
         var property_name = exports.extract_property_name(elem);
-        var current_val = page_params[property_name];
         var changed_val;
+        // Check whether the id refers to a property whose name we can't
+        // extract from element's id.
+        var current_val = property_value_element_refers(property_name);
+        if (current_val === undefined) {
+            current_val = page_params[property_name];
+        }
+
         if (typeof current_val === 'boolean') {
             changed_val = elem.prop('checked');
         } else if (typeof current_val === 'string') {
@@ -442,17 +448,9 @@ function _set_up() {
             current_val = current_val.toString();
             changed_val = elem.val().trim();
         } else {
-            // Check whether the id refers to a property whose name we can't
-            // extract from element's id.
-            current_val = property_value_element_refers(property_name);
-
-            if (current_val !== undefined) {
-                current_val = current_val.toString();
-                changed_val = elem.val().trim();
-            } else {
-                blueslip.error('Element refers to unknown property ' + property_name);
-            }
+            blueslip.error('Element refers to unknown property ' + property_name);
         }
+
         return current_val !== changed_val;
     }
 
