@@ -17,18 +17,18 @@
     padding: 0px 18px 0px 3px;
     margin: 1px 1px;
 
-    color: hsl(177, 38%, 54%);
-    border: 1px solid #b2e4e2;
+    color: inherit;
+    border: 1px solid hsla(0, 0%, 0%, 0.15);
 
     border-radius: 4px;
-
+    background: hsla(0, 0%, 0%, 0.07);
     cursor: pointer;
 }
 
 .pill-container .pill:focus {
-    color: hsl(0, 38%, 54%);
-    border: 1px solid #e4b2b2;
-
+    color: #fff;
+    border: 1px solid #108179;
+    background: hsl(176, 49%, 42%);
     outline: none;
 }
 
@@ -73,18 +73,6 @@
     margin: -1px 0px;
 
     border: none;
-}
-
-.pm_recipient .pill-container .pill {
-    color: inherit;
-    border: 1px solid hsla(0, 0%, 0%, 0.15);
-    background: hsla(0, 0%, 0%, 0.07);
-}
-
-.pm_recipient .pill-container .pill:focus {
-    color: #fff;
-    border: 1px solid #108179;
-    background: hsl(176, 49%, 42%);
 }
 
 .pm_recipient .pill-container .input {
