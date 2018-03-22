@@ -654,6 +654,14 @@ function _set_up() {
         exports.save_organization_settings(data, save_button, success_continuation);
     });
 
+    $(".org-subsection-parent").on("keydown", "input", function (e) {
+        e.stopPropagation();
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            $(e.target).closest('.org-subsection-parent').find('.subsection-changes-save button').click();
+        }
+    });
+
     $("#id_realm_create_stream_permission").change(function () {
         var create_stream_permission = this.value;
         var node = $("#id_realm_waiting_period_threshold").parent();
