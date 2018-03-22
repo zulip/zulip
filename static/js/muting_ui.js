@@ -70,8 +70,8 @@ exports.notify_with_undo_option = (function () {
         // add a four second delay before closing up.
         meta.hide_me_time = new Date().getTime() + 4000;
 
-        meta.$mute.find(".topic").html(topic);
-        meta.$mute.find(".stream").html(stream);
+        meta.$mute.find(".topic").text(topic);
+        meta.$mute.find(".stream").text(stream);
 
         animate.fadeIn();
 
