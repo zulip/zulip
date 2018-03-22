@@ -39,7 +39,7 @@
     "underscore": "1.8.3",
     "webfonts-generator": "0.4.0",
     "webpack": "2.5.1",
-    "webpack-bundle-tracker": "0.2.0",
+    "webpack-bundle-tracker": "0.3.0",
     "winchan": "0.2.0",
     "xdate": "0.8.2",
     "zxcvbn": "4.4.2"
