@@ -1,5 +1,5 @@
 
-from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
+from typing import Any, Iterable, List, Mapping, Set, Text, Tuple, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -34,7 +34,7 @@ def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int
 def access_stream_common(user_profile: UserProfile, stream: Stream,
                          error: Text,
                          require_active: bool=True,
-                         allow_realm_admin: bool=False) -> Tuple[Recipient, Subscription]:
+                         allow_realm_admin: bool=False) -> Tuple[Recipient, Optional[Subscription]]:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -76,7 +76,7 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True,
-                        allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Subscription]:
+                        allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream id")
     try:
         stream = Stream.objects.get(id=stream_id)
@@ -97,7 +97,7 @@ def check_stream_name_available(realm: Realm, name: Text) -> None:
         pass
 
 def access_stream_by_name(user_profile: UserProfile,
-                          stream_name: Text) -> Tuple[Stream, Recipient, Subscription]:
+                          stream_name: Text) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
