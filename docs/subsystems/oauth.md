@@ -35,9 +35,6 @@ The steps to do this are a variation of the steps documented in
   and in `dev-secrets.conf`, set `google_oauth2_client_secret` to the
   client secret.
 
-* Uncomment `'zproject.backends.GoogleMobileOauth2Backend'` in
-  `AUTHENTICATION_BACKENDS` in `dev_settings.py`.
-
 ### GitHub
 
 * Register an OAuth2 application with GitHub at one of
@@ -49,6 +46,3 @@ The steps to do this are a variation of the steps documented in
   showing a client ID and a client secret.  In `dev_settings.py`, set
   `SOCIAL_AUTH_GITHUB_KEY` to the client ID, and in
   `dev-secrets.conf`, set `social_auth_github_secret` to the client secret.
-
-* Uncomment `'zproject.backends.GitHubAuthBackend'` in
-  `AUTHENTICATION_BACKENDS` in `dev_settings.py`.
