@@ -614,6 +614,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         # Build the query for the narrow
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
         search_term = {}  # type: Dict[str, Any]
+        is_stream_narrow = False
         for term in narrow:
             if term['operator'] == 'search':
                 if not is_search:
@@ -625,8 +626,17 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                     search_term['operand'] += ' ' + term['operand']
             else:
                 query = builder.add_term(query, term)
+
+            if term['operator'] == 'stream' and len(narrow) == 1:
+                is_stream_narrow = True
+
         if is_search:
             query = builder.add_term(query, search_term)
+
+        if is_stream_narrow:
+            muting_conditions = exclude_muting_conditions(user_profile, narrow)
+            if muting_conditions:
+                query = query.where(*muting_conditions)
 
     sa_conn = get_sqlalchemy_connection()
 
