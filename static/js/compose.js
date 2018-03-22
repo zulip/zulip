@@ -900,15 +900,15 @@ exports.initialize = function () {
     // content is passed to check for status messages ("/me ...")
     // and will be undefined in case of errors
     function show_preview(rendered_content, content) {
-        var preview_html;
+        var rendered_preview_html;
         if (content !== undefined && markdown.is_status_message(content, rendered_content)) {
             // Handle previews of /me messages
-            preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
+            rendered_preview_html = "<strong>" + page_params.full_name + "</strong> " + rendered_content.slice(4 + 3, -4);
         } else {
-            preview_html = rendered_content;
+            rendered_preview_html = rendered_content;
         }
 
-        $("#preview_content").html(preview_html);
+        $("#preview_content").html(rendered_preview_html);
         if (page_params.emojiset === "text") {
             $("#preview_content").find(".emoji").replaceWith(function () {
                 var text = $(this).attr("title");
