@@ -421,6 +421,22 @@ function _set_up() {
     function property_value_element_refers(property_name) {
         if (property_name === 'realm_message_content_edit_limit_minutes') {
             return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
+        } else if (property_name === 'realm_create_stream_permission') {
+            if (page_params.create_stream_by_admins_only) {
+                return "by_admins_only";
+            }
+            if (page_params.realm_waiting_period_threshold === 0) {
+                return "by_anyone";
+            }
+            if (page_params.realm_waiting_period_threshold === 3) {
+                return "by_admin_user_with_three_days_old";
+            }
+            return "by_admin_user_with_custom_time";
+        } else if (property_name === 'realm_add_emoji_by_admins_only') {
+            if (page_params.realm_add_emoji_by_admins_only) {
+                return "by_admins_only";
+            }
+            return "by_anyone";
         }
         return;
     }
@@ -459,7 +475,7 @@ function _set_up() {
         return subsection.find("input[id^='id_realm_'], select[id^='id_realm_']");
     }
 
-    $('.org-settings-form').on('change input', 'input, select', function (e) {
+    $('.admin-realm-form').on('change input', 'input, select', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -481,37 +497,35 @@ function _set_up() {
         }
     });
 
+    function discard_subsection_changes(target) {
+        _.each(get_subsection_property_elements(target), function (elem) {
+            elem = $(elem);
+            var property_name = exports.extract_property_name(elem);
+            // Check whether the id refers to a property whose name we can't
+            // extract from element's id.
+            var property_value = property_value_element_refers(property_name);
+            if (property_value === undefined) {
+                property_value = page_params[property_name];
+            }
+
+            if (typeof property_value === 'boolean') {
+                elem.prop('checked', property_value);
+            } else if (typeof property_value === 'string' || typeof property_value === 'number') {
+                elem.val(property_value);
+            } else {
+                blueslip.error('Element refers to unknown property ' + property_name);
+            }
+            // Triggering a change event to handle fading and showing of
+            // dependent sub-settings correctly
+            elem.change();
+        });
+    }
+
     $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        var properties_elements = get_subsection_property_elements(this);
-        _.each(properties_elements, function (elem) {
-            elem = $(elem);
-            var property_name = exports.extract_property_name(elem);
-            if (typeof page_params[property_name] === 'boolean') {
-                // We trigger a click event rather than just changing
-                // the prop, because that handles dependent
-                // sub-settings correctly.
-                if (elem.prop('checked') !== page_params[property_name]) {
-                    elem.click();
-                }
-            } else if (typeof page_params[property_name] === 'string' || typeof page_params[property_name] === 'number') {
-                elem.val(page_params[property_name]);
-            } else {
-                // Check whether the id refers to a property whose name we can't
-                // extract from element's id.
-                var property_value = property_value_element_refers(property_name);
-
-                if (property_value !== undefined) {
-                    elem.val(property_value);
-                } else {
-                    blueslip.error('Element refers to unknown property ' + property_name);
-                }
-            }
-        });
-
-        var subsection = $(this).closest('.org-subsection-parent');
+        discard_subsection_changes(e.target);
+        var subsection = $(e.target).closest('.org-subsection-parent');
         var change_process_buttons = subsection.find('.subsection-header .button');
         change_process_buttons.removeClass('show').addClass('hide');
     });
@@ -578,8 +592,51 @@ function _set_up() {
                    $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
                 }
             };
+        } else if (subsection === 'other_permissions') {
+            var create_stream_permission = $("#id_realm_create_stream_permission").val();
+            var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
+            var new_message_retention_days = $("#id_realm_message_retention_days").val();
+
+            if (parseInt(new_message_retention_days, 10).toString() !==
+                new_message_retention_days && new_message_retention_days !== "") {
+                    new_message_retention_days = "";
+            }
+
+            var data = {
+                message_retention_days: new_message_retention_days !== "" ?
+                    JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
+            };
+
+            if (add_emoji_permission === "by_admins_only") {
+                data.add_emoji_by_admins_only = true;
+            } else if (add_emoji_permission === "by_anyone") {
+                data.add_emoji_by_admins_only = false;
+            }
+
+            if (create_stream_permission === "by_admins_only") {
+                data.create_stream_by_admins_only = true;
+            } else if (create_stream_permission === "by_admin_user_with_three_days_old") {
+                data.create_stream_by_admins_only = false;
+                data.waiting_period_threshold = 3;
+            } else if (create_stream_permission === "by_admin_user_with_custom_time") {
+                data.create_stream_by_admins_only = false;
+                data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
+            } else if (create_stream_permission === "by_anyone") {
+                data.create_stream_by_admins_only = false;
+                data.waiting_period_threshold = 0;
+            }
+            opts.data = data;
         }
+
         return opts;
+    }
+
+    function get_subsection_property_types(subsection) {
+        if (_.has(org_settings, subsection)) {
+            return org_settings[subsection];
+        } else if (_.has(org_permissions, subsection)) {
+            return org_permissions[subsection];
+        }
     }
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
@@ -589,12 +646,20 @@ function _set_up() {
         var subsection_id = save_button.attr('id').replace("org-submit-", "");
         var subsection = subsection_id.split('-').join('_');
 
+        var data = populate_data_for_request({}, get_subsection_property_types(subsection));
         var opts = get_complete_data_for_subsection(subsection);
-        var data = _.extend({}, opts.data);
+        data = _.extend(data, opts.data);
         var success_continuation = opts.success_continuation;
 
-        data = populate_data_for_request(data, org_settings[subsection]);
         exports.save_organization_settings(data, save_button, success_continuation);
+    });
+
+    $(".org-subsection-parent").on("keydown", "input", function (e) {
+        e.stopPropagation();
+        if (e.keyCode === 13) {
+            e.preventDefault();
+            $(e.target).closest('.org-subsection-parent').find('.subsection-changes-save button').click();
+        }
     });
 
     $("#id_realm_create_stream_permission").change(function () {
@@ -605,81 +670,6 @@ function _set_up() {
         } else {
             node.hide();
         }
-    });
-
-    $(".organization").on("submit", "form.org-permissions-form", function (e) {
-        var $alerts = $(".settings-section.show .alert").hide();
-        // grab the first alert available and use it for the status.
-        var status = $("#admin-realm-restricted-to-domain-status");
-
-        var create_stream_permission = $("#id_realm_create_stream_permission").val();
-        var create_stream_permission_status = $("#admin-realm-create-stream-by-admins-only-status").expectOne();
-        var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
-        status.hide();
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        var new_message_retention_days = $("#id_realm_message_retention_days").val();
-
-        if (parseInt(new_message_retention_days, 10).toString() !==
-            new_message_retention_days && new_message_retention_days !== "") {
-                new_message_retention_days = "";
-        }
-
-        // take the existing object and apply the rest of the properties.
-        var data = populate_data_for_request({
-            message_retention_days: new_message_retention_days !== "" ? JSON.stringify(parseInt(new_message_retention_days, 10)) : null,
-        }, property_types.permissions);
-
-        if (add_emoji_permission === "by_admins_only") {
-            data.add_emoji_by_admins_only = true;
-        } else if (add_emoji_permission === "by_anyone") {
-            data.add_emoji_by_admins_only = false;
-        }
-
-        if (create_stream_permission === "by_admins_only") {
-            data.create_stream_by_admins_only = true;
-        } else if (create_stream_permission === "by_admin_user_with_three_days_old") {
-            data.create_stream_by_admins_only = false;
-            data.waiting_period_threshold = 3;
-        } else if (create_stream_permission === "by_admin_user_with_custom_time") {
-            data.create_stream_by_admins_only = false;
-            data.waiting_period_threshold = $("#id_realm_waiting_period_threshold").val();
-        } else if (create_stream_permission === "by_anyone") {
-            data.create_stream_by_admins_only = false;
-            data.waiting_period_threshold = 0;
-        }
-
-        channel.patch({
-            url: "/json/realm",
-            data: data,
-            success: function (response_data) {
-                $alerts.hide();
-
-                if (response_data.create_stream_by_admins_only !== undefined ||
-                    response_data.waiting_period_threshold !== undefined) {
-                    ui_report.success(i18n.t("Stream creation permission changed!"), create_stream_permission_status);
-                }
-
-                process_response_data(response_data, 'permissions');
-
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), status);
-                }
-            },
-            error: function (xhr) {
-                $alerts.hide();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
     });
 
     $(".organization").on("submit", "form.org-profile-form", function (e) {
