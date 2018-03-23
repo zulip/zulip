@@ -18,7 +18,7 @@ from zerver.lib.queue import queue_json_publish
 from version import ZULIP_VERSION
 
 def try_git_describe() -> Optional[str]:
-    try:
+    try:  # nocoverage
         return subprocess.check_output(
             ['git',
              '--git-dir', os.path.join(os.path.dirname(__file__), '../.git'),
