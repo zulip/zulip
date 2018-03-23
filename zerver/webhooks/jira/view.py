@@ -95,7 +95,7 @@ def get_in(payload: Dict[str, Any], keys: List[str], default: Text='') -> Any:
         return default
     return payload
 
-def get_issue_string(payload: Dict[str, Any], issue_id: Text=None) -> Text:
+def get_issue_string(payload: Dict[str, Any], issue_id: Optional[Text]=None) -> Text:
     # Guess the URL as it is not specified in the payload
     # We assume that there is a /browse/BUG-### page
     # from the REST url of the issue itself

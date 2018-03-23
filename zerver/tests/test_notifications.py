@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from email.utils import formataddr
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Text, Optional
 
 from zerver.lib.notifications import fix_emojis, \
     handle_missedmessage_emails, relative_to_full_url
@@ -39,7 +39,7 @@ class TestMissedMessages(ZulipTestCase):
     def _test_cases(self, tokens: List[str], msg_id: int, body: str, subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
-                    verify_body_does_not_include: List[str]=None) -> None:
+                    verify_body_does_not_include: Optional[List[str]]=None) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
