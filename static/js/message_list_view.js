@@ -865,6 +865,7 @@ MessageListView.prototype = {
         }
         this._post_process_dom_messages(rendered_msg.get());
         row.replaceWith(rendered_msg);
+        current_msg_list.hide_edit_message(row);
 
         if (was_selected) {
             this.list.select_id(message_container.msg.id);

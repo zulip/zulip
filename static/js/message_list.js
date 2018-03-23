@@ -507,28 +507,29 @@ exports.MessageList.prototype = {
 
     show_edit_message: function MessageList_show_edit_message(row, edit_obj) {
         row.find(".message_edit_form").empty().append(edit_obj.form);
-        row.find(".message_content, .status-message").hide();
-        row.find(".message_edit").css("display", "block");
+        row.find(".message_content, .status-message").slideUp(250);
+        row.find(".message_edit").slideDown(250);
         row.find(".message_edit_content").autosize();
     },
 
     hide_edit_message: function MessageList_hide_edit_message(row) {
-        row.find(".message_content, .status-message").show();
-        row.find(".message_edit").hide();
+        row.find(".message_edit").slideUp(250);
+        row.find(".message_content, .status-message").slideDown(250);
+        row.find(".message_edit_form").empty();
         row.trigger("mouseleave");
     },
 
     show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
         recipient_row.find(".topic_edit_form").empty().append(form);
         recipient_row.find('.icon-vector-pencil').hide();
-        recipient_row.find(".stream_topic").hide();
-        recipient_row.find(".topic_edit").show();
+        recipient_row.find(".stream_topic").slideUp(250);
+        recipient_row.find(".topic_edit").slideDown(250);
     },
 
     hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
-        recipient_row.find(".stream_topic").show();
+        recipient_row.find(".stream_topic").slideDown(250);
         recipient_row.find('.icon-vector-pencil').show();
-        recipient_row.find(".topic_edit").hide();
+        recipient_row.find(".topic_edit").slideUp(250);
     },
 
     show_message_as_read: function (message, options) {
