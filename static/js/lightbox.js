@@ -116,9 +116,12 @@ exports.open = function (image, options) {
             $type = "image";
             $source = $image.attr("src");
         }
-
+        var message = message_store.get($message.attr("zid"));
+        if (message === undefined) {
+            blueslip.error("Lightbox for unknown message " + $message.attr("zid"));
+        }
         payload = {
-            user: message_store.get($message.attr("zid")).sender_full_name,
+            user: message.sender_full_name,
             title: $image.parent().attr("title"),
             type: $type,
             preview: $image.attr("src"),
