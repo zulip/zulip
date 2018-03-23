@@ -172,7 +172,8 @@ function add_email_hint(row, email_address_hint_content) {
         $(hint_id).popover({placement: "right",
                 title: "Email integration",
                 content: email_address_hint_content,
-                trigger: "manual"});
+                trigger: "manual",
+                animation: false});
         $(hint_id).popover('show');
         e.stopPropagation();
     });
