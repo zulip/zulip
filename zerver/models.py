@@ -1471,6 +1471,9 @@ def get_user_including_cross_realm(email: Text, realm: Optional[Realm]=None) -> 
     assert realm is not None
     return get_user(email, realm)
 
+def exist_system_bot(email: Text) -> bool:
+    return UserProfile.objects.filter(email__iexact=email.strip()).exists()
+
 @cache_with_key(bot_profile_cache_key, timeout=3600*24*7)
 def get_system_bot(email: Text) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())

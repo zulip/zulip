@@ -557,7 +557,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             name = "Ghost"
             response = dict(email=email, name=name)
             result = self.backend.do_auth(response=response)
-            confirmation = Confirmation.objects.all().first()
+            confirmation = Confirmation.objects.all().last()
             confirmation_key = confirmation.confirmation_key
             self.assertIn('do_confirm/' + confirmation_key, result.url)
             result = self.client_get(result.url)
@@ -853,7 +853,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 'is_signup': True}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().first()
+        confirmation = Confirmation.objects.all().last()
         confirmation_key = confirmation.confirmation_key
         self.assertIn('do_confirm/' + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -997,7 +997,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
         result = self.client_get(result.url)
         self.assertEqual(result.status_code, 302)
-        confirmation = Confirmation.objects.all().first()
+        confirmation = Confirmation.objects.all().last()
         confirmation_key = confirmation.confirmation_key
         self.assertIn('do_confirm/' + confirmation_key, result.url)
         result = self.client_get(result.url)
@@ -2081,7 +2081,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 0)
                 result = maybe_send_to_registration(request, self.example_email("hamlet"))
                 self.assertEqual(result.status_code, 302)
-                confirmation = Confirmation.objects.all().first()
+                confirmation = Confirmation.objects.all().last()
                 confirmation_key = confirmation.confirmation_key
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
@@ -2113,7 +2113,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
                 result = maybe_send_to_registration(request, email)
                 self.assertEqual(result.status_code, 302)
-                confirmation = Confirmation.objects.all().first()
+                confirmation = Confirmation.objects.all().last()
                 confirmation_key = confirmation.confirmation_key
                 self.assertIn('do_confirm/' + confirmation_key, result.url)
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)

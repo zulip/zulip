@@ -2750,8 +2750,7 @@ class FetchQueriesTest(ZulipTestCase):
                     queue_id='x',
                     client_gravatar=False,
                 )
-
-        self.assert_length(queries, 30)
+        self.assert_length(queries, 32)  # why 30?
 
         expected_counts = dict(
             alert_words=0,

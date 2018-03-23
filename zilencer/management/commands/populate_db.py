@@ -24,6 +24,12 @@ from zerver.models import CustomProfileField, DefaultStream, Message, Realm, Rea
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
 
+from zerver.lib.onboarding import send_initial_pms, setup_initial_streams, \
+    send_initial_realm_messages
+from zerver.lib.actions import do_create_user, do_create_realm, bulk_add_subscriptions
+from zerver.lib.initial_password import initial_password
+
+
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
 # protocol' errors if `populate_db` is run with a different Python
@@ -126,15 +132,31 @@ class Command(BaseCommand):
             # Start by clearing all the data in our database
             clear_database()
 
-            # Create our two default realms
-            # Could in theory be done via zerver.lib.actions.do_create_realm, but
-            # welcome-bot (needed for do_create_realm) hasn't been created yet
-            zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
-                description="The Zulip development environment default organization."
-                            "  It's great for testing!",
-                invite_required=False, org_type=Realm.CORPORATE)
-            RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
+            zulip_realm = do_create_realm("zulip", "Zulip Dev", restricted_to_domain=True,
+                                          invite_required=False, org_type=Realm.CORPORATE)
+            RealmDomain.objects.create(realm=zulip_realm, domain='zulip.com',
+                                       allow_subdomains=False)
+            setup_initial_streams(zulip_realm)
+
+            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
+                              for bot in settings.INTERNAL_BOTS]
+            zulip_realm_bots = [
+                ("Zulip New User Bot", "new-user-bot@zulip.com"),
+                ("Zulip Error Bot", "error-bot@zulip.com"),
+                ("Zulip Default Bot", "default-bot@zulip.com"),
+                ("Welcome Bot", "welcome-bot@zulip.com"),
+            ]
+
+            for i in range(options["extra_bots"]):
+                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
+            zulip_realm_bots.extend(all_realm_bots)
+            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
+            iago_mail = 'iago@zulip.com'
+            user = do_create_user(iago_mail, initial_password(iago_mail), zulip_realm, 'Iago', 'Iago',
+                                  is_realm_admin=True)
+            bulk_add_subscriptions([zulip_realm.signup_notifications_stream], [user])
+            send_initial_pms(user)
+            send_initial_realm_messages(zulip_realm)
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
                     string_id="zephyr", name="MIT", restricted_to_domain=True,
@@ -150,7 +172,6 @@ class Command(BaseCommand):
             names = [
                 ("Zoe", "ZOE@zulip.com"),
                 ("Othello, the Moor of Venice", "othello@zulip.com"),
-                ("Iago", "iago@zulip.com"),
                 ("Prospero from The Tempest", "prospero@zulip.com"),
                 ("Cordelia Lear", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
@@ -161,26 +182,11 @@ class Command(BaseCommand):
             create_users(zulip_realm, names)
 
             iago = get_user("iago@zulip.com", zulip_realm)
-            do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
-            all_realm_bots = [(bot['name'], bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,))
-                              for bot in settings.INTERNAL_BOTS]
-            zulip_realm_bots = [
-                ("Zulip New User Bot", "new-user-bot@zulip.com"),
-                ("Zulip Error Bot", "error-bot@zulip.com"),
-                ("Zulip Default Bot", "default-bot@zulip.com"),
-                ("Welcome Bot", "welcome-bot@zulip.com"),
-            ]
-
-            for i in range(options["extra_bots"]):
-                zulip_realm_bots.append(('Extra Bot %d' % (i,), 'extrabot%d@zulip.com' % (i,)))
-            zulip_realm_bots.extend(all_realm_bots)
-            create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
-
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
             ]
@@ -400,7 +406,8 @@ class Command(BaseCommand):
                 subscriptions_to_add = []
                 event_time = timezone_now()
                 all_subscription_logs = []
-                profiles = UserProfile.objects.select_related().filter(realm=zulip_realm)
+                profiles = UserProfile.objects.select_related().filter(realm=zulip_realm,
+                                                                       is_realm_admin=False)
                 for i, stream_name in enumerate(zulip_stream_dict):
                     stream = Stream.objects.get(name=stream_name, realm=zulip_realm)
                     recipient = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
