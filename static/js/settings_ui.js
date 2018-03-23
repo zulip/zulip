@@ -26,41 +26,36 @@ exports.initialize = function () {
 // UI.  Intended to replace the old system that was built around
 // direct calls to `ui_report`.
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
-    var success;
+    var spinner = $(status_element).expectOne();
+    loading.make_indicator(spinner, {text: exports.strings.saving});
     var success_msg;
     var success_continuation;
-    var error;
-    var spinner = $(status_element).expectOne();
+    var error_continuation;
     if (opts !== undefined) {
-        success = opts.success;
         success_msg = opts.success_msg;
         success_continuation = opts.success_continuation;
-        error = opts.error;
+        error_continuation = opts.error_continuation;
     }
     if (success_msg === undefined) {
         success_msg = exports.strings.success;
-    }
-    if (success === undefined) {
-        loading.make_indicator(spinner, {text: exports.strings.saving});
-        success = function (reponse_data) {
-            ui_report.success(success_msg, $(status_element).expectOne());
-            settings_ui.display_checkmark(spinner);
-            if (success_continuation !== undefined) {
-                success_continuation(reponse_data);
-            }
-        };
-    }
-    if (error === undefined) {
-        error = function (xhr) {
-            ui_report.error(exports.strings.failure, xhr, $(status_element).expectOne());
-        };
     }
 
     request_method({
         url: url,
         data: data,
-        success: success,
-        error: error,
+        success: function (reponse_data) {
+            ui_report.success(success_msg, spinner);
+            settings_ui.display_checkmark(spinner);
+            if (success_continuation !== undefined) {
+                success_continuation(reponse_data);
+            }
+        },
+        error: function (xhr) {
+            ui_report.error(exports.strings.failure, xhr, spinner);
+            if (error_continuation !== undefined) {
+                error_continuation(xhr);
+            }
+        },
     });
 };
 
