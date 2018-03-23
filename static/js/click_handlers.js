@@ -213,6 +213,7 @@ $(function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         var recipient_row = $(this).closest(".recipient_row");
+        message_edit.show_topic_edit_spinner(recipient_row);
         message_edit.save(recipient_row, true);
         e.stopPropagation();
         popovers.hide_all();
