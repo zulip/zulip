@@ -83,12 +83,8 @@ if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-extra_args = ["--check-untyped-defs",
-              "--follow-imports=silent",
-              "--scripts-are-modules",
-              "--show-traceback",
-              "-i", "--cache-dir=var/mypy-cache",
-              "--disallow-any-generics"]
+extra_args = ["--follow-imports=silent",
+              "-i", "--cache-dir=var/mypy-cache"]
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("var/linecoverage-report")
