@@ -143,7 +143,7 @@ def write_data_to_file(output_file: Path, data: Any) -> None:
     with open(output_file, "w") as f:
         f.write(ujson.dumps(data, indent=4))
 
-def make_raw(query: Any, exclude: List[Field]=None) -> List[Record]:
+def make_raw(query: Any, exclude: Optional[List[Field]]=None) -> List[Record]:
     '''
     Takes a Django query and returns a JSONable list
     of dictionaries corresponding to the database rows.
@@ -194,13 +194,21 @@ class Config:
 
     '''
 
-    def __init__(self, table: str=None, model: Any=None,
-                 normal_parent: 'Config'=None, virtual_parent: 'Config'=None,
-                 filter_args: FilterArgs=None, custom_fetch: CustomFetch=None,
-                 custom_tables: List[TableName]=None, post_process_data: PostProcessData=None,
-                 concat_and_destroy: List[TableName]=None, id_source: IdSource=None,
-                 source_filter: SourceFilter=None, parent_key: Field=None,
-                 use_all: bool=False, is_seeded: bool=False, exclude: List[Field]=None) -> None:
+    def __init__(self, table: Optional[str]=None,
+                 model: Optional[Any]=None,
+                 normal_parent: Optional['Config']=None,
+                 virtual_parent: Optional['Config']=None,
+                 filter_args: Optional[FilterArgs]=None,
+                 custom_fetch: Optional[CustomFetch]=None,
+                 custom_tables: Optional[List[TableName]]=None,
+                 post_process_data: Optional[PostProcessData]=None,
+                 concat_and_destroy: Optional[List[TableName]]=None,
+                 id_source: Optional[IdSource]=None,
+                 source_filter: Optional[SourceFilter]=None,
+                 parent_key: Optional[Field]=None,
+                 use_all: bool=False,
+                 is_seeded: bool=False,
+                 exclude: Optional[List[Field]]=None) -> None:
         assert table or custom_tables
         self.table = table
         self.model = model
@@ -259,8 +267,8 @@ class Config:
                     self.virtual_parent.table))
 
 
-def export_from_config(response: TableData, config: Config, seed_object: Any=None,
-                       context: Context=None) -> None:
+def export_from_config(response: TableData, config: Config, seed_object: Optional[Any]=None,
+                       context: Optional[Context]=None) -> None:
     table = config.table
     parent = config.parent
     model = config.model
@@ -701,7 +709,7 @@ def write_message_export(message_filename: Path, output: MessageOutput) -> None:
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
                                  chunk_size: int=1000,
-                                 output_dir: Path=None) -> Set[int]:
+                                 output_dir: Optional[Path]=None) -> Set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
 
@@ -1022,7 +1030,7 @@ def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
             f.write('\n')
 
 def do_export_realm(realm: Realm, output_dir: Path, threads: int,
-                    exportable_user_ids: Set[int]=None) -> None:
+                    exportable_user_ids: Optional[Set[int]]=None) -> None:
     response = {}  # type: TableData
 
     # We need at least one thread running to export
@@ -1281,7 +1289,8 @@ def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_n
         values_as_int = int(values_as_bitstring, 2)
         item[field_name] = values_as_int
 
-def bulk_import_model(data: TableData, model: Any, table: TableName, dump_file_id: str=None) -> None:
+def bulk_import_model(data: TableData, model: Any, table: TableName,
+                      dump_file_id: Optional[str]=None) -> None:
     # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
     if dump_file_id is None:
@@ -1532,7 +1541,8 @@ def do_import_system_bots(realm: Any) -> None:
     create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
     print("Finished importing system bots.")
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]], bot_type: int=None) -> None:
+def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+                 bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:
         short_name = email_to_username(email)
