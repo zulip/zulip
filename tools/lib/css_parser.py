@@ -1,4 +1,4 @@
-from typing import Callable, List, Tuple, Union
+from typing import Callable, List, Tuple, Union, Optional
 
 ####### Helpers
 
@@ -50,7 +50,7 @@ def get_whitespace(tokens, i, end):
     return i, text
 
 def get_whitespace_and_comments(tokens, i, end, line=None):
-    # type: (List[Token], int, int, int) -> Tuple[int, str]
+    # type: (List[Token], int, int, Optional[int]) -> Tuple[int, str]
 
     def is_fluff_token(token):
         # type: (Token) -> bool

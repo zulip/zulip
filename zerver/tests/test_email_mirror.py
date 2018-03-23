@@ -45,7 +45,7 @@ import sys
 from io import StringIO
 from django.conf import settings
 
-from typing import Any, Callable, Dict, Mapping, Union, Text
+from typing import Any, Callable, Dict, Mapping, Union, Text, Optional
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
@@ -406,7 +406,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
 
         def check_queue_json_publish(queue_name: str,
                                      event: Union[Mapping[str, Any], str],
-                                     processor: Callable[[Any], None]=None) -> None:
+                                     processor: Optional[Callable[[Any], None]]=None) -> None:
             self.assertEqual(queue_name, "email_mirror")
             self.assertEqual(event, {"rcpt_to": to_address, "message": mail})
 

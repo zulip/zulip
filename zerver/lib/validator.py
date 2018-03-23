@@ -90,7 +90,7 @@ def check_list(sub_validator: Optional[Validator], length: Optional[int]=None) -
     return f
 
 def check_dict(required_keys: Iterable[Tuple[str, Validator]]=[],
-               value_validator: Validator=None,
+               value_validator: Optional[Validator]=None,
                _allow_only_listed_keys: bool=False) -> Validator:
     def f(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, dict):

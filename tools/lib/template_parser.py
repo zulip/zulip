@@ -11,7 +11,7 @@ class TemplateParserException(Exception):
 
 class TokenizationException(Exception):
     def __init__(self, message, line_content=None):
-        # type: (str, str) -> None
+        # type: (str, Optional[str]) -> None
         self.message = message
         self.line_content = line_content
 
