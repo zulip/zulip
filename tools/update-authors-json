@@ -86,13 +86,24 @@ def run_production() -> None:
             if contribs:
                 repos_done.append(name)
                 for contrib in contribs:
-                    if contrib.get('author') is None:
+                    assert contrib is not None  # TODO: To improve/clarify
+
+                    author = contrib.get('author')
+                    if author is None:
                         # This happens for users who've deleted their GitHub account.
                         continue
-                    username = contrib.get('author').get('login')
+
+                    username = author.get('login')
+                    assert username is not None  # TODO: To improve/clarify
+
+                    avatar = author.get('avatar_url')
+                    assert avatar is not None  # TODO: To improve/clarify
+                    total = contrib.get('total')
+                    assert total is not None  # TODO: To improve/clarify
+
                     contrib_data = {
-                        'avatar': contrib.get('author').get('avatar_url'),
-                        name: contrib.get('total'),
+                        'avatar': avatar,
+                        name: total,
                     }
                     if username in contribs_list:
                         contribs_list[username].update(contrib_data)
