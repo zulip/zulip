@@ -124,9 +124,8 @@ exports.save = function (row, from_topic_edited_only) {
         url: '/json/messages/' + message.id,
         data: request,
         success: function () {
-            if (msg_list === current_msg_list) {
-                row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
-            }
+            var spinner = row.find(".topic_edit_spinner");
+            loading.destroy_indicator(spinner);
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
@@ -146,6 +145,14 @@ exports.update_message_topic_editing_pencil = function () {
     }
 };
 
+exports.show_topic_edit_spinner = function (row) {
+    var spinner = row.find(".topic_edit_spinner");
+    loading.make_indicator(spinner);
+    $(spinner).removeAttr("style");
+    $(".topic_edit_save").hide();
+    $(".topic_edit_cancel").hide();
+}
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
@@ -157,6 +164,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
         row = $(e.target).closest(".message_row");
     } else if (e.target.id === "inline_topic_edit" && code === 13) {
         row = $(e.target).closest(".recipient_row");
+        exports.show_topic_edit_spinner(row);
     } else {
         return;
     }
