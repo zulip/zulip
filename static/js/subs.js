@@ -26,8 +26,10 @@ function row_for_stream_id(stream_id) {
 }
 
 function settings_button_for_sub(sub) {
+    // We don't do expectOne() here, because this button is only
+    // visible if the user has that stream selected in the streams UI.
     var id = parseInt(sub.stream_id, 10);
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button").expectOne();
+    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
 function get_row_data(row) {
