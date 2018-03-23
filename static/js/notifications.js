@@ -262,7 +262,21 @@ function process_notification(notification) {
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
     ui.replace_emoji_with_text(content);
-    content = content.text();
+
+    if (content.text().trim() === "" && content.find("p a")) {
+        var notification_message = [];
+        content.find("p a").each(function () {
+            if ($(this).attr("href").startsWith("/user_uploads/")) {
+                notification_message.push(i18n.t("Uploaded __title__ file", {title: $(this).attr("title")}));
+            }
+        });
+        if (notification_message.length === 0) {
+            notification_message.push("Sent an attachment");
+        }
+        content = notification_message.join("\n").trim();
+    } else {
+        content = content.text();
+    }
 
     if (message.is_me_message) {
         content = message.sender_full_name + content.slice(3);
