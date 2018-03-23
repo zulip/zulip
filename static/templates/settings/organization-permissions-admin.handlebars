@@ -15,18 +15,7 @@
         <div id="org-org-join" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Joining the organization" }}</h3>
-                {{#if is_admin }}
-                <div class="input-group organization-submission subsection-changes-save">
-                    <button type="button" id="org-submit-org-join" class="button rounded sea-green hide" data-status="save">
-                        {{t 'Save' }}
-                    </button>
-                </div>
-                <div class="input-group subsection-changes-discard">
-                    <button type="button" id="org-discard-org-join" class="button rounded hide">
-                        {{t 'Discard changes' }}
-                    </button>
-                </div>
-                {{/if}}
+                {{ partial "settings-save-discard-widget" "section_name" "org-join" }}
             </div>
             <div class="inline-block organization-permissions-parent">
                 <div class="input-group admin-restricted-to-domain">
@@ -82,18 +71,7 @@
         <div id="org-user-identity" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "User identity" }}</h3>
-                {{#if is_admin }}
-                <div class="input-group organization-submission subsection-changes-save">
-                    <button type="button" id="org-submit-user-identity" class="button rounded sea-green hide" data-status="save">
-                        {{t 'Save' }}
-                    </button>
-                </div>
-                <div class="input-group subsection-changes-discard">
-                    <button type="button" id="org-discard-user-identity" class="button rounded hide">
-                        {{t 'Discard changes' }}
-                    </button>
-                </div>
-                {{/if}}
+                {{ partial "settings-save-discard-widget" "section_name" "user-identity" }}
             </div>
             <div class="inline-block organization-permissions-parent">
                 <div class="input-group">
@@ -123,18 +101,7 @@
         <div id="org-other-permissions" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Other permissions" }}</h3>
-                {{#if is_admin }}
-                <div class="input-group organization-submission subsection-changes-save">
-                    <button type="button" id="org-submit-other-permissions" class="button rounded sea-green hide" data-status="save">
-                        {{t 'Save' }}
-                    </button>
-                </div>
-                <div class="input-group subsection-changes-discard">
-                    <button type="button" id="org-discard-other-permissions" class="button rounded hide">
-                        {{t 'Discard changes' }}
-                    </button>
-                </div>
-                {{/if}}
+                {{ partial "settings-save-discard-widget" "section_name" "other-permissions" }}
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
