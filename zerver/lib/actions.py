@@ -4687,7 +4687,7 @@ def do_send_delete_user_group_event(user_group_id: int, realm_id: int) -> None:
                  group_id=user_group_id)
     send_event(event, active_user_ids(realm_id))
 
-def check_delete_user_group(user_group_id: int, realm: Realm) -> None:
-    user_group = access_user_group_by_id(user_group_id, realm)
+def check_delete_user_group(user_group_id: int, user_profile: UserProfile) -> None:
+    user_group = access_user_group_by_id(user_group_id, user_profile)
     user_group.delete()
-    do_send_delete_user_group_event(user_group_id, realm.id)
+    do_send_delete_user_group_event(user_group_id, user_profile.realm.id)
