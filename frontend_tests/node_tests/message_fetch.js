@@ -23,6 +23,7 @@ set_global('document', 'document-stub');
 set_global('message_util', {});
 set_global('message_store', {});
 set_global('muting', {});
+set_global('narrow_state', {});
 set_global('pm_list', {});
 set_global('resize', {});
 set_global('server_events', {});
@@ -252,4 +253,126 @@ function test_backfill_idle(idle_config) {
     var idle_config = step2.finish();
 
     test_backfill_idle(idle_config);
+}());
+
+
+function simulate_narrow() {
+    var filter = {
+        predicate: function () { return true; },
+    };
+
+    narrow_state.active = function () { return true; };
+    narrow_state.public_operators = function () {
+        return 'operators-stub';
+    };
+
+    var msg_list = new message_list.MessageList(
+        'zfilt',
+        filter
+    );
+    set_global('current_msg_list', msg_list);
+
+    return msg_list;
+}
+
+(function test_loading_newer() {
+    function test_dup_new_fetch(msg_list) {
+        assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
+        message_fetch.maybe_load_newer_messages({
+            msg_list: msg_list,
+        });
+    }
+
+    function test_happy_path(opts) {
+        var msg_list = opts.msg_list;
+        var data = opts.data;
+
+        var fetch = config_fake_channel({
+            expected_opts_data: data.req,
+        });
+
+        message_fetch.maybe_load_newer_messages({
+            msg_list: msg_list,
+        });
+
+        test_dup_new_fetch(msg_list);
+
+        test_fetch_success({
+            fetch: fetch,
+            response: data.resp,
+        });
+    }
+
+    (function test_narrow() {
+        var msg_list = simulate_narrow();
+
+        var data = {
+            req: {
+                anchor: '444',
+                num_before: 0,
+                num_after: 100,
+                narrow: '"operators-stub"',
+                client_gravatar: true,
+            },
+            resp: {
+                messages: message_range(500, 600),
+                found_newest: false,
+            },
+        };
+
+        test_happy_path({
+            msg_list: msg_list,
+            data: data,
+        });
+
+        assert.equal(msg_list.fetch_status.can_load_newer_messages(), true);
+    }());
+
+    (function test_home() {
+        reset_lists();
+        var msg_list = home_msg_list;
+
+        var data = [
+            {
+                req: {
+                    anchor: '444',
+                    num_before: 0,
+                    num_after: 100,
+                    client_gravatar: true,
+                },
+                resp: {
+                    messages: message_range(500, 600),
+                    found_newest: false,
+                },
+            },
+            {
+                req: {
+                    anchor: '599',
+                    num_before: 0,
+                    num_after: 100,
+                    client_gravatar: true,
+                },
+                resp: {
+                    messages: message_range(700, 800),
+                    found_newest: true,
+                },
+            },
+        ];
+
+        test_happy_path({
+            msg_list: msg_list,
+            data: data[0],
+        });
+
+        assert.equal(msg_list.fetch_status.can_load_newer_messages(), true);
+
+        test_happy_path({
+            msg_list: msg_list,
+            data: data[1],
+        });
+
+        assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
+
+    }());
+
 }());
