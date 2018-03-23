@@ -478,6 +478,11 @@ input[type=checkbox].inline-block {
     margin-left: 10px;
 }
 
+#settings_page .custom_user_field textarea {
+    width: 303px;
+    height: 75px;
+}
+
 #settings_page .alert-notification.alert-error {
     color: hsl(2, 46%, 68%);
     border-color: hsl(2, 46%, 68%);
