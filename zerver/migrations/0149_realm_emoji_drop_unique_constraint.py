@@ -55,11 +55,11 @@ class S3Uploader(Uploader):
     def __init__(self) -> None:
         super().__init__()
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket_name = settings.S3_AVATAR_BUCKET
-        self.bucket = conn.get_bucket(bucket_name, validate=False)
+        self.bucket_name = settings.S3_AVATAR_BUCKET
+        self.bucket = conn.get_bucket(self.bucket_name, validate=False)
 
     def copy_files(self, src_key: str, dst_key: str) -> None:
-        self.bucket.copy_key(src_key, self.bucket, dst_key)
+        self.bucket.copy_key(dst_key, self.bucket_name, src_key)
 
 def get_uploader() -> Uploader:
     if settings.LOCAL_UPLOADS_DIR is None:
