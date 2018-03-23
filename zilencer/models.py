@@ -30,7 +30,7 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         unique_together = ("server", "token")
 
     def __str__(self) -> str:
-        return "<RemotePushDeviceToken %s %s %s>" % (self.server, self.user_id)
+        return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)
 
 class Customer(models.Model):
     stripe_customer_id = models.CharField(max_length=255, unique=True)
