@@ -27,14 +27,13 @@
             {{/if}}
         </div>
 
-        <h3>{{t "Organization avatar" }}</h3>
-
+        <h3 class="light">{{t "Organization avatar" }}</h3>
         <div class="realm-icon-section">
             <div class="inline-block">
                 <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
                 <div id="realm_icon_file_input_error" class="text-error"></div>
                 <input type="file" name="realm_icon_file_input" class="notvisible"
-                       id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
+                        id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
                 <div id="upload_icon_spinner"></div>
             </div>
             <div class="inline-block avatar-controls">
@@ -42,6 +41,23 @@
                         id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                         id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
+            </div>
+        </div>
+
+        <h3 class="light">{{t "Organization logo" }}</h3>
+        <div class="realm-icon-section">
+            <div class="inline-block">
+                <img id="realm-settings-logo" src="{{ realm_logo_url }}"/>
+                <div id="realm_logo_file_input_error" class="text-error"></div>
+                <input type="file" name="realm_logo_file_input" class="notvisible"
+                        id="realm_logo_file_input" value="{{t 'Upload logo' }}"/>
+                <div id="upload_logo_spinner"></div>
+            </div>
+            <div class="inline-block avatar-controls">
+                <button class="button rounded sea-green w-200 block input-size"
+                        id="realm_logo_upload_button">{{t 'Upload new logo' }}</button>
+                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
+                        id="realm_logo_delete_button">{{t 'Delete logo' }}</button>
             </div>
         </div>
 
@@ -53,6 +69,5 @@
                 </button>
             </div>
             {{ partial "deactivate-realm-modal"}}
-        </div>
     </form>
 </div>
