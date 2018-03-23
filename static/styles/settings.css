@@ -1237,6 +1237,16 @@ input[type=checkbox].inline-block {
     height: 80px;
 }
 
+#settings_page .custom_user_field input[type=number]::-webkit-outer-spin-button,
+#settings_page .custom_user_field input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#settings_page .custom_user_field input[type=number] {
+    -moz-appearance: textfield;
+}
+
 #settings_page #change_password_modal .change_password_info,
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
