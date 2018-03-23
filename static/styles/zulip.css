@@ -2242,6 +2242,20 @@ button.topic_edit_cancel {
     margin-top: -1px;
 }
 
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
+}
+
 .modal {
     overflow: hidden;
     margin-top: 0;
