@@ -166,21 +166,22 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     }
 };
 
-function add_email_hint(row, email_address_hint_content) {
+function add_email_hint_handler() {
     // Add a popover explaining stream e-mail addresses on hover.
-    var hint_id = "#email-address-hint-" + row.stream_id;
 
-    $("body").on("mouseover", hint_id, function (e) {
-        $(hint_id).popover({placement: "right",
-                title: "Email integration",
-                content: email_address_hint_content,
-                trigger: "manual",
-                animation: false});
-        $(hint_id).popover('show');
+    $("body").on("mouseover", '.stream-email-hint', function (e) {
+        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
+        $(e.target).popover({
+            placement: "right",
+            title: "Email integration",
+            content: email_address_hint_content,
+            trigger: "manual",
+            animation: false});
+        $(e.target).popover('show');
         e.stopPropagation();
     });
-    $("body").on("mouseout", hint_id, function (e) {
-        $(hint_id).popover('hide');
+    $("body").on("mouseout", '.stream-email-hint', function (e) {
+        $(e.target).popover('hide');
         e.stopPropagation();
     });
 }
@@ -194,9 +195,6 @@ exports.add_sub_to_table = function (sub) {
         $(".streams-list").append(html);
     }
     $(".subscriptions .settings").append($(settings_html));
-
-    var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
-    add_email_hint(sub, email_address_hint_content);
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -440,10 +438,6 @@ exports.setup_page = function (callback) {
         $('#subscriptions_table').append(rendered);
         initialize_components();
         exports.actually_filter_streams();
-        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
-        _.each(sub_rows, function (row) {
-            add_email_hint(row, email_address_hint_content);
-        });
 
         $("#add_new_subscription input[type='text']").on("input", function () {
             remove_temporarily_miscategorized_streams();
@@ -712,13 +706,14 @@ exports.sub_or_unsub = function (sub) {
 
 
 $(function () {
-
     stream_data.initialize_from_page_params();
     stream_list.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     stream_list.build_stream_list();
+
+    add_email_hint_handler();
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();
