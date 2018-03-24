@@ -144,7 +144,7 @@ class Command(BaseCommand):
                       'true': self.generate_fixture_data(stat, 20, 2, 3, .2, 3)}
         insert_fixture_data(stat, realm_data, RealmCount)
         stream_data = {'false': self.generate_fixture_data(stat, 10, 7, 5, .6, 4),
-                       'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}
+                       'true': self.generate_fixture_data(stat, 5, 3, 2, .4, 2)}  # type: Mapping[Optional[str], List[int]]
         insert_fixture_data(stat, stream_data, StreamCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)
