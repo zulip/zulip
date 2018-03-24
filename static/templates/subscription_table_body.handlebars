@@ -10,16 +10,23 @@
             </div>
             <div class="left">
                 <div class="search-container">
-                    <form id="add_new_subscription" class="form-inline" action="">
-                        <input type="text" name="stream_name" id="search_stream_name"
-                          placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
-                        {{#if can_create_streams}}
-                        <input type="submit" class="create_stream_button"
-                          value="+" title="{{t 'Create new stream' }} (n)"/>
-                        {{/if}}
-                        <div class="float-clear"></div>
-                    </form>
-                    <div class="clear-float"></div>
+                    <div class="search_sort_bar">
+                        <form id="add_new_subscription" class="form-inline" action="">
+                            <input type="text" name="stream_name" id="search_stream_name"
+                              placeholder="{{t 'Filter streams' }}" value="" autocomplete="off" />
+                            {{#if can_create_streams}}
+                            <input type="submit" class="create_stream_button"
+                              value="+" title="{{t 'Create new stream' }} (n)"/>
+                            {{/if}}
+                            <div class="float-clear"></div>
+                        </form>
+                        <select id="sort_menu">
+                            <option value="">&#xf160 Sort By</option>   # Sorting icon
+                            <option value="subscriber_count">&#xf2c0 Subscriber count</option>
+                            <option value="weekly_messages">&#xf080 Weekly traffic</option>
+                        </select>
+                        <div class="clear-float"></div>
+                    </div>
                 </div>
                 <div class="streams-list">
                     {{#each subscriptions}}

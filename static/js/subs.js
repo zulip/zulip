@@ -821,6 +821,72 @@ $(function () {
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
+
+    $("#subscriptions_table").on("change", "#sort_menu", function () {
+        var menu = $('#sort_menu')[0];
+        var option = menu.options[menu.selectedIndex].value;
+        var streams = stream_data.get_streams_for_settings_page();
+        var streams_list = $(".streams-list");
+        var list = list_render(streams_list, streams, {
+            name: "streams-list",
+            modifier: function (item) {
+                return templates.render("subscription", item);
+            },
+            filter: {
+                element: undefined, // do we need to connect existing 'Filter streams' with this?
+                callback: function (item, value) {
+                    return item.name.toLocaleLowerCase().indexOf(value) >= 0;
+                },
+                onupdate: function () {
+                    ui.update_scrollbar(streams_list);
+                },
+            },
+        }).init();
+
+        list.add_sort_function('subscriber_count', function (a, b) {
+            var a_m = parseInt(a.subscriber_count, 10);
+            var b_m = parseInt(b.subscriber_count, 10);
+
+            if (a_m > b_m) {
+                return 1;
+            } else if (a_m === b_m) {
+                return 0;
+            }
+
+            return -1;
+        });
+
+        list.add_sort_function('weekly_messages', function (a, b) {
+            var a_m = parseInt(a.stream_weekly_traffic, 10);
+            var b_m = parseInt(b.stream_weekly_traffic, 10);
+
+            if(!a.is_old_stream && b.is_old_stream){
+                return 0;   // Put "New" streams at the top
+            }
+            if (a_m > b_m) {
+                return 1;
+            } else if (a_m === b_m) {
+                return 0;
+            }
+
+            return -1;
+        });
+
+        if (option !== 'none') {
+            list.sort(option);
+        }
+    });
+
+    $(document).on('peer_subscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+
+    $(document).on('peer_unsubscribe.zulip', function (e, data) {
+        var sub = stream_data.get_sub(data.stream_name);
+        exports.rerender_subscribers_count(sub);
+    });
+
 });
 
 function focus_on_narrowed_stream() {

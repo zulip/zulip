@@ -212,6 +212,15 @@ form#add_new_subscription {
     margin: 0;
 }
 
+.search_sort_bar #sort_menu {
+    float: left;
+    width: 50px;
+    margin-right: 5px;
+    border-radius: 5px;
+    box-shadow: none;
+    font-family: 'FontAwesome','Source Sans Pro';
+}
+
 .create_stream_button {
     margin: 0px 0px 0px 5px;
 
@@ -508,6 +517,11 @@ form#add_new_subscription {
 .subscriptions-container .left .search-container {
     padding: 6px 8px;
     border-bottom: 1px solid hsl(0, 0%, 86%);
+}
+
+.subscriptions-container .left .search-container .search_sort_bar {
+    float: right;
+    margin: 0;
 }
 
 .subscriptions-container .right .display-type {
@@ -959,6 +973,14 @@ form#add_new_subscription {
     margin-right: 5px;
 }
 
+@media (max-width: 1240px) {
+    #search_stream_name {
+        width: 100px;
+        margin-top: 2px;
+        margin-bottom: 0px;
+    }
+}
+
 @media (max-width: 1130px) {
     .subscriptions-container {
         max-width: 95%;
@@ -976,6 +998,10 @@ form#add_new_subscription {
         width: 100px;
         margin-top: 2px;
         margin-bottom: 0px;
+    }
+
+    #sort_menu {
+        display: none;
     }
 }
 
