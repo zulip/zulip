@@ -84,21 +84,14 @@
 .compose_table .pm_recipient {
     margin: 0px 20px 0px 10px;
     display: flex;
+    width: 100%;
 }
 
 .compose_table #private-message .to_text {
     width: 65px;
-    vertical-align: top;
+    vertical-align: middle;
 
     font-weight: 600;
-}
-
-.compose_table #private-message .to_text span {
-    display: flex;
-    align-items: center;
-
-    position: relative;
-    top: -1px;
 }
 
 .compose_table #compose-lock-icon {
