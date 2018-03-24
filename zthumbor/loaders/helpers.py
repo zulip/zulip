@@ -80,6 +80,7 @@ def sign_is_valid(url, context):
         force_text(size),
         force_text(source_type),
     ])
-    if sign == get_sign_hash(raw, get_secret('thumbor_key')):
-        return True
-    return False
+    secret_key = get_secret('thumbor_key')
+    if secret_key is None or sign != get_sign_hash(raw, secret_key):
+        return False
+    return True
