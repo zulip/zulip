@@ -84,6 +84,8 @@ parameters, or specify no parameters for interactive user creation.""")
                 pw = open(options['password_file'], 'r').read()
             else:
                 user_initial_password = initial_password(email)
+                if user_initial_password is None:
+                    raise CommandError("Password is unusable.")
                 pw = user_initial_password.encode()
             notify_new_user(do_create_user(email, pw,
                                            realm, full_name, email_to_username(email)),
