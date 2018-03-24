@@ -1612,6 +1612,7 @@ input.new-organization-button {
     box-shadow: none;
 }
 
+.integration-instructions .tip,
 .markdown .warn,
 .markdown .tip {
     position: relative;
@@ -1623,16 +1624,19 @@ input.new-organization-button {
     margin: 5px 0px;
 }
 
+.integration-instructions .tip,
 .markdown .tip {
     background-color: hsl(46, 63%, 95%);
     border: 1px solid hsl(46, 63%, 84%);
 }
 
+.integration-instructions .tip,
 .markdown .warn p,
 .markdown .tip p {
     margin-bottom: 0;
 }
 
+.integration-instructions .tip::before,
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
@@ -1640,6 +1644,7 @@ input.new-organization-button {
     font-weight: 600;
 }
 
+.integration-instructions .tip p:first-of-type,
 .markdown .tip p:first-of-type {
     display: inline;
 }
