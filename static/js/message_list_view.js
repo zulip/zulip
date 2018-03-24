@@ -435,14 +435,6 @@ MessageListView.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
 
-            var e = $.Event('message_rendered.zulip', {target: row});
-            try {
-                $(document).trigger(e);
-            } catch (ex) {
-                blueslip.error('Problem with message rendering',
-                               {message_id: rows.id($(row))},
-                               ex.stack);
-            }
         });
     },
 
