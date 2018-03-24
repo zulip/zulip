@@ -423,7 +423,7 @@ function _set_up() {
         if (property_name === 'realm_message_content_edit_limit_minutes') {
             return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
         } else if (property_name === 'realm_create_stream_permission') {
-            if (page_params.create_stream_by_admins_only) {
+            if (page_params.realm_create_stream_by_admins_only) {
                 return "by_admins_only";
             }
             if (page_params.realm_waiting_period_threshold === 0) {
