@@ -123,7 +123,7 @@
 .group-pms-sidebar-entry,
 .user_sidebar_entry {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
 }
 
@@ -138,7 +138,6 @@
     font-weight: normal;
     letter-spacing: 0.6px;
     position: relative;
-    top: 3px;
     border-radius: 4px;
     margin-right: 15px;
 }
