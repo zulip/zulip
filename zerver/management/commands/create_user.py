@@ -83,7 +83,8 @@ parameters, or specify no parameters for interactive user creation.""")
             if 'password_file' in options:
                 pw = open(options['password_file'], 'r').read()
             else:
-                pw = initial_password(email).encode()
+                user_initial_password = initial_password(email)
+                pw = user_initial_password.encode()
             notify_new_user(do_create_user(email, pw,
                                            realm, full_name, email_to_username(email)),
                             internal=True)
