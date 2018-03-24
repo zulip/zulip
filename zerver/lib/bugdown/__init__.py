@@ -548,6 +548,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(5)
 
+    def vimeo_title(self, extracted_data: Dict[Text, Any]) -> Optional[Text]:
+        title = extracted_data.get("title")
+        if title is not None:
+            return "Vimeo - {}".format(title)
+        return None
+
     def twitter_text(self, text: Text,
                      urls: List[Dict[Text, Text]],
                      user_mentions: List[Dict[Text, Any]],
@@ -870,8 +876,12 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 vm_id = self.vimeo_id(url)
                 if vm_id is not None:
                     vimeo_image = extracted_data.get('image')
+                    vimeo_title = self.vimeo_title(extracted_data)
                     if vimeo_image is not None:
-                        add_a(root, vimeo_image, url, None, None, "vimeo-video message_inline_image", vm_id)
+                        add_a(root, vimeo_image, url, vimeo_title,
+                              None, "vimeo-video message_inline_image", vm_id)
+                    if vimeo_title is not None:
+                        found_url.family.child.text = vimeo_title
                 else:
                     add_embed(root, url, extracted_data)
 
