@@ -1,4 +1,6 @@
-{{#with user_group}}
+{{#if is_non_member_first}}
+<h3>{{t 'Other groups' }}</h3>
+{{/if}}
 <div class="user-group white-box" id="{{id}}">
     <h4>
         <span class="name" data-placeholder="{{t 'Name' }}" contenteditable="true" spellcheck="false">{{name}}</span>
@@ -25,4 +27,3 @@
         </div>
     </p>
 </div>
-{{/with}}

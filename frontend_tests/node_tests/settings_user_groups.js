@@ -11,7 +11,9 @@ var pills = {
     pill: {},
 };
 
-var create_item_handler;
+var non_editable_pills = {
+    pill: {},
+};
 
 set_global('channel', {});
 set_global('templates', {});
@@ -26,26 +28,8 @@ set_global('ui_report', {});
 set_global('people', {
     my_current_user_id: noop,
 });
-function reset_test_setup(pill_container_stub) {
-    function input_pill_stub(opts) {
-        assert.equal(opts.container, pill_container_stub);
-        create_item_handler = opts.create_item_from_text;
-        assert(create_item_handler);
-        return pills;
-    }
-    set_global('input_pill', {
-        create: input_pill_stub,
-    });
-}
 
 (function test_can_edit() {
-    var me = {
-        is_admin: false,
-    };
-    people.get_person_from_user_id = function (id) {
-        assert.equal(id, undefined);
-        return me;
-    };
     user_groups.is_member_of = function (group_id, user_id) {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
@@ -72,6 +56,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         email: 'iago@zulip.com',
         user_id: 2,
         full_name: 'Iago',
+        is_admin: true,
     };
     var alice = {
         email: 'alice@example.com',
@@ -96,17 +81,22 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     var fake_rendered_temp = $.create('fake_admin_user_group_list_template_rendered');
     templates.render = function (template, args) {
         assert.equal(template, 'admin_user_group_list');
-        assert.equal(args.user_group.id, 1);
-        assert.equal(args.user_group.name, 'Mobile');
-        assert.equal(args.user_group.description, 'All mobile people');
+        assert.equal(args.id, 1);
+        assert.equal(args.name, 'Mobile');
+        assert.equal(args.description, 'All mobile people');
+        assert(!args.is_non_member_first);
         templates_render_called = true;
         return fake_rendered_temp;
     };
 
-    var user_groups_list_append_called = false;
+    var user_groups_list_append_called = 0;
     $('#user-groups').append = function (rendered_temp) {
+        if (rendered_temp === 'translated: <h3>Your groups</h3>') {
+            user_groups_list_append_called += 1;
+            return;
+        }
         assert.equal(rendered_temp, fake_rendered_temp);
-        user_groups_list_append_called = true;
+        user_groups_list_append_called += 1;
     };
 
     var get_person_from_user_id_called = false;
@@ -116,7 +106,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             return iago;
         }
         if (user_id === undefined) {
-            return noop;
+            return iago;
         }
         assert.equal(user_id, 4);
         blueslip.warn = function (err_msg) {
@@ -130,14 +120,16 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         return true;
     };
 
+    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+
     var all_pills = {};
 
-    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
     pills.appendValidatedData = function (item) {
         var id = item.user_id;
         assert.equal(all_pills[id], undefined);
         all_pills[id] = item;
     };
+
     pills.items = function () {
         return _.values(all_pills);
     };
@@ -265,7 +257,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         assert.equal(typeof(handler), 'function');
         handler();
     };
-
+    var create_item_handler;
     function test_create_item(handler) {
         (function test_rejection_path() {
             var item = handler(iago.email, pills.items());
@@ -291,10 +283,19 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         handler();
     };
 
-    reset_test_setup(pill_container_stub);
+    function input_pill_stub(opts) {
+        assert.equal(opts.container, pill_container_stub);
+        create_item_handler = opts.create_item_from_text;
+        assert(create_item_handler);
+        return pills;
+    }
+    set_global('input_pill', {
+        create: input_pill_stub,
+    });
+
     settings_user_groups.set_up();
     assert(templates_render_called);
-    assert(user_groups_list_append_called);
+    assert.equal(user_groups_list_append_called, 2);
     assert(get_person_from_user_id_called);
     assert(blueslip_warn_called);
     assert(input_typeahead_called);
@@ -311,28 +312,43 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         id: 1,
         name: 'Mobile',
         description: 'All mobile people',
-        members: Dict.from_array([2, 4]),
+        members: Dict.from_array([3, 5]),
     };
-
+    var othello = {
+        email: 'othello@zulip.com',
+        user_id: 3,
+        full_name: 'othello',
+    };
     user_groups.get_realm_user_groups = function () {
         return [realm_user_group];
     };
 
-    // We return noop because these are already tested, so we skip them
-    people.get_realm_persons = function () {
-        return noop;
+    var templates_render_called = false;
+    var fake_rendered_temp = $.create('fake_non_editable_user_group_template_rendered');
+    templates.render = function (template, args) {
+        assert.equal(template, 'non_editable_user_group');
+        assert.equal(args.user_group.id, 1);
+        assert.equal(args.user_group.name, 'Mobile');
+        assert.equal(args.user_group.description, 'All mobile people');
+        templates_render_called = true;
+        return fake_rendered_temp;
     };
 
-    templates.render = function () {
-        return noop;
-    };
-
-    people.get_person_from_user_id = function () {
-        return noop;
-    };
-
-    user_pill.append_person = function () {
-        return noop;
+    var get_person_from_user_id_called = false;
+    var blueslip_warn_called = false;
+    people.get_person_from_user_id = function (id) {
+        if (id === othello.user_id) {
+            return othello;
+        }
+        if (id === undefined) {
+            return othello;
+        }
+        assert.equal(id, 5);
+        blueslip.warn = function (err_msg) {
+            assert.equal(err_msg, 'Unknown user ID 5 in members of user group Mobile');
+            blueslip_warn_called = true;
+        };
+        get_person_from_user_id_called = true;
     };
 
     var can_edit_called = 0;
@@ -341,138 +357,52 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         return false;
     };
 
-    // Reset zjquery to test stuff with user who cannot edit
-    set_global('$', global.make_zjquery());
-
-    var user_group_find_called = 0;
-    var user_group_stub = $('div.user-group[id="1"]');
-    var name_field_stub = $.create('fake-name-field');
-    var description_field_stub = $.create('fake-description-field');
-    var input_stub = $.create('fake-input');
-    user_group_stub.find = function (elem) {
-        if (elem === '.name') {
-            user_group_find_called += 1;
-            return name_field_stub;
-        }
-        if (elem === '.description') {
-            user_group_find_called += 1;
-            return description_field_stub;
-        }
-    };
-
     var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
-    var pill_stub = $.create('fake-pill');
-    var pill_container_find_called = 0;
-    pill_container_stub.find = function (elem) {
-        if (elem === '.input') {
-            pill_container_find_called += 1;
-            return input_stub;
+    var user_groups_append_called = 0;
+    $('#user-groups').append = function (opts) {
+        if (opts === 'translated: <h3>Other groups</h3>') {
+            user_groups_append_called += 1;
+            return;
         }
-        if (elem === '.pill') {
-            pill_container_find_called += 1;
-            return pill_stub;
+        if (opts === 'translated: <p>You are not a part of any groups.</p>') {
+            user_groups_append_called += 1;
+            return;
         }
-    };
-
-    input_stub.css = function (property, val) {
-        assert.equal(property, 'display');
-        assert.equal(val, 'none');
-    };
-
-    // Test the 'off' handlers on the pill-container
-    var turned_off = {};
-    pill_container_stub.off = function (event_name, sel) {
-        if (sel === undefined) {
-           sel = 'whole';
+        if (opts === 'translated: <h3>Your groups</h3>') {
+            user_groups_append_called += 1;
+            return;
         }
-        turned_off[event_name + '/' + sel] = true;
+        assert.equal(opts, fake_rendered_temp);
+        user_groups_append_called += 1;
     };
 
-    var pill_hover_called = false;
-    var callback;
-    var empty_fn;
-    pill_stub.hover = function (one, two) {
-        callback = one;
-        empty_fn = two;
-        pill_hover_called = true;
-        assert.equal(typeof(one), 'function');
-        assert.equal(typeof(two), 'function');
+    var all_pills = {};
+
+    non_editable_pills.appendValidatedData = function (item) {
+        var id = item.user_id;
+        assert.equal(all_pills[id], undefined);
+        all_pills[id] = item;
     };
 
-    var exit_button = $.create('fake-pill-exit');
-    pill_stub.set_find_results('.exit', exit_button);
-    var exit_button_called=false;
-    exit_button.css = function (property, value) {
-        exit_button_called = true;
-        assert.equal(property, 'opacity');
-        assert.equal(value, '0.5');
+    non_editable_pills.items = function () {
+        return _.values(all_pills);
     };
 
-    // We return noop because these are already tested, so we skip them
-    pill_container_stub.children = function () {
-        return noop;
-    };
+    function input_pill_stub(opts) {
+        assert.equal(opts.container, pill_container_stub);
+        return non_editable_pills;
+    }
+    set_global('input_pill', {
+        create_non_editable_pills: input_pill_stub,
+    });
 
-    $('#user-groups').append = function () {
-        return noop;
-    };
-
-    reset_test_setup(pill_container_stub);
-
-    settings_user_groups.set_up();
-
-    var set_parents_result_called = 0;
-    var set_attributes_called = 0;
-
-    // Test different handlers with an external user
-    var delete_handler = $('#user-groups').get_on_handler('click', '.delete');
-    var fake_delete = $.create('fk-#user-groups.delete_btn');
-    fake_delete.set_parents_result('.user-group', $('.user-group'));
-    set_parents_result_called += 1;
-    $('.user-group').attr('id', '1');
-    set_attributes_called += 1;
-
-    var name_update_handler = $(user_group_selector).get_on_handler("input", ".name");
-
-    var des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
-
-    var member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
-
-    var name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
-
-    var des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
-
-    var event = {
-        stopPropagation: noop,
-    };
-    var pill_click_called = false;
-    var pill_click_handler = pill_container_stub.get_on_handler('click');
-    pill_click_called = true;
-
-    assert(callback);
-    assert(empty_fn);
-    callback();
-    empty_fn();
-    pill_click_handler(event);
-    assert.equal(delete_handler.call(fake_delete), undefined);
-    assert.equal(name_update_handler(), undefined);
-    assert.equal(des_update_handler(), undefined);
-    assert.equal(member_change_handler(), undefined);
-    assert.equal(name_change_handler(), undefined);
-    assert.equal(des_change_handler(), undefined);
-    assert.equal(set_parents_result_called, 1);
-    assert.equal(set_attributes_called, 1);
-    assert.equal(can_edit_called, 9);
-    assert(exit_button_called);
-    assert(pill_click_called);
-    assert(pill_hover_called);
-    assert.equal(user_group_find_called, 2);
-    assert.equal(pill_container_find_called, 4);
-    assert.equal(turned_off['keydown/.pill'], true);
-    assert.equal(turned_off['keydown/.input'], true);
-    assert.equal(turned_off['click/whole'], true);
+    settings_user_groups.populate_user_groups();
+    assert.equal(user_groups_append_called, 4);
+    assert.equal(can_edit_called, 1);
+    assert(templates_render_called);
+    assert(get_person_from_user_id_called);
+    assert(blueslip_warn_called);
 }());
-
 (function test_reload() {
     $('#user-groups').html('Some text');
     var populate_user_groups_called = false;
@@ -483,19 +413,12 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     assert(populate_user_groups_called);
     assert.equal($('#user-groups').html(), '');
 }());
-
 (function test_reset() {
     settings_user_groups.reset();
     var result = settings_user_groups.reload();
     assert.equal(result, undefined);
 }());
-
 (function test_on_events() {
-
-    settings_user_groups.can_edit = function () {
-        return true;
-    };
-
     (function test_admin_user_group_form_submit_triggered() {
         var handler = $('.organization form.admin-user-group-form').get_on_handler("submit");
         var event = {

@@ -356,11 +356,9 @@ function render(template_name, args) {
 
 (function admin_user_group_list() {
     var args = {
-        user_group: {
-            id: "9",
-            name: "uranohoshi",
-            description: "Students at Uranohoshi Academy",
-        },
+        id: "9",
+        name: "uranohoshi",
+        description: "Students at Uranohoshi Academy",
     };
 
     var html = '';

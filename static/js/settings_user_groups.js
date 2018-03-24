@@ -14,29 +14,67 @@ exports.reload = function () {
     if (!meta.loaded) {
         return;
     }
-
     var user_groups_section = $('#user-groups').expectOne();
     user_groups_section.html('');
     exports.populate_user_groups();
 };
 
 exports.can_edit = function (group_id) {
-   var me = people.get_person_from_user_id(people.my_current_user_id());
-   return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
+   return (user_groups.is_member_of(group_id, people.my_current_user_id()));
 };
 
 exports.populate_user_groups = function () {
 
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
-    _.each(user_groups_array, function (data) {
-        user_groups_section.append(templates.render('admin_user_group_list', {
-            user_group: {
-                name: data.name,
-                id: data.id,
-                description: data.description,
-            },
-        }));
+    var me = people.get_person_from_user_id(people.my_current_user_id());
+    // We first separate out groups based on membership.
+    var editable_groups = []; // Groups of which user is a member
+    var non_editable_groups = []; // Groups of which user is not a member
+
+    _.each(user_groups_array, function (user_group) {
+        if (exports.can_edit(user_group.id)) {
+            editable_groups.push(user_group);
+        } else {
+            non_editable_groups.push(user_group);
+        }
+    });
+    // Save the length of user groups which user is member
+    var editable_group_length = editable_groups.length;
+
+    // We do the following for admin, since he/she can edit all groups.
+    if (me.is_admin) {
+        editable_groups = editable_groups.concat(non_editable_groups);
+        non_editable_groups = [];
+    }
+
+    // At this moment, editable groups mean which can be edited and
+    // non-editable groups mean which cannot be edited.
+
+    if (editable_group_length > 0) {
+        user_groups_section.append(i18n.t('<h3>Your groups</h3>'));
+    } else if (user_groups_array.length > 0) {
+        user_groups_section.append(i18n.t('<h3>Your groups</h3>'));
+        user_groups_section.append(i18n.t('<p>You are not a part of any groups.</p>'));
+    }
+
+    function append_user(user, pills) {
+        user_pill.append_person({
+            pill_widget: pills,
+            person: user,
+        });
+    }
+
+    _.each(editable_groups, function (data) {
+        // 'is_non_editable_first' parameter will hold only (if at all) in case of admins, when
+        // we have groups (for 1st such group) of which admin is not a member of.
+        var args = {
+            name: data.name,
+            id: data.id,
+            description: data.description,
+            is_non_member_first: editable_groups.indexOf(data) === editable_group_length,
+        };
+        user_groups_section.append(templates.render('admin_user_group_list', args));
         var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
         var pills = input_pill.create({
             container: pill_container,
@@ -48,46 +86,15 @@ exports.populate_user_groups = function () {
             return user_pill.get_user_ids(pills);
         }
 
-        function append_user(user) {
-            user_pill.append_person({
-                pill_widget: pills,
-                person: user,
-            });
-        }
-
-        var userg = $('div.user-group[id="' + data.id + '"]');
         data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
             if (user) {
-                append_user(user);
+                append_user(user, pills);
             } else {
                 blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
             }
         });
-
-        function update_membership(group_id) {
-            if (exports.can_edit(group_id)) {
-                return;
-            }
-            userg.find('.name').attr('contenteditable','false');
-            userg.find('.description').attr('contenteditable','false');
-            userg.addClass('ntm');
-            pill_container.find('.input').attr('contenteditable','false');
-            pill_container.find('.input').css('display', 'none');
-            pill_container.addClass('notmem');
-            pill_container.off('keydown', '.pill');
-            pill_container.off('keydown', '.input');
-            pill_container.off('click');
-            pill_container.on('click', function (e) {
-                e.stopPropagation();
-            });
-            pill_container.find('.pill').hover(function () {
-                pill_container.find('.pill').find('.exit').css('opacity', '0.5');
-                    }, function () {}
-            );
-        }
-        update_membership(data.id);
 
         function is_user_group_changed() {
             var draft_group = get_pill_user_ids();
@@ -105,9 +112,6 @@ exports.populate_user_groups = function () {
         }
 
         function update_cancel_button() {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
             var cancel_button = $('#user-groups #' + data.id + ' .cancel');
             var saved_button = $('#user-groups #' + data.id + ' .saved');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
@@ -195,10 +199,6 @@ exports.populate_user_groups = function () {
         }
 
         function auto_save(class_name, event) {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
-
             if (do_not_blur(class_name, event)) {
                 return;
             }
@@ -231,9 +231,6 @@ exports.populate_user_groups = function () {
 
         var input = pill_container.children('.input');
         (function set_up_typeahead() {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
             input.typeahead({
                 items: 5,
                 fixed: true,
@@ -254,7 +251,7 @@ exports.populate_user_groups = function () {
                         this.query, matches, "");
                 },
                 updater: function (user) {
-                    append_user(user);
+                    append_user(user, pills);
                     input.focus();
                     update_cancel_button();
                 },
@@ -263,9 +260,6 @@ exports.populate_user_groups = function () {
         }());
 
         (function pill_remove() {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
             pills.onPillRemove(function () {
                 // onPillRemove is fired before the pill is removed from
                 // the DOM.
@@ -275,6 +269,33 @@ exports.populate_user_groups = function () {
                 }, 100);
             });
         }());
+    });
+    if (non_editable_groups.length > 0) {
+        user_groups_section.append(i18n.t('<h3>Other groups</h3>'));
+    }
+    // We now append non_editable_user_groups
+    _.each(non_editable_groups, function (data) {
+        user_groups_section.append(templates.render('non_editable_user_group', {
+            user_group: {
+                name: data.name,
+                id: data.id,
+                description: data.description,
+            },
+        }));
+        var non_editable_pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
+        var non_editable_pills = input_pill.create_non_editable_pills({
+            container: non_editable_pill_container,
+        });
+
+        data.members.keys().forEach(function (user_id) {
+            var user = people.get_person_from_user_id(user_id);
+
+            if (user) {
+                append_user(user, non_editable_pills);
+            } else {
+                blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
+            }
+        });
     });
 };
 
@@ -317,9 +338,6 @@ exports.set_up = function () {
 
     $('#user-groups').on('click', '.delete', function () {
         var group_id = $(this).parents('.user-group').attr('id');
-        if (!exports.can_edit(group_id)) {
-            return;
-        }
         var user_group = user_groups.get_user_group_from_id(group_id);
         var btn = $(this);
         channel.del({
