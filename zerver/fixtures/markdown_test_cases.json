@@ -561,19 +561,6 @@
       "text_content": "!gravatar(username@example.com)"
     },
     {
-      "name": "stream_subscribe_button",
-      "input": "!_stream_subscribe_button(streamname)",
-      "expected_output": "<p><span class=\"inline-subscribe\" data-stream-name=\"streamname\"><button class=\"inline-subscribe-button btn\">Subscribe to streamname</button><span class=\"inline-subscribe-error\"></span></span></p>",
-      "marked_expected_output": "<p>!_stream_subscribe_button(streamname)</p>",
-      "text_content": "Subscribe to streamname"
-    },
-    {
-      "name": "stream_subscribe_button_escaped",
-      "input": "`!_stream_subscribe_button(streamname)`",
-      "expected_output": "<p><code>!_stream_subscribe_button(streamname)</code></p>",
-      "text_content": "!_stream_subscribe_button(streamname)"
-    },
-    {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"strut\" style=\"height:0.64444em;\"></span><span class=\"strut bottom\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"base\"><span class=\"mord mathrm\">1</span><span class=\"mbin\">⊕</span><span class=\"mord mathrm\">0</span><span class=\"mrel\">=</span><span class=\"mord mathrm\">1</span></span></span></span></p>"

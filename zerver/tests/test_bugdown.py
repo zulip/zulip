@@ -1067,58 +1067,6 @@ class BugdownTest(ZulipTestCase):
                          '<p>There #<strong>Nonexistentstream</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
-    def test_stream_subscribe_button_simple(self) -> None:
-        msg = '!_stream_subscribe_button(simple)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_in_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple (not\\))'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple (not)">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple (not)</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_after_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple) (not)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            ' (not)</p>'
-        )
-
-    def test_stream_subscribe_button_slash(self) -> None:
-        msg = '!_stream_subscribe_button(simple\\\\)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple\\">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple\\</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
     def test_in_app_modal_link(self) -> None:
         msg = '!modal_link(#settings, Settings page)'
         converted = bugdown_convert(msg)

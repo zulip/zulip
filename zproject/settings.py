@@ -1141,7 +1141,6 @@ JS_SPECS = {
             'js/admin.js',
             'js/tab_bar.js',
             'js/emoji.js',
-            'js/custom_markdown.js',
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
