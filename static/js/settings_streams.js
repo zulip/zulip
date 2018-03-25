@@ -168,6 +168,21 @@ exports.set_up = function () {
         default_stream_input[0].value = "";
     });
 
+    $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
+        var row = $(this).closest(".default_stream_row");
+        var stream_name = row.attr("id");
+
+        channel.del({
+            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+            error: function (xhr) {
+                ui_report.generic_row_button_error(xhr, $(e.target));
+            },
+            success: function () {
+                row.remove();
+            },
+        });
+    });
+
     $("#settings_content").on("click", "#do_deactivate_stream_button", function () {
         if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
             blueslip.error("Stream deactivation canceled due to non-matching fields.");
