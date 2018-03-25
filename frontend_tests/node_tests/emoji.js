@@ -96,7 +96,7 @@ zrequire('util');
         {name: 'after a word', original: 'Hello<original>', expected: 'Hello<original>'},
         {name: 'between words', original: 'Hello<original>World', expected: 'Hello<original>World'},
         {name: 'end of sentence', original: 'End of sentence. <original>', expected: 'End of sentence. <converted>'},
-        {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<converted>! World.'},
+        {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
     Object.keys(emoji.EMOTICON_CONVERSIONS).forEach(key => {

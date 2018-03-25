@@ -126,12 +126,22 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
     var translated = text;
     var replacement_text;
     var terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    var symbols_except_space = terminal_symbols.replace(' ', '');
+
     var emoticon_replacer = function (match, g1, offset, str) {
-        var symbol_at_start = terminal_symbols.indexOf(str[offset - 1]) !== -1;
-        var symbol_at_end = terminal_symbols.indexOf(str[offset + match.length]) !== -1;
+        var prev_char = str[offset - 1];
+        var next_char = str[offset + match.length];
+
+        var symbol_at_start = terminal_symbols.indexOf(prev_char) !== -1;
+        var symbol_at_end = terminal_symbols.indexOf(next_char) !== -1;
+        var non_space_at_start = symbols_except_space.indexOf(prev_char) !== -1;
+        var non_space_at_end = symbols_except_space.indexOf(next_char) !== -1;
         var valid_start = symbol_at_start || offset === 0;
         var valid_end = symbol_at_end || offset === str.length - match.length;
 
+        if (non_space_at_start && non_space_at_end) { // Hello!:)?
+            return match;
+        }
         if (valid_start && valid_end) {
             return replacement_text;
         }
