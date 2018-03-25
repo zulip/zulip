@@ -95,7 +95,7 @@ exports.set_up = function () {
 
     var emoji_widget = emoji.build_emoji_upload_widget();
 
-    $(".organization").on("submit", "form.admin-emoji-form", function (e) {
+    $(".organization form.admin-emoji-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');

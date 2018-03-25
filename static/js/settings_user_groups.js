@@ -282,7 +282,7 @@ exports.set_up = function () {
     meta.loaded = true;
     exports.populate_user_groups();
 
-    $(".organization").on("submit", "form.admin-user-group-form", function (e) {
+    $(".organization form.admin-user-group-form").off("submit").on("submit", function (e) {
         e.preventDefault();
         e.stopPropagation();
 

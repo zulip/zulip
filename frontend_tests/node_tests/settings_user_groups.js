@@ -301,7 +301,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
-    assert.equal(typeof($('.organization').get_on_handler("submit", "form.admin-user-group-form")), 'function');
+    assert.equal(typeof($('.organization form.admin-user-group-form').get_on_handler("submit")), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('click', '.delete')), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
 }());
@@ -497,7 +497,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     };
 
     (function test_admin_user_group_form_submit_triggered() {
-        var handler = $('.organization').get_on_handler("submit", "form.admin-user-group-form");
+        var handler = $('.organization form.admin-user-group-form').get_on_handler("submit");
         var event = {
             stopPropagation: noop,
             preventDefault: noop,

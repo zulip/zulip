@@ -673,7 +673,7 @@ function _set_up() {
         }
     });
 
-    $(".organization").on("submit", "form.org-profile-form", function (e) {
+    $(".organization form.org-profile-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -708,7 +708,7 @@ function _set_up() {
         });
     });
 
-    $(".organization").on("submit", "form.org-authentications-form", function (e) {
+    $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
 
         var new_auth_methods = {};
