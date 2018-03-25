@@ -67,6 +67,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             invite_by_admins_only: noop,
             invite_required: noop,
             mandatory_topics: noop,
+            message_content_edit_limit_seconds: noop,
             message_retention_days: settings_org.update_message_retention_days,
             name: notifications.redraw_title,
             name_changes_disabled: settings_account.update_name_change_display,
@@ -79,6 +80,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.op === 'update' && _.has(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
+            settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
                     page_params.can_create_streams = (!page_params.
@@ -100,6 +102,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
+                }
+                if (_.has(realm_settings, key)) {
+                    settings_org.sync_realm_settings(key);
                 }
             });
             if (event.data.authentication_methods !== undefined) {
