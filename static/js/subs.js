@@ -438,6 +438,7 @@ exports.setup_page = function (callback) {
         $('#subscriptions_table').append(rendered);
         initialize_components();
         exports.actually_filter_streams();
+        stream_create.set_up_handlers();
 
         $("#add_new_subscription input[type='text']").on("input", function () {
             remove_temporarily_miscategorized_streams();

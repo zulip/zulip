@@ -354,10 +354,12 @@ exports.create_handlers_for_users = function (container) {
 };
 
 
-$(function () {
-    $('body').on('change', '#make-invite-only input', update_announce_stream_state);
+exports.set_up_handlers = function () {
+    var container = $('#stream-creation').expectOne();
 
-    $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
+    container.on('change', '#make-invite-only input', update_announce_stream_state);
+
+    container.on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
         clear_error_display();
 
@@ -388,23 +390,23 @@ $(function () {
         }
     });
 
-    $(document).on("click", ".close-invites-warning-modal", function () {
+    container.on("click", ".close-invites-warning-modal", function () {
         $("#invites-warning-overlay").remove();
     });
 
-    $(document).on("click", ".confirm-invites-warning-modal", function () {
+    container.on("click", ".confirm-invites-warning-modal", function () {
         create_stream();
         $("#invites-warning-overlay").remove();
     });
 
-    $(".subscriptions").on("input", "#create_stream_name", function () {
+    container.on("input", "#create_stream_name", function () {
         var stream_name = $.trim($("#create_stream_name").val());
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
     });
 
-    $("body").on("mouseover", "#announce-stream-docs", function (e) {
+    container.on("mouseover", "#announce-stream-docs", function (e) {
         var announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({placement: "right",
                                       content: templates.render('announce_stream_docs', {
@@ -415,12 +417,12 @@ $(function () {
         announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');
         e.stopPropagation();
     });
-    $("body").on("mouseout", "#announce-stream-docs", function (e) {
+    container.on("mouseout", "#announce-stream-docs", function (e) {
         $("#announce-stream-docs").popover('hide');
         e.stopPropagation();
     });
 
-});
+};
 
 return exports;
 
