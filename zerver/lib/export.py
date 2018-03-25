@@ -23,7 +23,7 @@ from zerver.lib.bulk_create import bulk_create_users
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, \
+    UserPresence, UserActivity, UserActivityInterval, Reaction, \
     get_display_recipient, Attachment, get_system_bot, email_to_username
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
@@ -1233,6 +1233,7 @@ id_maps = {
     'useractivityinterval': {},
     'usermessage': {},
     'attachment': {},
+    'reaction': {},
 }  # type: Dict[str, Dict[int, int]]
 
 path_maps = {
@@ -1683,6 +1684,15 @@ def import_message_data(import_dir: Path) -> None:
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         update_model_ids(UserMessage, data, 'zerver_usermessage', 'usermessage')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
+
+        # As the export of Reactions is not supported, Zulip exported
+        # data would not contain this field.
+        # However this is supported in slack importer script
+        if 'zerver_reaction' in data:
+            re_map_foreign_keys(data['zerver_reaction'], 'message', related_table="message")
+            re_map_foreign_keys(data['zerver_reaction'], 'user_profile', related_table="user_profile")
+            update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
+            bulk_import_model(data, Reaction, 'zerver_reaction')
 
         dump_file_id += 1
 
