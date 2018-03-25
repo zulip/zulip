@@ -413,7 +413,7 @@ def get_realm_domains(realm: Realm) -> List[Dict[str, Text]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
 class RealmEmoji(models.Model):
-    author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)
+    author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with
     # one of the punctuation characters
@@ -856,7 +856,7 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField()  # type: Text
-    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # Optional[UserProfile]
+    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     invited_at = models.DateTimeField(auto_now=True)  # type: datetime.datetime
     realm_creation = models.BooleanField(default=False)
