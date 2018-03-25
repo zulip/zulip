@@ -402,13 +402,7 @@ function _set_up() {
     exports.set_add_emoji_permission_dropdown();
 
     $("#id_realm_restricted_to_domain").change(function () {
-        if (this.checked) {
-            $("#id_realm_disallow_disposable_email_addresses").attr("disabled", true);
-            $("#id_realm_disallow_disposable_email_addresses_label").parent().addClass("control-label-disabled");
-        } else {
-            $("#id_realm_disallow_disposable_email_addresses").prop("disabled", false);
-            $("#id_realm_disallow_disposable_email_addresses_label").parent().removeClass("control-label-disabled");
-        }
+        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_disallow_disposable_email_addresses", false);
     });
 
     $("#id_realm_invite_required").change(function () {
