@@ -1013,9 +1013,8 @@ def unicode_emoji_to_codepoint(unicode_emoji: Text) -> Text:
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
     def handleMatch(self, match: Match[Text]) -> Optional[Element]:
-        # If there is `db_data` and it is false, then don't do translating.
-        # If there is no `db_data`, such as during tests, translate.
-        if db_data is not None and not db_data['translate_emoticons']:
+        # If there is `db_data` and it is True, proceed with translating.
+        if db_data is None or not db_data['translate_emoticons']:
             return None
 
         emoticon = match.group('emoticon')

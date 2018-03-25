@@ -245,15 +245,23 @@ class BugdownTest(ZulipTestCase):
     @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_bugdown_tests()
-        valid_keys = set(['name', "input", "expected_output",
+        valid_keys = set(["name", "input", "expected_output",
                           "backend_only_rendering",
-                          "marked_expected_output", "text_content"])
+                          "marked_expected_output", "text_content",
+                          "translate_emoticons"])
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
             self.assertEqual(len(set(test.keys()) - valid_keys), 0)
 
-            converted = bugdown_convert(test['input'])
+            if test.get('translate_emoticons', False):
+                # Create a userprofile and send message with it.
+                user_profile = self.example_user('othello')
+                do_set_user_display_setting(user_profile, 'translate_emoticons', True)
+                msg = Message(sender=user_profile, sending_client=get_client("test"))
+                converted = render_markdown(msg, test['input'])
+            else:
+                converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))
             self.assertEqual(converted, test['expected_output'])

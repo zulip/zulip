@@ -181,6 +181,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
     tests.forEach(function (test) {
         var message = {raw_content: test.input};
+        page_params.translate_emoticons = test.translate_emoticons || false;
         markdown.apply_markdown(message);
         var output = message.content;
 
