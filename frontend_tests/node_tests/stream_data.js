@@ -209,6 +209,12 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
+    // verify that deactivating user should unsubscribe user from all streams
+    assert(stream_data.add_subscriber('Rome', george.user_id));
+    set_global('subs', { rerender_subscriptions_settings: function () {} });
+    stream_data.remove_deactivated_user_from_all_streams(george.user_id);
+    assert(!stream_data.is_user_subscribed('Rome', george.user_id));
+
     // verify that checking subscription with undefined user id
     global.blueslip.warn = function (msg) {
         assert.equal(msg, "Undefined user_id passed to function is_user_subscribed");
