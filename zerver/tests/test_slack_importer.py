@@ -376,11 +376,13 @@ class SlackImporter(ZulipTestCase):
 
         added_users = {"U066MTL5U": 5, "U061A5N1G": 24, "U061A1R2R": 43}
 
+        reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
+
         all_messages = [{"text": "<@U066MTL5U> has joined the channel", "subtype": "channel_join",
                          "user": "U066MTL5U", "ts": "1434139102.000002", "channel_name": "random"},
                         {"text": "<@U061A5N1G>: hey!", "user": "U061A1R2R",
                          "ts": "1437868294.000006", "has_image": True, "channel_name": "random"},
-                        {"text": "random", "user": "U061A5N1G",
+                        {"text": "random", "user": "U061A5N1G", "reactions": reactions,
                          "ts": "1439868294.000006", "channel_name": "random"},
                         {"text": "without a user", "user": None,  # this message will be ignored as it has no user
                          "ts": "1239868294.000006", "channel_name": "general"},
@@ -395,8 +397,9 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
-        zerver_message, zerver_usermessage, attachment, uploads = channel_message_to_zerver_message(
-            1, user_data, added_users, added_recipient, all_messages, zerver_subscription, 'domain')
+        zerver_message, zerver_usermessage, attachment, uploads, \
+            reaction = channel_message_to_zerver_message(1, user_data, added_users, added_recipient,
+                                                         all_messages, zerver_subscription, 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -404,6 +407,11 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
+
+        # Test reactions
+        self.assertEqual(reaction[0]['user_profile'], 24)
+        self.assertEqual(reaction[0]['message'], 1)
+        self.assertEqual(reaction[0]['emoji_name'], reactions[0]['name'])
 
         # Message conversion already tested in tests.test_slack_message_conversion
         self.assertEqual(zerver_message[0]['content'], '@**Jane**: hey!')
@@ -439,7 +447,7 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message, zerver_usermessage, [], []]]
+        mock_message.side_effect = [[zerver_message, zerver_usermessage, [], [], []]]
         message_json, uploads, zerver_attachment = convert_slack_workspace_messages(
             './random_path', user_list, 2, {}, {}, added_channels, realm, 'domain')
         self.assertEqual(message_json['zerver_message'], zerver_message)

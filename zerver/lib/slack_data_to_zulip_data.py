@@ -1,5 +1,6 @@
 import os
 import json
+import ujson
 import hashlib
 import sys
 import argparse
@@ -16,11 +17,13 @@ from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.forms import check_subdomain_available
+from zerver.models import Reaction
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.upload import random_name, sanitize_name
+from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -456,14 +459,16 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
 
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
-    zerver_message, zerver_usermessage, attachment, uploads = channel_message_to_zerver_message(
-        realm_id, users, added_users, added_recipient, all_messages,
-        realm['zerver_subscription'], domain_name)
+    zerver_message, zerver_usermessage, attachment, uploads, \
+        reactions = channel_message_to_zerver_message(realm_id, users, added_users,
+                                                      added_recipient, all_messages,
+                                                      realm['zerver_subscription'], domain_name)
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
     message_json['zerver_message'] = zerver_message
     message_json['zerver_usermessage'] = zerver_usermessage
+    message_json['zerver_reaction'] = reactions
 
     return message_json, uploads, attachment
 
@@ -489,6 +494,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
+                                                                 List[ZerverFieldsT],
                                                                  List[ZerverFieldsT]]:
     """
     Returns:
@@ -496,12 +502,18 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     2. zerver_usermessage, which is a list of the usermessages
     3. zerver_attachment, which is a list of the attachments
     4. uploads_list, which is a list of uploads to be mapped in uploads records.json
+    5. reaction_list, which is a list of all user reactions
     """
-    message_id_count = usermessage_id_count = attachment_id_count = 0
+    message_id_count = usermessage_id_count = attachment_id_count = reaction_id_count = 0
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
     zerver_attachment = []  # type: List[ZerverFieldsT]
+    reaction_list = []  # type: List[ZerverFieldsT]
+
+    # For unicode emoji
+    with open(NAME_TO_CODEPOINT_PATH) as fp:
+        name_to_codepoint = ujson.load(fp)
 
     for message in all_messages:
         user = get_message_sending_user(message)
@@ -518,6 +530,11 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
         recipient_id = added_recipient[message['channel_name']]
         message_id = message_id_count
+
+        # Process message reactions
+        if 'reactions' in message.keys():
+            reaction_id_count = build_reactions(reaction_list, message['reactions'], added_users,
+                                                message_id, reaction_id_count, name_to_codepoint)
 
         # Process different subtypes of slack messages
         if 'subtype' in message.keys():
@@ -589,7 +606,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             recipient_id, mentioned_users_id, message_id)
 
         message_id_count += 1
-    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list
+    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, reaction_list
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str,
                                                                                      str]:
@@ -605,6 +622,28 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
     content = '[%s](%s)' % (fileinfo['title'], attachment_path)
 
     return s3_path, content
+
+def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
+                    added_users: AddedUsersT, message_id: int, reaction_id: int,
+                    name_to_codepoint: ZerverFieldsT) -> int:
+    # For the unicode emoji codes, we use equivalent of
+    # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
+    for slack_reaction in reactions:
+        emoji_name = slack_reaction['name']
+        if emoji_name in name_to_codepoint:
+            for user in slack_reaction['users']:
+                reaction = dict(
+                    id=reaction_id,
+                    emoji_code=name_to_codepoint[emoji_name],
+                    emoji_name=emoji_name,
+                    message=message_id,
+                    reaction_type=Reaction.UNICODE_EMOJI,
+                    user_profile=added_users[user])
+                reaction_id += 1
+                reaction_list.append(reaction)
+        else:
+            continue
+    return reaction_id
 
 def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverFieldsT, s3_path: str,
                   uploads_list: List[ZerverFieldsT]) -> None:
