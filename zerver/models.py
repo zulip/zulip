@@ -870,7 +870,7 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
-    invited_as_admin = models.BooleanField(default=False)  # type: Optional[bool]
+    invited_as_admin = models.BooleanField(default=False)  # type: bool
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
