@@ -17,7 +17,7 @@ def ticket_started_body(payload: Dict[str, Any]) -> Text:
     body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
     return body.format(**payload)
 
-def ticket_assigned_body(payload: Dict[str, Any]) -> Text:
+def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[Text]:
     # Take the state, assignee, and assigned group from the payload.
     state = payload['state']
     assignee = payload['assignee']

@@ -359,6 +359,21 @@ input[type=checkbox] + .inline-block {
     margin-top: 0px;
 }
 
+.admin-realm-form .subsection-header h3 {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] button.show {
+    display: inline-block;
+    margin-top: -4px;
+    min-width: 80px;
+    line-height: 10px;
+}
+
 #default_language {
     margin-left: 20px;
 }
@@ -924,6 +939,11 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group span[contenteditable] {
     display: inline-block;
+    word-break: break-all;
+}
+
+#user-groups .ntm {
+    cursor: not-allowed;
 }
 
 #user-groups .user-group span[contenteditable]:empty::before {
@@ -933,7 +953,7 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable]:hover {
+#user-groups .user-group span[contenteditable="true"]:hover {
     border-bottom: 1px solid hsl(0, 0%, 80%);
     outline: none;
 }
@@ -945,6 +965,15 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group h4 > .button {
     vertical-align: 1px;
+}
+
+#user-groups .ntm h4 > .button {
+    cursor: not-allowed;
+    display: none;
+}
+
+#user-groups .ntm h4 > .button:hover {
+    border-color: hsl(4, 56%, 82%);
 }
 
 #user-groups .save-status {
@@ -1212,10 +1241,35 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
+#settings_page .custom_user_field {
+    padding-bottom: 20px;
+}
+
+#settings_page .custom_user_field textarea {
+    width: 320px;
+    height: 80px;
+}
+
+#settings_page .custom_user_field input[type=number]::-webkit-outer-spin-button,
+#settings_page .custom_user_field input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#settings_page .custom_user_field input[type=number] {
+    -moz-appearance: textfield;
+}
+
 #settings_page #change_password_modal .change_password_info,
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
     margin: 10px;
+}
+
+#account-settings .custom_user_field input::placeholder,
+#account-settings .custom_user_field textarea::placeholder {
+    font-style: italic;
+    color: hsl(0, 0%, 66%);
 }
 
 #deactivation_user_modal.fade.in {

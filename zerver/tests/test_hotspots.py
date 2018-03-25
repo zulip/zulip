@@ -6,8 +6,10 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import UserProfile, UserHotspot, get_realm
 from zerver.views.hotspots import mark_hotspot_as_read
 
+from django.conf import settings
 from typing import Any, Dict
 import ujson
+import mock
 
 # Splitting this out, since I imagine this will eventually have most of the
 # complicated hotspots logic.
@@ -34,6 +36,10 @@ class TestGetNextHotspots(ZulipTestCase):
             do_mark_hotspot_as_read(self.user, hotspot)
         self.assertEqual(self.user.tutorial_status, UserProfile.TUTORIAL_FINISHED)
         self.assertEqual(get_next_hotspots(self.user), [])
+
+    def test_send_all(self) -> None:
+        with self.settings(DEVELOPMENT=True, ALWAYS_SEND_ALL_HOTSPOTS = True):
+            self.assertEqual(len(ALL_HOTSPOTS), len(get_next_hotspots(self.user)))
 
 class TestHotspots(ZulipTestCase):
     def test_do_mark_hotspot_as_read(self) -> None:

@@ -213,6 +213,7 @@ $(function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         var recipient_row = $(this).closest(".recipient_row");
+        message_edit.show_topic_edit_spinner(recipient_row);
         message_edit.save(recipient_row, true);
         e.stopPropagation();
         popovers.hide_all();
@@ -646,12 +647,7 @@ $(function () {
     // open
     $('body').on('click', '.hotspot-icon', function (e) {
         // hide icon
-        $(this).animate({ opacity: 0 }, {
-            duration: 300,
-            done: function () {
-                $(this).css({ display: 'none' });
-            }.bind(this),
-        });
+        hotspots.close_hotspot_icon(this);
 
         // show popover
         var hotspot_name = $(e.target).closest('.hotspot-icon')

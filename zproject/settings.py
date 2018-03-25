@@ -202,6 +202,10 @@ DEFAULT_SETTINGS = {
 
     # Two Factor Authentication is not yet implementation-complete
     'TWO_FACTOR_AUTHENTICATION_ENABLED': False,
+
+    # This is used to send all hotspots for convenient manual testing
+    # in development mode.
+    'ALWAYS_SEND_ALL_HOTSPOTS': False,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -287,6 +291,11 @@ DEFAULT_SETTINGS.update({
     # TODO: Investigate whether this should be removed and set one way or other.
     'SAVE_FRONTEND_STACKTRACES': False,
 
+    # If True, disable rate-limiting and other filters on sending error messages
+    # to admins, and enable logging on the error-reporting itself.  Useful
+    # mainly in development.
+    'DEBUG_ERROR_REPORTING': False,
+
     # Whether to flush memcached after data migrations.  Because of
     # how we do deployments in a way that avoids reusing memcached,
     # this is disabled in production, but we need it in development.
@@ -368,6 +377,9 @@ DEFAULT_SETTINGS.update({
     # because some transactional email providers reject sending such
     # emails since they can look like spam.
     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+    # Whether to send periodic digests of activity.  Off by default
+    # because this feature is in beta.
+    'SEND_DIGEST_EMAILS': False,
 
     # Used to change the Zulip logo in portico pages.
     'CUSTOM_LOGO_URL': None,
@@ -938,7 +950,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap.css',
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
-                'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
+                'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
             ),
             'output_filename': 'min/common.css'
         },
@@ -987,7 +999,7 @@ JS_SPECS = {
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
-            'node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js',
+            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/sockjs/sockjs-0.3.4.js',
@@ -1132,7 +1144,6 @@ JS_SPECS = {
             'js/admin.js',
             'js/tab_bar.js',
             'js/emoji.js',
-            'js/custom_markdown.js',
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
@@ -1299,8 +1310,9 @@ if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
-# Used for test_logging_handlers
-LOGGING_NOT_DISABLED = True
+
+# This is disabled in a few tests.
+LOGGING_ENABLED = True
 
 DEFAULT_ZULIP_HANDLERS = (
     (['zulip_admins'] if ERROR_REPORTING else []) +
@@ -1354,8 +1366,8 @@ LOGGING = {
         'zulip_admins': {
             'level': 'ERROR',
             'class': 'zerver.logging_handlers.AdminNotifyHandler',
-            # For manual testing of this handler, delete the `filters` line.
-            'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
+                        if not DEBUG_ERROR_REPORTING else []),
             'formatter': 'default'
         },
         'console': {
@@ -1442,8 +1454,19 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
-        'pika.adapters': {  # This library is super chatty on INFO.
+        'pika.adapters': {
+            # pika is super chatty on INFO.
             'level': 'WARNING',
+            # pika spews a lot of ERROR logs when a connection fails.
+            # We reconnect automatically, so those should be treated as WARNING --
+            # write to the log for use in debugging, but no error emails/Zulips.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
+        },
+        'pika.connection': {
+            # Leave `zulip_admins` out of the handlers.  See pika.adapters above.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
         },
         'requests': {
             'level': 'WARNING',

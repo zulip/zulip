@@ -26,8 +26,10 @@ function row_for_stream_id(stream_id) {
 }
 
 function settings_button_for_sub(sub) {
+    // We don't do expectOne() here, because this button is only
+    // visible if the user has that stream selected in the streams UI.
     var id = parseInt(sub.stream_id, 10);
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button").expectOne();
+    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
 function get_row_data(row) {
@@ -150,6 +152,10 @@ exports.set_color = function (stream_id, color) {
 };
 
 exports.rerender_subscribers_count = function (sub, just_subscribed) {
+    if (!overlays.streams_open()) {
+        // If the streams overlay isn't open, we don't need to rerender anything.
+        return;
+    }
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
     if (!sub.can_access_subscribers || (just_subscribed && sub.invite_only)) {
@@ -168,7 +174,8 @@ function add_email_hint(row, email_address_hint_content) {
         $(hint_id).popover({placement: "right",
                 title: "Email integration",
                 content: email_address_hint_content,
-                trigger: "manual"});
+                trigger: "manual",
+                animation: false});
         $(hint_id).popover('show');
         e.stopPropagation();
     });
@@ -343,6 +350,10 @@ exports.filter_table = function (query) {
             $(row).addClass("notdisplayed");
             others.push($(row).detach());
         }
+
+        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+            placement: 'left', animation: false,
+        });
     });
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));

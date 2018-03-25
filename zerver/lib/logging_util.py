@@ -62,7 +62,7 @@ class ReturnTrue(logging.Filter):
 
 class ReturnEnabled(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
-        return settings.LOGGING_NOT_DISABLED
+        return settings.LOGGING_ENABLED
 
 class RequireReallyDeployed(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:

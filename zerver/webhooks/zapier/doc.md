@@ -12,8 +12,8 @@ Get notifications from every event supported by Zapier.
 1. Set **URL** to the URL constructed above. Set **Payload Type** to `JSON`.
    Add the following two fields to **Data**:
 
-    * `subject` corresponds to the topic of a message
+    * `topic` corresponds to the topic of a message
     * `content` corresponds to the content of a message
 
-    Customize the `subject` and `content` fields as necessary. Click
+    Customize the `topic` and `content` fields as necessary. Click
     **Continue**.

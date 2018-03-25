@@ -66,11 +66,11 @@ a.no-underline:hover {
     font-style: italic;
 }
 
-.ps:hover.ps--in-scrolling.ps--x > .ps__scrollbar-x-rail > .ps__scrollbar-x {
+.ps--scrolling-x > .ps__rail-x > .ps__thumb-x:hover {
     background-color: #606060;
 }
 
-.ps:hover.ps--in-scrolling.ps--y > .ps__scrollbar-y-rail > .ps__scrollbar-y {
+.ps--scrolling-y > .ps__rail-y > .ps__thumb-y:hover {
     background-color: #606060;
 }
 

@@ -34,6 +34,7 @@ from zerver.lib.message import (
     get_first_visible_message_id,
     update_first_visible_message_id,
     maybe_update_first_visible_message_id,
+    get_raw_unread_data,
 )
 
 from zerver.lib.test_helpers import (
@@ -753,6 +754,31 @@ class StreamMessagesTest(ZulipTestCase):
 
         self.assert_stream_message(non_ascii_stream_name, topic_name=u"hümbüǵ",
                                    content=u"hümbüǵ")
+
+    def test_get_raw_unread_data_for_huddle_messages(self) -> None:
+        users = [
+            self.example_user('hamlet'),
+            self.example_user('cordelia'),
+            self.example_user('iago'),
+            self.example_user('prospero'),
+            self.example_user('othello'),
+        ]
+
+        message1_id = self.send_huddle_message(users[0].email,
+                                               [user.email for user in users],
+                                               "test content 1")
+        message2_id = self.send_huddle_message(users[0].email,
+                                               [user.email for user in users],
+                                               "test content 2")
+
+        msg_data = get_raw_unread_data(users[1])
+
+        # both the messages are present in msg_data
+        self.assertIn(message1_id, msg_data["huddle_dict"].keys())
+        self.assertIn(message2_id, msg_data["huddle_dict"].keys())
+
+        # only these two messages are present in msg_data
+        self.assertEqual(len(msg_data["huddle_dict"].keys()), 2)
 
 class MessageDictTest(ZulipTestCase):
     @slow('builds lots of messages')
@@ -1883,10 +1909,12 @@ class EditMessageTest(ZulipTestCase):
 
     def test_edit_message_content_limit(self) -> None:
         def set_message_editing_params(allow_message_editing: bool,
-                                       message_content_edit_limit_seconds: int) -> None:
+                                       message_content_edit_limit_seconds: int,
+                                       allow_community_topic_editing: bool) -> None:
             result = self.client_patch("/json/realm", {
                 'allow_message_editing': ujson.dumps(allow_message_editing),
-                'message_content_edit_limit_seconds': message_content_edit_limit_seconds
+                'message_content_edit_limit_seconds': message_content_edit_limit_seconds,
+                'allow_community_topic_editing': ujson.dumps(allow_community_topic_editing),
             })
             self.assert_json_success(result)
 
@@ -1928,25 +1956,93 @@ class EditMessageTest(ZulipTestCase):
 
         # test the various possible message editing settings
         # high enough time limit, all edits allowed
-        set_message_editing_params(True, 240)
+        set_message_editing_params(True, 240, False)
         do_edit_message_assert_success(id_, 'A')
 
         # out of time, only topic editing allowed
-        set_message_editing_params(True, 120)
+        set_message_editing_params(True, 120, False)
         do_edit_message_assert_success(id_, 'B', True)
         do_edit_message_assert_error(id_, 'C', "The time limit for editing this message has past")
 
         # infinite time, all edits allowed
-        set_message_editing_params(True, 0)
+        set_message_editing_params(True, 0, False)
         do_edit_message_assert_success(id_, 'D')
 
         # without allow_message_editing, nothing is allowed
-        set_message_editing_params(False, 240)
+        set_message_editing_params(False, 240, False)
         do_edit_message_assert_error(id_, 'E', "Your organization has turned off message editing", True)
-        set_message_editing_params(False, 120)
+        set_message_editing_params(False, 120, False)
         do_edit_message_assert_error(id_, 'F', "Your organization has turned off message editing", True)
-        set_message_editing_params(False, 0)
+        set_message_editing_params(False, 0, False)
         do_edit_message_assert_error(id_, 'G', "Your organization has turned off message editing", True)
+
+    def test_allow_community_topic_editing(self) -> None:
+        def set_message_editing_params(allow_message_editing,
+                                       message_content_edit_limit_seconds,
+                                       allow_community_topic_editing):
+            # type: (bool, int, bool) -> None
+            result = self.client_patch("/json/realm", {
+                'allow_message_editing': ujson.dumps(allow_message_editing),
+                'message_content_edit_limit_seconds': message_content_edit_limit_seconds,
+                'allow_community_topic_editing': ujson.dumps(allow_community_topic_editing),
+            })
+            self.assert_json_success(result)
+
+        def do_edit_message_assert_success(id_, unique_str):
+            # type: (int, Text) -> None
+            new_subject = 'subject' + unique_str
+            params_dict = {'message_id': id_, 'subject': new_subject}
+            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            self.assert_json_success(result)
+            self.check_message(id_, subject=new_subject)
+
+        def do_edit_message_assert_error(id_, unique_str, error):
+            # type: (int, Text, Text) -> None
+            message = Message.objects.get(id=id_)
+            old_subject = message.topic_name()
+            old_content = message.content
+            new_subject = 'subject' + unique_str
+            params_dict = {'message_id': id_, 'subject': new_subject}
+            result = self.client_patch("/json/messages/" + str(id_), params_dict)
+            message = Message.objects.get(id=id_)
+            self.assert_json_error(result, error)
+            self.check_message(id_, subject=old_subject, content=old_content)
+
+        self.login(self.example_email("iago"))
+        # send a message in the past
+        id_ = self.send_stream_message(self.example_email("hamlet"), "Scotland",
+                                       content="content", topic_name="subject")
+        message = Message.objects.get(id=id_)
+        message.pub_date = message.pub_date - datetime.timedelta(seconds=180)
+        message.save()
+
+        # any user can edit the topic of a message
+        set_message_editing_params(True, 0, True)
+        # log in as a new user
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_success(id_, 'A')
+
+        # only admins can edit the topics of messages
+        self.login(self.example_email("iago"))
+        set_message_editing_params(True, 0, False)
+        do_edit_message_assert_success(id_, 'B')
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_error(id_, 'C', "You don't have permission to edit this message")
+
+        # users cannot edit topics if allow_message_editing is False
+        self.login(self.example_email("iago"))
+        set_message_editing_params(False, 0, True)
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_error(id_, 'D', "Your organization has turned off message editing")
+
+        # non-admin users cannot edit topics sent > 24 hrs ago
+        message.pub_date = message.pub_date - datetime.timedelta(seconds=90000)
+        message.save()
+        self.login(self.example_email("iago"))
+        set_message_editing_params(True, 0, True)
+        do_edit_message_assert_success(id_, 'E')
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has past")
 
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))

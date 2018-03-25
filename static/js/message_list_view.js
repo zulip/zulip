@@ -87,7 +87,7 @@ function set_topic_edit_properties(group, message) {
     // to encourage updating them. Admins can also edit any topic.
     if (message.subject === compose.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
-    } else if (page_params.is_admin) {
+    } else if (page_params.is_admin || page_params.realm_allow_community_topic_editing) {
         group.on_hover_topic_edit = true;
     }
 }
@@ -435,14 +435,6 @@ MessageListView.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
 
-            var e = $.Event('message_rendered.zulip', {target: row});
-            try {
-                $(document).trigger(e);
-            } catch (ex) {
-                blueslip.error('Problem with message rendering',
-                               {message_id: rows.id($(row))},
-                               ex.stack);
-            }
         });
     },
 

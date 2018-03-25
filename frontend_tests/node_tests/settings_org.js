@@ -180,6 +180,7 @@ function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
+        target: '#org-submit-msg-editing',
     };
 
     $('#id_realm_default_language').val('fr');
@@ -190,13 +191,23 @@ function test_submit_settings_form(submit_form) {
     channel.patch = function (req) {
         patched = true;
         assert.equal(req.url, '/json/realm');
-
-        var data = req.data;
-
-        assert.equal(data.default_language, '"fr"');
-
         success_callback = req.success;
     };
+
+    var stub_save_button = $('#org-submit-msg-editing');
+    stub_save_button.attr = function () {
+        return 'org-submit-msg-editing';
+    };
+    var stub_save_button_header = $('.subsection-header');
+    stub_save_button_header.prevAll = function () {
+        return $.create('<stub failed alert status element>');
+    };
+    stub_save_button.closest = function () {
+        return stub_save_button_header;
+    };
+    stub_save_button_header.set_find_results(
+        '.subsection-changes-discard button', $.create('#org-discard-msg-editing')
+    );
 
     submit_form(ev);
     assert(patched);
@@ -208,80 +219,19 @@ function test_submit_settings_form(submit_form) {
 
     success_callback(response_data);
 
-    var editing_status = $('#admin-realm-message-editing-status').val();
-    assert(editing_status.indexOf('content of messages which are less than') > 0);
+    var updated_value_from_response = $('#id_realm_message_content_edit_limit_minutes').val();
+    assert(updated_value_from_response, 3);
+
+    $('#id_realm_message_content_edit_limit_minutes').val = function (time_limit) {
+        updated_value_from_response = time_limit;
+    };
 
     response_data = {
         allow_message_editing: true,
-        message_content_edit_limit_seconds: 0,
+        message_content_edit_limit_seconds: 10,
     };
     success_callback(response_data);
-
-    assert.equal($('#admin-realm-message-editing-status').val(),
-                 'translated: Users can now edit the content and topics ' +
-                 'of all their past messages!');
-
-    response_data = {
-        allow_message_editing: false,
-    };
-    success_callback(response_data);
-
-    assert.equal($('#admin-realm-message-editing-status').val(),
-          'translated: Users can no longer edit their past messages!');
-}
-
-function test_submit_permissions_form(submit_form) {
-    var ev = {
-        preventDefault: noop,
-        stopPropagation: noop,
-    };
-
-    $('#id_realm_add_emoji_by_admins_only').prop('checked', true);
-    $("#id_realm_create_stream_permission").val("by_admin_user_with_custom_time").change();
-    $("#id_realm_waiting_period_threshold").val("55");
-
-    var patched;
-    var success_callback;
-    var error_callback;
-    channel.patch = function (req) {
-        patched = true;
-        assert.equal(req.url, '/json/realm');
-
-        var data = req.data;
-        assert.equal(data.add_emoji_by_admins_only, 'true');
-        assert.equal(data.create_stream_by_admins_only, false);
-        assert.equal(data.waiting_period_threshold, '55');
-
-        success_callback = req.success;
-        error_callback = req.error;
-    };
-
-    submit_form(ev);
-    assert(patched);
-
-    var response_data = {
-        waiting_period_threshold: 55,
-        add_emoji_by_admins_only: true,
-        create_stream_by_admins_only: false,
-    };
-    success_callback(response_data);
-
-    assert.equal($('#admin-realm-add-emoji-by-admins-only-status').val(),
-                 'translated: Only administrators may now add new emoji!');
-    assert.equal($('#admin-realm-create-stream-by-admins-only-status').val(),
-                  'translated: Stream creation permission changed!');
-
-    // TODO: change the code to have a better place to report status.
-    var status_elem = $('#admin-realm-restricted-to-domain-status');
-
-    success_callback({});
-
-    assert.equal(status_elem.val(),
-                 'translated: No changes to save!');
-
-    error_callback({});
-    assert.equal(status_elem.val(),
-                 'translated: Failed');
+    assert(updated_value_from_response, 0);
 }
 
 function test_upload_realm_icon(upload_realm_icon) {
@@ -445,6 +395,28 @@ function test_change_allow_subdomains(change_allow_subdomains) {
                  'translated: Update successful: Subdomains no longer allowed for example.com');
 }
 
+function test_extract_property_name() {
+    $('#id_realm_allow_message_editing').attr('id', 'id_realm_allow_message_editing');
+    assert.equal(
+        settings_org.extract_property_name($('#id_realm_allow_message_editing')),
+        'realm_allow_message_editing'
+    );
+
+    $('#id_realm_message_content_edit_limit_minutes_label').attr(
+        'id', 'id_realm_message_content_edit_limit_minutes_label');
+    assert.equal(
+        settings_org.extract_property_name($('#id_realm_message_content_edit_limit_minutes_label')),
+        'realm_message_content_edit_limit_minutes_label'
+    );
+
+    $('#id-realm-allow-message-deleting').attr(
+        'id', 'id-realm-allow-message-deleting');
+    assert.equal(
+        settings_org.extract_property_name($('#id-realm-allow-message-deleting')),
+        'realm_allow_message_deleting'
+    );
+}
+
 (function test_set_up() {
     var callbacks = {};
 
@@ -466,19 +438,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
     var submit_settings_form;
-    var submit_permissions_form;
     var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
-        if (selector === 'button.save-message-org-settings') {
+        if (selector === '.subsection-header .subsection-changes-save button') {
             assert.equal(action, 'click');
             submit_settings_form = f;
         }
         if (selector === 'button.save-language-org-settings') {
             assert.equal(action, 'click');
-        }
-        if (selector === 'form.org-permissions-form') {
-            assert.equal(action, 'submit');
-            submit_permissions_form = f;
         }
         if (selector === 'form.org-profile-form') {
             assert.equal(action, 'submit');
@@ -511,13 +478,13 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     test_submit_profile_form(submit_profile_form);
     test_submit_settings_form(submit_settings_form);
-    test_submit_permissions_form(submit_permissions_form);
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);
     test_change_message_editing(callbacks.change_message_editing);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
+    test_extract_property_name();
 }());
 
 (function test_misc() {

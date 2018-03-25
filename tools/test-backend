@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import List, Any
+from mypy_extensions import NoReturn
 import glob
 import argparse
 import os
@@ -160,7 +161,7 @@ def block_internet():
     # We are blocking internet currently by assuming mostly any test would use
     # httplib2 to access internet.
     def internet_guard(*args, **kwargs):
-        # type: (*Any, **Any) -> None
+        # type: (*Any, **Any) -> NoReturn
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")

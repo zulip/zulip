@@ -24,6 +24,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib import mdiff
+from zerver.lib.tex import render_tex
 from zerver.models import (
     realm_in_local_realm_filters_cache,
     flush_per_request_caches,
@@ -36,6 +37,7 @@ from zerver.models import (
     Message,
     Stream,
     Realm,
+    RealmEmoji,
     RealmFilter,
     Recipient,
     UserProfile,
@@ -215,6 +217,12 @@ class BugdownMiscTest(ZulipTestCase):
         user = mention_data.get_user('king hamLET')
         assert(user is not None)
         self.assertEqual(user['email'], hamlet.email)
+
+    def test_invalid_katex_path(self) -> None:
+        with self.settings(STATIC_ROOT="/invalid/path"):
+            with mock.patch('logging.error') as mock_logger:
+                render_tex("random text")
+                mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
 class BugdownTest(ZulipTestCase):
     def assertEqual(self, first: Any, second: Any, msg: Text = "") -> None:
@@ -593,7 +601,10 @@ class BugdownTest(ZulipTestCase):
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
         converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', 'green_tick.png', realm.id)))
+        realm_emoji = RealmEmoji.objects.filter(realm=realm,
+                                                name='green_tick',
+                                                deactivated=False).get()
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id)))
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
@@ -1055,58 +1066,6 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(render_markdown(msg, content),
                          '<p>There #<strong>Nonexistentstream</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
-
-    def test_stream_subscribe_button_simple(self) -> None:
-        msg = '!_stream_subscribe_button(simple)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_in_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple (not\\))'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple (not)">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple (not)</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_after_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple) (not)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            ' (not)</p>'
-        )
-
-    def test_stream_subscribe_button_slash(self) -> None:
-        msg = '!_stream_subscribe_button(simple\\\\)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple\\">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple\\</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
 
     def test_in_app_modal_link(self) -> None:
         msg = '!modal_link(#settings, Settings page)'

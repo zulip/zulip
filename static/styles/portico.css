@@ -950,7 +950,8 @@ input#desktop:checked ~ #tab-desktop,
 input#mobile:checked ~ #tab-mobile,
 input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
-input#zulipbot:checked ~ #tab-zulipbot {
+input#zulipbot:checked ~ #tab-zulipbot,
+input#terminal:checked ~ #tab-terminal {
     border-top: 1px solid #eee;
     padding-top: 20px;
     display: grid;
@@ -1799,7 +1800,7 @@ input.new-organization-button {
         -webkit-filter: brightness(0.7);
     }
 
-    .app.help .sidebar:not(.show) .ps__scrollbar-y-rail {
+    .app.help .sidebar:not(.show) .ps__rail-y {
         display: none; /* Hide y-scrollbar on collapsed sidebar view */
     }
 }

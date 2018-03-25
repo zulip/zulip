@@ -10,11 +10,11 @@ Get notifications from every event supported by IFTTT!
 
 1. Set **URL** to the URL constructed above. Set **Method** to `POST`,
    and set **Content Type** to `application/json`. Set **Body** to a
-   JSON object with two parameters: `content` and `subject`, like so:
+   JSON object with two parameters: `content` and `topic`, like so:
 
-    `{"content": "message body", "subject": "message topic"}`
+    `{"content": "message body", "topic": "message topic"}`
 
     You will most likely want to specify some IFTTT **Ingredients** to
-    customize the subject and content of your messages. Click **Add ingredient**
-    to see the available options and customize the `content` and `subject`
+    customize the topic and content of your messages. Click **Add ingredient**
+    to see the available options and customize the `content` and `topic`
     parameters as necessary. Click **Create action**, and click **Finish**.

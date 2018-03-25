@@ -164,6 +164,8 @@ class Realm(models.Model):
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
     message_retention_days = models.IntegerField(null=True)  # type: Optional[int]
     allow_edit_history = models.BooleanField(default=True)  # type: bool
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
+    allow_community_topic_editing = models.BooleanField(default=False)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -418,13 +420,10 @@ class RealmEmoji(models.Model):
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))])  # type: Text
-    file_name = models.TextField(db_index=True, null=True)  # type: Optional[Text]
+    file_name = models.TextField(db_index=True, null=True, blank=True)  # type: Optional[Text]
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
-
-    class Meta:
-        unique_together = ("realm", "name")
+    PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def __str__(self) -> Text:
         return "<RealmEmoji(%s): %s %s %s %s>" % (self.realm.string_id,
@@ -433,38 +432,37 @@ class RealmEmoji(models.Model):
                                                   self.deactivated,
                                                   self.file_name)
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
+def get_realm_emoji_dicts(realm: Realm,
+                          only_active_emojis: bool=False) -> Dict[str, Dict[str, Any]]:
+    query = RealmEmoji.objects.filter(realm=realm).select_related('author')
+    if only_active_emojis:
+        query = query.filter(deactivated=False)
     d = {}
     from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+
+    for realm_emoji in query.all():
         author = None
-        if row.author:
+        if realm_emoji.author:
             author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
+                'id': realm_emoji.author.id,
+                'email': realm_emoji.author.email,
+                'full_name': realm_emoji.author.full_name}
+        emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
+        d[str(realm_emoji.id)] = dict(id=str(realm_emoji.id),
+                                      name=realm_emoji.name,
+                                      source_url=emoji_url,
+                                      deactivated=realm_emoji.deactivated,
+                                      author=author)
     return d
 
+def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    return get_realm_emoji_dicts(realm)
+
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
     d = {}
-    from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm,
-                                         deactivated=False).select_related('author'):
-        author = None
-        if row.author:
-            author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           name=row.name,
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
+    for emoji_id, emoji_dict in realm_emojis.items():
+        d[emoji_dict['name']] = emoji_dict
     return d
 
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:

@@ -7,6 +7,10 @@ zrequire('pm_conversations');
 zrequire('people');
 zrequire('util');
 zrequire('stream_data');
+zrequire('narrow');
+zrequire('hash_util');
+zrequire('marked', 'third/marked/lib/marked');
+var _ = require('node_modules/underscore/underscore.js');
 var th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
@@ -30,6 +34,7 @@ stream_data.create_streams([
         {name: 'Denmark', pin_to_top: true, subscribers: popular, subscribed: true},
         {name: 'dead', pin_to_top: false, subscribers: unpopular, subscribed: true},
     ];
+    _.each(test_streams, stream_data.update_calculated_fields);
 
     global.stream_data.is_active = function (sub) {
         return sub.name !== 'dead';
@@ -50,6 +55,7 @@ stream_data.create_streams([
         {name: 'Denmark', description: 'visiting Denmark', subscribers: popular, subscribed: true},
         {name: 'dead', description: 'dead stream', subscribers: unpopular, subscribed: true},
     ];
+    _.each(test_streams, stream_data.update_calculated_fields);
     test_streams = th.sort_streams(test_streams, 'wr');
     assert.deepEqual(test_streams[0].name, "Docs"); // Description match
     assert.deepEqual(test_streams[1].name, "Denmark"); // Popular stream
@@ -59,13 +65,14 @@ stream_data.create_streams([
 
     // Test sort both subscribed and unsubscribed streams.
     test_streams = [
-        {name: 'Dev', description: 'Some devs', subscribed: true},
-        {name: 'East', description: 'Developing east', subscribed: true},
-        {name: 'New', description: 'No match', subscribed: true},
-        {name: 'Derp', description: 'Always Derping', subscribed: false},
-        {name: 'Ether', description: 'Destroying ether', subscribed: false},
-        {name: 'Mew', description: 'Cat mews', subscribed: false},
+        {name: 'Dev', description: 'Some devs', subscribed: true, subscribers: popular},
+        {name: 'East', description: 'Developing east', subscribed: true, subscribers: popular},
+        {name: 'New', description: 'No match', subscribed: true, subscribers: popular},
+        {name: 'Derp', description: 'Always Derping', subscribed: false, subscribers: popular},
+        {name: 'Ether', description: 'Destroying ether', subscribed: false, subscribers: popular},
+        {name: 'Mew', description: 'Cat mews', subscribed: false, subscribers: popular},
     ];
+    _.each(test_streams, stream_data.update_calculated_fields);
 
     test_streams = th.sort_streams(test_streams, 'd');
     assert.deepEqual(test_streams[0].name, "Dev"); // Subscribed and stream name starts with query
@@ -186,6 +193,11 @@ _.each(matches, function (person) {
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_1));
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_2));
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_3));
+
+    var dev_sub = stream_data.get_sub("Dev");
+    var linux_sub = stream_data.get_sub("Linux");
+    stream_data.update_calculated_fields(dev_sub);
+    stream_data.update_calculated_fields(linux_sub);
 
     // For spliting based on whether a PM was sent
     global.pm_conversations.set_partner(5);

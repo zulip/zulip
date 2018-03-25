@@ -6,8 +6,6 @@ Receive GitLab notifications in Zulip!
 
    {!git-webhook-url-with-branches-indented.md!}
 
-    {!append-topic.md!}
-
 1. Go to your repository on GitLab and click **Settings** on the left
    sidebar.  Click on **Integrations**.
 

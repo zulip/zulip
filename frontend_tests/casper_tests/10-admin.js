@@ -81,7 +81,8 @@ casper.then(function () {
 });
 
 function submit_permissions_change() {
-    casper.click('form.org-permissions-form button.button');
+    casper.test.assertSelectorHasText('#org-submit-other-permissions', "Save");
+    casper.click('#org-submit-other-permissions');
 }
 
 // Test setting limiting stream creation to administrators
@@ -97,9 +98,9 @@ casper.then(function () {
 
 casper.then(function () {
     // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-                                          'Stream creation permission changed!');
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
 
@@ -115,9 +116,9 @@ casper.then(function () {
 
 casper.then(function () {
     // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-            'Stream creation permission changed!');
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
 
@@ -145,12 +146,12 @@ casper.waitUntilVisible('#id_realm_create_stream_permission', function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin-realm-create-stream-by-admins-only-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-create-stream-by-admins-only-status',
-                                          'Stream creation permission changed!');
+    // Test setting was activated
+    casper.waitUntilVisible('#org-submit-other-permissions[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-other-permissions',
+                                          'Saved');
     });
 });
-
 
 casper.then(function () {
     // Test custom realm emoji
@@ -172,7 +173,7 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('tr#emoji_mouseface', function () {
         casper.test.assertSelectorHasText('tr#emoji_mouseface .emoji_name', 'mouseface');
-        casper.test.assertExists('.emoji_row img[src="/user_avatars/1/emoji/mouseface.png"]');
+        casper.test.assertExists('tr#emoji_mouseface img');
         casper.click('tr#emoji_mouseface button.delete');
     });
 });
@@ -317,9 +318,6 @@ casper.then(function () {
     });
 });
 
-function submit_org_settings_change() {
-    casper.click('form.org-settings-form button.button');
-}
 
 casper.then(function () {
     casper.click("li[data-section='organization-settings']");
@@ -328,14 +326,15 @@ casper.then(function () {
         casper.evaluate(function () {
             $('#id_realm_default_language').val('de').change();
         });
-        submit_org_settings_change();
+        casper.test.assertSelectorHasText('#org-submit-language-notify', "Save");
+        casper.click('#org-submit-language-notify');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#admin-realm-default-language-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-default-language-status',
-                                          'Default language changed!');
+    casper.waitUntilVisible('#org-submit-language-notify[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-language-notify',
+                                          'Saved');
     });
 });
 

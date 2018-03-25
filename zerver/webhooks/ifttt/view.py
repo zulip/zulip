@@ -13,11 +13,16 @@ from zerver.models import UserProfile
 @has_request_variables
 def api_iftt_app_webhook(request: HttpRequest, user_profile: UserProfile,
                          payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    subject = payload.get('subject')
+    topic = payload.get('topic')
     content = payload.get('content')
-    if subject is None:
-        return json_error(_("Subject can't be empty"))
+
+    if topic is None:
+        topic = payload.get('subject')  # Backwards-compatibility
+        if topic is None:
+            return json_error(_("Topic can't be empty"))
+
     if content is None:
         return json_error(_("Content can't be empty"))
-    check_send_webhook_message(request, user_profile, subject, content)
+
+    check_send_webhook_message(request, user_profile, topic, content)
     return json_success()

@@ -513,15 +513,14 @@ def render_markdown(message: Message,
     else:
         message_user_ids = user_ids
 
-    if message is not None:
-        message.mentions_wildcard = False
-        message.mentions_user_ids = set()
-        message.mentions_user_group_ids = set()
-        message.alert_words = set()
-        message.links_for_preview = set()
+    message.mentions_wildcard = False
+    message.mentions_user_ids = set()
+    message.mentions_user_group_ids = set()
+    message.alert_words = set()
+    message.links_for_preview = set()
 
-        if realm is None:
-            realm = message.get_realm()
+    if realm is None:
+        realm = message.get_realm()
 
     possible_words = set()  # type: Set[Text]
     if realm_alert_words is not None:
@@ -529,12 +528,7 @@ def render_markdown(message: Message,
             if user_id in message_user_ids:
                 possible_words.update(set(words))
 
-    if message is None:
-        # If we don't have a message, then we are in the compose preview
-        # codepath, so we know we are dealing with a human.
-        sent_by_bot = False
-    else:
-        sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
+    sent_by_bot = get_user_profile_by_id(message.sender_id).is_bot
 
     # DO MAIN WORK HERE -- call bugdown to convert
     rendered_content = bugdown.convert(

@@ -1,5 +1,7 @@
 <div id="user-groups-admin" class="settings-section" data-name="user-groups-admin">
-    <div class="tip">Anyone in this organization can add user groups.</div>
+    {{#unless is_admin}}
+    <div class="tip">Only group members and organization administrators can modify a group.</div>
+    {{/unless}}
     <form class="form-horizontal admin-user-group-form">
         <div class="add-new-user-group-box grey-box">
             <div class="new-user-group-form">

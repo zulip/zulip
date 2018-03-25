@@ -24,8 +24,11 @@ set_global('window', {
 set_global('page_params', {
     realm_users: [],
     realm_emoji: {
-        burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
-                  source_url: '/static/generated/emoji/images/emoji/burrito.png'},
+        1: {id: 1,
+            name: 'burrito',
+            source_url: '/static/generated/emoji/images/emoji/burrito.png',
+            deactivated: false,
+        },
     },
     realm_filters: [
         [
@@ -214,6 +217,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'hello', expected: '<p>hello</p>'},
         {input: 'hello there', expected: '<p>hello there</p>'},
         {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
+        {input: 'hello ***foo*** for you', expected: '<p>hello <strong><em>foo</em></strong> for you</p>'},
         {input: '__hello__', expected: '<p>__hello__</p>'},
         {input: '\n```\nfenced code\n```\n\nand then after\n',
          expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},

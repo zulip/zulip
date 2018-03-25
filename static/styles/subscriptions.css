@@ -10,10 +10,15 @@
     margin: 0;
 }
 
+.email_address_hint {
+    max-width: 430px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
 .subscription-email-hint-image {
     float: right;
     width: 80px;
-    padding-right: 60px;
 }
 
 .subscription_header.collapsed {
@@ -153,7 +158,7 @@
 
 .mute-note {
     font-size: 90%;
-    font-color: hsl(0, 0%, 32%);
+    opacity: 0.5;
 }
 
 .hide-mute-note {
@@ -183,14 +188,6 @@
     text-decoration: none;
     background-color: hsl(0, 0%, 92%);
     border: 1px solid hsl(0, 0%, 68%);
-}
-
-.stream-row .btn.sub_unsub_button {
-    display: inline-block;
-    min-width: 140px;
-    float: right;
-    margin-top: 9px;
-    margin-right: 10px;
 }
 
 .sub_arrow {
@@ -686,9 +683,23 @@ form#add_new_subscription {
     width: calc(100% - 90px);
 }
 
+.stream-row .sub-info-box .top-bar,
+.stream-row .sub-info-box .bottom-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+}
+
 .stream-row .sub-info-box .top-bar > div {
     display: inline-block;
     vertical-align: top;
+}
+
+.stream-row .sub-info-box .top-bar .stream-name,
+.stream-row .sub-info-box .bottom-bar .description {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .stream-row .sub-info-box .top-bar .stream-name {
@@ -697,7 +708,7 @@ form#add_new_subscription {
 
 .stream-row .sub-info-box .top-bar .subscriber-count,
 .stream-row .sub-info-box .bottom-bar .stream-message-count {
-    float: right;
+    white-space: nowrap;
     color: hsl(0, 0%, 66%);
 }
 
@@ -707,44 +718,14 @@ form#add_new_subscription {
     margin-right: 5px;
 }
 
-.stream-row .sub-info-box .top-bar .subscriber-count:hover .subscriber-count-hover-content,
-.stream-row .sub-info-box .bottom-bar .stream-message-count:hover .stream-message-hover-content {
-    display: inline-block;
-}
-
-.stream-row .sub-info-box .top-bar .subscriber-count .subscriber-count-hover-content {
-    display: none;
-    width: 110px;
-    margin-right: 3px;
-    float: left;
-    text-align: center;
-    background-color: #a9a9a9;
-    color: #fff;
-    border-radius: 6px;
-}
-
 .stream-row .sub-info-box .bottom-bar > div {
     display: inline-block;
     vertical-align: bottom;
 }
 
-.stream-row .sub-info-box .bottom-bar .description {
+.stream-row .sub-info-box .bottom-bar {
     margin-top: 2px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     line-height: 1.5;
-}
-
-.stream-row .sub-info-box .bottom-bar .stream-message-count .stream-message-hover-content {
-    display: none;
-    width: 175px;
-    margin-right: 3px;
-    float: left;
-    text-align: center;
-    background-color: #a9a9a9;
-    color: #fff;
-    border-radius: 6px;
 }
 
 #subscription_overlay .stream-description .stream-description-editable:empty:after,
@@ -806,6 +787,7 @@ form#add_new_subscription {
 
 #subscription_overlay .stream-header {
     margin-bottom: 20px;
+    white-space: nowrap;
 }
 
 #subscription_overlay .stream-header .stream-name {
@@ -813,6 +795,8 @@ form#add_new_subscription {
     font-size: 1.5em;
     font-weight: 600;
     margin-left: -3px;
+    white-space: normal;
+    word-break: break-all;
 }
 
 #subscription_overlay .stream-header .deactivate,

@@ -363,11 +363,10 @@ exports.remove_subscriber = function (stream_name, user_id) {
 
 exports.user_is_subscribed = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we don't know about the stream, or we ourselves are not
-        // subscribed, we can't keep track of the subscriber list in general,
+    if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
+        // If we don't know about the stream, or we ourselves can not access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warn("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
+        blueslip.warn("We got a user_is_subscribed call for a non-existent or inaccessible stream.");
         return;
     }
     var user_id = people.get_user_id(user_email);
@@ -428,6 +427,8 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         var used_colors = exports.get_colors();
         sub.color = stream_color.pick_color(used_colors);
     }
+
+    exports.update_calculated_fields(sub);
 
     exports.add_sub(stream_name, sub);
 

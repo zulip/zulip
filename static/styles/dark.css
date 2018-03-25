@@ -70,9 +70,7 @@ body.dark-mode #tab_list li.stream:not(.dark_background) {
 
 /* these are converting grey things to "new grey" */
 body.dark-mode .sidebar-title,
-body.dark-mode .recipient_row_date,
-body.dark-mode .stream-row .sub-info-box .top-bar .subscriber-count,
-body.dark-mode .stream-row .sub-info-box .top-bar .message-count {
+body.dark-mode .recipient_row_date {
     color: inherit;
     opacity: 0.5;
 }
@@ -93,6 +91,11 @@ body.dark-mode .pill-container {
 body.dark-mode select option {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
+}
+
+body.dark-mode .topic-unread-count,
+body.dark-mode .private_message_count {
+    background-color: hsla(105, 2%, 50%, 0.5);
 }
 
 body.dark-mode .pm_recipient .pill-container .pill {
@@ -193,10 +196,16 @@ body.dark-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
 }
 
-body.dark-mode .popover.right .arrow,
-body.dark-mode .popover.left .arrow,
+body.dark-mode .popover.left .arrow {
+    border-left-color: hsl(235, 18%, 7%);
+}
+
 body.dark-mode .popover.top .arrow {
     border-top-color: hsl(235, 18%, 7%);
+}
+
+body.dark-mode .popover.right .arrow {
+    border-right-color: hsl(235, 18%, 7%);
 }
 
 body.dark-mode ul.filters li:hover .arrow {
