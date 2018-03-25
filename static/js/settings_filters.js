@@ -66,7 +66,7 @@ exports.set_up = function () {
         });
     });
 
-    $(".organization").on("submit", "form.admin-filter-form", function (e) {
+    $(".organization form.admin-filter-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var filter_status = $('#admin-filter-status');
