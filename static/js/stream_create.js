@@ -271,8 +271,8 @@ exports.show_new_stream_modal = function () {
     });
 };
 
-$(function () {
-    $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
+exports.create_handlers_for_users = function () {
+    $('body').on('change', '#user-checkboxes input', update_announce_stream_state);
 
     // 'Check all' and 'Uncheck all' visible users
     $(document).on('click', '.subs_set_all_users', function (e) {
@@ -346,6 +346,13 @@ $(function () {
         update_announce_stream_state();
         e.preventDefault();
     });
+};
+
+
+$(function () {
+    exports.create_handlers_for_users();
+
+    $('body').on('change', '#make-invite-only input', update_announce_stream_state);
 
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
