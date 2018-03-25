@@ -187,7 +187,7 @@ class Realm(models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
-    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: int
+    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
     message_visibility_limit = models.IntegerField(null=True)  # type: int
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
@@ -608,7 +608,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: Text
     tos_version = models.CharField(null=True, max_length=10)  # type: Optional[Text]
-    last_active_message_id = models.IntegerField(null=True)  # type: int
+    last_active_message_id = models.IntegerField(null=True)  # type: Optional[int]
 
     ### Notifications settings. ###
 
@@ -1786,9 +1786,9 @@ class AbstractScheduledJob(models.Model):
 class ScheduledEmail(AbstractScheduledJob):
     # Exactly one of user or address should be set. These are used to
     # filter the set of ScheduledEmails.
-    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: UserProfile
+    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     # Just the address part of a full "name <address>" email address
-    address = models.EmailField(null=True, db_index=True)  # type: Text
+    address = models.EmailField(null=True, db_index=True)  # type: Optional[Text]
 
     # Valid types are below
     WELCOME = 1
@@ -1806,7 +1806,7 @@ class ScheduledMessage(models.Model):
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)  # type: Text
     content = models.TextField()  # type: Text
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
-    stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Stream
+    stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     delivered = models.BooleanField(default=False)  # type: bool
