@@ -232,11 +232,15 @@ exports.show_new_stream_modal = function () {
     var all_users = people.get_rest_of_realm();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
-    $('#people_to_add').html(templates.render('new_stream_users', {
+    var html = templates.render('new_stream_users', {
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
         is_admin: page_params.is_admin,
-    }));
+    });
+
+    var container = $('#people_to_add');
+    container.html(html);
+    exports.create_handlers_for_users(container);
 
     // Make the options default to the same each time:
     // public, "announce stream" on.
@@ -271,11 +275,12 @@ exports.show_new_stream_modal = function () {
     });
 };
 
-exports.create_handlers_for_users = function () {
-    $('body').on('change', '#user-checkboxes input', update_announce_stream_state);
+exports.create_handlers_for_users = function (container) {
+    // container should be $('#people_to_add')...see caller to verify
+    container.on('change', '#user-checkboxes input', update_announce_stream_state);
 
     // 'Check all' and 'Uncheck all' visible users
-    $(document).on('click', '.subs_set_all_users', function (e) {
+    container.on('click', '.subs_set_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', true);
@@ -285,7 +290,7 @@ exports.create_handlers_for_users = function () {
         update_announce_stream_state();
     });
 
-    $(document).on('click', '.subs_unset_all_users', function (e) {
+    container.on('click', '.subs_unset_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if (li.style.display !== "none") {
                 // The first checkbox is the one for ourself; this is the code path for:
@@ -300,7 +305,7 @@ exports.create_handlers_for_users = function () {
         update_announce_stream_state();
     });
 
-    $(document).on('click', '#copy-from-stream-expand-collapse', function (e) {
+    container.on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
         e.preventDefault();
@@ -308,7 +313,7 @@ exports.create_handlers_for_users = function () {
     });
 
     // Search People or Streams
-    $(document).on('input', '.add-user-list-filter', function (e) {
+    container.on('input', '.add-user-list-filter', function (e) {
         var user_list = $(".add-user-list-filter");
         if (user_list === 0) {
             return;
@@ -350,8 +355,6 @@ exports.create_handlers_for_users = function () {
 
 
 $(function () {
-    exports.create_handlers_for_users();
-
     $('body').on('change', '#make-invite-only input', update_announce_stream_state);
 
     $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
