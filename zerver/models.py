@@ -188,7 +188,7 @@ class Realm(models.Model):
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
     _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
-    message_visibility_limit = models.IntegerField(null=True)  # type: int
+    message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
