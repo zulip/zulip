@@ -21,7 +21,7 @@ var zulip_emoji = {
 // Emoticons, and which emoji they should become (without colons). Duplicate
 // emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
 // and `templates/zerver/help/enable-emoticon-translations.md`.
-var EMOTICON_CONVERSIONS = {
+exports.EMOTICON_CONVERSIONS = {
     ':)': 'smiley',
     '(:': 'smiley',
     ':(': 'slightly_frowning_face',
@@ -124,13 +124,25 @@ exports.get_canonical_name = function (emoji_name) {
 // Translates emoticons in a string to their colon syntax.
 exports.translate_emoticons_to_names = function translate_emoticons_to_names(text) {
     var translated = text;
+    var replacement_text;
+    var terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    var emoticon_replacer = function (match, g1, offset, str) {
+        var symbol_at_start = terminal_symbols.indexOf(str[offset - 1]) !== -1;
+        var symbol_at_end = terminal_symbols.indexOf(str[offset + match.length]) !== -1;
+        var valid_start = symbol_at_start || offset === 0;
+        var valid_end = symbol_at_end || offset === str.length - match.length;
 
-    for (var emoticon in EMOTICON_CONVERSIONS) {
-        if (EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
-            var emoticon_reg_ex = new RegExp(util.escape_regexp(emoticon), "g");
-            translated = translated.replace(
-                emoticon_reg_ex,
-                ':' + EMOTICON_CONVERSIONS[emoticon] + ':');
+        if (valid_start && valid_end) {
+            return replacement_text;
+        }
+        return match;
+    };
+
+    for (var emoticon in exports.EMOTICON_CONVERSIONS) {
+        if (exports.EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
+            replacement_text = ':' + exports.EMOTICON_CONVERSIONS[emoticon] + ':';
+            var emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+            translated = translated.replace(emoticon_regex, emoticon_replacer);
         }
     }
 
