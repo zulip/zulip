@@ -285,13 +285,7 @@ exports.on_load_success = function (realm_people_data) {
         channel.del({
             url: '/json/bots/' + encodeURIComponent(email),
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    row.find("button").closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    row.find("button").text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, $(e.target));
             },
             success: function () {
                 update_view_on_deactivate(row);
@@ -310,14 +304,7 @@ exports.on_load_success = function (realm_people_data) {
         channel.post({
             url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
             error: function (xhr) {
-                var button = row.find("button");
-                if (xhr.status.toString().charAt(0) === "4") {
-                    button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                     button.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, $(e.target));
             },
             success: function () {
                 update_view_on_reactivate(row);

@@ -494,21 +494,14 @@ $(function () {
         stream_list.toggle_filter_displayed(e);
     });
 
-    $("body").on("click", ".default_stream_row .remove-default-stream", function () {
+    $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
         var row = $(this).closest(".default_stream_row");
         var stream_name = row.attr("id");
 
         channel.del({
             url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
             error: function (xhr) {
-                var button = row.find("button");
-                if (xhr.status.toString().charAt(0) === "4") {
-                    button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    button.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, $(e.target));
             },
             success: function () {
                 row.remove();

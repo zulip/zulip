@@ -101,13 +101,7 @@ exports.on_load_success = function (invites_data) {
         channel.del({
             url: '/json/invites/' + meta.invite_id,
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    revoke_button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    revoke_button.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, revoke_button);
             },
             success: function () {
                 meta.current_revoke_invite_user_modal_row.remove();
@@ -129,13 +123,7 @@ exports.on_load_success = function (invites_data) {
         channel.post({
             url: '/json/invites/' + meta.invite_id + "/resend",
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    resend_button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    resend_button.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, resend_button);
             },
             success: function (data) {
                 resend_button.text(i18n.t("Sent!"));
