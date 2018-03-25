@@ -679,6 +679,25 @@ function _set_up() {
         }
     });
 
+    exports.sync_realm_settings = function (property) {
+        if (!overlays.settings_open()) {
+            return;
+        }
+
+        if (property === 'message_content_edit_limit_seconds') {
+            property = 'message_content_edit_limit_minutes';
+        } else if (property === 'create_stream_by_admins_only' || property === 'waiting_period_threshold') {
+            // We use this path for `waiting_period_threshold` property because we
+            // don't get both 'create_stream_by_admins_only' and 'waiting_period_threshold'
+            // in the same event to determine the value of dropdown.
+            property = 'create_stream_permission';
+        }
+        var element =  $('#id_realm_'+property);
+        if (element.length) {
+            discard_property_element_changes(element);
+        }
+    };
+
     $(".organization form.org-profile-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
