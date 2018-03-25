@@ -438,7 +438,6 @@ function test_extract_property_name() {
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
     var submit_settings_form;
-    var submit_profile_form;
     $('.organization').on = function (action, selector, f) {
         if (selector === '.subsection-header .subsection-changes-save button') {
             assert.equal(action, 'click');
@@ -447,10 +446,12 @@ function test_extract_property_name() {
         if (selector === 'button.save-language-org-settings') {
             assert.equal(action, 'click');
         }
-        if (selector === 'form.org-profile-form') {
-            assert.equal(action, 'submit');
-            submit_profile_form = f;
-        }
+    };
+
+    var submit_profile_form;
+    $('.organization form.org-profile-form').on = function (action, f) {
+        assert.equal(action, 'submit');
+        submit_profile_form = f;
     };
 
     var change_allow_subdomains;
