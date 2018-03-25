@@ -649,7 +649,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     left_side_userlist = models.BooleanField(default=False)  # type: bool
 
     # display settings
-    twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
+    twenty_four_hour_time = models.BooleanField(default=settings.DEFAULT_TWENTY_FOUR_HOUR_TIME)  # type: bool
     default_language = models.CharField(default=u'en', max_length=MAX_LANGUAGE_ID_LENGTH)  # type: Text
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool

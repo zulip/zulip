@@ -72,7 +72,7 @@ class Migration(migrations.Migration):
                 ('default_all_public_streams', models.BooleanField(default=False)),
                 ('enter_sends', models.NullBooleanField(default=True)),
                 ('autoscroll_forever', models.BooleanField(default=False)),
-                ('twenty_four_hour_time', models.BooleanField(default=False)),
+                ('twenty_four_hour_time', models.BooleanField(default=settings.DEFAULT_TWENTY_FOUR_HOUR_TIME)),
                 ('avatar_source', models.CharField(choices=[('G', 'Hosted by Gravatar'), ('U', 'Uploaded by user'), ('S', 'System generated')], default='G', max_length=1)),
                 ('tutorial_status', models.CharField(choices=[('W', 'Waiting'), ('S', 'Started'), ('F', 'Finished')], default='W', max_length=1)),
                 ('onboarding_steps', models.TextField(default='[]')),
