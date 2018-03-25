@@ -127,7 +127,10 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
 
     for (var emoticon in EMOTICON_CONVERSIONS) {
         if (EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
-            var emoticon_reg_ex = new RegExp(util.escape_regexp(emoticon), "g");
+            var emoticon_reg_ex = new RegExp(
+                "\\B" + util.escape_regexp(emoticon) + "\\B",
+                "g"
+            );
             translated = translated.replace(
                 emoticon_reg_ex,
                 ':' + EMOTICON_CONVERSIONS[emoticon] + ':');
