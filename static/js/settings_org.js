@@ -492,6 +492,21 @@ function _set_up() {
         }
     });
 
+    exports.handle_dependent_subsettings = function (property_name) {
+        if (property_name === 'realm_create_stream_permission') {
+            exports.set_create_stream_permission_dropdwon();
+        } else if (property_name === 'realm_allow_message_editing') {
+            settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
+                "id_realm_message_content_edit_limit_minutes", true);
+        } else if (property_name === 'realm_invite_required') {
+            settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
+                "id_realm_invite_by_admins_only", true);
+        } else if (property_name === 'realm_restricted_to_domain') {
+            settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
+                "id_realm_disallow_disposable_email_addresses", false);
+        }
+    };
+
     function discard_property_element_changes(elem) {
         elem = $(elem);
         var property_name = exports.extract_property_name(elem);
@@ -509,9 +524,8 @@ function _set_up() {
         } else {
             blueslip.error('Element refers to unknown property ' + property_name);
         }
-        // Triggering a change event to handle fading and showing of
-        // dependent sub-settings correctly
-        elem.change();
+
+        exports.handle_dependent_subsettings(property_name);
     }
 
     $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
