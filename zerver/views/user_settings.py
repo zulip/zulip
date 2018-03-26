@@ -19,6 +19,7 @@ from zerver.lib.i18n import get_available_language_codes
 from zerver.lib.response import json_success, json_error
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string
+from zerver.lib.queue import queue_json_publish
 from zerver.lib.request import JsonableError
 from zerver.lib.timezone import get_all_timezones
 from zerver.models import UserProfile, Realm, name_changes_disabled, \
@@ -218,3 +219,12 @@ def change_enter_sends(request: HttpRequest, user_profile: UserProfile,
                        enter_sends: bool=REQ(validator=check_bool)) -> HttpResponse:
     do_change_enter_sends(user_profile, enter_sends)
     return json_success()
+
+@human_users_only
+@has_request_variables
+def export(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    data = {'user_profile_id': user_profile.id, 'type': 'export_user_messages'}
+    # FIXME: Can we check if an export is currently running, or has been
+    # started in the past hour, and deny exports?
+    queue_json_publish('deferred_work', data)
+    return json_success({'msg': 'Your export has been queued!'})

@@ -4,9 +4,12 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, 
 import copy
 import signal
 from functools import wraps
-
+import mimetypes
+import tempfile
+import shutil
 import smtplib
 import socket
+import subprocess
 
 from django.conf import settings
 from django.db import connection
@@ -17,6 +20,7 @@ from zerver.models import \
     get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
+from zerver.lib.export import do_export_user
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -24,8 +28,9 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, check_send_message, extract_recipients, \
-    render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
+    internal_send_message, internal_send_private_message, check_send_message, \
+    extract_recipients, render_incoming_message, do_update_embedded_data, \
+    do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
@@ -40,6 +45,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.upload import upload_message_file
 from zerver.models import get_bot_services
 from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
@@ -530,3 +536,35 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, stream)
+
+        elif event['type'] == 'export_user_messages':
+            user_profile = get_user_profile_by_id(event['user_profile_id'])
+
+            # Create export
+            output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
+            do_export_user(user_profile, output_dir)
+            print("Finished exporting to %s; tarring" % (output_dir,))
+            tarball_path = output_dir.rstrip('/') + '.tar.gz'
+            subprocess.check_call(
+                ["tar", "-czf", tarball_path, os.path.basename(output_dir)],
+                cwd=os.path.dirname(output_dir)
+            )
+            print("Tarball written to %s" % (tarball_path,))
+
+            # Upload
+            with open(tarball_path, 'rb') as f:
+                content_type = mimetypes.guess_type(tarball_path)[0]
+                size = os.path.getsize(tarball_path)
+                name = os.path.basename(tarball_path)
+                upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
+
+            # Delete export data
+            shutil.rmtree(output_dir)
+            os.remove(tarball_path)
+
+            # Notify user
+            content = """Your data has been exported and uploaded [here]({})""".format(upload_path)
+            internal_send_private_message(user_profile.realm,
+                                          get_system_bot(settings.NOTIFICATION_BOT),
+                                          user_profile,
+                                          content)

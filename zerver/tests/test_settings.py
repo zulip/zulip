@@ -1,9 +1,8 @@
-
 import ujson
 
 from django.http import HttpResponse
 from django.test import override_settings
-from mock import patch
+from mock import MagicMock, patch
 from typing import Any, Dict
 
 from zerver.lib.initial_password import initial_password
@@ -273,3 +272,18 @@ class UserChangesTest(ZulipTestCase):
         self.assertNotEqual(old_api_key, new_api_key)
         user = self.example_user('hamlet')
         self.assertEqual(new_api_key, user.api_key)
+
+
+class UserExportTest(ZulipTestCase):
+
+    @patch('zerver.views.user_settings.queue_json_publish')
+    def test_export(self, queue_publish: MagicMock) -> None:
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login(email)
+        result = self.client_post('/json/users/me/export')
+        self.assertEqual('Your export has been queued!', result.json()['msg'])
+        queue_publish.assert_called_once_with(
+            'deferred_work',
+            {'type': 'export_user_messages', 'user_profile_id': user.id}
+        )
