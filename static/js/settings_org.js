@@ -228,11 +228,9 @@ function _set_up() {
     var org_profile = {
         name: {
             type: 'text',
-            msg: i18n.t("Name changed!"),
         },
         description: {
             type: 'text',
-            msg: i18n.t("Description changed!"),
         },
     };
 
@@ -240,41 +238,28 @@ function _set_up() {
         msg_editing: {
             allow_message_deleting: {
                 type: 'bool',
-                checked_msg: i18n.t("Users can delete their messages!"),
-                unchecked_msg: i18n.t("Users can no longer delete their messages!"),
             },
             allow_edit_history: {
                 type: 'bool',
-                checked_msg: i18n.t("Users can view message edit history!"),
-                unchecked_msg: i18n.t("Users can no longer view message edit history!"),
             },
         },
         msg_feed: {
             inline_image_preview: {
                 type: 'bool',
-                checked_msg: i18n.t("Previews of uploaded and linked images will be shown!"),
-                unchecked_msg: i18n.t("Previews of uploaded and linked images will not be shown!"),
             },
             inline_url_embed_preview: {
                 type: 'bool',
-                checked_msg: i18n.t("Previews for linked websites will be shown!"),
-                unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
             },
             mandatory_topics: {
                 type: 'bool',
-                checked_msg: i18n.t("Topics are required in messages to streams!"),
-                unchecked_msg: i18n.t("Topics are not required in messages to streams!"),
             },
         },
         language_notify: {
             default_language: {
                 type: 'text',
-                msg: i18n.t("Default language changed!"),
             },
             send_welcome_emails: {
                 type: 'bool',
-                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
-                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
             },
         },
     };
@@ -283,46 +268,31 @@ function _set_up() {
         org_join: {
             restricted_to_domain: {
                 type: 'bool',
-                checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
-                unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
             invite_required: {
                 type: 'bool',
-                checked_msg: i18n.t("New users must be invited by e-mail!"),
-                unchecked_msg: i18n.t("New users may sign up online!"),
             },
             disallow_disposable_email_addresses: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot sign up using disposable email addresses!"),
-                unchecked_msg: i18n.t("Users can sign up using disposable email addresses!"),
             },
             invite_by_admins_only: {
                 type: 'bool',
-                checked_msg: i18n.t("New users must be invited by an admin!"),
-                unchecked_msg: i18n.t("Any user may now invite new users!"),
             },
         },
         user_identity: {
             name_changes_disabled: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot change their name!"),
-                unchecked_msg: i18n.t("Users may now change their name!"),
             },
             email_changes_disabled: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot change their email!"),
-                unchecked_msg: i18n.t("Users may now change their email!"),
             },
         },
         other_permissions: {
             add_emoji_by_admins_only: {
                 type: 'bool',
-                checked_msg: i18n.t("Only administrators may now add new emoji!"),
-                unchecked_msg: i18n.t("Any user may now add new emoji!"),
             },
             bot_creation_policy: {
                 type: 'integer',
-                msg: i18n.t("Permissions changed"),
             },
         },
     };
