@@ -244,6 +244,10 @@ exports.initialize = function () {
             found_newest: data.found_newest,
         });
 
+        message_list.all.fetch_status.finish_newer_batch({
+            found_newest: data.found_newest,
+        });
+
         if (data.found_newest) {
             server_events.home_view_loaded();
             exports.start_backfilling_messages();
@@ -267,6 +271,7 @@ exports.initialize = function () {
 
     if (page_params.have_initial_messages) {
         home_msg_list.fetch_status.start_newer_batch();
+        message_list.all.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,
