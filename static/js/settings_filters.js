@@ -51,13 +51,7 @@ exports.set_up = function () {
         channel.del({
             url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    btn.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    btn.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, btn);
             },
             success: function () {
                 var row = btn.parents('tr');
@@ -66,12 +60,14 @@ exports.set_up = function () {
         });
     });
 
-    $(".organization").on("submit", "form.admin-filter-form", function (e) {
+    $(".organization form.admin-filter-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var filter_status = $('#admin-filter-status');
         var pattern_status = $('#admin-filter-pattern-status');
         var format_status = $('#admin-filter-format-status');
+        var add_filter_button = $('.new-filter-form button');
+        add_filter_button.attr("disabled", "disabled");
         filter_status.hide();
         pattern_status.hide();
         format_status.hide();
@@ -84,11 +80,15 @@ exports.set_up = function () {
             url: "/json/realm/filters",
             data: $(this).serialize(),
             success: function (data) {
+                $('#filter_pattern').val('');
+                $('#filter_format_string').val('');
+                add_filter_button.removeAttr("disabled");
                 filter.id = data.id;
                 ui_report.success(i18n.t("Custom filter added!"), filter_status);
             },
             error: function (xhr) {
                 var errors = JSON.parse(xhr.responseText).errors;
+                add_filter_button.removeAttr("disabled");
                 if (errors.pattern !== undefined) {
                     xhr.responseText = JSON.stringify({msg: errors.pattern});
                     ui_report.error(i18n.t("Failed"), xhr, pattern_status);

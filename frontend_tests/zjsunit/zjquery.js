@@ -126,6 +126,12 @@ exports.make_zjquery = function () {
                 }
                 return html;
             },
+            is: function (arg) {
+                if (arg === ':visible') {
+                    return shown;
+                }
+                return self;
+            },
             is_focused: function () {
                 // is_focused is not a jQuery thing; this is
                 // for our testing
@@ -137,6 +143,21 @@ exports.make_zjquery = function () {
             },
             keyup: function (arg) {
                 generic_event('keyup', arg);
+                return self;
+            },
+            off: function () {
+                var event_name;
+
+                if (arguments.length === 2) {
+                    event_name = arguments[0];
+                    on_functions[event_name] = [];
+                } else if (arguments.length === 3) {
+                    event_name = arguments[0];
+                    var sel = arguments[1];
+                    var child_on = child_on_functions.setdefault(sel, new Dict());
+                    child_on[event_name] = [];
+                }
+
                 return self;
             },
             on: function () {

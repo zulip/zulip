@@ -7,9 +7,9 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
@@ -46,14 +46,12 @@ class UnknownTriggerType(Exception):
 @has_request_variables
 def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
                            payload: Dict[str, Any]=REQ(argument_type='body'),
-                           stream: str=REQ(default='bitbucket'),
                            branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
     type = get_type(request, payload)
     if type != 'push':
         subject = get_subject_based_on_type(payload, type)
         body = get_body_based_on_type(type)(payload)
-        check_send_stream_message(user_profile, request.client,
-                                  stream, subject, body)
+        check_send_webhook_message(request, user_profile, subject, body)
     else:
         # ignore push events with no changes
         if not payload['push']['changes']:
@@ -65,8 +63,8 @@ def api_bitbucket2_webhook(request: HttpRequest, user_profile: UserProfile,
         subjects = get_push_subjects(payload)
         bodies_list = get_push_bodies(payload)
         for body, subject in zip(bodies_list, subjects):
-            check_send_stream_message(user_profile, request.client,
-                                      stream, subject, body)
+            check_send_webhook_message(request, user_profile, subject, body)
+
     return json_success()
 
 def get_subject_for_branch_specified_events(payload: Dict[str, Any],

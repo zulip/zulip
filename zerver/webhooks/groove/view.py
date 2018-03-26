@@ -7,9 +7,9 @@ from django.utils.translation import ugettext as _
 import logging
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 def ticket_started_body(payload: Dict[str, Any]) -> Text:
@@ -17,7 +17,7 @@ def ticket_started_body(payload: Dict[str, Any]) -> Text:
     body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
     return body.format(**payload)
 
-def ticket_assigned_body(payload: Dict[str, Any]) -> Text:
+def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[Text]:
     # Take the state, assignee, and assigned group from the payload.
     state = payload['state']
     assignee = payload['assignee']
@@ -78,9 +78,7 @@ def note_added_body(payload: Dict[str, Any]) -> Text:
 @api_key_only_webhook_view('Groove')
 @has_request_variables
 def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
-                       payload: Dict[str, Any]=REQ(argument_type='body'),
-                       stream: Text=REQ(default='groove'),
-                       topic: Optional[Text]=REQ(default='notifications')) -> HttpResponse:
+                       payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     try:
         # The event identifier is stored in the X_GROOVE_EVENT header.
         event = request.META['X_GROOVE_EVENT']
@@ -96,7 +94,8 @@ def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
             logging.error('Required key not found : ' + e.args[0])
             return json_error(_('Missing required data'))
         if body is not None:
-            check_send_stream_message(user_profile, request.client, stream, topic, body)
+            topic = 'notifications'
+            check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
 

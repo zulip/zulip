@@ -7,17 +7,16 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 @api_key_only_webhook_view('Stripe')
 @has_request_variables
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
-                       stream: Text=REQ(default='test'),
-                       topic: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                       stream: Text=REQ(default='test')) -> HttpResponse:
     body = None
     event_type = payload["type"]
     data_object = payload["data"]["object"]
@@ -56,8 +55,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 verb = "succeeded"
             body = body_template.format(charge_id=charge_id, link=link, amount=amount_string, verb=verb)
 
-        if topic is None:
-            topic = "Charge {}".format(charge_id)
+        topic = "Charge {}".format(charge_id)
 
     elif event_type.startswith('customer'):
         object_id = data_object["id"]
@@ -106,8 +104,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                 rest = "has been deleted"
             body = body_template.format(beginning=beginning, id=object_id, link=link, rest=rest)
 
-        if topic is None:
-            topic = "Customer {}".format(object_id)
+        topic = "Customer {}".format(object_id)
 
     elif event_type == "invoice.payment_failed":
         object_id = data_object['id']
@@ -116,9 +113,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
         body_template = "An invoice payment on invoice with id **[{id}]({link})** and "\
                         "with **{amount}** due has failed."
         body = body_template.format(id=object_id, amount=amount_string, link=link)
-
-        if topic is None:
-            topic = "Invoice {}".format(object_id)
+        topic = "Invoice {}".format(object_id)
 
     elif event_type.startswith('order'):
         object_id = data_object['id']
@@ -141,9 +136,7 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                                     link=link,
                                     amount=amount_string,
                                     end=end)
-
-        if topic is None:
-            topic = "Order {}".format(object_id)
+        topic = "Order {}".format(object_id)
 
     elif event_type.startswith('transfer'):
         object_id = data_object['id']
@@ -162,14 +155,12 @@ def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
             amount=amount_string,
             end=end
         )
-
-        if topic is None:
-            topic = "Transfer {}".format(object_id)
+        topic = "Transfer {}".format(object_id)
 
     if body is None:
         return json_error(_("We don't support {} event".format(event_type)))
 
-    check_send_stream_message(user_profile, request.client, stream, topic, body)
+    check_send_webhook_message(request, user_profile, topic, body)
 
     return json_success()
 

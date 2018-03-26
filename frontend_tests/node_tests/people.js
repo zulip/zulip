@@ -2,7 +2,7 @@ zrequire('util');
 zrequire('people');
 
 set_global('blueslip', {
-    error: function () { return undefined; },
+    error: function () { return; },
 });
 set_global('page_params', {});
 set_global('md5', function (s) {
@@ -123,6 +123,14 @@ initialize();
     assert.equal(people.get_recipients('30,32'), 'Isaac Newton');
 }());
 
+(function test_my_custom_profile_data() {
+    var person = people.get_by_email(me.email);
+    person.profile_data = {3: 'My address', 4: 'My phone number'};
+    assert.equal(people.my_custom_profile_data(3), 'My address');
+    assert.equal(people.my_custom_profile_data(4), 'My phone number');
+    assert.equal(people.my_custom_profile_data(undefined), undefined);
+}());
+
 (function test_user_timezone() {
     var expected_pref = {
         timezone: 'US/Pacific',
@@ -182,6 +190,16 @@ initialize();
 }());
 
 initialize();
+
+(function test_set_custom_profile_field_data() {
+    var person = people.get_by_email(me.email);
+    me.profile_data = {};
+    var field = {id: 3, name: 'Custom long field', type: 'text', value: 'Field value'};
+    people.set_custom_profile_field_data(person.user_id, {});
+    assert.deepEqual(person.profile_data, {});
+    people.set_custom_profile_field_data(person.user_id, field);
+    assert.equal(person.profile_data[field.id], 'Field value');
+}());
 
 (function test_get_rest_of_realm() {
     var alice1 = {
@@ -555,7 +573,7 @@ initialize();
     assert.equal(email, 'debbie71@example.com');
 
     // Test undefined slug
-    people.emails_strings_to_user_ids_string = function () { return undefined; };
+    people.emails_strings_to_user_ids_string = function () { return; };
     assert.equal(people.emails_to_slug(), undefined);
 }());
 

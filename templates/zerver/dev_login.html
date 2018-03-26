@@ -17,7 +17,7 @@
                         <h2>{{ _('Administrators') }}</h2>
                         {% if direct_admins %}
                             {% for direct_admin in direct_admins %}
-                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                            <p><input type="submit" formaction="{{ direct_admin.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_admin.email }}" /></p>
                             {% endfor %}
                         {% else %}
@@ -29,7 +29,7 @@
                         <h2>{{ _('Normal users') }}</h2>
                         {% if direct_users %}
                             {% for direct_user in direct_users %}
-                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}"
+                            <p><input type="submit" formaction="{{ direct_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
                                       name="direct_email" class="btn-direct btn-admin" value="{{ direct_user.email }}" /></p>
                             {% endfor %}
                         {% else %}
@@ -57,7 +57,13 @@
 
 <script type="text/javascript">
 if (window.location.hash.substring(0, 1) === "#") {
-    document.login_form.action += window.location.hash;
+    /* We append the location.hash to the formaction so that URL can be
+    preserved after user is logged in. See this:
+    https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+    $("input[name='direct_email']").each(function () {
+        var new_formaction = $(this).attr('formaction') + '/' + window.location.hash;
+        $(this).attr('formaction', new_formaction);
+    });
 }
 </script>
 {% endblock %}

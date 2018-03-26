@@ -9,11 +9,12 @@ from django.http import HttpRequest, HttpResponse
 from django.test import RequestFactory, TestCase
 from django.utils.log import AdminEmailHandler
 from functools import wraps
-from mock import patch
+from mock import MagicMock, patch
 from mypy_extensions import NoReturn
 from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
 
 from zerver.lib.request import JsonableError
+from zerver.lib.types import ViewFuncT
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.logging_handlers import AdminNotifyHandler
 from zerver.middleware import JsonErrorHandler
@@ -22,9 +23,8 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
-def capture_and_throw(
-        domain: Optional[Text]=None) -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
-    def wrapper(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def capture_and_throw(domain: Optional[Text]=None) -> Callable[[ViewFuncT], ViewFuncT]:
+    def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
         def wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> NoReturn:
             global captured_request
@@ -35,7 +35,7 @@ def capture_and_throw(
                 global captured_exc_info
                 captured_exc_info = sys.exc_info()
                 raise e
-        return wrapped_view
+        return wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return wrapper
 
 class AdminNotifyHandlerTest(ZulipTestCase):
@@ -45,7 +45,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.handler = AdminNotifyHandler()
         # Prevent the exceptions we're going to raise from being printed
         # You may want to disable this when debugging tests
-        settings.LOGGING_NOT_DISABLED = False
+        settings.LOGGING_ENABLED = False
 
         global captured_exc_info
         global captured_request
@@ -53,7 +53,7 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         captured_exc_info = None
 
     def tearDown(self) -> None:
-        settings.LOGGING_NOT_DISABLED = True
+        settings.LOGGING_ENABLED = True
 
     def get_admin_zulip_handler(self) -> AdminNotifyHandler:
         return [
@@ -61,7 +61,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             if isinstance(h, AdminNotifyHandler)
         ][0]
 
-    def test_basic(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_basic(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A random exception passes happily through AdminNotifyHandler"""
         handler = self.get_admin_zulip_handler()
         try:
@@ -92,7 +94,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
             patched_notify.assert_called_once()
             return patched_notify.call_args[0][0]
 
-    def test_long_exception_request(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_long_exception_request(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A request with no stack and multi-line report.getMessage() is handled properly"""
         record = self.simulate_error()
         record.exc_info = None
@@ -105,7 +109,9 @@ class AdminNotifyHandlerTest(ZulipTestCase):
         self.assertEqual(report['stack_trace'], 'message\nmoremesssage\nmore')
         self.assertEqual(report['message'], 'message')
 
-    def test_request(self) -> None:
+    @patch('zerver.logging_handlers.try_git_describe')
+    def test_request(self, mock_function: MagicMock) -> None:
+        mock_function.return_value = None
         """A normal request is handled properly"""
         record = self.simulate_error()
 

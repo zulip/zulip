@@ -590,15 +590,16 @@ class RealmEmojiReactionTests(EmojiReactionBase):
             'emoji_code': '9999',
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Invalid custom emoji id.')
+        self.assert_json_error(result, 'Invalid custom emoji.')
 
     def test_add_realm_emoji_invalid_name(self) -> None:
+        green_tick_emoji = RealmEmoji.objects.get(name="green_tick")
         reaction_info = {
             'emoji_name': 'bogus_name',
-            'emoji_code': '1',
+            'emoji_code': str(green_tick_emoji.id),
         }
         result = self.post_reaction(reaction_info)
-        self.assert_json_error(result, 'Invalid custom emoji.')
+        self.assert_json_error(result, 'Invalid custom emoji name.')
 
     def test_add_deactivated_realm_emoji(self) -> None:
         emoji = RealmEmoji.objects.get(name="green_tick")

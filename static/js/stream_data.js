@@ -194,19 +194,17 @@ exports.render_stream_description = function (sub) {
 
 exports.update_calculated_fields = function (sub) {
     sub.is_admin = page_params.is_admin;
-    // Admin can change stream name/description either stream is public or
-    // stream is private and admin is subscribed to private stream.
-    sub.can_change_name_description = page_params.is_admin &&
-                                     (!sub.invite_only || (sub.invite_only && sub.subscribed));
+    // Admin can change any stream's name & description either stream is public or
+    // private, subscribed or unsubscribed.
+    sub.can_change_name_description = page_params.is_admin;
     // If stream is public then any user can subscribe. If stream is private then only
     // subscribed users can unsubscribe.
     sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
     sub.can_make_public = page_params.is_admin && sub.invite_only && sub.subscribed;
     sub.can_make_private = page_params.is_admin && !sub.invite_only;
     sub.can_change_subscription_type = sub.can_make_public || sub.can_make_private;
-    // User can access subscribers as well as add other users to stream
-    // if sub.can_add_subscribers is true.
-    sub.can_add_subscribers = !sub.invite_only || (sub.invite_only && sub.subscribed);
+    // User can add other users to stream if stream is public or user is subscribed to stream.
+    sub.can_access_subscribers = !sub.invite_only || sub.subscribed || page_params.is_admin;
     sub.preview_url = narrow.by_stream_uri(sub.name);
     exports.render_stream_description(sub);
     exports.update_subscribers_count(sub);
@@ -365,12 +363,11 @@ exports.remove_subscriber = function (stream_name, user_id) {
 
 exports.user_is_subscribed = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
-    if (typeof sub === 'undefined' || !sub.subscribed) {
-        // If we don't know about the stream, or we ourselves are not
-        // subscribed, we can't keep track of the subscriber list in general,
+    if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
+        // If we don't know about the stream, or we ourselves can not access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warn("We got a user_is_subscribed call for a non-existent or unsubscribed stream.");
-        return undefined;
+        blueslip.warn("We got a user_is_subscribed call for a non-existent or inaccessible stream.");
+        return;
     }
     var user_id = people.get_user_id(user_email);
     if (!user_id) {
@@ -430,6 +427,8 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         var used_colors = exports.get_colors();
         sub.color = stream_color.pick_color(used_colors);
     }
+
+    exports.update_calculated_fields(sub);
 
     exports.add_sub(stream_name, sub);
 
@@ -529,7 +528,7 @@ exports.get_newbie_stream = function () {
         return page_params.notifications_stream;
     }
 
-    return undefined;
+    return;
 };
 
 exports.remove_default_stream = function (stream_id) {

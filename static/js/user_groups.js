@@ -18,7 +18,6 @@ exports.init();
 exports.add = function (user_group) {
     // Reformat the user group members structure to be a dict.
     user_group.members = Dict.from_array(user_group.members);
-
     user_group_name_dict.set(user_group.name, user_group);
     user_group_by_id_dict.set(user_group.id, user_group);
 };
@@ -31,9 +30,23 @@ exports.remove = function (user_group) {
 exports.get_user_group_from_id = function (group_id) {
     if (!user_group_by_id_dict.has(group_id)) {
         blueslip.error('Unknown group_id in get_user_group_from_id: ' + group_id);
-        return undefined;
+        return;
     }
     return user_group_by_id_dict.get(group_id);
+};
+
+exports.update = function (event) {
+    var group = exports.get_user_group_from_id(event.group_id);
+    if (event.data.name !== undefined) {
+        group.name = event.data.name;
+        user_group_name_dict.del(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
+    if (event.data.description !== undefined) {
+        group.description = event.data.description;
+        user_group_name_dict.del(group.name);
+        user_group_name_dict.set(group.name, group);
+    }
 };
 
 exports.get_user_group_from_name = function (name) {
@@ -41,7 +54,9 @@ exports.get_user_group_from_name = function (name) {
 };
 
 exports.get_realm_user_groups = function () {
-    return user_group_name_dict.values();
+    return user_group_by_id_dict.values().sort(function (a, b) {
+        return (a.id - b.id);
+    });
 };
 
 exports.is_member_of = function (user_group_id, user_id) {

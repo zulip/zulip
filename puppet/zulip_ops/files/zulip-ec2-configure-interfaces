@@ -80,7 +80,12 @@ log.addHandler(logging.handlers.SysLogHandler(facility=logging.handlers.SysLogHa
 log.addHandler(logging.StreamHandler())
 log.info("Starting.")
 
-macs = boto.utils.get_instance_metadata()["network"]["interfaces"]["macs"]
+metadata = boto.utils.get_instance_metadata()
+if metadata is None:
+    log.error("Could not get instance metadata!")
+    sys.exit(1)
+
+macs = metadata["network"]["interfaces"]["macs"]
 ids = [int(macdata['device-number']) for macdata in macs.values()]
 ifaces = [iface for iface in netifaces.interfaces() if ":" not in iface and iface != "lo"]
 

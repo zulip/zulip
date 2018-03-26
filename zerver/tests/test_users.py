@@ -250,7 +250,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         valid_params["email"] = "abc@mailnator.com"
         result = self.client_post("/json/users", valid_params)
-        self.assert_json_error(result, "Disposable emails are not allowed for realm 'zulip'")
+        self.assert_json_error(result, "Disposable email addresses are not allowed in this organization")
 
 class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self) -> None:

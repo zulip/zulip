@@ -1,6 +1,7 @@
 var noop = function () {};
 
 set_global('document', 'document-stub');
+set_global('window', {});
 set_global('$', function () {
     return {
         trigger: noop,
@@ -48,6 +49,7 @@ set_global('settings_org', {
     reset_realm_default_language: noop,
     update_message_retention_days: noop,
     update_realm_description: noop,
+    sync_realm_settings: noop,
 });
 
 set_global('message_edit', {

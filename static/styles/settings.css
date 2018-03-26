@@ -116,7 +116,9 @@ label {
 
 .admin-realm-description {
     height: 16em;
-    width: 36em;
+    width: 100%;
+    max-width: 500px;
+    box-sizing: border-box;
 }
 
 .padded-container {
@@ -355,6 +357,21 @@ input[type=checkbox] + .inline-block {
 
 .org-settings-form .organization-submission {
     margin-top: 0px;
+}
+
+.admin-realm-form .subsection-header h3 {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] button.show {
+    display: inline-block;
+    margin-top: -4px;
+    min-width: 80px;
+    line-height: 10px;
 }
 
 #default_language {
@@ -922,6 +939,11 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group span[contenteditable] {
     display: inline-block;
+    word-break: break-all;
+}
+
+#user-groups .ntm {
+    cursor: not-allowed;
 }
 
 #user-groups .user-group span[contenteditable]:empty::before {
@@ -931,7 +953,7 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable]:hover {
+#user-groups .user-group span[contenteditable="true"]:hover {
     border-bottom: 1px solid hsl(0, 0%, 80%);
     outline: none;
 }
@@ -945,10 +967,52 @@ input[type=checkbox].inline-block {
     vertical-align: 1px;
 }
 
-#user-groups .save-group-changes,
-#user-groups .save-member-changes {
+#user-groups .ntm h4 > .button {
+    cursor: not-allowed;
+    display: none;
+}
+
+#user-groups .ntm h4 > .button:hover {
+    border-color: hsl(4, 56%, 82%);
+}
+
+#user-groups .save-status {
+    vertical-align: middle;
+    height: auto;
+    width: auto;
+    background: transparent;
+    padding: 2px 5px;
+    border-radius: 4px;
+    margin-left: 10px;
+}
+
+#user-groups .save-status.saved {
     display: none;
     opacity: 0;
+    border: 1px solid hsl(178, 100%, 40%);
+    color: hsl(178, 100%, 40%);
+}
+
+#user-groups .save-status.cancel {
+    display: none;
+    opacity: 0;
+    border: 1px solid #333;
+    color: #333;
+}
+
+#user-groups .checkmark {
+    width: 13px;
+}
+
+#user-groups .delete {
+    float: right;
+}
+
+#user-groups .save-instructions {
+    display: none;
+    opacity: 0;
+    color: #333;
+    font-size: 0.9em;
 }
 
 /* -- new settings overlay -- */
@@ -1177,10 +1241,35 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
+#settings_page .custom_user_field {
+    padding-bottom: 20px;
+}
+
+#settings_page .custom_user_field textarea {
+    width: 320px;
+    height: 80px;
+}
+
+#settings_page .custom_user_field input[type=number]::-webkit-outer-spin-button,
+#settings_page .custom_user_field input[type=number]::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+#settings_page .custom_user_field input[type=number] {
+    -moz-appearance: textfield;
+}
+
 #settings_page #change_password_modal .change_password_info,
 #settings_page #change_email_modal .change_email_info,
 #settings_page #change_full_name_modal .change_full_name_info {
     margin: 10px;
+}
+
+#account-settings .custom_user_field input::placeholder,
+#account-settings .custom_user_field textarea::placeholder {
+    font-style: italic;
+    color: hsl(0, 0%, 66%);
 }
 
 #deactivation_user_modal.fade.in {

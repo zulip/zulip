@@ -97,7 +97,7 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    stub_event_queue_user_events, queries_captured
+    get_test_image_file, stub_event_queue_user_events, queries_captured
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -911,6 +911,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('custom_profile_fields')),
             ('fields', check_list(check_dict_only([
+                ('id', check_int),
                 ('type', check_int),
                 ('name', check_string),
             ]))),
@@ -1085,7 +1086,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('group_id', check_int),
         ])
-        events = self.do_test(lambda: check_delete_user_group(backend.id, backend.realm))
+        events = self.do_test(lambda: check_delete_user_group(backend.id, othello))
         error = user_group_remove_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1334,6 +1335,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('data', check_dict_only([
                 ('allow_message_editing', check_bool),
                 ('message_content_edit_limit_seconds', check_int),
+                ('allow_community_topic_editing', check_bool),
             ])),
         ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
@@ -1343,7 +1345,8 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(
                 lambda: do_set_realm_message_editing(self.user_profile.realm,
                                                      allow_message_editing,
-                                                     message_content_edit_limit_seconds))
+                                                     message_content_edit_limit_seconds,
+                                                     False))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1488,8 +1491,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"), "my_emoji",
-                                                            "https://realm.com/my_emoji"))
+        author = self.example_user('iago')
+        with get_test_image_file('img.png') as img_file:
+            events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"),
+                                                                "my_emoji",
+                                                                author,
+                                                                img_file))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1553,12 +1560,12 @@ class EventsRegisterTest(ZulipTestCase):
             if bot_type == "GENERIC_BOT":
                 check_services = check_list(sub_validator=None, length=0)
             elif bot_type == "OUTGOING_WEBHOOK_BOT":
-                check_services = check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                check_services = check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]), length=1)
             elif bot_type == "EMBEDDED_BOT":
-                check_services = check_list(check_dict_only([  # type: ignore  # See above.
+                check_services = check_list(check_dict_only([
                     ('service_name', check_string),
                     ('config_data', check_dict(value_validator=check_string)),
                 ]), length=1)
@@ -1745,7 +1752,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('bot', check_dict_only([
                 ('email', check_string),
                 ('user_id', check_int),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]))),
@@ -1795,7 +1802,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('default_all_public_streams', check_bool),
                 ('avatar_url', check_string),
                 ('owner', check_none_or(check_string)),
-                ('services', check_list(check_dict_only([  # type: ignore  # check_url doesn't completely fit the default validator spec, but is de facto working here.
+                ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
                 ]))),

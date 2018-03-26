@@ -1,5 +1,5 @@
 
-from typing import Any, Iterable, List, Mapping, Set, Text, Tuple
+from typing import Any, Iterable, List, Mapping, Set, Text, Tuple, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -10,11 +10,11 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
-def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Stream:
+def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
 
     # We should only ever use this for realm admins, who are allowed
-    # to delete all streams on their realm, even private streams to
-    # which they are not subscribed.  We do an assert here, because
+    # to delete or update all streams on their realm, even private streams
+    # to which they are not subscribed.  We do an assert here, because
     # all callers should have the require_realm_admin decorator.
     assert(user_profile.is_realm_admin)
 
@@ -29,9 +29,12 @@ def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Strea
 
     return stream
 
+# Only set allow_realm_admin flag to True when you want to allow realm admin to
+# access unsubscribed private stream content.
 def access_stream_common(user_profile: UserProfile, stream: Stream,
                          error: Text,
-                         require_active: bool=True) -> Tuple[Recipient, Subscription]:
+                         require_active: bool=True,
+                         allow_realm_admin: bool=False) -> Tuple[Recipient, Optional[Subscription]]:
     """Common function for backend code where the target use attempts to
     access the target stream, returning all the data fetched along the
     way.  If that user does not have permission to access that stream,
@@ -59,13 +62,21 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
     if sub is not None:
         return (recipient, sub)
 
+    # For some specific callers (e.g. getting list of subscribers,
+    # removing other users from a stream, and updating stream name and
+    # description), we allow realm admins to access stream even if
+    # they are not subscribed to a private stream.
+    if user_profile.is_realm_admin and allow_realm_admin:
+        return (recipient, sub)
+
     # Otherwise it is a private stream and you're not on it, so throw
     # an error.
     raise JsonableError(error)
 
 def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
-                        require_active: bool=True) -> Tuple[Stream, Recipient, Subscription]:
+                        require_active: bool=True,
+                        allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream id")
     try:
         stream = Stream.objects.get(id=stream_id)
@@ -73,7 +84,8 @@ def access_stream_by_id(user_profile: UserProfile,
         raise JsonableError(error)
 
     (recipient, sub) = access_stream_common(user_profile, stream, error,
-                                            require_active=require_active)
+                                            require_active=require_active,
+                                            allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
 def check_stream_name_available(realm: Realm, name: Text) -> None:
@@ -85,7 +97,7 @@ def check_stream_name_available(realm: Realm, name: Text) -> None:
         pass
 
 def access_stream_by_name(user_profile: UserProfile,
-                          stream_name: Text) -> Tuple[Stream, Recipient, Subscription]:
+                          stream_name: Text) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)

@@ -31,8 +31,7 @@ exports.set_focused_recipient = function (msg_type) {
     } else {
         // Normalize the recipient list so it matches the one used when
         // adding the message (see message_store.add_message_metadata()).
-        var reply_to = util.normalize_recipients(
-                $('#private_message_recipient').val());
+        var reply_to = util.normalize_recipients(compose_state.recipient());
         focused_recipient.reply_to = reply_to;
         focused_recipient.to_user_ids = people.reply_to_to_user_ids_string(reply_to);
     }
@@ -122,13 +121,13 @@ exports.would_receive_message = function (email) {
         if (!sub) {
             // If the stream isn't valid, there is no risk of a mix
             // yet, so don't fade.
-            return undefined;
+            return;
         }
 
         if (user && user.is_bot && !sub.invite_only) {
             // Bots may receive messages on public streams even if they are
             // not subscribed.
-            return undefined;
+            return;
         }
         return stream_data.user_is_subscribed(focused_recipient.stream, email);
     }

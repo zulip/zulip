@@ -47,9 +47,9 @@ $(function () {
     $("#send_confirm").validate({
         errorElement: "div",
         errorPlacement: function (error) {
-            $('.alert-error').empty();
-            error.appendTo(".alert-error")
-                 .addClass("text-error");
+            $('.email-frontend-error').empty();
+            $("#send_confirm .alert.email-backend-error").remove();
+            error.appendTo(".email-frontend-error").addClass("text-error");
         },
         success: function () {
             $('#errors').empty();

@@ -61,6 +61,15 @@
     -webkit-font-smoothing: antialiased;
 }
 
+.drafts-list .removed-drafts {
+    display: block;
+    text-align: center;
+    font-size: 1em;
+    color: hsl(0, 0%, 66%);
+    pointer-events: none;
+    -webkit-font-smoothing: antialiased;
+}
+
 .draft-row {
     padding: 5px 10px;
 }

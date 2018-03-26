@@ -26,6 +26,11 @@ if EXTERNAL_HOST is None:
         REALM_HOSTS = {
             'zulip': 'localhost:9991'
         }
+else:
+    REALM_HOSTS = {
+        'zulip': EXTERNAL_HOST,
+    }
+
 ALLOWED_HOSTS = ['*']
 
 # Uncomment extra backends if you want to test with them.  Note that
@@ -80,3 +85,6 @@ TWO_FACTOR_SMS_GATEWAY = 'two_factor.gateways.fake.Fake'
 
 # Make sendfile use django to serve files in development
 SENDFILE_BACKEND = 'sendfile.backends.development'
+
+# Set this True to send all hotspots in development
+ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool

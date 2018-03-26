@@ -53,7 +53,7 @@ topic_data.reset();
     };
 
     global.narrow_state.stream = function () {
-        return undefined;
+        return;
     };
 
     var suggestions = search.get_suggestions(query);
@@ -73,7 +73,7 @@ topic_data.reset();
     };
 
     global.narrow_state.stream = function () {
-        return undefined;
+        return;
     };
 
     var ted =
@@ -244,7 +244,7 @@ topic_data.reset();
     };
 
     global.narrow_state.stream = function () {
-        return undefined;
+        return;
     };
 
     set_global('activity', {
@@ -430,7 +430,7 @@ init();
     };
 
     global.narrow_state.stream = function () {
-        return undefined;
+        return;
     };
 
     var suggestions = search.get_suggestions(query);
@@ -466,7 +466,7 @@ init();
     };
 
     global.narrow_state.stream = function () {
-        return undefined;
+        return;
     };
 
     var query = '';

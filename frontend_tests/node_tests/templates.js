@@ -300,12 +300,14 @@ function render(template_name, args) {
     global.write_handlebars_output('admin_user_group_list', html);
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_description = $(html).find('.user-group:first h4').text().trim().replace(/\s+/g, ' ');
+    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name, 'uranohoshi');
-    assert.equal(group_description, 'uranohoshi — Students at Uranohoshi Academy');
+    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_name_display, 'uranohoshi');
+    assert.equal(group_description, 'Students at Uranohoshi Academy');
 }());
 
 (function admin_user_list() {
@@ -575,6 +577,14 @@ function render(template_name, args) {
     var expected_text = 'translated: Warning: Denmark is a private stream.';
     assert(actual_text.indexOf(expected_text) >= 1);
     global.write_handlebars_output("compose_stream_alert", html);
+}());
+
+(function custom_user_profile_field() {
+    var args = {field_name: "GitHub user name", field_id: 2, field_value: "@GitHub", field_type: "text"};
+    var html = render('custom-user-profile-field', args);
+    assert.equal($(html).find('input').attr('id'), 2);
+    assert.equal($(html).find('input').val(), "@GitHub");
+    global.write_handlebars_output("custom-user-profile-field", html);
 }());
 
 (function deactivate_stream_modal() {

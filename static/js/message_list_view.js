@@ -87,7 +87,7 @@ function set_topic_edit_properties(group, message) {
     // to encourage updating them. Admins can also edit any topic.
     if (message.subject === compose.empty_topic_placeholder()) {
         group.always_visible_topic_edit = true;
-    } else if (page_params.is_admin) {
+    } else if (page_params.is_admin || page_params.realm_allow_community_topic_editing) {
         group.on_hover_topic_edit = true;
     }
 }
@@ -435,14 +435,6 @@ MessageListView.prototype = {
             var id = rows.id(row);
             message_edit.maybe_show_edit(row, id);
 
-            var e = $.Event('message_rendered.zulip', {target: row});
-            try {
-                $(document).trigger(e);
-            } catch (ex) {
-                blueslip.error('Problem with message rendering',
-                               {message_id: rows.id($(row))},
-                               ex.stack);
-            }
         });
     },
 
@@ -797,13 +789,13 @@ MessageListView.prototype = {
     },
 
     rerender_preserving_scrolltop: function MessageListView__rerender_preserving_scrolltop() {
-        // scrolltop_offset is the number of pixels between the top of the
+        // old_offset is the number of pixels between the top of the
         // viewable window and the selected message
-        var scrolltop_offset;
+        var old_offset;
         var selected_row = this.selected_row();
         var selected_in_view = (selected_row.length > 0);
         if (selected_in_view) {
-            scrolltop_offset = selected_row.offset().top;
+            old_offset = selected_row.offset().top;
         }
 
         this.clear_table();
@@ -817,10 +809,8 @@ MessageListView.prototype = {
             if (this.selected_row().length === 0 && this.list.selected_id() > -1) {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
-            // Must get this.list.selected_row() again since it is now a new DOM element
-            message_viewport.scrollTop(
-                message_viewport.scrollTop() +
-                    this.selected_row().offset().top - scrolltop_offset);
+
+            message_viewport.set_message_offset(old_offset);
         }
     },
 

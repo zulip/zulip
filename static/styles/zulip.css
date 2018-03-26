@@ -1762,6 +1762,19 @@ blockquote p {
     color: #fff;
 }
 
+.typeahead.dropdown-menu .unsubscribed_icon {
+    display: none;
+}
+
+.typeahead.dropdown-menu .active .unsubscribed_icon {
+    display: block;
+    float: right;
+    margin-top: 5px;
+    margin-right: -12px;
+    font-size: 0.8em;
+    color: hsl(96, 7%, 73%);
+}
+
 .nav .dropdown-menu:after {
     position: absolute;
     width: 0px;
@@ -2227,6 +2240,20 @@ button.topic_edit_cancel {
     width: 18px;
     height: 18px;
     margin-top: -1px;
+}
+
+div.topic_edit_spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    margin-top: -1px;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.topic_edit_spinner .loading_indicator_spinner {
+    width: 14px;
+    height: 14px;
 }
 
 .modal {

@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 from django.utils.translation import ugettext as _
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.decorator import REQ, has_request_variables, api_key_only_webhook_view
 from zerver.models import get_client, UserProfile
 from django.http import HttpRequest, HttpResponse
@@ -40,8 +40,7 @@ def get_component_topic(payload: Dict[Text, Any]) -> Text:
 @api_key_only_webhook_view('Statuspage')
 @has_request_variables
 def api_statuspage_webhook(request: HttpRequest, user_profile: UserProfile,
-                           payload: Dict[str, Any]=REQ(argument_type='body'),
-                           stream: str=REQ(default='statuspage-test')) -> HttpResponse:
+                           payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
 
     status = payload["page"]["status_indicator"]
 
@@ -52,9 +51,5 @@ def api_statuspage_webhook(request: HttpRequest, user_profile: UserProfile,
         topic = get_component_topic(payload)
         body = get_components_update_body(payload)
 
-    check_send_stream_message(user_profile,
-                              request.client,
-                              stream,
-                              topic,
-                              body)
+    check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

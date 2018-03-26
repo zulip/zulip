@@ -47,7 +47,7 @@ from zerver.lib.actions import (
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
-    one_click_unsubscribe_link
+    one_click_unsubscribe_link, followup_day2_email_delay
 from zerver.lib.subdomains import is_root_domain_available
 from zerver.lib.test_helpers import find_key_by_email, queries_captured, \
     HostRequestMock, load_subdomain_token
@@ -67,6 +67,7 @@ from typing import Any, Dict, List, Optional, Set, Text
 
 import urllib
 import os
+import pytz
 
 class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
     def test_cookie_data(self) -> None:
@@ -75,14 +76,16 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         email = self.example_email("hamlet")
         response = redirect_and_log_into_subdomain(realm, name, email)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
                                                    is_signup=True)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True})
 
@@ -134,6 +137,11 @@ class AddNewUserHistoryTest(ZulipTestCase):
         streams = Stream.objects.filter(id__in=[sub.recipient.type_id for sub in subs])
         self.send_stream_message(self.example_email('hamlet'), streams[0].name, "test")
         add_new_user_history(user_profile, streams)
+
+class InitialPasswordTest(ZulipTestCase):
+    def test_none_initial_password_salt(self) -> None:
+        with self.settings(INITIAL_PASSWORD_SALT=None):
+            self.assertIsNone(initial_password('test@test.com'))
 
 class PasswordResetTest(ZulipTestCase):
     """
@@ -645,6 +653,15 @@ earl-test@zulip.com""", ["Denmark"]))
             self.assertTrue(find_key_by_email("%s-test@zulip.com" % (user,)))
         self.check_sent_emails(["bob-test@zulip.com", "carol-test@zulip.com",
                                 "dave-test@zulip.com", "earl-test@zulip.com"])
+
+    def test_max_invites_model(self) -> None:
+        realm = get_realm("zulip")
+        self.assertEqual(realm.max_invites, settings.INVITES_DEFAULT_REALM_DAILY_MAX)
+        realm.max_invites = 3
+        realm.save()
+        self.assertEqual(get_realm("zulip").max_invites, 3)
+        realm.max_invites = settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        realm.save()
 
     def test_invite_too_many_users(self) -> None:
         # Only a light test of this pathway; e.g. doesn't test that
@@ -2597,4 +2614,26 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_id = get_session_dict_user(getattr(request, 'session'))
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://zulip.testserver', response.url)
+        self.assertEqual('http://zulip.testserver', response.url)
+
+class FollowupEmailTest(ZulipTestCase):
+    def test_followup_day2_email(self) -> None:
+        user_profile = self.example_user('hamlet')
+        # Test date_joined == Sunday
+        user_profile.date_joined = datetime.datetime(2018, 1, 7, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1))
+        # Test date_joined == Tuesday
+        user_profile.date_joined = datetime.datetime(2018, 1, 2, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=2, hours=-1))
+        # Test date_joined == Thursday
+        user_profile.date_joined = datetime.datetime(2018, 1, 4, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))
+        # Test date_joined == Friday
+        user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=3, hours=-1))
+
+        # Time offset of America/Phoenix is -07:00
+        user_profile.timezone = 'America/Phoenix'
+        # Test date_joined == Friday in UTC, but Thursday in the user's timezone
+        user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
+        self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))

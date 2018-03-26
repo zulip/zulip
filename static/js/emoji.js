@@ -31,28 +31,28 @@ var EMOTICON_CONVERSIONS = {
 };
 
 exports.update_emojis = function update_emojis(realm_emojis) {
-    // exports.all_realm_emojis is emptied before adding the realm-specific emoji to it.
-    // This makes sure that in case of deletion, the deleted realm_emojis don't
-    // persist in exports.all_realm_emojis or exports.active_realm_emojis.
+    // exports.all_realm_emojis is emptied before adding the realm-specific emoji
+    // to it. This makes sure that in case of deletion, the deleted realm_emojis
+    // don't persist in exports.active_realm_emojis.
     exports.all_realm_emojis = {};
     exports.active_realm_emojis = {};
 
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
-    _.each(realm_emojis, function (data, name) {
-        exports.all_realm_emojis[name] = {id: data.id,
-                                          emoji_name: name,
-                                          emoji_url: data.source_url,
-                                          deactivated: data.deactivated};
+    _.each(realm_emojis, function (data) {
+        exports.all_realm_emojis[data.id] = {id: data.id,
+                                             emoji_name: data.name,
+                                             emoji_url: data.source_url,
+                                             deactivated: data.deactivated};
         if (data.deactivated !== true) {
             // export.emojis are used in composebox autocomplete. This condition makes sure
             // that deactivated emojis don't appear in the autocomplete.
-            exports.emojis.push({emoji_name: name,
+            exports.emojis.push({emoji_name: data.name,
                                  emoji_url: data.source_url,
                                  is_realm_emoji: true});
-            exports.active_realm_emojis[name] = {id: data.id,
-                                                 emoji_name: name,
-                                                 emoji_url: data.source_url};
+            exports.active_realm_emojis[data.name] = {id: data.id,
+                                                      emoji_name: data.name,
+                                                      emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list
@@ -85,7 +85,7 @@ exports.initialize = function initialize() {
     // Load the sprite image in the background so that the browser
     // can cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_32.png';
+    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_64.png';
 };
 
 exports.build_emoji_upload_widget = function () {

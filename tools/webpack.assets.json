@@ -13,7 +13,7 @@
                "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
               ],
     "help": [
-            "./node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js",
+            "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.js",
             "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",

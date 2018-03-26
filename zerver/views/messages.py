@@ -596,9 +596,9 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         inner_msg_id_col = column("message_id")
 
     first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    query = query.where(inner_msg_id_col >= first_visible_message_id)
+    if first_visible_message_id > 0:
+        query = query.where(inner_msg_id_col >= first_visible_message_id)
 
-    num_extra_messages = 1
     is_search = False
 
     if narrow is not None:
@@ -612,7 +612,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
         # Build the query for the narrow
-        num_extra_messages = 0
         builder = NarrowBuilder(user_profile, inner_msg_id_col)
         search_term = {}  # type: Dict[str, Any]
         for term in narrow:
@@ -629,16 +628,10 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         if is_search:
             query = builder.add_term(query, search_term)
 
-    # We add 1 to the number of messages requested if no narrow was
-    # specified to ensure that the resulting list always contains the
-    # anchor message.  If a narrow was specified, the anchor message
-    # might not match the narrow anyway.
-    if num_after != 0:
-        num_after += num_extra_messages
-    else:
-        num_before += num_extra_messages
-
     sa_conn = get_sqlalchemy_connection()
+
+    anchored_to_right = False  # till we know better
+
     if use_first_unread_anchor:
         condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
 
@@ -668,41 +661,44 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         if len(first_unread_result) > 0:
             anchor = first_unread_result[0][0]
         else:
+            # Set values that will be used to short circuit the after_query
+            # altogether and avoid needless conditions in the before_query.
+            anchored_to_right = True
+            num_after = None
+
+            # We only use LARGER_THAN_MAX_MESSAGE_ID for an edge case hack
+            # where num_before and num_after are 0, and it produces a query
+            # that returns zero results.
             anchor = LARGER_THAN_MAX_MESSAGE_ID
 
-    before_query = None
-    after_query = None
-    if num_before != 0:
-        before_anchor = anchor
-        if num_after != 0:
-            # Don't include the anchor in both the before query and the after query
-            before_anchor = anchor - 1
-        before_query = query.where(inner_msg_id_col <= before_anchor) \
-                            .order_by(inner_msg_id_col.desc()).limit(num_before)
-    if num_after != 0:
-        after_query = query.where(inner_msg_id_col >= anchor) \
-                           .order_by(inner_msg_id_col.asc()).limit(num_after)
+    anchored_to_left = (anchor == 0)
 
-    if anchor == LARGER_THAN_MAX_MESSAGE_ID:
-        # There's no need for an after_query if we're targeting just the target message.
-        after_query = None
-
-    if before_query is not None:
-        if after_query is not None:
-            query = union_all(before_query.self_group(), after_query.self_group())
-        else:
-            query = before_query
-    elif after_query is not None:
-        query = after_query
-    else:
-        # This can happen when a narrow is specified.
-        query = query.where(inner_msg_id_col == anchor)
+    query = limit_query_to_range(
+        query=query,
+        num_before=num_before,
+        num_after=num_after,
+        anchor=anchor,
+        anchored_to_left=anchored_to_left,
+        anchored_to_right=anchored_to_right,
+        id_col=inner_msg_id_col,
+    )
 
     main_query = alias(query)
     query = select(main_query.c, None, main_query).order_by(column("message_id").asc())
     # This is a hack to tag the query we use for testing
     query = query.prefix_with("/* get_messages */")
-    query_result = list(sa_conn.execute(query).fetchall())
+    rows = list(sa_conn.execute(query).fetchall())
+
+    query_info = post_process_limited_query(
+        rows=rows,
+        num_before=num_before,
+        num_after=num_after,
+        anchor=anchor,
+        anchored_to_left=anchored_to_left,
+        anchored_to_right=anchored_to_right,
+    )
+
+    rows = query_info['rows']
 
     # The following is a little messy, but ensures that the code paths
     # are similar regardless of the value of include_history.  The
@@ -714,7 +710,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     message_ids = []  # type: List[int]
     user_message_flags = {}  # type: Dict[int, List[str]]
     if include_history:
-        message_ids = [row[0] for row in query_result]
+        message_ids = [row[0] for row in rows]
 
         # TODO: This could be done with an outer join instead of two queries
         um_rows = UserMessage.objects.filter(user_profile=user_profile,
@@ -725,7 +721,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             if message_id not in user_message_flags:
                 user_message_flags[message_id] = ["read", "historical"]
     else:
-        for row in query_result:
+        for row in rows:
             message_id = row[0]
             flags = row[1]
             user_message_flags[message_id] = UserMessage.flags_list_for_flags(flags)
@@ -733,7 +729,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     search_fields = dict()  # type: Dict[int, Dict[str, Text]]
     if is_search:
-        for row in query_result:
+        for row in rows:
             message_id = row[0]
             (subject, rendered_content, content_matches, subject_matches) = row[-4:]
 
@@ -756,12 +752,139 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     )
 
     statsd.incr('loaded_old_messages', len(message_list))
-    ret = {'messages': message_list,
-           "result": "success",
-           "msg": ""}
-    if use_first_unread_anchor:
-        ret['anchor'] = anchor
+
+    ret = dict(
+        messages=message_list,
+        result='success',
+        msg='',
+        found_anchor=query_info['found_anchor'],
+        found_oldest=query_info['found_oldest'],
+        found_newest=query_info['found_newest'],
+        anchor=anchor,
+    )
     return json_success(ret)
+
+def limit_query_to_range(query: Query,
+                         num_before: int,
+                         num_after: int,
+                         anchor: int,
+                         anchored_to_left: bool,
+                         anchored_to_right: bool,
+                         id_col: ColumnElement) -> Query:
+    '''
+    This code is actually generic enough that we could move it to a
+    library, but our only caller for now is message search.
+    '''
+    need_before_query = (not anchored_to_left) and (num_before > 0)
+    need_after_query = (not anchored_to_right) and (num_after > 0)
+
+    need_both_sides = need_before_query and need_after_query
+
+    # The semantics of our flags are as follows:
+    #
+    # num_after = number of rows < anchor
+    # num_after = number of rows > anchor
+    #
+    # But we also want the row where id == anchor (if it exists),
+    # and we don't want to union up to 3 queries.  So in some cases
+    # we do things like `after_limit = num_after + 1` to grab the
+    # anchor row in the "after" query.
+    #
+    # Note that in some cases, if the anchor row isn't found, we
+    # actually may fetch an extra row at one of the extremes.
+    if need_both_sides:
+        before_anchor = anchor - 1
+        after_anchor = anchor
+        before_limit = num_before
+        after_limit = num_after + 1
+    elif need_before_query:
+        before_anchor = anchor
+        before_limit = num_before
+        if not anchored_to_right:
+            before_limit += 1
+    elif need_after_query:
+        after_anchor = anchor
+        after_limit = num_after + 1
+
+    if need_before_query:
+        before_query = query
+
+        if not anchored_to_right:
+            before_query = before_query.where(id_col <= before_anchor)
+
+        before_query = before_query.order_by(id_col.desc())
+        before_query = before_query.limit(before_limit)
+
+    if need_after_query:
+        after_query = query
+
+        if not anchored_to_left:
+            after_query = after_query.where(id_col >= after_anchor)
+
+        after_query = after_query.order_by(id_col.asc())
+        after_query = after_query.limit(after_limit)
+
+    if need_both_sides:
+        query = union_all(before_query.self_group(), after_query.self_group())
+    elif need_before_query:
+        query = before_query
+    elif need_after_query:
+        query = after_query
+    else:
+        # If we don't have either a before_query or after_query, it's because
+        # some combination of num_before/num_after/anchor are zero or
+        # use_first_unread_anchor logic found no unread messages.
+        #
+        # The most likely reason is somebody is doing an id search, so searching
+        # for something like `message_id = 42` is exactly what we want.  In other
+        # cases, which could possibly be buggy API clients, at least we will
+        # return at most one row here.
+        query = query.where(id_col == anchor)
+
+    return query
+
+def post_process_limited_query(rows: List[Any],
+                               num_before: int,
+                               num_after: int,
+                               anchor: int,
+                               anchored_to_left: bool,
+                               anchored_to_right: bool) -> Dict[str, Any]:
+    # Our queries may have fetched extra rows if they added
+    # "headroom" to the limits, but we want to truncate those
+    # rows.
+    #
+    # Also, in cases where we had non-zero values of num_before or
+    # num_after, we want to know found_oldest and found_newest, so
+    # that the clients will know that they got complete results.
+
+    if anchored_to_right:
+        num_after = 0
+        before_rows = rows[:]
+        anchor_rows = []  # type: List[Any]
+        after_rows = []  # type: List[Any]
+    else:
+        before_rows = [r for r in rows if r[0] < anchor]
+        anchor_rows = [r for r in rows if r[0] == anchor]
+        after_rows = [r for r in rows if r[0] > anchor]
+
+    if num_before:
+        before_rows = before_rows[-1 * num_before:]
+
+    if num_after:
+        after_rows = after_rows[:num_after]
+
+    rows = before_rows + anchor_rows + after_rows
+
+    found_anchor = len(anchor_rows) == 1
+    found_oldest = anchored_to_left or (len(before_rows) < num_before)
+    found_newest = anchored_to_right or (len(after_rows) < num_after)
+
+    return dict(
+        rows=rows,
+        found_anchor=found_anchor,
+        found_newest=found_newest,
+        found_oldest=found_oldest,
+    )
 
 @has_request_variables
 def update_message_flags(request: HttpRequest, user_profile: UserProfile,
@@ -1090,11 +1213,13 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin.
+    # 3. This is a topic-only edit and you are an admin, OR:
+    # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
     elif (content is None) and ((message.topic_name() == "(no topic)") or
-                                user_profile.is_realm_admin):
+                                user_profile.is_realm_admin or
+                                user_profile.realm.allow_community_topic_editing):
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
@@ -1107,6 +1232,15 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
+        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has past"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If this is not the user who
+    # sent the message, they are not the admin, and the time limit for editing
+    # topics is passed, raise an error.
+    if content is None and message.sender != user_profile and not user_profile.is_realm_admin:
+        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has past"))
 

@@ -228,6 +228,12 @@
       "text_content": "foo"
     },
     {
+      "name": "star_strong_em",
+      "input": "***foo***",
+      "expected_output": "<p><strong><em>foo</em></strong></p>",
+      "text_content": "foo"
+    },
+    {
       "name": "numbered_list",
       "input": "1. A\n 2. B",
       "expected_output": "<p>1. A<br>\n 2. B</p>",
@@ -559,19 +565,6 @@
       "input": "`!gravatar(username@example.com)`",
       "expected_output": "<p><code>!gravatar(username@example.com)</code></p>",
       "text_content": "!gravatar(username@example.com)"
-    },
-    {
-      "name": "stream_subscribe_button",
-      "input": "!_stream_subscribe_button(streamname)",
-      "expected_output": "<p><span class=\"inline-subscribe\" data-stream-name=\"streamname\"><button class=\"inline-subscribe-button btn\">Subscribe to streamname</button><span class=\"inline-subscribe-error\"></span></span></p>",
-      "marked_expected_output": "<p>!_stream_subscribe_button(streamname)</p>",
-      "text_content": "Subscribe to streamname"
-    },
-    {
-      "name": "stream_subscribe_button_escaped",
-      "input": "`!_stream_subscribe_button(streamname)`",
-      "expected_output": "<p><code>!_stream_subscribe_button(streamname)</code></p>",
-      "text_content": "!_stream_subscribe_button(streamname)"
     },
     {
       "name": "tex_inline",

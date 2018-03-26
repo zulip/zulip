@@ -41,8 +41,6 @@ parser.add_argument('--linecoverage-report', action='store_true',
 parser.add_argument('--no-disallow-untyped-defs',
                     dest='disallow_untyped_defs', action='store_false',
                     help="don't pass --disallow-untyped-defs to mypy")
-parser.add_argument('--strict-optional', action='store_true',
-                    help="pass --strict-optional to mypy")
 parser.add_argument('--warn-unused-ignores', action='store_true',
                     help="pass --warn-unused-ignores to mypy")
 parser.add_argument('--no-ignore-missing-imports',
@@ -78,19 +76,15 @@ files_dict = cast(Dict[str, List[str]],
                                     use_shebang=True, modified_only=args.modified,
                                     exclude=exclude, group_by_ftype=True,
                                     extless_only=args.scripts_only))
-pyi_files = set(files_dict['pyi'])
+pyi_files = list(files_dict['pyi'])
 python_files = [fpath for fpath in files_dict['py']
                 if not fpath.endswith('.py') or fpath + 'i' not in pyi_files]
-if not python_files:
+if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-extra_args = ["--check-untyped-defs",
-              "--follow-imports=silent",
-              "--scripts-are-modules",
-              "--show-traceback",
-              "-i", "--cache-dir=var/mypy-cache",
-              "--disallow-any-generics"]
+extra_args = ["--follow-imports=silent",
+              "-i", "--cache-dir=var/mypy-cache"]
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("var/linecoverage-report")
@@ -98,14 +92,12 @@ if args.disallow_untyped_defs:
     extra_args.append("--disallow-untyped-defs")
 if args.warn_unused_ignores:
     extra_args.append("--warn-unused-ignores")
-if args.strict_optional:
-    extra_args.append("--strict-optional")
 if args.ignore_missing_imports:
     extra_args.append("--ignore-missing-imports")
 if args.quick:
     extra_args.append("--quick")
 
-rc = subprocess.call([mypy_command] + extra_args + python_files)
+rc = subprocess.call([mypy_command] + extra_args + python_files + pyi_files)
 
 if args.linecoverage_report:
     # Move the coverage report to where codecov will look for it.

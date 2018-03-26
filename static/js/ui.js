@@ -14,16 +14,24 @@ exports.replace_emoji_with_text = function (element) {
 };
 
 exports.set_up_scrollbar = function (element) {
-    element.perfectScrollbar({
+    var perfectScrollbar = new PerfectScrollbar(element[0], {
         suppressScrollX: true,
         useKeyboard: false,
         wheelSpeed: 0.68,
+        scrollingThreshold: 50,
     });
+    element[0].perfectScrollbar = perfectScrollbar;
 };
 
 exports.update_scrollbar = function (element) {
     element.scrollTop = 0;
-    element.perfectScrollbar('update');
+    if (element[0].perfectScrollbar !== undefined) {
+        element[0].perfectScrollbar.update();
+    }
+};
+
+exports.destroy_scrollbar = function (element) {
+    element[0].perfectScrollbar.destroy();
 };
 
 function update_message_in_all_views(message_id, callback) {

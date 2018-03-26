@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional, Text
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 GCI_MESSAGE_TEMPLATE = u'**{actor}** {action} the task [{task_name}]({task_url}).'
@@ -102,7 +102,7 @@ def get_outoftime_event_body(payload: Dict[Text, Any]) -> Text:
 
 @api_key_only_webhook_view("Google-Code-In")
 @has_request_variables
-def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Text=REQ(default='gci'),
+def api_gci_webhook(request: HttpRequest, user_profile: UserProfile,
                     payload: Dict[Text, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = get_event(payload)
     if event is not None:
@@ -110,8 +110,7 @@ def api_gci_webhook(request: HttpRequest, user_profile: UserProfile, stream: Tex
         subject = GCI_SUBJECT_TEMPLATE.format(
             student_name=payload['task_claimed_by']
         )
-        check_send_stream_message(user_profile, request.client,
-                                  stream, subject, body)
+        check_send_webhook_message(request, user_profile, subject, body)
 
     return json_success()
 

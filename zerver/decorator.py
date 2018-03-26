@@ -16,6 +16,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
 from zerver.lib.exceptions import RateLimited, JsonableError, ErrorCode
+from zerver.lib.types import ViewFuncT
 
 from zerver.lib.rate_limiter import incr_ratelimit, is_ratelimited, \
     api_calls_left, RateLimitedUser
@@ -42,7 +43,6 @@ else:
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
 
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 ReturnT = TypeVar('ReturnT')
 
 webhook_logger = logging.getLogger("zulip.zerver.webhooks")
@@ -229,7 +229,7 @@ def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfi
         raise JsonableError(_("Account not active"))
 
     if user_profile.realm.deactivated:
-        raise JsonableError(_("Realm for account has been deactivated"))
+        raise JsonableError(_("This organization has been deactivated"))
 
     # Either the subdomain matches, or processing a websockets message
     # in the message_sender worker (which will have already had the
@@ -294,19 +294,23 @@ body:
     message = message.strip(' ')
     webhook_logger.exception(message)
 
+def full_webhook_client_name(raw_client_name: Optional[str]=None) -> Optional[str]:
+    if raw_client_name is None:
+        return None
+    return "Zulip{}Webhook".format(raw_client_name)
+
 # Use this for webhook views that don't get an email passed in.
-WrappedViewFuncT = Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]
-def api_key_only_webhook_view(client_name: Text) -> WrappedViewFuncT:
+def api_key_only_webhook_view(webhook_client_name: Text) -> Callable[[ViewFuncT], ViewFuncT]:
     # TODO The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @has_request_variables
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, api_key: Text=REQ(),
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             user_profile = validate_api_key(request, None, api_key, is_webhook=True,
-                                            client_name="Zulip{}Webhook".format(client_name))
+                                            client_name=full_webhook_client_name(webhook_client_name))
 
             if settings.RATE_LIMITING:
                 rate_limit_user(request, user_profile, domain='all')
@@ -339,13 +343,13 @@ def redirect_to_login(next: Text, login_url: Optional[Text]=None,
 
 # From Django 1.8
 def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optional[Text]=None,
-                     redirect_field_name: Text=REDIRECT_FIELD_NAME) -> WrappedViewFuncT:
+                     redirect_field_name: Text=REDIRECT_FIELD_NAME) -> Callable[[ViewFuncT], ViewFuncT]:
     """
     Decorator for views that checks that the user passes the given test,
     redirecting to the log-in page if necessary. The test should be a callable
     that takes the user object and returns True if the user passes.
     """
-    def decorator(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def decorator(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func, assigned=available_attrs(view_func))
         def _wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
             if test_func(request):
@@ -361,7 +365,7 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
                 path = request.get_full_path()
             return redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
-        return _wrapped_view
+        return _wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
 def logged_in_and_active(request: HttpRequest) -> bool:
@@ -407,11 +411,10 @@ def human_users_only(view_func: ViewFuncT) -> ViewFuncT:
 
 # Based on Django 1.8's @login_required
 def zulip_login_required(
-        function: Optional[Callable[..., HttpResponse]]=None,
+        function: Optional[ViewFuncT]=None,
         redirect_field_name: Text=REDIRECT_FIELD_NAME,
         login_url: Text=settings.HOME_NOT_LOGGED_IN,
-) -> Union[Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]],
-           Callable[..., HttpResponse]]:
+) -> Union[Callable[[ViewFuncT], ViewFuncT], ViewFuncT]:
     actual_decorator = user_passes_test(
         logged_in_and_active,
         login_url=login_url,
@@ -436,8 +439,8 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
 # versions.
-def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @require_post
         @has_request_variables
@@ -470,8 +473,12 @@ def authenticated_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
 
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
-def authenticated_rest_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+#
+# If webhook_client_name is specific, the request is a webhook view
+# with that string as the basis for the client string.
+def authenticated_rest_api_view(*, webhook_client_name: str=None,
+                                is_webhook: bool=False) -> Callable[[ViewFuncT], ViewFuncT]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @wraps(view_func)
         def _wrapped_func_arguments(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
@@ -492,7 +499,9 @@ def authenticated_rest_api_view(is_webhook: bool=False) -> WrappedViewFuncT:
             # Now we try to do authentication or die
             try:
                 # profile is a Union[UserProfile, RemoteZulipServer]
-                profile = validate_api_key(request, role, api_key, is_webhook)
+                profile = validate_api_key(request, role, api_key,
+                                           is_webhook=is_webhook or webhook_client_name is not None,
+                                           client_name=full_webhook_client_name(webhook_client_name))
             except JsonableError as e:
                 return json_unauthorized(e.msg)
             # Apply rate limiting
@@ -531,7 +540,7 @@ def process_as_post(view_func: ViewFuncT) -> ViewFuncT:
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 def authenticate_log_and_execute_json(request: HttpRequest,
-                                      view_func: Callable[..., HttpResponse],
+                                      view_func: ViewFuncT,
                                       *args: Any, **kwargs: Any) -> HttpResponse:
     if not request.user.is_authenticated:
         return json_error(_("Not logged in"), status=401)
@@ -583,13 +592,13 @@ def client_is_exempt_from_rate_limiting(request: HttpRequest) -> bool:
             (is_local_addr(request.META['REMOTE_ADDR']) or
              settings.DEBUG_RATE_LIMITING))
 
-def internal_notify_view(is_tornado_view: bool) -> WrappedViewFuncT:
+def internal_notify_view(is_tornado_view: bool) -> Callable[[ViewFuncT], ViewFuncT]:
     # The typing here could be improved by using the Extended Callable types:
     # https://mypy.readthedocs.io/en/latest/kinds_of_types.html#extended-callable-types
     """Used for situations where something running on the Zulip server
     needs to make a request to the (other) Django/Tornado processes running on
     the server."""
-    def _wrapped_view_func(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
         @csrf_exempt
         @require_post
         @wraps(view_func)
@@ -632,7 +641,6 @@ def flexible_boolean(boolean: Text) -> bool:
 def to_utc_datetime(timestamp: Text) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
-WrapperT = Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]
 def statsd_increment(counter: Text, val: int=1,
                      ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Increments a statsd counter on completion of the
@@ -669,12 +677,12 @@ def rate_limit_user(request: HttpRequest, user: UserProfile, domain: Text) -> No
     request._ratelimit_remaining = calls_remaining
     request._ratelimit_secs_to_freedom = time_reset
 
-def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Callable[..., HttpResponse]]:
+def rate_limit(domain: Text='all') -> Callable[[ViewFuncT], ViewFuncT]:
     """Rate-limits a view. Takes an optional 'domain' param if you wish to
     rate limit different types of API calls independently.
 
     Returns a decorator"""
-    def wrapper(func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+    def wrapper(func: ViewFuncT) -> ViewFuncT:
         @wraps(func)
         def wrapped_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
 
@@ -706,13 +714,13 @@ def rate_limit(domain: Text='all') -> Callable[[Callable[..., HttpResponse]], Ca
             rate_limit_user(request, user, domain)
 
             return func(request, *args, **kwargs)
-        return wrapped_func
+        return wrapped_func  # type: ignore # https://github.com/python/mypy/issues/1927
     return wrapper
 
-def return_success_on_head_request(view_func: Callable[..., HttpResponse]) -> Callable[..., HttpResponse]:
+def return_success_on_head_request(view_func: ViewFuncT) -> ViewFuncT:
     @wraps(view_func)
     def _wrapped_view_func(request: HttpRequest, *args: Any, **kwargs: Any) -> HttpResponse:
         if request.method == 'HEAD':
             return json_success()
         return view_func(request, *args, **kwargs)
-    return _wrapped_view_func
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927

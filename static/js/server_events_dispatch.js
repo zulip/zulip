@@ -67,6 +67,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             invite_by_admins_only: noop,
             invite_required: noop,
             mandatory_topics: noop,
+            message_content_edit_limit_seconds: noop,
             message_retention_days: settings_org.update_message_retention_days,
             name: notifications.redraw_title,
             name_changes_disabled: settings_account.update_name_change_display,
@@ -79,6 +80,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.op === 'update' && _.has(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
+            settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
                     page_params.can_create_streams = (!page_params.
@@ -91,11 +93,18 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 settings_org.render_signup_notifications_stream_ui(
                     page_params.realm_signup_notifications_stream_id);
             }
+
+            if (event.property === 'name' && window.electron_bridge !== undefined) {
+                window.electron_bridge.send_event('realm_name', event.value);
+            }
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
+                }
+                if (_.has(realm_settings, key)) {
+                    settings_org.sync_realm_settings(key);
                 }
             });
             if (event.data.authentication_methods !== undefined) {
@@ -105,6 +114,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+
+            var electron_bridge = window.electron_bridge;
+            if (electron_bridge !== undefined) {
+                electron_bridge.send_event('realm_icon_url', event.data.icon_url);
+            }
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }
@@ -391,6 +405,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             user_groups.add_members(event.group_id, event.user_ids);
         } else if (event.op === 'remove_members') {
             user_groups.remove_members(event.group_id, event.user_ids);
+        } else if (event.op === "update") {
+            user_groups.update(event);
         }
         settings_user_groups.reload();
         break;

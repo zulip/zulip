@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class OpsGenieHookTests(WebhookTestCase):
     STREAM_NAME = 'opsgenie'
-    URL_TEMPLATE = "/api/v1/external/opsgenie?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/opsgenie?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'opsgenie'
 
     def test_acknowledge_alert(self) -> None:

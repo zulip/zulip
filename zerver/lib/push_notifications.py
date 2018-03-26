@@ -214,9 +214,9 @@ def send_android_push_notification(devices: List[DeviceToken], data: Dict[str, A
             if error in ['NotRegistered', 'InvalidRegistration']:
                 for reg_id in reg_ids:
                     logging.info("GCM: Removing %s" % (reg_id,))
-
-                    device = DeviceTokenClass.objects.get(token=reg_id, kind=DeviceTokenClass.GCM)
-                    device.delete()
+                    # We remove all entries for this token (There
+                    # could be multiple for different Zulip servers).
+                    DeviceTokenClass.objects.filter(token=reg_id, kind=DeviceTokenClass.GCM).delete()
             else:
                 for reg_id in reg_ids:
                     logging.warning("GCM: Delivery to %s failed: %s" % (reg_id, error))

@@ -1,0 +1,12 @@
+{{#if is_admin }}
+<div class="input-group organization-submission subsection-changes-save">
+    <button type="button" id="org-submit-{{section_name}}" class="button rounded sea-green hide" data-status="save">
+        {{t 'Save' }}
+    </button>
+</div>
+<div class="input-group subsection-changes-discard">
+    <button type="button" id="org-discard-{{section_name}}" class="button rounded hide">
+        {{t 'Discard changes' }}
+    </button>
+</div>
+{{/if}}

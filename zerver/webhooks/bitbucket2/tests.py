@@ -224,55 +224,55 @@ class Bitbucket2HookTests(WebhookTestCase):
                                           self.EXPECTED_SUBJECT,
                                           expected_message, **kwargs)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_event_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_commits_above_limit_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_commits_above_limit')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_force_push_event_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('force_push')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_multiple_committers_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_multiple_committers')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_multiple_committers_with_others_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='changes,devlopment')
         payload = self.get_body('push_multiple_committers_with_others')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.bitbucket2.view.check_send_stream_message')
+    @patch('zerver.webhooks.bitbucket2.view.check_send_webhook_message')
     def test_bitbucket2_on_push_without_changes_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body('push_without_changes')
         result = self.client_post(self.url, payload, content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

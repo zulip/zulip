@@ -24,7 +24,7 @@ from zerver.lib.actions import (
     do_reactivate_realm,
     do_reactivate_user,
     do_set_realm_authentication_methods,
-    create_stream_if_needed,
+    ensure_stream,
 )
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -35,7 +35,7 @@ from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.lib.test_helpers import POSTRequestMock
+from zerver.lib.test_helpers import POSTRequestMock, HostRequestMock
 from zerver.models import \
     get_realm, email_to_username, UserProfile, \
     PreregistrationUser, Realm, get_user, MultiuseInvite
@@ -635,6 +635,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.assertIn(reverse('social:begin', args=['github']), result.url)
         self.assertIn('is_signup=0', result.url)
 
+    def test_login_url_with_next_param(self) -> None:
+        result = self.client_get('/accounts/login/social/github',
+                                 {'next': "/image_path"})
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+        self.assertIn('image_path', result.url)
+
+        result = self.client_get('/accounts/login/social/github',
+                                 {'next': '/#narrow/stream/7-test-here'})
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+        self.assertIn('narrow', result.url)
+
     def test_signup_url(self) -> None:
         result = self.client_get('/accounts/register/social/github')
         self.assertIn(reverse('social:begin', args=['github']), result.url)
@@ -679,7 +692,8 @@ class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
-                           is_signup: Optional[str]=None) -> HttpResponse:
+                           is_signup: Optional[str]=None,
+                           next: Text='') -> HttpResponse:
         url = "/accounts/login/google/"
         params = {}
         headers = {}
@@ -690,6 +704,7 @@ class GoogleOAuthTest(ZulipTestCase):
             headers['HTTP_USER_AGENT'] = "ZulipAndroid"
         if is_signup is not None:
             params['is_signup'] = is_signup
+        params['next'] = next
         if len(params) > 0:
             url += "?%s" % (urllib.parse.urlencode(params))
 
@@ -728,12 +743,14 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                             emails=[dict(type="account",
                                          value=self.example_email("hamlet"))])
         account_response = ResponseMock(200, account_data)
-        result = self.google_oauth2_test(token_response, account_response, subdomain='zulip')
+        result = self.google_oauth2_test(token_response, account_response,
+                                         subdomain='zulip', next='/user_uploads/image')
 
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Full Name')
         self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -752,6 +769,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Test User')
         self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '')
         self.assertEqual(result.status_code, 302)
         parsed_url = urllib.parse.urlparse(result.url)
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
@@ -796,11 +814,38 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
         return self.client_get(url_path, subdomain=subdomain)
 
+    def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:
+        def test_redirect_to_next_url(next: Text='') -> HttpResponse:
+            data = {'name': 'Hamlet',
+                    'email': self.example_email("hamlet"),
+                    'subdomain': 'zulip',
+                    'is_signup': False,
+                    'next': next}
+            user_profile = self.example_user('hamlet')
+            with mock.patch(
+                    'zerver.views.auth.authenticate_remote_user',
+                    return_value=(user_profile, {'invalid_subdomain': False})):
+                with mock.patch('zerver.views.auth.do_login'):
+                    result = self.get_log_into_subdomain(data)
+            return result
+
+        res = test_redirect_to_next_url()
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver')
+        res = test_redirect_to_next_url('/user_uploads/path_to_image')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver/user_uploads/path_to_image')
+
+        res = test_redirect_to_next_url('/#narrow/stream/7-test-here')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
+
     def test_log_into_subdomain(self) -> None:
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         user_profile = self.example_user('hamlet')
@@ -817,7 +862,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         with mock.patch('logging.warning') as mock_warning:
             result = self.get_log_into_subdomain(data, key='nonsense')
             mock_warning.assert_called_with("Subdomain cookie: Bad signature.")
@@ -827,7 +873,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
         with mock.patch('django.core.signing.time.time', return_value=time.time() - 45):
             token = signing.dumps(data, salt=_subdomain_token_salt)
         url_path = reverse('zerver.views.auth.log_into_subdomain', args=[token])
@@ -840,7 +887,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('hamlet@zulip.com already has an account', result)
@@ -850,7 +898,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 302)
         confirmation = Confirmation.objects.all().last()
@@ -872,7 +921,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
-                'is_signup': True}
+                'is_signup': True,
+                'next': ''}
 
         realm = get_realm("zulip")
         realm.invite_required = True
@@ -881,7 +931,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         stream_names = ["new_stream_1", "new_stream_2"]
         streams = []
         for stream_name in set(stream_names):
-            stream, _ = create_stream_if_needed(realm, stream_name)
+            stream = ensure_stream(realm, stream_name)
             streams.append(stream)
 
         # Without the invite link, we can't create an account due to invite_required
@@ -930,7 +980,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         data = {'name': None,
                 'email': None,
                 'subdomain': 'zulip',
-                'is_signup': False}
+                'is_signup': False,
+                'next': ''}
 
         with mock.patch('logging.warning'):
             result = self.get_log_into_subdomain(data)
@@ -1109,7 +1160,7 @@ class GoogleLoginTest(GoogleOAuthTest):
 
     def test_google_oauth2_csrf_badstate(self) -> None:
         with mock.patch("logging.warning") as m:
-            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more::")
+            result = self.client_get("/accounts/login/google/done/?state=badstate:otherbadstate:more:::")
         self.assertEqual(result.status_code, 400)
         self.assertEqual(m.call_args_list[0][0][0],
                          'Google oauth2 CSRF error')
@@ -1452,6 +1503,28 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_redirect_to_next_url(self) -> None:
+        def do_local_login(formaction: Text) -> HttpResponse:
+            user_email = self.example_email('hamlet')
+            data = {'direct_email': user_email}
+            return self.client_post(formaction, data)
+
+        res = do_local_login('/accounts/login/local/')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver')
+
+        res = do_local_login('/accounts/login/local/?next=/user_uploads/path_to_image')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver/user_uploads/path_to_image')
+
+        # In local Email based authentication we never make browser send the hash
+        # to the backend. Rather we depend upon the browser's behaviour of persisting
+        # hash anchors in between redirect requests. See below stackoverflow conversation
+        # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
+        res = do_local_login('/accounts/login/local/?next=#narrow/stream/7-test-here')
+        self.assertEqual(res.status_code, 302)
+        self.assertEqual(res.url, 'http://zulip.testserver')
+
     def test_login_with_subdomain(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
@@ -1623,6 +1696,26 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                          otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
+
+    def test_redirect_to(self) -> None:
+        def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
+            user_profile = self.example_user('hamlet')
+            email = user_profile.email
+            with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):
+                result = self.client_post('/accounts/login/sso/?next=' + next, REMOTE_USER=email)
+            return result
+
+        res = test_with_redirect_to_param_set_as_next()
+        self.assertEqual('http://zulip.testserver', res.url)
+        res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
+        self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
+
+        # In SSO based auth we never make browser send the hash to the backend.
+        # Rather we depend upon the browser's behaviour of persisting hash anchors
+        # in between redirect requests. See below stackoverflow conversation
+        # https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects
+        res = test_with_redirect_to_param_set_as_next('#narrow/stream/7-test-here')
+        self.assertEqual('http://zulip.testserver', res.url)
 
 class TestJWTLogin(ZulipTestCase):
     """
@@ -2174,6 +2267,29 @@ class LoginOrRegisterRemoteUserTestCase(ZulipTestCase):
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
         self.assertIn('/accounts/login/?subdomain=1', response.url)
+
+    def test_redirect_to(self) -> None:
+        def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
+            full_name = 'Hamlet'
+            user_profile = self.example_user('hamlet')
+            request = HostRequestMock(user_profile)
+            with mock.patch('zerver.views.auth.do_login'):
+                response = login_or_register_remote_user(
+                    request,
+                    self.example_email('hamlet'),
+                    user_profile,
+                    full_name=full_name,
+                    invalid_subdomain=False,
+                    redirect_to=next)
+            return response
+
+        res = test_with_redirect_to_param_set_as_next()
+        self.assertEqual('http://zulip.testserver', res.url)
+        res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
+        self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
+        # We test with a rogue next URL and redirect URL must be towards root zulip uri.
+        res = test_with_redirect_to_param_set_as_next('https://rogue.zulip-like.server/login')
+        self.assertEqual('http://zulip.testserver', res.url)
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))

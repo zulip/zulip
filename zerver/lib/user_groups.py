@@ -7,9 +7,13 @@ from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
 from typing import Dict, Iterable, List, Text, Tuple, Any
 
-def access_user_group_by_id(user_group_id: int, realm: Realm) -> UserGroup:
+def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
     try:
-        user_group = UserGroup.objects.get(id=user_group_id, realm=realm)
+        user_group = UserGroup.objects.get(id=user_group_id, realm=user_profile.realm)
+        group_member_ids = get_user_group_members(user_group)
+        msg = _("Only group members and organization administrators can administer this group.")
+        if (not user_profile.is_realm_admin and user_profile.id not in group_member_ids):
+            raise JsonableError(msg)
     except UserGroup.DoesNotExist:
         raise JsonableError(_("Invalid user group"))
     return user_group
@@ -73,6 +77,10 @@ def create_user_group(name: Text, members: List[UserProfile], realm: Realm,
             for member in members
         ])
         return user_group
+
+def get_user_group_members(user_group: UserGroup) -> List[UserProfile]:
+    members = UserGroupMembership.objects.filter(user_group=user_group)
+    return [member.user_profile.id for member in members]
 
 def get_memberships_of_users(user_group: UserGroup, members: List[UserProfile]) -> List[int]:
     return list(UserGroupMembership.objects.filter(

@@ -53,8 +53,40 @@ function settings_change_success(message) {
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
+function add_custom_profile_fields_to_settings() {
+    var all_custom_fields = page_params.custom_profile_fields;
+
+    all_custom_fields.forEach(function (field) {
+        var type;
+        var value = people.my_custom_profile_data(field.id);
+        var is_long_text = field.type === 4;
+
+        // 1 & 2 type represent numeric data and 3 & 4 type represent textual data.
+        if (field.type === 1 || field.type === 2) {
+            type = "number";
+        } else if (field.type === 3 || field.type === 4) {
+            type = "text";
+        } else {
+            blueslip.error("Undefined field type.");
+        }
+        if (value === undefined) {
+            // If user has not set value for field.
+            value = "";
+        }
+
+        var html = templates.render("custom-user-profile-field", {field_name: field.name,
+                                                                  field_id: field.id,
+                                                                  field_type: type,
+                                                                  field_value: value,
+                                                                  is_long_text_field: is_long_text,
+                                                                  });
+        $("#account-settings .custom-profile-fields-form").append(html);
+    });
+}
 
 exports.set_up = function () {
+    // Add custom profile fields elements to user account settings.
+    add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
@@ -278,6 +310,20 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
+    $(".custom_user_field input, .custom_user_field textarea").on('change', function () {
+        var fields = [];
+        var value = $(this).val();
+        var spinner = $("#custom-field-status").expectOne();
+        loading.make_indicator(spinner, {text: 'Saving ...'});
+        if ($(this).attr("type") === "number") {
+            value = parseInt(value, 10);
+        }
+        fields.push({id: parseInt($(this).attr("id"), 10), value: value});
+
+        settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
+                                       {data: JSON.stringify(fields)}, spinner);
+    });
+
     $("#do_deactivate_self_button").on('click',function () {
         $("#do_deactivate_self_button .loader").css('display', 'inline-block');
         $("#do_deactivate_self_button span").hide();
@@ -324,7 +370,7 @@ exports.set_up = function () {
             contentType: false,
             success: function (data) {
                 loading.destroy_indicator($("#upload_avatar_spinner"));
-                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+                $("#user-avatar-block").expectOne().attr("src", data.avatar_url);
                 $("#user_avatar_delete_button").show();
                 $("#user-avatar-source").hide();
             },

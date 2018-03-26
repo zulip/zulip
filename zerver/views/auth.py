@@ -16,6 +16,7 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET
 from django.utils.translation import ugettext as _
+from django.utils.http import is_safe_url
 from django.core import signing
 import urllib
 from typing import Any, Dict, List, Optional, Tuple, Text
@@ -46,6 +47,13 @@ import logging
 import requests
 import time
 import ujson
+
+def get_safe_redirect_to(url: Text, redirect_host: Text) -> Text:
+    is_url_safe = is_safe_url(url=url, host=redirect_host)
+    if is_url_safe:
+        return urllib.parse.urljoin(redirect_host, url)
+    else:
+        return redirect_host
 
 def create_preregistration_user(email: Text, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True) -> HttpResponse:
@@ -119,7 +127,8 @@ def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
 def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[Text],
                                   user_profile: Optional[UserProfile], full_name: Text='',
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
-                                  is_signup: bool=False) -> HttpResponse:
+                                  is_signup: bool=False,
+                                  redirect_to: Text='') -> HttpResponse:
     if user_profile is None or user_profile.is_mirror_dummy:
         # Since execution has reached here, we have verified the user
         # controls an email address (remote_username) but there's no
@@ -174,7 +183,9 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
         return response
 
     do_login(request, user_profile)
-    return HttpResponseRedirect(user_profile.realm.uri)
+
+    redirect_to = get_safe_redirect_to(redirect_to, user_profile.realm.uri)
+    return HttpResponseRedirect(redirect_to)
 
 @log_view_func
 @has_request_variables
@@ -205,8 +216,12 @@ def remote_user_sso(request: HttpRequest,
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
     user_profile = authenticate(remote_user=remote_user, realm=realm)
+
+    redirect_to = request.GET.get('next', '')
+
     return login_or_register_remote_user(request, remote_user, user_profile,
-                                         mobile_flow_otp=mobile_flow_otp)
+                                         mobile_flow_otp=mobile_flow_otp,
+                                         redirect_to=redirect_to)
 
 @csrf_exempt
 @log_view_func
@@ -278,6 +293,10 @@ def oauth_redirect_to_root(request: HttpRequest, url: Text, is_signup: bool=Fals
             raise JsonableError(_("Invalid OTP"))
         params['mobile_flow_otp'] = mobile_flow_otp
 
+    next = request.GET.get('next')
+    if next:
+        params['next'] = next
+
     return redirect(main_site_uri + '?' + urllib.parse.urlencode(params))
 
 def start_google_oauth2(request: HttpRequest) -> HttpResponse:
@@ -304,6 +323,7 @@ def start_social_signup(request: HttpRequest, backend: Text) -> HttpResponse:
 def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
     subdomain = request.GET.get('subdomain', '')
     is_signup = request.GET.get('is_signup', '')
+    next = request.GET.get('next', '')
     mobile_flow_otp = request.GET.get('mobile_flow_otp', '0')
 
     if ((settings.ROOT_DOMAIN_LANDING_PAGE and subdomain == '') or
@@ -312,7 +332,7 @@ def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
 
     google_uri = 'https://accounts.google.com/o/oauth2/auth?'
     cur_time = str(int(time.time()))
-    csrf_state = '%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup)
+    csrf_state = '%s:%s:%s:%s:%s' % (cur_time, subdomain, mobile_flow_otp, is_signup, next)
 
     # Now compute the CSRF hash with the other parameters as an input
     csrf_state += ":%s" % (google_oauth2_csrf(request, csrf_state),)
@@ -336,7 +356,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         return HttpResponse(status=400)
 
     csrf_state = request.GET.get('state')
-    if csrf_state is None or len(csrf_state.split(':')) != 5:
+    if csrf_state is None or len(csrf_state.split(':')) != 6:
         logging.warning('Missing Google oauth2 CSRF state')
         return HttpResponse(status=400)
 
@@ -344,7 +364,7 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
     if hmac_value != google_oauth2_csrf(request, csrf_data):
         logging.warning('Google oauth2 CSRF error')
         return HttpResponse(status=400)
-    cur_time, subdomain, mobile_flow_otp, is_signup = csrf_data.split(':')
+    cur_time, subdomain, mobile_flow_otp, is_signup, next = csrf_data.split(':')
     if mobile_flow_otp == '0':
         mobile_flow_otp = None
 
@@ -408,10 +428,11 @@ def finish_google_oauth2(request: HttpRequest) -> HttpResponse:
         return login_or_register_remote_user(request, email_address, user_profile,
                                              full_name, invalid_subdomain,
                                              mobile_flow_otp=mobile_flow_otp,
-                                             is_signup=is_signup)
+                                             is_signup=is_signup,
+                                             redirect_to=next)
 
     return redirect_and_log_into_subdomain(
-        realm, full_name, email_address, is_signup=is_signup)
+        realm, full_name, email_address, is_signup=is_signup, redirect_to=next)
 
 def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProfile, Dict[str, Any]]:
     return_data = {}  # type: Dict[str, bool]
@@ -451,6 +472,7 @@ def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
     email_address = data['email']
     full_name = data['name']
     is_signup = data['is_signup']
+    redirect_to = data['next']
     if is_signup:
         # If we are signing up, user_profile should be None. In case
         # email_address already exists, user will get an error message.
@@ -467,12 +489,12 @@ def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
     invalid_subdomain = bool(return_data.get('invalid_subdomain'))
     return login_or_register_remote_user(request, email_address, user_profile,
                                          full_name, invalid_subdomain=invalid_subdomain,
-                                         is_signup=is_signup)
+                                         is_signup=is_signup, redirect_to=redirect_to)
 
 def redirect_and_log_into_subdomain(realm: Realm, full_name: Text, email_address: Text,
-                                    is_signup: bool=False) -> HttpResponse:
+                                    is_signup: bool=False, redirect_to: Text='') -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
-            'is_signup': is_signup}
+            'is_signup': is_signup, 'next': redirect_to}
     token = signing.dumps(data, salt=_subdomain_token_salt)
     subdomain_login_uri = (realm.uri
                            + reverse('zerver.views.auth.log_into_subdomain', args=[token]))
@@ -591,7 +613,10 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if user_profile is None:
         return HttpResponseRedirect(reverse('dev_not_supported'))
     do_login(request, user_profile)
-    return HttpResponseRedirect(user_profile.realm.uri)
+
+    next = request.GET.get('next', '')
+    redirect_to = get_safe_redirect_to(next, user_profile.realm.uri)
+    return HttpResponseRedirect(redirect_to)
 
 @csrf_exempt
 @require_post

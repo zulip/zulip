@@ -4,9 +4,9 @@ from typing import Text
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile, get_client
 
 # Desk.com's integrations all make the user supply a template, where it fills
@@ -14,11 +14,10 @@ from zerver.models import UserProfile, get_client
 # There's no raw JSON for us to work from. Thus, it makes sense to just write
 # a template Zulip message within Desk.com and have the webhook extract that
 # from the "data" param and post it, which this does.
-@authenticated_rest_api_view(is_webhook=True)
+@authenticated_rest_api_view(webhook_client_name="Desk")
 @has_request_variables
-def api_deskdotcom_webhook(request: HttpRequest, user_profile: UserProfile, data: Text=REQ(),
-                           topic: Text=REQ(default="Desk.com notification"),
-                           stream: Text=REQ(default="desk.com")) -> HttpResponse:
-    check_send_stream_message(user_profile, get_client("ZulipDeskWebhook"),
-                              stream, topic, data)
+def api_deskdotcom_webhook(request: HttpRequest, user_profile: UserProfile,
+                           data: Text=REQ()) -> HttpResponse:
+    topic = "Desk.com notification"
+    check_send_webhook_message(request, user_profile, topic, data)
     return json_success()

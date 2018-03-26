@@ -5,9 +5,9 @@ from typing import Any, Dict, Text
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import api_key_only_webhook_view
-from zerver.lib.actions import check_send_stream_message
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
 from .support_event import SUPPORT_EVENTS
@@ -25,8 +25,7 @@ TODO_TEMPLATE = "{user_name} {verb} the todo task [{title}]({url})"
 @api_key_only_webhook_view('Basecamp')
 @has_request_variables
 def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
-                         payload: Dict[str, Any]=REQ(argument_type='body'),
-                         stream: Text=REQ(default='basecamp')) -> HttpResponse:
+                         payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
     event = get_event_type(payload)
 
     if event not in SUPPORT_EVENTS:
@@ -52,8 +51,7 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
         logging.warning("Basecamp handling of {} event is not implemented".format(event))
         return json_success()
 
-    check_send_stream_message(user_profile, request.client,
-                              stream, subject, body)
+    check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
 def get_project_name(payload: Dict[str, Any]) -> Text:

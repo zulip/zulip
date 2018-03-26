@@ -133,6 +133,7 @@ class Command(makemessages.Command):
         try:
             ignore_patterns = options.get('ignore_patterns', [])
             ignore_patterns.append('docs/*')
+            ignore_patterns.append('var/*')
             options['ignore_patterns'] = ignore_patterns
             super().handle(*args, **options)
         finally:

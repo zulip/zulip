@@ -26,8 +26,10 @@ function row_for_stream_id(stream_id) {
 }
 
 function settings_button_for_sub(sub) {
+    // We don't do expectOne() here, because this button is only
+    // visible if the user has that stream selected in the streams UI.
     var id = parseInt(sub.stream_id, 10);
-    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button").expectOne();
+    return $(".subscription_settings[data-stream-id='" + id + "'] .subscribe-button");
 }
 
 function get_row_data(row) {
@@ -150,9 +152,13 @@ exports.set_color = function (stream_id, color) {
 };
 
 exports.rerender_subscribers_count = function (sub, just_subscribed) {
+    if (!overlays.streams_open()) {
+        // If the streams overlay isn't open, we don't need to rerender anything.
+        return;
+    }
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
-    if (!sub.can_add_subscribers || (just_subscribed && sub.invite_only)) {
+    if (!sub.can_access_subscribers || (just_subscribed && sub.invite_only)) {
         var sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(sub_count);
     } else {
@@ -160,20 +166,22 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     }
 };
 
-function add_email_hint(row, email_address_hint_content) {
+function add_email_hint_handler() {
     // Add a popover explaining stream e-mail addresses on hover.
-    var hint_id = "#email-address-hint-" + row.stream_id;
 
-    $("body").on("mouseover", hint_id, function (e) {
-        $(hint_id).popover({placement: "right",
-                title: "Email integration",
-                content: email_address_hint_content,
-                trigger: "manual"});
-        $(hint_id).popover('show');
+    $("body").on("mouseover", '.stream-email-hint', function (e) {
+        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
+        $(e.target).popover({
+            placement: "right",
+            title: "Email integration",
+            content: email_address_hint_content,
+            trigger: "manual",
+            animation: false});
+        $(e.target).popover('show');
         e.stopPropagation();
     });
-    $("body").on("mouseout", hint_id, function (e) {
-        $(hint_id).popover('hide');
+    $("body").on("mouseout", '.stream-email-hint', function (e) {
+        $(e.target).popover('hide');
         e.stopPropagation();
     });
 }
@@ -187,9 +195,6 @@ exports.add_sub_to_table = function (sub) {
         $(".streams-list").append(html);
     }
     $(".subscriptions .settings").append($(settings_html));
-
-    var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
-    add_email_hint(sub, email_address_hint_content);
 
     if (stream_create.get_name() === sub.name) {
         // This `stream_create.get_name()` check tells us whether the
@@ -213,6 +218,7 @@ exports.remove_stream = function (stream_id) {
 exports.update_settings_for_subscribed = function (sub) {
     var button = button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
+    $('.add_subscribers_container').show();
 
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub, true);
@@ -250,9 +256,10 @@ exports.update_settings_for_unsubscribed = function (sub) {
         stream_edit.rerender_subscribers_list(sub);
 
         // If user unsubscribed from private stream then user can not subscribe to
-        // stream without invitation. So hide subscribe button.
+        // stream without invitation and can not add subscribers to stream.
         if (!sub.should_display_subscription_button) {
             settings_button.hide();
+            $('.add_subscribers_container').hide();
         }
     }
 
@@ -341,6 +348,10 @@ exports.filter_table = function (query) {
             $(row).addClass("notdisplayed");
             others.push($(row).detach());
         }
+
+        $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
+            placement: 'left', animation: false,
+        });
     });
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
@@ -427,10 +438,7 @@ exports.setup_page = function (callback) {
         $('#subscriptions_table').append(rendered);
         initialize_components();
         exports.actually_filter_streams();
-        var email_address_hint_content = templates.render('email_address_hint', { page_params: page_params });
-        _.each(sub_rows, function (row) {
-            add_email_hint(row, email_address_hint_content);
-        });
+        stream_create.set_up_handlers();
 
         $("#add_new_subscription input[type='text']").on("input", function () {
             remove_temporarily_miscategorized_streams();
@@ -699,13 +707,14 @@ exports.sub_or_unsub = function (sub) {
 
 
 $(function () {
-
     stream_data.initialize_from_page_params();
     stream_list.create_initial_sidebar_rows();
 
     // We build the stream_list now.  It may get re-built again very shortly
     // when new messages come in, but it's fairly quick.
     stream_list.build_stream_list();
+
+    add_email_hint_handler();
 
     $("#subscriptions_table").on("click", ".create_stream_button", function (e) {
         e.preventDefault();

@@ -477,11 +477,7 @@ def build_custom_checkers(by_lang):
              # Zerver files that we should just clean.
              'zerver/tests',
              'zerver/lib/api_test_helpers.py',
-             'zerver/lib/cache.py',
              'zerver/lib/request.py',
-             'zerver/lib/stream_subscription.py',
-             'zerver/models.py',
-             'zerver/tornado/descriptors.py',
              'zerver/views/streams.py',
              # thumbor is (currently) python2 only
              'zthumbor/',

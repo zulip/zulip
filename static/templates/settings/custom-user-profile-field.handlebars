@@ -1,0 +1,8 @@
+<div class="user-name-section custom_user_field">
+    <label for="{{ field_name }}" class="title">{{ field_name }}</label>
+    {{#if is_long_text_field}}
+    <textarea name="{{ field_name }}" id="{{ field_id }}">{{ field_value }}</textarea>
+    {{else}}
+    <input type="{{ field_type }}" name="{{ field_name }}" id="{{ field_id }}" value="{{ field_value }}" />
+    {{/if}}
+</div>

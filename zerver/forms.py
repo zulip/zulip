@@ -25,7 +25,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_user, UserProfile, get_realm, email_to_domain, \
-    email_allowed_for_realm, disposable_email_check
+    email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError
 from zproject.backends import email_auth_enabled
 
 import logging
@@ -145,13 +145,16 @@ class HomepageForm(forms.Form):
                                     "from the organization "
                                     "administrator.").format(email=email))
 
-        if not email_allowed_for_realm(email, realm):
+        try:
+            email_allowed_for_realm(email, realm)
+        except DomainNotAllowedForRealmError:
             raise ValidationError(
                 _("Your email address, {email}, is not in one of the domains "
                   "that are allowed to register for accounts in this organization.").format(
                       string_id=realm.string_id, email=email))
+        except DisposableEmailError:
+            raise ValidationError(_("Please use your real email address."))
 
-        disposable_email_check(realm, email)
         validate_email_for_realm(realm, email)
 
         if realm.is_zephyr_mirror_realm:

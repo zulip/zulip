@@ -34,6 +34,7 @@ from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, check_string, \
     check_short_string
 from zerver.lib.name_restrictions import is_disposable_domain
+from zerver.lib.types import Validator
 
 from django.utils.encoding import force_text
 
@@ -163,6 +164,8 @@ class Realm(models.Model):
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
     message_retention_days = models.IntegerField(null=True)  # type: Optional[int]
     allow_edit_history = models.BooleanField(default=True)  # type: bool
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
+    allow_community_topic_editing = models.BooleanField(default=False)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -184,8 +187,7 @@ class Realm(models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
-    DEFAULT_MAX_INVITES = 100
-    max_invites = models.IntegerField(default=DEFAULT_MAX_INVITES)  # type: int
+    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: int
     message_visibility_limit = models.IntegerField(null=True)  # type: int
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
@@ -284,6 +286,16 @@ class Realm(models.Model):
             return self.signup_notifications_stream
         return None
 
+    @property
+    def max_invites(self) -> int:
+        if self._max_invites is None:
+            return settings.INVITES_DEFAULT_REALM_DAILY_MAX
+        return self._max_invites
+
+    @max_invites.setter
+    def max_invites(self, value: int) -> None:
+        self._max_invites = value
+
     def upload_quota_bytes(self) -> Optional[int]:
         if self.upload_quota_gb is None:
             return None
@@ -368,32 +380,34 @@ def email_to_username(email: Text) -> Text:
 def email_to_domain(email: Text) -> Text:
     return email.split("@")[-1].lower()
 
-class GetRealmByDomainException(Exception):
+class DomainNotAllowedForRealmError(Exception):
+    pass
+
+class DisposableEmailError(Exception):
     pass
 
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
-def email_allowed_for_realm(email: Text, realm: Realm) -> bool:
+def email_allowed_for_realm(email: Text, realm: Realm) -> None:
     if not realm.restricted_to_domain:
-        return True
+        if realm.disallow_disposable_email_addresses and \
+                is_disposable_domain(email_to_domain(email)):
+            raise DisposableEmailError
+        return
+
     domain = email_to_domain(email)
     query = RealmDomain.objects.filter(realm=realm)
     if query.filter(domain=domain).exists():
-        return True
+        return
     else:
         query = query.filter(allow_subdomains=True)
         while len(domain) > 0:
             subdomain, sep, domain = domain.partition('.')
             if query.filter(domain=domain).exists():
-                return True
-    return False
-
-def disposable_email_check(realm: Realm, email: Text) -> None:
-    if not realm.restricted_to_domain and realm.disallow_disposable_email_addresses:
-        if is_disposable_domain(email_to_domain(email)):
-            raise ValidationError("Please use your real email address.")
+                return
+    raise DomainNotAllowedForRealmError
 
 def get_realm_domains(realm: Realm) -> List[Dict[str, Text]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
@@ -406,13 +420,10 @@ class RealmEmoji(models.Model):
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))])  # type: Text
-    file_name = models.TextField(db_index=True, null=True)  # type: Optional[Text]
+    file_name = models.TextField(db_index=True, null=True, blank=True)  # type: Optional[Text]
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
-
-    class Meta:
-        unique_together = ("realm", "name")
+    PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def __str__(self) -> Text:
         return "<RealmEmoji(%s): %s %s %s %s>" % (self.realm.string_id,
@@ -421,38 +432,37 @@ class RealmEmoji(models.Model):
                                                   self.deactivated,
                                                   self.file_name)
 
-def get_realm_emoji_uncached(realm: Realm) -> Dict[Text, Dict[str, Any]]:
+def get_realm_emoji_dicts(realm: Realm,
+                          only_active_emojis: bool=False) -> Dict[str, Dict[str, Any]]:
+    query = RealmEmoji.objects.filter(realm=realm).select_related('author')
+    if only_active_emojis:
+        query = query.filter(deactivated=False)
     d = {}
     from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm).select_related('author'):
+
+    for realm_emoji in query.all():
         author = None
-        if row.author:
+        if realm_emoji.author:
             author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
+                'id': realm_emoji.author.id,
+                'email': realm_emoji.author.email,
+                'full_name': realm_emoji.author.full_name}
+        emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
+        d[str(realm_emoji.id)] = dict(id=str(realm_emoji.id),
+                                      name=realm_emoji.name,
+                                      source_url=emoji_url,
+                                      deactivated=realm_emoji.deactivated,
+                                      author=author)
     return d
 
+def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    return get_realm_emoji_dicts(realm)
+
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
+    realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
     d = {}
-    from zerver.lib.emoji import get_emoji_url
-    for row in RealmEmoji.objects.filter(realm=realm,
-                                         deactivated=False).select_related('author'):
-        author = None
-        if row.author:
-            author = {
-                'id': row.author.id,
-                'email': row.author.email,
-                'full_name': row.author.full_name}
-        d[row.name] = dict(id=str(row.id),
-                           name=row.name,
-                           source_url=get_emoji_url(row.file_name, row.realm_id),
-                           deactivated=row.deactivated,
-                           author=author)
+    for emoji_id, emoji_dict in realm_emojis.items():
+        d[emoji_dict['name']] = emoji_dict
     return d
 
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
@@ -1036,6 +1046,8 @@ def stream_name_in_use(stream_name: Text, realm_id: int) -> bool:
     ).exists()
 
 def get_active_streams(realm: Optional[Realm]) -> QuerySet:
+    # TODO: Change return type to QuerySet[Stream]
+    # NOTE: Return value is used as a QuerySet, so cannot currently be Sequence[QuerySet]
     """
     Return all streams (including invite-only streams) that have not been deactivated.
     """
@@ -1249,8 +1261,7 @@ def pre_save_message(sender: Any, **kwargs: Any) -> None:
         message = kwargs['instance']
         message.update_calculated_fields()
 
-def get_context_for_message(message):
-    # type: (Message) -> QuerySet[Message]
+def get_context_for_message(message: Message) -> Sequence[Message]:
     # TODO: Change return type to QuerySet[Message]
     return Message.objects.filter(
         recipient_id=message.recipient_id,
@@ -1271,7 +1282,7 @@ class Reaction(models.Model):
     REALM_EMOJI         = u'realm_emoji'
     ZULIP_EXTRA_EMOJI   = u'zulip_extra_emoji'
     REACTION_TYPES      = ((UNICODE_EMOJI, _("Unicode emoji")),
-                           (REALM_EMOJI, _("Realm emoji")),
+                           (REALM_EMOJI, _("Custom emoji")),
                            (ZULIP_EXTRA_EMOJI, _("Zulip extra emoji")))
 
     reaction_type = models.CharField(default=UNICODE_EMOJI, choices=REACTION_TYPES, max_length=30)  # type: Text
@@ -1870,9 +1881,9 @@ class CustomProfileField(models.Model):
         (FLOAT, u'Float', check_float, float),
         (SHORT_TEXT, u'Short Text', check_short_string, str),
         (LONG_TEXT, u'Long Text', check_string, str),
-    ]  # type: List[Tuple[int, Text, Callable[[str, Any], str], Callable[[Any], Any]]]
+    ]  # type: List[Tuple[int, Text, Validator, Callable[[Any], Any]]]
 
-    FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[str, Any], str]]
+    FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
     FIELD_CONVERTERS = {item[0]: item[3] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[Any], Any]]
     FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in FIELD_TYPE_DATA]  # type: List[Tuple[int, Text]]
 

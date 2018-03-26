@@ -7,7 +7,10 @@ var meta = {
 };
 
 function change_display_setting(data, status_element, success_msg) {
-    settings_ui.do_settings_change('/json/settings/display', data, status_element, success_msg);
+    var opts = {
+        success_msg: success_msg,
+    };
+    settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
 
 exports.set_night_mode = function (bool) {
@@ -143,7 +146,7 @@ exports.report_emojiset_change = function () {
         $("#emoji-spritesheet").attr('href', sprite_css_href);
         emoji_success();
     };
-    sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_32.png";
+    sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_64.png";
 };
 
 function _update_page() {

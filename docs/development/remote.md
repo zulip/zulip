@@ -41,10 +41,19 @@ the remote virtual machine, we recommend installing
 [Vagrant][install-vagrant] method so you can easily uninstall if you
 need to.
 
+The main difference from the standard instructions is that for a
+remote development environment, you'll need to run `export
+EXTERNAL_HOST=<REMOTE_IP>:9991` in a shell before running `run-dev.py`
+(and see also the `--interface=''` option documented below).  If your
+server has a static IP address, we recommend putting this command in
+`~/.bashrc`, so you don't need to remember to run it every time. This
+allows you to access Zulip running in your development environment
+using a browser on another host.
+
 ## Running the development server
 
 Once you have set up the development environment, you can start up the
-development instance of Zulip with the following command in the directory where
+development server with the following command in the directory where
 you cloned Zulip:
 
 ```
@@ -57,6 +66,11 @@ this screenshot of the Zulip development environment:
 
 ![Image of Zulip development
 environment](../images/zulip-dev.png)
+
+The `--interface=''` command makes the Zulip development environment
+accessible from any IP address (in contrast with the more secure
+default of only being accessible from localhost, which is great for
+developing on your laptop).
 
 You can [port
 forward](https://help.ubuntu.com/community/SSH/OpenSSH/PortForwarding) using

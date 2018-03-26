@@ -10,23 +10,23 @@
     <div class="sub-info-box">
         <div class="top-bar">
             <div class="stream-name">{{name}}</div>
-            <div class="subscriber-count">
+            <div class="subscriber-count" data-toggle="tooltip" title="{{t 'Subscriber count' }}">
                 {{partial "subscription_count"}}
             </div>
-            <div class="stream-message-count">
-                {{#if is_old_stream}}
-                    <i class="icon-vector-comments"></i>
-                    {{#if can_add_subscribers}}
-                    <span class="stream-message-count-text">{{stream_weekly_traffic}}</span>
-                    <div class="stream-message-hover-content">{{t "Average weekly traffic" }}</div>
-                    {{/if}}
-                {{else}}
-                    <span class="stream-message-count-text">{{t "New" }}</span>
-                    <div class="stream-message-hover-content">{{t "Recently created stream" }}</div>
-                {{/if}}
-            </div>
         </div>
-        <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
+        <div class="bottom-bar">
+            <div class="description" data-no-description="{{t 'No description.'}}">{{{rendered_description}}}</div>
+            {{#if is_old_stream}}
+            <div class="stream-message-count" data-toggle="tooltip" title="{{t 'Average messages per week' }}">
+                <i class="fa fa-bar-chart"></i>
+                <span class="stream-message-count-text">{{stream_weekly_traffic}}</span>
+            </div>
+            {{else}}
+            <div class="stream-message-count" data-toggle="tooltip" title="{{t 'Stream created recently' }}">
+                <span class="stream-message-count-text">{{t "New" }}</span>
+            </div>
+            {{/if}}
+        </div>
     </div>
 </div>
 {{/with}}

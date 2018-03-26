@@ -57,10 +57,8 @@
 * [Share a message or conversation](/help/share-a-message-or-conversation)
 * [Advanced search](/help/search-for-messages)
 * [View a message's edit history](/help/view-a-messages-edit-history)
-* [View messages from a stream](/help/view-messages-from-a-stream)
-* [View messages from a topic](/help/view-messages-from-a-topic)
-* [View messages from a user](/help/view-messages-from-a-user)
-* [View messages containing files or links](/help/view-messages-containing-files-or-links)
+* [Reading by stream or topic](/help/reading-messages-by-stream-or-topic)
+* [Private messages and group PMs](/help/view-your-pms-and-group-pms)
 
 ## People
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
@@ -71,7 +69,7 @@
 * [Browse and subscribe to streams](/help/browse-and-subscribe-to-streams)
 * [Create a stream](/help/create-a-stream)
 * [View your stream subscriptions](/help/browse-and-subscribe-to-streams#browse-streams)
-* [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
+* [Add someone to a stream](/help/add-or-remove-users-from-a-stream)
 * [Change the stream description](/help/change-the-stream-description)
 * [Rename a stream](/help/rename-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
@@ -87,11 +85,11 @@
 * [Mute or unmute a topic](/help/mute-a-topic)
 * [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
 * [Desktop notifications](/help/configure-desktop-notifications)
-* [Audible notifications](/help/configure-audible-notifications)
 * [Email notifications](/help/configure-email-notifications)
 * [Mobile notifications](/help/configure-mobile-notifications)
 * [Digest emails](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/add-an-alert-word)
+* [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
@@ -102,21 +100,19 @@
 * [View organization statistics](/help/analytics)
 
 ## Apps
-* [Installation guides](/help/desktop-app-install-guide)
+* [Desktop installation guides](/help/desktop-app-install-guide)
 * [Tips for Zulip on Windows](/help/zulip-on-windows)
 * [Tips for Zulip on Android](/help/zulip-on-android)
+* [Zulip in a Terminal](/help/zulip-in-a-terminal)
 <!-- Zulip on macOS -->
 <!-- Zulip on Linux -->
 <!-- Zulip on iOS -->
-<!-- Zulip in a terminal -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
 # Zulip administration
 
 ## Organization basics
-* [Change your organization name](/help/change-your-organizations-name)
-* [Change your organization description](/help/change-your-organizations-description)
-* [Change your organization avatar](/help/change-your-organizations-avatar)
+* [Create your organization's profile](/help/create-your-organization-profile)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import data from Slack](/help/import-data-from-slack)
@@ -129,8 +125,7 @@
 * [Restrict stream creation](/help/only-allow-admins-to-create-new-streams-feature)
 * [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
 * [Block image and link previews](/help/allow-image-link-previews)
-* [Prevent users from changing their name](/help/prevent-users-from-changing-their-name)
-* [Prevent users from changing their email](/help/prevent-users-from-changing-their-email-address)
+* [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/restrict-editing-of-old-messages-and-topics)
 * [Require topics in stream messages](/help/require-users-to-include-topics-in-stream-messages)
@@ -150,10 +145,10 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Stream management
-* [Delete a stream](/help/delete-a-stream)
+* [Delete or archive a stream](/help/delete-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
-* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
-* [Add someone to a stream](/help/add-or-invite-someone-to-a-stream)
-* [Remove someone from a stream](/help/remove-someone-from-a-stream)
+* [Make a private stream public](/help/change-the-privacy-of-a-stream#make-a-private-stream-public)
+* [Make a public stream private](/help/change-the-privacy-of-a-stream)
+* [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)

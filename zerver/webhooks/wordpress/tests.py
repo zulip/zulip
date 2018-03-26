@@ -4,7 +4,7 @@ from zerver.models import get_realm, get_user
 
 class WordPressHookTests(WebhookTestCase):
     STREAM_NAME = 'wordpress'
-    URL_TEMPLATE = "/api/v1/external/wordpress?api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/wordpress?api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'wordpress'
 
     def test_publish_post(self) -> None:

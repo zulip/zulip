@@ -1,4 +1,4 @@
-const Ps = require('perfect-scrollbar');
+import PerfectScrollbar from 'perfect-scrollbar';
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -94,12 +94,26 @@ function scrollToHash(container) {
         });
     };
 
+    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+        scrollingThreshold: 50,
+    });
+
+    new PerfectScrollbar($(".sidebar")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+        scrollingThreshold: 50,
+    });
+
     $(".sidebar.slide h2").click(function (e) {
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {
             $next.slideToggle("fast", "swing", function () {
-                Ps.update($(".markdown")[0]);
+                markdownPS.update();
             });
         }
     });
@@ -124,7 +138,7 @@ function scrollToHash(container) {
 
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
-            Ps.update(container);
+            markdownPS.update();
             render_code_sections();
             scrollToHash(container);
         } else {
@@ -134,7 +148,7 @@ function scrollToHash(container) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
-                Ps.update(container);
+                markdownPS.update();
                 scrollToHash(container);
             });
         }
@@ -155,20 +169,8 @@ function scrollToHash(container) {
         window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
     });
 
-    Ps.initialize($(".markdown")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-    });
-
-    Ps.initialize($(".sidebar")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-    });
-
     window.onresize = function () {
-        Ps.update($(".markdown")[0]);
+        markdownPS.update();
     };
 
     window.addEventListener("popstate", function () {

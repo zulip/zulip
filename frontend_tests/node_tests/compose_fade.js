@@ -1,5 +1,7 @@
 set_global('$', function () {
 });
+set_global('blueslip', {});
+global.blueslip.warn = function () {};
 
 zrequire('util');
 zrequire('stream_data');
@@ -36,6 +38,7 @@ people.add(bob);
         stream_id: 101,
         name: 'social',
         subscribed: true,
+        can_access_subscribers: true,
     };
     stream_data.add_sub('social', sub);
     stream_data.set_subscribers(sub, [me.user_id, alice.user_id]);

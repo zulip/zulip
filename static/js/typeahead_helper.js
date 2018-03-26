@@ -124,6 +124,7 @@ exports.render_stream = function (stream) {
         html = exports.render_typeahead_item({
             primary: stream.name,
             secondary: desc,
+            is_unsubscribed: !stream.subscribed,
         });
         rendered.streams.set(stream.stream_id, html);
     }
@@ -305,12 +306,16 @@ exports.sort_emojis = function (matches, query) {
 // Gives stream a score from 0 to 3 based on its activity
 function activity_score(sub) {
     var stream_score = 0;
-    if (sub.pin_to_top) {
-        stream_score += 2;
-    }
-    // Note: A pinned stream may accumulate a 3rd point if it is active
-    if (stream_data.is_active(sub)) {
-        stream_score += 1;
+    if (!sub.subscribed) {
+        stream_score = -1;
+    } else {
+        if (sub.pin_to_top) {
+            stream_score += 2;
+        }
+        // Note: A pinned stream may accumulate a 3rd point if it is active
+        if (stream_data.is_active(sub)) {
+            stream_score += 1;
+        }
     }
     return stream_score;
 }

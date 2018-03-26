@@ -7,14 +7,13 @@ from typing import Any, Callable, Dict, Optional, Text, TypeVar
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_rest_api_view
-from zerver.lib.actions import check_send_stream_message
+from zerver.lib.types import ViewFuncT
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
+from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile, get_client
 from zerver.webhooks.github.view import build_message_from_gitlog
-
-ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
@@ -38,7 +37,7 @@ def beanstalk_decoder(view_func: ViewFuncT) -> ViewFuncT:
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
 @beanstalk_decoder
-@authenticated_rest_api_view(is_webhook=True)
+@authenticated_rest_api_view(webhook_client_name="Beanstalk")
 @has_request_variables
 def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
                           payload: Dict[str, Any]=REQ(validator=check_dict([])),
@@ -68,6 +67,5 @@ def api_beanstalk_webhook(request: HttpRequest, user_profile: UserProfile,
         subject = "svn r%s" % (revision,)
         content = "%s pushed [revision %s](%s):\n\n> %s" % (author, revision, url, short_commit_msg)
 
-    check_send_stream_message(user_profile, get_client("ZulipBeanstalkWebhook"),
-                              "commits", subject, content)
+    check_send_webhook_message(request, user_profile, subject, content)
     return json_success()

@@ -31,8 +31,7 @@ from django.core.validators import validate_email, URLValidator
 from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text
 
 from zerver.lib.request import JsonableError
-
-Validator = Callable[[str, object], Optional[str]]
+from zerver.lib.types import Validator
 
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
@@ -156,9 +155,15 @@ def validate_login_email(email: Text) -> None:
     except ValidationError as err:
         raise JsonableError(str(err.message))
 
-def check_url(var_name: str, val: Text) -> None:
+def check_url(var_name: str, val: object) -> Optional[str]:
+    # First, ensure val is a string
+    string_msg = check_string(var_name, val)
+    if string_msg is not None:
+        return string_msg
+    # Now, validate as URL
     validate = URLValidator()
     try:
         validate(val)
+        return None
     except ValidationError as err:
-        raise JsonableError(str(err.message))
+        return _('%s is not a URL') % (var_name,)

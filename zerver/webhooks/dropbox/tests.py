@@ -5,7 +5,7 @@ from zerver.lib.test_classes import WebhookTestCase
 
 class DropboxHookTests(WebhookTestCase):
     STREAM_NAME = 'test'
-    URL_TEMPLATE = "/api/v1/external/dropbox?&api_key={api_key}"
+    URL_TEMPLATE = "/api/v1/external/dropbox?&api_key={api_key}&stream={stream}"
     FIXTURE_DIR_NAME = 'dropbox'
 
     def test_file_updated(self) -> None:

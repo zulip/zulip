@@ -35,7 +35,7 @@ exports.init();
 exports.get_person_from_user_id = function (user_id) {
     if (!people_by_user_id_dict.has(user_id)) {
         blueslip.error('Unknown user_id in get_person_from_user_id: ' + user_id);
-        return undefined;
+        return;
     }
     return people_by_user_id_dict.get(user_id);
 };
@@ -44,7 +44,7 @@ exports.get_by_email = function (email) {
     var person = people_dict.get(email);
 
     if (!person) {
-        return undefined;
+        return;
     }
 
     if (person.email.toLowerCase() !== email.toLowerCase()) {
@@ -91,12 +91,12 @@ exports.get_user_id = function (email) {
     if (person === undefined) {
         var error_msg = 'Unknown email for get_user_id: ' + email;
         blueslip.error(error_msg);
-        return undefined;
+        return;
     }
     var user_id = person.user_id;
     if (!user_id) {
         blueslip.error('No user_id found for ' + email);
-        return undefined;
+        return;
     }
 
     return user_id;
@@ -555,7 +555,7 @@ exports.is_valid_email_for_compose = function (email) {
 exports.get_active_user_for_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {
-        return undefined;
+        return;
     }
     return active_user_dict.get(person.user_id);
 };
@@ -596,7 +596,7 @@ exports.get_active_user_ids = function () {
 exports.is_cross_realm_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {
-        return undefined;
+        return;
     }
     return cross_realm_dict.has(person.user_id);
 };
@@ -819,6 +819,14 @@ exports.set_full_name = function (person_obj, new_full_name) {
     person_obj.full_name = new_full_name;
 };
 
+exports.set_custom_profile_field_data = function (user_id, field) {
+    if (field.id === undefined) {
+        blueslip.error("Unknown field id " + field.id);
+        return;
+    }
+    people_by_user_id_dict.get(user_id).profile_data[field.id] = field.value;
+};
+
 exports.is_current_user = function (email) {
     if (email === null || email === undefined) {
         return false;
@@ -841,6 +849,14 @@ exports.my_current_email = function () {
 
 exports.my_current_user_id = function () {
     return my_user_id;
+};
+
+exports.my_custom_profile_data = function (field_id) {
+    if (field_id === undefined) {
+        blueslip.error("Undefined field id");
+        return;
+    }
+    return people_by_user_id_dict.get(my_user_id).profile_data[field_id];
 };
 
 exports.is_my_user_id = function (user_id) {

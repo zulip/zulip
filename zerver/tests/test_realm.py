@@ -93,7 +93,7 @@ class RealmTest(ZulipTestCase):
         self.login(email)
 
         result = self.client_patch('/json/realm', data)
-        self.assert_json_error(result, 'Realm description is too long.')
+        self.assert_json_error(result, 'Organization description is too long.')
         realm = get_realm('zulip')
         self.assertNotEqual(realm.description, new_description)
 
@@ -106,7 +106,7 @@ class RealmTest(ZulipTestCase):
         self.login(email)
 
         result = self.client_patch('/json/realm', data)
-        self.assert_json_error(result, 'Realm name is too long.')
+        self.assert_json_error(result, 'Organization name is too long.')
         realm = get_realm('zulip')
         self.assertNotEqual(realm.name, new_name)
 
@@ -365,13 +365,22 @@ class RealmAPITest(ZulipTestCase):
         """Tests updating the realm property 'allow_message_editing'."""
         self.set_up_db('allow_message_editing', False)
         self.set_up_db('message_content_edit_limit_seconds', 0)
+        self.set_up_db('allow_community_topic_editing', False)
         realm = self.update_with_api('allow_message_editing', True)
         realm = self.update_with_api('message_content_edit_limit_seconds', 100)
+        realm = self.update_with_api('allow_community_topic_editing', True)
         self.assertEqual(realm.allow_message_editing, True)
         self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        self.assertEqual(realm.allow_community_topic_editing, True)
         realm = self.update_with_api('allow_message_editing', False)
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        self.assertEqual(realm.allow_community_topic_editing, True)
         realm = self.update_with_api('message_content_edit_limit_seconds', 200)
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.allow_community_topic_editing, True)
+        realm = self.update_with_api('allow_community_topic_editing', False)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.allow_community_topic_editing, False)

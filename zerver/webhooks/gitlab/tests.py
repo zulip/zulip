@@ -124,6 +124,16 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Issue Hook"
         )
 
+    def test_create_issue_with_null_description(self) -> None:
+        expected_subject = u"my-awesome-project / Issue #7 Issue without description"
+        expected_message = u"Eeshan Garg created [Issue #7](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)"
+        self.send_and_test_stream_message(
+            'issue_opened_with_null_description',
+            expected_subject,
+            expected_message,
+            HTTP_X_GITLAB_EVENT="Issue Hook"
+        )
+
     def test_update_issue_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
         expected_message = u"Tomasz Kolek updated [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
@@ -418,20 +428,20 @@ class GitlabHookTests(WebhookTestCase):
             HTTP_X_GITLAB_EVENT="Test Hook"
         )
 
-    @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
+    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
     def test_push_event_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    @patch('zerver.webhooks.gitlab.view.check_send_stream_message')
+    @patch('zerver.lib.webhooks.common.check_send_webhook_message')
     def test_push_commits_more_than_limit_message_filtered_by_branches_ignore(
-            self, check_send_stream_message_mock: MagicMock) -> None:
+            self, check_send_webhook_message_mock: MagicMock) -> None:
         self.url = self.build_webhook_url(branches='master,development')
         payload = self.get_body('push_commits_more_than_limit')
         result = self.client_post(self.url, payload, HTTP_X_GITLAB_EVENT='Push Hook', content_type="application/json")
-        self.assertFalse(check_send_stream_message_mock.called)
+        self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)

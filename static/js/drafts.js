@@ -160,6 +160,20 @@ exports.restore_draft = function (draft_id) {
     $("#compose-textarea").data("draft-id", draft_id);
 };
 
+var DRAFT_LIFETIME = 30;
+
+function remove_old_drafts() {
+    var old_date  = new Date().setDate(new Date().getDate() - DRAFT_LIFETIME);
+    var drafts = draft_model.get();
+    _.each(drafts, function (draft, id) {
+        if (draft.updatedAt < old_date) {
+            draft_model.deleteDraft(id);
+        }
+    });
+}
+// Exporting for testing purpose
+exports.remove_old_drafts = remove_old_drafts;
+
 exports.setup_page = function (callback) {
     function setup_event_handlers() {
         $(".restore-draft").on("click", function (e) {
@@ -198,7 +212,7 @@ exports.setup_page = function (callback) {
             var formatted;
             var time = new XDate(draft.updatedAt);
             var time_stamp = timerender.render_now(time).time_str;
-            if (time_stamp === "Today") {
+            if (time_stamp === i18n.t("Today")) {
                 time_stamp = timerender.stringify_time(time);
             }
             if (draft.type === "stream") {
@@ -262,7 +276,10 @@ exports.setup_page = function (callback) {
     function _populate_and_fill() {
         $('#drafts_table').empty();
         var drafts = format_drafts(draft_model.get());
-        var rendered = templates.render('draft_table_body', { drafts: drafts });
+        var rendered = templates.render('draft_table_body',{
+                drafts: drafts,
+                draft_lifetime: DRAFT_LIFETIME,
+        });
         $('#drafts_table').append(rendered);
         if ($("#drafts_table .draft-row").length > 0) {
             $('#drafts_table .no-drafts').hide();
@@ -280,6 +297,8 @@ exports.setup_page = function (callback) {
             _populate_and_fill();
         });
     }
+
+    remove_old_drafts();
     populate_and_fill();
 };
 
