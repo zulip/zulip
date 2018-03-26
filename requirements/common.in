@@ -194,3 +194,6 @@ django-sendfile==0.3.11
 
 # For checking whether email of the user is from a disposable email provider.
 disposable-email-domains==0.0.20
+
+# For cross origin resource sharing
+django-cors-headers==2.2.0
