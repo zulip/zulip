@@ -140,42 +140,6 @@ function test_realms_domain_modal(add_realm_domain) {
     assert.equal(info.val(), 'translated: Failed');
 }
 
-function test_submit_profile_form(submit_form) {
-    var ev = {
-        preventDefault: noop,
-        stopPropagation: noop,
-    };
-
-    $('#id_realm_name').val('Acme');
-    $('#id_realm_description').val('makes widgets');
-
-    var patched;
-    var success_callback;
-
-    channel.patch = function (req) {
-        patched = true;
-        assert.equal(req.url, '/json/realm');
-
-        var data = req.data;
-
-        assert.equal(data.name, '"Acme"');
-        assert.equal(data.description, '"makes widgets"');
-
-        success_callback = req.success;
-    };
-
-    submit_form(ev);
-    assert(patched);
-
-    var response_data = {
-        name: 'Acme',
-    };
-    success_callback(response_data);
-
-    assert.equal($('#admin-realm-name-status').val(),
-                 'translated: Name changed!');
-}
-
 function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
@@ -448,12 +412,6 @@ function test_extract_property_name() {
         }
     };
 
-    var submit_profile_form;
-    $('.organization form.org-profile-form').on = function (action, f) {
-        assert.equal(action, 'submit');
-        submit_profile_form = f;
-    };
-
     var change_allow_subdomains;
     $('#realm_domains_table').on = function (action, selector, f) {
         if (action === 'change') {
@@ -476,8 +434,6 @@ function test_extract_property_name() {
     verify_realm_domains();
 
     test_realms_domain_modal(callbacks.add_realm_domain);
-
-    test_submit_profile_form(submit_profile_form);
     test_submit_settings_form(submit_settings_form);
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);

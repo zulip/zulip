@@ -205,10 +205,6 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
-function property_type_status_element(element) {
-    return $("#admin-realm-" + element.split('_').join('-') + "-status").expectOne();
-}
-
 function _set_up() {
     meta.loaded = true;
 
@@ -331,21 +327,6 @@ function _set_up() {
         },
     };
 
-    function get_property_types(settings) {
-        var setting_property = {};
-        _.each(_.values(settings), function (t) {
-            setting_property = _.extend(setting_property, t);
-        });
-        return setting_property;
-    }
-
-    // create property_types object
-    var property_types = {
-        profile: org_profile,
-        settings: get_property_types(org_settings),
-        permissions: get_property_types(org_permissions),
-    };
-
     function populate_data_for_request(data, changing_property_types) {
         _.each(changing_property_types, function (v, k) {
             var field = changing_property_types[k];
@@ -362,40 +343,6 @@ function _set_up() {
             }
         });
         return data;
-    }
-
-    function process_response_data(response_data, category) {
-        if (!_.has(property_types, category)) {
-            blueslip.error('Unknown category ' + category);
-            return;
-        }
-
-        _.each(response_data, function (value, key) {
-            if (value === undefined || !_.has(property_types[category], key)) {
-                return;
-            }
-
-            var msg;
-            var field_info = property_types[category][key];
-            var setting_type = field_info.type;
-
-            if (setting_type === 'bool') {
-                if (value) {
-                    msg = field_info.checked_msg;
-                } else {
-                    msg = field_info.unchecked_msg;
-                }
-                ui_report.success(msg,
-                                  property_type_status_element(key));
-                return;
-            }
-
-            if (setting_type === 'text' || setting_type === 'integer') {
-                ui_report.success(field_info.msg,
-                                  property_type_status_element(key));
-                return;
-            }
-        });
     }
 
     exports.set_create_stream_permission_dropdwon();
@@ -467,10 +414,10 @@ function _set_up() {
 
     function get_subsection_property_elements(element) {
         var subsection = $(element).closest('.org-subsection-parent');
-        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_']");
+        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_'], textarea[id^='id_realm_']");
     }
 
-    $('.admin-realm-form').on('change input', 'input, select', function (e) {
+    $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -643,7 +590,10 @@ function _set_up() {
             return org_settings[subsection];
         } else if (_.has(org_permissions, subsection)) {
             return org_permissions[subsection];
+        } else if (subsection === 'org_profile') {
+            return org_profile;
         }
+        return;
     }
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
@@ -697,41 +647,6 @@ function _set_up() {
             discard_property_element_changes(element);
         }
     };
-
-    $(".organization form.org-profile-form").off('submit').on('submit', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var $alerts = $(".settings-section.show .alert");
-        // grab the first alert available and use it for the status.
-        var status = $("#admin-realm-name-status");
-
-        var data = populate_data_for_request({}, org_profile);
-
-        channel.patch({
-            url: "/json/realm",
-            data: data,
-
-            success: function (response_data) {
-                $alerts.hide();
-                process_response_data(response_data, 'profile');
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), status);
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
-    });
 
     $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
