@@ -35,6 +35,10 @@ body.dark-mode .stream_label {
     color: hsl(212, 28%, 18%);
 }
 
+body.dark-mode .column-middle.column-overlay.recipient-bar-main {
+    background-color: hsl(212, 28%, 18%) !important;
+}
+
 body.dark-mode .new-style label.checkbox input[type=checkbox] ~ span {
     border-color: hsla(0, 0%, 100%, 0.4);
 }
