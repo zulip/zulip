@@ -15,8 +15,10 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, 
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
     try_add_realm_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
+from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
@@ -307,6 +309,15 @@ class Command(BaseCommand):
 
         # Generate a new set of test data.
         create_test_data()
+
+        # prepopulate the URL preview/embed data for the links present
+        # in the config.generate_data.json data set.  This makes it
+        # possible for populate_db to run happily without Internet
+        # access.
+        with open("zerver/fixtures/docs_url_preview_data.json", "r") as f:
+            urls_with_preview_data = ujson.load(f)
+            for url in urls_with_preview_data:
+                cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
 
         threads = options["threads"]
         jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]]
