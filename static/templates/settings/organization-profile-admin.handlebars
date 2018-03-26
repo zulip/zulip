@@ -1,12 +1,12 @@
 <div id="organization-profile" data-name="organization-profile" class="settings-section">
     <form class="form-horizontal admin-realm-form org-profile-form">
-        <div class="alert" id="admin-realm-name-status"></div>
-        <div class="alert" id="admin-realm-description-status"></div>
         <div class="alert" id="admin-realm-deactivation-status"></div>
+        <div class="alert admin-realm-failed-change-status"></div>
 
         <div id="org-org-profile" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Organization profile" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "org-profile" }}
             </div>
 
             <div class="organization-settings-parent">
@@ -20,14 +20,6 @@
                     <textarea id="id_realm_description" name="realm_description" class="admin-realm-description"
                         maxlength="1000">{{ realm_description }}</textarea>
                 </div>
-
-                {{#if is_admin }}
-                <div class="input-group organization-submission">
-                    <button type="submit" class="button rounded sea-green">
-                        {{t 'Save changes' }}
-                    </button>
-                </div>
-                {{/if}}
             </div>
         </div>
 
