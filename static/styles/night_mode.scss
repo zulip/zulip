@@ -185,8 +185,9 @@ body.night-mode .informational-overlays .overlay-content {
 
 body.night-mode .dropdown .dropdown-menu,
 body.night-mode .popover,
-body.night-mode .popover-title {
-    background: hsl(212, 32%, 14%);
+body.night-mode .popover-title,
+body.night-mode .popover-content {
+    background-color: hsl(212, 32%, 14%);
 }
 
 body.night-mode .dropdown-menu a {
