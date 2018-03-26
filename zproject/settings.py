@@ -15,6 +15,7 @@ import os
 import platform
 import time
 import sys
+import re
 from typing import Optional
 import configparser
 
@@ -478,6 +479,7 @@ MIDDLEWARE = (
     'zerver.middleware.JsonErrorHandler',
     'zerver.middleware.RateLimitMiddleware',
     'zerver.middleware.FlushDisplayRecipientCache',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'zerver.middleware.SessionHostDomainMiddleware',
     'django.middleware.locale.LocaleMiddleware',
@@ -505,6 +507,9 @@ ROOT_URLCONF = 'zproject.urls'
 # Python dotted path to the WSGI application used by Django's runserver.
 WSGI_APPLICATION = 'zproject.wsgi.application'
 
+CORS_ORIGIN_WHITELIST = list(REALM_HOSTS.values())
+CORS_ORIGIN_REGEX_WHITELIST = (r'^(https?://)?(\w+\.)?{}$'.format(re.escape(EXTERNAL_HOST)))
+
 # A site can include additional installed apps via the
 # EXTRA_INSTALLED_APPS setting
 INSTALLED_APPS = [
@@ -518,6 +523,7 @@ INSTALLED_APPS = [
     'webpack_loader',
     'zerver',
     'social_django',
+    'corsheaders',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
@@ -788,7 +794,7 @@ if CAMO_URI != '':
 # STATIC CONTENT AND MINIFICATION SETTINGS
 ########################################################################
 
-STATIC_URL = '/static/'
+STATIC_URL = '{}/static/'.format(ROOT_DOMAIN_URI)
 
 # ZulipStorage is a modified version of PipelineCachedStorage,
 # and, like that class, it inserts a file hash into filenames
