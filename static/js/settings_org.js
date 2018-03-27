@@ -205,10 +205,6 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
-function property_type_status_element(element) {
-    return $("#admin-realm-" + element.split('_').join('-') + "-status").expectOne();
-}
-
 function _set_up() {
     meta.loaded = true;
 
@@ -232,11 +228,9 @@ function _set_up() {
     var org_profile = {
         name: {
             type: 'text',
-            msg: i18n.t("Name changed!"),
         },
         description: {
             type: 'text',
-            msg: i18n.t("Description changed!"),
         },
     };
 
@@ -244,41 +238,28 @@ function _set_up() {
         msg_editing: {
             allow_message_deleting: {
                 type: 'bool',
-                checked_msg: i18n.t("Users can delete their messages!"),
-                unchecked_msg: i18n.t("Users can no longer delete their messages!"),
             },
             allow_edit_history: {
                 type: 'bool',
-                checked_msg: i18n.t("Users can view message edit history!"),
-                unchecked_msg: i18n.t("Users can no longer view message edit history!"),
             },
         },
         msg_feed: {
             inline_image_preview: {
                 type: 'bool',
-                checked_msg: i18n.t("Previews of uploaded and linked images will be shown!"),
-                unchecked_msg: i18n.t("Previews of uploaded and linked images will not be shown!"),
             },
             inline_url_embed_preview: {
                 type: 'bool',
-                checked_msg: i18n.t("Previews for linked websites will be shown!"),
-                unchecked_msg: i18n.t("Previews for linked websites will not be shown!"),
             },
             mandatory_topics: {
                 type: 'bool',
-                checked_msg: i18n.t("Topics are required in messages to streams!"),
-                unchecked_msg: i18n.t("Topics are not required in messages to streams!"),
             },
         },
         language_notify: {
             default_language: {
                 type: 'text',
-                msg: i18n.t("Default language changed!"),
             },
             send_welcome_emails: {
                 type: 'bool',
-                checked_msg: i18n.t("Send emails to new users explaining how to use Zulip!"),
-                unchecked_msg: i18n.t("Don't send emails to new users explaining how to use Zulip!"),
             },
         },
     };
@@ -287,63 +268,33 @@ function _set_up() {
         org_join: {
             restricted_to_domain: {
                 type: 'bool',
-                checked_msg: i18n.t("New user e-mails now restricted to certain domains!"),
-                unchecked_msg: i18n.t("New users may have arbitrary e-mails!"),
             },
             invite_required: {
                 type: 'bool',
-                checked_msg: i18n.t("New users must be invited by e-mail!"),
-                unchecked_msg: i18n.t("New users may sign up online!"),
             },
             disallow_disposable_email_addresses: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot sign up using disposable email addresses!"),
-                unchecked_msg: i18n.t("Users can sign up using disposable email addresses!"),
             },
             invite_by_admins_only: {
                 type: 'bool',
-                checked_msg: i18n.t("New users must be invited by an admin!"),
-                unchecked_msg: i18n.t("Any user may now invite new users!"),
             },
         },
         user_identity: {
             name_changes_disabled: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot change their name!"),
-                unchecked_msg: i18n.t("Users may now change their name!"),
             },
             email_changes_disabled: {
                 type: 'bool',
-                checked_msg: i18n.t("Users cannot change their email!"),
-                unchecked_msg: i18n.t("Users may now change their email!"),
             },
         },
         other_permissions: {
             add_emoji_by_admins_only: {
                 type: 'bool',
-                checked_msg: i18n.t("Only administrators may now add new emoji!"),
-                unchecked_msg: i18n.t("Any user may now add new emoji!"),
             },
             bot_creation_policy: {
                 type: 'integer',
-                msg: i18n.t("Permissions changed"),
             },
         },
-    };
-
-    function get_property_types(settings) {
-        var setting_property = {};
-        _.each(_.values(settings), function (t) {
-            setting_property = _.extend(setting_property, t);
-        });
-        return setting_property;
-    }
-
-    // create property_types object
-    var property_types = {
-        profile: org_profile,
-        settings: get_property_types(org_settings),
-        permissions: get_property_types(org_permissions),
     };
 
     function populate_data_for_request(data, changing_property_types) {
@@ -362,40 +313,6 @@ function _set_up() {
             }
         });
         return data;
-    }
-
-    function process_response_data(response_data, category) {
-        if (!_.has(property_types, category)) {
-            blueslip.error('Unknown category ' + category);
-            return;
-        }
-
-        _.each(response_data, function (value, key) {
-            if (value === undefined || !_.has(property_types[category], key)) {
-                return;
-            }
-
-            var msg;
-            var field_info = property_types[category][key];
-            var setting_type = field_info.type;
-
-            if (setting_type === 'bool') {
-                if (value) {
-                    msg = field_info.checked_msg;
-                } else {
-                    msg = field_info.unchecked_msg;
-                }
-                ui_report.success(msg,
-                                  property_type_status_element(key));
-                return;
-            }
-
-            if (setting_type === 'text' || setting_type === 'integer') {
-                ui_report.success(field_info.msg,
-                                  property_type_status_element(key));
-                return;
-            }
-        });
     }
 
     exports.set_create_stream_permission_dropdwon();
@@ -467,10 +384,10 @@ function _set_up() {
 
     function get_subsection_property_elements(element) {
         var subsection = $(element).closest('.org-subsection-parent');
-        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_']");
+        return subsection.find("input[id^='id_realm_'], select[id^='id_realm_'], textarea[id^='id_realm_']");
     }
 
-    $('.admin-realm-form').on('change input', 'input, select', function (e) {
+    $('.admin-realm-form').on('change input', 'input, select, textarea', function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -643,7 +560,10 @@ function _set_up() {
             return org_settings[subsection];
         } else if (_.has(org_permissions, subsection)) {
             return org_permissions[subsection];
+        } else if (subsection === 'org_profile') {
+            return org_profile;
         }
+        return;
     }
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
@@ -697,41 +617,6 @@ function _set_up() {
             discard_property_element_changes(element);
         }
     };
-
-    $(".organization form.org-profile-form").off('submit').on('submit', function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        var $alerts = $(".settings-section.show .alert");
-        // grab the first alert available and use it for the status.
-        var status = $("#admin-realm-name-status");
-
-        var data = populate_data_for_request({}, org_profile);
-
-        channel.patch({
-            url: "/json/realm",
-            data: data,
-
-            success: function (response_data) {
-                $alerts.hide();
-                process_response_data(response_data, 'profile');
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), status);
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
-    });
 
     $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
