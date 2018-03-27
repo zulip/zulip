@@ -457,7 +457,7 @@ exports.deactivate = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     current_msg_list = home_msg_list;
-    condense.condense_and_collapse($("#zhome tr.message_row"));
+    condense.condense_and_collapse($("#zhome div.message_row"));
 
     $('#search_query').val('');
     message_scroll.hide_indicators();
