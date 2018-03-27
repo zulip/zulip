@@ -277,6 +277,9 @@ exports.handler = function () {
     popovers.hide_all();
     exports.resize_page_components();
 
+    // Re-compute and display/remove [More] links to messages
+    condense.condense_and_collapse($("div.message_row"));
+
     // This function might run onReady (if we're in a narrow window),
     // but before we've loaded in the messages; in that case, don't
     // try to scroll to one.
