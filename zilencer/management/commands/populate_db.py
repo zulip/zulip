@@ -18,6 +18,7 @@ from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
 from zerver.lib.user_groups import create_user_group
+from zerver.lib.cache import cache_set
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, clear_database, \
@@ -307,6 +308,13 @@ class Command(BaseCommand):
 
         # Generate a new set of test data.
         create_test_data()
+
+        # pre populate the link embed data for the links of config.generate_data.json
+        with open("zerver/fixtures/docs_url_preview_data.json", "r") as f:
+            urls_with_preview_data = ujson.load(f)
+
+        for url in urls_with_preview_data:
+            cache_set(url, urls_with_preview_data[url], 'database')
 
         threads = options["threads"]
         jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]]
