@@ -281,6 +281,12 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_collapse = !message.locally_echoed && !message.collapsed;
         var should_display_uncollapse = !message.locally_echoed && message.collapsed;
 
+        var should_display_edit_and_view_source =
+                message.content !== '<p>(deleted)</p>' ||
+                editability === message_edit.editability_types.FULL ||
+                editability === message_edit.editability_types.TOPIC_ONLY;
+        var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
@@ -295,6 +301,8 @@ exports.toggle_actions_popover = function (element, id) {
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
+            should_display_edit_and_view_source: should_display_edit_and_view_source,
+            should_display_quote_and_reply: should_display_quote_and_reply,
         };
 
         var ypos = elt.offset().top;

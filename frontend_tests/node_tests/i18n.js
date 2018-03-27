@@ -29,6 +29,7 @@ i18n.init({
             subject: "testing",
             sender_full_name: "King Lear",
         },
+        should_display_quote_and_reply: true,
         can_edit_message: true,
         can_mute_topic: true,
         narrowed: true,
