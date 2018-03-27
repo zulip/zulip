@@ -545,8 +545,16 @@ def authenticated_rest_api_view(*, webhook_client_name: str=None,
                                            client_name=full_webhook_client_name(webhook_client_name))
             except JsonableError as e:
                 return json_unauthorized(e.msg)
-            # Apply rate limiting
-            return rate_limit()(view_func)(request, profile, *args, **kwargs)
+            try:
+                # Apply rate limiting
+                return rate_limit()(view_func)(request, profile, *args, **kwargs)
+            except Exception as err:
+                if is_webhook or webhook_client_name is not None:
+                    request_body = request.POST.get('payload')
+                    if request_body is not None:
+                        log_exception_to_webhook_logger(request, profile,
+                                                        request_body=request_body)
+                raise err
         return _wrapped_func_arguments
     return _wrapped_view_func
 
