@@ -353,12 +353,12 @@ run_test('handlebars_bug', () => {
     html += '</div>';
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_pills_id, '9');
     assert.equal(group_name_display, 'uranohoshi');
     assert.equal(group_description, 'Students at Uranohoshi Academy');
 }());
@@ -1022,12 +1022,12 @@ run_test('handlebars_bug', () => {
     html += '</div>';
 
     var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_pills_id = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
     var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
     var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
-    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_pills_id, '9');
     assert.equal(group_name_display, 'uranohoshi');
     assert.equal(group_description, 'Students at Uranohoshi Academy');
 }());

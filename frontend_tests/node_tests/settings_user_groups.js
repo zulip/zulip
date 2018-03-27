@@ -128,7 +128,7 @@ run_test('populate_user_groups', () => {
 
     var all_pills = {};
 
-    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+    var pill_container_stub = $('.pill-container[data-group-pills="1"]');
     pills.appendValidatedData = function (item) {
         var id = item.user_id;
         assert.equal(all_pills[id], undefined);
@@ -357,7 +357,7 @@ run_test('with_external_user', () => {
         }
     };
 
-    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+    var pill_container_stub = $('.pill-container[data-group-pills="1"]');
     var pill_stub = $.create('fake-pill');
     var pill_container_find_called = 0;
     pill_container_stub.find = function (elem) {
