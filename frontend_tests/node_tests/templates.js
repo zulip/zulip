@@ -61,6 +61,7 @@ function render(template_name, args) {
             subject: "testing",
             sender_full_name: "King Lear",
         },
+        should_display_quote_and_reply: true,
         can_edit_message: true,
         can_mute_topic: true,
         narrowed: true,
@@ -72,6 +73,27 @@ function render(template_name, args) {
     var link = $(html).find("a.respond_button");
     assert.equal(link.text().trim(), 'translated: Quote and reply');
     global.write_handlebars_output("actions_popover_content", html);
+
+    var deletedArgs = {
+        message: {
+            is_stream: true,
+            id: "100",
+            stream: "devel",
+            subject: "testing",
+            sender_full_name: "King Lear",
+        },
+        should_display_edit_and_view_source: false,
+        should_display_quote_and_reply: false,
+        narrowed: true,
+    };
+
+    var deletedHtml = '<div style="height: 250px">';
+    deletedHtml += render('actions_popover_content', deletedArgs);
+    deletedHtml += "</div>";
+    var viewSourceLink = $(deletedHtml).find("a.popover_edit_message");
+    assert.equal(viewSourceLink.length, 0);
+    var quoteLink = $(deletedHtml).find("a.respond_button");
+    assert.equal(quoteLink.length, 0);
 }());
 
 (function admin_realm_domains_list() {
