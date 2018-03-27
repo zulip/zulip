@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import base64
 import mock
 import re
 import os
@@ -30,6 +31,7 @@ from zerver.lib.request import \
 from zerver.decorator import (
     api_key_only_webhook_view,
     authenticated_api_view,
+    authenticated_rest_api_view,
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
@@ -324,6 +326,8 @@ body:
         with self.assertRaisesRegex(JsonableError, "This organization has been deactivated"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
+
+class DecoratorLoggingTestCase(ZulipTestCase):
     def test_authenticated_api_view_logging(self) -> None:
         @authenticated_api_view(is_webhook=True)
         def my_webhook_raises_exception(request: HttpRequest, user_profile: UserProfile) -> None:
@@ -361,6 +365,48 @@ body:
                 email=webhook_bot_email,
                 realm=webhook_bot_realm.string_id,
                 client_name='Unspecified',
+                path_info=request.META.get('PATH_INFO'),
+                content_type=request.content_type,
+                body=request.body,
+            ))
+
+    def test_authenticated_rest_api_view_logging(self) -> None:
+        @authenticated_rest_api_view(webhook_client_name="ClientName")
+        def my_webhook_raises_exception(request: HttpRequest) -> None:
+            raise Exception("raised by webhook function")
+
+        webhook_bot_email = 'webhook-bot@zulip.com'
+        webhook_bot_realm = get_realm('zulip')
+        webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
+        webhook_bot_api_key = webhook_bot.api_key
+
+        request = HostRequestMock()
+        request.META['HTTP_AUTHORIZATION'] = self.encode_credentials(webhook_bot_email)
+        request.method = 'POST'
+        request.host = "zulip.testserver"
+
+        request.body = '{}'
+        request.POST['payload'] = '{}'
+        request.content_type = 'text/plain'
+
+        with mock.patch('zerver.decorator.webhook_logger.exception') as mock_exception:
+            with self.assertRaisesRegex(Exception, "raised by webhook function"):
+                my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
+
+            message = """
+user: {email} ({realm})
+client: {client_name}
+URL: {path_info}
+content_type: {content_type}
+body:
+
+{body}
+                """
+            message = message.strip(' ')
+            mock_exception.assert_called_with(message.format(
+                email=webhook_bot_email,
+                realm=webhook_bot_realm.string_id,
+                client_name='ZulipRandomClient',
                 path_info=request.META.get('PATH_INFO'),
                 content_type=request.content_type,
                 body=request.body,
