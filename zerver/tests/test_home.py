@@ -225,6 +225,17 @@ class HomeTest(ZulipTestCase):
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
 
+    def test_num_queries_for_realm_admin(self) -> None:
+        # Verify number of queries for Realm admin isn't much higher than for normal users.
+        self.login(self.example_email("iago"))
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            with patch('zerver.lib.cache.cache_set') as cache_mock:
+                result = self._get_home_page()
+                self.assertEqual(result.status_code, 200)
+                self.assert_length(cache_mock.call_args_list, 17)
+            self.assert_length(queries, 60)
+
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
         main_user = self.example_user('hamlet')
