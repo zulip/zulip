@@ -37,7 +37,7 @@ exports.populate_user_groups = function () {
                 description: data.description,
             },
         }));
-        var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
+        var pill_container = $('.pill-container[data-group-pills="' + data.id + '"]');
         var pills = user_pill.create_pills(pill_container);
 
         function get_pill_user_ids() {
