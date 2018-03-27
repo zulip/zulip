@@ -39,6 +39,7 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, \
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.streams import access_stream_by_id
 from zerver.decorator import JsonableError
+from zerver.tornado.event_queue import send_event
 from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
@@ -541,6 +542,8 @@ class DeferredWorker(QueueProcessingWorker):
         elif event['type'] == 'export_user_messages':
             try:
                 user_profile = get_user_profile_by_id(event['user_profile_id'])
+                send_event({"type": "export_status", "status": "started"},
+                           [user_profile.id])
 
                 # Create export
                 output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
@@ -573,7 +576,11 @@ class DeferredWorker(QueueProcessingWorker):
 
             except Exception:
                 UserDataExport.export_finished(user_profile.id)
+                send_event({"type": "export_status", "status": "failure"},
+                           [user_profile.id])
                 raise
 
             else:
                 UserDataExport.export_finished(user_profile.id, upload_path)
+                send_event({"type": "export_status", "status": "success"},
+                           [user_profile.id])

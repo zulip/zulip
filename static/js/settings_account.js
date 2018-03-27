@@ -45,6 +45,22 @@ exports.update_email_change_display = function () {
     }
 };
 
+exports.update_export_status = function (status) {
+    var messages = {
+        success: i18n.t("Finished export!"),
+        failure: i18n.t("Failed to finish your export"),
+        started: i18n.t("Your export has started"),
+    };
+    var spinner = $("#user_export_data_message").expectOne();
+
+    if (status === 'failure') {
+        ui_report.error(messages[status], undefined, spinner);
+    } else {
+        ui_report.success(messages[status], spinner);
+    }
+
+};
+
 function settings_change_error(message, xhr) {
     ui_report.error(message, xhr, $('#account-settings-status').expectOne());
 }
@@ -390,6 +406,28 @@ exports.set_up = function () {
             var email = $('#email_value').text().trim();
             $('.email_change_container').find("input[name='email']").val(email);
         }
+    });
+
+    $("#user_export_data").on('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var spinner = $("#user_export_data_message").expectOne();
+        var opts = {
+            failure_msg: i18n.t("Failed to start a new export for you"),
+            saving_msg: i18n.t("Queuing an export for you"),
+        };
+        ui_report.success(opts.saving_msg, spinner, undefined, 3000);
+        channel.post({
+            url: '/json/users/me/export',
+            data: {},
+            success: function () {
+                // Don't do anything on success.
+                // Updates will be received, when the export starts
+            },
+            error: function (xhr) {
+                ui_report.error(opts.failure_msg, xhr, spinner);
+            },
+        });
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
