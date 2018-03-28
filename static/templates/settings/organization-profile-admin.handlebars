@@ -28,7 +28,6 @@
         <div class="realm-icon-section">
             <div class="inline-block">
                 <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
-                <div id="realm_icon_file_input_error" class="text-error"></div>
                 <input type="file" name="realm_icon_file_input" class="notvisible"
                        id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
                 <div id="upload_icon_spinner"></div>
@@ -36,6 +35,7 @@
             <div class="inline-block avatar-controls">
                 <button class="button rounded sea-green w-200 block input-size"
                         id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
+                <div id="realm_icon_file_input_error" class="text-error"></div>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                         id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
             </div>
