@@ -217,6 +217,11 @@
       "text_content": "A foo bar is a baz quux"
     },
     {
+      "name": "emphasis_with_html",
+      "input": "*<h1>Hello World</h1>*",
+      "expected_output": "<p><em>&lt;h1&gt;Hello World&lt;/h1&gt;</em></p>"
+    },
+    {
       "name": "underscore_strong_disabled",
       "input": "__foo__",
       "expected_output": "<p>__foo__</p>"
@@ -232,6 +237,11 @@
       "input": "***foo***",
       "expected_output": "<p><strong><em>foo</em></strong></p>",
       "text_content": "foo"
+    },
+    {
+      "name": "strong_with_html",
+      "input": "**<h1>Hello World</h1>**",
+      "expected_output": "<p><strong>&lt;h1&gt;Hello World&lt;/h1&gt;</strong></p>"
     },
     {
       "name": "numbered_list",

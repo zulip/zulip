@@ -11,6 +11,17 @@ var exports = {};
 var realm_filter_map = {};
 var realm_filter_list = [];
 
+
+// Helper function
+function escape(html, encode) {
+  return html
+    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Regexes that match some of our common bugdown markup
 var backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
@@ -55,7 +66,7 @@ exports.apply_markdown = function (message) {
                     message.mentioned_me_directly = true;
                 }
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
-                       '@' + person.full_name +
+                       '@' + escape(person.full_name, true) +
                        '</span>';
             } else if (name === 'all' || name === 'everyone' || name === 'stream') {
                 message.mentioned = true;
@@ -72,7 +83,7 @@ exports.apply_markdown = function (message) {
                     message.mentioned = true;
                 }
                 return '<span class="user-group-mention" data-user-group-id="' + group.id + '">' +
-                       '@' + group.name +
+                       '@' + escape(group.name, true) +
                        '</span>';
             }
             return;
@@ -116,15 +127,6 @@ exports.is_status_message = function (raw_content, content) {
             content.indexOf('<p>') === 0 &&
             content.lastIndexOf('</p>') === content.length - 4);
 };
-
-function escape(html, encode) {
-  return html
-    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 function handleUnicodeEmoji(unicode_emoji) {
     var codepoint = unicode_emoji.codePointAt(0).toString(16);
@@ -170,7 +172,7 @@ function handleStream(streamName) {
     var href = window.location.origin + '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="' + href + '"' +
-        '>' + '#' + stream.name + '</a>';
+        '>' + '#' + escape(stream.name) + '</a>';
 
 }
 
