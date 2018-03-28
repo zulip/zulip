@@ -52,6 +52,12 @@ exports.scroll_finished = function () {
         });
     }
 
+    if (message_viewport.at_bottom()) {
+        message_fetch.maybe_load_newer_messages({
+            msg_list: current_msg_list,
+        });
+    }
+
     // When the window scrolls, it may cause some messages to
     // enter the screen and become read.  Calling
     // unread_ops.process_visible will update necessary
