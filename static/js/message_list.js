@@ -43,7 +43,9 @@ exports.MessageList.prototype = {
         var interior_messages = [];
 
         if (opts.messages_are_new && !self.fetch_status.can_append()) {
-            blueslip.log('Ignoring new message(s) for list that is behind on fetches');
+            var debug_info = this.debug();
+            debug_info.message_ids = _.pluck(messages, 'id');
+            blueslip.log('Ignoring new message(s) for list that is behind on fetches: ' + JSON.stringify(debug_info));
             return;
         }
 
