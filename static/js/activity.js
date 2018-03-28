@@ -187,14 +187,18 @@ exports.huddle_fraction_present = function (huddle) {
 
     var num_present = 0;
     _.each(user_ids, function (user_id) {
-        if (presence.is_not_offline(user_id)) {
+        if (presence.is_active(user_id)) {
             num_present += 1;
         }
     });
 
-    var ratio = num_present / user_ids.length;
+    if (num_present === user_ids.length) {
+        return 1;
+    } else if (num_present !== 0) {
+        return 0.5;
+    }
+    return false;
 
-    return ratio.toFixed(2);
 };
 
 function compare_function(a, b) {
