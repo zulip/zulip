@@ -73,6 +73,14 @@ This procedure prevents any server-side rendering.  If you don't do
 this, backend will likely render the Markdown you're testing and swap
 it in before you can see the frontend's rendering.
 
+If you are working on a feature that breaks multiple testcases, and want
+to debug the testcases one by one, you can add `"ignore": true` to any
+testcases in `markdown_test_cases.json` that you want to ignore. This
+is a workaround due to lack of comments support in JSON. Revert your
+"ignore" changes before committing. After this, you can run the frontend
+tests with `tools/test-js-with-node markdown` and backend tests with
+`tools/test-backend zerver.tests.test_bugdown.BugdownTest.test_bugdown_fixtures`.
+
 ## Changing Zulip's markdown processor
 
 First, you will likely find these third-party resources helpful:

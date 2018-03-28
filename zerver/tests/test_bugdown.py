@@ -242,17 +242,29 @@ class BugdownTest(ZulipTestCase):
 
         return test_fixtures, data['linkify_tests']
 
+    def test_bugdown_no_ignores(self) -> None:
+        # We do not want any ignored tests to be committed and merged.
+        format_tests, linkify_tests = self.load_bugdown_tests()
+        for name, test in format_tests.items():
+            message = 'Test "%s" shouldn\'t be ignored.' % (name,)
+            is_ignored = test.get('ignore', False)
+            self.assertFalse(is_ignored, message)
+
     @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_bugdown_tests()
         valid_keys = set(["name", "input", "expected_output",
                           "backend_only_rendering",
                           "marked_expected_output", "text_content",
-                          "translate_emoticons"])
+                          "translate_emoticons", "ignore"])
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
             self.assertEqual(len(set(test.keys()) - valid_keys), 0)
+
+            # Ignore tests if specified
+            if test.get('ignore', False):
+                return  # nocoverage
 
             if test.get('translate_emoticons', False):
                 # Create a userprofile and send message with it.

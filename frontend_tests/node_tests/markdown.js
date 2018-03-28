@@ -180,6 +180,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var tests = bugdown_data.regular_tests;
 
     tests.forEach(function (test) {
+
+        // Ignore tests if specified
+        if (test.ignore === true) {
+            return;
+        }
+
         var message = {raw_content: test.input};
         page_params.translate_emoticons = test.translate_emoticons || false;
         markdown.apply_markdown(message);
