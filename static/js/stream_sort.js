@@ -2,7 +2,8 @@ var stream_sort = (function () {
 
 var exports = {};
 
-var previous_pinned;
+var previous_pinned_normal;
+var previous_pinned_dormant;
 var previous_normal;
 var previous_dormant;
 var all_streams = [];
@@ -49,6 +50,8 @@ exports.sort_groups = function (search_term) {
         return stream_data.is_active(sub);
     }
 
+    var pinned_normal_streams = [];
+    var pinned_dormant_streams = [];
     var pinned_streams = [];
     var normal_streams = [];
     var dormant_streams = [];
@@ -56,30 +59,40 @@ exports.sort_groups = function (search_term) {
     _.each(streams, function (stream) {
         var sub = stream_data.get_sub(stream);
         var pinned = sub.pin_to_top;
+        var normal = is_normal(sub);
         if (pinned) {
-            pinned_streams.push(stream);
-        } else if (is_normal(sub)) {
+            if (normal) {
+                pinned_normal_streams.push(stream);
+            } else {
+                pinned_dormant_streams.push(stream);
+            }
+        } else if (normal) {
             normal_streams.push(stream);
         } else {
             dormant_streams.push(stream);
         }
     });
 
-    pinned_streams.sort(util.strcmp);
+    pinned_normal_streams.sort(util.strcmp);
+    pinned_dormant_streams.sort(util.strcmp);
     normal_streams.sort(util.strcmp);
     dormant_streams.sort(util.strcmp);
 
     var same_as_before =  (
-        previous_pinned !== undefined &&
-        util.array_compare(previous_pinned, pinned_streams) &&
+        previous_pinned_normal !== undefined &&
+        previous_pinned_dormant !== undefined &&
+        util.array_compare(previous_pinned_normal, pinned_normal_streams) &&
+        util.array_compare(previous_pinned_dormant, pinned_dormant_streams) &&
         util.array_compare(previous_normal, normal_streams) &&
         util.array_compare(previous_dormant, dormant_streams));
 
     if (!same_as_before) {
-        previous_pinned = pinned_streams;
+        previous_pinned_normal = pinned_normal_streams;
+        previous_pinned_dormant = pinned_dormant_streams;
         previous_normal = normal_streams;
         previous_dormant = dormant_streams;
 
+        pinned_streams = pinned_normal_streams.concat(pinned_dormant_streams);
         all_streams = pinned_streams.concat(normal_streams, dormant_streams);
     }
 
