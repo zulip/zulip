@@ -259,7 +259,8 @@ class ExportTest(ZulipTestCase):
         exported_streams = get_set('zerver_stream', 'name')
         self.assertEqual(
             exported_streams,
-            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona'])
+            set([u'Denmark', u'Rome', u'Scotland', u'Venice', u'Verona',
+                 u'zulip', u'core team', u'announce', u'general', u'new members'])
         )
 
         data = full_data['message']

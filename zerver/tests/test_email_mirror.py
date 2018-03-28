@@ -175,7 +175,7 @@ class TestMissedPersonalMessageEmailMessages(ZulipTestCase):
 
         self.assertEqual(message.content, "TestMissedMessageEmailMessages Body")
         self.assertEqual(message.sender, self.example_user('othello'))
-        self.assertEqual(message.recipient.id, user_profile.id)
+        self.assertEqual(message.recipient.type_id, user_profile.id)
         self.assertEqual(message.recipient.type, Recipient.PERSONAL)
 
 class TestMissedHuddleMessageEmailMessages(ZulipTestCase):

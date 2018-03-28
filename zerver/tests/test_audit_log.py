@@ -18,12 +18,13 @@ class TestRealmAuditLog(ZulipTestCase):
     def test_user_activation(self) -> None:
         realm = get_realm('zulip')
         now = timezone_now()
+        # do_create_user make 5 audit_log
         user = do_create_user('email', 'password', realm, 'full_name', 'short_name')
         do_deactivate_user(user)
         do_activate_user(user)
         do_deactivate_user(user)
         do_reactivate_user(user)
-        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 5)
+        self.assertEqual(RealmAuditLog.objects.filter(event_time__gte=now).count(), 9)
         event_types = list(RealmAuditLog.objects.filter(
             realm=realm, acting_user=None, modified_user=user, modified_stream=None,
             event_time__gte=now, event_time__lte=now+timedelta(minutes=60))

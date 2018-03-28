@@ -78,7 +78,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_old_unclaimed_attachments, is_cross_realm_bot_email, \
     Reaction, EmailChangeStatus, CustomProfileField, \
     custom_profile_fields_for_realm, get_huddle_user_ids, \
-    CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
+    CustomProfileFieldValue, validate_attachment_request, get_system_bot, exist_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError
@@ -3005,7 +3005,7 @@ def do_create_realm(string_id: Text, name: Text, restricted_to_domain: Optional[
                "org_type": org_type})
 
     # Send a notification to the admin realm (if configured)
-    if settings.NEW_USER_BOT is not None:
+    if settings.NEW_USER_BOT is not None and exist_system_bot(settings.NEW_USER_BOT):
         signup_message = "Signups enabled"
         admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
         internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
