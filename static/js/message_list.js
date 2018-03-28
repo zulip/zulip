@@ -102,6 +102,29 @@ exports.MessageList.prototype = {
         }
     },
 
+    debug: function () {
+        var last = this.last() || {};
+        var type;
+
+        if (home_msg_list === this) {
+            type = 'home';
+        } else if (exports.all === this) {
+            type = 'all';
+        } else {
+            type = 'narrow';
+        }
+
+        var info = {
+            num_items: this.num_items(),
+            can_append: this.fetch_status.can_append(),
+            last_id: last.id,
+            selected_id: this.selected_id(),
+            type: type,
+        }
+
+        return info;
+    },
+
     get: function MessageList_get(id) {
         id = parseFloat(id);
         if (isNaN(id)) {
