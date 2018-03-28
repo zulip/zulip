@@ -122,7 +122,6 @@ function _setup_page() {
     }());
 
     setup_settings_label();
-    settings_bots.setup_bot_creation_policy_values();
 
     var settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
