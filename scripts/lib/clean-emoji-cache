@@ -30,13 +30,12 @@ def get_caches_in_use(threshold_days):
         caches_in_use.add(CURRENT_CACHE)
 
     for setup_dir in setups_to_check:
-        zulip_emoji_dir = os.path.join(setup_dir, "tools", "setup", "emoji")
-        if not os.path.exists(zulip_emoji_dir):
-            # Most probably this is a deployment directory extracted from a
-            # tarball so no emoji cache is associated with this.
+        emoji_link_path = os.path.join(setup_dir, "static/generated/emoji")
+        if not os.path.islink(emoji_link_path):
+            # This happens for a deployment directory extracted from a
+            # tarball, which just has a copy of the emoji data, not a symlink.
             continue
-        sha1sum_emoji = generate_sha1sum_emoji(setup_dir)
-        caches_in_use.add(os.path.join(EMOJI_CACHE_PATH, sha1sum_emoji))
+        caches_in_use.add(os.readlink(emoji_link_path))
     return caches_in_use
 
 def main():
