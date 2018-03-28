@@ -726,7 +726,7 @@ InlineLexer.prototype.output = function(src) {
     // em
     if (cap = this.rules.em.exec(src)) {
       src = src.substring(cap[0].length);
-      out += this.renderer.em(cap[1] + cap[2]);
+      out += this.renderer.em(this.output(cap[1] + cap[2]));
       continue;
     }
 
@@ -815,6 +815,7 @@ InlineLexer.prototype.outputLink = function(cap, link) {
     : this.renderer.image(href, title, escape(cap[1]));
 };
 InlineLexer.prototype.emoji = function (name) {
+  name = escape(name)
   if (typeof this.options.emojiHandler !== 'function')
     return ':' + name + ':';
 
@@ -822,6 +823,7 @@ InlineLexer.prototype.emoji = function (name) {
 };
 
 InlineLexer.prototype.unicodeEmoji = function (name) {
+  name = escape(name)
   if (typeof this.options.unicodeEmojiHandler !== 'function')
     return name;
   return this.options.unicodeEmojiHandler(name);
@@ -834,12 +836,14 @@ InlineLexer.prototype.tex = function (tex, fullmatch) {
 };
 
 InlineLexer.prototype.userAvatar = function (email) {
+  email = escape(email);
   if (typeof this.options.avatarHandler !== 'function')
     return '!avatar(' + email + ')';
   return this.options.avatarHandler(email);
 };
 
 InlineLexer.prototype.userGravatar = function (email) {
+  email = escape(email);
   if (typeof this.options.avatarHandler !== 'function')
     return '!gravatar(' + email + ')';
   return this.options.avatarHandler(email);
@@ -853,6 +857,7 @@ InlineLexer.prototype.realm_filter = function (filter, matches, orig) {
 };
 
 InlineLexer.prototype.usermention = function (username, orig) {
+  orig = escape(orig);
   if (typeof this.options.userMentionHandler !== 'function')
   {
     return orig;
@@ -867,6 +872,7 @@ InlineLexer.prototype.usermention = function (username, orig) {
 };
 
 InlineLexer.prototype.stream = function (streamName, orig) {
+  orig = escape(orig);
   if (typeof this.options.streamHandler !== 'function')
     return orig;
 
@@ -1007,6 +1013,7 @@ Renderer.prototype.strong = function(text) {
 };
 
 Renderer.prototype.em = function(text) {
+  text = escape(text);
   return '<em>' + text + '</em>';
 };
 

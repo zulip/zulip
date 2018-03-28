@@ -11,6 +11,17 @@ var exports = {};
 var realm_filter_map = {};
 var realm_filter_list = [];
 
+
+// Helper function
+function escape(html, encode) {
+  return html
+    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 // Regexes that match some of our common bugdown markup
 var backend_only_markdown_re = [
     // Inline image previews, check for contiguous chars ending in image suffix
@@ -62,7 +73,7 @@ exports.apply_markdown = function (message) {
                     push_uniquely(message.flags, 'mentioned');
                 }
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
-                       '@' + person.full_name +
+                       '@' + escape(person.full_name, true) +
                        '</span>';
             } else if (name === 'all' || name === 'everyone') {
                 push_uniquely(message.flags, 'mentioned');
@@ -106,15 +117,6 @@ exports.add_subject_links = function (message) {
     });
     message.subject_links = links;
 };
-
-function escape(html, encode) {
-  return html
-    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
 
 function handleUnicodeEmoji(unicode_emoji) {
     var codepoint = unicode_emoji.codePointAt(0).toString(16);
@@ -160,7 +162,7 @@ function handleStream(streamName) {
     return '<a class="stream" data-stream-id="' + stream.stream_id + '" ' +
         'href="' + window.location.origin + '/#narrow/stream/' +
         hash_util.encodeHashComponent(stream.name) + '"' +
-        '>' + '#' + stream.name + '</a>';
+        '>' + '#' + escape(stream.name) + '</a>';
 
 }
 

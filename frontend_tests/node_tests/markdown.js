@@ -71,6 +71,12 @@ people.add({
     email: 'leo@zulip.com',
 });
 
+people.add({
+    full_name: 'Bobby <h1>Tables</h1>',
+    user_id: 103,
+    email: 'bobby@zulip.com',
+});
+
 people.initialize_current_user(cordelia.user_id);
 
 var stream_data = global.stream_data;
@@ -89,8 +95,16 @@ var social = {
     in_home_view: true,
     invite_only: true,
 };
+var edgecase_stream = {
+    subscribed: true,
+    color: 'green',
+    name: 'Bobby <h1>Tables</h1>',
+    stream_id: 3,
+    in_home_view: true,
+};
 stream_data.add_sub('Denmark', denmark);
 stream_data.add_sub('social', social);
+stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
 
 // Check the default behavior of fenced code blocks
 // works properly before markdown is initialized.
@@ -257,6 +271,21 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
           expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
         {input: 'This is a realm filter `hello` with text after it',
          expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
+         // Test HTML Escape in Custom Zulip Rules
+        {input: '@**<h1>The Rogue One</h1>**',
+         expected: '<p>@**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>'},
+        {input: '#**<h1>The Rogue One</h1>**',
+         expected: '<p>#**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>'},
+        {input: '!avatar(<h1>The Rogue One</h1>)',
+         expected: '<p><img alt="&lt;h1&gt;The Rogue One&lt;/h1&gt;" class="message_body_gravatar" src="/avatar/&lt;h1&gt;The Rogue One&lt;/h1&gt;?s=30" title="&lt;h1&gt;The Rogue One&lt;/h1&gt;"></p>'},
+        {input: ':<h1>The Rogue One</h1>:',
+         expected: '<p>:&lt;h1&gt;The Rogue One&lt;/h1&gt;:</p>'},
+        {input: '@**O\'Connell**',
+         expected: '<p>@**O&#39;Connell**</p>'},
+        {input: '@**Bobby <h1>Tables</h1>**',
+         expected: '<p><span class="user-mention" data-user-id="103">@Bobby &lt;h1&gt;Tables&lt;/h1&gt;</span></p>'},
+        {input: '#**Bobby <h1>Tables</h1>**',
+         expected: '<p><a class="stream" data-stream-id="3" href="http://zulip.zulipdev.com/#narrow/stream/Bobby.20.3Ch1.3ETables.3C.2Fh1.3E">#Bobby &lt;h1&gt;Tables&lt;/h1&gt;</a></p>'},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
@@ -271,7 +300,6 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         var message = {raw_content: input};
         markdown.apply_markdown(message);
         var output = message.content;
-
         assert.equal(expected, output);
     });
 }());
