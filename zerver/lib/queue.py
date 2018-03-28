@@ -315,7 +315,7 @@ def queue_json_publish(queue_name: str,
         else:
             # Must be imported here: A top section import leads to obscure not-defined-ish errors.
             from zerver.worker.queue_processors import get_worker
-            get_worker(queue_name).consume_wrapper(event)  # type: ignore # https://github.com/python/mypy/issues/3360
+            get_worker(queue_name).consume_wrapper(event)
 
 def retry_event(queue_name: str,
                 event: Dict[str, Any],

@@ -57,7 +57,7 @@ def get_imap_messages() -> Generator[Message, None, None]:
                 msg_as_bytes = msg_data[0][1]
                 message = email.message_from_bytes(msg_as_bytes)
                 yield message
-                mbox.store(msgid, '+FLAGS', '\\Deleted')  # type: ignore # https://github.com/python/typeshed/pull/1762
+                mbox.store(msgid, '+FLAGS', '\\Deleted')
             mbox.expunge()
         finally:
             mbox.close()
