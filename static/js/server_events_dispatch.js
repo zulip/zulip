@@ -202,7 +202,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             _.each(event.streams, function (stream) {
                 var sub = stream_data.get_sub_by_id(stream.stream_id);
                 stream_data.update_calculated_fields(sub);
-                subs.add_sub_to_table(sub);
             });
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
@@ -235,6 +234,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.op === 'add') {
             _.each(event.subscriptions, function (rec) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
+                sub.email_address = rec.email_address;
                 if (sub) {
                     stream_events.mark_subscribed(sub, rec.subscribers);
                 } else {
