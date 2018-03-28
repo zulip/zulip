@@ -10,6 +10,78 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+var org_profile = {
+    name: {
+        type: 'text',
+    },
+    description: {
+        type: 'text',
+    },
+};
+
+var org_settings = {
+    msg_editing: {
+        allow_message_deleting: {
+            type: 'bool',
+        },
+        allow_edit_history: {
+            type: 'bool',
+        },
+    },
+    msg_feed: {
+        inline_image_preview: {
+            type: 'bool',
+        },
+        inline_url_embed_preview: {
+            type: 'bool',
+        },
+        mandatory_topics: {
+            type: 'bool',
+        },
+    },
+    language_notify: {
+        default_language: {
+            type: 'text',
+        },
+        send_welcome_emails: {
+            type: 'bool',
+        },
+    },
+};
+
+var org_permissions = {
+    org_join: {
+        restricted_to_domain: {
+            type: 'bool',
+        },
+        invite_required: {
+            type: 'bool',
+        },
+        disallow_disposable_email_addresses: {
+            type: 'bool',
+        },
+        invite_by_admins_only: {
+            type: 'bool',
+        },
+    },
+    user_identity: {
+        name_changes_disabled: {
+            type: 'bool',
+        },
+        email_changes_disabled: {
+            type: 'bool',
+        },
+    },
+    other_permissions: {
+        add_emoji_by_admins_only: {
+            type: 'bool',
+        },
+        bot_creation_policy: {
+            type: 'integer',
+        },
+    },
+};
+
 exports.set_create_stream_permission_dropdwon = function () {
     var menu = "id_realm_create_stream_permission";
     $("#id_realm_waiting_period_threshold").parent().hide();
@@ -224,78 +296,6 @@ function _set_up() {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
-
-    var org_profile = {
-        name: {
-            type: 'text',
-        },
-        description: {
-            type: 'text',
-        },
-    };
-
-    var org_settings = {
-        msg_editing: {
-            allow_message_deleting: {
-                type: 'bool',
-            },
-            allow_edit_history: {
-                type: 'bool',
-            },
-        },
-        msg_feed: {
-            inline_image_preview: {
-                type: 'bool',
-            },
-            inline_url_embed_preview: {
-                type: 'bool',
-            },
-            mandatory_topics: {
-                type: 'bool',
-            },
-        },
-        language_notify: {
-            default_language: {
-                type: 'text',
-            },
-            send_welcome_emails: {
-                type: 'bool',
-            },
-        },
-    };
-
-    var org_permissions = {
-        org_join: {
-            restricted_to_domain: {
-                type: 'bool',
-            },
-            invite_required: {
-                type: 'bool',
-            },
-            disallow_disposable_email_addresses: {
-                type: 'bool',
-            },
-            invite_by_admins_only: {
-                type: 'bool',
-            },
-        },
-        user_identity: {
-            name_changes_disabled: {
-                type: 'bool',
-            },
-            email_changes_disabled: {
-                type: 'bool',
-            },
-        },
-        other_permissions: {
-            add_emoji_by_admins_only: {
-                type: 'bool',
-            },
-            bot_creation_policy: {
-                type: 'integer',
-            },
-        },
-    };
 
     function populate_data_for_request(data, changing_property_types) {
         _.each(changing_property_types, function (v, k) {
