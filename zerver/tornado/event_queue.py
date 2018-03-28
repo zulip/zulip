@@ -740,7 +740,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
         for client in get_client_descriptors_for_realm_all_streams(realm_id):
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
-                flags=None,
+                flags=[],
                 is_sender=is_sender_client(client)
             )
 

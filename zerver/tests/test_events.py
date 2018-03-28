@@ -2495,7 +2495,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         self.assertEqual(dct['client'].apply_markdown, True)
         self.assertEqual(dct['client'].client_gravatar, True)
         self.assertEqual(dct['client'].user_profile_id, hamlet.id)
-        self.assertEqual(dct['flags'], None)
+        self.assertEqual(dct['flags'], [])
         self.assertEqual(dct['is_sender'], False)
 
         message_event = dict(

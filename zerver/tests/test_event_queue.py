@@ -149,6 +149,11 @@ class MissedMessageNotificationsTest(ZulipTestCase):
 
         self.send_stream_message(cordelia.email, stream_name)
 
+        self.assertEqual(len(client.event_queue.contents()), 1)
+
+        # This next line of code should silently succeed and basically do
+        # nothing under the covers.  This test is here to prevent a bug
+        # from re-appearing.
         missedmessage_hook(
             user_profile_id=hamlet.id,
             client=client,
