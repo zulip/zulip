@@ -20,7 +20,7 @@ from zerver.lib.export import (
 )
 from zerver.lib.upload import (
     claim_attachment,
-    upload_message_image,
+    upload_message_file,
 )
 from zerver.lib.utils import (
     query_chunker,
@@ -212,7 +212,7 @@ class ExportTest(ZulipTestCase):
     def test_attachment(self) -> None:
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,

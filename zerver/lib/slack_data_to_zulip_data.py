@@ -671,7 +671,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str,
                                                                                      str]:
     # Should be kept in sync with its equivalent in zerver/lib/uploads in the function
-    # 'upload_message_image'
+    # 'upload_message_file'
     s3_path = "/".join([
         str(realm_id),
         format(random.randint(0, 255), 'x'),

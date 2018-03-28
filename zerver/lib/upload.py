@@ -118,10 +118,10 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
 ### Common
 
 class ZulipUploadBackend:
-    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
-                             content_type: Optional[Text], file_data: bytes,
-                             user_profile: UserProfile,
-                             target_realm: Optional[Realm]=None) -> Text:
+    def upload_message_file(self, uploaded_file_name: Text, uploaded_file_size: int,
+                            content_type: Optional[Text], file_data: bytes,
+                            user_profile: UserProfile,
+                            target_realm: Optional[Realm]=None) -> Text:
         raise NotImplementedError()
 
     def upload_avatar_image(self, user_file: File,
@@ -236,9 +236,9 @@ def get_realm_for_filename(path: Text) -> Optional[int]:
 
 class S3UploadBackend(ZulipUploadBackend):
 
-    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
-                             content_type: Optional[Text], file_data: bytes,
-                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
+    def upload_message_file(self, uploaded_file_name: Text, uploaded_file_size: int,
+                            content_type: Optional[Text], file_data: bytes,
+                            user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
         bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
         if target_realm is None:
             target_realm = user_profile.realm
@@ -415,9 +415,9 @@ def get_local_file_path(path_id: Text) -> Optional[Text]:
         return None
 
 class LocalUploadBackend(ZulipUploadBackend):
-    def upload_message_image(self, uploaded_file_name: Text, uploaded_file_size: int,
-                             content_type: Optional[Text], file_data: bytes,
-                             user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
+    def upload_message_file(self, uploaded_file_name: Text, uploaded_file_size: int,
+                            content_type: Optional[Text], file_data: bytes,
+                            user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
         # Split into 256 subdirectories to prevent directories from getting too big
         path = "/".join([
             str(user_profile.realm_id),
@@ -530,12 +530,12 @@ def upload_icon_image(user_file: File, user_profile: UserProfile) -> None:
 def upload_emoji_image(emoji_file: File, emoji_file_name: Text, user_profile: UserProfile) -> None:
     upload_backend.upload_emoji_image(emoji_file, emoji_file_name, user_profile)
 
-def upload_message_image(uploaded_file_name: Text, uploaded_file_size: int,
-                         content_type: Optional[Text], file_data: bytes,
-                         user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
-    return upload_backend.upload_message_image(uploaded_file_name, uploaded_file_size,
-                                               content_type, file_data, user_profile,
-                                               target_realm=target_realm)
+def upload_message_file(uploaded_file_name: Text, uploaded_file_size: int,
+                        content_type: Optional[Text], file_data: bytes,
+                        user_profile: UserProfile, target_realm: Optional[Realm]=None) -> Text:
+    return upload_backend.upload_message_file(uploaded_file_name, uploaded_file_size,
+                                              content_type, file_data, user_profile,
+                                              target_realm=target_realm)
 
 def claim_attachment(user_profile: UserProfile,
                      path_id: Text,
@@ -555,5 +555,5 @@ def create_attachment(file_name: Text, path_id: Text, user_profile: UserProfile,
 def upload_message_image_from_request(request: HttpRequest, user_file: File,
                                       user_profile: UserProfile) -> Text:
     uploaded_file_name, uploaded_file_size, content_type = get_file_info(request, user_file)
-    return upload_message_image(uploaded_file_name, uploaded_file_size,
-                                content_type, user_file.read(), user_profile)
+    return upload_message_file(uploaded_file_name, uploaded_file_size,
+                               content_type, user_file.read(), user_profile)
