@@ -640,12 +640,6 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         assert 'flags' in event
 
         flags = event.get('flags')
-        if flags is None:
-            # If we have no flags, this is probably in the
-            # API-watching-all-streams codepath, and we don't want
-            # to send a missed-message email
-            logging.error('Ignore missedmessage_hook for user {}.'.format(user_profile_id))
-            return
 
         mentioned = 'mentioned' in flags and 'read' not in flags
         private_message = event['message']['type'] == 'private'
