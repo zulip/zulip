@@ -640,12 +640,6 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         assert 'flags' in event
 
         flags = event.get('flags')
-        if flags is None:
-            # If we have no flags, this is probably in the
-            # API-watching-all-streams codepath, and we don't want
-            # to send a missed-message email
-            logging.error('Ignore missedmessage_hook for user {}.'.format(user_profile_id))
-            return
 
         mentioned = 'mentioned' in flags and 'read' not in flags
         private_message = event['message']['type'] == 'private'
@@ -746,7 +740,7 @@ def get_client_info_for_message_event(event_template: Mapping[str, Any],
         for client in get_client_descriptors_for_realm_all_streams(realm_id):
             send_to_clients[client.event_queue.id] = dict(
                 client=client,
-                flags=None,
+                flags=[],
                 is_sender=is_sender_client(client)
             )
 
