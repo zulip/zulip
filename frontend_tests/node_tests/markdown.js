@@ -180,18 +180,24 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var tests = bugdown_data.regular_tests;
 
     tests.forEach(function (test) {
+
+        // Ignore tests if specified
+        if (test.ignore === true) {
+            return;
+        }
+
         var message = {raw_content: test.input};
         page_params.translate_emoticons = test.translate_emoticons || false;
         markdown.apply_markdown(message);
         var output = message.content;
-
+        var error_message = `Failure in test: ${test.name}`;
         if (test.marked_expected_output) {
-            global.bugdown_assert.notEqual(test.expected_output, output);
-            global.bugdown_assert.equal(test.marked_expected_output, output);
+            global.bugdown_assert.notEqual(test.expected_output, output, error_message);
+            global.bugdown_assert.equal(test.marked_expected_output, output, error_message);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            global.bugdown_assert.equal(test.expected_output, output);
+            global.bugdown_assert.equal(test.expected_output, output, error_message);
         }
     });
 }());
