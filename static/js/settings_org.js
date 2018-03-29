@@ -10,17 +10,127 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+var org_profile = {
+    name: {
+        type: 'text',
+    },
+    description: {
+        type: 'text',
+    },
+};
+
+var org_settings = {
+    msg_editing: {
+        allow_message_deleting: {
+            type: 'bool',
+        },
+        allow_edit_history: {
+            type: 'bool',
+        },
+    },
+    msg_feed: {
+        inline_image_preview: {
+            type: 'bool',
+        },
+        inline_url_embed_preview: {
+            type: 'bool',
+        },
+        mandatory_topics: {
+            type: 'bool',
+        },
+    },
+    language_notify: {
+        default_language: {
+            type: 'text',
+        },
+        send_welcome_emails: {
+            type: 'bool',
+        },
+    },
+};
+
+var org_permissions = {
+    org_join: {
+        restricted_to_domain: {
+            type: 'bool',
+        },
+        invite_required: {
+            type: 'bool',
+        },
+        disallow_disposable_email_addresses: {
+            type: 'bool',
+        },
+        invite_by_admins_only: {
+            type: 'bool',
+        },
+    },
+    user_identity: {
+        name_changes_disabled: {
+            type: 'bool',
+        },
+        email_changes_disabled: {
+            type: 'bool',
+        },
+    },
+    other_permissions: {
+        add_emoji_by_admins_only: {
+            type: 'bool',
+        },
+        bot_creation_policy: {
+            type: 'integer',
+        },
+    },
+};
+
+function get_subsection_property_types(subsection) {
+    if (_.has(org_settings, subsection)) {
+        return org_settings[subsection];
+    } else if (_.has(org_permissions, subsection)) {
+        return org_permissions[subsection];
+    } else if (subsection === 'org_profile') {
+        return org_profile;
+    }
+    return;
+}
+
+function property_value_element_refers(property_name) {
+    if (property_name === 'realm_message_content_edit_limit_minutes') {
+        return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
+    } else if (property_name === 'realm_create_stream_permission') {
+        if (page_params.realm_create_stream_by_admins_only) {
+            return "by_admins_only";
+        }
+        if (page_params.realm_waiting_period_threshold === 0) {
+            return "by_anyone";
+        }
+        if (page_params.realm_waiting_period_threshold === 3) {
+            return "by_admin_user_with_three_days_old";
+        }
+        return "by_admin_user_with_custom_time";
+    } else if (property_name === 'realm_add_emoji_by_admins_only') {
+        if (page_params.realm_add_emoji_by_admins_only) {
+            return "by_admins_only";
+        }
+        return "by_anyone";
+    }
+    return;
+}
+
+exports.extract_property_name = function (elem) {
+    return elem.attr('id').split('-').join('_').replace("id_", "");
+};
+
 exports.set_create_stream_permission_dropdwon = function () {
-    var menu = "id_realm_create_stream_permission";
+    var menu = $("#id_realm_create_stream_permission");
     $("#id_realm_waiting_period_threshold").parent().hide();
     if (page_params.realm_create_stream_by_admins_only) {
-        $("#" + menu + " option[value=by_admins_only]").attr("selected", "selected");
+        menu.val("by_admins_only");
     } else if (page_params.realm_waiting_period_threshold === 0) {
-        $("#" + menu + " option[value=by_anyone]").attr("selected", "selected");
+        menu.val("by_anyone");
     } else if (page_params.realm_waiting_period_threshold === 3) {
-        $("#" + menu + " option[value=by_admin_user_with_three_days_old]").attr("selected", "selected");
+        menu.val("by_admin_user_with_three_days_old");
     } else {
-        $("#" + menu + " option[value=by_admin_user_with_custom_time]").attr("selected", "selected");
+        menu.val("by_admin_user_with_custom_time");
         $("#id_realm_waiting_period_threshold").parent().show();
     }
 };
@@ -205,6 +315,58 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
+exports.handle_dependent_subsettings = function (property_name) {
+    if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
+        exports.set_create_stream_permission_dropdwon();
+    } else if (property_name === 'realm_allow_message_editing') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
+            "id_realm_message_content_edit_limit_minutes", true);
+    } else if (property_name === 'realm_invite_required') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
+            "id_realm_invite_by_admins_only", true);
+    } else if (property_name === 'realm_restricted_to_domain') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
+            "id_realm_disallow_disposable_email_addresses", false);
+    }
+};
+
+function discard_property_element_changes(elem) {
+    elem = $(elem);
+    var property_name = exports.extract_property_name(elem);
+    // Check whether the id refers to a property whose name we can't
+    // extract from element's id.
+    var property_value = property_value_element_refers(property_name);
+    if (property_value === undefined) {
+        property_value = page_params[property_name];
+    }
+
+    if (typeof property_value === 'boolean') {
+        elem.prop('checked', property_value);
+    } else if (typeof property_value === 'string' || typeof property_value === 'number') {
+        elem.val(property_value);
+    } else {
+        blueslip.error('Element refers to unknown property ' + property_name);
+    }
+
+    exports.handle_dependent_subsettings(property_name);
+}
+
+exports.sync_realm_settings = function (property) {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    if (property === 'message_content_edit_limit_seconds') {
+        property = 'message_content_edit_limit_minutes';
+    } else if (property === 'create_stream_by_admins_only') {
+        property = 'create_stream_permission';
+    }
+    var element =  $('#id_realm_'+property);
+    if (element.length) {
+        discard_property_element_changes(element);
+    }
+};
+
 function _set_up() {
     meta.loaded = true;
 
@@ -224,78 +386,6 @@ function _set_up() {
 
     // Populate authentication methods table
     exports.populate_auth_methods(page_params.realm_authentication_methods);
-
-    var org_profile = {
-        name: {
-            type: 'text',
-        },
-        description: {
-            type: 'text',
-        },
-    };
-
-    var org_settings = {
-        msg_editing: {
-            allow_message_deleting: {
-                type: 'bool',
-            },
-            allow_edit_history: {
-                type: 'bool',
-            },
-        },
-        msg_feed: {
-            inline_image_preview: {
-                type: 'bool',
-            },
-            inline_url_embed_preview: {
-                type: 'bool',
-            },
-            mandatory_topics: {
-                type: 'bool',
-            },
-        },
-        language_notify: {
-            default_language: {
-                type: 'text',
-            },
-            send_welcome_emails: {
-                type: 'bool',
-            },
-        },
-    };
-
-    var org_permissions = {
-        org_join: {
-            restricted_to_domain: {
-                type: 'bool',
-            },
-            invite_required: {
-                type: 'bool',
-            },
-            disallow_disposable_email_addresses: {
-                type: 'bool',
-            },
-            invite_by_admins_only: {
-                type: 'bool',
-            },
-        },
-        user_identity: {
-            name_changes_disabled: {
-                type: 'bool',
-            },
-            email_changes_disabled: {
-                type: 'bool',
-            },
-        },
-        other_permissions: {
-            add_emoji_by_admins_only: {
-                type: 'bool',
-            },
-            bot_creation_policy: {
-                type: 'integer',
-            },
-        },
-    };
 
     function populate_data_for_request(data, changing_property_types) {
         _.each(changing_property_types, function (v, k) {
@@ -330,32 +420,6 @@ function _set_up() {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
-    function property_value_element_refers(property_name) {
-        if (property_name === 'realm_message_content_edit_limit_minutes') {
-            return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
-        } else if (property_name === 'realm_create_stream_permission') {
-            if (page_params.realm_create_stream_by_admins_only) {
-                return "by_admins_only";
-            }
-            if (page_params.realm_waiting_period_threshold === 0) {
-                return "by_anyone";
-            }
-            if (page_params.realm_waiting_period_threshold === 3) {
-                return "by_admin_user_with_three_days_old";
-            }
-            return "by_admin_user_with_custom_time";
-        } else if (property_name === 'realm_add_emoji_by_admins_only') {
-            if (page_params.realm_add_emoji_by_admins_only) {
-                return "by_admins_only";
-            }
-            return "by_anyone";
-        }
-        return;
-    }
-
-    exports.extract_property_name = function (elem) {
-        return elem.attr('id').split('-').join('_').replace("id_", "");
-    };
 
     function check_property_changed(elem) {
         elem = $(elem);
@@ -408,42 +472,6 @@ function _set_up() {
             change_process_button.removeClass('show').addClass('hide');
         }
     });
-
-    exports.handle_dependent_subsettings = function (property_name) {
-        if (property_name === 'realm_create_stream_permission') {
-            exports.set_create_stream_permission_dropdwon();
-        } else if (property_name === 'realm_allow_message_editing') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
-                "id_realm_message_content_edit_limit_minutes", true);
-        } else if (property_name === 'realm_invite_required') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
-                "id_realm_invite_by_admins_only", true);
-        } else if (property_name === 'realm_restricted_to_domain') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
-                "id_realm_disallow_disposable_email_addresses", false);
-        }
-    };
-
-    function discard_property_element_changes(elem) {
-        elem = $(elem);
-        var property_name = exports.extract_property_name(elem);
-        // Check whether the id refers to a property whose name we can't
-        // extract from element's id.
-        var property_value = property_value_element_refers(property_name);
-        if (property_value === undefined) {
-            property_value = page_params[property_name];
-        }
-
-        if (typeof property_value === 'boolean') {
-            elem.prop('checked', property_value);
-        } else if (typeof property_value === 'string' || typeof property_value === 'number') {
-            elem.val(property_value);
-        } else {
-            blueslip.error('Element refers to unknown property ' + property_name);
-        }
-
-        exports.handle_dependent_subsettings(property_name);
-    }
 
     $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
         e.preventDefault();
@@ -555,17 +583,6 @@ function _set_up() {
         return opts;
     }
 
-    function get_subsection_property_types(subsection) {
-        if (_.has(org_settings, subsection)) {
-            return org_settings[subsection];
-        } else if (_.has(org_permissions, subsection)) {
-            return org_permissions[subsection];
-        } else if (subsection === 'org_profile') {
-            return org_profile;
-        }
-        return;
-    }
-
     $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -598,25 +615,6 @@ function _set_up() {
             node.hide();
         }
     });
-
-    exports.sync_realm_settings = function (property) {
-        if (!overlays.settings_open()) {
-            return;
-        }
-
-        if (property === 'message_content_edit_limit_seconds') {
-            property = 'message_content_edit_limit_minutes';
-        } else if (property === 'create_stream_by_admins_only' || property === 'waiting_period_threshold') {
-            // We use this path for `waiting_period_threshold` property because we
-            // don't get both 'create_stream_by_admins_only' and 'waiting_period_threshold'
-            // in the same event to determine the value of dropdown.
-            property = 'create_stream_permission';
-        }
-        var element =  $('#id_realm_'+property);
-        if (element.length) {
-            discard_property_element_changes(element);
-        }
-    };
 
     $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
         var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
