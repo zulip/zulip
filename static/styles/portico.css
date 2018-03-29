@@ -1697,14 +1697,6 @@ input.new-organization-button {
     margin: 5px 0px;
 }
 
-.markdown .footer {
-    position: relative;
-    margin-top: -240px;
-    height: auto;
-    width: calc(100% - 40px);
-    max-width: calc(768px - -20px);
-}
-
 .error_page {
     padding: 20px 0px;
     min-height: calc(100vh - 290px);
@@ -1869,13 +1861,6 @@ input.new-organization-button {
     .signup-section {
         display: inline-block;
         margin-top: 10px;
-    }
-}
-
-@media (max-width: 648px) {
-    /* this is when the .markdown .footer collapses to two lines. */
-    .markdown .footer {
-        margin-top: -95px;
     }
 }
 
