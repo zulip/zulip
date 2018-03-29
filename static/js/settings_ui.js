@@ -16,6 +16,8 @@ function _initialize() {
         failure: i18n.t("Save failed"),
         saving: i18n.t("Saving"),
     };
+
+    settings_bots.setup_bot_creation_policy_values();
 }
 
 exports.initialize = function () {
