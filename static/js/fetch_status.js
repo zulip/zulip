@@ -45,10 +45,6 @@ var FetchStatus = function () {
         return !loading_newer && !found_newest;
     };
 
-    self.can_append = function () {
-        return found_newest;
-    };
-
     return self;
 
 };

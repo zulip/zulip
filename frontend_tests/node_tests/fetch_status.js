@@ -38,8 +38,6 @@ function blocked_older() {
     blocked_newer();
     blocked_older();
 
-    assert(fetch_status.can_append());
-
     reset();
 
     fetch_status.start_initial_narrow();
