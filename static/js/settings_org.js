@@ -316,7 +316,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
 };
 
 exports.handle_dependent_subsettings = function (property_name) {
-    if (property_name === 'realm_create_stream_permission') {
+    if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
         exports.set_create_stream_permission_dropdwon();
     } else if (property_name === 'realm_allow_message_editing') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
@@ -358,10 +358,7 @@ exports.sync_realm_settings = function (property) {
 
     if (property === 'message_content_edit_limit_seconds') {
         property = 'message_content_edit_limit_minutes';
-    } else if (property === 'create_stream_by_admins_only' || property === 'waiting_period_threshold') {
-        // We use this path for `waiting_period_threshold` property because we
-        // don't get both 'create_stream_by_admins_only' and 'waiting_period_threshold'
-        // in the same event to determine the value of dropdown.
+    } else if (property === 'create_stream_by_admins_only') {
         property = 'create_stream_permission';
     }
     var element =  $('#id_realm_'+property);
