@@ -17,7 +17,7 @@ from django.db import connection
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction
+from zerver.models import Reaction, RealmEmoji
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -763,9 +763,12 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
         realm, domain_name)
 
+    emoji_folder = os.path.join(output_dir, 'emoji')
+    os.makedirs(emoji_folder, exist_ok=True)
+    emoji_records = process_emojis(realm['zerver_realmemoji'], emoji_folder, emoji_url_map)
+
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
-
     os.makedirs(avatar_realm_folder, exist_ok=True)
     avatar_records = process_avatars(avatar_list, avatar_folder, realm_id)
 
@@ -778,6 +781,8 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     create_converted_data_files(realm, output_dir, '/realm.json')
     # IO message.json
     create_converted_data_files(message_json, output_dir, '/messages-000001.json')
+    # IO emoji records
+    create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
     # IO avatar records
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
     # IO uploads TODO
@@ -791,6 +796,36 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
+
+def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
+                   emoji_url_map: ZerverFieldsT) -> List[ZerverFieldsT]:
+    """
+    This function gets the custom emojis and saves in the output emoji folder
+    """
+    emoji_records = []
+    logging.info('######### GETTING EMOJIS #########\n')
+    logging.info('DOWNLOADING EMOJIS .......\n')
+    for emoji in zerver_realmemoji:
+        slack_emoji_url = emoji_url_map[emoji['name']]
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=emoji['realm'],
+            emoji_file_name=emoji['name'])
+
+        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
+        response = requests.get(slack_emoji_url, stream=True)
+        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
+        with open(upload_emoji_path, 'wb') as emoji_file:
+            shutil.copyfileobj(response.raw, emoji_file)
+
+        emoji_record = dict(emoji)
+        emoji_record['path'] = emoji_path
+        emoji_record['s3_path'] = emoji_path
+        emoji_record['realm_id'] = emoji_record['realm']
+        emoji_record.pop('realm')
+
+        emoji_records.append(emoji_record)
+    logging.info('######### GETTING EMOJIS FINISHED #########\n')
+    return emoji_records
 
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
                     realm_id: int) -> List[ZerverFieldsT]:
