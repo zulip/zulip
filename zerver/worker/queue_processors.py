@@ -17,7 +17,8 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
+    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile, \
+    UserDataExport
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
 from zerver.lib.export import do_export_user
@@ -538,33 +539,41 @@ class DeferredWorker(QueueProcessingWorker):
                 do_mark_stream_messages_as_read(user_profile, stream)
 
         elif event['type'] == 'export_user_messages':
-            user_profile = get_user_profile_by_id(event['user_profile_id'])
+            try:
+                user_profile = get_user_profile_by_id(event['user_profile_id'])
 
-            # Create export
-            output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
-            do_export_user(user_profile, output_dir)
-            print("Finished exporting to %s; tarring" % (output_dir,))
-            tarball_path = output_dir.rstrip('/') + '.tar.gz'
-            subprocess.check_call(
-                ["tar", "-czf", tarball_path, os.path.basename(output_dir)],
-                cwd=os.path.dirname(output_dir)
-            )
-            print("Tarball written to %s" % (tarball_path,))
+                # Create export
+                output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
+                do_export_user(user_profile, output_dir)
+                logger.info("Finished exporting to %s; tarring", output_dir)
+                tarball_path = output_dir.rstrip('/') + '.tar.gz'
+                subprocess.check_call(
+                    ["tar", "-czf", tarball_path, os.path.basename(output_dir)],
+                    cwd=os.path.dirname(output_dir)
+                )
+                logger.info("Tarball written to %s", tarball_path)
 
-            # Upload
-            with open(tarball_path, 'rb') as f:
-                content_type = mimetypes.guess_type(tarball_path)[0]
-                size = os.path.getsize(tarball_path)
-                name = os.path.basename(tarball_path)
-                upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
+                # Upload
+                with open(tarball_path, 'rb') as f:
+                    content_type = mimetypes.guess_type(tarball_path)[0]
+                    size = os.path.getsize(tarball_path)
+                    name = os.path.basename(tarball_path)
+                    upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
 
-            # Delete export data
-            shutil.rmtree(output_dir)
-            os.remove(tarball_path)
+                # Delete export data
+                shutil.rmtree(output_dir)
+                os.remove(tarball_path)
 
-            # Notify user
-            content = """Your data has been exported and uploaded [here]({})""".format(upload_path)
-            internal_send_private_message(user_profile.realm,
-                                          get_system_bot(settings.NOTIFICATION_BOT),
-                                          user_profile,
-                                          content)
+                # Notify user
+                content = """Your data has been exported and uploaded [here]({})""".format(upload_path)
+                internal_send_private_message(user_profile.realm,
+                                              get_system_bot(settings.NOTIFICATION_BOT),
+                                              user_profile,
+                                              content)
+
+            except Exception:
+                UserDataExport.export_finished(user_profile.id)
+                raise
+
+            else:
+                UserDataExport.export_finished(user_profile.id, upload_path)

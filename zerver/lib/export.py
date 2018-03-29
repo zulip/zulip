@@ -110,6 +110,7 @@ ALL_ZULIP_TABLES = {
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_userdataexport',
     'zerver_usergroup',
     'zerver_usergroupmembership',
     'zerver_userhotspot',
@@ -131,6 +132,7 @@ NON_EXPORTED_TABLES = {
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_scheduledemail',
+    'zerver_userdataexport',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
     # These are for unfinished features

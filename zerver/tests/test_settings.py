@@ -3,13 +3,13 @@ import ujson
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
-from typing import Any, Dict
+from typing import Any, Dict, Mapping
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP
-from zerver.models import get_realm, get_user, UserProfile
+from zerver.models import get_realm, get_user, UserProfile, UserDataExport
 
 class ChangeSettingsTest(ZulipTestCase):
 
@@ -282,8 +282,75 @@ class UserExportTest(ZulipTestCase):
         email = user.email
         self.login(email)
         result = self.client_post('/json/users/me/export')
+        queue_publish.assert_called_once_with(
+            'deferred_work',
+            {'type': 'export_user_messages', 'user_profile_id': user.id}
+        )
+        self.assertEqual('Your export has been queued!', result.json()['msg'])
+
+    @patch('zerver.views.user_settings.queue_json_publish')
+    def test_export_waits_for_previous_one_to_finish(self, queue_publish: MagicMock) -> None:
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login(email)
+        result = self.client_post('/json/users/me/export')
         self.assertEqual('Your export has been queued!', result.json()['msg'])
         queue_publish.assert_called_once_with(
             'deferred_work',
             {'type': 'export_user_messages', 'user_profile_id': user.id}
         )
+        self.assertTrue(UserDataExport.export_running(user.id))
+
+        # Try second export
+        queue_publish.reset_mock()
+        result = self.client_post('/json/users/me/export')
+        self.assertIn('You will need to wait', result.json()['msg'])
+        queue_publish.assert_not_called()
+
+    @patch('zerver.views.user_settings.queue_json_publish')
+    def test_export_starts_if_previous_one_finished(self, queue_publish: MagicMock) -> None:
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login(email)
+
+        def mark_export_finished(queue_name: str, event: Mapping[str, Any]) -> None:
+            """A patch function that marks a user data export as finished."""
+            UserDataExport.export_finished(user.id)
+
+        with patch('zerver.views.user_settings.queue_json_publish', new=mark_export_finished):
+            result = self.client_post('/json/users/me/export')
+            self.assertEqual('Your export has been queued!', result.json()['msg'])
+            self.assertFalse(UserDataExport.export_running(user.id))
+
+        # Try second export
+        queue_publish.reset_mock()
+        result = self.client_post('/json/users/me/export')
+        queue_publish.assert_called_once_with(
+            'deferred_work',
+            {'type': 'export_user_messages', 'user_profile_id': user.id}
+        )
+        self.assertEqual('Your export has been queued!', result.json()['msg'])
+
+    def test_export_starts_even_if_previous_one_failed(self) -> None:
+        user = self.example_user('hamlet')
+        email = user.email
+        self.login(email)
+
+        def export(user_profile: UserProfile, output_dir: str) -> None:
+            """A patch function that raises a RuntimeError"""
+            raise RuntimeError('User data export failed')
+
+        # Pretend first export failure
+        with patch('zerver.lib.export.do_export_user', new=export), patch('logging.error'), patch('logging.info'):
+            result = self.client_post('/json/users/me/export')
+            self.assertEqual('Your export has been queued!', result.json()['msg'])
+            self.assertFalse(UserDataExport.export_running(user.id))
+
+        # Try second export
+        with patch('zerver.views.user_settings.queue_json_publish') as queue_publish:
+            result = self.client_post('/json/users/me/export')
+            queue_publish.assert_called_once_with(
+                'deferred_work',
+                {'type': 'export_user_messages', 'user_profile_id': user.id}
+            )
+            self.assertEqual('Your export has been queued!', result.json()['msg'])
