@@ -4,7 +4,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.slack_data_to_zulip_data import (
     rm_tree,
-    get_user_data,
+    get_slack_api_data,
     build_zerver_realm,
     get_user_email,
     build_avatar_url,
@@ -64,6 +64,8 @@ def mocked_requests_get(*args: List[str], **kwargs: List[str]) -> mock.Mock:
 
     if args[0] == 'https://slack.com/api/users.list?token=valid-token':
         return MockResponse({"members": "user_data"}, 200)
+    elif args[0] == 'https://slack.com/api/users.list?token=invalid-token':
+        return MockResponse({"ok": False, "error": "invalid_auth"}, 200)
     else:
         return MockResponse(None, 404)
 
@@ -73,13 +75,21 @@ class SlackImporter(ZulipTestCase):
     logger.setLevel(logging.WARNING)
 
     @mock.patch('requests.get', side_effect=mocked_requests_get)
-    def test_get_user_data(self, mock_get: mock.Mock) -> None:
+    def test_get_slack_api_data(self, mock_get: mock.Mock) -> None:
         token = 'valid-token'
-        self.assertEqual(get_user_data(token), "user_data")
+        slack_user_list_url = "https://slack.com/api/users.list"
+        self.assertEqual(get_slack_api_data(token, slack_user_list_url, "members"),
+                         "user_data")
         token = 'invalid-token'
         with self.assertRaises(Exception) as invalid:
-            get_user_data(token)
+            get_slack_api_data(token, slack_user_list_url, "members")
         self.assertEqual(invalid.exception.args, ('Enter a valid token!',),)
+
+        token = 'status404'
+        wrong_url = "https://slack.com/api/wrong"
+        with self.assertRaises(Exception) as invalid:
+            get_slack_api_data(token, wrong_url, "members")
+        self.assertEqual(invalid.exception.args, ('Something went wrong. Please try again!',),)
 
     def test_build_zerver_realm(self) -> None:
         fixtures_path = os.path.dirname(os.path.abspath(__file__)) + '/../fixtures/'
@@ -458,8 +468,8 @@ class SlackImporter(ZulipTestCase):
                 return_value = [])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_user_data")
-    def test_slack_import_to_existing_database(self, mock_get_user_data: mock.Mock,
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_slack_api_data")
+    def test_slack_import_to_existing_database(self, mock_get_slack_api_data: mock.Mock,
                                                mock_build_avatar_url: mock.Mock,
                                                mock_build_avatar: mock.Mock,
                                                mock_process_uploads: mock.Mock,
@@ -482,7 +492,7 @@ class SlackImporter(ZulipTestCase):
 
         user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                          "slack_fixtures", "user_data.json")
-        mock_get_user_data.return_value = ujson.load(open(user_data_fixture))['members']
+        mock_get_slack_api_data.return_value = ujson.load(open(user_data_fixture))['members']
 
         do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))
