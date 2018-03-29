@@ -358,6 +358,57 @@ body.night-mode .alert-box .alert.alert-error::before {
     color: 1px solid hsl(0, 75%, 65%);
 }
 
+/* Popover: */
+
+body.night-mode .hotspot.overlay .hotspot-popover {
+    border-color: hsla(0, 0%, 0%, 0.2)!important;
+
+    /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
+    color. */
+    box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
+}
+
+/* Arrows: */
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-right::before {
+    border-left-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-right::after {
+    border-left-color: hsl(212, 28%, 18%);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-bottom::before {
+    border-top-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-bottom::after {
+    border-top-color: hsl(212, 28%, 18%);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-left::before {
+    border-right-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-left::after {
+    border-right-color: hsl(212, 28%, 18%);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-top::before {
+    border-bottom-color: hsla(0, 0%, 0%, 0.2);
+}
+
+body.night-mode .hotspot.overlay .hotspot-popover.arrow-top::after {
+    border-bottom-color: hsl(212, 28%, 18%);
+}
+
+/* Content: */
+
+body.night-mode .hotspot.overlay .hotspot-popover .hotspot-popover-content,
+body.night-mode .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
+    background-color: hsl(212, 28%, 18%);
+}
+
 body.night-mode .top-messages-logo svg path {
     fill: hsl(214, 27%, 18%);
     stroke: hsl(214, 27%, 18%);
