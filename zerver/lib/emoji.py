@@ -28,7 +28,10 @@ EMOTICON_CONVERSIONS = {
 
 possible_emoticons = EMOTICON_CONVERSIONS.keys()
 possible_emoticon_regexes = map(re.escape, possible_emoticons)  # type: ignore # AnyStr/str issues
-emoticon_regex = '(?<![^\s])(?P<emoticon>(' + ')|('.join(possible_emoticon_regexes) + '))(?![\S])'  # type: ignore # annoying
+terminal_symbols = ',.;?!()\\[\\] "\'\\n\\t'  # type: str # from composebox_typeahead.js
+emoticon_regex = ('(?<![^{0}])(?P<emoticon>('.format(terminal_symbols)
+                  + ')|('.join(possible_emoticon_regexes)  # type: ignore # AnyStr/str issues
+                  + '))(?![^{0}])'.format(terminal_symbols))
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
 def translate_emoticons(text: Text) -> Text:
