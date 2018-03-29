@@ -109,7 +109,7 @@ exports.update_bot_settings_tip = function () {
     if (current_permission === permission_type.admins_only.code) {
         tip_text = i18n.t("Only organization administrators can add bots to this organization");
     } else if (current_permission === permission_type.restricted.code) {
-        tip_text = i18n.t("Only orgainzation administrators can add generic bots");
+        tip_text = i18n.t("Only organization administrators can add generic bots");
     } else {
         tip_text = i18n.t("Anyone in this organization can add bots");
     }
