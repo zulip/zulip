@@ -1,71 +1,51 @@
-This webhook integration for Trello is the recommended way to
-integrate with Trello, and should support all the features of
-the [legacy Trello cron-based integration](./trello-plugin).
+### Get Zulip notifications from your Trello boards!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-Trello doesn't support creating webhooks on their website; you
-have to do it using their API.  So before you create a webhook,
-you'll need to follow the steps below to get from Trello
-an **APPLICATION_KEY**, and a **UserToken**, and to fetch
-the board's **idModel**.
+1. We will first collect three items: a **Board ID**, an **API Key**, and a
+   **User Token**.
 
-To generate the **APPLICATION_KEY**, open this URL in your web browser:
-`https://trello.com/1/appkey/generate`.
+    * **Board ID**: Go to your Trello board. The URL should look like
+      `https://trello.com/b/<BOARD_ID>/<BOARD_NAME>`. Note down the
+      `<BOARD_ID>`.
 
-To generate a read access token, fill in and open this URL in the browser while logged into your Trello account:
-`https://trello.com/1/authorize?key=<APPLICATION_KEY>&name=Issue+Manager&expiration=never&response_type=token&scope=read`
-You will receive your **UserToken**. Note it.
+    * **API Key**: Go to <https://trello.com/1/appkey/generate>. Note down the
+      key listed under **Developer API Keys**.
 
-Within the the board URL, you can find the **TRELLO_BOARD_SHORT_ID**.
-The Trello URL format is:
-`https://trello.com/b/TRELLO_BOARD_SHORT_ID/boardName`.
+    * **User Token**: Go to <https://trello.com/1/appkey/generate>. Under
+      **Developer API Keys**, click on the **Token** link. Click on **Allow**.
+      Note down the token generated.
 
-Now you have the **APPLICATION_KEY**, **UserToken** and **TRELLO_BOARD_SHORT_ID**.
-Construct this URL and open it in your web browser:
-`https://api.trello.com/1/board/<TRELLO_BOARD_SHORT_ID>?key=<APPLICATION_KEY>&token=<UserToken>`
-You'll receive some JSON. Within that, find the **id** value. That's your **idModel**; note it.
+1. {!download-python-bindings.md!}
 
-Now you have all the ingredients you need.  To actually create the
-Trello webhook, you will need to send an `HTTP POST`
-request to the trello API webhook endpoint
-(`https://api.trello.com/1/tokens/<UserToken>/webhooks/?key=<APPLICATION_KEY>`)
-with the following data:
+1. Open `/usr/local/share/zulip/integrations/trello/zulip_trello_config.py`
+   with your favorite editor and change the following lines to specify
+   the Trello **API Key**, **User Token**, and the webhook URL constructed
+   above:
 
-```
-{
-"description": "Webhook for Zulip integration",
-"callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",
-"idModel": "<ID_MODEL>",
-}
-```
+    ```
+    TRELLO_API_KEY = "<Trello API key generated above>"
+    TRELLO_TOKEN = "<Trello User Token generated above>"
+    ZULIP_WEBHOOK_URL = "<URL constructed above>"
+    ```
 
-You can do this using the `curl` program as follows:
-```
-curl 'https://api.trello.com/1/tokens/<UserToken>/webhooks/?key=<APPLICATION_KEY>'
--H 'Content-Type: application/json' -H 'Accept: application/json'
---data-binary $'{\n  "description": "Webhook for Zulip integration",\n  "callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",\n  "idModel": "<ID_MODEL>"\n}'
---compressed
-```
+1. Go to the `/usr/local/share/zulip/integrations/trello/` directory
+   and run the `zulip_trello.py` script, like so:
 
-The response from Trello should look like:
+    ```
+    python zulip_trello.py <trello_board_name> <trello_board_id>
+    ```
 
-```
-{
-"id": "<WEBHOOK_ID>",
-"description": "Webhook for Zulip integration",
-"idModel": "<ID_MODEL>",
-"callbackURL": "<URL_TO_ZULIP_WEBHOOK_FROM_SECOND_STEP>",
-"active": true
-}
-```
+    Replace `<trello_board_name` and `<trello_board_id` with the Trello
+    board's name and **Board ID**, respectively.
 
-Congratulations! You've created a webhook and your integration is live.
+!!! tip ""
+    To learn more, see [Trello's webhooks documentation][1].
 
+[1]: https://developers.trello.com/page/webhooks
 
-When you make changes in on this board in Trello, you will
-receive Zulip notifications like this:
+{!congrats.md!}
 
 ![](/static/images/integrations/trello/001.png)
