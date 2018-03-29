@@ -47,7 +47,7 @@ var keydown_unshift_mappings = {
     40: {name: 'down_arrow', message_view_only: false}, // down arrow
 };
 
-var keydown_ctrl_mappings = {
+var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search', message_view_only: false}, // 'K'
     219: {name: 'escape', message_view_only: false}, // '['
 };
@@ -107,16 +107,20 @@ var keypress_mappings = {
 };
 
 exports.get_keydown_hotkey = function (e) {
-    if (e.metaKey || e.altKey) {
+    if (e.altKey) {
         return;
     }
 
     var hotkey;
-    if (e.ctrlKey) {
-        hotkey = keydown_ctrl_mappings[e.which];
+
+    var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
+    if (isCmdOrCtrl) {
+        hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
         }
+        return;
+    } else if (e.metaKey || e.ctrlKey) {
         return;
     }
 
