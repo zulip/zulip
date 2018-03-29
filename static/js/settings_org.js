@@ -82,6 +82,44 @@ var org_permissions = {
     },
 };
 
+function get_subsection_property_types(subsection) {
+    if (_.has(org_settings, subsection)) {
+        return org_settings[subsection];
+    } else if (_.has(org_permissions, subsection)) {
+        return org_permissions[subsection];
+    } else if (subsection === 'org_profile') {
+        return org_profile;
+    }
+    return;
+}
+
+function property_value_element_refers(property_name) {
+    if (property_name === 'realm_message_content_edit_limit_minutes') {
+        return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
+    } else if (property_name === 'realm_create_stream_permission') {
+        if (page_params.realm_create_stream_by_admins_only) {
+            return "by_admins_only";
+        }
+        if (page_params.realm_waiting_period_threshold === 0) {
+            return "by_anyone";
+        }
+        if (page_params.realm_waiting_period_threshold === 3) {
+            return "by_admin_user_with_three_days_old";
+        }
+        return "by_admin_user_with_custom_time";
+    } else if (property_name === 'realm_add_emoji_by_admins_only') {
+        if (page_params.realm_add_emoji_by_admins_only) {
+            return "by_admins_only";
+        }
+        return "by_anyone";
+    }
+    return;
+}
+
+exports.extract_property_name = function (elem) {
+    return elem.attr('id').split('-').join('_').replace("id_", "");
+};
+
 exports.set_create_stream_permission_dropdwon = function () {
     var menu = $("#id_realm_create_stream_permission");
     $("#id_realm_waiting_period_threshold").parent().hide();
@@ -277,6 +315,21 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
+exports.handle_dependent_subsettings = function (property_name) {
+    if (property_name === 'realm_create_stream_permission') {
+        exports.set_create_stream_permission_dropdwon();
+    } else if (property_name === 'realm_allow_message_editing') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
+            "id_realm_message_content_edit_limit_minutes", true);
+    } else if (property_name === 'realm_invite_required') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
+            "id_realm_invite_by_admins_only", true);
+    } else if (property_name === 'realm_restricted_to_domain') {
+        settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
+            "id_realm_disallow_disposable_email_addresses", false);
+    }
+};
+
 function _set_up() {
     meta.loaded = true;
 
@@ -330,32 +383,6 @@ function _set_up() {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
     });
 
-    function property_value_element_refers(property_name) {
-        if (property_name === 'realm_message_content_edit_limit_minutes') {
-            return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
-        } else if (property_name === 'realm_create_stream_permission') {
-            if (page_params.realm_create_stream_by_admins_only) {
-                return "by_admins_only";
-            }
-            if (page_params.realm_waiting_period_threshold === 0) {
-                return "by_anyone";
-            }
-            if (page_params.realm_waiting_period_threshold === 3) {
-                return "by_admin_user_with_three_days_old";
-            }
-            return "by_admin_user_with_custom_time";
-        } else if (property_name === 'realm_add_emoji_by_admins_only') {
-            if (page_params.realm_add_emoji_by_admins_only) {
-                return "by_admins_only";
-            }
-            return "by_anyone";
-        }
-        return;
-    }
-
-    exports.extract_property_name = function (elem) {
-        return elem.attr('id').split('-').join('_').replace("id_", "");
-    };
 
     function check_property_changed(elem) {
         elem = $(elem);
@@ -408,21 +435,6 @@ function _set_up() {
             change_process_button.removeClass('show').addClass('hide');
         }
     });
-
-    exports.handle_dependent_subsettings = function (property_name) {
-        if (property_name === 'realm_create_stream_permission') {
-            exports.set_create_stream_permission_dropdwon();
-        } else if (property_name === 'realm_allow_message_editing') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
-                "id_realm_message_content_edit_limit_minutes", true);
-        } else if (property_name === 'realm_invite_required') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
-                "id_realm_invite_by_admins_only", true);
-        } else if (property_name === 'realm_restricted_to_domain') {
-            settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
-                "id_realm_disallow_disposable_email_addresses", false);
-        }
-    };
 
     function discard_property_element_changes(elem) {
         elem = $(elem);
@@ -553,17 +565,6 @@ function _set_up() {
         }
 
         return opts;
-    }
-
-    function get_subsection_property_types(subsection) {
-        if (_.has(org_settings, subsection)) {
-            return org_settings[subsection];
-        } else if (_.has(org_permissions, subsection)) {
-            return org_permissions[subsection];
-        } else if (subsection === 'org_profile') {
-            return org_profile;
-        }
-        return;
     }
 
     $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
