@@ -382,6 +382,21 @@
       "translate_emoticons": true
     },
     {
+      "name": "translate_emoticons_at_sentence_end",
+      "input": "Translate this :).",
+      "expected_output": "<p>Translate this <span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span>.</p>",
+      "text_content": "Translate this \ud83d\ude03.",
+      "translate_emoticons": true
+    },
+    {
+      "name": "translate_emoticons_between_symbols",
+      "input": "Translate this !:)?",
+      "expected_output": "<p>Translate this !<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span>?</p>",
+      "marked_expected_output": "<p>Translate this !:)?</p>",
+      "text_content": "Translate this !\ud83d\ude03?",
+      "translate_emoticons": true
+    },
+    {
       "name": "random_emoji_1",
       "input": ":airplane:",
       "expected_output": "<p><span class=\"emoji emoji-2708\" title=\"airplane\">:airplane:</span></p>"
