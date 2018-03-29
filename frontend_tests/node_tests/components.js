@@ -31,11 +31,6 @@ var RIGHT_KEY = { which: 39 };
             self.class = _.without(tokens, c).join(' ');
         };
 
-        self.hasClass = function (c) {
-            var tokens = self.class.trim().split(/ +/);
-            return tokens.indexOf(c) >= 0;
-        };
-
         self.click = function () {
             click_f.call(this);
         };
@@ -49,29 +44,9 @@ var RIGHT_KEY = { which: 39 };
             focused_tab = i;
         };
 
-        self.next = function () {
-            return tabs[i+1];
-        };
-
-        self.prev = function () {
-            return tabs[i-1];
-        };
-
         tabs.push(self);
 
         return self;
-    }
-
-    function selected_tabs() {
-        var selected_tabs = _.filter(tabs, function (tab) {
-            return tab.hasClass('selected');
-        });
-        assert.equal(selected_tabs.length, 1);
-        selected_tabs.eq = function (idx) {
-            assert.equal(idx, 0);
-            return selected_tabs[0];
-        };
-        return selected_tabs;
     }
 
     var ind_tab = (function () {
@@ -93,15 +68,8 @@ var RIGHT_KEY = { which: 39 };
             });
         };
 
-        self.filter = function (sel) {
-            switch (sel) {
-            case "[data-tab-id='0']":
-                return tabs[0];
-            case "[data-tab-id='1']":
-                return tabs[1];
-            default:
-                throw Error('unknown selector: ' + sel);
-            }
+        self.eq = function (idx) {
+            return tabs[idx];
         };
 
         return self;
@@ -122,11 +90,6 @@ var RIGHT_KEY = { which: 39 };
             switch (sel) {
             case ".ind-tab":
                 return ind_tab;
-            case ".ind-tab[data-tab-id='0']":
-                return tabs[0];
-            case ".selected":
-                return selected_tabs();
-
             default:
                 throw Error('unknown selector: ' + sel);
             }
@@ -217,4 +180,9 @@ var RIGHT_KEY = { which: 39 };
     // try to crash the key handler
     keydown_f.call(tabs[focused_tab], LEFT_KEY);
     assert.equal(widget.value(), 'translated: Keyboard shortcuts');
+
+    callback_args = undefined;
+
+    click_f.call(tabs[1]);
+    assert.equal(widget.value(), 'translated: Message formatting');
 }());
