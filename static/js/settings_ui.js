@@ -29,6 +29,7 @@ exports.initialize = function () {
 // direct calls to `ui_report`.
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
     var spinner = $(status_element).expectOne();
+    spinner.fadeTo(0,1);
     loading.make_indicator(spinner, {text: exports.strings.saving});
     var success_msg;
     var success_continuation;

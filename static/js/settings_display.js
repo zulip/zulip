@@ -7,10 +7,18 @@ var meta = {
 };
 
 function change_display_setting(data, status_element, success_msg, sticky) {
+    var $status_el = $(status_element);
+    var status_is_sticky = $status_el.data('is_sticky');
+    var display_message = (status_is_sticky) ? $status_el.data('sticky_msg') : success_msg;
     var opts = {
-        success_msg: success_msg,
-        sticky: sticky,
+        success_msg: display_message,
+        sticky: status_is_sticky || sticky,
     };
+
+    if (sticky) {
+        $status_el.data('is_sticky', true);
+        $status_el.data('sticky_msg', success_msg);
+    }
     settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
 

@@ -351,6 +351,87 @@ input[type=checkbox] + .inline-block {
     margin-bottom: 0px;
 }
 
+#settings_page .icon-button {
+    min-width: auto;
+    border-width: 2px;
+    -moz-border-radius: 28px;
+    -webkit-border-radius: 28px;
+    border-radius: 5px;
+    border: 1px solid hsl(0,0%,80%);
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 3px 12px 4px 10px;
+    text-decoration: none;
+    color: hsl(0, 0%, 43%);
+    font-weight: 400;
+}
+
+#settings_page .icon-button:hover {
+    background: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 61%);
+    color: hsl(0, 0%, 18%);
+}
+
+#settings_page .icon-button:hover .icon-button-icon {
+    color: hsl(0, 0%, 47%);
+}
+
+#settings_page .icon-button.primary:hover {
+    background-color: hsl(166, 35%, 57%);
+    border: 1px solid hsl(166, 35%, 57%);
+}
+
+#settings_page .icon-button.primary {
+    background-color: hsl(156, 30%, 50%);
+    color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(155, 30%, 50%);
+}
+
+#settings_page .icon-button .icon-button-icon {
+    color: #969696;
+}
+
+#settings_page .icon-button.primary .icon-button-icon {
+    color: white;
+}
+
+#settings_page .icon-button .icon-button-text,
+#settings_page .icon-button .icon-button-icon {
+    vertical-align: baseline;
+    margin-right: 2px;
+}
+
+#settings_page .save-button-controls {
+    display: inline;
+    margin-left: 15px;
+}
+
+#settings_page .save-button-controls.hide {
+    display: none;
+}
+
+#settings_page .save-button {
+    margin-right: 5px;
+}
+
+#settings_page .icon-button.save-button.saving {
+    background: hsl(156, 14%, 40%);
+    border-color: hsl(156, 14%, 40%);
+}
+
+#settings_page .save-button.saving .icon-button-icon {
+    display: none;
+}
+
+#settings_page .save-button.saving .icon-button-loading {
+    display: inline-block;
+}
+
+#settings_page .save-button .icon-button-loading {
+    display: none;
+}
+
 .organization-settings-parent div:first-of-type {
     margin-top: 10px;
 }
@@ -471,14 +552,13 @@ input[type=checkbox].inline-block {
     width: auto !important;
 
     background: transparent;
-    border: 1px solid hsl(178, 100%, 40%);
-    color: hsl(178, 100%, 40%);
-
-    padding: 2px 5px;
     border-radius: 4px;
-
     margin-top: 14px;
     margin-left: 10px;
+    border: 1px solid hsl(156, 30%, 50%);
+    color: hsl(156, 30%, 50%);
+    padding: 3px 10px;
+    font-size: 15px;
 }
 
 #settings_page .alert-notification.alert-error {
@@ -493,9 +573,6 @@ input[type=checkbox].inline-block {
 }
 
 /* make the spinner green like the text and box. */
-#settings_page .alert-notification .loading_indicator_spinner svg path {
-    fill: hsl(178, 100%, 40%);
-}
 
 #settings_page .alert-notification .loading_indicator_text {
     margin-top: 0px;
@@ -505,6 +582,8 @@ input[type=checkbox].inline-block {
 
 #settings_page .alert-notification img {
     margin-right: 5px;
+    vertical-align: middle;
+    margin-top: -1px;
 }
 
 #notification-settings .notification-reminder {
