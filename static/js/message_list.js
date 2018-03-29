@@ -43,7 +43,9 @@ exports.MessageList.prototype = {
         var interior_messages = [];
 
         if (opts.messages_are_new && !self.fetch_status.can_append()) {
-            blueslip.log('Ignoring new message(s) for list that is behind on fetches');
+            var debug_info = this.debug();
+            debug_info.message_ids = _.pluck(messages, 'id');
+            blueslip.log('Ignoring new message(s) for list that is behind on fetches: ' + JSON.stringify(debug_info));
             return;
         }
 
@@ -100,6 +102,29 @@ exports.MessageList.prototype = {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
+    },
+
+    debug: function () {
+        var last = this.last() || {};
+        var type;
+
+        if (home_msg_list === this) {
+            type = 'home';
+        } else if (exports.all === this) {
+            type = 'all';
+        } else {
+            type = 'narrow';
+        }
+
+        var info = {
+            num_items: this.num_items(),
+            can_append: this.fetch_status.can_append(),
+            last_id: last.id,
+            selected_id: this.selected_id(),
+            type: type,
+        }
+
+        return info;
     },
 
     get: function MessageList_get(id) {
