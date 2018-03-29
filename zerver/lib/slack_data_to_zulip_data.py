@@ -36,10 +36,12 @@ def rm_tree(path: str) -> None:
         shutil.rmtree(path)
 
 def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[ZerverFieldsT],
-                             realm_subdomain: str, fixtures_path: str,
-                             slack_data_dir: str) -> Tuple[ZerverFieldsT, AddedUsersT,
-                                                           AddedRecipientsT, AddedChannelsT,
-                                                           List[ZerverFieldsT]]:
+                             realm_subdomain: str, fixtures_path: str, slack_data_dir: str,
+                             custom_emoji_list: ZerverFieldsT)-> Tuple[ZerverFieldsT, AddedUsersT,
+                                                                       AddedRecipientsT,
+                                                                       AddedChannelsT,
+                                                                       List[ZerverFieldsT],
+                                                                       ZerverFieldsT]:
     """
     Returns:
     1. realm, Converted Realm data
@@ -47,6 +49,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
     4. added_channels, which is a dictionary to map from channel name to zulip stream_id
     5. avatars, which is list to map avatars to zulip avatar records.json
+    6. emoji_url_map, which is maps emoji name to its slack url
     """
     NOW = float(timezone_now().timestamp())
 
@@ -66,8 +69,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
                  zerver_huddle=[],
                  zerver_userprofile_crossrealm=[],
                  zerver_useractivityinterval=[],
-                 zerver_realmfilter=[],
-                 zerver_realmemoji=[])
+                 zerver_realmfilter=[])
 
     zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
         slack_data_dir, user_list, realm_id, int(NOW), domain_name)
@@ -75,6 +77,9 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
                                                                  realm_id,
                                                                  added_users,
                                                                  zerver_userprofile)
+    zerver_realmemoji, emoji_url_map = build_realmemoji(custom_emoji_list, realm_id)
+    realm['zerver_realmemoji'] = zerver_realmemoji
+
     # See https://zulipchat.com/help/set-default-streams-for-new-users
     # for documentation on zerver_defaultstream
     realm['zerver_userprofile'] = zerver_userprofile
@@ -86,7 +91,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     added_channels = channels_to_zerver_stream_fields[2]
     added_recipient = channels_to_zerver_stream_fields[5]
 
-    return realm, added_users, added_recipient, added_channels, avatars
+    return realm, added_users, added_recipient, added_channels, avatars, emoji_url_map
 
 def build_zerver_realm(fixtures_path: str, realm_id: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
@@ -99,6 +104,28 @@ def build_zerver_realm(fixtures_path: str, realm_id: int, realm_subdomain: str,
     zerver_realm_skeleton[0]['date_created'] = time
 
     return zerver_realm_skeleton
+
+def build_realmemoji(custom_emoji_list: ZerverFieldsT,
+                     realm_id: int) -> Tuple[List[ZerverFieldsT],
+                                             ZerverFieldsT]:
+    zerver_realmemoji = []
+    emoji_url_map = {}
+    emoji_id = 0
+    for emoji_name, url in custom_emoji_list.items():
+        if 'emoji.slack-edge.com' in url:
+            # Some of the emojis we get from the api have invalid links
+            # this is to prevent errors related to them
+            realmemoji = dict(
+                name=emoji_name,
+                id=emoji_id,
+                author=None,
+                realm=realm_id,
+                file_name=os.path.basename(url),
+                deactivated=False)
+            emoji_url_map[emoji_name] = url
+            zerver_realmemoji.append(realmemoji)
+            emoji_id += 1
+    return zerver_realmemoji, emoji_url_map
 
 def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                 timestamp: Any, domain_name: str) -> Tuple[List[ZerverFieldsT],
@@ -724,9 +751,13 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
     # We get the user data from the legacy token method of slack api, which is depreciated
     # but we use it as the user email data is provided only in this method
     user_list = get_slack_api_data(token, "https://slack.com/api/users.list", "members")
+    # Get custom emoji from slack api
+    custom_emoji_list = get_slack_api_data(token, "https://slack.com/api/emoji.list", "emoji")
 
-    realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
-        domain_name, realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
+    realm, added_users, added_recipient, added_channels, avatar_list, \
+        emoji_url_map = slack_workspace_to_realm(domain_name, realm_id, user_list,
+                                                 realm_subdomain, fixtures_path,
+                                                 slack_data_dir, custom_emoji_list)
 
     message_json, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
@@ -825,7 +856,7 @@ def get_data_file(path: str) -> Any:
     data = json.load(open(path))
     return data
 
-def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> List[ZerverFieldsT]:
+def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> Any:
     data = requests.get('%s?token=%s' % (slack_api_url, token))
     if data.status_code == requests.codes.ok:
         if 'error' in data.json():

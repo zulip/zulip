@@ -324,8 +324,8 @@ class SlackImporter(ZulipTestCase):
 
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
-        realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
-            'testdomain', realm_id, user_list, 'test-realm', './fixtures', './random_path')
+        realm, added_users, added_recipient, added_channels, avatar_list, em = slack_workspace_to_realm(
+            'testdomain', realm_id, user_list, 'test-realm', './fixtures', './random_path', {})
         test_zerver_realmdomain = [{'realm': realm_id, 'allow_subdomains': False,
                                     'domain': 'testdomain', 'id': realm_id}]
         # Functioning already tests in helper functions
@@ -492,7 +492,7 @@ class SlackImporter(ZulipTestCase):
 
         user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
                                          "slack_fixtures", "user_data.json")
-        mock_get_slack_api_data.return_value = ujson.load(open(user_data_fixture))['members']
+        mock_get_slack_api_data.side_effect = [ujson.load(open(user_data_fixture))['members'], {}]
 
         do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))
