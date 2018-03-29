@@ -41,7 +41,7 @@ def get_caches_in_use(threshold_days):
 
     for setup_dir in setups_to_check:
         node_modules_link_path = os.path.join(setup_dir, "node_modules")
-        if not os.path.exists(node_modules_link_path):
+        if not os.path.islink(node_modules_link_path):
             # If 'package.json' file doesn't exist then no node_modules
             # cache is associated with this setup.
             continue
