@@ -548,7 +548,6 @@ html {
     color: hsl(0, 0%, 34%);
     font-weight: 600;
     text-align: center;
-    text-transform: uppercase;
 }
 
 .portico-page .or::before,
