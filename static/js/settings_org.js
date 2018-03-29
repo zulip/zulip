@@ -83,16 +83,16 @@ var org_permissions = {
 };
 
 exports.set_create_stream_permission_dropdwon = function () {
-    var menu = "id_realm_create_stream_permission";
+    var menu = $("#id_realm_create_stream_permission");
     $("#id_realm_waiting_period_threshold").parent().hide();
     if (page_params.realm_create_stream_by_admins_only) {
-        $("#" + menu + " option[value=by_admins_only]").attr("selected", "selected");
+        menu.val("by_admins_only");
     } else if (page_params.realm_waiting_period_threshold === 0) {
-        $("#" + menu + " option[value=by_anyone]").attr("selected", "selected");
+        menu.val("by_anyone");
     } else if (page_params.realm_waiting_period_threshold === 3) {
-        $("#" + menu + " option[value=by_admin_user_with_three_days_old]").attr("selected", "selected");
+        menu.val("by_admin_user_with_three_days_old");
     } else {
-        $("#" + menu + " option[value=by_admin_user_with_custom_time]").attr("selected", "selected");
+        menu.val("by_admin_user_with_custom_time");
         $("#id_realm_waiting_period_threshold").parent().show();
     }
 };
