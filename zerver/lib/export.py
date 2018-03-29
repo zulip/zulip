@@ -1377,13 +1377,16 @@ def bulk_import_client(data: TableData, model: Any, table: TableName) -> None:
             client = Client.objects.create(name=item['name'])
         update_id_map(table='client', old_id=item['id'], new_id=client.id)
 
-def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> None:
+def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
+                         processing_emojis: bool=False) -> None:
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
         records = ujson.loads(records_file.read())
 
     re_map_foreign_keys(records, 'realm_id', related_table="realm", id_field=True)
-    re_map_foreign_keys(records, 'user_profile_id', related_table="user_profile", id_field=True)
+    if not processing_emojis:
+        re_map_foreign_keys(records, 'user_profile_id', related_table="user_profile",
+                            id_field=True)
     for record in records:
         if processing_avatars:
             # For avatars, we need to rehash the user ID with the
@@ -1394,6 +1397,12 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
                 file_path += '.original'
             else:
                 file_path += '.png'
+        elif processing_emojis:
+            # For emojis we follow the function 'upload_emoji_image'
+            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+                realm_id=record['realm_id'],
+                emoji_file_name=record['file_name'])
+            file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
@@ -1422,7 +1431,8 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False) -> No
                 # If medium sized avatar does not exist, this creates it using the original image
                 upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
-def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False) -> None:
+def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False,
+                      processing_emojis: bool=False) -> None:
     upload_backend = S3UploadBackend()
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
@@ -1443,6 +1453,12 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
             key.key = avatar_path
             if record['s3_path'].endswith('.original'):
                 key.key += '.original'
+        if processing_emojis:
+            # For emojis we follow the function 'upload_emoji_image'
+            emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+                realm_id=record['realm_id'],
+                emoji_file_name=record['file_name'])
+            key.key = emoji_path
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
@@ -1476,15 +1492,19 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
             # code path for more notes.
             upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
-def import_uploads(import_dir: Path, processing_avatars: bool=False) -> None:
+def import_uploads(import_dir: Path, processing_avatars: bool=False,
+                   processing_emojis: bool=False) -> None:
     if processing_avatars:
         logging.info("Importing avatars")
+    elif processing_emojis:
+        logging.info("Importing emojis")
     else:
         logging.info("Importing uploaded files")
     if settings.LOCAL_UPLOADS_DIR:
-        import_uploads_local(import_dir, processing_avatars=processing_avatars)
+        import_uploads_local(import_dir, processing_avatars=processing_avatars,
+                             processing_emojis=processing_emojis)
     else:
-        if processing_avatars:
+        if processing_avatars or processing_emojis:
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
@@ -1621,6 +1641,12 @@ def do_import_realm(import_dir: Path) -> Realm:
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
     import_uploads(os.path.join(import_dir, "uploads"))
+
+    # We need to have this check as the emoji files are only present in the data
+    # importer from slack
+    # For Zulip export, this doesn't exist
+    if os.path.exists(os.path.join(import_dir, "emoji")):
+        import_uploads(os.path.join(import_dir, "emoji"), processing_emojis=True)
 
     # Import zerver_message and zerver_usermessage
     import_message_data(import_dir)
