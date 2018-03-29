@@ -55,7 +55,10 @@ function render_bots() {
     $('#active_bots_list').empty();
     $('#inactive_bots_list').empty();
 
-    _.each(bot_data.get_all_bots_for_current_user(), function (elem) {
+    var all_bots_for_current_user = bot_data.get_all_bots_for_current_user();
+    var user_owns_an_active_bot = false;
+
+    _.each(all_bots_for_current_user, function (elem) {
         add_bot_row({
             name: elem.full_name,
             email: elem.email,
@@ -66,7 +69,16 @@ function render_bots() {
             is_active: elem.is_active,
             zuliprc: 'zuliprc', // Most browsers do not allow filename starting with `.`
         });
+        user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     });
+
+    if (page_params.is_admin || page_params.realm_bot_creation_policy !==
+        exports.bot_creation_policy_values.admins_only.code) {
+        if (!user_owns_an_active_bot) {
+            focus_tab.add_a_new_bot_tab();
+            return;
+        }
+    }
 
     if ($("#bots_lists_navbar .add-a-new-bot-tab").hasClass("active")) {
         $("#add-a-new-bot-form").show();
