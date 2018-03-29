@@ -636,7 +636,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     ###
 
-    last_reminder = models.DateTimeField(default=timezone_now, null=True)  # type: Optional[datetime.datetime]
+    last_reminder = models.DateTimeField(default=None, null=True)  # type: Optional[datetime.datetime]
     rate_limits = models.CharField(default=u"", max_length=100)  # type: Text # comma-separated list of range:max pairs
 
     # Default streams
