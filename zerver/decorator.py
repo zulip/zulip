@@ -275,11 +275,24 @@ def log_exception_to_webhook_logger(request: HttpRequest, user_profile: UserProf
     else:
         request_body = str(payload)
 
+    custom_header_template = "{header}: {value}\n"
+
+    header_message = ""
+    for header in request.META.keys():
+        if header.lower().startswith('http_x'):
+            header_message += custom_header_template.format(
+                header=header, value=request.META[header])
+
+    if not header_message:
+        header_message = None
+
     message = """
 user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
 content_type: {content_type}
+custom_http_headers:
+{custom_headers}
 body:
 
 {body}
@@ -290,6 +303,7 @@ body:
         body=payload,
         path_info=request.META.get('PATH_INFO', None),
         content_type=request.content_type,
+        custom_headers=header_message,
     )
     message = message.strip(' ')
     webhook_logger.exception(message)
