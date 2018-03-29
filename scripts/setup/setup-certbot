@@ -75,6 +75,11 @@ CERTBOT_PATH="/usr/local/sbin/certbot-auto"
 wget -q https://dl.eff.org/certbot-auto -O "$CERTBOT_PATH"
 chmod a+x "$CERTBOT_PATH"
 
+# First, we install the OS packages with --quiet, to suppress `apt`
+# prompting the user for input.  This can't be part of the same
+# invocation as gets the certs, since `certonly --quiet --force-interactive`
+# rejects the Certbot ToS, causing Certbot to fail.
+"$CERTBOT_PATH" --os-packages-only --quiet
 # We don't use --no-interactive, because certbot needs to ask the user
 # to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
 # Passing --force-interactive suppresses a warning, but also brings up
