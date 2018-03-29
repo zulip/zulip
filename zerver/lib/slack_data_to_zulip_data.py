@@ -721,7 +721,10 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     realm_id = 0
 
-    user_list = get_user_data(token)
+    # We get the user data from the legacy token method of slack api, which is depreciated
+    # but we use it as the user email data is provided only in this method
+    user_list = get_slack_api_data(token, "https://slack.com/api/users.list", "members")
+
     realm, added_users, added_recipient, added_channels, avatar_list = slack_workspace_to_realm(
         domain_name, realm_id, user_list, realm_subdomain, fixtures_path, slack_data_dir)
 
@@ -822,14 +825,15 @@ def get_data_file(path: str) -> Any:
     data = json.load(open(path))
     return data
 
-def get_user_data(token: str) -> List[ZerverFieldsT]:
-    slack_user_list_url = "https://slack.com/api/users.list"
-    user_list = requests.get('%s?token=%s' % (slack_user_list_url, token))
-    if user_list.status_code == requests.codes.ok:
-        user_list_json = user_list.json()['members']
-        return user_list_json
+def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> List[ZerverFieldsT]:
+    data = requests.get('%s?token=%s' % (slack_api_url, token))
+    if data.status_code == requests.codes.ok:
+        if 'error' in data.json():
+            raise Exception('Enter a valid token!')
+        json_data = data.json()[get_param]
+        return json_data
     else:
-        raise Exception('Enter a valid token!')
+        raise Exception('Something went wrong. Please try again!')
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
