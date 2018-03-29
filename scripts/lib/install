@@ -130,7 +130,7 @@ fi
 
 apt-get -y dist-upgrade $APT_OPTIONS
 apt-get install -y \
-    puppet git curl \
+    puppet git curl wget \
     python python3 python-six python3-six crudini \
     $ADDITIONAL_PACKAGES
 

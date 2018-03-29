@@ -4,6 +4,7 @@ class zulip::base {
                      "ntp",
                      # Used in scripts including install-yarn.sh
                      "curl",
+                     "wget",
                      # Used in scripts
                      "netcat",
                      # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
