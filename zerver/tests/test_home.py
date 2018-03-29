@@ -95,7 +95,6 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
-            "new_user_bot_configured",
             "night_mode",
             "password_min_guesses",
             "password_min_length",
@@ -190,7 +189,7 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 44)
+        self.assert_length(queries, 43)
         self.assert_length(cache_mock.call_args_list, 8)
 
         html = result.content.decode('utf-8')
@@ -234,7 +233,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 17)
-            self.assert_length(queries, 60)
+            self.assert_length(queries, 59)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:

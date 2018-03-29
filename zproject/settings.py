@@ -226,9 +226,6 @@ DEFAULT_SETTINGS.update({
     # ERROR_BOT sends Django exceptions to an "errors" stream in the
     # system realm.
     'ERROR_BOT': None,
-    # NEW_USER_BOT sends notifications about new user signups to a
-    # "signups" stream in the system realm.
-    'NEW_USER_BOT': None,
     # These are extra bot users for our end-to-end Nagios message
     # sending tests.
     'NAGIOS_STAGING_SEND_BOT': None,

@@ -66,8 +66,6 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
-    if signup_notifications_stream_id is not None and settings.NEW_USER_BOT is None:
-        return json_error(_("NEW_USER_BOT must configured first."))
 
     # Additional validation of permissions values to add new bot
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:

@@ -126,7 +126,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     # Reset our don't-spam-users-with-email counter since the
     # user has since logged in
-    if user_profile.last_reminder is not None:
+    if user_profile.last_reminder is not None:  # nocoverage
+        # TODO: Look into the history of last_reminder; we may have
+        # eliminated that as a useful concept for non-bot users.
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
@@ -172,7 +174,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
         # Server settings.
-        new_user_bot_configured = settings.NEW_USER_BOT is not None,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,

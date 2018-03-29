@@ -302,8 +302,8 @@ def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_st
     )
 
 def notify_new_user(user_profile: UserProfile, internal: bool=False) -> None:
-    if settings.NEW_USER_BOT is not None:
-        send_signup_message(settings.NEW_USER_BOT, "signups", user_profile, internal)
+    if settings.NOTIFICATION_BOT is not None:
+        send_signup_message(settings.NOTIFICATION_BOT, "signups", user_profile, internal)
     statsd.gauge("users.signups.%s" % (user_profile.realm.string_id), 1, delta=True)
 
     # We also clear any scheduled invitation emails to prevent them
@@ -1890,7 +1890,7 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         elif sender.email == settings.WELCOME_BOT:
             # The welcome bot welcomes folks to the stream.
             pass
-        elif sender.email == settings.NEW_USER_BOT:
+        elif sender.email == settings.NOTIFICATION_BOT:
             pass
         else:
             # All other cases are an error.
@@ -3005,10 +3005,10 @@ def do_create_realm(string_id: Text, name: Text, restricted_to_domain: Optional[
                "org_type": org_type})
 
     # Send a notification to the admin realm (if configured)
-    if settings.NEW_USER_BOT is not None:
+    if settings.NOTIFICATION_BOT is not None:
         signup_message = "Signups enabled"
-        admin_realm = get_system_bot(settings.NEW_USER_BOT).realm
-        internal_send_message(admin_realm, settings.NEW_USER_BOT, "stream",
+        admin_realm = get_system_bot(settings.NOTIFICATION_BOT).realm
+        internal_send_message(admin_realm, settings.NOTIFICATION_BOT, "stream",
                               "signups", realm.display_subdomain, signup_message)
     return realm
 
