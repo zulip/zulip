@@ -213,12 +213,22 @@ exports.paste_handler_converter = function (paste_html) {
 
 exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
+    if (!clipboardData) {
+        // On IE11, ClipboardData isn't defined.  One can instead
+        // access it with `window.clipboardData`, but even that
+        // doesn't support text/html, so this code path couldn't do
+        // anything special anyway.  So we instead just let the
+        // default paste handler run on IE11.
+        return;
+    }
 
-    var paste_html = clipboardData.getData('text/html');
-    if (paste_html) {
-        event.preventDefault();
-        var text = exports.paste_handler_converter(paste_html);
-        compose_ui.insert_syntax_and_focus(text);
+    if (clipboardData.getData) {
+        var paste_html = clipboardData.getData('text/html');
+        if (paste_html) {
+            event.preventDefault();
+            var text = exports.paste_handler_converter(paste_html);
+            compose_ui.insert_syntax_and_focus(text);
+        }
     }
 };
 
