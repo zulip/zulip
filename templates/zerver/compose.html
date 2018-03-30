@@ -56,80 +56,58 @@
                 <button type="button" class="close" id='compose_close' title="{{ _('Cancel compose') }} (Esc)">&times;</button>
                 <form id="send_message_form" action="/json/messages" method="post">
                     {{ csrf_input }}
-                    <table class="compose_table">
-                        <tbody>
-                            <tr class="ztable_layout_row">
-                                <td class="ztable_comp_col1" />
-                                <td class="ztable_comp_col2" />
-                            </tr>
-                            <tr id="stream-message">
-                                <td class="message_header_colorblock message_header_stream left_part">
-                                </td>
-                                <td class="right_part">
-                                    <span id="compose-lock-icon">
-                                        <i class="icon-vector-lock" title="{{ _('This is an invite-only stream') }}"></i>
-                                    </span>
-                                    <input type="text" class="recipient_box" name="stream" id="stream"
-                                      maxlength="30"
-                                      value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}"/>
-                                    <i class="icon-vector-narrow icon-vector-small"></i>
-                                    <input type="text" class="recipient_box" name="subject" id="subject"
-                                      maxlength="60"
-                                      value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}"/>
-                                </td>
-                            </tr>
-                            <tr id="private-message">
-                                <td class="to_text">
-                                    <span>{{ _('To') }}:</span>
-                                </td>
-                                <td class="right_part">
-                                    <div class="pm_recipient">
-                                        <div class="pill-container" data-before="{{ _('You and') }}">
-                                            <div class="input" contenteditable="true" id="private_message_recipient" name="recipient"
-                                              data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
-                                        </div>
+                    <div class="compose_table">
+                        <div id="stream-message">
+                            <div class="message_header_colorblock message_header_stream left_part"></div>
+                            <div class="right_part">
+                                <span id="compose-lock-icon">
+                                    <i class="icon-vector-lock" title="{{ _('This is an invite-only stream') }}"></i>
+                                </span>
+                                <input type="text" class="recipient_box" name="stream" id="stream" maxlength="30" value="" placeholder="{{ _('Stream') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Stream') }}" />
+                                <i class="icon-vector-narrow icon-vector-small"></i>
+                                <input type="text" class="recipient_box" name="subject" id="subject" maxlength="60" value="" placeholder="{{ _('Topic') }}" autocomplete="off" tabindex="0" aria-label="{{ _('Topic') }}" />
+                            </div>
+                        </div>
+                        <div id="private-message">
+                            <div class="to_text">
+                                <span>{{ _('To') }}:</span>
+                            </div>
+                            <div class="right_part">
+                                <div class="pm_recipient">
+                                    <div class="pill-container" data-before="{{ _('You and') }}">
+                                        <div class="input" contenteditable="true" id="private_message_recipient" name="recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
                                     </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="messagebox" colspan="2">
-                                    <textarea class="new_message_textarea" name="content" id='compose-textarea'
-                                      value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
-                                    <div class="scrolling_list" id="preview_message_area" style="display:none;">
-                                        <div id="markdown_preview_spinner"></div>
-                                        <div id="preview_content"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="messagebox" colspan="2">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                                <div class="scrolling_list" id="preview_message_area" style="display:none;">
+                                    <div id="markdown_preview_spinner"></div>
+                                    <div id="preview_content"></div>
+                                </div>
+                                <div class="drag"></div>
+                                <div id="below-compose-content">
+                                    <input type="file" id="file_input" class="notvisible pull-left" multiple />
+                                    <a class="message-control-button icon-vector-smile" id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
+                                    <a class="message-control-button icon-vector-font" title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
+                                    <a class="message-control-button icon-vector-paper-clip notdisplayed" id="attach_files" href="#" title="{{ _('Attach files') }}"></a> {% if jitsi_server_url %}
+                                    <a class="message-control-button fa fa-video-camera" id="video_link" href="#" title="{{ _('Add video call') }}"></a> {% endif %}
+                                    <a id="undo_markdown_preview" class="message-control-button icon-vector-edit" style="display:none;" title="{{ _('Write') }}"></a>
+                                    <a id="markdown_preview" class="message-control-button icon-vector-eye-open" title="{{ _('Preview') }}"></a>
+                                    <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
+                                    <span id="sending-indicator"></span>
+                                    <div id="send_controls" class="new-style">
+                                        <label id="enter-sends-label" class="compose_checkbox_label">
+                                            <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
+                                        </label>
+                                        <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
                                     </div>
-                                    <div class="drag"></div>
-                                    <div id="below-compose-content">
-                                        <input type="file" id="file_input" class="notvisible pull-left" multiple />
-                                        <a class="message-control-button icon-vector-smile"
-                                          id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
-                                        <a class="message-control-button icon-vector-font"
-                                          title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
-                                        <a class="message-control-button icon-vector-paper-clip notdisplayed"
-                                          id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
-                                        {% if jitsi_server_url %}
-                                        <a class="message-control-button fa fa-video-camera"
-                                          id="video_link" href="#" title="{{ _('Add video call') }}"></a>
-                                        {% endif %}
-                                        <a id="undo_markdown_preview"
-                                          class="message-control-button icon-vector-edit"
-                                          style="display:none;" title="{{ _('Write') }}"></a>
-                                        <a id="markdown_preview" class="message-control-button icon-vector-eye-open"
-                                          title="{{ _('Preview') }}"></a>
-                                        <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
-                                        <span id="sending-indicator"></span>
-                                        <div id="send_controls" class="new-style">
-                                            <label id="enter-sends-label" class="compose_checkbox_label">
-                                                <input type="checkbox" id="enter_sends" />{{ _('Press Enter to send') }}
-                                            </label>
-                                            <button type="submit" id="compose-send-button" class="button small send_message" tabindex="150" title="{{ _('Send') }} (Ctrl + Enter)">{{ _('Send') }}</button>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

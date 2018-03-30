@@ -69,6 +69,7 @@
     padding: 0px;
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .compose_table .right_part .icon-vector-narrow {
@@ -82,13 +83,13 @@
 }
 
 .compose_table .pm_recipient {
-    margin: 0px 20px 0px 10px;
+    margin-left: 5px;
+    margin-right: 20px;
     display: flex;
     width: 100%;
 }
 
 .compose_table #private-message .to_text {
-    width: 65px;
     vertical-align: middle;
 
     font-weight: 600;
@@ -172,7 +173,6 @@ table.compose_table {
     display: none;
     position: absolute;
     right: 0px;
-    top: 5px;
 }
 
 #compose_invite_users,
@@ -386,7 +386,7 @@ input.recipient_box {
 
 #stream-message,
 #private-message {
-    display: none;
+    display: flex;
 }
 
 .compose_table .drafts-link {

@@ -893,6 +893,7 @@ td.pointer {
     border-radius: 3px 0px 0px 0px;
     /* box-shadow: 0px 2px 3px hsl(0, 0%, 80%); */
     box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%), inset 2px 0px 1px -2px hsl(0, 0%, 20%) !important;
+    width: 10px;
 }
 
 .summary_row_private_message .summary_colorblock {
