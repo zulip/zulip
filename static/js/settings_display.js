@@ -6,9 +6,10 @@ var meta = {
     loaded: false,
 };
 
-function change_display_setting(data, status_element, success_msg) {
+function change_display_setting(data, status_element, success_msg, sticky) {
     var opts = {
         success_msg: success_msg,
+        sticky: sticky,
     };
     settings_ui.do_settings_change(channel.patch, '/json/settings/display', data, status_element, opts);
 }
@@ -44,7 +45,7 @@ exports.set_up = function () {
         $('#default_language_name').text(new_language);
 
         change_display_setting(data, '#language-settings-status',
-                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."));
+                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
 
     });
 
@@ -74,7 +75,7 @@ exports.set_up = function () {
         var data = {};
         data.left_side_userlist = JSON.stringify(left_side_userlist);
         change_display_setting(data, '#display-settings-status',
-                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."));
+                               i18n.t("Saved. Please <a class='reload_link'>reload</a> for the change to take effect."), true);
     });
 
     $("#twenty_four_hour_time").change(function () {
