@@ -160,6 +160,9 @@ DEFAULT_SETTINGS = {
     'LOCAL_UPLOADS_DIR': None,
     'MAX_FILE_UPLOAD_SIZE': 25,
 
+    # Default user settings
+    'DEFAULT_TWENTY_FOUR_HOUR_TIME': False,
+
     # Feedback bot settings
     'ENABLE_FEEDBACK': PRODUCTION,
     'FEEDBACK_EMAIL': None,

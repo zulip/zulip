@@ -192,7 +192,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
             tos_version=None,
             default_all_public_streams=False,
             full_name=get_user_full_name(user),
-            twenty_four_hour_time=False,
+            twenty_four_hour_time=settings.DEFAULT_TWENTY_FOUR_HOUR_TIME,
             groups=[],  # This is Zulip-specific
             enable_online_push_notifications=False,
             alert_words="[]",
