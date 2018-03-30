@@ -281,6 +281,7 @@ $(function () {
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
+    info_overlay.initialize();
     ui.initialize();
     panels.initialize();
     typing.initialize();
