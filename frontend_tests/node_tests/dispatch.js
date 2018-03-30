@@ -215,6 +215,13 @@ var event_fixtures = {
         value: false,
     },
 
+    realm__update_default_twenty_four_hour_time: {
+        type: 'realm',
+        op: 'update',
+        property: 'default_twenty_four_hour_time',
+        value: false,
+    },
+
     realm__update_dict__default: {
         type: 'realm',
         op: 'update_dict',

@@ -43,6 +43,9 @@ var org_settings = {
         default_language: {
             type: 'text',
         },
+        default_twenty_four_hour_time: {
+            type: 'bool',
+        },
     },
     notifications: {
         send_welcome_emails: {

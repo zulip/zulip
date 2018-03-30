@@ -40,7 +40,8 @@ def create_user_profile(realm: Realm, email: Text, password: Optional[Text],
                                tutorial_status=tutorial_status,
                                enter_sends=enter_sends,
                                onboarding_steps=ujson.dumps([]),
-                               default_language=realm.default_language)
+                               default_language=realm.default_language,
+                               twenty_four_hour_time=realm.default_twenty_four_hour_time)
 
     if bot_type or not active:
         password = None

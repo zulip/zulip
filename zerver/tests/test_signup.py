@@ -1591,6 +1591,34 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         outbox.pop()
 
+    def test_default_twenty_four_hour_time(self) -> None:
+        """
+        Check if the default twenty_four_hour_time setting of new user
+        is the default twenty_four_hour_time of the realm.
+        """
+        email = self.nonreg_email('newguy')
+        password = "newpassword"
+        realm = get_realm('zulip')
+        do_set_realm_property(realm, 'default_twenty_four_hour_time', True)
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password)
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.nonreg_user('newguy')
+        self.assertEqual(user_profile.twenty_four_hour_time, realm.default_twenty_four_hour_time)
+
     def test_signup_already_active(self) -> None:
         """
         Check if signing up with an active email redirects to a login page.

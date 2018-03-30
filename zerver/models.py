@@ -157,7 +157,6 @@ class Realm(models.Model):
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
     description = models.TextField(null=True)  # type: Optional[Text]
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
-
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js
@@ -166,6 +165,7 @@ class Realm(models.Model):
     allow_edit_history = models.BooleanField(default=True)  # type: bool
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
     allow_community_topic_editing = models.BooleanField(default=False)  # type: bool
+    default_twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -200,6 +200,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_by_admins_only=bool,
         default_language=Text,
+        default_twenty_four_hour_time = bool,
         description=Text,
         disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,

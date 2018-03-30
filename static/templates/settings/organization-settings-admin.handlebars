@@ -131,6 +131,17 @@
                         {{/each}}
                     </select>
                 </div>
+                <div class="input-group">
+                    <label class="checkbox">
+                        <input type="checkbox" id="id_realm_default_twenty_four_hour_time"
+                        name="realm_default_twenty_four_hour_time"
+                            {{#if realm_default_twenty_four_hour_time}}checked="checked"{{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="id_realm_default_twenty_four_hour_time" class="inline-block">
+                        {{t "Default time format, 24-hour time (17:00 instead of 5:00 PM)" }}
+                    </label>
+                </div>
             </div>
         </div>
 
