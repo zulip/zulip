@@ -1,20 +1,24 @@
 # Change your name
 
-It's easy to change how your name is shown in Zulip. With full Unicode support,
-you can spell your name exactly how you'd like it to be displayed.
+By default, everyone can change their name in Zulip. You can write your name
+in any language you'd like.
 
-{!go-to-the.md!} [Your account](/#settings/your-account)
-{!settings.md!}
+Organization administrators can
+[change anyone's name](/help/change-a-users-name), and
+[prevent users from changing their names](/help/restrict-name-and-email-changes). This
+is useful when users' names are managed via LDAP or another data source.
 
-2. Change your name in the **Full name** field.
+1. From your desktop, click on the **gear**
+   (<i class="icon-vector-cog"></i>) in the upper right corner.
+
+1. Select **Settings** from the dropdown.
+
+1. Click the button with your name in it, under **User settings**.
 
     !!! warn ""
-        **Note:** Some organization administrators manage users' names
-        via LDAP or another data source, and have disabled the ability
-        for individual users to update their names in Zulip.  If you
-        are unable to edit your name, check with your organization
-        administrators for help.
+        **Note:** If clicking on the button doesn't work, check that your
+        organization allows name changes. Follow the steps at
+        [prevent users from changing their names](/help/restrict-name-and-email-changes)
+        and see if the relevant box is checked.
 
-{!save-changes.md!} account settings.
-
-Congratulations! You have updated your name.
+1. Change your name, and click **Save**.
