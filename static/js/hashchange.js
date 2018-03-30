@@ -152,13 +152,13 @@ function do_hashchange(from_reload) {
         ui_util.change_tab_to("#streams");
         break;
     case "#keyboard-shortcuts":
-        ui.show_info_overlay("keyboard-shortcuts");
+        info_overlay.show("keyboard-shortcuts");
         break;
     case "#markdown-help":
-        ui.show_info_overlay("markdown-help");
+        info_overlay.show("markdown-help");
         break;
     case "#search-operators":
-        ui.show_info_overlay("search-operators");
+        info_overlay.show("search-operators");
         break;
     case "#drafts":
         ui_util.change_tab_to("#drafts");

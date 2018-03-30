@@ -1077,6 +1077,7 @@ JS_SPECS = {
             'js/lightbox.js',
             'js/ui_report.js',
             'js/message_scroll.js',
+            'js/info_overlay.js',
             'js/ui.js',
             'js/night_mode.js',
             'js/ui_util.js',

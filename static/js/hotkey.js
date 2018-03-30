@@ -622,7 +622,7 @@ exports.process_hotkey = function (e, hotkey) {
             gear_menu.open();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
-            ui.maybe_show_keyboard_shortcuts();
+            info_overlay.maybe_show_keyboard_shortcuts();
             return true;
         case 'stream_cycle_backward':
             narrow.stream_cycle_backward();

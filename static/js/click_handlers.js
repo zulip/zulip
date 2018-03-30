@@ -457,7 +457,8 @@ $(function () {
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
-        ui.show_info_overlay($(this).attr("data-overlay-trigger"));
+        var target = $(this).attr("data-overlay-trigger");
+        info_overlay.show(target);
     });
 
     function handle_compose_click(e) {
