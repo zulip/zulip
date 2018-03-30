@@ -2,6 +2,33 @@ var settings_bots = (function () {
 
 var exports = {};
 
+var focus_tab = {
+    add_a_new_bot_tab: function () {
+        $("#bots_lists_navbar .active").removeClass("active");
+        $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
+        $("#add-a-new-bot-form").show();
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
+    },
+    active_bots_tab: function () {
+        $("#bots_lists_navbar .active").removeClass("active");
+        $("#bots_lists_navbar .active-bots-tab").addClass("active");
+        $("#add-a-new-bot-form").hide();
+        $("#active_bots_list").show();
+        $("#inactive_bots_list").hide();
+        $('#bot_table_error').hide();
+    },
+    inactive_bots_tab: function () {
+        $("#bots_lists_navbar .active").removeClass("active");
+        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
+        $("#add-a-new-bot-form").hide();
+        $("#active_bots_list").hide();
+        $("#inactive_bots_list").show();
+        $('#bot_table_error').hide();
+    },
+};
+
 function add_bot_row(info) {
     info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
@@ -126,7 +153,7 @@ exports.update_bot_permissions_ui = function () {
         $('#create_bot_form').hide();
         $('.add-a-new-bot-tab').hide();
         $('.account-api-key-section').hide();
-        $("#bots_lists_navbar .active-bots-tab").click();
+        focus_tab.active_bots_tab();
     } else {
         $('#create_bot_form').show();
         $('.add-a-new-bot-tab').show();
@@ -424,40 +451,19 @@ exports.set_up = function () {
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        $("#bots_lists_navbar .add-a-new-bot-tab").addClass("active");
-        $("#bots_lists_navbar .active-bots-tab").removeClass("active");
-        $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
-        $("#add-a-new-bot-form").show();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        focus_tab.add_a_new_bot_tab();
     });
 
     $("#bots_lists_navbar .active-bots-tab").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
-        $("#bots_lists_navbar .active-bots-tab").addClass("active");
-        $("#bots_lists_navbar .inactive-bots-tab").removeClass("active");
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").show();
-        $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        focus_tab.active_bots_tab();
     });
 
     $("#bots_lists_navbar .inactive-bots-tab").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
-
-        $("#bots_lists_navbar .add-a-new-bot-tab").removeClass("active");
-        $("#bots_lists_navbar .active-bots-tab").removeClass("active");
-        $("#bots_lists_navbar .inactive-bots-tab").addClass("active");
-        $("#add-a-new-bot-form").hide();
-        $("#active_bots_list").hide();
-        $("#inactive_bots_list").show();
-        $('#bot_table_error').hide();
+        focus_tab.inactive_bots_tab();
     });
 
 };
