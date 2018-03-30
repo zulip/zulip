@@ -191,9 +191,12 @@ exports.start = function (msg_type, opts) {
     exports.expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-    // If we are invoked by a compose hotkey (c or C), do not assume that we know
-    // what the message's topic or PM recipient should be.
-    if ((opts.trigger === "compose_hotkey") || (opts.trigger === "new topic button")) {
+    // If we are invoked by a compose hotkey (c or C) or new topic button
+    // or sidebar stream actions (in stream popover), do not assume that we know what
+    // the message's topic or PM recipient should be.
+    if ((opts.trigger === "compose_hotkey") ||
+        (opts.trigger === "new topic button") ||
+        (opts.trigger === "sidebar stream actions")) {
         opts.subject = '';
         opts.private_message_recipient = '';
     }
