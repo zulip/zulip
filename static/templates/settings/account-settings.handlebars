@@ -38,7 +38,7 @@
             </form>
 
             <form class="form-horizontal full-name-change-form">
-                <div class="inline-block grid user-name-parent">
+                <div class="input-group inline-block grid user-name-parent">
                     <div class="user-name-section inline-block">
                         <label for="full_name" class="inline-block title">{{t "Full name" }}</label>
                         <a id="change_full_name" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_name_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
