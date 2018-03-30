@@ -172,30 +172,6 @@ exports.populate_realm_domains = function (realm_domains) {
     });
 };
 
-exports.reset_realm_default_language = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $("#id_realm_default_language").val(page_params.realm_default_language);
-};
-
-exports.update_realm_description = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $('#id_realm_description').val(page_params.realm_description);
-};
-
-exports.update_message_retention_days = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $("#id_realm_message_retention_days").val(page_params.message_retention_days);
-};
-
 exports.populate_auth_methods = function (auth_methods) {
     if (!meta.loaded) {
         return;

@@ -603,11 +603,8 @@ function you created to the following object with `noop` as the value:
     # frontend_tests/node_tests/dispatch.js
 
     set_global('settings_org', {
-        reset_realm_default_language: noop,
         update_email_change_display: noop,
         update_name_change_display: noop,
-        update_message_retention_days: noop,
-        update_realm_description: noop,
     });
 
 Beyond that, you should add any applicable tests that verify the
