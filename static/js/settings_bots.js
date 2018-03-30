@@ -164,12 +164,10 @@ exports.update_bot_permissions_ui = function () {
         !page_params.is_admin) {
         $('#create_bot_form').hide();
         $('.add-a-new-bot-tab').hide();
-        $('.account-api-key-section').hide();
         focus_tab.active_bots_tab();
     } else {
         $('#create_bot_form').show();
         $('.add-a-new-bot-tab').show();
-        $('.account-api-key-section').show();
     }
 };
 
