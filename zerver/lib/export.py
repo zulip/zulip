@@ -1717,6 +1717,10 @@ def import_message_data(import_dir: Path) -> None:
         if 'zerver_reaction' in data:
             re_map_foreign_keys(data['zerver_reaction'], 'message', related_table="message")
             re_map_foreign_keys(data['zerver_reaction'], 'user_profile', related_table="user_profile")
+            for reaction in data['zerver_reaction']:
+                if reaction['reaction_type'] == Reaction.REALM_EMOJI:
+                    re_map_foreign_keys(data['zerver_reaction'], 'emoji_code',
+                                        related_table="realmemoji", id_field=True)
             update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
             bulk_import_model(data, Reaction, 'zerver_reaction')
 

@@ -465,6 +465,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
+                                     zerver_realmemoji: List[ZerverFieldsT],
                                      domain_name: str) -> Tuple[ZerverFieldsT,
                                                                 List[ZerverFieldsT],
                                                                 List[ZerverFieldsT]]:
@@ -489,6 +490,7 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     zerver_message, zerver_usermessage, attachment, uploads, \
         reactions = channel_message_to_zerver_message(realm_id, users, added_users,
                                                       added_recipient, all_messages,
+                                                      zerver_realmemoji,
                                                       realm['zerver_subscription'], domain_name)
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
@@ -517,6 +519,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       added_users: AddedUsersT,
                                       added_recipient: AddedRecipientsT,
                                       all_messages: List[ZerverFieldsT],
+                                      zerver_realmemoji: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
@@ -561,7 +564,8 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         # Process message reactions
         if 'reactions' in message.keys():
             reaction_id_count = build_reactions(reaction_list, message['reactions'], added_users,
-                                                message_id, reaction_id_count, name_to_codepoint)
+                                                message_id, reaction_id_count, name_to_codepoint,
+                                                zerver_realmemoji)
 
         # Process different subtypes of slack messages
         if 'subtype' in message.keys():
@@ -652,24 +656,37 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
 
 def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFieldsT],
                     added_users: AddedUsersT, message_id: int, reaction_id: int,
-                    name_to_codepoint: ZerverFieldsT) -> int:
+                    name_to_codepoint: ZerverFieldsT,
+                    zerver_realmemoji: List[ZerverFieldsT]) -> int:
+    realmemoji = {}
+    for realm_emoji in zerver_realmemoji:
+        realmemoji[realm_emoji['name']] = realm_emoji['id']
+
     # For the unicode emoji codes, we use equivalent of
     # function 'emoji_name_to_emoji_code' in 'zerver/lib/emoji' here
     for slack_reaction in reactions:
         emoji_name = slack_reaction['name']
+        # Check in unicode emoji
         if emoji_name in name_to_codepoint:
-            for user in slack_reaction['users']:
-                reaction = dict(
-                    id=reaction_id,
-                    emoji_code=name_to_codepoint[emoji_name],
-                    emoji_name=emoji_name,
-                    message=message_id,
-                    reaction_type=Reaction.UNICODE_EMOJI,
-                    user_profile=added_users[user])
-                reaction_id += 1
-                reaction_list.append(reaction)
+            emoji_code = name_to_codepoint[emoji_name]
+            reaction_type = Reaction.UNICODE_EMOJI
+        # Check in realm emoji
+        elif emoji_name in realmemoji:
+            emoji_code = realmemoji[emoji_name]
+            reaction_type = Reaction.REALM_EMOJI
         else:
             continue
+
+        for user in slack_reaction['users']:
+            reaction = dict(
+                id=reaction_id,
+                emoji_code=emoji_code,
+                emoji_name=emoji_name,
+                message=message_id,
+                reaction_type=reaction_type,
+                user_profile=added_users[user])
+            reaction_id += 1
+            reaction_list.append(reaction)
     return reaction_id
 
 def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverFieldsT, s3_path: str,
@@ -761,7 +778,7 @@ def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, 
 
     message_json, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
-        realm, domain_name)
+        realm, realm['zerver_realmemoji'], domain_name)
 
     emoji_folder = os.path.join(output_dir, 'emoji')
     os.makedirs(emoji_folder, exist_ok=True)
