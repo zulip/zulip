@@ -274,6 +274,7 @@ class DecoratorTestCase(TestCase):
             with self.assertRaisesRegex(Exception, "raised by webhook function"):
                 request.body = "invalidjson"
                 request.content_type = 'application/json'
+                request.META['HTTP_X_CUSTOM_HEADER'] = 'custom_value'
                 my_webhook_raises_exception(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
             message = """
@@ -281,6 +282,8 @@ user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
 content_type: {content_type}
+custom_http_headers:
+{custom_headers}
 body:
 
 {body}
@@ -292,6 +295,7 @@ body:
                 client_name=webhook_client_name,
                 path_info=request.META.get('PATH_INFO'),
                 content_type=request.content_type,
+                custom_headers="HTTP_X_CUSTOM_HEADER: custom_value\n",
                 body=request.body,
             ))
 
@@ -352,6 +356,8 @@ user: {email} ({realm})
 client: {client_name}
 URL: {path_info}
 content_type: {content_type}
+custom_http_headers:
+{custom_headers}
 body:
 
 {body}
@@ -363,6 +369,7 @@ body:
                 client_name='Unspecified',
                 path_info=request.META.get('PATH_INFO'),
                 content_type=request.content_type,
+                custom_headers=None,
                 body=request.body,
             ))
 
