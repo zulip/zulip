@@ -59,6 +59,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
             create_stream_by_admins_only: noop,
             default_language: noop,
+            default_twenty_four_hour_time: noop,
             description: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
