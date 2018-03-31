@@ -309,7 +309,7 @@ exports.create = function (opts) {
             var text = (e.originalEvent || e).clipboardData.getData('text/plain');
 
             // insert text manually
-            document.execCommand("insertHTML", false, text);
+            document.execCommand("insertText", false, text);
 
             funcs.insertManyPills(store.$input.text().trim());
         });
