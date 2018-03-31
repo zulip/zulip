@@ -5,6 +5,7 @@
         <table class="table table-condensed table-striped admin_profile_fields_table">
             <tbody id="admin_profile_fields_table">
                 <th>{{t "Label" }}</th>
+                <th>{{t "Hint" }}</th>
                 <th>{{t "Type" }}</th>
                 {{#if is_admin}}
                 <th class="actions">{{t "Actions" }}</th>
@@ -20,6 +21,11 @@
                 <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
                     <input type="text" id="profile_field_name" name="name" />
+                </div>
+                <div class="control-group">
+                    <label for="profile_field_hint" class="control-label">{{t "Hint" }}</label>
+                    <input type="text" id="profile_field_hint" name="hint" />
+                    <div class="alert" id="admin-profile-field-hint-status"></div>
                 </div>
                 <div class="control-group">
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>

@@ -4,6 +4,9 @@
         <span class="profile_field_name">{{name}}</span>
     </td>
     <td>
+        <span class="profile_field_hint">{{hint}}</span>
+    </td>
+    <td>
         <span class="profile_field_type">{{type}}</span>
     </td>
     {{#if ../can_modify}}
@@ -23,6 +26,10 @@
             <div class="input-group name_change_container">
                 <label for="name">{{t "Name" }}</label>
                 <input type="text" name="name" value="{{ name }}" />
+            </div>
+            <div class="input-group hint_change_container">
+                <label for="hint">{{t "Hint" }}</label>
+                <input type="text" name="hint" value="{{ hint }}" />
             </div>
             <div class="input-group">
                 <button type="button" class="button rounded sea-green submit">
