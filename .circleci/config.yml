@@ -21,10 +21,10 @@ jobs:
               sudo chown -R circleci "${dirs[@]}"
       - restore_cache:
           keys:
-          - v1-npm-base.trusty.1
+          - v1-npm-base.trusty-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v1-venv-base.trusty.1
+          - v1-venv-base.trusty-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
       - run:
           name: install dependencies
@@ -50,11 +50,11 @@ jobs:
       - save_cache:
           paths:
             - /srv/zulip-npm-cache
-          key: v1-npm-base.trusty.1
+          key: v1-npm-base.trusty-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
       - save_cache:
           paths:
             - /srv/zulip-venv-cache
-          key: v1-venv-base.trusty.1
+          key: v1-venv-base.trusty-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
       # TODO: in Travis we also cache ~/zulip-emoji-cache, ~/node, ~/misc
 
       # The moment of truth!  Run the tests.
@@ -101,10 +101,10 @@ jobs:
               sudo chown -R circleci "${dirs[@]}"
       - restore_cache:
           keys:
-          - v1-npm-base.xenial.1
+          - v1-npm-base.xenial-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
       - restore_cache:
           keys:
-          - v1-venv-base.xenial.1
+          - v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
       - run:
           name: install dependencies
@@ -116,11 +116,11 @@ jobs:
       - save_cache:
           paths:
             - /srv/zulip-npm-cache
-          key: v1-npm-base.xenial.1
+          key: v1-npm-base.xenial-{{ checksum "package.json" }}-{{ checksum "yarn.lock" }}
       - save_cache:
           paths:
             - /srv/zulip-venv-cache
-          key: v1-venv-base.xenial.1
+          key: v1-venv-base.xenial-{{ checksum "requirements/thumbor.txt" }}-{{ checksum "requirements/dev.txt" }}
 
       - run:
           name: run backend tests
