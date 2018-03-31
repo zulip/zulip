@@ -36,9 +36,6 @@ set_global('templates', {
 
     settings_org.reset();
     settings_org.populate_realm_domains();
-    settings_org.reset_realm_default_language();
-    settings_org.update_realm_description();
-    settings_org.update_message_retention_days();
     settings_org.populate_auth_methods();
 }());
 
@@ -445,10 +442,6 @@ function test_extract_property_name() {
 }());
 
 (function test_misc() {
-    page_params.realm_default_language = 'es';
-    settings_org.reset_realm_default_language();
-    assert.equal($('#id_realm_default_language').val(), 'es');
-
     page_params.is_admin = false;
 
     page_params.realm_name_changes_disabled = false;
@@ -474,14 +467,6 @@ function test_extract_property_name() {
 
     settings_account.update_email_change_display();
     assert.equal($("#change_email .button").attr('disabled'), false);
-
-    page_params.realm_description = 'realm description';
-    settings_org.update_realm_description();
-    assert.equal($('#id_realm_description').val(), 'realm description');
-
-    page_params.message_retention_days = 42;
-    settings_org.update_message_retention_days();
-    assert.equal($('#id_realm_message_retention_days').val(), 42);
 
     var elem = $('#realm_notifications_stream_name');
     stream_data.get_sub_by_id = function (stream_id) {

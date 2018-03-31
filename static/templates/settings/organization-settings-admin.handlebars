@@ -117,10 +117,10 @@
             </div>
         </div>
 
-        <div id="org-language-notify" class="org-subsection-parent">
+        <div id="org-user-defaults" class="org-subsection-parent">
             <div class="subsection-header">
-                <h3>{{t "Language &amp; notifications" }}</h3>
-                {{ partial "settings-save-discard-widget" "section_name" "language-notify" }}
+                <h3>{{t "Default user settings" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "user-defaults" }}
             </div>
             <div class="inline-block organization-settings-parent">
                 <div class="input-group">
@@ -131,6 +131,26 @@
                         {{/each}}
                     </select>
                 </div>
+                <div class="input-group">
+                    <label class="checkbox">
+                        <input type="checkbox" id="id_realm_default_twenty_four_hour_time"
+                        name="realm_default_twenty_four_hour_time"
+                            {{#if realm_default_twenty_four_hour_time}}checked="checked"{{/if}} />
+                        <span></span>
+                    </label>
+                    <label for="id_realm_default_twenty_four_hour_time" class="inline-block">
+                        {{t "Default time format, 24-hour time (17:00 instead of 5:00 PM)" }}
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div id="org-notifications" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Notifications" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
                 <div class="input-group">
                     <label class="checkbox">
                         <input type="checkbox" id="id_realm_send_welcome_emails" name="realm_send_welcome_emails"

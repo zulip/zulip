@@ -39,10 +39,15 @@ var org_settings = {
             type: 'bool',
         },
     },
-    language_notify: {
+    user_defaults: {
         default_language: {
             type: 'text',
         },
+        default_twenty_four_hour_time: {
+            type: 'bool',
+        },
+    },
+    notifications: {
         send_welcome_emails: {
             type: 'bool',
         },
@@ -170,30 +175,6 @@ exports.populate_realm_domains = function (realm_domains) {
     _.each(realm_domains, function (realm_domain) {
         realm_domains_table_body.append(templates.render("admin-realm-domains-list", {realm_domain: realm_domain}));
     });
-};
-
-exports.reset_realm_default_language = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $("#id_realm_default_language").val(page_params.realm_default_language);
-};
-
-exports.update_realm_description = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $('#id_realm_description').val(page_params.realm_description);
-};
-
-exports.update_message_retention_days = function () {
-    if (!meta.loaded) {
-        return;
-    }
-
-    $("#id_realm_message_retention_days").val(page_params.message_retention_days);
 };
 
 exports.populate_auth_methods = function (auth_methods) {

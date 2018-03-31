@@ -378,14 +378,14 @@ casper.then(function () {
         casper.evaluate(function () {
             $('#id_realm_default_language').val('de').change();
         });
-        casper.test.assertSelectorHasText('#org-submit-language-notify', "Save");
-        casper.click('#org-submit-language-notify');
+        casper.test.assertSelectorHasText('#org-submit-user-defaults', "Save");
+        casper.click('#org-submit-user-defaults');
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#org-submit-language-notify[data-status="saved"]', function () {
-        casper.test.assertSelectorHasText('#org-submit-language-notify',
+    casper.waitUntilVisible('#org-submit-user-defaults[data-status="saved"]', function () {
+        casper.test.assertSelectorHasText('#org-submit-user-defaults',
                                           'Saved');
     });
 });
