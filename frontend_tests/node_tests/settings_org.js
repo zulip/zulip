@@ -488,12 +488,12 @@ function test_extract_property_name() {
         assert.equal(stream_id, 42);
         return { name: 'some_stream' };
     };
-    settings_org.render_notifications_stream_ui(42);
+    settings_org.render_notifications_stream_ui(42, elem);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_notifications_stream_ui();
+    settings_org.render_notifications_stream_ui(undefined, elem);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
@@ -502,12 +502,12 @@ function test_extract_property_name() {
         assert.equal(stream_id, 75);
         return { name: 'some_stream' };
     };
-    settings_org.render_signup_notifications_stream_ui(75);
+    settings_org.render_notifications_stream_ui(75, elem);
     assert.equal(elem.text(), '#some_stream');
     assert(!elem.hasClass('text-warning'));
 
     stream_data.get_sub_by_id = noop;
-    settings_org.render_signup_notifications_stream_ui();
+    settings_org.render_notifications_stream_ui(undefined, elem);
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
