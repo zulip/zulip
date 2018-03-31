@@ -1,5 +1,6 @@
 var noop = function () {};
 
+set_global('$', global.make_zjquery());
 set_global('page_params', {
     use_websockets: true,
 });
