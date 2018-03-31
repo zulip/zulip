@@ -11,8 +11,8 @@ from zerver.models import UserProfile
 @has_request_variables
 def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
-        topic: Text, body: Text, stream: Optional[Text]=REQ(default=None),
-        user_specified_topic: Optional[Text]=REQ("topic", default=None)
+        topic: Text, body: Text, stream: Optional[Text]=REQ(default=None, type=str),
+        user_specified_topic: Optional[Text]=REQ("topic", default=None, type=str)
 ) -> None:
 
     if stream is None:

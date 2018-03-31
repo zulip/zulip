@@ -13,10 +13,11 @@ from zerver.models import Stream, UserProfile
 
 @api_key_only_webhook_view("NewRelic")
 @has_request_variables
-def api_newrelic_webhook(request: HttpRequest, user_profile: UserProfile,
-                         alert: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None),
-                         deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
-                         )-> HttpResponse:
+def api_newrelic_webhook(
+        request: HttpRequest, user_profile: UserProfile,
+        alert: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None, type=dict),
+        deployment: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None, type=dict)
+)-> HttpResponse:
     if alert:
         # Use the message as the subject because it stays the same for
         # "opened", "acknowledged", and "closed" messages that should be
