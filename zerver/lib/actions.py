@@ -27,6 +27,7 @@ from zerver.lib.addressee import (
 from zerver.lib.bot_config import (
     ConfigError,
     get_bot_config,
+    get_bot_configs,
     set_bot_config,
 )
 from zerver.lib.cache import (
@@ -81,7 +82,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError
+    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
+    get_user_profiles_by_ids, get_services_for_bots
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -447,7 +449,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,
                avatar_url=avatar_url(user_profile),
-               services = get_service_dicts_for_bots(user_profile.id),
+               services = get_service_dicts_for_bot(user_profile.id),
                )
 
     # Set the owner key only when the bot has an owner.
@@ -4612,7 +4614,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
                     ),
                bot_owner_user_ids(bot_profile))
 
-def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
+def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
     service_dicts = []  # type: List[Dict[Text, Any]]
@@ -4631,6 +4633,35 @@ def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
             pass
     return service_dicts
 
+def get_service_dicts_for_bots(user_profile_ids: List[str]) -> Dict[str, List[Dict[str, Any]]]:
+    bot_profiles = get_user_profiles_by_ids(user_profile_ids)
+    bot_services_by_uid = get_services_for_bots(user_profile_ids)
+    bot_configs = get_bot_configs(user_profile_ids)
+
+    service_dicts_by_uid = {}  # type: Dict[str, List[Dict[Text, Any]]]
+    logging.warning('bot_profiles: %s' % (len(bot_profiles)))
+    for bot_profile in bot_profiles:
+        services = bot_services_by_uid[bot_profile.id]
+        service_dicts = []
+        logging.warning('bot_type: %s=%s' % (bot_profile.id, bot_profile.bot_type))
+        if bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            service_dicts = [{'base_url': service.base_url,
+                            'interface': service.interface,
+                            }
+                            for service in services]
+        elif bot_profile.bot_type == UserProfile.EMBEDDED_BOT:
+            try:
+                if bot_profile.id in bot_configs.keys():
+                    bot_config = bot_configs[bot_profile.id]
+                    service_dicts = [{'config_data': bot_config,
+                                    'service_name': services[0].name
+                                    }]
+            # A ConfigError just means that there are no config entries for user_profile.
+            except ConfigError:
+                pass
+        service_dicts_by_uid[bot_profile.id] = service_dicts
+    return service_dicts_by_uid
+
 def get_owned_bot_dicts(user_profile: UserProfile,
                         include_all_realm_bots_if_admin: bool=True) -> List[Dict[str, Any]]:
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
@@ -4638,6 +4669,9 @@ def get_owned_bot_dicts(user_profile: UserProfile,
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
+    bot_profile_ids = [botdict['id'] for botdict in result]
+    services_by_ids = get_service_dicts_for_bots(bot_profile_ids)
+    logging.warning(services_by_ids)
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
@@ -4649,7 +4683,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': avatar_url_from_dict(botdict),
-             'services': get_service_dicts_for_bots(botdict['id']),
+             'services': services_by_ids[botdict['id']],
              }
             for botdict in result]
 
