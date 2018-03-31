@@ -39,10 +39,12 @@ var org_settings = {
             type: 'bool',
         },
     },
-    language_notify: {
+    user_defaults: {
         default_language: {
             type: 'text',
         },
+    },
+    notifications: {
         send_welcome_emails: {
             type: 'bool',
         },
