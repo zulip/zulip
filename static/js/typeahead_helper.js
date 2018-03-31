@@ -79,14 +79,21 @@ var rendered = { persons: new Dict(), streams: new Dict(), user_groups: new Dict
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
-        return exports.render_typeahead_item({ primary: person.special_item_text });
+        return exports.render_typeahead_item({
+            primary: person.special_item_text,
+            is_person: true,
+        });
     }
 
     var html = rendered.persons.get(person.user_id);
     if (html === undefined) {
+        var avatar_url = people.small_avatar_url_for_person(person);
+
         html = exports.render_typeahead_item({
             primary: person.full_name,
             secondary: person.email,
+            img_src: avatar_url,
+            is_person: true,
         });
         rendered.persons.set(person.user_id, html);
     }
@@ -104,6 +111,7 @@ exports.render_user_group = function (user_group) {
         html = exports.render_typeahead_item({
             primary: user_group.name,
             secondary: user_group.description,
+            is_user_group: true,
         });
         rendered.user_groups.set(user_group.id, html);
     }
