@@ -313,9 +313,12 @@ if __name__ == "__main__":
     full_suite = len(args) == 0
 
     if len(args) == 0:
-        suites = ["zerver.tests",
-                  "zerver.webhooks",
-                  "analytics.tests"]
+        suites = [
+            "zerver.tests",
+            "zerver.webhooks",
+            "analytics.tests",
+            "zilencer.tests",
+        ]
     else:
         suites = args
 

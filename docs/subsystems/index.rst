@@ -39,4 +39,5 @@ Subsystems Documentation
    input-pills
    presence
    unread_messages
+   billing
    user-docs

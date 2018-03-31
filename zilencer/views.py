@@ -1,13 +1,13 @@
-
 from typing import Any, Dict, Optional, Union, cast
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
 from django.db import IntegrityError
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext as err_
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.conf import settings
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
@@ -20,11 +20,15 @@ from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_int, check_string, check_url, \
     validate_login_email, check_capped_string, check_string_fixed_length
+from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
-from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, count_stripe_cards, \
-    save_stripe_token, StripeError
-from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
+from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
+    do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
+    get_stripe_customer, get_upcoming_invoice, payment_source, \
+    get_seat_count
+from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
+    Customer, Plan
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
@@ -152,28 +156,88 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
     return json_success()
 
 @zulip_login_required
-def add_payment_method(request: HttpRequest) -> HttpResponse:
+def initial_upgrade(request: HttpRequest) -> HttpResponse:
     user = request.user
-    ctx = {
-        "publishable_key": STRIPE_PUBLISHABLE_KEY,
-        "email": user.email,
+    if Customer.objects.filter(realm=user.realm).exists():
+        return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
+
+    if request.method == 'POST':
+        customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
+        # TODO: the current way this is done is subject to tampering by the user.
+        seat_count = int(request.POST['seat_count'])
+        if seat_count < 1:
+            raise AssertionError('seat_count is less than 1')
+        do_subscribe_customer_to_plan(
+            customer=customer,
+            stripe_plan_id=Plan.objects.get(nickname=request.POST['plan']).stripe_plan_id,
+            seat_count=seat_count,
+            # TODO: billing address details are passed to us in the request;
+            # use that to calculate taxes.
+            tax_percent=0)
+        # TODO: check for errors and raise/send to frontend
+        return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
+
+    context = {
+        'publishable_key': STRIPE_PUBLISHABLE_KEY,
+        'email': user.email,
+        'seat_count': get_seat_count(user.realm),
+        'plan': "Zulip Premium",
+        'nickname_monthly': Plan.CLOUD_MONTHLY,
+        'nickname_annual': Plan.CLOUD_ANNUAL,
+    }  # type: Dict[str, Any]
+    return render(request, 'zilencer/upgrade.html', context=context)
+
+PLAN_NAMES = {
+    Plan.CLOUD_ANNUAL: "Zulip Premium (billed annually)",
+    Plan.CLOUD_MONTHLY: "Zulip Premium (billed monthly)",
+}
+
+@zulip_login_required
+def billing_home(request: HttpRequest) -> HttpResponse:
+    user = request.user
+    customer = Customer.objects.filter(realm=user.realm).first()
+    if customer is None:
+        return HttpResponseRedirect(reverse('zilencer.views.initial_upgrade'))
+
+    # TODO
+    # if not user.is_realm_admin and not user == customer.billing_user:
+        # context['error_message'] = _("You must be an administrator to view this page.")
+        # return render(request, 'zilencer/billing.html', context=context)
+
+    stripe_customer = get_stripe_customer(customer.stripe_customer_id)
+
+    if stripe_customer.subscriptions:
+        subscription = stripe_customer.subscriptions.data[0]
+        plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
+        seat_count = subscription.quantity
+        # Need user's timezone to do this properly
+        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
+            dt=timestamp_to_datetime(subscription.current_period_end))
+        renewal_amount = subscription.plan.amount * subscription.quantity / 100.
+    else:
+        plan_name = "Zulip Free"  # nocoverage -- no way to get here yet
+        renewal_date = ''  # nocoverage -- no way to get here yet
+        renewal_amount = 0  # nocoverage -- no way to get here yet
+
+    prorated_credits = 0
+    prorated_charges = get_upcoming_invoice(customer.stripe_customer_id).amount_due / 100. - renewal_amount
+    if prorated_charges < 0:
+        prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
+        prorated_charges = 0  # nocoverage -- no way to get here yet
+
+    payment_method = None
+    source = payment_source(stripe_customer)
+    if source is not None:
+        payment_method = "Card ending in %(last4)s" % {'last4': source.last4}
+
+    context = {
+        'plan_name': plan_name,
+        'seat_count': seat_count,
+        'renewal_date': renewal_date,
+        'renewal_amount': '{:,.2f}'.format(renewal_amount),
+        'payment_method': payment_method,
+        'prorated_charges': '{:,.2f}'.format(prorated_charges),
+        'prorated_credits': '{:,.2f}'.format(prorated_credits),
     }  # type: Dict[str, Any]
 
-    if not user.is_realm_admin:
-        ctx["error_message"] = (
-            _("You should be an administrator of the organization %s to view this page.")
-            % (user.realm.name,))
-        return render(request, 'zilencer/billing.html', context=ctx)
-
-    try:
-        if request.method == "GET":
-            ctx["num_cards"] = count_stripe_cards(user.realm)
-            return render(request, 'zilencer/billing.html', context=ctx)
-        if request.method == "POST":
-            token = request.POST.get("stripeToken", "")
-            ctx["num_cards"] = save_stripe_token(user, token)
-            ctx["payment_method_added"] = True
-            return render(request, 'zilencer/billing.html', context=ctx)
-    except StripeError as e:
-        ctx["error_message"] = e.msg
-        return render(request, 'zilencer/billing.html', context=ctx)
+    return render(request, 'zilencer/billing.html', context=context)
