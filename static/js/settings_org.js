@@ -272,22 +272,6 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
-exports.render_signup_notifications_stream_ui = function (stream_id) {
-    var elem = $('#realm_signup_notifications_stream_name');
-
-    var name = stream_data.maybe_get_stream_name(stream_id);
-
-    if (!name) {
-        elem.text(i18n.t("Disabled"));
-        elem.addClass("text-warning");
-        return;
-    }
-
-    // Happy path
-    elem.text('#' + name);
-    elem.removeClass('text-warning');
-};
-
 exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     var dropdown_list_body = $("#id_realm_signup_notifications_stream .dropdown-list-body").expectOne();
     var search_input = $("#id_realm_signup_notifications_stream .dropdown-search > input[type=text]");
@@ -379,7 +363,8 @@ function _set_up() {
     }
     exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id,
                                            $('#realm_notifications_stream_name'));
-    exports.render_signup_notifications_stream_ui(page_params.realm_signup_notifications_stream_id);
+    exports.render_notifications_stream_ui(page_params.realm_signup_notifications_stream_id,
+                                           $('#realm_signup_notifications_stream_name'));
 
     // Populate realm domains
     exports.populate_realm_domains(page_params.realm_domains);
@@ -777,7 +762,8 @@ function _set_up() {
 
     var signup_notifications_stream_status = $("#admin-realm-signup-notifications-stream-status").expectOne();
     function update_signup_notifications_stream(new_signup_notifications_stream_id) {
-        exports.render_signup_notifications_stream_ui(new_signup_notifications_stream_id);
+        exports.render_notifications_stream_ui(new_signup_notifications_stream_id,
+                                               $('#realm_signup_notifications_stream_name'));
         signup_notifications_stream_status.hide();
         var stringified_id = JSON.stringify(parseInt(new_signup_notifications_stream_id, 10));
         var url = "/json/realm";
