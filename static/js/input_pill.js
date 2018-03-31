@@ -93,7 +93,13 @@ exports.create = function (opts) {
 
             store.pills.push(payload);
 
-            payload.$element = $("<div class='pill' data-id='" + payload.id + "' tabindex=0>" + item.display_value + "<div class='exit'>&times;</div></div>");
+            var opts = {
+                id: payload.id,
+                display_value: item.display_value,
+            };
+
+            var pill_html = templates.render('input_pill', opts);
+            payload.$element = $(pill_html);
             store.$input.before(payload.$element);
         },
 

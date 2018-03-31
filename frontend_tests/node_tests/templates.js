@@ -868,6 +868,18 @@ function render(template_name, args) {
     );
 }());
 
+(function input_pill() {
+    var args = {
+        id: 22,
+        display_value: 'King Hamlet',
+    };
+
+    var html = render('input_pill', args);
+    global.write_handlebars_output("input_pill", html);
+
+    assert($(html).hasClass('pill'));
+}());
+
 (function invite_subscription() {
     var args = {
         streams: [
