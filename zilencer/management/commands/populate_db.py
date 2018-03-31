@@ -253,11 +253,14 @@ class Command(BaseCommand):
 
             # Create custom profile field data
             phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
-                                                              CustomProfileField.SHORT_TEXT)
+                                                              CustomProfileField.SHORT_TEXT,
+                                                              hint='Primary contact number')
             biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
-                                                           CustomProfileField.LONG_TEXT)
+                                                           CustomProfileField.LONG_TEXT,
+                                                           hint='Hint for biography')
             favorite_food = try_add_realm_custom_profile_field(zulip_realm, "Favorite food",
-                                                               CustomProfileField.SHORT_TEXT)
+                                                               CustomProfileField.SHORT_TEXT,
+                                                               hint='Hint for favorite food')
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)

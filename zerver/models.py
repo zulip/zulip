@@ -740,10 +740,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         unique_together = (('realm', 'email'),)
 
     @property
-    def profile_data(self) -> List[Dict[str, Union[int, float, Text]]]:
+    def profile_data(self) -> List[Dict[str, Union[int, float, Optional[Text]]]]:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {v.field_id: v.value for v in values}
-        data = []  # type: List[Dict[str, Union[int, float, Text]]]
+        data = []  # type: List[Dict[str, Union[int, float, Optional[Text]]]]
         for field in custom_profile_fields_for_realm(self.realm_id):
             value = user_data.get(field.id, None)
             field_type = field.field_type
@@ -751,7 +751,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 converter = field.FIELD_CONVERTERS[field_type]
                 value = converter(value)
 
-            field_data = {}  # type: Dict[str, Union[int, float, Text]]
+            field_data = {}  # type: Dict[str, Union[int, float, Optional[Text]]]
             for k, v in field.as_dict().items():
                 field_data[k] = v
             field_data['value'] = value
@@ -1873,8 +1873,11 @@ class UserHotspot(models.Model):
         unique_together = ("user", "hotspot")
 
 class CustomProfileField(models.Model):
+    HINT_MAX_LENGTH = 80
+
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.CharField(max_length=100)  # type: Text
+    hint = models.CharField(max_length=HINT_MAX_LENGTH, default='', null=True)  # type: Optional[Text]
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
@@ -1895,11 +1898,12 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ('realm', 'name')
 
-    def as_dict(self) -> Dict[str, Union[int, Text]]:
+    def as_dict(self) -> Dict[str, Union[int, Optional[Text]]]:
         return {
             'id': self.id,
             'name': self.name,
             'type': self.field_type,
+            'hint': self.hint,
         }
 
     def __str__(self) -> str:

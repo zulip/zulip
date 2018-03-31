@@ -37,6 +37,14 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_error(result, u'Invalid field type.')
 
         data["name"] = "Phone"
+        data["hint"] = "*" * 81
+        data["field_type"] = CustomProfileField.SHORT_TEXT
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        msg = "hint is longer than 80."
+        self.assert_json_error(result, msg)
+
+        data["name"] = "Phone"
+        data["hint"] = "Contact number"
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_success(result)
@@ -90,10 +98,31 @@ class CustomProfileFieldTest(ZulipTestCase):
             info={'name': 'New phone number',
                   'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_success(result)
+        field = CustomProfileField.objects.get(id=field.id, realm=realm)
+        self.assertEqual(CustomProfileField.objects.count(), 3)
+        self.assertEqual(field.name, 'New phone number')
+        self.assertIs(field.hint, '')
+        self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': 'New phone number',
+                  'hint': '*' * 81,
+                  'field_type': CustomProfileField.SHORT_TEXT})
+        msg = "hint is longer than 80."
+        self.assert_json_error(result, msg)
+
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': 'New phone number',
+                  'hint': 'New contact number',
+                  'field_type': CustomProfileField.SHORT_TEXT})
+        self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(id=field.id, realm=realm)
         self.assertEqual(CustomProfileField.objects.count(), 3)
         self.assertEqual(field.name, 'New phone number')
+        self.assertEqual(field.hint, 'New contact number')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
 
     def test_update_is_aware_of_uniqueness(self) -> None:
