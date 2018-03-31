@@ -226,8 +226,7 @@ exports.populate_auth_methods = function (auth_methods) {
 };
 
 
-exports.render_notifications_stream_ui = function (stream_id) {
-    var elem = $('#realm_notifications_stream_name');
+exports.render_notifications_stream_ui = function (stream_id, elem) {
 
     var name = stream_data.maybe_get_stream_name(stream_id);
 
@@ -378,7 +377,8 @@ function _set_up() {
         exports.populate_notifications_stream_dropdown(streams);
         exports.populate_signup_notifications_stream_dropdown(streams);
     }
-    exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id);
+    exports.render_notifications_stream_ui(page_params.realm_notifications_stream_id,
+                                           $('#realm_notifications_stream_name'));
     exports.render_signup_notifications_stream_ui(page_params.realm_signup_notifications_stream_id);
 
     // Populate realm domains
@@ -730,7 +730,8 @@ function _set_up() {
 
     var notifications_stream_status = $("#admin-realm-notifications-stream-status").expectOne();
     function update_notifications_stream(new_notifications_stream_id) {
-        exports.render_notifications_stream_ui(new_notifications_stream_id);
+        exports.render_notifications_stream_ui(new_notifications_stream_id,
+                                               $('#realm_notifications_stream_name'));
         notifications_stream_status.hide();
 
         var url = "/json/realm";
