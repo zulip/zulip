@@ -135,6 +135,12 @@ class PermissionTest(ZulipTestCase):
         result = self.client_patch('/json/users/hamlet@zulip.com', req)
         self.assert_json_error(result, 'Insufficient permission')
 
+    def test_user_cannot_promote_to_admin(self) -> None:
+        self.login(self.example_email("hamlet"))
+        req = dict(is_admin=ujson.dumps(True))
+        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        self.assert_json_error(result, 'Insufficient permission')
+
     def test_admin_user_can_change_full_name(self) -> None:
         new_name = 'new name'
         self.login(self.example_email("iago"))
