@@ -214,11 +214,15 @@ exports.paste_handler_converter = function (paste_html) {
 exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
 
-    var paste_html = clipboardData.getData('text/html');
-    if (paste_html) {
-        event.preventDefault();
-        var text = exports.paste_handler_converter(paste_html);
-        compose_ui.insert_syntax_and_focus(text);
+    if (clipboardData && clipboardData.getData) {
+        // IE11 doesn't have clipboardData API
+        // Also, IE11 doesn't support text/html format for clipboard data
+        var paste_html = clipboardData.getData('text/html');
+        if (paste_html) {
+            event.preventDefault();
+            var text = exports.paste_handler_converter(paste_html);
+            compose_ui.insert_syntax_and_focus(text);
+        }
     }
 };
 
