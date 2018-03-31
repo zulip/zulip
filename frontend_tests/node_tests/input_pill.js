@@ -1,6 +1,10 @@
 set_global('$', global.make_zjquery());
 zrequire('input_pill');
 
+zrequire('Handlebars', 'handlebars');
+zrequire('templates');
+global.compile_template('input_pill');
+
 set_global('blueslip', {
 });
 
@@ -24,9 +28,12 @@ var id_seq = 0;
 
 
 function pill_html(value, data_id) {
-    var exit_div = "<div class='exit'>&times;</div>";
-    var html = "<div class='pill' data-id='" + data_id + "' tabindex=0>" + value + exit_div + "</div>";
-    return html;
+    var opts = {
+        id: data_id,
+        display_value: value,
+    };
+
+    return templates.render('input_pill', opts);
 }
 
 (function test_basics() {
