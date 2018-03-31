@@ -14,3 +14,4 @@ Code Contribution Guide
    accessibility
    bug-reports
    ../code-of-conduct
+   summer-with-zulip
