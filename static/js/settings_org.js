@@ -125,7 +125,7 @@ exports.extract_property_name = function (elem) {
     return elem.attr('id').split('-').join('_').replace("id_", "");
 };
 
-exports.set_create_stream_permission_dropdown = function () {
+function set_create_stream_permission_dropdown() {
     var menu = $("#id_realm_create_stream_permission");
     $("#id_realm_waiting_period_threshold").parent().hide();
     if (page_params.realm_create_stream_by_admins_only) {
@@ -138,16 +138,16 @@ exports.set_create_stream_permission_dropdown = function () {
         menu.val("by_admin_user_with_custom_time");
         $("#id_realm_waiting_period_threshold").parent().show();
     }
-};
+}
 
-exports.set_add_emoji_permission_dropdown = function () {
+function set_add_emoji_permission_dropdown() {
     var menu = "id_realm_add_emoji_by_admins_only";
     if (page_params.realm_add_emoji_by_admins_only) {
         $("#" + menu + " option[value=by_admins_only]").attr("selected", "selected");
     } else {
         $("#" + menu + " option[value=by_anyone]").attr("selected", "selected");
     }
-};
+}
 
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
@@ -279,9 +279,9 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
-exports.handle_dependent_subsettings = function (property_name) {
+function handle_dependent_subsettings(property_name) {
     if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
-        exports.set_create_stream_permission_dropdown();
+        set_create_stream_permission_dropdown();
     } else if (property_name === 'realm_allow_message_editing') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
             "id_realm_message_content_edit_limit_minutes", true);
@@ -292,7 +292,7 @@ exports.handle_dependent_subsettings = function (property_name) {
         settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
             "id_realm_disallow_disposable_email_addresses", false);
     }
-};
+}
 
 function discard_property_element_changes(elem) {
     elem = $(elem);
@@ -312,7 +312,7 @@ function discard_property_element_changes(elem) {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
 
-    exports.handle_dependent_subsettings(property_name);
+    handle_dependent_subsettings(property_name);
 }
 
 exports.sync_realm_settings = function (property) {
@@ -371,8 +371,8 @@ function _set_up() {
         return data;
     }
 
-    exports.set_create_stream_permission_dropdown();
-    exports.set_add_emoji_permission_dropdown();
+    set_create_stream_permission_dropdown();
+    set_add_emoji_permission_dropdown();
 
     $("#id_realm_restricted_to_domain").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_disallow_disposable_email_addresses", false);
