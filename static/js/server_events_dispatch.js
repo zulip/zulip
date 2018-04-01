@@ -393,7 +393,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
-        unread_ops.mark_message_as_read(message);
+        unread_ops.process_read_messages_event([msg_id]);
         if (message.type === 'stream') {
             topic_data.remove_message({
                 stream_id: message.stream_id,
