@@ -98,7 +98,7 @@ function get_subsection_property_types(subsection) {
     return;
 }
 
-function property_value_element_refers(property_name) {
+function get_property_value(property_name) {
     if (property_name === 'realm_message_content_edit_limit_minutes') {
         return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
     } else if (property_name === 'realm_create_stream_permission') {
@@ -279,7 +279,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     });
 };
 
-function handle_dependent_subsettings(property_name) {
+function update_dependent_subsettings(property_name) {
     if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
         set_create_stream_permission_dropdown();
     } else if (property_name === 'realm_allow_message_editing') {
@@ -299,7 +299,7 @@ function discard_property_element_changes(elem) {
     var property_name = exports.extract_property_name(elem);
     // Check whether the id refers to a property whose name we can't
     // extract from element's id.
-    var property_value = property_value_element_refers(property_name);
+    var property_value = get_property_value(property_name);
     if (property_value === undefined) {
         property_value = page_params[property_name];
     }
@@ -312,7 +312,7 @@ function discard_property_element_changes(elem) {
         blueslip.error('Element refers to unknown property ' + property_name);
     }
 
-    handle_dependent_subsettings(property_name);
+    update_dependent_subsettings(property_name);
 }
 
 exports.sync_realm_settings = function (property) {
@@ -393,7 +393,7 @@ function _set_up() {
         var changed_val;
         // Check whether the id refers to a property whose name we can't
         // extract from element's id.
-        var current_val = property_value_element_refers(property_name);
+        var current_val = get_property_value(property_name);
         if (current_val === undefined) {
             current_val = page_params[property_name];
         }
