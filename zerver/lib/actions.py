@@ -3737,10 +3737,21 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
 
 
 def do_delete_message(user_profile: UserProfile, message: Message) -> None:
+    message_type = "stream"
+    if not message.is_stream_message():
+        message_type = "private"
+
     event = {
         'type': 'delete_message',
         'sender': user_profile.email,
-        'message_id': message.id}  # type: Dict[str, Any]
+        'message_id': message.id,
+        'message_type': message_type, }  # type: Dict[str, Any]
+    if message_type == "stream":
+        event['stream_id'] = message.recipient.type_id
+        event['topic'] = message.subject
+    else:
+        event['recipient_user_ids'] = message.recipient.type_id
+
     ums = [{'id': um.user_profile_id} for um in
            UserMessage.objects.filter(message=message.id)]
     move_message_to_archive(message.id)

@@ -2023,13 +2023,37 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-    def test_do_delete_message(self) -> None:
+    def test_do_delete_message_stream(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('sender', check_string),
+            ('message_type', equals("stream")),
+            ('stream_id', check_int),
+            ('topic', check_string),
         ])
         msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
+        message = Message.objects.get(id=msg_id)
+        events = self.do_test(
+            lambda: do_delete_message(self.user_profile, message),
+            state_change_expected=True,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_delete_message_personal(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('delete_message')),
+            ('message_id', check_int),
+            ('sender', check_string),
+            ('message_type', equals("private")),
+            ('recipient_user_ids', check_int),
+        ])
+        msg_id = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.user_profile.email,
+            "hello",
+        )
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_message(self.user_profile, message),

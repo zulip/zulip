@@ -479,6 +479,9 @@ var event_fixtures = {
     delete_message: {
         type: 'delete_message',
         message_id: 1337,
+        message_type: "stream",
+        stream_id: 99,
+        topic: 'topic1',
     },
 
     custom_profile_fields: {
@@ -942,13 +945,6 @@ set_global('message_store', {});
 with_overrides(function (override) {
     // delete_message
     var event = event_fixtures.delete_message;
-    message_store.get = function (msg_id) {
-        return { id: msg_id,
-             reactions: [],
-             stream_id: 99,
-             subject: 'topic1',
-             type: 'stream'};
-    };
 
     override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
