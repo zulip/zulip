@@ -173,7 +173,7 @@ DEFAULT_SETTINGS = {
     # External service configuration
     'CAMO_URI': '',
     'MEMCACHED_LOCATION': '127.0.0.1:11211',
-    'RABBITMQ_HOST': 'localhost',
+    'RABBITMQ_HOST': '127.0.0.1',
     'RABBITMQ_USERNAME': 'zulip',
     'REDIS_HOST': '127.0.0.1',
     'REDIS_PORT': 6379,
