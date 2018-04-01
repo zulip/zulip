@@ -10,16 +10,11 @@
                 {{ partial "settings-save-discard-widget" "section_name" "msg-editing" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_allow_message_editing" name="realm_allow_message_editing"
-                            {{#if realm_allow_message_editing}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_allow_message_editing" class="inline-block">
-                        {{t "Users can edit their messages" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_allow_message_editing"
+                "prefix" "id_"
+                "is_checked" realm_allow_message_editing
+                "label" admin_settings_label.realm_allow_message_editing}}
 
                 <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
                     <label for="id_realm_message_content_edit_limit_minutes"
@@ -46,16 +41,11 @@
                     title="{{t 'Administrators can always delete any message.' }}"/>
                 </div>
 
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_allow_edit_history" name="realm_allow_edit_history"
-                            {{#if realm_allow_edit_history}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_allow_edit_history" id="id_realm_allow_edit_history_label" class="inline-block">
-                        {{t "Enable message edit history" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_allow_edit_history"
+                "prefix" "id_"
+                "is_checked" realm_allow_edit_history
+                "label" admin_settings_label.realm_allow_edit_history}}
             </div>
         </div>
 
@@ -77,42 +67,26 @@
                     value="{{ realm_message_retention_days }}"/>
                 </div>
                 {{/if}}
-
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_mandatory_topics" name="realm_mandatory_topics"
-                            {{#if realm_mandatory_topics}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_mandatory_topics" id="id_realm_mandatory_topics_label" class="inline-block">
-                        {{t "Require topics in stream messages" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_mandatory_topics"
+                "prefix" "id_"
+                "is_checked" realm_mandatory_topics
+                "label" admin_settings_label.realm_mandatory_topics}}
 
                 {{#if server_inline_image_preview}}
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_inline_image_preview" name="realm_inline_image_preview"
-                            {{#if realm_inline_image_preview}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_inline_image_preview" id="id_realm_inline_image_preview_label" class="inline-block">
-                        {{t "Show previews of uploaded and linked images" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_inline_image_preview"
+                "prefix" "id_"
+                "is_checked" realm_inline_image_preview
+                "label" admin_settings_label.realm_inline_image_preview}}
                 {{/if}}
 
                 {{#if server_inline_url_embed_preview}}
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_inline_url_embed_preview" name="realm_inline_url_embed_preview"
-                            {{#if realm_inline_url_embed_preview}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_inline_url_embed_preview" id="id_realm_inline_url_embed_preview_label" class="inline-block">
-                        {{t "Show previews of linked websites" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_inline_url_embed_preview"
+                "prefix" "id_"
+                "is_checked" realm_inline_url_embed_preview
+                "label" admin_settings_label.realm_inline_url_embed_preview}}
                 {{/if}}
             </div>
         </div>
@@ -132,17 +106,11 @@
                         {{/each}}
                     </select>
                 </div>
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_default_twenty_four_hour_time"
-                        name="realm_default_twenty_four_hour_time"
-                            {{#if realm_default_twenty_four_hour_time}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_default_twenty_four_hour_time" class="inline-block">
-                        {{t "24-hour time (17:00 instead of 5:00 PM)" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_default_twenty_four_hour_time"
+                "prefix" "id_"
+                "is_checked" realm_default_twenty_four_hour_time
+                "label" admin_settings_label.realm_default_twenty_four_hour_time}}
             </div>
         </div>
 
@@ -152,16 +120,11 @@
                 {{ partial "settings-save-discard-widget" "section_name" "notifications" }}
             </div>
             <div class="inline-block organization-settings-parent">
-                <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_send_welcome_emails" name="realm_send_welcome_emails"
-                            {{#if realm_send_welcome_emails}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_send_welcome_emails" id="id_realm_send_welcome_emails_label" class="inline-block">
-                        {{t "Send emails introducing Zulip to new users" }}
-                    </label>
-                </div>
+                {{partial "settings_checkbox"
+                "setting_name" "realm_send_welcome_emails"
+                "prefix" "id_"
+                "is_checked" realm_send_welcome_emails
+                "label" admin_settings_label.realm_send_welcome_emails}}
             </div>
 
             <div class="input-group">
