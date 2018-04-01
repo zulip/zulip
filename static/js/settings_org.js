@@ -126,27 +126,17 @@ exports.extract_property_name = function (elem) {
 };
 
 function set_create_stream_permission_dropdown() {
-    var menu = $("#id_realm_create_stream_permission");
-    $("#id_realm_waiting_period_threshold").parent().hide();
-    if (page_params.realm_create_stream_by_admins_only) {
-        menu.val("by_admins_only");
-    } else if (page_params.realm_waiting_period_threshold === 0) {
-        menu.val("by_anyone");
-    } else if (page_params.realm_waiting_period_threshold === 3) {
-        menu.val("by_admin_user_with_three_days_old");
-    } else {
-        menu.val("by_admin_user_with_custom_time");
+    var value = get_property_value("realm_create_stream_permission");
+    $("#id_realm_create_stream_permission").val(value);
+    if (value === "by_admin_user_with_custom_time") {
         $("#id_realm_waiting_period_threshold").parent().show();
+    } else {
+        $("#id_realm_waiting_period_threshold").parent().hide();
     }
 }
 
 function set_add_emoji_permission_dropdown() {
-    var menu = "id_realm_add_emoji_by_admins_only";
-    if (page_params.realm_add_emoji_by_admins_only) {
-        $("#" + menu + " option[value=by_admins_only]").attr("selected", "selected");
-    } else {
-        $("#" + menu + " option[value=by_anyone]").attr("selected", "selected");
-    }
+    $("#id_realm_add_emoji_by_admins_only").val(get_property_value("realm_add_emoji_by_admins_only"));
 }
 
 exports.populate_realm_domains = function (realm_domains) {
