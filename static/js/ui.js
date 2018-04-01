@@ -122,24 +122,34 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
+var shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     var message;
     if (key === 'C') {
         message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
     } else {
-        // should never get here
+        blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;
     }
 
-    var shown_deprecation_notices = JSON.parse(localStorage.getItem('shown_deprecation_notices'));
-    if (shown_deprecation_notices === null) {
-        shown_deprecation_notices = [];
+    // Here we handle the tracking for showing deprecation notices,
+    // whether or not local storage is available.
+    if (localstorage.supported()) {
+        var notices_from_storage = JSON.parse(localStorage.getItem('shown_deprecation_notices'));
+        if (notices_from_storage !== null) {
+            shown_deprecation_notices = notices_from_storage;
+        } else {
+            shown_deprecation_notices = [];
+        }
     }
+
     if (shown_deprecation_notices.indexOf(key) === -1) {
         $('#deprecation-notice-modal').modal('show');
         $('#deprecation-notice-message').text(message);
         shown_deprecation_notices.push(key);
-        localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
+        if (localstorage.supported()) {
+            localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
+        }
     }
 };
 
