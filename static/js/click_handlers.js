@@ -171,9 +171,24 @@ $(function () {
 
     $("#main_div").on("click", ".message_reaction", function (e) {
         e.stopPropagation();
+        $(this).popover('hide');
         var local_id = $(this).attr('data-reaction-id');
         var message_id = rows.get_message_id(this);
         reactions.process_reaction_click(message_id, local_id);
+    });
+
+    $('#main_div').on('mouseenter', '.message_reaction', function (e) {
+        e.stopPropagation();
+        var elem = $(this);
+        var local_id = elem.attr('data-reaction-id');
+        var message_id = rows.get_message_id(this);
+        reactions.generate_popover(elem, message_id, local_id);
+        elem.data('popover').$tip.css('left', e.pageX + 3);
+    });
+
+    $('#main_div').on('mouseleave', '.message_reaction', function (e) {
+        e.stopPropagation();
+        $(this).popover('hide');
     });
 
     $("#main_div").on("click", "a.stream", function (e) {

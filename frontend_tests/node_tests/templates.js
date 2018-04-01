@@ -1121,6 +1121,12 @@ function render(template_name, args) {
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
 }());
 
+(function reaction_popover() {
+    var html = render('reaction_popover', {class: 'reaction-popover'});
+    global.write_handlebars_output("reaction_popover", html);
+    $(html).hasClass('popover reaction-popover');
+}());
+
 (function reminder_popover_content() {
     var args = {
         message: {

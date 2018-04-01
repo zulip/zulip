@@ -69,6 +69,15 @@ set_global('emoji_picker', {
     hide_emoji_popover: function () {},
 });
 
+set_global('message_viewport', {
+    height: function () {
+        return 500;
+    },
+});
+
+var noop = function () {};
+$.fn.popover = noop;
+
 var alice = {
     email: 'alice@example.com',
     user_id: 5,
@@ -165,7 +174,6 @@ set_global('current_msg_list', {
          local_id: 'unicode_emoji,frown,1f626',
          count: 1,
          user_ids: [7],
-         title: 'Cali reacted with :frown:',
          emoji_alt_code: false,
          class: 'message_reaction',
       },
@@ -176,7 +184,6 @@ set_global('current_msg_list', {
          local_id: 'realm_emoji,inactive_realm_emoji,992',
          count: 1,
          user_ids: [5],
-         title: 'You (click to remove) reacted with :inactive_realm_emoji:',
          emoji_alt_code: false,
          is_realm_emoji: true,
          url: 'TBD',
@@ -189,7 +196,6 @@ set_global('current_msg_list', {
          local_id: 'unicode_emoji,smile,1f604',
          count: 2,
          user_ids: [5, 6],
-         title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
          emoji_alt_code: false,
          class: 'message_reaction reacted',
       },
@@ -335,7 +341,6 @@ set_global('current_msg_list', {
         assert.equal(data.class, 'message_reaction reacted');
         assert(!data.is_realm_emoji);
         assert.equal(data.message_id, 1001);
-        assert.equal(data.title, 'You (click to remove) reacted with :8ball:');
         return '<new reaction html>';
     };
 
@@ -372,36 +377,18 @@ set_global('current_msg_list', {
     var reaction_element = $.create('reaction-element');
     reaction_element.set_find_results('.message_reaction_count', count_element);
 
-    var title_set;
-    reaction_element.prop = function (prop_name, value) {
-        assert.equal(prop_name, 'title');
-        var expected_msg = 'You (click to remove)' +
-            ' and Bob van Roberts reacted with :8ball:';
-        assert.equal(value, expected_msg);
-        title_set = true;
-    };
-
     message_reactions.find = function (selector) {
         assert.equal(selector, "[data-reaction-id='unicode_emoji,8ball,1f3b1']");
         return reaction_element;
     };
 
     reactions.add_reaction(bob_event);
-    assert(title_set);
     assert.equal(count_element.text(), '2');
 
     // Now, remove Bob's 8ball emoji.  The event has the same exact
     // structure as the add event.
-    title_set = false;
-    reaction_element.prop = function (prop_name, value) {
-        assert.equal(prop_name, 'title');
-        var expected_msg = 'You (click to remove) reacted with :8ball:';
-        assert.equal(value, expected_msg);
-        title_set = true;
-    };
 
     reactions.remove_reaction(bob_event);
-    assert(title_set);
     assert.equal(count_element.text(), '1');
 
     var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
@@ -485,6 +472,49 @@ set_global('current_msg_list', {
     reactions.remove_reaction(alice_event);
     assert(!reaction_element.hasClass('reacted'));
 
+}());
+
+(function test_generate_popover() {
+    var message_id = 1001;
+    var local_id = 'unicode_emoji,smile,1f604';
+    var target_element = $.create('fake-target-element');
+    target_element.offset = function () {
+        return {
+            top: 450,
+        };
+    };
+    var templates_render_called;
+    templates.render = function (template, opts) {
+        templates_render_called = true;
+        assert.equal(template, 'reaction_popover');
+        assert.deepEqual(opts, {class: 'reaction-popover'});
+        return 'template-html';
+    };
+    var data_called = 0;
+    target_element.data = function (opts) {
+        data_called += 1;
+        assert.equal(opts, 'popover');
+        if (data_called > 1) {
+            return {
+                options: {
+                    content: '',
+                    placement: '',
+                },
+            };
+        }
+        return;
+    };
+    reactions.generate_popover(target_element, message_id, local_id);
+    assert.equal(data_called, 2);
+    assert(templates_render_called);
+    // We call generate_popover again to ensure complete coverage for generate_title function
+    // of reactions.js
+    data_called = 0;
+    templates_render_called = false;
+    local_id = 'realm_emoji,inactive_realm_emoji,992';
+    reactions.generate_popover(target_element, message_id, local_id);
+    assert.equal(data_called, 2);
+    assert(templates_render_called);
 }());
 
 (function test_with_view_stubs() {

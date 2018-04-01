@@ -236,7 +236,6 @@ exports.view.update_existing_reaction = function (opts) {
     // simply updates the DOM.
 
     var message_id = opts.message_id;
-    var emoji_name = opts.emoji_name;
     var user_list = opts.user_list;
     var user_id = opts.user_id;
     var local_id = exports.get_local_reaction_id(opts);
@@ -244,12 +243,31 @@ exports.view.update_existing_reaction = function (opts) {
 
     exports.set_reaction_count(reaction, user_list.length);
 
-    var new_title = generate_title(emoji_name, user_list);
-    reaction.prop('title', new_title);
-
     if (user_id === page_params.user_id) {
         reaction.addClass("reacted");
     }
+};
+
+exports.generate_popover = function (elem, message_id, local_id) {
+    // Add a popover showing who reacted to a message.
+    var message = get_message(message_id);
+    var user_list = get_user_list_for_message_reaction(message, local_id);
+    var emoji_name = exports.get_reaction_info(local_id).emoji_name;
+    var title = generate_title(emoji_name, user_list);
+    var html_title = '<div>'+title+'</div>';
+    var ypos = elem.offset().top;
+    var popover = elem.data('popover');
+    if (popover === undefined) {
+        elem.popover({
+            template: templates.render('reaction_popover', {class: 'reaction-popover'}),
+            trigger: "manual",
+            animation: false,
+        });
+        popover = elem.data('popover');
+    }
+    popover.options.content = html_title;
+    popover.options.placement = ((message_viewport.height() - ypos) < 70) ? 'top' : 'bottom';
+    elem.popover('show');
 };
 
 exports.view.insert_new_reaction = function (opts) {
@@ -261,8 +279,6 @@ exports.view.insert_new_reaction = function (opts) {
     var message_id = opts.message_id;
     var emoji_name = opts.emoji_name;
     var emoji_code = opts.emoji_code;
-    var user_id = opts.user_id;
-    var user_list = [user_id];
 
     var context = {
         message_id: message_id,
@@ -270,15 +286,12 @@ exports.view.insert_new_reaction = function (opts) {
         emoji_code: emoji_code,
     };
 
-    var new_title = generate_title(emoji_name, user_list);
-
     if (opts.reaction_type !== 'unicode_emoji') {
         context.is_realm_emoji = true;
         context.url = emoji.all_realm_emojis[emoji_code].emoji_url;
     }
 
     context.count = 1;
-    context.title = new_title;
     context.local_id = exports.get_local_reaction_id(opts);
     context.emoji_alt_code = (page_params.emojiset === 'text');
 
@@ -347,7 +360,6 @@ exports.remove_reaction = function (event) {
 exports.view.remove_reaction = function (opts) {
 
     var message_id = opts.message_id;
-    var emoji_name = opts.emoji_name;
     var user_list = opts.user_list;
     var user_id = opts.user_id;
     var local_id = exports.get_local_reaction_id(opts);
@@ -360,12 +372,7 @@ exports.view.remove_reaction = function (opts) {
         return;
     }
 
-    // The emoji still has reactions from other users, so we need to update
-    // the title/count and, if the user is the current user, turn off the
-    // "reacted" class.
-
-    var new_title = generate_title(emoji_name, user_list);
-    reaction.prop('title', new_title);
+    // If the user is the current user, turn off the "reacted" class.
 
     exports.set_reaction_count(reaction, user_list.length);
 
@@ -409,7 +416,6 @@ exports.get_message_reactions = function (message) {
         reaction.emoji_name = reaction.emoji_name;
         reaction.emoji_code = reaction.emoji_code;
         reaction.count = reaction.user_ids.length;
-        reaction.title = generate_title(reaction.emoji_name, reaction.user_ids);
         reaction.emoji_alt_code = (page_params.emojiset === 'text');
 
         if (reaction.reaction_type !== 'unicode_emoji') {

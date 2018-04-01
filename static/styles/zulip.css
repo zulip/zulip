@@ -2818,3 +2818,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .hotkey-hint {
     opacity: 0.75;
 }
+
+.popover.reaction-popover {
+    background-color: #f5f5f5;
+    border-radius: 3px;
+    box-shadow: none;
+}
+
+.popover.reaction-popover .popover-content {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
