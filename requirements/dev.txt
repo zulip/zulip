@@ -119,7 +119,7 @@ pycrypto==2.6.1
 pydispatcher==2.0.5       # via scrapy
 pyflakes==1.6.0
 pygments==2.2.0
-pyjwt==1.5.3
+pyjwt==1.6.1
 pyldap==2.4.37
 pylibmc==1.5.2
 pyoembed==0.1.2
