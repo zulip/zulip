@@ -21,7 +21,7 @@ from zerver.models import \
     UserDataExport
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
-from zerver.lib.export import do_export_user
+from zerver.lib.export import do_export_user_tarball
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -546,15 +546,7 @@ class DeferredWorker(QueueProcessingWorker):
                            [user_profile.id])
 
                 # Create export
-                output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
-                do_export_user(user_profile, output_dir)
-                logger.info("Finished exporting to %s; tarring", output_dir)
-                tarball_path = output_dir.rstrip('/') + '.tar.gz'
-                subprocess.check_call(
-                    ["tar", "-czf", tarball_path, os.path.basename(output_dir)],
-                    cwd=os.path.dirname(output_dir)
-                )
-                logger.info("Tarball written to %s", tarball_path)
+                tarball_path = do_export_user_tarball(user_profile)
 
                 # Upload
                 with open(tarball_path, 'rb') as f:
@@ -564,7 +556,6 @@ class DeferredWorker(QueueProcessingWorker):
                     upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
 
                 # Delete export data
-                shutil.rmtree(output_dir)
                 os.remove(tarball_path)
 
                 # Notify user
