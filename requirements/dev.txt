@@ -92,7 +92,7 @@ mypy==0.580
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.4
 oauth2client==4.1.2
-oauthlib==2.0.6
+oauthlib==2.0.7
 ordereddict==1.1          # via gitlint
 packaging==16.8           # via sphinx
 parsel==1.2.0             # via scrapy
