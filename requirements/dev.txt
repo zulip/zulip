@@ -52,7 +52,7 @@ django-pipeline==1.6.14
 django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.7.0
-django-webpack-loader==0.5.0
+django-webpack-loader==0.6.0
 django==1.11.6
 docker-pycreds==0.2.1     # via docker
 docker==2.6.1             # via moto
