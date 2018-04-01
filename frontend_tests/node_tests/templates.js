@@ -1027,6 +1027,11 @@ run_test('propagate_notification_change', () => {
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
 });
 
+run_test('reactions_popover', () => {
+    var html = render('reaction_popover', {class: 'reaction-popover'});
+    $(html).hasClass('popover reaction-popover');
+});
+
 run_test('reminder_popover_content', () => {
     var args = {
         message: {

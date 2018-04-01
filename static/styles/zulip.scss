@@ -3034,3 +3034,16 @@ div.message_content button.tictactoe-square:disabled {
 .flatpickr-months .numInputWrapper span {
     display: none;
 }
+
+.popover.reaction-popover {
+    background-color: hsl(0, 0%, 96%);
+    border-radius: 3px;
+    box-shadow: none;
+}
+
+.popover.reaction-popover .popover-content {
+    padding-top: 2px;
+    padding-bottom: 2px;
+    padding-left: 5px;
+    padding-right: 5px;
+}
