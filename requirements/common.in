@@ -3,7 +3,7 @@
 # and requirements/prod.txt.
 # See requirements/README.md for more detail.
 # Django itself
-Django==1.11.6
+Django==1.11.11
 
 # needed for mypy TypedDict
 mypy_extensions==0.3.0
@@ -149,7 +149,7 @@ django-webpack-loader==0.6.0
 # Needed for iOS push notifications
 apns2==0.3.0
 
-python-twitter==3.3
+python-twitter==3.4.1
 
 # To parse po files
 polib==1.1.0

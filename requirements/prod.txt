@@ -41,7 +41,7 @@ django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.7.0
 django-webpack-loader==0.6.0
-django==1.11.6
+django==1.11.11
 docopt==0.6.2
 gitdb==0.6.4
 google-api-python-client==1.6.6
@@ -92,7 +92,7 @@ pyopenssl==17.3.0         # via ndg-httpsclient
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
-python-twitter==3.3
+python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.3
 qrcode==4.0.4             # via django-two-factor-auth
