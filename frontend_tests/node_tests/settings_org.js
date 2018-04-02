@@ -316,20 +316,6 @@ function test_upload_realm_icon(upload_realm_icon) {
     assert(posted);
 }
 
-function test_change_message_editing(change_message_editing) {
-    var parent_elem = $.create('editing-parent-stub');
-
-    $('#id_realm_message_content_edit_limit_minutes_label').set_parent(parent_elem);
-
-    change_message_editing.apply({checked: false});
-    assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), 'disabled');
-
-    change_message_editing.apply({checked: true});
-    assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_message_content_edit_limit_minutes').attr('disabled'), false);
-}
-
 function test_change_invite_required(change_invite_required) {
     var parent_elem = $.create('invite-parent-stub');
 
@@ -496,7 +482,6 @@ function test_sync_realm_settings() {
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $('#id_realm_restricted_to_domain').change = set_callback('id_realm_restricted_to_domain');
-    $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
@@ -524,6 +509,8 @@ function test_sync_realm_settings() {
 
     var stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
+    $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
+    $("#id_realm_msg_edit_limit_setting").change = noop;
     var parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     // TEST set_up() here, but this mostly just allows us to
@@ -536,7 +523,6 @@ function test_sync_realm_settings() {
     test_submit_settings_form(submit_settings_form);
     test_upload_realm_icon(upload_realm_icon);
     test_change_invite_required(callbacks.change_invite_required);
-    test_change_message_editing(callbacks.change_message_editing);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
