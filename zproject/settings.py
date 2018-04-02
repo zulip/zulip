@@ -1413,7 +1413,7 @@ LOGGING = {
 
         # root logger
         '': {
-            'level': 'INFO',
+            'level': 'DEBUG',
             'filters': ['require_logging_enabled'],
             'handlers': DEFAULT_ZULIP_HANDLERS,
         },
@@ -1445,12 +1445,12 @@ LOGGING = {
             'propagate': False,
         },
 
-        ## Uncomment the following to get all database queries logged to the console
-        # 'django.db': {
-        #     'level': 'DEBUG',
-        #     'handlers': ['console'],
-        #     'propagate': False,
-        # },
+        # Uncomment the following to get all database queries logged to the console
+        'django.db': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'file'],
+            'propagate': False,
+        },
 
         # other libraries, alphabetized
         'pika.adapters': {

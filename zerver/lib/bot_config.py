@@ -4,7 +4,7 @@ from django.db.models.query import F
 from django.db.models.functions import Length
 from zerver.models import BotConfigData, UserProfile
 
-from typing import Text, Dict, Optional
+from typing import Text, List, Dict, Optional
 
 import os
 
@@ -19,6 +19,15 @@ def get_bot_config(bot_profile: UserProfile) -> Dict[Text, Text]:
     if not entries:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
+
+def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[Text, Text]]:
+    entries = BotConfigData.objects.filter(bot_profile__id__in=bot_profile_ids).select_related()
+    if not entries:
+        return {}
+    entries_by_uid = defaultdict(dict)
+    for entry in entries:
+        entries_by_uid[entry.bot_profile.id].update({entry.key: entry.value})
+    return entries_by_uid
 
 def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
     if key is None:
