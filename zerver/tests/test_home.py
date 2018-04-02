@@ -81,6 +81,7 @@ class HomeTest(ZulipTestCase):
             "hotspots",
             "initial_servertime",
             "is_admin",
+            "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
             "last_event_id",

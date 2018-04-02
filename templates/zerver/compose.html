@@ -109,8 +109,10 @@
                                            id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
                                         <a class="message-control-button icon-vector-paper-clip notdisplayed"
                                            id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
+                                        {% if jitsi_server_url %}
                                         <a class="message-control-button fa fa-video-camera"
                                            id="video_link" href="#" title="{{ _('Add video call') }}"></a>
+                                        {% endif %}
                                         <a id="undo_markdown_preview"
                                             class="message-control-button icon-vector-edit"
                                             style="display:none;" title="{{ _('Write') }}"></a>

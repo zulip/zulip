@@ -1227,6 +1227,8 @@ function test_raw_file_drop(raw_drop_func) {
     }());
 
     (function test_video_link_compose_clicked() {
+        page_params.jitsi_server_url = 'https://meet.jit.si';
+
         var syntax_to_insert;
 
         compose_ui.insert_syntax_and_focus = function (syntax) {

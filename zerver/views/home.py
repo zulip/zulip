@@ -190,6 +190,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
         password_min_length = settings.PASSWORD_MIN_LENGTH,
         password_min_guesses  = settings.PASSWORD_MIN_GUESSES,
+        jitsi_server_url      = settings.JITSI_SERVER_URL,
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,
