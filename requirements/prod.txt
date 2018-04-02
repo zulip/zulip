@@ -92,7 +92,7 @@ pyopenssl==17.3.0         # via ndg-httpsclient
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
-python-twitter==3.3
+python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.3
 qrcode==4.0.4             # via django-two-factor-auth
