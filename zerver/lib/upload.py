@@ -22,6 +22,7 @@ from zerver.models import get_user_profile_by_id, RealmEmoji
 from zerver.models import Attachment
 from zerver.models import Realm, RealmEmoji, UserProfile, Message
 
+import mimetypes
 import urllib
 import base64
 import os
@@ -623,6 +624,14 @@ def create_attachment(file_name: str, path_id: str, user_profile: UserProfile,
     from zerver.lib.actions import notify_attachment_update
     notify_attachment_update(user_profile, 'add', attachment.to_dict())
     return True
+
+def upload_file_from_path(path: str, user_profile: UserProfile) -> str:
+    content_type = mimetypes.guess_type(path)[0]
+    size = os.path.getsize(path)
+    name = os.path.basename(path)
+    with open(path, 'rb') as f:
+        upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
+    return upload_path
 
 def upload_message_image_from_request(request: HttpRequest, user_file: File,
                                       user_profile: UserProfile) -> str:

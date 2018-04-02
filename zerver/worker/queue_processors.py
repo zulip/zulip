@@ -4,12 +4,8 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, 
 import copy
 import signal
 from functools import wraps
-import mimetypes
-import tempfile
-import shutil
 import smtplib
 import socket
-import subprocess
 
 from django.conf import settings
 from django.db import connection
@@ -47,7 +43,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
-from zerver.lib.upload import upload_message_file
+from zerver.lib.upload import upload_file_from_path
 from zerver.models import get_bot_services
 from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
@@ -547,17 +543,8 @@ class DeferredWorker(QueueProcessingWorker):
 
                 # Create export
                 tarball_path = do_export_user_tarball(user_profile)
-
-                # Upload
-                with open(tarball_path, 'rb') as f:
-                    content_type = mimetypes.guess_type(tarball_path)[0]
-                    size = os.path.getsize(tarball_path)
-                    name = os.path.basename(tarball_path)
-                    upload_path = upload_message_file(name, size, content_type, f.read(), user_profile)
-
-                # Delete export data
+                upload_path = upload_file_from_path(tarball_path, user_profile)
                 os.remove(tarball_path)
-
                 # Notify user
                 content = """Your data has been exported and uploaded [here]({})""".format(upload_path)
                 internal_send_private_message(user_profile.realm,
