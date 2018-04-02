@@ -141,7 +141,7 @@ class CustomProfileDataTest(ZulipTestCase):
         })
         self.assert_json_error(
             result,
-            u"value[{}] is longer than 200.".format(field.id))
+            u"value[{}] is longer than 50.".format(field.id))
 
     def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))
