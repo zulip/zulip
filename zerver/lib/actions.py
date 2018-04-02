@@ -27,6 +27,7 @@ from zerver.lib.addressee import (
 from zerver.lib.bot_config import (
     ConfigError,
     get_bot_config,
+    get_bot_configs,
     set_bot_config,
 )
 from zerver.lib.cache import (
@@ -81,7 +82,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     CustomProfileFieldValue, validate_attachment_request, get_system_bot, \
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
-    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError
+    get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
+    get_user_profiles_by_ids, get_services_for_bots
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -4643,6 +4645,32 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
             pass
     return service_dicts
 
+def get_service_dicts_for_bots(bot_profile_ids: List[int]) -> Dict[int, List[Dict[str, Any]]]:
+    bot_profiles = get_user_profiles_by_ids(bot_profile_ids)  # type: List[UserProfile]
+    bot_services_by_uid = get_services_for_bots(bot_profiles)
+
+    embedded_bot_profiles = [profile for profile in bot_profiles
+                             if profile.bot_type == UserProfile.EMBEDDED_BOT]
+    embedded_bot_configs = get_bot_configs(embedded_bot_profiles)
+
+    service_dicts_by_uid = {}  # type: Dict[int, List[Dict[Text, Any]]]
+    for bot_profile in bot_profiles:
+        services = bot_services_by_uid[bot_profile.id]
+        service_dicts = []  # type: List[Dict[Text, Any]]
+        if bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+            service_dicts = [{'base_url': service.base_url,
+                              'interface': service.interface,
+                              }
+                             for service in services]
+        elif bot_profile.bot_type == UserProfile.EMBEDDED_BOT:
+            if bot_profile.id in embedded_bot_configs.keys():
+                bot_config = embedded_bot_configs[bot_profile.id]
+                service_dicts = [{'config_data': bot_config,
+                                  'service_name': services[0].name
+                                  }]
+        service_dicts_by_uid[bot_profile.id] = service_dicts
+    return service_dicts_by_uid
+
 def get_owned_bot_dicts(user_profile: UserProfile,
                         include_all_realm_bots_if_admin: bool=True) -> List[Dict[str, Any]]:
     if user_profile.is_realm_admin and include_all_realm_bots_if_admin:
@@ -4650,6 +4678,8 @@ def get_owned_bot_dicts(user_profile: UserProfile,
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
+    bot_profile_ids = [botdict['id'] for botdict in result]
+    services_by_ids = get_service_dicts_for_bots(bot_profile_ids)
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
@@ -4661,7 +4691,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': avatar_url_from_dict(botdict),
-             'services': get_service_dicts_for_bot(botdict['id']),
+             'services': services_by_ids[botdict['id']],
              }
             for botdict in result]
 

@@ -1465,6 +1465,9 @@ class Subscription(models.Model):
 def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
 
+def get_user_profiles_by_ids(uids: List[int]) -> List[UserProfile]:
+    return list(UserProfile.objects.filter(id__in=uids).select_related())
+
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: Text) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
@@ -1963,6 +1966,13 @@ class Service(models.Model):
 
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
+
+def get_services_for_bots(bot_profiles: List[UserProfile]) -> Dict[int, List[Service]]:
+    services = Service.objects.filter(user_profile__in=bot_profiles).select_related()
+    services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
+    for service in services:
+        services_by_uid[service.user_profile.id].append(service)
+    return services_by_uid
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)
