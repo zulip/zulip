@@ -354,11 +354,11 @@ class ActivateTest(ZulipTestCase):
         do_change_is_admin(admin, True)
         self.login(self.example_email("othello"))
 
-        # Can not deactivate a user with the bot api
+        # Cannot deactivate a user with the bot api
         result = self.client_delete('/json/bots/hamlet@zulip.com')
         self.assert_json_error(result, 'No such bot')
 
-        # Can not deactivate a nonexistent user.
+        # Cannot deactivate a nonexistent user.
         result = self.client_delete('/json/users/nonexistent@zulip.com')
         self.assert_json_error(result, 'No such user')
 
@@ -368,7 +368,7 @@ class ActivateTest(ZulipTestCase):
         result = self.client_delete('/json/users/othello@zulip.com')
         self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
 
-        # Can not reactivate a nonexistent user.
+        # Cannot reactivate a nonexistent user.
         result = self.client_post('/json/users/nonexistent@zulip.com/reactivate')
         self.assert_json_error(result, 'No such user')
 
@@ -377,11 +377,11 @@ class ActivateTest(ZulipTestCase):
         do_change_is_admin(non_admin, False)
         self.login(self.example_email("othello"))
 
-        # Can not deactivate a user with the users api
+        # Cannot deactivate a user with the users api
         result = self.client_delete('/json/users/hamlet@zulip.com')
         self.assert_json_error(result, 'Insufficient permission')
 
-        # Can not reactivate a user
+        # Cannot reactivate a user
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_error(result, 'Insufficient permission')
 

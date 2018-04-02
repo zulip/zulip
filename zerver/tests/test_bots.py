@@ -477,7 +477,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         # Hamlet's bot.
         self.login(self.example_email('othello'))
 
-        # Can not deactivate a user as a bot
+        # Cannot deactivate a user as a bot
         result = self.client_delete("/json/bots/" + self.example_email("hamlet"))
         self.assert_json_error(result, 'No such bot')
 
@@ -488,7 +488,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         self.assert_num_bots_equal(1)
 
-        # Can not deactivate a bot as a user
+        # Cannot deactivate a bot as a user
         result = self.client_delete("/json/users/hambot-bot@zulip.testserver")
         self.assert_json_error(result, 'No such user')
         self.assert_num_bots_equal(1)

@@ -255,8 +255,8 @@ exports.update_settings_for_unsubscribed = function (sub) {
     if (active_stream !== undefined && active_stream.id === sub.stream_id) {
         stream_edit.rerender_subscribers_list(sub);
 
-        // If user unsubscribed from private stream then user can not subscribe to
-        // stream without invitation and can not add subscribers to stream.
+        // If user unsubscribed from private stream then user cannot subscribe to
+        // stream without invitation and cannot add subscribers to stream.
         if (!sub.should_display_subscription_button) {
             settings_button.hide();
             $('.add_subscribers_container').hide();

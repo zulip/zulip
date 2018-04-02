@@ -442,7 +442,7 @@ class StreamAdminTest(ZulipTestCase):
                                    {'new_description': ujson.dumps('new description')})
         self.assert_json_success(result)
 
-        # But can not change stream type.
+        # But cannot change stream type.
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'stream_name': ujson.dumps('private_stream'),
                                     'is_private': ujson.dumps(True)})

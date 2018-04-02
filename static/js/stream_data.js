@@ -364,7 +364,7 @@ exports.remove_subscriber = function (stream_name, user_id) {
 exports.user_is_subscribed = function (stream_name, user_email) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
-        // If we don't know about the stream, or we ourselves can not access subscriber list,
+        // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
         blueslip.warn("We got a user_is_subscribed call for a non-existent or inaccessible stream.");
         return;

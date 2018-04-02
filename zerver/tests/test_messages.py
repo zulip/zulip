@@ -311,7 +311,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_huddle_message(feedback_email, [user1_email, user2_email])
 
-        # Users on the different realms can not PM each other
+        # Users on the different realms cannot PM each other
         with assert_invalid_email():
             self.send_personal_message(user1_email, user2_email, sender_realm="1.example.com")
 
@@ -319,7 +319,7 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_personal_message(user1_email, "hamlet@zulip.com", sender_realm="1.example.com")
 
-        # Users on three different realms can not PM each other
+        # Users on three different realms cannot PM each other
         with assert_invalid_email():
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
