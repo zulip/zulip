@@ -114,6 +114,17 @@ function get_property_value(property_name) {
             return "by_admins_only";
         }
         return "by_anyone";
+    } else if (property_name === 'realm_msg_edit_limit_setting') {
+        if (!page_params.realm_allow_message_editing) {
+            return "never";
+        }
+        var value = _.findKey(exports.msg_edit_limit_dropdown_values, function (elem) {
+            return elem.seconds === page_params.realm_message_content_edit_limit_seconds;
+        });
+        if (value === undefined) {
+            return "custom_limit";
+        }
+        return value;
     }
     return page_params[property_name];
 }
@@ -134,6 +145,51 @@ function set_create_stream_permission_dropdown() {
 
 function set_add_emoji_permission_dropdown() {
     $("#id_realm_add_emoji_by_admins_only").val(get_property_value("realm_add_emoji_by_admins_only"));
+}
+
+exports.setup_msg_edit_limit_dropdown_values = function () {
+    exports.msg_edit_limit_dropdown_values = {
+        any_time: {
+            text: i18n.t("Any time"),
+            seconds: 0,
+        },
+        never: {
+            text: i18n.t("Never"),
+        },
+        upto_two_min: {
+            text: i18n.t("Up to __time_limit__ after posting", i18n.t("2 minutes")),
+            seconds: 2*60,
+        },
+        upto_ten_min: {
+            text: i18n.t("Up to __time_limit__ after posting", i18n.t("10 minutes")),
+            seconds: 10*60,
+        },
+        upto_one_hour: {
+            text: i18n.t("Up to __time_limit__ after posting", i18n.t("1 hour")),
+            seconds: 60*60,
+        },
+        upto_one_day: {
+            text: i18n.t("Up to __time_limit__ after posting", i18n.t("1 day")),
+            seconds: 24*60*60,
+        },
+        upto_one_week: {
+            text: i18n.t("Up to __time_limit__ after posting", i18n.t("1 week")),
+            seconds: 7*24*60*60,
+        },
+        custom_limit: {
+            text: i18n.t("Custom time limit"),
+        },
+    };
+};
+
+function set_msg_edit_limit_dropdown() {
+    var value = get_property_value("realm_msg_edit_limit_setting");
+    $("#id_realm_msg_edit_limit_setting").val(value);
+    if (value === "custom_limit") {
+        $("#id_realm_message_content_edit_limit_minutes").parent().show();
+    } else {
+        $("#id_realm_message_content_edit_limit_minutes").parent().hide();
+    }
 }
 
 exports.populate_realm_domains = function (realm_domains) {
@@ -280,6 +336,8 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_restricted_to_domain') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
             "id_realm_disallow_disposable_email_addresses", false);
+    } else if (property_name === 'realm_msg_edit_limit_setting' || property_name === 'realm_message_content_edit_limit_minutes') {
+        set_msg_edit_limit_dropdown();
     }
 }
 
@@ -308,6 +366,8 @@ exports.sync_realm_settings = function (property) {
         property = 'message_content_edit_limit_minutes';
     } else if (property === 'create_stream_by_admins_only') {
         property = 'create_stream_permission';
+    } else if (property === 'allow_message_editing') {
+        property = 'msg_edit_limit_setting';
     }
     var element =  $('#id_realm_'+property);
     if (element.length) {
@@ -397,7 +457,7 @@ function _set_up() {
 
     set_create_stream_permission_dropdown();
     set_add_emoji_permission_dropdown();
-
+    set_msg_edit_limit_dropdown();
     $("#id_realm_restricted_to_domain").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_disallow_disposable_email_addresses", false);
     });
@@ -405,11 +465,6 @@ function _set_up() {
     $("#id_realm_invite_required").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
     });
-
-    $("#id_realm_allow_message_editing").change(function () {
-        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_message_content_edit_limit_minutes", true);
-    });
-
 
     function check_property_changed(elem) {
         elem = $(elem);
@@ -489,38 +544,18 @@ function _set_up() {
     function get_complete_data_for_subsection(subsection) {
         var opts = {};
         if (subsection === 'msg_editing') {
-            var compose_textarea_edit_limit_minutes = $("#id_realm_message_content_edit_limit_minutes").val();
-            var new_allow_message_editing = $("#id_realm_allow_message_editing").prop("checked");
-            // If allow_message_editing is unchecked, message_content_edit_limit_minutes
-            // is irrelevant.  Hence if allow_message_editing is unchecked, and
-            // message_content_edit_limit_minutes is poorly formed, we set the latter to
-            // a default value to prevent the server from returning an error.
-            if (!new_allow_message_editing) {
-                if ((parseInt(compose_textarea_edit_limit_minutes, 10).toString() !==
-                     compose_textarea_edit_limit_minutes) ||
-                        compose_textarea_edit_limit_minutes < 0) {
-                    // Realm.DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS / 60
-                    compose_textarea_edit_limit_minutes = 10;
-                }
+            var edit_limit_setting_value = $("#id_realm_msg_edit_limit_setting").val();
+            opts.data = {};
+            if (edit_limit_setting_value === 'never') {
+                opts.data.allow_message_editing = false;
+            } else if (edit_limit_setting_value === 'custom_limit') {
+                opts.data.allow_message_editing = true;
+                opts.data.message_content_edit_limit_seconds = parseInt($("#id_realm_message_content_edit_limit_minutes").val(), 10) * 60;
+            } else {
+                opts.data.allow_message_editing = true;
+                opts.data.message_content_edit_limit_seconds =
+                    exports.msg_edit_limit_dropdown_values[edit_limit_setting_value].seconds;
             }
-
-            opts.data = {
-                allow_message_editing: JSON.stringify(new_allow_message_editing),
-                message_content_edit_limit_seconds:
-                    JSON.stringify(parseInt(compose_textarea_edit_limit_minutes, 10) * 60),
-            };
-
-            opts.success_continuation = function (response_data) {
-                if (response_data.allow_message_editing !== undefined) {
-                   // We expect message_content_edit_limit_seconds was sent in the
-                   // response as well
-                   var data_message_content_edit_limit_minutes =
-                   Math.ceil(response_data.message_content_edit_limit_seconds / 60);
-                   // message_content_edit_limit_seconds could have been changed earlier
-                   // in this function, so update the field just in case
-                   $("#id_realm_message_content_edit_limit_minutes").val(data_message_content_edit_limit_minutes);
-                }
-            };
         } else if (subsection === 'other_permissions') {
             var create_stream_permission = $("#id_realm_create_stream_permission").val();
             var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
@@ -580,6 +615,16 @@ function _set_up() {
         if (e.keyCode === 13) {
             e.preventDefault();
             $(e.target).closest('.org-subsection-parent').find('.subsection-changes-save button').click();
+        }
+    });
+
+    $("#id_realm_msg_edit_limit_setting").change(function (e) {
+        var create_stream_permission = e.target.value;
+        var node = $("#id_realm_message_content_edit_limit_minutes").parent();
+        if (create_stream_permission === 'custom_limit') {
+            node.show();
+        } else {
+            node.hide();
         }
     });
 
