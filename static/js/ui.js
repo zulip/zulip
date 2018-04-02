@@ -19,6 +19,7 @@ exports.set_up_scrollbar = function (element) {
         useKeyboard: false,
         wheelSpeed: 0.68,
         scrollingThreshold: 50,
+        minScrollbarLength: 40,
     });
     element[0].perfectScrollbar = perfectScrollbar;
 };
