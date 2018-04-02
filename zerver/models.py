@@ -31,8 +31,8 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
-from zerver.lib.validator import check_int, check_float, check_string, \
-    check_short_string
+from zerver.lib.validator import check_int, check_float, \
+    check_short_string, check_long_string
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator
 
@@ -1868,17 +1868,13 @@ class CustomProfileField(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.CharField(max_length=100)  # type: Text
 
-    INTEGER = 1
-    FLOAT = 2
     SHORT_TEXT = 3
     LONG_TEXT = 4
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
-        (INTEGER, u'Integer', check_int, int),
-        (FLOAT, u'Float', check_float, float),
         (SHORT_TEXT, u'Short Text', check_short_string, str),
-        (LONG_TEXT, u'Long Text', check_string, str),
+        (LONG_TEXT, u'Long Text', check_long_string, str),
     ]  # type: List[Tuple[int, Text, Validator, Callable[[Any], Any]]]
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
