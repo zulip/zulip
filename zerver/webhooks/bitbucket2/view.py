@@ -145,7 +145,8 @@ def get_push_bodies(payload: Dict[str, Any]) -> List[Text]:
         potential_tag = (change['new'] or change['old'] or {}).get('type')
         if potential_tag == 'tag':
             messages_list.append(get_push_tag_body(payload, change))
-        elif change.get('closed'):
+        # if change['new'] is None, that means a branch was deleted
+        elif change.get('new') is None:
             messages_list.append(get_remove_branch_push_body(payload, change))
         elif change.get('forced'):
             messages_list.append(get_force_push_body(payload, change))
