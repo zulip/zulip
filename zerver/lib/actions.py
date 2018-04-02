@@ -447,7 +447,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,
                avatar_url=avatar_url(user_profile),
-               services = get_service_dicts_for_bots(user_profile.id),
+               services = get_service_dicts_for_bot(user_profile.id),
                )
 
     # Set the owner key only when the bot has an owner.
@@ -4624,7 +4624,7 @@ def do_update_bot_config_data(bot_profile: UserProfile,
                     ),
                bot_owner_user_ids(bot_profile))
 
-def get_service_dicts_for_bots(user_profile_id: str) -> List[Dict[str, Any]]:
+def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
     services = get_bot_services(user_profile_id)
     service_dicts = []  # type: List[Dict[Text, Any]]
@@ -4661,7 +4661,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
              'default_all_public_streams': botdict['default_all_public_streams'],
              'owner': botdict['bot_owner__email'],
              'avatar_url': avatar_url_from_dict(botdict),
-             'services': get_service_dicts_for_bots(botdict['id']),
+             'services': get_service_dicts_for_bot(botdict['id']),
              }
             for botdict in result]
 
