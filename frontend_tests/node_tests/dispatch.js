@@ -479,6 +479,9 @@ var event_fixtures = {
     delete_message: {
         type: 'delete_message',
         message_id: 1337,
+        message_type: "stream",
+        stream_id: 99,
+        subject: 'topic1',
     },
 
     custom_profile_fields: {
@@ -942,13 +945,6 @@ set_global('message_store', {});
 with_overrides(function (override) {
     // delete_message
     var event = event_fixtures.delete_message;
-    message_store.get = function (msg_id) {
-        return { id: msg_id,
-             reactions: [],
-             stream_id: 99,
-             subject: 'topic1',
-             type: 'stream'};
-    };
 
     override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
@@ -958,10 +954,10 @@ with_overrides(function (override) {
         assert_same(args.message_id, 1337);
     });
     global.with_stub(function (stub) {
-        override('unread_ops.mark_message_as_read', stub.f);
+        override('unread_ops.process_read_messages_event', stub.f);
         dispatch(event);
-        var args = stub.get_args('message');
-        assert_same(args.message.id, 1337);
+        var args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [1337]);
     });
     global.with_stub(function (stub) {
         override('topic_data.remove_message', stub.f);

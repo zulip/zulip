@@ -394,15 +394,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'delete_message':
         var msg_id = event.message_id;
-        var message = message_store.get(msg_id);
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
-        unread_ops.mark_message_as_read(message);
-        if (message.type === 'stream') {
+        unread_ops.process_read_messages_event([msg_id]);
+        if (event.message_type === 'stream') {
             topic_data.remove_message({
-                stream_id: message.stream_id,
-                topic_name: message.subject,
+                stream_id: event.stream_id,
+                topic_name: event.subject,
             });
             stream_list.update_streams_sidebar();
         }
