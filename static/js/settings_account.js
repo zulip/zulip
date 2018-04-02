@@ -61,10 +61,8 @@ function add_custom_profile_fields_to_settings() {
         var value = people.my_custom_profile_data(field.id);
         var is_long_text = field.type === 4;
 
-        // 1 & 2 type represent numeric data and 3 & 4 type represent textual data.
+        // 1 & 2 type represent textual data.
         if (field.type === 1 || field.type === 2) {
-            type = "number";
-        } else if (field.type === 3 || field.type === 4) {
             type = "text";
         } else {
             blueslip.error("Undefined field type.");
