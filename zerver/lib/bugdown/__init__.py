@@ -81,7 +81,7 @@ STREAM_LINK_REGEX = r"""
 class BugdownRenderingException(Exception):
     pass
 
-def rewrite_if_relative_link(link: str) -> str:
+def rewrite_local_links_to_relative(link: str) -> str:
     """ If the link points to a local destination we can just switch to that
     instead of opening a new tab. """
 
@@ -1162,7 +1162,7 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    href = rewrite_if_relative_link(href)
+    href = rewrite_local_links_to_relative(href)
     target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
@@ -1328,7 +1328,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
-        href = rewrite_if_relative_link(href)
+        href = rewrite_local_links_to_relative(href)
 
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
