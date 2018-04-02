@@ -126,40 +126,6 @@ class CustomProfileDataTest(ZulipTestCase):
         self.assert_json_error(result,
                                u"Field id 1234 not found.")
 
-    def test_update_invalid_value(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        age_field = try_add_realm_custom_profile_field(
-            realm,
-            u"age",
-            CustomProfileField.INTEGER
-        )
-
-        data = [{'id': age_field.id, 'value': 'text'}]
-        result = self.client_patch("/json/users/me/profile_data", {
-            'data': ujson.dumps(data)
-        })
-        self.assert_json_error(
-            result,
-            u"value[{}] is not an integer".format(age_field.id))
-
-    def test_update_invalid_double(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        field = try_add_realm_custom_profile_field(
-            realm,
-            u"distance",
-            CustomProfileField.FLOAT
-        )
-
-        data = [{'id': field.id, 'value': 'text'}]
-        result = self.client_patch("/json/users/me/profile_data", {
-            'data': ujson.dumps(data)
-        })
-        self.assert_json_error(
-            result,
-            u"value[{}] is not a float".format(field.id))
-
     def test_update_invalid_short_text(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -183,7 +149,7 @@ class CustomProfileDataTest(ZulipTestCase):
         fields = [
             ('Phone number', 'short text data'),
             ('Biography', 'long text data'),
-            ('Favorite integer', 1),
+            ('Favorite food', 'short text data'),
         ]
 
         data = []
