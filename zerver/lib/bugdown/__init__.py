@@ -86,9 +86,10 @@ def rewrite_if_relative_link(link: str) -> str:
     instead of opening a new tab. """
 
     if db_data:
-        if link.startswith(db_data['realm_uri']):
+        realm_uri_prefix = db_data['realm_uri'] + "/"
+        if link.startswith(realm_uri_prefix):
             # +1 to skip the `/` before the hash link.
-            return link[len(db_data['realm_uri']) + 1:]
+            return link[len(realm_uri_prefix):]
 
     return link
 
