@@ -39,13 +39,7 @@ def check_string(var_name: str, val: object) -> Optional[str]:
     return None
 
 def check_short_string(var_name: str, val: object) -> Optional[str]:
-    if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
-    max_length = 50
-    if len(val) >= max_length:
-        return _("{var_name} is longer than {max_length}.".format(
-            var_name=var_name, max_length=max_length))
-    return None
+    return check_capped_string(var_name, val, 50)
 
 def check_capped_string(var_name: str, val: object, max_length: int) -> Optional[str]:
     if not isinstance(val, str):
