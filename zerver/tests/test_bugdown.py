@@ -1185,6 +1185,17 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>'
         )
 
+    def test_relative_link_streams_page(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://zulip.testserver/#streams/all"
+
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="#streams/all" target="_blank" title="#streams/all">http://zulip.testserver/#streams/all</a></p>'
+        )
+
     def test_md_relative_link(self) -> None:
         realm = get_realm("zulip")
         sender_user_profile = self.example_user('othello')

@@ -1163,7 +1163,7 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
         text = markdown.util.AtomicString(url)
 
     href = rewrite_if_relative_link(href)
-    target_blank = not href.startswith("#") and not href.startswith('mailto:')
+    target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
     a.text = text
