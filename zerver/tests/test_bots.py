@@ -667,6 +667,14 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot = self.get_bot()
         self.assertEqual('Fred', bot['full_name'])
 
+    def test_patch_bot_full_name_non_bot(self) -> None:
+        self.login(self.example_email('iago'))
+        bot_info = {
+            'full_name': 'Fred',
+        }
+        result = self.client_patch("/json/bots/hamlet@zulip.com", bot_info)
+        self.assert_json_error(result, "No such bot")
+
     def test_patch_bot_owner(self) -> None:
         self.login(self.example_email('hamlet'))
         bot_info = {
