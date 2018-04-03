@@ -388,6 +388,8 @@ exports.on_load_success = function (realm_people_data) {
         var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
         var admin_status = $('#organization-status').expectOne();
         var person = people.get_person_from_user_id(user_id);
+        var url;
+        var data;
         if (!person) {
             return;
         } else if (person.is_bot) {
@@ -412,13 +414,19 @@ exports.on_load_success = function (realm_people_data) {
             e.preventDefault();
             e.stopPropagation();
 
-            var url = "/json/bots/" + encodeURIComponent(person.email);
-            var data = {
-                full_name: full_name.val(),
-            };
-
-            if (owner_select.val() !== undefined && owner_select.val() !== "") {
-                data.bot_owner = owner_select.val();
+            if (person.is_bot) {
+                url = "/json/bots/" + encodeURIComponent(person.email);
+                data = {
+                    full_name: full_name.val(),
+                };
+                if (owner_select.val() !== undefined && owner_select.val() !== "") {
+                    data.bot_owner = owner_select.val();
+                }
+            } else {
+                url = "/json/users/" + encodeURIComponent(person.email);
+                data = {
+                    full_name: JSON.stringify(full_name.val()),
+                };
             }
 
             channel.patch({
