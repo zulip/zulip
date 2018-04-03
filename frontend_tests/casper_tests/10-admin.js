@@ -191,7 +191,7 @@ casper.then(function () {
     casper.waitUntilVisible('.admin-profile-field-form', function () {
         casper.fill('form.admin-profile-field-form', {
             name: 'Teams',
-            field_type: '3',
+            field_type: '1',
         });
         casper.click('form.admin-profile-field-form button.button');
     });
