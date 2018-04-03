@@ -1255,6 +1255,20 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
             if item[field_name] is not None:
                 item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
+def fix_slack_upload_links(data: TableData, message_table: TableName) -> None:
+    """
+    This is slack importer specific
+    """
+    for message in data[message_table]:
+        if message['has_attachment'] is True:
+            # Should be kept in sync with the specific placeholder 'SlackImportAttachment' of
+            # slack import attachment path
+            # See function 'get_attachment_path_and_content' in 'slack_data_to_zulip_data' module
+            if 'SlackImportAttachment' in message['content']:
+                for key, value in path_maps['attachment_path'].items():
+                    if key in message['content']:
+                        message['content'] = message['content'].replace(key, value)
+
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
     Returns the ids present in the current table
@@ -1741,6 +1755,8 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_message', 'recipient', related_table="recipient")
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
+        # Parser to update message content with the updated attachment urls
+        fix_slack_upload_links(data, 'zerver_message')
 
         # We re-map the ids of zerver_message here, as the data is loaded again
         # and it is separate from the function 'update_message_foreign_keys' which just
