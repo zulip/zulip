@@ -204,12 +204,14 @@ exports.render_notifications_stream_ui = function (stream_id, elem) {
     if (!name) {
         elem.text(i18n.t("Disabled"));
         elem.addClass("text-warning");
+        elem.closest('.input-group').find('.notification-disable').hide();
         return;
     }
 
     // Happy path
     elem.text('#' + name);
     elem.removeClass('text-warning');
+    elem.closest('.input-group').find('.notification-disable').show();
 };
 
 exports.populate_notifications_stream_dropdown = function (stream_list) {

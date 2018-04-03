@@ -422,6 +422,8 @@ function test_extract_property_name() {
         upload_realm_icon = f;
     };
 
+    var stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
+    settings_org.render_notifications_stream_ui = noop;
     var parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     // TEST set_up() here, but this mostly just allows us to
@@ -439,10 +441,16 @@ function test_extract_property_name() {
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
+
+    settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
 }());
 
 (function test_misc() {
     page_params.is_admin = false;
+
+    var stub_notification_disable_parent = $.create('<stub notification_disable parent');
+    stub_notification_disable_parent.set_find_results('.notification-disable',
+        $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
     settings_account.update_name_change_display();
@@ -469,6 +477,9 @@ function test_extract_property_name() {
     assert.equal($("#change_email .button").attr('disabled'), false);
 
     var elem = $('#realm_notifications_stream_name');
+    elem.closest = function () {
+        return stub_notification_disable_parent;
+    };
     stream_data.get_sub_by_id = function (stream_id) {
         assert.equal(stream_id, 42);
         return { name: 'some_stream' };
@@ -483,6 +494,9 @@ function test_extract_property_name() {
     assert(elem.hasClass('text-warning'));
 
     elem = $('#realm_signup_notifications_stream_name');
+    elem.closest = function () {
+        return stub_notification_disable_parent;
+    };
     stream_data.get_sub_by_id = function (stream_id) {
         assert.equal(stream_id, 75);
         return { name: 'some_stream' };
