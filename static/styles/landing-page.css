@@ -2612,14 +2612,13 @@ nav ul li.active::after {
 }
 
 @media (max-width: 1390px) {
-    .portico-landing.plans .pricing-container .block .responsive-title {
+    .portico-landing.plans .pricing-container .block:not(:first-child) .responsive-title {
         color: inherit;
     }
 }
 
 @media (max-width: 1376px) {
     .portico-landing.plans .price-box {
-        height: 500px !important;
         margin: 20px;
     }
 
@@ -3318,7 +3317,26 @@ nav ul li.active::after {
     }
 }
 
-@media (max-device-width: 450px) {
+@media (max-width: 450px) {
+    .portico-landing.plans .price-box {
+        display: inline-flex;
+        flex-direction: column;
+        min-height: 500px;
+        height: auto;
+        max-width: 300px;
+        width: auto;
+        margin: 10px 0px;
+    }
+
+    .pricing-model .pricing-container .text-content {
+        flex: 1;
+    }
+
+    .pricing-model .pricing-container .bottom {
+        position: static;
+        height: auto;
+    }
+
     nav {
         padding-bottom: 105px;
     }
