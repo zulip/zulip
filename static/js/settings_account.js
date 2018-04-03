@@ -59,7 +59,7 @@ function add_custom_profile_fields_to_settings() {
     all_custom_fields.forEach(function (field) {
         var type;
         var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field.type === 4;
+        var is_long_text = field.type === 2;
 
         // 1 & 2 type represent textual data.
         if (field.type === 1 || field.type === 2) {
