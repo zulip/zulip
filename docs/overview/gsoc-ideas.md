@@ -61,7 +61,7 @@ contributors to the project today).
 
 ### Expectations for GSoC students
 
-[Our guide for having a great summer with Zulip](../contributing/summer-with-zulip)
+[Our guide for having a great summer with Zulip](../contributing/summer-with-zulip.html)
 is focused on what one should know once doing a summer project with
 Zulip.  But it has a lot of useful advice on how we expect students to
 interact, above and beyond what is discussed in Google's materials.
