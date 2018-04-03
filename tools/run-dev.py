@@ -389,12 +389,12 @@ class Application(web.Application):
 
 def on_shutdown():
     # type: () -> None
-    IOLoop.instance().stop()
+    IOLoop.current().stop()
 
 
 def shutdown_handler(*args, **kwargs):
     # type: (*Any, **Any) -> None
-    io_loop = IOLoop.instance()
+    io_loop = IOLoop.current()
     if io_loop._callbacks:
         io_loop.call_later(1, shutdown_handler)
     else:
@@ -416,7 +416,7 @@ print("".join((WARNING,
 try:
     app = Application(enable_logging=options.enable_tornado_logging)
     app.listen(proxy_port, address=options.interface)
-    ioloop = IOLoop.instance()
+    ioloop = IOLoop.current()
     for s in (signal.SIGINT, signal.SIGTERM):
         signal.signal(s, shutdown_handler)
     ioloop.start()
