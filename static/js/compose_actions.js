@@ -356,9 +356,16 @@ exports.on_topic_narrow = function () {
         // why did they narrow?) or the new one is
         // appropriate (after all, they were starting to
         // compose on the old topic and may now be looking
-        // for info), so we punt and cancel.
+        // for info).  We use the following heuristics:
 
-        // If subject is not same as topic narrowed to then
+        if (compose_state.has_message_content()) {
+            // If the user has written something, they probably want that content,
+            // so leave compose open.
+            compose_fade.update_message_list();
+            return;
+        }
+
+        // If subject is not same as the topic we just narrowed to, then
         // stop composing
         if (compose_state.subject().toLowerCase() !== narrow_state.topic().toLowerCase()) {
             exports.cancel();
