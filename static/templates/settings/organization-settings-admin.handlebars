@@ -22,23 +22,23 @@
                         {{t 'Message edit limit in minutes (0 for no limit)' }}
                     </label>
                     <input type="text" id="id_realm_message_content_edit_limit_minutes"
-                        name="realm_message_content_edit_limit_minutes"
-                        class="admin-realm-message-content-edit-limit-minutes"
-                        value="{{ realm_message_content_edit_limit_minutes }}"
-                    {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
+                      name="realm_message_content_edit_limit_minutes"
+                      class="admin-realm-message-content-edit-limit-minutes"
+                      value="{{ realm_message_content_edit_limit_minutes }}"
+                      {{#unless realm_allow_message_editing}}disabled="disabled"{{/unless}} />
                 </div>
 
                 <div class="input-group">
                     <label class="checkbox">
                         <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"
-                            {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
+                          {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
                         <span></span>
                     </label>
                     <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block">
                         {{t "Users can delete their messages" }}
                     </label>
                     <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                    title="{{t 'Administrators can always delete any message.' }}"/>
+                      title="{{t 'Administrators can always delete any message.' }}"/>
                 </div>
 
                 {{partial "settings_checkbox"
@@ -62,9 +62,9 @@
                         {{t 'Messages retention period in days (blank means messages are retained forever)' }}
                     </label>
                     <input type="text" id="id_realm_message_retention_days"
-                    name="realm_message_retention_days"
-                    class="admin-realm-message-retention-days"
-                    value="{{ realm_message_retention_days }}"/>
+                      name="realm_message_retention_days"
+                      class="admin-realm-message-retention-days"
+                      value="{{ realm_message_retention_days }}"/>
                 </div>
                 {{/if}}
                 {{partial "settings_checkbox"
