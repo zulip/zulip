@@ -32,7 +32,7 @@ class WebsocketClient:
         self.cookie_dict = self._login()
         self.cookie_str = self._get_cookie_header(self.cookie_dict)
         self.events_data = self._get_queue_events(self.cookie_str)
-        self.ioloop_instance = IOLoop.instance()
+        self.ioloop_instance = IOLoop.current()
         self.run_on_start = run_on_start
         self.run_kwargs = run_kwargs
         self.scheme_dict = {'http': 'ws', 'https': 'wss'}
@@ -92,8 +92,8 @@ class WebsocketClient:
             self.run_on_start(self, **self.run_kwargs)
         except Exception as e:
             logging.exception(str(e))
-            IOLoop.instance().stop()
-        IOLoop.instance().stop()
+            IOLoop.current().stop()
+        IOLoop.current().stop()
 
     @gen.coroutine
     def send_message(self, client: str, type: str, subject: str, stream: str,

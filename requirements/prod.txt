@@ -9,6 +9,7 @@
 #
 --no-binary psycopg2
 
+git+https://github.com/sinwar/sockjs-tornado.git@b31696bbddc7148882a4636666e2cd15eadb3605#egg=sockjs-tornado==1.0.3.zulip1
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
 git+https://github.com/zulip/python-zulip-api.git@0.4.6#egg=zulip==0.4.6_git&subdirectory=zulip
@@ -107,12 +108,11 @@ six==1.11.0
 smmap==0.9.0
 social-auth-app-django==2.1.0
 social-auth-core==1.5.0   # via social-auth-app-django
-sockjs-tornado==1.0.3
 sourcemap==0.2.1
 sqlalchemy==1.2.7
 statsd==3.2.1             # via django-statsd-mozilla
 stripe==1.82.1
-tornado==4.5.3
+tornado==5.0.2
 traitlets==4.3.2          # via ipython
 twilio==6.14.0
 typing==3.6.4
