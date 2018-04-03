@@ -12,7 +12,7 @@
                 <div class="input-group admin-restricted-to-domain">
                     <label class="checkbox">
                         <input type="checkbox" name="realm_restricted_to_domain" id="id_realm_restricted_to_domain"
-                            {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
+                          {{#if realm_restricted_to_domain}}checked="checked"{{/if}} />
                         <span></span>
                     </label>
                     <label for="id_realm_restricted_to_domain" id="realm_restricted_to_domains_label" class="inline-block" />
@@ -24,7 +24,7 @@
                 <div class="input-group admin-disallow-disposable-email-addresses {{#if realm_restricted_to_domain}}control-label-disabled{{/if}}">
                     <label class="checkbox">
                         <input type="checkbox" name="realm_disallow_disposable_email_addresses" id="id_realm_disallow_disposable_email_addresses"
-                            {{#if realm_disallow_disposable_email_addresses}}checked="checked"{{/if}} {{#if realm_restricted_to_domain}}disabled="disabled"{{/if}}/>
+                          {{#if realm_disallow_disposable_email_addresses}}checked="checked"{{/if}} {{#if realm_restricted_to_domain}}disabled="disabled"{{/if}}/>
                         <span></span>
                     </label>
                     <label for="id_realm_disallow_disposable_email_addresses" id="id_realm_disallow_disposable_email_addresses_label" class="inline-block">
@@ -42,8 +42,8 @@
                 <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
                     <label class="checkbox">
                         <input type="checkbox" name="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only"
-                            {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
-                            {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
+                          {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
+                          {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
                         <span></span>
                     </label>
                     <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block">
@@ -91,9 +91,9 @@
                 <div class="inline-block">
                     <label for="aitin" class="inline-block">{{t "Minimum account age (N)" }}:</label>
                     <input type="text" id="id_realm_waiting_period_threshold"
-                        name="realm_waiting_period_threshold"
-                        class="admin-realm-message-content-edit-limit-minutes"
-                        value="{{ realm_waiting_period_threshold }}"/>
+                      name="realm_waiting_period_threshold"
+                      class="admin-realm-message-content-edit-limit-minutes"
+                      value="{{ realm_waiting_period_threshold }}"/>
                 </div>
 
                 <div class="input-group">

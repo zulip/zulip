@@ -18,8 +18,8 @@
                     <div class="input-box horizontal moving-label">
                         <div class="inline-block relative">
                             <input id="id_email" class="required" type="text" name="email"
-                                   value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
-                                   maxlength="100" required />
+                              value="{% if form.email.value() %}{{ form.email.value() }}{% endif %}"
+                              maxlength="100" required />
                             <label for="id_email" class="">{{ _('Email') }}</label>
                             {% if form.email.errors %}
                                 {% for error in form.email.errors %}
