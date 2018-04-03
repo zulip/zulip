@@ -39,18 +39,20 @@ def check_string(var_name: str, val: object) -> Optional[str]:
     return None
 
 def check_short_string(var_name: str, val: object) -> Optional[str]:
-    return check_capped_string(var_name, val, 50)
+    return check_capped_string(50)(var_name, val)
 
-def check_capped_string(var_name: str, val: object, max_length: int) -> Optional[str]:
-    if not isinstance(val, str):
-        return _('%s is not a string') % (var_name,)
-    if len(val) >= max_length:
-        return _("{var_name} is longer than {max_length}.".format(
-            var_name=var_name, max_length=max_length))
-    return None
+def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str]]:
+    def validator(var_name: str, val: object) -> Optional[str]:
+        if not isinstance(val, str):
+            return _('%s is not a string') % (var_name,)
+        if len(val) >= max_length:
+            return _("{var_name} is longer than {max_length}.".format(
+                var_name=var_name, max_length=max_length))
+        return None
+    return validator
 
 def check_long_string(var_name: str, val: object) -> Optional[str]:
-    return check_capped_string(var_name, val, 500)
+    return check_capped_string(500)(var_name, val)
 
 def check_int(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, int):
