@@ -313,11 +313,7 @@ exports.set_up = function () {
         var value = $(this).val();
         var spinner = $("#custom-field-status").expectOne();
         loading.make_indicator(spinner, {text: 'Saving ...'});
-        if ($(this).attr("type") === "number") {
-            value = parseInt(value, 10);
-        }
         fields.push({id: parseInt($(this).attr("id"), 10), value: value});
-
         settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
                                        {data: JSON.stringify(fields)}, spinner);
     });
