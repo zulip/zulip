@@ -124,13 +124,13 @@ six==1.11.0
 smmap==0.9.0
 
 # Needed for Tornado websockets support
-sockjs-tornado==1.0.3
+-e git+https://github.com/sinwar/sockjs-tornado.git@b31696bbddc7148882a4636666e2cd15eadb3605#egg=sockjs-tornado==1.0.3.zulip1
 
 # Needed to parse source maps for error reporting
 sourcemap==0.2.1
 
 # Tornado used for server->client push system
-tornado==4.5.3
+tornado==5.0.2
 
 # Needed for Python static typing
 typing==3.6.4

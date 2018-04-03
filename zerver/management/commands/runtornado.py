@@ -105,7 +105,7 @@ class Command(BaseCommand):
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
 
-                instance = ioloop.IOLoop.instance()
+                instance = ioloop.IOLoop.current()
 
                 if django.conf.settings.DEBUG:
                     instance.set_blocking_log_threshold(5)

@@ -81,7 +81,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
         log_data = dict(extra='[transport=%s]' % (self.session.transport_name,))
         record_request_start_data(log_data)
 
-        ioloop = tornado.ioloop.IOLoop.instance()
+        ioloop = tornado.ioloop.IOLoop.current()
 
         self.authenticated = False
         self.session.user_profile = None
@@ -159,7 +159,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
             response['response']['status_inquiries'] = results
 
         self.session.send_message(response)
-        ioloop = tornado.ioloop.IOLoop.instance()
+        ioloop = tornado.ioloop.IOLoop.current()
         ioloop.remove_timeout(self.timeout_handle)
 
     def on_message(self, msg_raw: str) -> None:
