@@ -374,25 +374,20 @@ exports.compose_content_begins_typeahead = function (query) {
 
         this.completing = 'mention';
         this.token = current_token;
-        var all_item = {
-            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                      {wildcard_mention_token: "all"}),
-            email: "all",
-            // Always sort above, under the assumption that names will
-            // be longer and only contain "all" as a substring.
-            pm_recipient_count: Infinity,
-            full_name: "all",
-        };
-        var everyone_item = {
-            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                                      {wildcard_mention_token: "everyone"}),
-            email: "everyone",
-            pm_recipient_count: Infinity,
-            full_name: "everyone",
-        };
+        var all_items = _.map(['all', 'everyone'], function (mention) {
+            return {
+                special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                {wildcard_mention_token: mention}),
+                email: mention,
+                // Always sort above, under the assumption that names will
+                // be longer and only contain "all" as a substring.
+                pm_recipient_count: Infinity,
+                full_name: mention,
+            };
+        });
         var persons = people.get_realm_persons();
         var groups = user_groups.get_realm_user_groups();
-        return [].concat(persons, [all_item, everyone_item], groups);
+        return [].concat(persons, all_items, groups);
     }
 
     if (this.options.completions.stream && current_token[0] === '#') {
