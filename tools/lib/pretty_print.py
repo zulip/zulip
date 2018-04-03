@@ -39,7 +39,7 @@ def pretty_print_html(html, num_spaces=4):
     # we proceed, we will push/pop info dictionaries on/off a stack.
     for token in tokens:
 
-        if token.kind in ('html_start', 'handlebars_start',
+        if token.kind in ('html_start', 'handlebars_start', 'handlebars_singleton',
                           'html_singleton', 'django_start') and stack[-1]['tag'] != 'pre':
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
@@ -95,7 +95,7 @@ def pretty_print_html(html, num_spaces=4):
                     )
                 stack.append(info)
         elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',
-                             'django_end') and
+                             'django_end', 'handlebars_singleton_end') and
               (stack[-1]['tag'] != 'pre' or token.tag == 'pre')):
             info = stack.pop()
             if info['block']:
@@ -123,10 +123,12 @@ def pretty_print_html(html, num_spaces=4):
                     elif (start_line + info['line_span'] - 1 == end_line and
                             (info['line_span'] > 2 or
                                 (info['line_span'] == 2 and
-                                    token.kind == 'html_singleton_end'))):
+                                    token.kind in
+                                    ('html_singleton_end',
+                                     'handlebars_singleton_end')))):
                         offsets[end_line] = (1 + info['extra_indent'] +
                                              (info['depth'] + 1) * num_spaces) - adjustment
-                        if token.kind == 'html_singleton_end':
+                        if token.kind in ('html_singleton_end', 'handlebars_singleton_end'):
                             # We would like singleton tags to have 2 space
                             # indentation in case they span over multiple lines.
                             offsets[end_line] -= 2
@@ -146,7 +148,7 @@ def pretty_print_html(html, num_spaces=4):
                             extra_indent = info['extra_indent']
                             adjustment = len(line)-len(line.lstrip()) + 1
                             offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
-                            if token.kind == 'html_singleton_end':
+                            if token.kind in ('html_singleton_end', 'handlebars_singleton_end'):
                                 # We would like singleton tags to have 2 space
                                 # indentation in case they span over multiple lines.
                                 offset -= 2
