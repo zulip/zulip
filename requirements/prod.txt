@@ -85,13 +85,14 @@ pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pygments==2.2.0
 pyjwt==1.6.1
-pyldap==2.4.37
+pyldap==3.0.0.post1       # via django-auth-ldap
 pylibmc==1.5.2
 pyoembed==0.1.2
 pyopenssl==17.3.0         # via ndg-httpsclient
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
+python-ldap==3.0.0
 python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.3
