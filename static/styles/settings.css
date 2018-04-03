@@ -361,9 +361,9 @@ input[type=checkbox] + .inline-block {
     display: inline-block;
     cursor: pointer;
     font-size: 14px;
-    padding: 3px 12px 4px 10px;
+    padding: 3px 14px 4px 11px;
     text-decoration: none;
-    color: hsl(0, 0%, 43%);
+    color: hsl(0, 0%, 46%);
     font-weight: 400;
 }
 
@@ -389,17 +389,21 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button .icon-button-icon {
-    color: #969696;
+    vertical-align: bottom;
+    margin-right: 3px;
+    font-size: 24px;
+    line-height: 19px;
+    font-weight: 600;
 }
 
 #settings_page .icon-button.primary .icon-button-icon {
-    color: white;
+    width: 10px;
+    margin-bottom: 2px;
+    margin-right: 3px;
 }
 
-#settings_page .icon-button .icon-button-text,
-#settings_page .icon-button .icon-button-icon {
+#settings_page .icon-button .icon-button-text {
     vertical-align: baseline;
-    margin-right: 2px;
 }
 
 #settings_page .save-button-controls {
@@ -426,6 +430,7 @@ input[type=checkbox] + .inline-block {
 
 #settings_page .save-button.saving .icon-button-loading {
     display: inline-block;
+    margin-right: 2px;
 }
 
 #settings_page .save-button .icon-button-loading {
@@ -570,6 +575,7 @@ input[type=checkbox].inline-block {
     width: 13px;
     height: 20px;
     margin: 0;
+    margin-right: 3px;
 }
 
 #settings_page .alert-notification .loading_indicator_text {
@@ -579,9 +585,9 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .alert-notification img {
-    margin-right: 5px;
+    margin-right: 6px;
     vertical-align: middle;
-    margin-top: -1px;
+    margin-top: -2px;
 }
 
 #notification-settings .notification-reminder {
