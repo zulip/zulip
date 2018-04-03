@@ -55,7 +55,7 @@
             <input type="hidden" name="is_full_name" value="true" />
             <div class="input-group name_change_container">
                 <label for="full_name">{{t "Full name" }}</label>
-                <input type="text" name="full_name" value="{{ full_name }}" />
+                <input type="text" autocomplete="off" name="full_name" value="{{ full_name }}" />
             </div>
             {{#if is_bot}}
             <div class="input-group edit_bot_owner_container">
