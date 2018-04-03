@@ -17,7 +17,8 @@ in bursts.
 - Added certbot support to the installer for getting certificates.
 - Added support for mentioning groups of users.
 - Added a new "night mode" theme for dark environments.
-- Added experimental support for importing an organization from Slack.
+- Added experimental support for importing an organization's history
+  from Slack.
 - Overhauled our settings system to eliminate the ugly "save changes"
   button system.
 - Rewrote our API documentation to be much more friendly and
@@ -30,8 +31,9 @@ in bursts.
 
 **Full feature changelog:**
 
-- New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove, Raygun,
-  Insping, Dropbox, Front, Intercom, Statuspage.io, Flock and Beeminder.
+- New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove,
+  Raygun, Insping, Dialogflow, Dropbox, Front, Intercom,
+  Statuspage.io, Flock and Beeminder.
 - The local uploads backend now does the same security checks that the
   S3 backend did before serving files to users.
 - Added support for users in multiple realms having the same email.
@@ -40,7 +42,7 @@ in bursts.
 - Added a setting to allow users to delete their messages.
 - Added an organization setting to limit creation of bots.
 - Added support for uploading files in the message-edit UI.
-- Added new event types to several webhook integrations.
+- Added new event types and fixed bugs in several webhook integrations.
 - Added a display for whether the user is logged-in in logged-out
   pages.
 - Added support for hosting multiple domains, not all as subdomains of
@@ -84,7 +86,7 @@ discoverable.
 - Links to logged-in content in Zulip now take the user to the
   appropriate upload or view after a user logs in.
 - Incoming webhooks now send a private message to the bot owner for
-  more convenient testing.
+  more convenient testing if a stream is not specified.
 - Rewrote documentation for many integrations to use a cleaner
   numbered-list format.
 - Renamed "Home" to "All messages", to avoid users clicking on it too
@@ -98,6 +100,7 @@ discoverable.
 - Redesigned the API for emoji reactions to support the full range of
   how emoji reactions are used.
 - Migrated the codebase to use the nice Python 3 typing syntax.
+- Changed the hotkey for compose-private-message from "C" to "x".
 - Optimized how user avatar URLs are transmitted over the wire.
 - Optimized message sending performance a bit more.
 - Split the Notifications Stream setting in two settings, one for new
@@ -126,8 +129,10 @@ discoverable.
 - Fixed uploading user avatars encoded using the CMYK mode.
 - Fixed scrolling downwards in narrows.
 - Fixed numerous subtle bugs with the stream creation UI.
+- Fixed a subtle and hard-to-reproduce bug that resulted in every
+  message being condensed ([More] appearing on every message).
+- Fixed subtle bugs in garbage-collection of old node_modules versions.
 - Dramatically improved organization of developer docs.
-- Statistics on translation percentages now include mobile apps.
 - Improved typeahead's handling of editing an already-completed mention.
 - Improved syntax for inline LaTeX to be more convenient.
 - Improve keyboard navigation of left and right sidebars with arrow keys.
