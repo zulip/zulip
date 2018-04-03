@@ -420,6 +420,24 @@ GOOD_HTML15 = """
 </div>
 """
 
+BAD_HTML16 = """
+<div>
+  {{partial "settings_checkbox"
+  "setting_name" "realm_name_in_notifications"
+  "is_checked" page_params.realm_name_in_notifications
+  "label" settings_label.realm_name_in_notifications}}
+</div>
+"""
+
+GOOD_HTML16 = """
+<div>
+    {{partial "settings_checkbox"
+      "setting_name" "realm_name_in_notifications"
+      "is_checked" page_params.realm_name_in_notifications
+      "label" settings_label.realm_name_in_notifications}}
+</div>
+"""
+
 class TestPrettyPrinter(unittest.TestCase):
     def compare(self, a: str, b: str) -> None:
         self.assertEqual(a.split('\n'), b.split('\n'))
@@ -442,3 +460,4 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print_html(BAD_HTML13), GOOD_HTML13)
         self.compare(pretty_print_html(BAD_HTML14), GOOD_HTML14)
         self.compare(pretty_print_html(BAD_HTML15), GOOD_HTML15)
+        self.compare(pretty_print_html(BAD_HTML16), GOOD_HTML16)

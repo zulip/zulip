@@ -34,10 +34,10 @@
                 </div>
 
                 {{partial "settings_checkbox"
-                "setting_name" "realm_invite_required"
-                "prefix" "id_"
-                "is_checked" realm_invite_required
-                "label" admin_settings_label.realm_invite_required}}
+                  "setting_name" "realm_invite_required"
+                  "prefix" "id_"
+                  "is_checked" realm_invite_required
+                  "label" admin_settings_label.realm_invite_required}}
 
                 <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
                     <label class="checkbox">
@@ -60,16 +60,16 @@
             </div>
             <div class="inline-block organization-permissions-parent">
                 {{partial "settings_checkbox"
-                "setting_name" "realm_name_changes_disabled"
-                "prefix" "id_"
-                "is_checked" realm_name_changes_disabled
-                "label" admin_settings_label.realm_name_changes_disabled}}
+                  "setting_name" "realm_name_changes_disabled"
+                  "prefix" "id_"
+                  "is_checked" realm_name_changes_disabled
+                  "label" admin_settings_label.realm_name_changes_disabled}}
 
                 {{partial "settings_checkbox"
-                "setting_name" "realm_email_changes_disabled"
-                "prefix" "id_"
-                "is_checked" realm_email_changes_disabled
-                "label" admin_settings_label.realm_email_changes_disabled}}
+                  "setting_name" "realm_email_changes_disabled"
+                  "prefix" "id_"
+                  "is_checked" realm_email_changes_disabled
+                  "label" admin_settings_label.realm_email_changes_disabled}}
             </div>
         </div>
 
