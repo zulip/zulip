@@ -32,7 +32,7 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, \
-    check_short_string, check_long_string, validate_choice_field
+    check_short_string, check_long_string, validate_choice_field, check_date
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, FieldTypeData
@@ -1897,6 +1897,7 @@ class CustomProfileField(models.Model):
     SHORT_TEXT = 1
     LONG_TEXT = 2
     CHOICE = 3
+    DATE = 4
 
     # These are the fields whose validators require field_data
     # argument as well.
@@ -1912,6 +1913,7 @@ class CustomProfileField(models.Model):
         # Type, Name, Validator, Converter
         (SHORT_TEXT, u'Short Text', check_short_string, str),
         (LONG_TEXT, u'Long Text', check_long_string, str),
+        (DATE, u'Date', check_date, str),
     ]  # type: FieldTypeData
 
     ALL_FIELD_TYPES = FIELD_TYPE_DATA + EXTENDED_FIELD_TYPE_DATA

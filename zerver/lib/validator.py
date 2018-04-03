@@ -32,6 +32,7 @@ from django.core.validators import validate_email, URLValidator
 from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, cast, \
     Dict
 
+from datetime import datetime
 from zerver.lib.request import JsonableError
 from zerver.lib.types import Validator, ProfileFieldData
 
@@ -66,6 +67,15 @@ def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str
 
 def check_long_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(500)(var_name, val)
+
+def check_date(var_name: str, val: object) -> Optional[str]:
+    if not isinstance(val, str):
+        return _('%s is not a string') % (var_name,)
+    try:
+        datetime.strptime(val, '%Y-%m-%d')
+    except ValueError:
+        return _('%s is not a date') % (var_name,)
+    return None
 
 def check_int(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, int):

@@ -66,6 +66,8 @@ function add_custom_profile_fields_to_settings() {
             type = "text";
         } else if (field.type === 3) {
             type = "choice";
+        } else if (field.type === 4) {
+            type = "date";
         } else {
             blueslip.error("Undefined field type.");
         }
