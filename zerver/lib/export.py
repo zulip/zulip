@@ -1605,6 +1605,9 @@ def do_import_realm(import_dir: Path) -> Realm:
     del data['zerver_userprofile_mirrordummy']
     data['zerver_userprofile'].sort(key=lambda r: r['id'])
 
+    # To remap foreign key for UserProfile.last_active_message_id
+    update_message_foreign_keys(import_dir)
+
     fix_datetime_fields(data, 'zerver_userprofile')
     re_map_foreign_keys(data, 'zerver_userprofile', 'realm', related_table="realm")
     re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
@@ -1612,6 +1615,8 @@ def do_import_realm(import_dir: Path) -> Realm:
                         related_table="stream")
     re_map_foreign_keys(data, 'zerver_userprofile', 'default_events_register_stream',
                         related_table="stream")
+    re_map_foreign_keys(data, 'zerver_userprofile', 'last_active_message_id',
+                        related_table="message", id_field=True)
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
         user_profile_dict['api_key'] = random_api_key()
@@ -1705,6 +1710,19 @@ def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
             user_set.add((email, full_name, short_name, True))
     bulk_create_users(realm, user_set, bot_type)
 
+def update_message_foreign_keys(import_dir: Path) -> None:
+    dump_file_id = 1
+    while True:
+        message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
+        if not os.path.exists(message_filename):
+            break
+
+        with open(message_filename) as f:
+            data = ujson.load(f)
+
+        update_model_ids(Message, data, 'zerver_message', 'message')
+        dump_file_id += 1
+
 def import_message_data(import_dir: Path) -> None:
     dump_file_id = 1
     while True:
@@ -1720,7 +1738,7 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_message', 'recipient', related_table="recipient")
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
-        update_model_ids(Message, data, 'zerver_message', 'message')
+        re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
         bulk_import_model(data, Message, 'zerver_message')
 
         # Due to the structure of these message chunks, we're
