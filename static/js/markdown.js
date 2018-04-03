@@ -57,7 +57,7 @@ exports.apply_markdown = function (message) {
                 return '<span class="user-mention" data-user-id="' + person.user_id + '">' +
                        '@' + person.full_name +
                        '</span>';
-            } else if (name === 'all' || name === 'everyone') {
+            } else if (name === 'all' || name === 'everyone' || name === 'stream') {
                 message.mentioned = true;
                 return '<span class="user-mention" data-user-id="*">' +
                        '@' + name +
