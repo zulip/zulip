@@ -572,8 +572,7 @@ input[type=checkbox].inline-block {
     padding: 6px;
 }
 
-.add-new-emoji-box #emoji-file-name,
-.add-new-emoji-box #emoji_file_input_error {
+.add-new-emoji-box #emoji-file-name {
     width: 0;
     top: -19px;
     left: 3px;
@@ -583,6 +582,10 @@ input[type=checkbox].inline-block {
 
     white-space: nowrap;
     font-style: italic;
+}
+
+#emoji_file_input_error {
+    vertical-align: middle;
 }
 
 .add-new-emoji-box #emoji-file-name {
