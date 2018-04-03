@@ -374,7 +374,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
         this.completing = 'mention';
         this.token = current_token;
-        var all_items = _.map(['all', 'everyone'], function (mention) {
+        var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
             return {
                 special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
                 {wildcard_mention_token: mention}),

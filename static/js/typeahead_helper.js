@@ -177,10 +177,10 @@ exports.compare_by_pms = function (user_a, user_b) {
 };
 
 function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current_stream) {
-    // give preference to "all" or "everyone"
-    if (person_a.email === "all" || person_a.email === "everyone") {
+    // give preference to "all", "everyone" or "stream"
+    if (person_a.email === "all" || person_a.email === "everyone" || person_a.email === "stream") {
         return -1;
-    } else if (person_b.email === "all" || person_b.email === "everyone") {
+    } else if (person_b.email === "all" || person_b.email === "everyone" || person_b.email === "stream") {
         return 1;
     }
 

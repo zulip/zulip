@@ -893,20 +893,14 @@ user_pill.get_user_ids = function () {
         assert.deepEqual(returned, reference);
     }
 
-    var all_items = [
-        {
-            special_item_text: 'translated: all (Notify stream)',
-            email: 'all',
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            email: mention,
             pm_recipient_count: Infinity,
-            full_name: 'all',
-        },
-        {
-            special_item_text: 'translated: everyone (Notify stream)',
-            email: 'everyone',
-            pm_recipient_count: Infinity,
-            full_name: 'everyone',
-        },
-    ];
+            full_name: mention,
+        };
+    });
 
     var people_with_all = global.people.get_realm_persons().concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
@@ -1091,20 +1085,14 @@ user_pill.get_user_ids = function () {
 }());
 
 (function test_typeahead_results() {
-    var all_items = [
-        {
-            special_item_text: 'all (translated: Notify stream)',
-            email: 'all',
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            email: mention,
             pm_recipient_count: Infinity,
-            full_name: 'all',
-        },
-        {
-            special_item_text: 'everyone (translated: Notify stream)',
-            email: 'everyone',
-            pm_recipient_count: Infinity,
-            full_name: 'everyone',
-        },
-    ];
+            full_name: mention,
+        };
+    });
     var people_with_all = global.people.get_realm_persons().concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var stream_list = [denmark_stream, sweden_stream, netherland_stream];

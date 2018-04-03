@@ -722,8 +722,8 @@ exports.initialize = function () {
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
 
-            // warn if @all or @everyone is mentioned
-            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
+            // warn if @all, @everyone or @stream is mentioned
+            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone' || data.mentioned.full_name === 'stream') {
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
