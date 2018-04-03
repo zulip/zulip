@@ -174,7 +174,7 @@ pyoembed==0.1.2
 py3dns==3.1.0
 
 # Needed for LDAP integration
-pyldap==2.4.37
+python-ldap==3.0.0
 
 # Install Python Social Auth
 social-auth-app-django==2.1.0
