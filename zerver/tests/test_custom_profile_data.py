@@ -253,6 +253,19 @@ class CustomProfileDataTest(ZulipTestCase):
             result,
             u"value[{}] is too long (limit: 50 characters).".format(field.id))
 
+    def test_update_invalid_date(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        field = CustomProfileField.objects.get(name="Birthday", realm=realm)
+
+        # Update value of field
+        result = self.client_patch("/json/users/me/profile_data",
+                                   {'data': ujson.dumps([{"id": field.id, "value": u"a-b-c"}])})
+        self.assert_json_error(result, u"value[{}] is not a date".format(field.id))
+        result = self.client_patch("/json/users/me/profile_data",
+                                   {'data': ujson.dumps([{"id": field.id, "value": 123}])})
+        self.assert_json_error(result, u"value[{}] is not a string".format(field.id))
+
     def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -261,6 +274,7 @@ class CustomProfileDataTest(ZulipTestCase):
             ('Biography', 'long text data'),
             ('Favorite food', 'short text data'),
             ('Favorite editor', 'vim'),
+            ('Birthday', '1909-3-5'),
         ]
 
         data = []

@@ -279,6 +279,8 @@ class Command(BaseCommand):
                                                                  "Favorite editor",
                                                                  CustomProfileField.CHOICE,
                                                                  field_data=field_data)
+            birthday = try_add_realm_custom_profile_field(zulip_realm, "Birthday",
+                                                          CustomProfileField.DATE)
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)
@@ -287,12 +289,14 @@ class Command(BaseCommand):
                 {"id": biography.id, "value": "Betrayer of Othello."},
                 {"id": favorite_food.id, "value": "Apples"},
                 {"id": favorite_editor.id, "value": "emacs"},
+                {"id": birthday.id, "value": "2000-1-1"},
             ])
             do_update_user_custom_profile_data(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
                 {"id": biography.id, "value": "Prince of Denmark, and other things!"},
                 {"id": favorite_food.id, "value": "Dark chocolate"},
                 {"id": favorite_editor.id, "value": "vim"},
+                {"id": birthday.id, "value": "1900-1-1"},
             ])
         else:
             zulip_realm = get_realm("zulip")
