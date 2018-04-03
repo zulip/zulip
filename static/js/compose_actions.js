@@ -349,34 +349,23 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject()) {
-        // If the user has filled in a subject, we have
-        // a risk of a mix, and we can't reliably guess
-        // whether the old topic is appropriate (otherwise,
-        // why did they narrow?) or the new one is
-        // appropriate (after all, they were starting to
-        // compose on the old topic and may now be looking
-        // for info).  We use the following heuristics:
-
-        if (compose_state.has_message_content()) {
-            // If the user has written something, they probably want that content,
-            // so leave compose open.
-            compose_fade.update_message_list();
-            return;
-        }
-
-        // If subject is not same as the topic we just narrowed to, then
-        // stop composing
-        if (compose_state.subject().toLowerCase() !== narrow_state.topic().toLowerCase()) {
-            exports.cancel();
-        }
+    if (compose_state.subject() && compose_state.has_message_content()) {
+        // If the user has written something to a different topic,
+        // they probably want that content, so leave compose open.
+        //
+        // This effectively uses the heuristic of whether there is
+        // content in compose to determine whether the user had firmly
+        // decided to compose to the old topic or is just looking to
+        // reply to what they see.
+        compose_fade.update_message_list();
         return;
     }
 
-    // If we got this far, then the compose box has the correct
-    // stream filled in, and we just need to update the topic.
-    // See #3300 for context--a couple users specifically asked
-    // for this convenience.
+    // If we got this far, then the compose box has the correct stream
+    // filled in, and either compose is empty or no topic was set, so
+    // we should update the compose topic to match the new narrow.
+    // See #3300 for context--a couple users specifically asked for
+    // this convenience.
     compose_state.subject(narrow_state.topic());
     $('#compose-textarea').focus().select();
 };
