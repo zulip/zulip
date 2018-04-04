@@ -1,7 +1,7 @@
 // Dependencies
-zrequire('muting');
-zrequire('stream_data');
-
+set_global('$', global.make_zjquery({
+    silent: true,
+}));
 set_global('document', {
     hasFocus: function () {
         return true;
@@ -12,7 +12,15 @@ set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
-set_global('$', () => {});
+// For people.js
+set_global('md5', function (s) {
+    return 'md5-' + s;
+});
+
+zrequire('muting');
+zrequire('stream_data');
+zrequire('ui');
+zrequire('people');
 
 zrequire('notifications');
 
@@ -146,4 +154,109 @@ stream_data.add_sub('stream_two', two);
             stream_id: 20,
             subject: 'topic_two',
         }), true);
+}());
+
+
+(function test_basic_notifications() {
+
+    var n; // Object for storing all notification data for assertions.
+    var last_closed_message_id = null;
+    var last_shown_message_id = null;
+
+    // Notifications API stub
+    notifications.set_notification_api({
+        checkPermission: function checkPermission() {
+            if (window.Notification.permission === 'granted') {
+                return 0;
+            }
+            return 2;
+        },
+        requestPermission: function () {
+            return;
+        },
+        createNotification: function createNotification(icon, title, content, tag) {
+            var notification_object = {icon: icon, body: content, tag: tag};
+            // properties for testing.
+            notification_object.tests = {
+                shown: false,
+            };
+            notification_object.show = function () {
+                last_shown_message_id = this.tag;
+            };
+            notification_object.close = function () {
+                last_closed_message_id = this.tag;
+            };
+            notification_object.cancel = function () { notification_object.close(); };
+            return notification_object;
+        },
+    });
+
+   var message_1 = {
+        id: 1000,
+        content: '@-mentions the user',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_one',
+        stream_id: 10,
+        subject: 'topic_two',
+    };
+
+    var message_2 = {
+        id: 1500,
+        content: '@-mentions the user',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_one',
+        stream_id: 10,
+        subject: 'topic_four',
+    };
+
+    // Send notification.
+    notifications.process_notification({message: message_1, webkit_notify: true});
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_two' in n, true);
+    assert.equal(Object.keys(n).length, 1);
+    assert.equal(last_shown_message_id, message_1.id);
+
+    // Remove notification.
+    notifications.close_notification(message_1);
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_two' in n, false);
+    assert.equal(Object.keys(n).length, 0);
+    assert.equal(last_closed_message_id, message_1.id);
+
+    // Send notification.
+    message_1.id = 1001;
+    notifications.process_notification({message: message_1, webkit_notify: true});
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_two' in n, true);
+    assert.equal(Object.keys(n).length, 1);
+    assert.equal(last_shown_message_id, message_1.id);
+
+    // Process same message again. Notification count shouldn't increase.
+    message_1.id = 1002;
+    notifications.process_notification({message: message_1, webkit_notify: true});
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_two' in n, true);
+    assert.equal(Object.keys(n).length, 1);
+    assert.equal(last_shown_message_id, message_1.id);
+
+    // Send another message. Notification count should increase.
+    notifications.process_notification({message: message_2, webkit_notify: true});
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_four' in n, true);
+    assert.equal(Object.keys(n).length, 2);
+    assert.equal(last_shown_message_id, message_2.id);
+
+    // Remove notifications.
+    notifications.close_notification(message_1);
+    notifications.close_notification(message_2);
+    n = notifications.get_notifications();
+    assert.equal('undefined to stream_one > topic_two' in n, false);
+    assert.equal(Object.keys(n).length, 0);
+    assert.equal(last_closed_message_id, message_2.id);
 }());
