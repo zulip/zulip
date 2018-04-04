@@ -365,32 +365,32 @@ class BuildNarrowFilterTest(TestCase):
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
-        realm = get_realm('zulip')
-        self.make_stream('public_stream', realm=realm)
+        user_profile = self.example_user("hamlet")
+        self.make_stream('public_stream', realm=user_profile.realm)
 
         # Negated stream searches should not include history.
         narrow = [
             dict(operator='stream', operand='public_stream', negated=True),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # Definitely forbid seeing history on private streams.
         narrow = [
             dict(operator='stream', operand='private_stream'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # History doesn't apply to PMs.
         narrow = [
             dict(operator='is', operand='private'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # History doesn't apply to unread messages.
         narrow = [
             dict(operator='is', operand='unread'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # If we are looking for something like starred messages, there is
         # no point in searching historical messages.
@@ -398,20 +398,20 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator='stream', operand='public_stream'),
             dict(operator='is', operand='starred'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # simple True case
         narrow = [
             dict(operator='stream', operand='public_stream'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, realm))
+        self.assertTrue(ok_to_include_history(narrow, user_profile))
 
         narrow = [
             dict(operator='stream', operand='public_stream'),
             dict(operator='topic', operand='whatever'),
             dict(operator='search', operand='needle in haystack'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, realm))
+        self.assertTrue(ok_to_include_history(narrow, user_profile))
 
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:

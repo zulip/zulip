@@ -491,8 +491,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
     return list(map(convert_term, data))
 
-def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], realm: Realm) -> bool:
-
+def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profile: UserProfile) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public stream that might include messages that
@@ -507,7 +506,7 @@ def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], realm: Rea
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                if is_public_stream_by_name(term['operand'], realm):
+                if is_public_stream_by_name(term['operand'], user_profile.realm):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
@@ -568,7 +567,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
-    include_history = ok_to_include_history(narrow, user_profile.realm)
+    include_history = ok_to_include_history(narrow, user_profile)
 
     if include_history and not use_first_unread_anchor:
         # The initial query in this case doesn't use `zerver_usermessage`,
