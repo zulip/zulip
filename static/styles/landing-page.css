@@ -2007,6 +2007,10 @@ nav ul li.active::after {
     list-style: none;
 }
 
+.portico-landing.integrations ul li {
+    list-style: circle;
+}
+
 .portico-landing.integrations ol > li > p {
     max-width: calc(100% - 33px);
     margin-top: 0px;
