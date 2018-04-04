@@ -88,7 +88,7 @@ exports.toggle_starred = function (message) {
 
     message.starred = !message.starred;
 
-    unread_ops.mark_message_as_read(message);
+    unread_ops.notify_server_message_read(message);
     ui.update_starred(message);
 
     if (message.starred) {

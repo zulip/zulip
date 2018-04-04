@@ -935,7 +935,7 @@ with_overrides(function (override) {
     });
 });
 
-// mark_message_as_read requires message_store and these dependencies.
+// notify_server_message_read requires message_store and these dependencies.
 zrequire('unread_ops');
 zrequire('unread');
 zrequire('topic_data');

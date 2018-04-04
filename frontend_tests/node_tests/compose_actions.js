@@ -71,7 +71,7 @@ set_global('narrow_state', {
 });
 
 set_global('unread_ops', {
-    mark_message_as_read: noop,
+    notify_server_message_read: noop,
 });
 
 set_global('common', {
