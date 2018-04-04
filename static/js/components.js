@@ -68,12 +68,14 @@ exports.toggle = (function () {
         function maybe_go_left() {
             if (meta.idx > 0) {
                 select_tab(meta.idx - 1);
+                return true;
             }
         }
 
         function maybe_go_right() {
             if (meta.idx < opts.values.length - 1) {
                 select_tab(meta.idx + 1);
+                return true;
             }
         }
 
@@ -83,14 +85,12 @@ exports.toggle = (function () {
                 select_tab(idx);
             });
 
-            meta.$ind_tab.keydown(function (e) {
-                var key = e.which || e.keyCode;
-
-                if (key === 37) {
-                    maybe_go_left();
-                } else if (key === 39) {
-                    maybe_go_right();
-                }
+            keydown_util.handle({
+                elem: meta.$ind_tab,
+                handlers: {
+                    left_arrow: maybe_go_left,
+                    right_arrow: maybe_go_right,
+                },
             });
 
             if (typeof opts.selected === "number") {

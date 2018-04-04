@@ -1023,6 +1023,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dynamic_text.js',
+            'js/keydown_util.js',
             'js/lightbox_canvas.js',
             'js/rtl.js',
             'js/dict.js',
