@@ -1663,6 +1663,10 @@ input.new-organization-button {
     display: inline;
 }
 
+.integration-instructions .help-content h3 {
+    margin: 20px 0;
+}
+
 .markdown ol > li > div.tip,
 .markdown ol > li > div.warn {
     margin: 5px 25px 5px;
