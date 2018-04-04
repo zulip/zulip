@@ -197,7 +197,7 @@ zrequire('timerender');
 
 (function test_set_full_datetime() {
     var message = {
-        timestamp: 1495091573, // 5/18/2017 7:12:53 AM (UTC+0)
+        timestamp: 1495091573, // 2017-5-18 07:12:53 AM (UTC+0)
     };
     var time_element = $('<span/>');
     var attrs = new Dict();
@@ -207,7 +207,14 @@ zrequire('timerender');
         return time_element;
     };
 
-    var expected = '5/18/2017 7:12:53 AM (UTC+0)';
+    // since node >= 8 date.toLocaleDateString and
+    // date.toLocaleTimeString have been changed, instead of
+    // returning 5/18/2017 7:12:53 AM (UTC+0) they now return
+    // 2017-5-18 07:12:53 (UTC+0) - This change does not affect browsers
+    // since browsers have their own way of returning string that is
+    // or maybe inconsistenc with node's way.
+    var time = new Date(message.timestamp * 1000);
+    var expected = `${time.toLocaleDateString()} 07:12:53 (UTC+0)`;
     timerender.set_full_datetime(message, time_element);
     var actual = attrs.get('title');
     assert.equal(expected, actual);
