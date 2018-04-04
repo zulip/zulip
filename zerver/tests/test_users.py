@@ -286,7 +286,9 @@ class UserProfileTest(ZulipTestCase):
             self.example_user('cordelia').id,
         ]
 
-        user_ids_to_users(real_user_ids, get_realm("zulip"))
+        self.assertEqual(user_ids_to_users([], get_realm("zulip")), [])
+        self.assertEqual(set([user_profile.id for user_profile in user_ids_to_users(real_user_ids, get_realm("zulip"))]),
+                         set(real_user_ids))
         with self.assertRaises(JsonableError):
             user_ids_to_users([1234], get_realm("zephyr"))
         with self.assertRaises(JsonableError):

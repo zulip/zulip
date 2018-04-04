@@ -109,7 +109,7 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
     # users should be included.
 
     def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
-        if not user_ids:
+        if len(user_ids) == 0:
             return []
 
         return list(UserProfile.objects.filter(id__in=user_ids).select_related())
