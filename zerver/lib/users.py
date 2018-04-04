@@ -3,10 +3,11 @@ from typing import Dict, List, Optional, Text
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id
+from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
+    user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id
+    get_user_profile_by_id, query_for_ids
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -104,18 +105,28 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
     )
 
 def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
-    # TODO: Change this to do a single bulk query with
-    # generic_bulk_cached_fetch; it'll be faster.
-    #
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
-    user_profiles = []
-    for user_id in user_ids:
-        try:
-            user_profile = get_user_profile_by_id(user_id)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
+
+    def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
+        if not user_ids:
+            return []
+
+        return list(UserProfile.objects.filter(id__in=user_ids).select_related())
+
+    user_profiles_by_id = generic_bulk_cached_fetch(
+        cache_key_function=user_profile_by_id_cache_key,
+        query_function=fetch_users_by_id,
+        object_ids=user_ids
+    )  # type: Dict[int, UserProfile]
+
+    found_user_ids = user_profiles_by_id.keys()
+    missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
+    if missed_user_ids:
+        raise JsonableError(_("Invalid user ID: %s" % (missed_user_ids[0])))
+
+    user_profiles = list(user_profiles_by_id.values())
+    for user_profile in user_profiles:
         if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
-        user_profiles.append(user_profile)
+            raise JsonableError(_("Invalid user ID: %s" % (user_profile.id,)))
     return user_profiles
