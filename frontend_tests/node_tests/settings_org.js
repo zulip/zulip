@@ -481,7 +481,7 @@ function test_sync_realm_settings() {
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
-    $('#id_realm_restricted_to_domain').change = set_callback('id_realm_restricted_to_domain');
+    $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
@@ -513,6 +513,7 @@ function test_sync_realm_settings() {
     $("#id_realm_msg_edit_limit_setting").change = noop;
     var parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
+    $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     settings_org.set_up();

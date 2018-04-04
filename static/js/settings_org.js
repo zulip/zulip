@@ -64,13 +64,7 @@ var org_settings = {
 
 var org_permissions = {
     org_join: {
-        restricted_to_domain: {
-            type: 'bool',
-        },
         invite_required: {
-            type: 'bool',
-        },
-        disallow_disposable_email_addresses: {
             type: 'bool',
         },
         invite_by_admins_only: {
@@ -133,6 +127,14 @@ function get_property_value(property_name) {
             return "custom_limit";
         }
         return value;
+    } else if (property_name === 'realm_org_join_restrictions') {
+        if (page_params.realm_restricted_to_domain) {
+            return "only_selected_domain";
+        }
+        if (page_params.realm_disallow_disposable_email_addresses) {
+            return "no_disposable_email";
+        }
+        return "no_restriction";
     }
     return page_params[property_name];
 }
@@ -211,6 +213,17 @@ function set_msg_edit_limit_dropdown() {
     }
 }
 
+function set_org_join_restrictions_dropdown() {
+    var value = get_property_value("realm_org_join_restrictions");
+    $("#id_realm_org_join_restrictions").val(value);
+    var node = $("#allowed_domains_label").parent();
+    if (value === 'only_selected_domain') {
+        node.show();
+    } else {
+        node.hide();
+    }
+}
+
 exports.populate_realm_domains = function (realm_domains) {
     if (!meta.loaded) {
         return;
@@ -220,17 +233,10 @@ exports.populate_realm_domains = function (realm_domains) {
         return (realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain);
     });
     var domains = domains_list.join(', ');
-
-    $("#id_realm_restricted_to_domain").prop("checked", page_params.realm_restricted_to_domain);
     if (domains.length === 0) {
         domains = i18n.t("None");
-        $("#id_realm_restricted_to_domain").attr("data-toggle", "modal");
-        $("#id_realm_restricted_to_domain").attr("href", "#realm_domains_modal");
     }
-    if (domains !== "None") {
-        $("#id_realm_restricted_to_domain").attr("data-toggle", "none");
-    }
-    $("#realm_restricted_to_domains_label").text(i18n.t("Restrict new users to the following email domains: __domains__", {domains: domains}));
+    $("#allowed_domains_label").text(i18n.t("Allowed domains: __domains__", {domains: domains}));
 
     var realm_domains_table_body = $("#realm_domains_table tbody").expectOne();
     realm_domains_table_body.find("tr").remove();
@@ -352,13 +358,12 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_invite_required') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
             "id_realm_invite_by_admins_only", true);
-    } else if (property_name === 'realm_restricted_to_domain') {
-        settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
-            "id_realm_disallow_disposable_email_addresses", false);
     } else if (property_name === 'realm_video_chat_provider' || property_name === 'realm_google_hangouts_domain') {
         set_video_chat_provider_dropdown();
     } else if (property_name === 'realm_msg_edit_limit_setting' || property_name === 'realm_message_content_edit_limit_minutes') {
         set_msg_edit_limit_dropdown();
+    } else if (property_name === 'realm_org_join_restrictions') {
+        set_org_join_restrictions_dropdown();
     }
 }
 
@@ -389,6 +394,8 @@ exports.sync_realm_settings = function (property) {
         property = 'create_stream_permission';
     } else if (property === 'allow_message_editing') {
         property = 'msg_edit_limit_setting';
+    } else if (property === 'restricted_to_domain' || property === 'disallow_disposable_email_addresses') {
+        property = 'org_join_restrictions';
     }
     var element =  $('#id_realm_'+property);
     if (element.length) {
@@ -480,10 +487,7 @@ function _set_up() {
     set_add_emoji_permission_dropdown();
     set_video_chat_provider_dropdown();
     set_msg_edit_limit_dropdown();
-
-    $("#id_realm_restricted_to_domain").change(function () {
-        settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_disallow_disposable_email_addresses", false);
-    });
+    set_org_join_restrictions_dropdown();
 
     $("#id_realm_invite_required").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
@@ -613,6 +617,20 @@ function _set_up() {
                 data.waiting_period_threshold = 0;
             }
             opts.data = data;
+        } else if (subsection === 'org_join') {
+            opts.data = {};
+            var org_join_restrictions = $('#id_realm_org_join_restrictions').val();
+
+            if (org_join_restrictions === "only_selected_domain") {
+                opts.data.restricted_to_domain = true;
+                opts.data.disallow_disposable_email_addresses = false;
+            } else if (org_join_restrictions === "no_disposable_email") {
+                opts.data.restricted_to_domain = false;
+                opts.data.disallow_disposable_email_addresses = true;
+            } else if (org_join_restrictions === "no_restriction") {
+                opts.data.disallow_disposable_email_addresses = false;
+                opts.data.restricted_to_domain = false;
+            }
         }
 
         return opts;
@@ -669,6 +687,26 @@ function _set_up() {
         } else {
             node.hide();
         }
+    });
+
+    $("#id_realm_org_join_restrictions").change(function (e) {
+        var org_join_restrictions = e.target.value;
+        var node = $("#allowed_domains_label").parent();
+        if (org_join_restrictions === 'only_selected_domain') {
+            node.show();
+            if (_.isEmpty(page_params.realm_domains)) {
+                overlays.open_modal('realm_domains_modal');
+            }
+        } else {
+            node.hide();
+        }
+    });
+
+    $("#id_realm_org_join_restrictions").click(function (e) {
+        // This prevents the disappearance of modal when there are
+        // no allowed domains otherwise it gets closed due to
+        // the click event handler attached to `#settings_overlay_container`
+        e.stopPropagation();
     });
 
     $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
