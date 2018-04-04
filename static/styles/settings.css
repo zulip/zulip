@@ -333,7 +333,6 @@ td .button {
     margin: 0px;
 }
 
-.admin-restricted-to-domain input[type=checkbox] + .inline,
 input[type=checkbox] + .inline-block {
     margin-left: 10px;
 }
@@ -1371,6 +1370,7 @@ input[type=checkbox].inline-block {
 }
 
 #id_realm_create_stream_permission,
+#id_realm_org_join_restrictions,
 #id_realm_bot_creation_policy,
 #id_realm_msg_edit_limit_setting {
     width: 100%;
