@@ -113,6 +113,9 @@ exports.reset = function () {
 };
 
 exports.populate_profile_fields = function (profile_fields_data) {
+    $("#account-settings .custom-profile-fields-form").html("");
+    settings_account.add_custom_profile_fields_to_settings();
+
     if (!meta.loaded) {
         return;
     }
