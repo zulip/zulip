@@ -210,6 +210,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
             enable_stream_desktop_notifications=False,
             enable_digest_emails=True,
             last_pointer_updater="",
+            last_active_message_id=None,
             email=email,
             realm_name_in_notifications=False,
             date_joined=timestamp,
@@ -645,6 +646,8 @@ def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> T
     # 'upload_message_file'
     s3_path = "/".join([
         str(realm_id),
+        'SlackImportAttachment',  # This is a special placeholder which should be kept
+                                  # in sync with 'exports.py' function 'import_message_data'
         format(random.randint(0, 255), 'x'),
         random_name(18),
         sanitize_name(fileinfo['name'])
