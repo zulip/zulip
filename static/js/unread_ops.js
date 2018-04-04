@@ -23,7 +23,7 @@ function process_newly_read_message(message, options) {
 
 exports.process_read_messages_event = function (message_ids) {
     /*
-        This code has a lot in common with mark_messages_as_read,
+        This code has a lot in common with notify_server_messages_read,
         but there are subtle differences due to the fact that the
         server can tell us about unread messages that we didn't
         actually read locally (and which we may not have even
@@ -58,7 +58,7 @@ exports.process_read_messages_event = function (message_ids) {
 
 // Takes a list of messages and marks them as read.
 // Skips any messages that are already marked as read.
-exports.mark_messages_as_read = function (messages, options) {
+exports.notify_server_messages_read = function (messages, options) {
     options = options || {};
 
     messages = unread.get_unread_messages(messages);
@@ -80,8 +80,8 @@ exports.mark_messages_as_read = function (messages, options) {
     unread_ui.update_unread_counts();
 };
 
-exports.mark_message_as_read = function (message, options) {
-    exports.mark_messages_as_read([message], options);
+exports.notify_server_message_read = function (message, options) {
+    exports.notify_server_messages_read([message], options);
 };
 
 // If we ever materially change the algorithm for this function, we
@@ -96,12 +96,12 @@ exports.process_visible = function () {
             exports.mark_current_list_as_read();
         }
     } else {
-        exports.mark_messages_as_read(message_viewport.visible_messages(true));
+        exports.notify_server_messages_read(message_viewport.visible_messages(true));
     }
 };
 
 exports.mark_current_list_as_read = function (options) {
-    exports.mark_messages_as_read(current_msg_list.all_messages(), options);
+    exports.notify_server_messages_read(current_msg_list.all_messages(), options);
 };
 
 exports.mark_stream_as_read = function (stream_id, cont) {
