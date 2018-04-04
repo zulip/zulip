@@ -61,7 +61,7 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
-from zerver.lib.users import bulk_get_users, check_full_name
+from zerver.lib.users import bulk_get_users, check_full_name, user_ids_to_users
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, \
@@ -83,7 +83,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    get_user_profiles_by_ids, get_services_for_bots
+    get_services_for_bots
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -4645,8 +4645,8 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
             pass
     return service_dicts
 
-def get_service_dicts_for_bots(bot_profile_ids: List[int]) -> Dict[int, List[Dict[str, Any]]]:
-    bot_profiles = get_user_profiles_by_ids(bot_profile_ids)  # type: List[UserProfile]
+def get_service_dicts_for_bots(bot_profile_ids: List[int], realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
+    bot_profiles = user_ids_to_users(bot_profile_ids, realm)  # type: List[UserProfile]
     bot_services_by_uid = get_services_for_bots(bot_profiles)
 
     embedded_bot_profiles = [profile for profile in bot_profiles
@@ -4679,7 +4679,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
     bot_profile_ids = [botdict['id'] for botdict in result]
-    services_by_ids = get_service_dicts_for_bots(bot_profile_ids)
+    services_by_ids = get_service_dicts_for_bots(bot_profile_ids, user_profile.realm)
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
