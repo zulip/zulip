@@ -16,6 +16,11 @@ var previous_favicon;
 var flashing = false;
 
 var notifications_api;
+
+exports.set_notification_api = function (n) {
+    notifications_api = n;
+};
+
 if (window.webkitNotifications) {
     notifications_api = window.webkitNotifications;
 } else if (window.Notification) {
@@ -56,6 +61,10 @@ function cancel_notification_object(notification_object) {
         notification_object.onclick = function () {};
         notification_object.cancel();
 }
+
+exports.get_notifications = function () {
+    return notice_memory;
+};
 
 exports.initialize = function () {
     $(window).focus(function () {
@@ -380,6 +389,8 @@ function process_notification(notification) {
         window.bridge.desktopNotification(title, content, notification_source);
     }
 }
+
+exports.process_notification = process_notification;
 
 exports.close_notification = function (message) {
     _.each(Object.keys(notice_memory), function (key) {
