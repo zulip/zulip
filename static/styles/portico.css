@@ -314,6 +314,11 @@ body {
     margin-left: 5px;
 }
 
+.portico-landing.integrations ol ul {
+    padding-left: 40px;
+    margin-left: 5px;
+}
+
 .markdown ol > li > ul {
     padding-left: 20px;
 }
