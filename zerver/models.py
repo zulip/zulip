@@ -1473,9 +1473,6 @@ class Subscription(models.Model):
 def get_user_profile_by_id(uid: int) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid)
 
-def get_user_profiles_by_ids(uids: List[int]) -> List[UserProfile]:
-    return list(UserProfile.objects.filter(id__in=uids).select_related())
-
 @cache_with_key(user_profile_by_email_cache_key, timeout=3600*24*7)
 def get_user_profile_by_email(email: Text) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip())
