@@ -1,9 +1,12 @@
 set_global('i18n', global.stub_i18n);
 
+zrequire('keydown_util');
 zrequire('components');
 
-var LEFT_KEY = { which: 37 };
-var RIGHT_KEY = { which: 39 };
+var noop = function () {};
+
+var LEFT_KEY = { which: 37, preventDefault: noop };
+var RIGHT_KEY = { which: 39, preventDefault: noop };
 
 (function test_basics() {
     var keydown_f;
