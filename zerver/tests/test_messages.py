@@ -2262,6 +2262,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
 class StarTests(ZulipTestCase):
+    """This is also the main test for access_message"""
 
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
@@ -2404,6 +2405,18 @@ class StarTests(ZulipTestCase):
         self.login(self.example_email("cordelia"))
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
+
+        with self.settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True):
+            # With PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS, you still
+            # can't see it if you didn't receive the message and are
+            # not subscribed.
+            result = self.change_star(message_ids)
+            self.assert_json_error(result, 'Invalid message(s)')
+
+            # But if you subscribe, then you can star the message
+            self.subscribe(self.example_user("cordelia"), stream_name)
+            result = self.change_star(message_ids)
+            self.assert_json_success(result)
 
     def test_new_message(self) -> None:
         """
