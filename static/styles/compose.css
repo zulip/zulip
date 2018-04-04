@@ -193,11 +193,17 @@ table.compose_table {
 .compose_invite_user,
 .compose_private_stream_alert,
 .compose-all-everyone,
-.compose-announce {
+.compose-announce,
+.compose_not_subscribed {
     padding: 4px 0px 4px 0px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+}
+
+#compose_not_subscribed_close {
+    top: 1px;
+    right: 10px;
 }
 
 .compose_invite_close,
@@ -216,10 +222,15 @@ table.compose_table {
     position: relative;
 }
 
-.compose_invite_user p {
+.compose_invite_user p,
+.compose_not_subscribed p {
     margin: 0px;
     display: inline-block;
     max-width: calc(100% - 100px);
+}
+
+#error-message-sub-button {
+    margin-right: 30px;
 }
 
 .compose_invite_user_error {
