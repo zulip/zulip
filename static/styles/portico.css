@@ -305,6 +305,15 @@ body {
     top: -2px;
 }
 
+.portico-landing.integrations ol {
+    margin-left: 0;
+}
+
+.portico-landing.integrations ol > li > p:not(:first-child) {
+    padding-left: 24px;
+    margin-left: 5px;
+}
+
 .markdown ol > li > ul {
     padding-left: 20px;
 }
