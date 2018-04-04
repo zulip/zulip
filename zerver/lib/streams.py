@@ -127,10 +127,12 @@ def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: Text,
         raise JsonableError(error)
     return stream
 
-def is_public_stream_by_name(stream_name: Text, realm: Realm) -> bool:
-    """Determine whether a stream is public, so that
-    our caller can decide whether we can get
-    historical messages for a narrowing search.
+def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: Text) -> bool:
+    """Determine whether the provided user is allowed to access the
+    history of the target stream.  The stream is specified by name.
+
+    This is used by the caller to determine whether this user can get
+    historical messages before they joined for a narrowing search.
 
     Because of the way our search is currently structured,
     we may be passed an invalid stream here.  We return
@@ -142,7 +144,7 @@ def is_public_stream_by_name(stream_name: Text, realm: Realm) -> bool:
     can actually see this stream.
     """
     try:
-        stream = get_stream(stream_name, realm)
+        stream = get_stream(stream_name, user_profile.realm)
     except Stream.DoesNotExist:
         return False
     return stream.is_public()

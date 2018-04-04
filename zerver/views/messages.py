@@ -29,7 +29,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
+from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -506,7 +506,7 @@ def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profi
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                if is_public_stream_by_name(term['operand'], user_profile.realm):
+                if can_access_stream_history_by_name(user_profile, term['operand']):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
