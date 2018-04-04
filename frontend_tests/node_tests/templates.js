@@ -622,6 +622,13 @@ function render(template_name, args) {
     assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
 }());
 
+(function compose_not_subscribed() {
+    var html = render('compose_not_subscribed');
+    global.write_handlebars_output("compose_not_subscribed", html);
+    var button = $(html).find("button:first");
+    assert.equal(button.text(), "translated: Subscribe");
+}());
+
 (function compose_notification() {
     var args = {
         note: "You sent a message to a muted topic.",
