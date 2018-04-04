@@ -954,6 +954,14 @@ class Stream(models.Model):
         # All streams are private in Zephyr mirroring realms.
         return not self.invite_only and not self.is_in_zephyr_realm
 
+    def is_history_realm_public(self) -> bool:
+        return self.is_public()
+
+    def is_history_public_to_subscribers(self) -> bool:
+        if settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS:
+            return True
+        return self.is_public()
+
     class Meta:
         unique_together = ("name", "realm")
 

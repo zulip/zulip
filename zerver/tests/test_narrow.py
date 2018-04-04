@@ -375,10 +375,18 @@ class IncludeHistoryTest(ZulipTestCase):
         self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # Definitely forbid seeing history on private streams.
+        self.make_stream('private_stream', realm=user_profile.realm, invite_only=True)
+        subscribed_user_profile = self.example_user("cordelia")
+        self.subscribe(subscribed_user_profile, 'private_stream')
         narrow = [
             dict(operator='stream', operand='private_stream'),
         ]
         self.assertFalse(ok_to_include_history(narrow, user_profile))
+
+        with self.settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True):
+            # Verify that with this setting, subscribed users can access history.
+            self.assertFalse(ok_to_include_history(narrow, user_profile))
+            self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
 
         # History doesn't apply to PMs.
         narrow = [

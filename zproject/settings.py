@@ -311,6 +311,12 @@ DEFAULT_SETTINGS.update({
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
+    # TODO: This server setting is a hack to help with folks who are
+    # finding our private stream security model painful.  Future work
+    # will migrate this to be a property of Stream or maybe Realm and
+    # this setting will be deprecated.
+    'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS': False,
+
     # Limits to help prevent spam, in particular by sending invitations.
     #
     # A non-admin user who's joined an open realm this recently can't invite at all.

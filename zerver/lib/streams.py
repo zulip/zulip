@@ -147,7 +147,19 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: Te
         stream = get_stream(stream_name, user_profile.realm)
     except Stream.DoesNotExist:
         return False
-    return stream.is_public()
+
+    if stream.is_history_realm_public():
+        return True
+
+    if stream.is_history_public_to_subscribers():
+        # In this case, we check if the user is subscribed.
+        error = _("Invalid stream name '%s'" % (stream_name,))
+        try:
+            (recipient, sub) = access_stream_common(user_profile, stream, error)
+        except JsonableError:
+            return False
+        return True
+    return False
 
 def filter_stream_authorization(user_profile: UserProfile,
                                 streams: Iterable[Stream]) -> Tuple[List[Stream], List[Stream]]:
