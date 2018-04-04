@@ -121,7 +121,10 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
         }
     });
 
-    var widget = components.toggle({
+    var callback_value;
+
+    var widget;
+    widget = components.toggle({
         name: "info-overlay-toggle",
         selected: 0,
         values: [
@@ -132,6 +135,12 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
         callback: function (name, key) {
             assert.equal(callback_args, undefined);
             callback_args = [name, key];
+
+            // The subs code tries to get a widget value in the middle of a
+            // callback, which can lead to obscure bugs.
+            if (widget) {
+                callback_value = widget.value();
+            }
         },
     });
 
@@ -165,6 +174,7 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
     assert.equal(tabs[2].class, 'last selected');
     assert.deepEqual(callback_args, ['translated: Search operators', 'search-operators']);
     assert.equal(widget.value(), 'translated: Search operators');
+    assert.equal(widget.value(), callback_value);
 
     // try to crash the key handler
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);

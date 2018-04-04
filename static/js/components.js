@@ -52,6 +52,7 @@ exports.toggle = (function () {
             elem.addClass("selected");
 
             if (idx !== meta.idx) {
+                meta.idx = idx;
                 if (opts.callback) {
                     opts.callback(
                         opts.values[idx].label,
@@ -60,8 +61,6 @@ exports.toggle = (function () {
                     );
                 }
             }
-
-            meta.idx = idx;
 
             if (!opts.child_wants_focus) {
                 elem.focus();
