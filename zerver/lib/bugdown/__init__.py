@@ -1820,7 +1820,10 @@ class AtomicLinkPattern(CompiledPattern):
         href = rewrite_local_links_to_relative(db_data, href)
 
         el = markdown.util.etree.Element('a')
-        el.text = m.group(2)
+        text = m.group(2)
+        if not text.strip():
+            text = href
+        el.text = text
         el.set('href', href)
         fixup_link(el, target_blank=(href[:1] != '#'))
         return el
