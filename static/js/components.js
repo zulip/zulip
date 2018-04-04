@@ -62,7 +62,10 @@ exports.toggle = (function () {
             }
 
             meta.idx = idx;
-            elem.focus();
+
+            if (!opts.child_wants_focus) {
+                elem.focus();
+            }
         }
 
         function maybe_go_left() {
@@ -99,6 +102,9 @@ exports.toggle = (function () {
         }());
 
         var prototype = {
+            maybe_go_left: maybe_go_left,
+            maybe_go_right: maybe_go_right,
+
             value: function () {
                 if (meta.idx >= 0) {
                     return opts.values[meta.idx].label;
