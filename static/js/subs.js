@@ -379,15 +379,11 @@ exports.filter_table = function (query) {
     $(".streams-list").scrollTop(streams_list_scrolltop);
 };
 
+var subscribed_only = true;
+
 exports.actually_filter_streams = function () {
     var search_box = $("#add_new_subscription input[type='text']");
     var query = search_box.expectOne().val().trim();
-    var subscribed_only;
-    if (components.toggle.lookup("stream-filter-toggle")) {
-        subscribed_only = components.toggle.lookup("stream-filter-toggle").value() === "Subscribed";
-    } else {
-        subscribed_only = false;
-    }
     exports.filter_table({ input: query, subscribed_only: subscribed_only });
 };
 
@@ -406,8 +402,10 @@ exports.setup_page = function (callback) {
                 // then redirect to `streams/all` when you click "all-streams".
                 if (key === "all-streams") {
                     window.location.hash = "streams/all";
+                    subscribed_only = false;
                 } else if (key === "subscribed") {
                     window.location.hash = "streams/subscribed";
+                    subscribed_only = true;
                 }
 
                 exports.actually_filter_streams();
