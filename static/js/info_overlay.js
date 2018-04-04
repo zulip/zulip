@@ -22,9 +22,10 @@ function adjust_mac_shortcuts() {
 }
 
 function _setup_info_overlay() {
-    var info_overlay_toggle = components.toggle({
+    var opts = {
         name: "info-overlay-toggle",
         selected: 0,
+        child_wants_focus: true,
         values: [
             { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
             { label: i18n.t("Message formatting"), key: "markdown-help" },
@@ -35,10 +36,29 @@ function _setup_info_overlay() {
             $("#" + key).show();
             $("#" + key).find(".modal-body").focus();
         },
-    }).get();
+    };
 
-    $(".informational-overlays .overlay-tabs")
-        .append($(info_overlay_toggle).addClass("large"));
+    var toggler = components.toggle(opts);
+    var elem = toggler.get();
+    elem.addClass('large');
+
+    var modals = _.map(opts.values, function (item) {
+        var key = item.key; // e.g. markdown-help
+        var modal = $('#' + key).find('.modal-body');
+        return modal;
+    });
+
+    _.each(modals, function (modal) {
+        keydown_util.handle({
+            elem: modal,
+            handlers: {
+                left_arrow: toggler.maybe_go_left,
+                right_arrow: toggler.maybe_go_right,
+            },
+        });
+    });
+
+    $(".informational-overlays .overlay-tabs").append(elem);
 
     if (/Mac/i.test(navigator.userAgent)) {
         adjust_mac_shortcuts();
