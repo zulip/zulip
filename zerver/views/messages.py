@@ -565,28 +565,31 @@ def add_narrow_conditions(user_profile: UserProfile,
     if first_visible_message_id > 0:
         query = query.where(inner_msg_id_col >= first_visible_message_id)
 
-    is_search = False
+    is_search = False  # for now
 
     if narrow is None:
         return (query, is_search)
 
     # Build the query for the narrow
     builder = NarrowBuilder(user_profile, inner_msg_id_col)
-    search_term = {}  # type: Dict[str, Any]
+    search_operands = []
 
+    # As we loop through terms, builder does most of the work to extend
+    # our query, but we need to collect the search operands and handle
+    # them after the loop.
     for term in narrow:
         if term['operator'] == 'search':
-            if not is_search:
-                search_term = term
-                query = query.column(column("subject")).column(column("rendered_content"))
-                is_search = True
-            else:
-                # Join the search operators if there are multiple of them
-                search_term['operand'] += ' ' + term['operand']
+            search_operands.append(term['operand'])
         else:
             query = builder.add_term(query, term)
 
-    if is_search:
+    if search_operands:
+        is_search = True
+        query = query.column(column("subject")).column(column("rendered_content"))
+        search_term = dict(
+            operator='search',
+            operand=' '.join(search_operands)
+        )
         query = builder.add_term(query, search_term)
 
     return (query, is_search)
