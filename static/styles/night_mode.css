@@ -360,6 +360,17 @@ body.night-mode .alert-box .alert.alert-error::before {
     color: 1px solid hsl(0, 75%, 65%);
 }
 
+body.night-mode .progress {
+    /* Setting `background-image` to none overrides Bootstrap and allows for
+    `background-color` to be used instead. */
+    background-image: none;
+    background-color: hsl(212, 28%, 18%);
+}
+
+body.night-mode .progress-bar-percent {
+    color: #fff;
+}
+
 /* Popover: */
 
 body.night-mode .hotspot.overlay .hotspot-popover {
