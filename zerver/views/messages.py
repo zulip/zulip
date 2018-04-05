@@ -622,10 +622,32 @@ def add_narrow_conditions(user_profile: UserProfile,
     return (query, is_search)
 
 def find_first_unread_anchor(sa_conn: Any,
-                             inner_msg_id_col: ColumnElement,
                              user_profile: UserProfile,
-                             narrow: List[Dict[str, Any]],
-                             query: Query) -> int:
+                             narrow: List[Dict[str, Any]]) -> int:
+    # We always need UserMessage in our query, because it has the unread
+    # flag for the user.
+    need_user_message = True
+
+    # TODO:
+    # We err on the side of putting Message in our query, but there are
+    # probably situations that we don't need it.  We may eventually try
+    # to make add_narrow_conditions() and similar functions help us make
+    # possible optimizations.
+    need_message = True
+
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
+
     condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
 
     # We exclude messages on muted topics when finding the first unread
@@ -716,10 +738,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if use_first_unread_anchor:
         anchor = find_first_unread_anchor(
             sa_conn,
-            inner_msg_id_col,
             user_profile,
             narrow,
-            query
         )
 
     anchored_to_left = (anchor == 0)

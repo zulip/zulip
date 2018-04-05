@@ -1760,21 +1760,10 @@ class GetOldMessagesTest(ZulipTestCase):
 
         user_profile = hamlet
 
-        # TODO: Make it so that find_first_unread_anchor() does not require
-        #       the incoming query to join to zerver_usermessage.
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       join(table("zerver_usermessage"), table("zerver_message"),
-                            literal_column("zerver_usermessage.message_id") ==
-                            literal_column("zerver_message.id")))
-        inner_msg_id_col = column("message_id")
-
         anchor = find_first_unread_anchor(
             sa_conn=sa_conn,
-            inner_msg_id_col=inner_msg_id_col,
             user_profile=user_profile,
             narrow=[],
-            query=query,
         )
         self.assertEqual(anchor, first_message_id)
 
