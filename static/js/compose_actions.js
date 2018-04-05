@@ -367,6 +367,8 @@ exports.on_topic_narrow = function () {
     // See #3300 for context--a couple users specifically asked for
     // this convenience.
     compose_state.subject(narrow_state.topic());
+    compose_fade.set_focused_recipient("stream");
+    compose_fade.update_message_list();
     $('#compose-textarea').focus().select();
 };
 
