@@ -101,8 +101,12 @@ people.add(bob);
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
+    templates.render = function (template_name) {
+        assert.equal(template_name, 'compose_not_subscribed');
+        return 'compose_not_subscribed_stub';
+    };
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
     global.page_params.narrow_stream = false;
     channel.post = function (payload) {
@@ -121,7 +125,7 @@ people.add(bob);
         payload.success(payload.data);
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');
