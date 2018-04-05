@@ -24,6 +24,7 @@ exports.options = function (config) {
     var send_status_close;
     var error_msg;
     var upload_bar;
+    var should_hide_upload_status;
     var file_input;
 
     switch (config.mode) {
@@ -49,18 +50,39 @@ exports.options = function (config) {
         throw Error("Invalid upload mode!");
     }
 
+    var maybe_hide_upload_status = function () {
+        // The first time `maybe_hide_upload_status`, it will not hide the
+        // status; the second time it will. This guarantees that whether
+        // `progressUpdated` or `uploadFinished` is called first, the status
+        // is hidden only after the animation is finished.
+        if (should_hide_upload_status) {
+            send_button.prop("disabled", false);
+            send_status.removeClass("alert-info").hide();
+            $("#" + upload_bar).parent().remove();
+        } else {
+            should_hide_upload_status = true;
+        }
+    }
+
     var uploadStarted = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', compose.abort_xhr);
-        error_msg.html($("<p>").text(i18n.t("Uploading…"))
-            .after('<div class="progress progress-striped active">' +
-                   '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
-                   '</div>'));
+        error_msg.html($("<p>").text(i18n.t("Uploading…")));
+        send_status.append('<div class="progress progress-striped active">' +
+                           '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
+                           '</div>');
+        should_hide_upload_status = false;
     };
 
     var progressUpdated = function (i, file, progress) {
-        $("#" + upload_bar).width(progress + "%");
+        $("#" + upload_bar).animate({
+            width: progress + "%",
+        }, 500, "linear", function () {
+            if (progress === 100) {
+                maybe_hide_upload_status();
+            }
+        });
     };
 
     var uploadError = function (error_code, server_response, file) {
@@ -68,6 +90,7 @@ exports.options = function (config) {
         send_status.addClass("alert-error")
             .removeClass("alert-info");
         send_button.prop("disabled", false);
+        $("#" + upload_bar).parent().remove();
         switch (error_code) {
         case 'BrowserNotSupported':
             msg = i18n.t("File upload is not yet available for your browser.");
@@ -120,8 +143,8 @@ exports.options = function (config) {
             compose_ui.insert_syntax_and_focus(filename_uri, textarea);
         }
         compose_ui.autosize_textarea();
-        send_button.prop("disabled", false);
-        send_status.removeClass("alert-info").hide();
+
+        maybe_hide_upload_status();
 
         // In order to upload the same file twice in a row, we need to clear out
         // the file input element, so that the next time we use the file dialog,
