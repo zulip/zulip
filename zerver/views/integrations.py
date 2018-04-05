@@ -37,8 +37,8 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
 
     context["html_settings_links"] = html_settings_links
     if html_settings_links:
-        settings_html = '<a href="../../#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
+        settings_html = '<a href="/#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="/#streams">streams page</a>'
     else:
         settings_html = 'Zulip settings page'
         subscriptions_html = 'streams page'

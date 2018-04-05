@@ -128,7 +128,7 @@ class HelpTest(ZulipTestCase):
     def test_html_settings_links(self) -> None:
         result = self.client_get('/help/message-a-stream-by-email')
         self.assertEqual(result.status_code, 200)
-        self.assertIn('<a target="_blank" href="../../#streams">streams page</a>', str(result.content))
+        self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
@@ -174,19 +174,19 @@ class IntegrationTest(TestCase):
             add_api_uri_context(context, HostRequestMock(host="mysubdomain.testserver"))
         self.assertEqual(
             context['settings_html'],
-            '<a href="../../#settings">Zulip settings page</a>')
+            '<a href="/#settings">Zulip settings page</a>')
         self.assertEqual(
             context['subscriptions_html'],
-            '<a target="_blank" href="../../#streams">streams page</a>')
+            '<a target="_blank" href="/#streams">streams page</a>')
 
         context = dict()
         add_api_uri_context(context, HostRequestMock())
         self.assertEqual(
             context['settings_html'],
-            '<a href="../../#settings">Zulip settings page</a>')
+            '<a href="/#settings">Zulip settings page</a>')
         self.assertEqual(
             context['subscriptions_html'],
-            '<a target="_blank" href="../../#streams">streams page</a>')
+            '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
     def setUp(self) -> None:
