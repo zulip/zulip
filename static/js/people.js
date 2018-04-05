@@ -527,8 +527,8 @@ exports.small_avatar_url = function (message) {
     // Try to get info from the message if we didn't have a `person` object
     // or if the avatar was missing. We do this verbosely to avoid false
     // positives on line coverage (we don't do branch checking).
-    if (!url) {
-        url = message.avatar_url;
+    if (!url && message.avatar_url) {
+        return exports.format_small_avatar_url(message.avatar_url);
     }
 
     if (!email) {
