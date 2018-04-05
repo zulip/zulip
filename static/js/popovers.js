@@ -59,7 +59,7 @@ function init_email_clipboard() {
             var copy_email_icon = email_el.find('i');
             copy_email_icon.removeClass('hide_copy_icon');
 
-            var copy_email_clipboard = new Clipboard(copy_email_icon[0]);
+            var copy_email_clipboard = new ClipboardJS(copy_email_icon[0]);
             copy_email_clipboard.on('success', copy_email_handler);
         }
     });
@@ -830,7 +830,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    new Clipboard('.copy_link');
+    new ClipboardJS('.copy_link');
 
     $('body').on('click', '.copy_link', function (e) {
         popovers.hide_actions_popover();
