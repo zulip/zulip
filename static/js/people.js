@@ -522,8 +522,6 @@ exports.small_avatar_url = function (message) {
         person = exports.get_person_from_user_id(message.sender_id);
     }
 
-    var email;
-
     // The first time we encounter a sender in a message, we may
     // not have person.avatar_url set, but if we do, then use that.
     if (person && person.avatar_url) {
@@ -537,7 +535,13 @@ exports.small_avatar_url = function (message) {
         return exports.format_small_avatar_url(message.avatar_url);
     }
 
-    if (!email) {
+    // For computing the user's email, we first trust the person
+    // object since that is updated via our real-time sync system, but
+    // if unavailable, we use the sender email.
+    var email;
+    if (person) {
+        email = person.email;
+    } else {
         email = message.sender_email;
     }
 
