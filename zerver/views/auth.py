@@ -655,7 +655,7 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @csrf_exempt
-def api_dev_get_emails(request: HttpRequest) -> HttpResponse:
+def api_dev_get_accounts(request: HttpRequest) -> HttpResponse:
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
     users = get_dev_users()
