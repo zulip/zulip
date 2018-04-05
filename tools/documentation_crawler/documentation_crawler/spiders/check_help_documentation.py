@@ -44,7 +44,9 @@ class HelpDocumentationSpider(UnusedImagesLinterSpider):
     name = "help_documentation_crawler"
     start_urls = ['http://localhost:9981/help']
     deny_domains = []  # type: List[str]
-    deny = ['/privacy']
+    deny = ['/privacy',
+            # Ignored because scrapy seems to not process relatively URLs with ../ properly.
+            '[.][.]/']
     images_path = "static/images/help"
 
 
