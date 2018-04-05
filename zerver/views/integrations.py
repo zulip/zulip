@@ -34,7 +34,16 @@ def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
     context['external_uri_scheme'] = settings.EXTERNAL_URI_SCHEME
     context['api_url'] = api_url
     context['api_url_scheme_relative'] = api_url_scheme_relative
+
     context["html_settings_links"] = html_settings_links
+    if html_settings_links:
+        settings_html = '<a href="../../#settings">Zulip settings page</a>'
+        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
+    else:
+        settings_html = 'Zulip settings page'
+        subscriptions_html = 'streams page'
+    context['settings_html'] = settings_html
+    context['subscriptions_html'] = subscriptions_html
 
 class ApiURLView(TemplateView):
     def get_context_data(self, **kwargs: Any) -> Dict[str, str]:
@@ -102,30 +111,6 @@ def add_integrations_context(context: Dict[str, Any]) -> None:
     context['integrations_dict'] = alphabetical_sorted_integration
     context['integrations_count_display'] = integrations_count_display
 
-    if "html_settings_links" in context and context["html_settings_links"]:
-        settings_html = '<a href="../../#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
-    else:
-        settings_html = 'Zulip settings page'
-        subscriptions_html = 'streams page'
-
-    context['settings_html'] = settings_html
-    context['subscriptions_html'] = subscriptions_html
-
-
-def add_context_for_single_integration(context: Dict[str, Any], name: str, request: HttpRequest) -> None:
-    add_api_uri_context(context, request)
-
-    if "html_settings_links" in context and context["html_settings_links"]:
-        settings_html = '<a href="../../#settings">Zulip settings page</a>'
-        subscriptions_html = '<a target="_blank" href="../../#streams">streams page</a>'
-    else:
-        settings_html = 'Zulip settings page'
-        subscriptions_html = 'streams page'
-
-    context['settings_html'] = settings_html
-    context['subscriptions_html'] = subscriptions_html
-
 
 class IntegrationView(ApiURLView):
     template_name = 'zerver/integrations/index.html'
@@ -144,7 +129,7 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None
         return HttpResponseNotFound()
 
     context = {}  # type: Dict[str, Any]
-    add_context_for_single_integration(context, integration_name, request)
+    add_api_uri_context(context, request)
 
     context['integration_name'] = integration.name
     context['integration_display_name'] = integration.display_name
