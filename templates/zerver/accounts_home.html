@@ -53,7 +53,7 @@ $(function () {
                     {% else %}
                         {% if password_auth_enabled %}
                             <form class="form-inline" id="send_confirm" name="email_form"
-                                action="{{ current_url() }}" method="post">
+                              action="{{ current_url() }}" method="post">
                                 {{ csrf_input }}
 
                                 <div class="input-box no-validate">

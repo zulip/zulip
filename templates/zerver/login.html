@@ -65,7 +65,7 @@
                         {% else %}
                             {% if password_auth_enabled %}
                                 <form name="login_form" id="login_form" method="post" class="login-form"
-                                    action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
+                                  action="{{ url('django.contrib.auth.views.login') }}?next={{ next }}">
 
                                     {{ csrf_input }}
 

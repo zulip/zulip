@@ -8,17 +8,17 @@
                     <label class="inline-block title">{{t "Email" }}</label>
                     <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
                         <button type="button" class="button small rounded inline-block" id='email_value'
-                            {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
+                          {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
                             {{page_params.email}}
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
                     <i class="icon-vector-question-sign change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
-                    title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
+                      title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
                 <div id="change_email_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
-                    aria-labelledby="change_email_modal_label" aria-hidden="true">
+                  aria-labelledby="change_email_modal_label" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                         <h3 id="change_email_modal_label">{{t "Change email" }}</h3>
@@ -52,7 +52,7 @@
                           title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                     </div>
                     <div id="change_full_name_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
-                        aria-labelledby="change_full_name_modal_label" aria-hidden="true">
+                      aria-labelledby="change_full_name_modal_label" aria-hidden="true">
                         <div class="modal-header">
                             <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                             <h3 id="change_full_name_modal_label">{{t "Change full name" }}</h3>
@@ -86,7 +86,7 @@
                 {{/if}}
 
                 <div id="change_password_modal" class="modal modal-bg hide" tabindex="-1" role="dialog"
-                    aria-labelledby="change_password_modal_label" aria-hidden="true">
+                  aria-labelledby="change_password_modal_label" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{t 'Close' }}"><span aria-hidden="true">&times;</span></button>
                         <h3 id="change_password_modal_label">{{t "Change password" }}</h3>
@@ -196,7 +196,7 @@
                 </div>
                 <div class="control-group">
                     <button type="submit" name="view_api_key"
-                           class="button sea-green">{{t 'Get API key' }}</button>
+                      class="button sea-green">{{t 'Get API key' }}</button>
                 </div>
             </form>
         </div>

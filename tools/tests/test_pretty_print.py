@@ -63,8 +63,8 @@ GOOD_HTML = """
             print 'hello world'
     </pre>
         <div class = "foo"
-            id = "bar"
-            role = "whatever">{{ bla }}</div>
+          id = "bar"
+          role = "whatever">{{ bla }}</div>
     </body>
 </html>
 <!-- test -->
@@ -438,6 +438,36 @@ GOOD_HTML16 = """
 </div>
 """
 
+BAD_HTML17 = """
+<div>
+  <button type="button"
+class="btn btn-primary btn-small">{{t "Yes" }}</button>
+<button type="button"
+id="confirm_btn"
+class="btn btn-primary btn-small">{{t "Yes" }}</button>
+<div class = "foo"
+     id = "bar"
+     role = "whatever">
+     {{ bla }}
+</div>
+</div>
+"""
+
+GOOD_HTML17 = """
+<div>
+    <button type="button"
+      class="btn btn-primary btn-small">{{t "Yes" }}</button>
+    <button type="button"
+      id="confirm_btn"
+      class="btn btn-primary btn-small">{{t "Yes" }}</button>
+    <div class = "foo"
+      id = "bar"
+      role = "whatever">
+        {{ bla }}
+    </div>
+</div>
+"""
+
 class TestPrettyPrinter(unittest.TestCase):
     def compare(self, a: str, b: str) -> None:
         self.assertEqual(a.split('\n'), b.split('\n'))
@@ -461,3 +491,4 @@ class TestPrettyPrinter(unittest.TestCase):
         self.compare(pretty_print_html(BAD_HTML14), GOOD_HTML14)
         self.compare(pretty_print_html(BAD_HTML15), GOOD_HTML15)
         self.compare(pretty_print_html(BAD_HTML16), GOOD_HTML16)
+        self.compare(pretty_print_html(BAD_HTML17), GOOD_HTML17)

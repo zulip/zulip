@@ -40,12 +40,12 @@
                 {% elif only_sso %}
                 <a href="{{ url('login-sso') }}">
                     <button href="" class="download-button" type="button"
-                            name="button">{{ _('Log in now!') }}</button>
+                      name="button">{{ _('Log in now!') }}</button>
                 </a>
                 {% else %}
                 <a href="{{ url('register') }}">
                     <button href="" class="download-button" type="button"
-                            name="button">{{ _('Sign up now!') }}</button>
+                      name="button">{{ _('Sign up now!') }}</button>
                 </a>
                 {% endif %}
                 <!-- we want this to be il-block so we'll put a <br> above so it's on
@@ -609,12 +609,12 @@
         {% elif only_sso %}
         <a href="{{ url('login-sso') }}">
             <button href="" type="button"
-                    name="button">{{ _('Log in now!') }}</button>
+              name="button">{{ _('Log in now!') }}</button>
         </a>
         {% else %}
         <a href="{{ url('register') }}">
             <button href="" type="button"
-                    name="button">{{ _('Sign up now!') }}</button>
+              name="button">{{ _('Sign up now!') }}</button>
         </a>
         {% endif %}
         <div class="zulip-octopus"></div>

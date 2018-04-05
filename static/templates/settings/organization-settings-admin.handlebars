@@ -18,7 +18,7 @@
 
                 <div class="input-group disableable {{#unless realm_allow_message_editing}}control-label-disabled{{/unless}}">
                     <label for="id_realm_message_content_edit_limit_minutes"
-                        id="id_realm_message_content_edit_limit_minutes_label">
+                      id="id_realm_message_content_edit_limit_minutes_label">
                         {{t 'Message edit limit in minutes (0 for no limit)' }}
                     </label>
                     <input type="text" id="id_realm_message_content_edit_limit_minutes"
@@ -58,7 +58,7 @@
                 {{#if false}}
                 <div class="input-group">
                     <label for="realm_message_retention_days"
-                        id="id_realm_message_retention_days_label">
+                      id="id_realm_message_retention_days_label">
                         {{t 'Messages retention period in days (blank means messages are retained forever)' }}
                     </label>
                     <input type="text" id="id_realm_message_retention_days"
@@ -129,10 +129,10 @@
 
             <div class="input-group">
                 <label for="realm_notifications_stream" id="realm_notifications_stream_label" class="inline-block"
-                    title="{{t 'The stream to which new stream notifications go to.' }}">
+                  title="{{t 'The stream to which new stream notifications go to.' }}">
                     {{t "New stream notifications:" }}
                     <span class="dropup actual-dropdown-menu" id="id_realm_notifications_stream"
-                        name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
+                      name="realm_notifications_stream" aria-labelledby="realm_notifications_stream_label">
                         <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
                             <span id="realm_notifications_stream_name"></span>
                             <i class="fa fa-pencil"></i>
@@ -152,10 +152,10 @@
 
             <div class="input-group">
                 <label for="realm_signup_notifications_stream" id="realm_signup_notifications_stream_label" class="inline-block"
-                    title="{{t 'The stream which new user signup notifications go to.' }}">
+                  title="{{t 'The stream which new user signup notifications go to.' }}">
                     {{t "New user notifications:" }}
                     <span class="dropup actual-dropdown-menu" id="id_realm_signup_notifications_stream"
-                        name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
+                      name="realm_signup_notifications_stream" aria-labelledby="realm_signup_notifications_stream_label">
                         <button class="button small rounded dropdown-toggle" data-toggle="dropdown">
                             <span id="realm_signup_notifications_stream_name"></span>
                             <i class="fa fa-pencil"></i>

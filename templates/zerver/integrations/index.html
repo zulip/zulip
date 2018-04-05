@@ -87,12 +87,12 @@
                             {% if integration.is_enabled() %}
                             <a href="/integrations/doc/{{ integration.name }}">
                                 <div
-                                    {% if integration.legacy %}
-                                    class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
-                                    class="integration-lozenge integration-{{ integration.name }}"
-                                    {% endif %}
-                                    data-categories="{{ integration.categories }}"
-                                    data-name="{{ integration.name }}">
+                                  {% if integration.legacy %}
+                                  class="integration-lozenge integration-{{ integration.name }} legacy"{% else %}
+                                  class="integration-lozenge integration-{{ integration.name }}"
+                                  {% endif %}
+                                  data-categories="{{ integration.categories }}"
+                                  data-name="{{ integration.name }}">
                                     <img class="integration-logo" src="/{{ integration.logo }}"
                                       alt="{{ integration.display_name }} logo"/>
                                     {% if integration.secondary_line_text %}
