@@ -284,7 +284,7 @@ exports.make_zjquery = function () {
         return self;
     }
 
-    var zjquery = function (arg) {
+    var zjquery = function (arg, arg2) {
         if (typeof arg === "function") {
             // If somebody is passing us a function, we emulate
             // jQuery's behavior of running this function after
@@ -303,6 +303,10 @@ exports.make_zjquery = function () {
                     return arg;
                 }
             }
+        }
+
+        if (arg2 !== undefined) {
+            throw Error("We only use one-argument variations of $(...) in Zulip code.");
         }
 
         var selector = arg;
