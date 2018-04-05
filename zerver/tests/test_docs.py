@@ -124,6 +124,11 @@ class DocPageTest(ZulipTestCase):
             # be rendered instead
             self._test('/integrations/', 'native integrations.')
 
+class HelpTest(ZulipTestCase):
+    def test_html_settings_links(self) -> None:
+        result = self.client_get('/help/message-a-stream-by-email')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('<a target="_blank" href="../../#streams">streams page</a>', str(result.content))
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
