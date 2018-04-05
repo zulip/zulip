@@ -1736,7 +1736,7 @@ class GetOldMessagesTest(ZulipTestCase):
         self.make_stream('England')
 
         # Send a few messages that Hamlet won't have UserMessage rows for.
-        self.send_stream_message(cordelia.email, 'England')
+        unsub_message_id = self.send_stream_message(cordelia.email, 'England')
         self.send_personal_message(cordelia.email, othello.email)
 
         self.subscribe(hamlet, 'England')
@@ -1747,13 +1747,13 @@ class GetOldMessagesTest(ZulipTestCase):
         set_topic_mutes(hamlet, muted_topics)
 
         # send a muted message
-        self.send_stream_message(cordelia.email, 'England', topic_name='muted')
+        muted_message_id = self.send_stream_message(cordelia.email, 'England', topic_name='muted')
 
         # finally send Hamlet a "normal" message
         first_message_id = self.send_stream_message(cordelia.email, 'England')
 
         # send a few more messages
-        self.send_stream_message(cordelia.email, 'England')
+        extra_message_id = self.send_stream_message(cordelia.email, 'England')
         self.send_personal_message(cordelia.email, hamlet.email)
 
         sa_conn = get_sqlalchemy_connection()
@@ -1766,6 +1766,30 @@ class GetOldMessagesTest(ZulipTestCase):
             narrow=[],
         )
         self.assertEqual(anchor, first_message_id)
+
+        # With the same data setup, we now want to test that a reasonable
+        # search still gets the first message sent to Hamlet (before he
+        # subscribed) and other recent messages to the stream.
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=10,
+            num_after=10,
+            narrow='[["stream", "England"]]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = ujson.loads(payload.content)
+        self.assertEqual(result['anchor'], first_message_id)
+        self.assertEqual(result['found_newest'], True)
+        self.assertEqual(result['found_oldest'], True)
+
+        messages = result['messages']
+        self.assertEqual(
+            {msg['id'] for msg in messages},
+            {unsub_message_id, muted_message_id, first_message_id, extra_message_id}
+        )
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -1947,7 +1971,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
+        self.assertIn('AND zerver_message.id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
                       queries[0]['sql'])
 
     def test_exclude_muting_conditions(self) -> None:

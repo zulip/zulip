@@ -692,7 +692,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
     include_history = ok_to_include_history(narrow, user_profile)
 
-    if include_history and not use_first_unread_anchor:
+    if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!
         #
@@ -701,7 +701,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         # See `ok_to_include_history` for details.
         need_message = True
         need_user_message = False
-    elif narrow is None and not use_first_unread_anchor:
+    elif narrow is None:
         # We need to limit to messages the user has received, but we don't actually
         # need any fields from Message
         need_message = False
