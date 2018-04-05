@@ -4,7 +4,7 @@
 from django.db import connection
 from django.test import override_settings
 from sqlalchemy.sql import (
-    and_, select, column, table,
+    and_, select, column, table, literal, join, literal_column,
 )
 from sqlalchemy.sql import compiler
 
@@ -38,6 +38,7 @@ from zerver.views.messages import (
     get_messages_backend, ok_to_include_history,
     NarrowBuilder, BadNarrowOperator, Query,
     post_process_limited_query,
+    find_first_unread_anchor,
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
@@ -1726,6 +1727,56 @@ class GetOldMessagesTest(ZulipTestCase):
                 self.assertEqual(sql, expected)
                 return
         raise AssertionError("get_messages query not found")
+
+    def test_find_first_unread_anchor(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+
+        self.make_stream('England')
+
+        # Send a few messages that Hamlet won't have UserMessage rows for.
+        self.send_stream_message(cordelia.email, 'England')
+        self.send_personal_message(cordelia.email, othello.email)
+
+        self.subscribe(hamlet, 'England')
+
+        muted_topics = [
+            ['England', 'muted'],
+        ]
+        set_topic_mutes(hamlet, muted_topics)
+
+        # send a muted message
+        self.send_stream_message(cordelia.email, 'England', topic_name='muted')
+
+        # finally send Hamlet a "normal" message
+        first_message_id = self.send_stream_message(cordelia.email, 'England')
+
+        # send a few more messages
+        self.send_stream_message(cordelia.email, 'England')
+        self.send_personal_message(cordelia.email, hamlet.email)
+
+        sa_conn = get_sqlalchemy_connection()
+
+        user_profile = hamlet
+
+        # TODO: Make it so that find_first_unread_anchor() does not require
+        #       the incoming query to join to zerver_usermessage.
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       join(table("zerver_usermessage"), table("zerver_message"),
+                            literal_column("zerver_usermessage.message_id") ==
+                            literal_column("zerver_message.id")))
+        inner_msg_id_col = column("message_id")
+
+        anchor = find_first_unread_anchor(
+            sa_conn=sa_conn,
+            inner_msg_id_col=inner_msg_id_col,
+            user_profile=user_profile,
+            narrow=[],
+            query=query,
+        )
+        self.assertEqual(anchor, first_message_id)
 
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
