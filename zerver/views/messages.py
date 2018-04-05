@@ -557,6 +557,33 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
+def get_base_query_for_search(user_profile: UserProfile,
+                              need_message: bool,
+                              need_user_message: bool) -> Tuple[Query, ColumnElement]:
+    if need_message and need_user_message:
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       join(table("zerver_usermessage"), table("zerver_message"),
+                            literal_column("zerver_usermessage.message_id") ==
+                            literal_column("zerver_message.id")))
+        inner_msg_id_col = column("message_id")
+        return (query, inner_msg_id_col)
+
+    if need_user_message:
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       table("zerver_usermessage"))
+        inner_msg_id_col = column("message_id")
+        return (query, inner_msg_id_col)
+
+    else:
+        assert(need_message)
+        query = select([column("id").label("message_id")],
+                       None,
+                       table("zerver_message"))
+        inner_msg_id_col = literal_column("zerver_message.id")
+        return (query, inner_msg_id_col)
+
 def add_narrow_conditions(user_profile: UserProfile,
                           inner_msg_id_col: ColumnElement,
                           query: Query,
@@ -595,10 +622,32 @@ def add_narrow_conditions(user_profile: UserProfile,
     return (query, is_search)
 
 def find_first_unread_anchor(sa_conn: Any,
-                             inner_msg_id_col: ColumnElement,
                              user_profile: UserProfile,
-                             narrow: List[Dict[str, Any]],
-                             query: Query) -> int:
+                             narrow: List[Dict[str, Any]]) -> int:
+    # We always need UserMessage in our query, because it has the unread
+    # flag for the user.
+    need_user_message = True
+
+    # TODO:
+    # We err on the side of putting Message in our query, but there are
+    # probably situations that we don't need it.  We may eventually try
+    # to make add_narrow_conditions() and similar functions help us make
+    # possible optimizations.
+    need_message = True
+
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
+
     condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
 
     # We exclude messages on muted topics when finding the first unread
@@ -643,30 +692,29 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
     include_history = ok_to_include_history(narrow, user_profile)
 
-    if include_history and not use_first_unread_anchor:
+    if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!
         #
         # This is OK only because we've made sure this is a narrow that
         # will cause us to limit the query appropriately later.
         # See `ok_to_include_history` for details.
-        query = select([column("id").label("message_id")], None, table("zerver_message"))
-        inner_msg_id_col = literal_column("zerver_message.id")
-    elif narrow is None and not use_first_unread_anchor:
-        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       table("zerver_usermessage"))
-        inner_msg_id_col = column("message_id")
+        need_message = True
+        need_user_message = False
+    elif narrow is None:
+        # We need to limit to messages the user has received, but we don't actually
+        # need any fields from Message
+        need_message = False
+        need_user_message = True
     else:
-        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
-        # TODO: Don't do this join if we're not doing a search
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       join(table("zerver_usermessage"), table("zerver_message"),
-                            literal_column("zerver_usermessage.message_id") ==
-                            literal_column("zerver_message.id")))
-        inner_msg_id_col = column("message_id")
+        need_message = True
+        need_user_message = True
+
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
 
     query, is_search = add_narrow_conditions(
         user_profile=user_profile,
@@ -690,10 +738,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
     if use_first_unread_anchor:
         anchor = find_first_unread_anchor(
             sa_conn,
-            inner_msg_id_col,
             user_profile,
             narrow,
-            query
         )
 
     anchored_to_left = (anchor == 0)
