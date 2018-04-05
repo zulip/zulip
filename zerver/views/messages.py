@@ -629,9 +629,11 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     sa_conn = get_sqlalchemy_connection()
 
-    anchored_to_right = False  # till we know better
-
-    if use_first_unread_anchor:
+    def find_first_unread_anchor(sa_conn: Any,
+                                 inner_msg_id_col: ColumnElement,
+                                 user_profile: UserProfile,
+                                 narrow: List[Dict[str, Any]],
+                                 query: Query) -> int:
         condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
 
         # We exclude messages on muted topics when finding the first unread
@@ -660,17 +662,26 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
         if len(first_unread_result) > 0:
             anchor = first_unread_result[0][0]
         else:
-            # Set values that will be used to short circuit the after_query
-            # altogether and avoid needless conditions in the before_query.
-            anchored_to_right = True
-            num_after = None
-
-            # We only use LARGER_THAN_MAX_MESSAGE_ID for an edge case hack
-            # where num_before and num_after are 0, and it produces a query
-            # that returns zero results.
             anchor = LARGER_THAN_MAX_MESSAGE_ID
 
+        return anchor
+
+    if use_first_unread_anchor:
+        anchor = find_first_unread_anchor(
+            sa_conn,
+            inner_msg_id_col,
+            user_profile,
+            narrow,
+            query
+        )
+
     anchored_to_left = (anchor == 0)
+
+    # Set values that will be used to short circuit the after_query
+    # altogether and avoid needless conditions in the before_query.
+    anchored_to_right = (anchor == LARGER_THAN_MAX_MESSAGE_ID)
+    if anchored_to_right:
+        num_after = None
 
     query = limit_query_to_range(
         query=query,
