@@ -60,7 +60,9 @@ exports.append_person = function (opts) {
         user_id: person.user_id,
         email: person.email,
     });
-    pill_widget.clear_text();
+    if (pill_widget.clear_text !== undefined) {
+        pill_widget.clear_text();
+    }
 };
 
 exports.get_user_ids = function (pill_widget) {
