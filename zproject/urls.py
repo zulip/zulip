@@ -560,7 +560,7 @@ urls += [
     url(r'^api/v1/dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key,
         name='zerver.views.auth.api_dev_fetch_api_key'),
     # This is for fetching the emails of the admins and the users.
-    url(r'^api/v1/dev_get_emails$', zerver.views.auth.api_dev_get_accounts,
+    url(r'^api/v1/dev_list_users$', zerver.views.auth.api_dev_get_accounts,
         name='zerver.views.auth.api_dev_get_accounts'),
 
     # Used to present the GOOGLE_CLIENT_ID to mobile apps

@@ -1345,14 +1345,14 @@ class DevFetchAPIKeyTest(ZulipTestCase):
 
 class DevGetEmailsTest(ZulipTestCase):
     def test_success(self) -> None:
-        result = self.client_get("/api/v1/dev_get_emails")
+        result = self.client_get("/api/v1/dev_list_users")
         self.assert_json_success(result)
         self.assert_in_response("direct_admins", result)
         self.assert_in_response("direct_users", result)
 
     def test_dev_auth_disabled(self) -> None:
         with mock.patch('zerver.views.auth.dev_auth_enabled', return_value=False):
-            result = self.client_get("/api/v1/dev_get_emails")
+            result = self.client_get("/api/v1/dev_list_users")
             self.assert_json_error_contains(result, "Dev environment not enabled.", 400)
 
 class FetchAuthBackends(ZulipTestCase):
