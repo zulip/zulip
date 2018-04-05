@@ -48,10 +48,6 @@
     background: hsla(0, 0%, 0%, 0.07);
 }
 
-.pill-container.notmem .pill .exit {
-    display: none;
-}
-
 .pill-container .input {
     display: inline-block;
     padding: 2px 4px;
