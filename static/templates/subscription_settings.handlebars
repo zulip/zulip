@@ -96,14 +96,12 @@
                     </li>
                 </ul>
             </div>
-            {{#if email_address}}
-            <div class="stream-email-box">
+            <div class="stream-email-box" {{#unless email_address}}style="display: none;"{{/unless}}>
                 <div class="sub_settings_title">{{t "Email address" }} <i class="icon-vector-question-sign stream-email-hint"></i></div>
                 <div class="stream-email">
                     <span class="email-address">{{email_address}}</span>
                 </div>
             </div>
-            {{/if}}
         </div>
         <div class="subscription-members-setting">
             {{partial "subscription_members"}}

@@ -192,6 +192,9 @@ zrequire('marked', 'third/marked/lib/marked');
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
+    var sub_email = "Rome:214125235@zulipdev.com:9991";
+    stream_data.update_stream_email_address(sub, sub_email);
+    assert.equal(sub.email_address, sub_email);
 
     // verify that adding an already-added subscriber is a noop
     stream_data.add_subscriber('Rome', brutus.user_id);
