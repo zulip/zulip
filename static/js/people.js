@@ -496,6 +496,13 @@ function gravatar_url_for_email(email) {
     return small_avatar_url;
 }
 
+exports.small_avatar_url_for_person = function (person) {
+    if (person.avatar_url) {
+        return exports.format_small_avatar_url(person.avatar_url);
+    }
+    return gravatar_url_for_email(person.email);
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
@@ -519,9 +526,8 @@ exports.small_avatar_url = function (message) {
 
     // The first time we encounter a sender in a message, we may
     // not have person.avatar_url set, but if we do, then use that.
-    if (person) {
-        url = person.avatar_url;
-        email = person.email;
+    if (person && person.avatar_url) {
+        return exports.small_avatar_url_for_person(person);
     }
 
     // Try to get info from the message if we didn't have a `person` object
