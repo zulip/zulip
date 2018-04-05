@@ -167,7 +167,7 @@ Welcome to the Zulip development environment!  Popular commands:
 * tools/lint - Run the linter (quick and catches many problmes)
 * tools/test-* - Run tests (use --help to learn about options)
 
-Read https://zulip.readthedocs.io/en/latest/testing.html to learn
+Read https://zulip.readthedocs.io/en/latest/testing/testing.html to learn
 how to run individual test suites so that you can get a fast debug cycle.
 
 EndOfMessage'
