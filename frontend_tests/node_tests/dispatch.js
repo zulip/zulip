@@ -360,6 +360,7 @@ var event_fixtures = {
                 name: 'devel',
                 stream_id: 42,
                 subscribers: ['alice@example.com', 'bob@example.com'],
+                email_address: 'devel+0138515295f4@zulipdev.com:9991',
                 // etc.
             },
         ],
@@ -801,15 +802,21 @@ with_overrides(function (override) {
     });
 
     var event = event_fixtures.subscription__add;
-    global.with_stub(function (stub) {
-        override('stream_data.get_sub_by_id', function (stream_id) {
-            return {stream_id: stream_id};
+    global.with_stub(function (subscription_stub) {
+        global.with_stub(function (stream_email_stub) {
+            override('stream_data.get_sub_by_id', function (stream_id) {
+                return {stream_id: stream_id};
+            });
+            override('stream_events.mark_subscribed', subscription_stub.f);
+            override('stream_data.update_stream_email_address', stream_email_stub.f);
+            dispatch(event);
+            var args = subscription_stub.get_args('sub', 'subscribers');
+            assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
+            assert_same(args.subscribers, event.subscriptions[0].subscribers);
+            args = stream_email_stub.get_args('sub', 'email_address');
+            assert_same(args.email_address, event.subscriptions[0].email_address);
+            assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
         });
-        override('stream_events.mark_subscribed', stub.f);
-        dispatch(event);
-        var args = stub.get_args('sub', 'subscribers');
-        assert_same(args.sub.stream_id, event.subscriptions[0].stream_id);
-        assert_same(args.subscribers, event.subscriptions[0].subscribers);
     });
 
     event = event_fixtures.subscription__peer_add;

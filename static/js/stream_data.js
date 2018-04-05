@@ -174,6 +174,10 @@ exports.update_subscribers_count = function (sub) {
     sub.subscriber_count = count;
 };
 
+exports.update_stream_email_address = function (sub, email) {
+    sub.email_address = email;
+};
+
 exports.get_subscriber_count = function (stream_name) {
     var sub = exports.get_sub_by_name(stream_name);
     if (sub === undefined) {
