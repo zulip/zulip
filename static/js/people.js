@@ -512,9 +512,7 @@ exports.small_avatar_url = function (message) {
     // We actually request these at s=50, so that we look better
     // on retina displays.
 
-    var url = "";
     var person;
-
     if (message.sender_id) {
         // We should always have message.sender_id, except for in the
         // tutorial, where it's ok to fall back to the url in the fake
@@ -531,7 +529,7 @@ exports.small_avatar_url = function (message) {
     // Try to get info from the message if we didn't have a `person` object
     // or if the avatar was missing. We do this verbosely to avoid false
     // positives on line coverage (we don't do branch checking).
-    if (!url && message.avatar_url) {
+    if (message.avatar_url) {
         return exports.format_small_avatar_url(message.avatar_url);
     }
 
@@ -545,15 +543,7 @@ exports.small_avatar_url = function (message) {
         email = message.sender_email;
     }
 
-    if (!url) {
-        return gravatar_url_for_email(email);
-    }
-
-    if (url) {
-        url = exports.format_small_avatar_url(url);
-    }
-
-    return url;
+    return gravatar_url_for_email(email);
 };
 
 exports.is_valid_email_for_compose = function (email) {
