@@ -121,17 +121,12 @@ def pretty_print_html(html, num_spaces=4):
                                              info['extra_indent'] -
                                              info['extra_indent_prev'])
                     elif (start_line + info['line_span'] - 1 == end_line and
-                            (info['line_span'] > 2 or
-                                (info['line_span'] == 2 and
-                                    token.kind in
-                                    ('html_singleton_end',
-                                     'handlebars_singleton_end')))):
+                            info['line_span'] > 1):
                         offsets[end_line] = (1 + info['extra_indent'] +
                                              (info['depth'] + 1) * num_spaces) - adjustment
-                        if token.kind in ('html_singleton_end', 'handlebars_singleton_end'):
-                            # We would like singleton tags to have 2 space
-                            # indentation in case they span over multiple lines.
-                            offsets[end_line] -= 2
+                        # We would like singleton tags and tags which spread over
+                        # multiple lines to have 2 space indentation.
+                        offsets[end_line] -= 2
                     elif token.line != info['line']:
                         offsets[end_line] = info['offset']
                 if token.tag != 'pre' and token.tag != 'script':
@@ -148,9 +143,9 @@ def pretty_print_html(html, num_spaces=4):
                             extra_indent = info['extra_indent']
                             adjustment = len(line)-len(line.lstrip()) + 1
                             offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
-                            if token.kind in ('html_singleton_end', 'handlebars_singleton_end'):
-                                # We would like singleton tags to have 2 space
-                                # indentation in case they span over multiple lines.
+                            if line_num <= start_line + info['line_span'] - 1:
+                                # We would like singleton tags and tags which spread over
+                                # multiple lines to have 2 space indentation.
                                 offset -= 2
                             offsets[line_num] = offset
                         elif (token.kind in ('handlebars_end', 'django_end') and
