@@ -557,6 +557,43 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
+def find_first_unread_anchor(sa_conn: Any,
+                             inner_msg_id_col: ColumnElement,
+                             user_profile: UserProfile,
+                             narrow: List[Dict[str, Any]],
+                             query: Query) -> int:
+    condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
+
+    # We exclude messages on muted topics when finding the first unread
+    # message in this narrow
+    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+    if muting_conditions:
+        condition = and_(condition, *muting_conditions)
+
+    # The mobile app uses narrow=[] and use_first_unread_anchor=True to
+    # determine what messages to show when you first load the app.
+    # Unfortunately, this means that if you have a years-old unread
+    # message, the mobile app could get stuck in the past.
+    #
+    # To fix this, we enforce that the "first unread anchor" must be on or
+    # after the user's current pointer location. Since the pointer
+    # location refers to the latest the user has read in the home view,
+    # we'll only apply this logic in the home view (ie, when narrow is
+    # empty).
+    if not narrow:
+        pointer_condition = inner_msg_id_col >= user_profile.pointer
+        condition = and_(condition, pointer_condition)
+
+    first_unread_query = query.where(condition)
+    first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
+    first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
+    if len(first_unread_result) > 0:
+        anchor = first_unread_result[0][0]
+    else:
+        anchor = LARGER_THAN_MAX_MESSAGE_ID
+
+    return anchor
+
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          anchor: int=REQ(converter=int),
@@ -628,43 +665,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             query = builder.add_term(query, search_term)
 
     sa_conn = get_sqlalchemy_connection()
-
-    def find_first_unread_anchor(sa_conn: Any,
-                                 inner_msg_id_col: ColumnElement,
-                                 user_profile: UserProfile,
-                                 narrow: List[Dict[str, Any]],
-                                 query: Query) -> int:
-        condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
-
-        # We exclude messages on muted topics when finding the first unread
-        # message in this narrow
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        if muting_conditions:
-            condition = and_(condition, *muting_conditions)
-
-        # The mobile app uses narrow=[] and use_first_unread_anchor=True to
-        # determine what messages to show when you first load the app.
-        # Unfortunately, this means that if you have a years-old unread
-        # message, the mobile app could get stuck in the past.
-        #
-        # To fix this, we enforce that the "first unread anchor" must be on or
-        # after the user's current pointer location. Since the pointer
-        # location refers to the latest the user has read in the home view,
-        # we'll only apply this logic in the home view (ie, when narrow is
-        # empty).
-        if not narrow:
-            pointer_condition = inner_msg_id_col >= user_profile.pointer
-            condition = and_(condition, pointer_condition)
-
-        first_unread_query = query.where(condition)
-        first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
-        first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
-        if len(first_unread_result) > 0:
-            anchor = first_unread_result[0][0]
-        else:
-            anchor = LARGER_THAN_MAX_MESSAGE_ID
-
-        return anchor
 
     if use_first_unread_anchor:
         anchor = find_first_unread_anchor(
