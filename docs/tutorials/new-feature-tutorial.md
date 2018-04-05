@@ -483,8 +483,9 @@ to be added to the admin page (and its value added to the data sent back
 to server when a realm is updated) and the change event needs to be
 handled on the client.
 
-To add the checkbox to the admin page, modify the relevant template,
-`static/templates/settings/organization-permissions-admin.handlebars`
+To add the checkbox to the admin page, modify the relevant template in
+`static/templates/settings/`, which can be
+`organization-permissions-admin.handlebars` or `organization-settings-admin.handlebars`
 (omitted here since it is relatively straightforward).
 
 Then add the new form control in `static/js/admin.js`.
@@ -507,66 +508,79 @@ function _setup_page() {
 The JavaScript code for organization settings and permissions can be found in
 `static/js/settings_org.js`.
 
-There is a front-end version of `property_types`, which reduces the code
-needed on the front end for a new feature.
+In frontend, we have split the `property_types` into three objects:
 
-Add the new feature to the `property_types` object in `settings_org.js`.
-The key should be the setting name and the value should be an object with
-the following keys:
+- `org_profile`: This contains properties which belong to organization profile
+    section. New features don't usually lie in this section as it mostly contains
+    the bio of the realm.
 
-* type
-* checked_msg (what message the user sees when they enable the setting)
-* unchecked_msg (what message the user sees when they disable the setting)
+- `org_settings`: This contains properties which belong to organization
+    settings section. Settings belonging to this section generally decide what
+    features should be available to a user like deleting a message, message
+    edit history etc. and usually they affect the whole realm including admin
+    (who definitely have access to change them). Our `mandatory_topics`
+    feature is going to lie in this section.
+
+- `org_permissions`: This contains properties which belong to organization
+    permissions section. These properties are related to the user access to
+    the various feature like `bot_creation_policy` which decide who can create bots.
+
+After deciding which section the setting belongs, you've to find the appropriate
+subsection of the new property i.e. under what header your setting will fall
+into. For example in this case of `mandatory_topics` it will lie
+in "Message feed" (`msg_feed`) subsection.
+
+*If you're not sure in which section your feature will lie it is better
+to discuss it in the [community](https://chat.zulip.org/) before implementing it.*
+
+And the property you're adding, you have to also provide `type` i.e. whether it is
+`bool`, `integer` or `text`.
 
 ``` diff
 
 // static/js/settings_org.js
-
-var property_types = {
-    settings: {
+var org_settings = {
+    msg_editing: {
         // ...
     },
-    permissions: { // ...
+    msg_feed: {
+        // ...
 +       mandatory_topics: {
 +           type: 'bool',
-+           checked_msg: i18n.t("Topics are required in messages to streams"),
-+           unchecked_msg: i18n.t("Topics are not required in messages to streams"),
-        },
++       },
     },
 };
+
 ```
 
-Additionally, any code needed to update the UI when the setting is changed
-should be written in a function inside `settings_org.js`.
-For example, when a realm description is updated, that value change should
-occur in other windows where the description field is visible:
+Note that there can be settings like `realm_create_stream_permission` which
+needs some special treatment when they don't match the common pattern like
+most checkboxes. We can't extract the property name and compare the value
+of such input elements with those in `page_params`, so we have to manually
+handle such situations in some functions:
 
-    # static/js/settings_org.js
+- `settings_org.get_property_value`: It processes property name
+    which is not any `page_param` key and returns values which we can use to
+    compare and set the values of corresponding DOM element.
 
-    exports.update_realm_description = function () {
-        if (!meta.loaded) {
-            return;
-        }
-
-        $('#id_realm_description').val(page_params.realm_description);
-    };
-
-
-This ensures the appropriate code will run even if the
-changes are made in another browser window.
-
-In the example of updating a `mandatory_topics` setting, most of the changes
-are on the backend, so no UI updates are required.
+- `settings_org.update_dependent_subsettings`: It handles settings whose
+    value and state depend on other elements like `realm_waiting_period_threshold`
+    is dependent upon `realm_create_stream_permission`.
 
 Finally, update `server_events_dispatch.js` to handle related events coming from
 the server. There is an object, `realm_settings`, in the function
 `dispatch_normal_event`. The keys in this object are setting names and the
 values are the UI updating functions to run when an event has occurred.
 
-If there is no relevant UI change to make, the value should be `noop`
-(this is the case for `mandatory_topics`). However, if you had written
-a function in `settings_org.js` to update UI, that function should
-be the value in the `realm_settings` object.
+If there is no relevant UI change to make other than in settings page itself,
+the value should be `noop` (this is the case for `mandatory_topics` as most of
+the changes are on the backend, so no UI updates are required.). However, if
+you had written a function to update UI after the settings have changed, that
+function should be the value in the `realm_settings` object like
+`settings_emoji.update_custom_emoji_ui` which updates the emojis without the
+need of reloading the page, another example can be
+`settings_bots.update_bot_permissions_ui` which updates various tips in
+settings page and tabs shown in "Your bots" section.
 
 ``` diff
 
@@ -585,9 +599,29 @@ function dispatch_normal_event(event) {
       };
 ```
 
+Checkboxes and other input elements of organization settings automatically
+get synced to other browser windows by `settings_org.sync_realm_settings`.
+
 The rest of the `dispatch_normal_events` function updates the state of the
 application if an update event has occurred on a realm property and runs
 the associated function to update the application's UI, if necessary.
+
+Here are few points you should consider while and after writing tests:
+
+- You should make sure both "Save" and "Discard changes" button are working
+    properly. For discarding changes carefully check if your setting is dependent
+    on another setting then both are properly synchronized. By dependent settings
+    we refer to those settings whose states like hide/show or check/uncheck is
+    dependent upon other settings, e.g. input element for
+    `realm_waiting_period_threshold` is shown only when we have selected custom time
+    limit in `realm_create_stream_permission` dropdown.
+
+- Do some manual testing for the real-time synchronization of input elements
+    across the browsers and just like "Discard changes" button, check whether
+    dependent settings are synchronized properly.
+
+- Each subsection has independent "Save" and "Discard changes" button so
+    changes and saving in one subsection shouldn't affect the others.
 
 ### Front End Tests
 
