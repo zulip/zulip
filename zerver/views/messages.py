@@ -557,6 +557,40 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
+def add_narrow_conditions(user_profile: UserProfile,
+                          inner_msg_id_col: ColumnElement,
+                          query: Query,
+                          narrow: List[Dict[str, Any]]) -> Tuple[Query, bool]:
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    if first_visible_message_id > 0:
+        query = query.where(inner_msg_id_col >= first_visible_message_id)
+
+    is_search = False
+
+    if narrow is None:
+        return (query, is_search)
+
+    # Build the query for the narrow
+    builder = NarrowBuilder(user_profile, inner_msg_id_col)
+    search_term = {}  # type: Dict[str, Any]
+
+    for term in narrow:
+        if term['operator'] == 'search':
+            if not is_search:
+                search_term = term
+                query = query.column(column("subject")).column(column("rendered_content"))
+                is_search = True
+            else:
+                # Join the search operators if there are multiple of them
+                search_term['operand'] += ' ' + term['operand']
+        else:
+            query = builder.add_term(query, term)
+
+    if is_search:
+        query = builder.add_term(query, search_term)
+
+    return (query, is_search)
+
 def find_first_unread_anchor(sa_conn: Any,
                              inner_msg_id_col: ColumnElement,
                              user_profile: UserProfile,
@@ -631,11 +665,12 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                             literal_column("zerver_message.id")))
         inner_msg_id_col = column("message_id")
 
-    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    if first_visible_message_id > 0:
-        query = query.where(inner_msg_id_col >= first_visible_message_id)
-
-    is_search = False
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
 
     if narrow is not None:
         # Add some metadata to our logging data for narrows
@@ -646,23 +681,6 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
             else:
                 verbose_operators.append(term['operator'])
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
-
-        # Build the query for the narrow
-        builder = NarrowBuilder(user_profile, inner_msg_id_col)
-        search_term = {}  # type: Dict[str, Any]
-        for term in narrow:
-            if term['operator'] == 'search':
-                if not is_search:
-                    search_term = term
-                    query = query.column(column("subject")).column(column("rendered_content"))
-                    is_search = True
-                else:
-                    # Join the search operators if there are multiple of them
-                    search_term['operand'] += ' ' + term['operand']
-            else:
-                query = builder.add_term(query, term)
-        if is_search:
-            query = builder.add_term(query, search_term)
 
     sa_conn = get_sqlalchemy_connection()
 
