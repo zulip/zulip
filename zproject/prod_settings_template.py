@@ -219,6 +219,10 @@ FEEDBACK_EMAIL = ZULIP_ADMINISTRATOR
 # "file:///" as a hyperlink (useful if you have e.g. an NFS share).
 ENABLE_FILE_LINKS = False
 
+# This is used to send all hotspots for manual testing in
+# development mode. Always set it False in Production.
+ALWAYS_SEND_ALL_HOTSPOTS = False
+
 # By default, files uploaded by users and user avatars are stored
 # directly on the Zulip server.  If file storage in Amazon S3 is
 # desired, you can configure that as follows:
