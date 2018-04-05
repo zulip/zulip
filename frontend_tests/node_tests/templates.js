@@ -1071,6 +1071,33 @@ function render(template_name, args) {
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
 }());
 
+(function non_editable_user_group() {
+    var args = {
+        user_group: {
+            id: "9",
+            name: "uranohoshi",
+            description: "Students at Uranohoshi Academy",
+        },
+    };
+
+    var html = '';
+    html += '<div id="user-groups">';
+    html += render('non_editable_user_group', args);
+    html += '</div>';
+
+    global.write_handlebars_output('non_editable_user_group', html);
+
+    var group_id = $(html).find('.user-group:first').prop('id');
+    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+
+    assert.equal(group_id, '9');
+    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_name_display, 'uranohoshi');
+    assert.equal(group_description, 'Students at Uranohoshi Academy');
+}());
+
 (function notification() {
     var args = {
         content: "Hello",
