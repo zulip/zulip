@@ -8,8 +8,8 @@ from typing import Optional
 #
 # Developer documentation on the Zulip settings system is available at:
 #   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
-#
-### MANDATORY SETTINGS
+
+## MANDATORY SETTINGS
 #
 # These settings MUST be set in production. In a development environment,
 # sensible default values will be used.
@@ -32,34 +32,31 @@ EXTERNAL_HOST = 'zulip.example.com'
 # 'Zulip Support <support@example.com>'.
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
-# Configure the outgoing Email (aka SMTP) server below. You will need
-# working SMTP to complete the installation process, in addition to
-# sending email address confirmations, missed message notifications,
-# onboarding follow-ups, and other user needs. If you do not have an
-# SMTP server already, we recommend services intended for developers
-# such as Mailgun.  Detailed documentation is available at:
+
+### OUTGOING EMAIL (SMTP) SETTINGS
 #
+# Zulip needs to be able to send email (that is, use SMTP) so it can
+# confirm new users' email addresses and send notifications.
+#
+# If you don't already have an SMTP provider, free ones are available.
+#
+# For more details, including a list of free SMTP providers and
+# advice for troubleshooting, see the Zulip documentation:
 #   https://zulip.readthedocs.io/en/latest/production/email.html
-#
-# To configure SMTP, you will need to complete the following steps:
-#
-# (1) Fill out the outgoing email sending configuration below.
-#
-# (2) Put the SMTP password for EMAIL_HOST_USER in
-# /etc/zulip/zulip-secrets.conf as e.g.:
-#
-#    email_password = abcd1234
-#
-# You can quickly test your sending email configuration using:
-#   su zulip
-#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
-#
-# A common problem is hosting provider firewalls that block outgoing SMTP traffic.
-#
+
+# EMAIL_HOST and EMAIL_HOST_USER are generally required.
 #EMAIL_HOST = 'smtp.example.com'
 #EMAIL_HOST_USER = ''
-#EMAIL_PORT = 587
+
+# Passwords and secrets are not stored in this file.  The password
+# for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
+# In that file, set `email_password`.  For example:
+#   email_password = abcd1234
+
+# EMAIL_USE_TLS and EMAIL_PORT are required for most SMTP providers.
 #EMAIL_USE_TLS = True
+#EMAIL_PORT = 587
+
 
 ## OPTIONAL SETTINGS
 
