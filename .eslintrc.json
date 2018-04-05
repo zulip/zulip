@@ -168,7 +168,7 @@
         "emoji_codes": false,
         "drafts": false,
         "katex": false,
-        "Clipboard": false,
+        "ClipboardJS": false,
         "emoji_picker": false,
         "hotspots": false,
         "compose_ui": false,
