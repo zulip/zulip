@@ -489,6 +489,13 @@ exports.sender_is_bot = function (message) {
     return false;
 };
 
+function gravatar_url_for_email(email) {
+    var hash = md5(email);
+    var avatar_url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
+    var small_avatar_url = exports.format_small_avatar_url(avatar_url);
+    return small_avatar_url;
+}
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
@@ -529,8 +536,7 @@ exports.small_avatar_url = function (message) {
     }
 
     if (!url) {
-        var hash = md5(email);
-        url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
+        return gravatar_url_for_email(email);
     }
 
     if (url) {
