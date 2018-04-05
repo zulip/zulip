@@ -131,7 +131,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     {% endif %}
 
                     <div class="inline-block" id="subdomain_section" {% if root_domain_available and
-                        not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
+                      not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
                         <div class="or"><span>{{ _('OR') }}</span></div>
                         <div class="inline-block relative">
                             <input id="id_team_subdomain"

@@ -18,24 +18,24 @@
                 </span>
                 <span class="new_message_button">
                     <button type="button" class="button small rounded compose_stream_button"
-                        id="left_bar_compose_stream_button_big"
-                        title="{{ _('New topic') }} (c)">
+                      id="left_bar_compose_stream_button_big"
+                      title="{{ _('New topic') }} (c)">
                         <span class="compose_stream_button_label">{{ _('New topic') }}</span>
                     </button>
                 </span>
                 {% if not embedded %}
                 <span class="new_message_button">
                     <button type="button" class="button small rounded compose_private_button"
-                        id="left_bar_compose_private_button_big"
-                        title="{{ _('New private message') }} (x)">
+                      id="left_bar_compose_private_button_big"
+                      title="{{ _('New private message') }} (x)">
                         <span class="compose_private_button_label">{{ _('New private message') }}</span>
                     </button>
                 </span>
                 {% endif %}
                 <span class="new_message_button">
                     <button type="button" class="button small rounded compose_reply_button"
-                        id="left_bar_compose_reply_button_big"
-                        title="{{ _('Reply') }} (r)">
+                      id="left_bar_compose_reply_button_big"
+                      title="{{ _('Reply') }} (r)">
                         <span class="compose_reply_button_label">{{ _('Reply') }}</span>
                     </button>
                 </span>
@@ -86,7 +86,7 @@
                                     <div class="pm_recipient">
                                         <div class="pill-container" data-before="{{ _('You and') }}">
                                             <div class="input" contenteditable="true" id="private_message_recipient" name="recipient"
-                                                 data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                              data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
                                         </div>
                                     </div>
                                 </td>
@@ -94,7 +94,7 @@
                             <tr>
                                 <td class="messagebox" colspan="2">
                                     <textarea class="new_message_textarea" name="content" id='compose-textarea'
-                                              value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                                      value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                                     <div class="scrolling_list" id="preview_message_area" style="display:none;">
                                         <div id="markdown_preview_spinner"></div>
                                         <div id="preview_content"></div>
@@ -103,22 +103,22 @@
                                     <div id="below-compose-content">
                                         <input type="file" id="file_input" class="notvisible pull-left" multiple />
                                         <a class="message-control-button icon-vector-smile"
-                                              id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
+                                          id="emoji_map" href="#" title="{{ _('Add emoji') }}"></a>
                                         <a class="message-control-button icon-vector-font"
-                                           title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
+                                          title="{{ _('Formatting') }}" data-overlay-trigger="markdown-help"></a>
                                         <a class="message-control-button icon-vector-dropbox notdisplayed"
-                                           id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
+                                          id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
                                         <a class="message-control-button icon-vector-paper-clip notdisplayed"
-                                           id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
+                                          id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
                                         {% if jitsi_server_url %}
                                         <a class="message-control-button fa fa-video-camera"
-                                           id="video_link" href="#" title="{{ _('Add video call') }}"></a>
+                                          id="video_link" href="#" title="{{ _('Add video call') }}"></a>
                                         {% endif %}
                                         <a id="undo_markdown_preview"
-                                            class="message-control-button icon-vector-edit"
-                                            style="display:none;" title="{{ _('Write') }}"></a>
+                                          class="message-control-button icon-vector-edit"
+                                          style="display:none;" title="{{ _('Write') }}"></a>
                                         <a id="markdown_preview" class="message-control-button icon-vector-eye-open"
-                                           title="{{ _('Preview') }}"></a>
+                                          title="{{ _('Preview') }}"></a>
                                         <a class="drafts-link" href="#drafts" title="{{ _('Drafts') }} (d)">{{ _('Drafts') }}</a>
                                         <span id="sending-indicator"></span>
                                         <div id="send_controls" class="new-style">
