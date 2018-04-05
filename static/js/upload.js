@@ -24,6 +24,7 @@ exports.options = function (config) {
     var send_status_close;
     var error_msg;
     var upload_bar;
+    var upload_bar_percent;
     var should_hide_upload_status;
     var file_input;
 
@@ -35,6 +36,7 @@ exports.options = function (config) {
         send_status_close = $('.compose-send-status-close');
         error_msg = $('#compose-error-msg');
         upload_bar = 'compose-upload-bar';
+        upload_bar_percent = 'compose-upload-bar-percent';
         file_input = 'file_input';
         break;
     case 'edit':
@@ -44,6 +46,7 @@ exports.options = function (config) {
         send_status_close = send_status.find('.send-status-close');
         error_msg = send_status.find('.error-msg');
         upload_bar = 'message-edit-upload-bar-' + config.row;
+        upload_bar_percent = 'message-edit-upload-bar-percent-' + config.row;
         file_input = 'message_edit_file_input_' + config.row;
         break;
     default:
@@ -71,6 +74,8 @@ exports.options = function (config) {
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
         send_status.append('<div class="progress progress-striped active">' +
                            '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
+                           '<p class="progress-bar-percent" id="' + upload_bar_percent + '">' +
+                           '0%</p>' +
                            '</div>');
         should_hide_upload_status = false;
     };
@@ -83,6 +88,7 @@ exports.options = function (config) {
                 maybe_hide_upload_status();
             }
         });
+        $("#" + upload_bar_percent).text(progress + "%");
     };
 
     var uploadError = function (error_code, server_response, file) {
