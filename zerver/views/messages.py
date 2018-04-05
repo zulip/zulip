@@ -750,7 +750,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 # No coverage for this block since it should be
                 # impossible, and we plan to remove it once we've
                 # debugged the case that makes it happen.
-                raise Exception(str(err), message_id, search_term)
+                raise Exception(str(err), message_id, narrow)
 
     message_list = messages_for_ids(
         message_ids=message_ids,
