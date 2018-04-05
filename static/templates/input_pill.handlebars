@@ -1,6 +1,8 @@
 <div class='pill' data-id='{{ id }}' tabindex=0>
     {{ display_value }}
+    {{#unless cannot_edit}}
     <div class='exit'>
         &times;
     </div>
+    {{/unless}}
 </div>
