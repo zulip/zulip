@@ -1,14 +1,13 @@
-{!create-stream.md!}
+Get Zulip notifications for your Opbeat events!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Go to your organization settings page (`https://opbeat.com/<organization_name>/settings`)
+1. {!create-bot-construct-url-indented.md!}
 
-![](/static/images/integrations/opbeat/002.png)
+1. Go to your Opbeat **Organization Settings**.
 
-Copy your webhook URL to the **Hook target** under HTTP hook.
-
-![](/static/images/integrations/opbeat/003.png)
+1. Under **HTTP Hook (Experimental)**, set **Hook target**
+   to the URL constructed above, and click **Save settings**.
 
 {!congrats.md!}
 
