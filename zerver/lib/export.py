@@ -1632,6 +1632,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_message_foreign_keys(import_dir)
 
     fix_datetime_fields(data, 'zerver_userprofile')
+    update_model_ids(UserProfile, data, 'zerver_userprofile', 'user_profile')
     re_map_foreign_keys(data, 'zerver_userprofile', 'realm', related_table="realm")
     re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userprofile', 'default_sending_stream',
@@ -1646,8 +1647,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
-
-    update_model_ids(UserProfile, data, 'zerver_userprofile', 'user_profile')
 
     user_profiles = [UserProfile(**item) for item in data['zerver_userprofile']]
     for user_profile in user_profiles:
