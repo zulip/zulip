@@ -9,6 +9,7 @@ from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 
 from zerver.lib.export import do_import_realm, do_import_system_bots
+from zerver.forms import check_subdomain_available
 from zerver.models import Client, DefaultStream, Huddle, \
     Message, Realm, RealmDomain, RealmFilter, Recipient, \
     Stream, Subscription, UserMessage, UserProfile
@@ -34,6 +35,9 @@ import a database dump from one or more JSON files."""
                             action="store_true",
                             help='Import into an existing nonempty database.')
 
+        parser.add_argument('subdomain', metavar='<subdomain>',
+                            type=str, help="Subdomain")
+
         parser.add_argument('export_files', nargs='+',
                             metavar='<export file>',
                             help="list of JSON exports to import")
@@ -57,6 +61,12 @@ import a database dump from one or more JSON files."""
                             Client, Message, UserMessage, Huddle, DefaultStream, RealmDomain,
                             RealmFilter]
 
+        subdomain = options['subdomain']
+        if subdomain is None:
+            print("Enter subdomain!")
+            exit(1)
+        check_subdomain_available(subdomain)
+
         if options["destroy_rebuild_database"]:
             print("Rebuilding the database!")
             db_name = settings.DATABASES['default']['NAME']
@@ -71,7 +81,7 @@ import a database dump from one or more JSON files."""
                 exit(1)
 
             print("Processing dump: %s ..." % (path,))
-            realm = do_import_realm(path)
+            realm = do_import_realm(path, subdomain)
             print("Resetting auto-increment sequence for Postgres......")
             subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
                                   "scripts/setup/postgres-reset-sequences")])

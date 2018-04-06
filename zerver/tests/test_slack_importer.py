@@ -494,12 +494,12 @@ class SlackImporter(ZulipTestCase):
                                          "slack_fixtures", "user_data.json")
         mock_get_slack_api_data.side_effect = [ujson.load(open(user_data_fixture))['members'], {}]
 
-        do_convert_data(test_slack_zip_file, test_realm_subdomain, output_dir, token)
+        do_convert_data(test_slack_zip_file, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))
         self.assertTrue(os.path.exists(output_dir + '/realm.json'))
 
         # test import of the converted slack data into an existing database
-        do_import_realm(output_dir)
+        do_import_realm(output_dir, test_realm_subdomain)
         self.assertTrue(get_realm(test_realm_subdomain).name, test_realm_subdomain)
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
