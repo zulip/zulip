@@ -78,7 +78,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     password_required = prereg_user.password_required
     is_realm_admin = prereg_user.invited_as_admin or realm_creation
 
-    validators.validate_email(email)
+    try:
+        validators.validate_email(email)
+    except ValidationError:
+        return render(request, "zerver/invalid_email.html", context={"invalid_email": True})
+
     if realm_creation:
         # For creating a new realm, there is no existing realm or domain
         realm = None

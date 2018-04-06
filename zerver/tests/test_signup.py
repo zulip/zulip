@@ -835,6 +835,21 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please sign up using a real email address.", result)
 
+    def test_invalid_email_check_after_confirming_email(self) -> None:
+        self.login(self.example_email("hamlet"))
+        email = "test@zulip.com"
+
+        self.assert_json_success(self.invite(email, ["Denmark"]))
+
+        obj = Confirmation.objects.get(confirmation_key=find_key_by_email(email))
+        prereg_user = obj.content_object
+        prereg_user.email = "invalid.email"
+        prereg_user.save()
+
+        result = self.submit_reg_form_for_user(email, "password")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("The email address you are trying to sign up with is not valid", result)
+
     def test_invite_with_non_ascii_streams(self) -> None:
         """
         Inviting someone to streams with non-ASCII characters succeeds.
