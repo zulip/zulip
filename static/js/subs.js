@@ -220,6 +220,7 @@ exports.update_settings_for_subscribed = function (sub) {
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     $('.add_subscribers_container').show();
 
+    exports.add_sub_to_table(sub);
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub, true);
 
@@ -227,8 +228,6 @@ exports.update_settings_for_subscribed = function (sub) {
         settings_button.text(i18n.t("Unsubscribe"));
 
         stream_edit.add_me_to_member_list(sub);
-    } else {
-        exports.add_sub_to_table(sub);
     }
 
     var active_stream = exports.active_stream();
