@@ -1,9 +1,25 @@
 # Outgoing email
 
-This page documents everything you need to know about setting up
-outgoing email in a Zulip production environment.  It's pretty simple
-if you already have an outgoing SMTP provider; just start reading from
-[the configuration section](#configuration).
+Zulip needs to be able to send email so it can confirm new users'
+email addresses and send notifications.
+
+## How to configure
+
+1. Identify an outgoing email (SMTP) account where you can have Zulip
+   send mail.  If you don't already have one you want to use, see
+   [Email services](#email-services) below.
+
+2. Fill out the section of `/etc/zulip/settings.py` headed "Outgoing
+   email (SMTP) settings".  This includes the hostname and typically
+   the port to reach your SMTP provider, and the username to log into
+   it as.
+
+3. Put the password for the SMTP user account in
+   `/etc/zulip/zulip-secrets.conf` by setting `email_password`. For
+   example: `email_password = abcd1234`.
+
+
+## Email services
 
 ### Free outgoing email services
 
@@ -63,19 +79,7 @@ initial user registration without an SMTP provider.
 Remember to delete this configuration and restart the server if you
 later setup a real SMTP provider!
 
-### Configuration
-
-To configure outgoing SMTP, you will need to complete the following steps:
-
-1. Fill out the outgoing email sending configuration block in
-`/etc/zulip/settings.py`, including `EMAIL_HOST`, and
-`EMAIL_HOST_USER`.  You may also need to set `EMAIL_PORT` if your
-provider doesn't use the standard SMTP submission port (587).
-
-2. Put the SMTP password for `EMAIL_HOST_USER` in
-`/etc/zulip/zulip-secrets.conf` as `email_password = yourPassword`.
-
-#### Testing and troubleshooting
+## Troubleshooting
 
 You can quickly test your outgoing email configuration using:
 
@@ -101,7 +105,7 @@ restart your Zulip server using
 `/home/zulip/deployments/current/scripts/restart-server` so that the running
 server is using the latest configuration.
 
-#### Advanced troubleshooting
+### Advanced troubleshooting
 
 Here are a few final notes on what to look at when debugging why you
 aren't receiving emails from Zulip:
