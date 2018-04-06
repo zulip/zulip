@@ -1,34 +1,26 @@
 See your Splunk Search alerts in Zulip!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-Next, in the Splunk search app, execute the search you'd like to be
-alerted on and then save it as an alert:
+    If you do not specify a topic, the name of the search is used
+    (truncated to fit if needed).
 
-![](/static/images/integrations/splunk/splunk_save_as_alert.png)
+1. In the Splunk search app, execute the search you'd like to be
+   notified about. Click on **Save As** in the top-right corner,
+   and select **Alert**.
 
-Name and configure your search in the **Settings** and **Trigger Conditions**
-sections of the **Save As Alert** dialog box.
+1. Configure the **Settings** and **Trigger Conditions** for your search
+   as appropriate. Under **Trigger Actions**, click **Add Actions**,
+   and select **Webhook**. Set **URL** to the URL constructed above,
+   and click **Save**.
 
-In the **Trigger Actions** section, click **Add Actions** and select
-**Webhook** to add a webhook action. Put the Zulip Splunk webhook URL
-we created earlier.
-
-If you do not specify a stream in the URL, your messages will use
-the default stream `splunk`. If you do not specify a topic,
-the name of the search is used (truncated to fit if needed.)
-
-When you are done, it should look like this:
-
-![](/static/images/integrations/splunk/splunk_configure_url.png)
-
-Click **Save** to save the alert. You can create as many searches with
-alert actions as you like, with whatever stream and topic you choose.
-Update your webhook URL as appropriate for each one, and make sure the
-stream exists.
+!!! tip ""
+    You can create as many search alerts as you like, with whatever
+    stream and topic you choose. Just update your webhook URL as
+    appropriate for each one, and make sure the stream exists.
 
 {!congrats.md!}
 
-![](/static/images/integrations/splunk/splunk_message.png)
+![](/static/images/integrations/splunk/001.png)
