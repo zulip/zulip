@@ -213,7 +213,7 @@ function show_subscription_settings(sub_row) {
             // Case-insensitive.
             var item_matches = (item.email.toLowerCase().indexOf(query) !== -1) ||
                                (item.full_name.toLowerCase().indexOf(query) !== -1);
-            var is_subscribed = stream_data.user_is_subscribed(sub.name, item.email);
+            var is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
             return item_matches && !is_subscribed;
         },
         sorter: function (matches) {

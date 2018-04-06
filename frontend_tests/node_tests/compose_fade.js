@@ -26,11 +26,11 @@ var bob = {
     full_name: 'Bob',
 };
 
-people.add(me);
+people.add_in_realm(me);
 people.initialize_current_user(me.user_id);
 
-people.add(alice);
-people.add(bob);
+people.add_in_realm(alice);
+people.add_in_realm(bob);
 
 
 (function test_set_focused_recipient() {
@@ -65,6 +65,7 @@ people.add(bob);
     assert(compose_fade.would_receive_message('me@example.com'));
     assert(compose_fade.would_receive_message('alice@example.com'));
     assert(!compose_fade.would_receive_message('bob@example.com'));
+    assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), undefined);
 
     var good_msg = {
         type: 'stream',

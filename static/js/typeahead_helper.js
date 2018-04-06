@@ -186,8 +186,8 @@ function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current
 
     // give preference to subscribed users first
     if (current_stream !== undefined) {
-        var a_is_sub = stream_data.user_is_subscribed(current_stream, person_a.email);
-        var b_is_sub = stream_data.user_is_subscribed(current_stream, person_b.email);
+        var a_is_sub = stream_data.is_user_subscribed(current_stream, person_a.user_id);
+        var b_is_sub = stream_data.is_user_subscribed(current_stream, person_b.user_id);
 
         if (a_is_sub && !b_is_sub) {
             return -1;
