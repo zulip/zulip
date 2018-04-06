@@ -182,3 +182,46 @@ function pill_html(value, data_id) {
         items.red,
     ]);
 }());
+(function test_non_editable_pills() {
+    var error;
+
+    var config = {};
+
+    blueslip.error = function (err) {
+        error = err;
+    };
+
+    input_pill.create_non_editable_pills(config);
+    assert.equal(error, 'Pill needs container.');
+
+    var container = $.create('non-editable-container');
+    config.container = container;
+
+    var widget = input_pill.create_non_editable_pills(config);
+
+    var item = {
+        language: 'English',
+    };
+    var opts = {
+        id: 'some_id5',
+        display_value: 'Hamlet',
+        cannot_edit: true,
+    };
+
+    var expected_html = templates.render('input_pill', opts);
+
+    var appended = false;
+    container.append = function (elem) {
+        appended = true;
+        assert.equal(elem.html(), expected_html);
+    };
+
+    widget.appendValidatedData(item);
+    assert.equal(error, 'no display_value returned');
+
+    item.display_value = 'Hamlet';
+    widget.appendValidatedData(item);
+    assert(appended);
+
+    assert.deepEqual(widget.items(), [item]);
+}());
