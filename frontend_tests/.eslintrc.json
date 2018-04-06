@@ -14,6 +14,7 @@
     },
     "rules": {
         "no-sync": 0,
+        "indent": 0,
         "prefer-const": "error"
     }
 }

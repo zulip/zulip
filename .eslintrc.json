@@ -208,6 +208,15 @@
         "eqeqeq": 2,
         "func-style": [ "off", "expression" ],
         "guard-for-in": 2,
+        "indent": ["error", 4, {
+            "ArrayExpression": "first",
+            "outerIIFEBody": 0,
+            "ObjectExpression": "first",
+            "SwitchCase": 0,
+            "CallExpression": {"arguments": "first"},
+            "FunctionExpression": {"parameters": "first"},
+            "FunctionDeclaration": {"parameters": "first"}
+        }],
         "keyword-spacing": [ "error",
             {
                 "before": true,
