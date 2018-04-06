@@ -5,6 +5,15 @@
 
     <p>{{ _('Hi there! Thank you for your interest in Zulip.') }}</p>
 
+    {% if invalid_email %}
+    <p>
+        {% trans %}
+        The email address you are trying to sign up with is not valid.
+        Please sign up using a valid email address.
+        {% endtrans %}
+    </p>
+    {% endif %}
+
     {% if closed_domain %}
     <p>
         {% trans %}
