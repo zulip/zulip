@@ -633,14 +633,13 @@ function remove_diacritics(s) {
         return s;
     }
 
-    return s
-            .replace(/[áàãâä]/g,"a")
-            .replace(/[éèëê]/g,"e")
-            .replace(/[íìïî]/g,"i")
-            .replace(/[óòöôõ]/g,"o")
-            .replace(/[úùüû]/g, "u")
-            .replace(/[ç]/g, "c")
-            .replace(/[ñ]/g, "n");
+    return s.replace(/[áàãâä]/g,"a")
+        .replace(/[éèëê]/g,"e")
+        .replace(/[íìïî]/g,"i")
+        .replace(/[óòöôõ]/g,"o")
+        .replace(/[úùüû]/g, "u")
+        .replace(/[ç]/g, "c")
+        .replace(/[ñ]/g, "n");
 }
 
 exports.person_matches_query = function (user, query) {
@@ -670,27 +669,27 @@ exports.person_matches_query = function (user, query) {
 };
 
 exports.filter_people_by_search_terms = function (users, search_terms) {
-        var filtered_users = new Dict();
+    var filtered_users = new Dict();
 
-        // Loop through users and populate filtered_users only
-        // if they include search_terms
-        _.each(users, function (user) {
-            var person = exports.get_by_email(user.email);
-            // Get person object (and ignore errors)
-            if (!person || !person.full_name) {
-                return;
-            }
+    // Loop through users and populate filtered_users only
+    // if they include search_terms
+    _.each(users, function (user) {
+        var person = exports.get_by_email(user.email);
+        // Get person object (and ignore errors)
+        if (!person || !person.full_name) {
+            return;
+        }
 
-            // Return user emails that include search terms
-            var match = _.any(search_terms, function (search_term) {
-                return exports.person_matches_query(user, search_term);
-            });
-
-            if (match) {
-                filtered_users.set(person.user_id, true);
-            }
+        // Return user emails that include search terms
+        var match = _.any(search_terms, function (search_term) {
+            return exports.person_matches_query(user, search_term);
         });
-        return filtered_users;
+
+        if (match) {
+            filtered_users.set(person.user_id, true);
+        }
+    });
+    return filtered_users;
 };
 
 exports.get_by_name = function (name) {

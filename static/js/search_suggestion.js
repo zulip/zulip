@@ -468,45 +468,45 @@ function get_sent_by_me_suggestions(last, operators) {
 }
 
 function get_containing_suggestions(last) {
-        if (!(last.operator === 'search' || last.operator === 'has')) {
-            return [];
-        }
+    if (!(last.operator === 'search' || last.operator === 'has')) {
+        return [];
+    }
 
-        var choices = ['link', 'image', 'attachment'];
-        choices = _.filter(choices, function (choice) {
-            return phrase_match(choice, last.operand);
-        });
+    var choices = ['link', 'image', 'attachment'];
+    choices = _.filter(choices, function (choice) {
+        return phrase_match(choice, last.operand);
+    });
 
-        return _.map(choices, function (choice) {
-            var op = [{operator: 'has', operand: choice, negated: last.negated}];
-            var search_string = Filter.unparse(op);
-            var description = Filter.describe(op);
-            return {description: description, search_string: search_string};
-        });
+    return _.map(choices, function (choice) {
+        var op = [{operator: 'has', operand: choice, negated: last.negated}];
+        var search_string = Filter.unparse(op);
+        var description = Filter.describe(op);
+        return {description: description, search_string: search_string};
+    });
 }
 
 function get_operator_suggestions(last) {
-        if (!(last.operator === 'search')) {
-            return [];
-        }
+    if (!(last.operator === 'search')) {
+        return [];
+    }
 
-        var negated = false;
-        if (last.operand.indexOf("-") === 0) {
-            negated = true;
-            last.operand = last.operand.slice(1);
-        }
+    var negated = false;
+    if (last.operand.indexOf("-") === 0) {
+        negated = true;
+        last.operand = last.operand.slice(1);
+    }
 
-        var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from', 'group-pm-with'];
-        choices = _.filter(choices, function (choice) {
-            return phrase_match(choice, last.operand);
-        });
+    var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from', 'group-pm-with'];
+    choices = _.filter(choices, function (choice) {
+        return phrase_match(choice, last.operand);
+    });
 
-        return _.map(choices, function (choice) {
-            var op = [{operator: choice, operand: '', negated: negated}];
-            var search_string = Filter.unparse(op);
-            var description = Filter.describe(op);
-            return {description: description, search_string: search_string};
-        });
+    return _.map(choices, function (choice) {
+        var op = [{operator: choice, operand: '', negated: negated}];
+        var search_string = Filter.unparse(op);
+        var description = Filter.describe(op);
+        return {description: description, search_string: search_string};
+    });
 }
 
 function attach_suggestions(result, base, suggestions) {
