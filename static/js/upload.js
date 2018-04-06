@@ -81,6 +81,7 @@ exports.options = function (config) {
     };
 
     var progressUpdated = function (i, file, progress) {
+        $("#" + upload_bar).stop();
         $("#" + upload_bar).animate({
             width: progress + "%",
         }, 500, "linear", function () {
