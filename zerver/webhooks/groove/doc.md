@@ -3,20 +3,11 @@ happening on your Groove dashboard.
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-3. Next, on your Groove dashboard, go to the **Settings** tab
-
-    ![](/static/images/integrations/groove/001.png)
-
-4. From there, go to the **API** menu under **Company**.
-
-    ![](/static/images/integrations/groove/002.png)
-
-5. On the **Webhooks** option, open the **Add Webhook**
-   dropdown and select the event that you wish to be notified of.
-
-    ![](/static/images/integrations/groove/003.png)
+1. On your Groove dashboard, click on **Settings**. Under **Company**,
+   click on **API**. Open the **Add Webhook** dropdown and select the
+   event that you would like to be notified about.
 
     Currently, Zulip supports these events:
 
@@ -26,12 +17,10 @@ happening on your Groove dashboard.
     * ―`customer_replied`: notify if a customer replied to a ticket.
     * ―`note_added`: notify if an agent left a note on a ticket.
 
-6. Copy your webhook URL to the space below the event.
-
-    ![](/static/images/integrations/groove/004.png)
-
-7. Click **Add Webhook**.
+1. Provide the URL constructed above in the URL field below the event,
+   and click on **Add Webhook**. You will have to provide the URL constructed
+   above for each supported event you'd like to be notified about.
 
 {!congrats.md!}
 
-![](/static/images/integrations/groove/005.png)
+![](/static/images/integrations/groove/001.png)
