@@ -13,7 +13,9 @@ from typing import Optional
 # Remember to restart the server after making changes here!
 #   su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
-## MANDATORY SETTINGS
+
+################################
+# Mandatory settings.
 #
 # These settings MUST be set in production. In a development environment,
 # sensible default values will be used.
@@ -37,7 +39,8 @@ EXTERNAL_HOST = 'zulip.example.com'
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
 
-### OUTGOING EMAIL (SMTP) SETTINGS
+################
+# Outgoing email (SMTP) settings.
 #
 # Zulip needs to be able to send email (that is, use SMTP) so it can
 # confirm new users' email addresses and send notifications.
@@ -62,7 +65,8 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 #EMAIL_PORT = 587
 
 
-## OPTIONAL SETTINGS
+################################
+# Optional settings.
 
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
@@ -90,8 +94,10 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # Note that these should just be hostnames, without port numbers.
 #ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
-### AUTHENTICATION SETTINGS
-#
+
+################
+# Authentication settings.
+
 # Enable at least one of the following authentication backends.
 # See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
 # for documentation on our authentication backends.
@@ -106,6 +112,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
+
 
 # To set up Google authentication, you'll need to do the following:
 #
@@ -126,6 +133,7 @@ AUTHENTICATION_BACKENDS = (
 # Use the client ID as `GOOGLE_OAUTH2_CLIENT_ID` here, and put the
 # client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
 #GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
+
 
 # To set up GitHub authentication, you'll need to do the following:
 #
@@ -156,6 +164,8 @@ AUTHENTICATION_BACKENDS = (
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None  # type: Optional[str]
 
+
+################
 
 # Support for mobile push notifications.  Setting controls whether
 # push notifications will be forwarded through a Zulip push
@@ -273,7 +283,9 @@ ENABLE_GRAVATAR = True
 # Similarly if you want to set a Privacy Policy.
 #PRIVACY_POLICY = '/etc/zulip/privacy.md'
 
-### TWITTER INTEGRATION
+
+################
+# Twitter integration.
 
 # Zulip supports showing inline Tweet previews when a tweet is linked
 # to in a message.  To support this, Zulip must have access to the
@@ -287,8 +299,10 @@ ENABLE_GRAVATAR = True
 # 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
 #    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
 
-### EMAIL GATEWAY INTEGRATION
 
+################
+# Email gateway integration.
+#
 # The Email gateway integration supports sending messages into Zulip
 # by sending an email.  This is useful for receiving notifications
 # from third-party services that only send outgoing notifications via
@@ -341,7 +355,10 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
-### LDAP integration configuration
+
+################
+# LDAP integration configuration.
+#
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
 #
@@ -418,6 +435,9 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
 }
+
+
+################
 
 # The default CAMO_URI of '/external_content/' is served by the camo
 # setup in the default Voyager nginx configuration.  Setting CAMO_URI
