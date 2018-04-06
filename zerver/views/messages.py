@@ -628,11 +628,11 @@ def find_first_unread_anchor(sa_conn: Any,
     # flag for the user.
     need_user_message = True
 
-    # TODO:
-    # We err on the side of putting Message in our query, but there are
-    # probably situations that we don't need it.  We may eventually try
-    # to make add_narrow_conditions() and similar functions help us make
-    # possible optimizations.
+    # Because we will need to call exclude_muting_conditions, unless
+    # the user hasn't muted anything, we will need to include Message
+    # in our query.  It may be worth eventually adding an optimization
+    # for the case of a user who hasn't muted anything to avoid the
+    # join in that case, but it's low priority.
     need_message = True
 
     query, inner_msg_id_col = get_base_query_for_search(
