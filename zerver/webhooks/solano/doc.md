@@ -1,17 +1,21 @@
-{!create-stream.md!}
+Get Zulip notifications for your Solano CI builds!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Next, follow [these instructions][1] for **Outgoing Web Hooks** to
-configure a webhook for your Solano Labs Organization and choose the
-repositories that should trigger a webhook a notification.
+1. {!create-bot-construct-url-indented.md!}
+
+1. Go to your Solano CI **Organizations** page, and click on
+   **Organization Settings**. Click on **Web Hooks**.
+
+1. Under **Add a Web Hook**, provide the URL constructed above.
+   Set **Repo** to the repository you'd like to be notified about.
+   Leave the **Username** and **Password** fields blank, and click
+   **Add Web Hook**.
+
+!!! tip ""
+    For more information, see [Solano Labs' Web Hook documentation][1].
 
 [1]: http://docs.solanolabs.com/Setup/webhooks/#build-notification-web-hooks-outgoing
-
-Enter the webhook URL we created earlier into the URL field:
-
-Leave the **Username** and **Password** fields blank and click
-**Add Web Hook**.
 
 {!congrats.md!}
 
