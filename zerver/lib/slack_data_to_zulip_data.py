@@ -745,9 +745,9 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
             zerver_usermessage.append(usermessage)
     return usermessage_id
 
-def do_convert_data(slack_zip_file: str, realm_subdomain: str, output_dir: str, token: str) -> None:
-    check_subdomain_available(realm_subdomain)
-
+def do_convert_data(slack_zip_file: str, output_dir: str, token: str) -> None:
+    # Subdomain is set by the user while running the import command
+    realm_subdomain = ""
     domain_name = settings.EXTERNAL_HOST
 
     slack_data_dir = slack_zip_file.replace('.zip', '')

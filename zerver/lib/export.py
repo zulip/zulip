@@ -1568,7 +1568,7 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
 # Because the Python object => JSON conversion process is not fully
 # faithful, we have to use a set of fixers (e.g. on DateTime objects
 # and Foreign Keys) to do the import correctly.
-def do_import_realm(import_dir: Path) -> Realm:
+def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     logging.info("Importing realm dump %s" % (import_dir,))
     if not os.path.exists(import_dir):
         raise Exception("Missing import directory!")
@@ -1585,6 +1585,9 @@ def do_import_realm(import_dir: Path) -> Realm:
     re_map_foreign_keys(data, 'zerver_realm', 'notifications_stream', related_table="stream")
 
     fix_datetime_fields(data, 'zerver_realm')
+    # Fix realm subdomain information
+    data['zerver_realm'][0]['string_id'] = subdomain
+    data['zerver_realm'][0]['name'] = subdomain
     fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
     update_model_ids(Realm, data, 'zerver_realm', 'realm')
 
