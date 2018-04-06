@@ -1,15 +1,21 @@
 from typing import Optional
 
-# Zulip server-level Settings (to be set by the system administrator).
+################################################################
+# Zulip Server settings.
 #
-# Remember to restart the server after changes here!  Documentation at:
-#
+# This file controls settings that affect the whole Zulip server.
+# See our documentation at:
 #   https://zulip.readthedocs.io/en/latest/production/settings.html
 #
-# Developer documentation on the Zulip settings system is available at:
+# For developer documentation on the Zulip settings system, see:
 #   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
 #
-### MANDATORY SETTINGS
+# Remember to restart the server after making changes here!
+#   su zulip -c /home/zulip/deployments/current/scripts/restart-server
+
+
+################################
+# Mandatory settings.
 #
 # These settings MUST be set in production. In a development environment,
 # sensible default values will be used.
@@ -32,36 +38,35 @@ EXTERNAL_HOST = 'zulip.example.com'
 # 'Zulip Support <support@example.com>'.
 ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 
-# Configure the outgoing Email (aka SMTP) server below. You will need
-# working SMTP to complete the installation process, in addition to
-# sending email address confirmations, missed message notifications,
-# onboarding follow-ups, and other user needs. If you do not have an
-# SMTP server already, we recommend services intended for developers
-# such as Mailgun.  Detailed documentation is available at:
+
+################
+# Outgoing email (SMTP) settings.
 #
+# Zulip needs to be able to send email (that is, use SMTP) so it can
+# confirm new users' email addresses and send notifications.
+#
+# If you don't already have an SMTP provider, free ones are available.
+#
+# For more details, including a list of free SMTP providers and
+# advice for troubleshooting, see the Zulip documentation:
 #   https://zulip.readthedocs.io/en/latest/production/email.html
-#
-# To configure SMTP, you will need to complete the following steps:
-#
-# (1) Fill out the outgoing email sending configuration below.
-#
-# (2) Put the SMTP password for EMAIL_HOST_USER in
-# /etc/zulip/zulip-secrets.conf as e.g.:
-#
-#    email_password = abcd1234
-#
-# You can quickly test your sending email configuration using:
-#   su zulip
-#   /home/zulip/deployments/current/manage.py send_test_email username@example.com
-#
-# A common problem is hosting provider firewalls that block outgoing SMTP traffic.
-#
+
+# EMAIL_HOST and EMAIL_HOST_USER are generally required.
 #EMAIL_HOST = 'smtp.example.com'
 #EMAIL_HOST_USER = ''
-#EMAIL_PORT = 587
-#EMAIL_USE_TLS = True
 
-## OPTIONAL SETTINGS
+# Passwords and secrets are not stored in this file.  The password
+# for user EMAIL_HOST_USER goes in `/etc/zulip/zulip-secrets.conf`.
+# In that file, set `email_password`.  For example:
+#   email_password = abcd1234
+
+# EMAIL_USE_TLS and EMAIL_PORT are required for most SMTP providers.
+#EMAIL_USE_TLS = True
+#EMAIL_PORT = 587
+
+
+################################
+# Optional settings.
 
 # The noreply address to be used as the sender for certain generated
 # emails.  Messages sent to this address could contain sensitive user
@@ -89,8 +94,10 @@ ZULIP_ADMINISTRATOR = 'zulip-admin@example.com'
 # Note that these should just be hostnames, without port numbers.
 #ALLOWED_HOSTS = ['zulip-alias.example.com', '192.0.2.1']
 
-### AUTHENTICATION SETTINGS
-#
+
+################
+# Authentication settings.
+
 # Enable at least one of the following authentication backends.
 # See https://zulip.readthedocs.io/en/latest/production/authentication-methods.html
 # for documentation on our authentication backends.
@@ -106,6 +113,9 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
+########
+# Google OAuth.
+#
 # To set up Google authentication, you'll need to do the following:
 #
 # (1) Visit https://console.developers.google.com/ , navigate to
@@ -126,6 +136,9 @@ AUTHENTICATION_BACKENDS = (
 # client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
 #GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
 
+########
+# GitHub OAuth.
+#
 # To set up GitHub authentication, you'll need to do the following:
 #
 # (1) Register an OAuth2 application with GitHub at one of:
@@ -148,13 +161,18 @@ AUTHENTICATION_BACKENDS = (
 #SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
 #SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
 
-
+########
+# SSO via REMOTE_USER.
+#
 # If you are using the ZulipRemoteUserBackend authentication backend,
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
 # SSO_APPEND_DOMAIN = "example.com")
 SSO_APPEND_DOMAIN = None  # type: Optional[str]
 
+
+################
+# Miscellaneous settings.
 
 # Support for mobile push notifications.  Setting controls whether
 # push notifications will be forwarded through a Zulip push
@@ -272,7 +290,9 @@ ENABLE_GRAVATAR = True
 # Similarly if you want to set a Privacy Policy.
 #PRIVACY_POLICY = '/etc/zulip/privacy.md'
 
-### TWITTER INTEGRATION
+
+################
+# Twitter integration.
 
 # Zulip supports showing inline Tweet previews when a tweet is linked
 # to in a message.  To support this, Zulip must have access to the
@@ -286,8 +306,10 @@ ENABLE_GRAVATAR = True
 # 4. Fill in the values for twitter_consumer_key, twitter_consumer_secret, twitter_access_token_key,
 #    and twitter_access_token_secret in /etc/zulip/zulip-secrets.conf.
 
-### EMAIL GATEWAY INTEGRATION
 
+################
+# Email gateway integration.
+#
 # The Email gateway integration supports sending messages into Zulip
 # by sending an email.  This is useful for receiving notifications
 # from third-party services that only send outgoing notifications via
@@ -340,7 +362,10 @@ EMAIL_GATEWAY_IMAP_PORT = 993
 # must be delivered to this folder
 EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
-### LDAP integration configuration
+
+################
+# LDAP integration.
+#
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
 #
@@ -417,6 +442,10 @@ AUTH_LDAP_USER_ATTR_MAP = {
     # full_name is required; common values include "cn" or "displayName".
     "full_name": "cn",
 }
+
+
+################
+# Miscellaneous settings.
 
 # The default CAMO_URI of '/external_content/' is served by the camo
 # setup in the default Voyager nginx configuration.  Setting CAMO_URI
