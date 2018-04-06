@@ -28,7 +28,7 @@ from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 # stubs
 ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
-AddedChannelsT = Dict[str, int]
+AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedRecipientsT = Dict[str, int]
 
 def rm_tree(path: str) -> None:
@@ -47,7 +47,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     1. realm, Converted Realm data
     2. added_users, which is a dictionary to map from slack user id to zulip user id
     3. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
-    4. added_channels, which is a dictionary to map from channel name to zulip stream_id
+    4. added_channels, which is a dictionary to map from channel name to channel id, zulip stream_id
     5. avatars, which is list to map avatars to zulip avatar records.json
     6. emoji_url_map, which is maps emoji name to its slack url
     """
@@ -301,7 +301,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     Returns:
     1. zerver_defaultstream, which is a list of the default streams
     2. zerver_stream, while is a list of all streams
-    3. added_channels, which is a dictionary to map from channel name to zulip stream_id
+    3. added_channels, which is a dictionary to map from channel name to channel id, zulip stream_id
     4. zerver_subscription, which is a list of the subscriptions
     5. zerver_recipient, which is a list of the recipients
     6. added_recipient, which is a dictionary to map from channel name to zulip recipient_id
@@ -352,7 +352,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             defaultstream_id += 1
 
         zerver_stream.append(stream)
-        added_channels[stream['name']] = stream_id
+        added_channels[stream['name']] = (channel['id'], stream_id)
 
         # construct the recipient object and append it to zerver_recipient
         # type 1: private
@@ -492,7 +492,9 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
         reactions = channel_message_to_zerver_message(realm_id, users, added_users,
                                                       added_recipient, all_messages,
                                                       zerver_realmemoji,
-                                                      realm['zerver_subscription'], domain_name)
+                                                      realm['zerver_subscription'],
+                                                      added_channels,
+                                                      domain_name)
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
@@ -522,6 +524,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       all_messages: List[ZerverFieldsT],
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
+                                      added_channels: AddedChannelsT,
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
@@ -556,6 +559,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         has_attachment = has_image = False
         content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
                                                                           users,
+                                                                          added_channels,
                                                                           added_users)
         rendered_content = None
 
