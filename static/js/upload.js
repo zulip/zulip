@@ -59,9 +59,11 @@ exports.options = function (config) {
         // `progressUpdated` or `uploadFinished` is called first, the status
         // is hidden only after the animation is finished.
         if (should_hide_upload_status) {
-            send_button.prop("disabled", false);
-            send_status.removeClass("alert-info").hide();
-            $("#" + upload_bar).parent().remove();
+            setTimeout(function () {
+                send_button.prop("disabled", false);
+                send_status.removeClass("alert-info").hide();
+                $("#" + upload_bar).parent().remove();
+            }, 200);
         } else {
             should_hide_upload_status = true;
         }

@@ -152,6 +152,10 @@ var upload_opts = upload.options({ mode: "compose" });
             }
         }
 
+        global.patch_builtin('setTimeout', function (func) {
+            func();
+        });
+
         setup();
         upload_opts.uploadFinished(i, {}, response);
         upload_opts.progressUpdated(1, '', 100);
