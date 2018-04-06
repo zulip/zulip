@@ -1,13 +1,17 @@
 from typing import Optional
 
-# Zulip server-level Settings (to be set by the system administrator).
+################################################################
+# Zulip Server settings.
 #
-# Remember to restart the server after changes here!  Documentation at:
-#
+# This file controls settings that affect the whole Zulip server.
+# See our documentation at:
 #   https://zulip.readthedocs.io/en/latest/production/settings.html
 #
-# Developer documentation on the Zulip settings system is available at:
+# For developer documentation on the Zulip settings system, see:
 #   https://zulip.readthedocs.io/en/latest/subsystems/settings.html
+#
+# Remember to restart the server after making changes here!
+#   su zulip -c /home/zulip/deployments/current/scripts/restart-server
 
 ## MANDATORY SETTINGS
 #
