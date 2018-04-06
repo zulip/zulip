@@ -113,7 +113,9 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
 )
 
-
+########
+# Google OAuth.
+#
 # To set up Google authentication, you'll need to do the following:
 #
 # (1) Visit https://console.developers.google.com/ , navigate to
@@ -134,7 +136,9 @@ AUTHENTICATION_BACKENDS = (
 # client secret in zulip-secrets.conf as `google_oauth2_client_secret`.
 #GOOGLE_OAUTH2_CLIENT_ID = <your client ID from Google>
 
-
+########
+# GitHub OAuth.
+#
 # To set up GitHub authentication, you'll need to do the following:
 #
 # (1) Register an OAuth2 application with GitHub at one of:
@@ -157,7 +161,9 @@ AUTHENTICATION_BACKENDS = (
 #SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
 #SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
 
-
+########
+# SSO via REMOTE_USER.
+#
 # If you are using the ZulipRemoteUserBackend authentication backend,
 # set this to your domain (e.g. if REMOTE_USER is "username" and the
 # corresponding email address is "username@example.com", set
@@ -166,6 +172,7 @@ SSO_APPEND_DOMAIN = None  # type: Optional[str]
 
 
 ################
+# Miscellaneous settings.
 
 # Support for mobile push notifications.  Setting controls whether
 # push notifications will be forwarded through a Zulip push
@@ -357,7 +364,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 
 
 ################
-# LDAP integration configuration.
+# LDAP integration.
 #
 # Zulip supports retrieving information about users via LDAP, and
 # optionally using LDAP as an authentication mechanism.
@@ -438,6 +445,7 @@ AUTH_LDAP_USER_ATTR_MAP = {
 
 
 ################
+# Miscellaneous settings.
 
 # The default CAMO_URI of '/external_content/' is served by the camo
 # setup in the default Voyager nginx configuration.  Setting CAMO_URI
