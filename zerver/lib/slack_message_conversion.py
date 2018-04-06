@@ -73,8 +73,12 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
     text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
 
     # Map Slack's mention all: '<!everyone>' to '@**all** '
+    # Map Slack's mention all: '<!channel>' to '@**all** '
+    # Map Slack's mention all: '<!here>' to '@**all** '
     # No regex for this as it can be present anywhere in the sentence
     text = text.replace('<!everyone>', '@**all**')
+    text = text.replace('<!channel>', '@**all**')
+    text = text.replace('<!here>', '@**all**')
 
     tokens = text.split(' ')
     for iterator in range(len(tokens)):
