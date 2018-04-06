@@ -403,6 +403,20 @@ if __name__ == "__main__":
             print("But also check out the include/exclude lists in tools/test-backend.")
             print("If this line intentionally is not tested, you can use a # nocoverage comment.")
             print("To run this check locally, use `test-backend --coverage`.")
+        ok = True
+        for path in not_yet_fully_covered:
+            try:
+                missing_lines = cov.analysis2(path)[3]
+                if len(missing_lines) == 0:
+                    print("ERROR: %s has complete backend test coverage but is still in not_yet_fully_covered." % (path,))
+                    ok = False
+            except coverage.misc.NoSource:
+                continue
+        if not ok:
+            print()
+            print("There are one or more fully covered files that are still in not_yet_fully_covered.")
+            print("Remove the file(s) from not_yet_fully_covered in `tools/test-backend`.")
+            failures = True
     if options.profile:
         prof.disable()
         prof.dump_stats("/tmp/profile.data")
