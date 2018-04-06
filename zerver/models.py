@@ -155,7 +155,7 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
-    description = models.TextField(null=True)  # type: Optional[Text]
+    description = models.TextField(default=u"")  # type: Text
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
