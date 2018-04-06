@@ -26,8 +26,8 @@ commands, replacing `<token>` with the value generated above:
 
 ```
 cd ~/zulip
-./manage.py convert_slack_data slack_data.zip '' --token <token> --output converted_slack_data
-./manage.py import --destroy-rebuild-database converted_slack_data
+./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
+./manage.py import --destroy-rebuild-database '' converted_slack_data
 ```
 
 !!! warn ""
@@ -42,8 +42,8 @@ Zulip organization.
 
 ```
 cd ~/zulip
-./manage.py convert_slack_data slack_data.zip <subdomain> --token <token> --output converted_slack_data
-./manage.py import --import-into-nonempty converted_slack_data
+./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
+./manage.py import --import-into-nonempty <subdomain> converted_slack_data
 ```
 
 ## Caveats
