@@ -231,8 +231,7 @@ exports.update_settings_for_subscribed = function (sub) {
         exports.add_sub_to_table(sub);
     }
 
-    var active_stream = exports.active_stream();
-    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
+    if (stream_edit.is_sub_settings_active(sub)) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
@@ -251,9 +250,8 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     stream_edit.hide_sub_settings(sub);
 
-    var active_stream = exports.active_stream();
     stream_data.update_stream_email_address(sub, "");
-    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
+    if (stream_edit.is_sub_settings_active(sub)) {
         stream_edit.rerender_subscribers_list(sub);
 
         // If user unsubscribed from private stream then user cannot subscribe to
