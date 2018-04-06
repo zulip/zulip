@@ -166,6 +166,22 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     }
 };
 
+exports.rerender_subscriptions_settings = function (sub) {
+    if (typeof sub === "undefined") {
+        blueslip.error('Undefined sub passed to function rerender_subscriptions_settings');
+        return;
+    }
+
+    if (overlays.streams_open()) {
+        // Render subscriptions templates only if subscription tab is open
+        exports.rerender_subscribers_count(sub);
+        if (stream_edit.is_sub_settings_active(sub)) {
+            // Render subscriptions only if stream settings is open
+            stream_edit.rerender_subscribers_list(sub);
+        }
+    }
+};
+
 function add_email_hint_handler() {
     // Add a popover explaining stream e-mail addresses on hover.
 
@@ -245,15 +261,11 @@ exports.update_settings_for_unsubscribed = function (sub) {
 
     button.toggleClass("checked");
     settings_button.text(i18n.t("Subscribe"));
-
-    exports.rerender_subscribers_count(sub);
-
     stream_edit.hide_sub_settings(sub);
+    exports.rerender_subscriptions_settings(sub);
 
     stream_data.update_stream_email_address(sub, "");
     if (stream_edit.is_sub_settings_active(sub)) {
-        stream_edit.rerender_subscribers_list(sub);
-
         // If user unsubscribed from private stream then user cannot subscribe to
         // stream without invitation and cannot add subscribers to stream.
         if (!sub.should_display_subscription_button) {
