@@ -14,6 +14,14 @@ function settings_for_sub(sub) {
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
+exports.is_sub_settings_active = function (sub) {
+    var active_stream = subs.active_stream();
+    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
+        return true;
+    }
+    return false;
+};
+
 function get_email_of_subscribers(subscribers) {
     var emails = [];
     subscribers.each(function (o, i) {
