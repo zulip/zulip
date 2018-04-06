@@ -323,6 +323,46 @@ exports.sync_realm_settings = function (property) {
     }
 };
 
+exports.change_save_button_state = function ($element, state) {
+    var show_hide_element = function (state) {
+        if (state === 'show') {
+          $element.removeClass('hide').addClass('show').animate({ opacity:1 }, 100);
+        } else {
+          $element.animate({opacity:0});
+        }
+    };
+    var $saveBtn = $element.find('.save-button');
+    var $textEl = $saveBtn.find('.icon-button-text');
+    if (state !== "saving") {
+        $saveBtn.removeClass('saving');
+    }
+    if (state === "unsaved") {
+        $textEl.text(i18n.t("Save changes"));
+        $saveBtn.attr("data-status", "unsaved");
+        show_hide_element('show');
+    } else if (state === "saved") {
+        $textEl.text(i18n.t("Save changes"));
+        $saveBtn.attr("data-status", "");
+        show_hide_element('hide');
+    } else if (state === "discarded") {
+        $element.removeClass('saving');
+        show_hide_element('hide');
+    } else if (state === "saving") {
+        $saveBtn.addClass('saving');
+        $textEl.text(i18n.t("Saving"));
+        $saveBtn.attr("data-status", "saving");
+        show_hide_element('show');
+    } else if (state === "failed") {
+        show_hide_element('show');
+        $textEl.text(i18n.t("Save changes"));
+        $saveBtn.attr("data-status", "failed");
+    } else if (state === 'succeeded') {
+        show_hide_element('hide');
+        $textEl.text(i18n.t("Saved"));
+        $saveBtn.attr("data-status", "saved");
+    }
+};
+
 function _set_up() {
     meta.loaded = true;
 
@@ -422,46 +462,38 @@ function _set_up() {
             }
         });
 
-        var change_process_button = subsection.find('.subsection-header .button');
-        change_process_button.first().text(i18n.t("Save"));
-        if (show_change_process_button) {
-            change_process_button.removeClass('hide').addClass('show');
-        } else {
-            change_process_button.removeClass('show').addClass('hide');
-        }
+        var save_btn_controls = subsection.find('.subsection-header .save-button-controls');
+        var button_state = (show_change_process_button) ? "unsaved" : "saved";
+        exports.change_save_button_state(save_btn_controls, button_state);
     });
 
-    $('.organization').on('click', '.subsection-header .subsection-changes-discard button', function (e) {
+    $('.organization').on('click', '.subsection-header .subsection-changes-discard .button', function (e) {
         e.preventDefault();
         e.stopPropagation();
         _.each(get_subsection_property_elements(e.target), discard_property_element_changes);
-        var subsection = $(e.target).closest('.org-subsection-parent');
-        var change_process_buttons = subsection.find('.subsection-header .button');
-        change_process_buttons.removeClass('show').addClass('hide');
+        var save_btn_controls = $(e.target).closest('.save-button-controls');
+        exports.change_save_button_state(save_btn_controls, "discarded");
     });
 
     exports.save_organization_settings = function (data, save_button, success_continuation) {
         var subsection_parent = save_button.closest('.org-subsection-parent');
-        var discard_button = subsection_parent.find('.subsection-changes-discard button');
+        var save_btn_container = subsection_parent.find('.save-button-controls');
         var failed_alert_elem = subsection_parent.prevAll('.admin-realm-failed-change-status:first').expectOne();
-        save_button.text(i18n.t("Saving"));
-        save_button.attr("data-status", "saving");
+        exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url: "/json/realm",
             data: data,
             success: function (response_data) {
-                discard_button.removeClass('show').addClass('hide');
                 failed_alert_elem.hide();
-                save_button.attr("data-status", "saved");
-                save_button.text(i18n.t("Saved"));
-                save_button.removeClass('hide').addClass('show').stop(true).fadeTo(0, 1);
+                setTimeout(function () {
+                  exports.change_save_button_state(save_btn_container, "succeeded");
+                }, 500);
                 if (success_continuation !== undefined) {
                     success_continuation(response_data);
                 }
             },
             error: function (xhr) {
-                save_button.attr("data-status", "failed");
-                save_button.text(i18n.t("Save"));
+                exports.change_save_button_state(save_btn_container, "failed");
                 ui_report.error(i18n.t("Failed"), xhr, failed_alert_elem);
             },
         });
@@ -541,10 +573,10 @@ function _set_up() {
         return opts;
     }
 
-    $(".organization").on("click", ".subsection-header .subsection-changes-save button", function (e) {
+    $(".organization").on("click", ".subsection-header .subsection-changes-save .button", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var save_button = $(e.target);
+        var save_button = $(e.currentTarget);
         var subsection_id = save_button.attr('id').replace("org-submit-", "");
         var subsection = subsection_id.split('-').join('_');
 

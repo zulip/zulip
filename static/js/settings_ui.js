@@ -4,9 +4,9 @@ var exports = {};
 
 exports.display_checkmark = function ($elem) {
     var check_mark = document.createElement("img");
-    check_mark.src = "/static/images/checkbox-green.svg";
+    check_mark.src = "/static/images/icon-checkbox-green.svg";
     $elem.prepend(check_mark);
-    $(check_mark).css("width", "13px");
+    $(check_mark).css("width", "10px");
 };
 
 exports.strings = {};
@@ -29,6 +29,7 @@ exports.initialize = function () {
 // direct calls to `ui_report`.
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
     var spinner = $(status_element).expectOne();
+    spinner.fadeTo(0,1);
     loading.make_indicator(spinner, {text: exports.strings.saving});
     var success_msg;
     var success_continuation;

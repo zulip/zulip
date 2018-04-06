@@ -5,6 +5,7 @@ zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
 zrequire('settings_ui');
+zrequire('settings_ui');
 
 var noop = function () {};
 
@@ -136,12 +137,63 @@ function test_realms_domain_modal(add_realm_domain) {
     error_callback({});
     assert.equal(info.val(), 'translated: Failed');
 }
-
+function createSaveButtons() {
+    var stub_save_button_header = $('.subsection-header');
+    var save_btn_controls = $.create('.save-btn-controls');
+    var stub_save_button = $('#org-submit-msg-editing');
+    var stub_save_button_text = $.create('.icon-button-text');
+    stub_save_button_header.prevAll = function () {
+        return $.create('<stub failed alert status element>');
+    };
+    stub_save_button.closest = function () {
+        return stub_save_button_header;
+    };
+    save_btn_controls.set_find_results(
+        '.save-button', stub_save_button
+    );
+    stub_save_button.set_find_results(
+        '.icon-button-text', stub_save_button_text
+    );
+    stub_save_button_header.set_find_results(
+        '.save-button-controls', save_btn_controls
+    );
+    stub_save_button_header.set_find_results(
+        '.subsection-changes-discard .button', $.create('#org-discard-msg-editing')
+    );
+    var props  = {};
+    props.hidden = false;
+    props.status = "";
+    stub_save_button.attr = function (name, val) {
+        if (name === "data-status") {
+            if (val !== null) {
+                props.status = val;
+                return;
+            }
+            return props.status;
+        } else if (name === "id") {
+            return 'org-submit-msg-editing';
+        }
+    };
+    save_btn_controls.animate = function (obj) {
+        if (obj.opacity === 0) {
+            props.hidden = true;
+        } else {
+            props.hidden = false;
+        }
+    };
+    return {
+        props: props,
+        save_button: stub_save_button,
+        save_button_header: stub_save_button_header,
+        save_button_controls: save_btn_controls,
+        save_button_text: stub_save_button_text,
+    };
+}
 function test_submit_settings_form(submit_form) {
     var ev = {
         preventDefault: noop,
         stopPropagation: noop,
-        target: '#org-submit-msg-editing',
+        currentTarget: '#org-submit-msg-editing',
     };
 
     $('#id_realm_default_language').val('fr');
@@ -155,20 +207,7 @@ function test_submit_settings_form(submit_form) {
         success_callback = req.success;
     };
 
-    var stub_save_button = $('#org-submit-msg-editing');
-    stub_save_button.attr = function () {
-        return 'org-submit-msg-editing';
-    };
-    var stub_save_button_header = $('.subsection-header');
-    stub_save_button_header.prevAll = function () {
-        return $.create('<stub failed alert status element>');
-    };
-    stub_save_button.closest = function () {
-        return stub_save_button_header;
-    };
-    stub_save_button_header.set_find_results(
-        '.subsection-changes-discard button', $.create('#org-discard-msg-editing')
-    );
+    createSaveButtons();
 
     submit_form(ev);
     assert(patched);
@@ -177,7 +216,6 @@ function test_submit_settings_form(submit_form) {
         allow_message_editing: true,
         message_content_edit_limit_seconds: 210,
     };
-
     success_callback(response_data);
 
     var updated_value_from_response = $('#id_realm_message_content_edit_limit_minutes').val();
@@ -193,6 +231,38 @@ function test_submit_settings_form(submit_form) {
     };
     success_callback(response_data);
     assert(updated_value_from_response, 0);
+}
+
+function test_change_save_button_state() {
+    set_global('$', global.make_zjquery());
+    var stubs = createSaveButtons();
+    var $save_btn_controls = stubs.save_button_controls;
+    var $save_btn_text = stubs.save_button_text;
+    var $save_btn = stubs.save_button;
+    var props = stubs.props;
+    settings_org.change_save_button_state($save_btn_controls, "unsaved");
+    assert.equal($save_btn_text.text(), 'translated: Save changes');
+    assert.equal(props.hidden, false);
+    assert.equal(props.status, "unsaved");
+    settings_org.change_save_button_state($save_btn_controls, "saved");
+    assert.equal($save_btn_text.text(), 'translated: Save changes');
+    assert.equal(props.hidden, true);
+    assert.equal(props.status, "");
+    settings_org.change_save_button_state($save_btn_controls, "saving");
+    assert.equal($save_btn_text.text(), 'translated: Saving');
+    assert.equal(props.status, "saving");
+    assert.equal($save_btn.hasClass('saving'), true);
+    settings_org.change_save_button_state($save_btn_controls, "discarded");
+    assert.equal(props.hidden, true);
+    assert.equal($save_btn.hasClass('saving'), false);
+    settings_org.change_save_button_state($save_btn_controls, "succeeded");
+    assert.equal(props.hidden, true);
+    assert.equal(props.status, "saved");
+    assert.equal($save_btn_text.text(), 'translated: Saved');
+    settings_org.change_save_button_state($save_btn_controls, "failed");
+    assert.equal(props.hidden, false);
+    assert.equal(props.status, "failed");
+    assert.equal($save_btn_text.text(), 'translated: Save changes');
 }
 
 function test_upload_realm_icon(upload_realm_icon) {
@@ -400,7 +470,7 @@ function test_extract_property_name() {
 
     var submit_settings_form;
     $('.organization').on = function (action, selector, f) {
-        if (selector === '.subsection-header .subsection-changes-save button') {
+        if (selector === '.subsection-header .subsection-changes-save .button') {
             assert.equal(action, 'click');
             submit_settings_form = f;
         }
@@ -441,8 +511,8 @@ function test_extract_property_name() {
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
-
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
+    test_change_save_button_state();
 }());
 
 (function test_misc() {
