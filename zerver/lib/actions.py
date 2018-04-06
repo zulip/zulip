@@ -1,3 +1,5 @@
+#added ums.append(Subscription.objects.filter(recipient__type=Recipient.STREAM, recipient__type_id=stream_id, active=True))
+# To line 3622 it did not work. Nadira
 from typing import (
     AbstractSet, Any, AnyStr, Callable, Dict, Iterable, List, Mapping, MutableMapping,
     Optional, Sequence, Set, Text, Tuple, TypeVar, Union, cast
