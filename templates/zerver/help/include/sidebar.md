@@ -133,6 +133,7 @@
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
+* [Manage system notifications](/help/manage-system-notifications)
 
 
 ## Server settings
