@@ -45,6 +45,8 @@ exports.rerender_subscribers_list = function (sub) {
 exports.hide_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     $settings.find(".regular_subscription_settings").removeClass('in');
+    // Clear email address widget
+    $settings.find(".email-address").html("");
 };
 
 exports.show_sub_settings = function (sub) {

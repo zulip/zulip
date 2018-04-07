@@ -252,6 +252,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
     stream_edit.hide_sub_settings(sub);
 
     var active_stream = exports.active_stream();
+    stream_data.update_stream_email_address(sub, "");
     if (active_stream !== undefined && active_stream.id === sub.stream_id) {
         stream_edit.rerender_subscribers_list(sub);
 
