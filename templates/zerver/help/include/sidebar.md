@@ -97,6 +97,7 @@
 * [Enable night mode](/help/enable-night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
+* [Change your time zone](/help/change-your-time-zone)
 * [View organization statistics](/help/analytics)
 
 ## Apps
