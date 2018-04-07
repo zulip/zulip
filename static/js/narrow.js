@@ -585,6 +585,8 @@ function pick_empty_narrow_banner() {
 }
 
 exports.show_empty_narrow_message = function () {
+    $("#left_bar_compose_reply_button_big").attr('disabled', 'disabled');
+    $("#left_bar_compose_reply_button_big").attr('title', 'There are no messages to reply to yet.');
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
 };

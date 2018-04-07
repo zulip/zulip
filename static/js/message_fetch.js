@@ -24,6 +24,9 @@ function process_result(data, opts) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.
         narrow.show_empty_narrow_message();
+    } else {
+        $("#left_bar_compose_reply_button_big").attr('disabled', false);
+        $("#left_bar_compose_reply_button_big").attr('title', 'Reply (r)');
     }
 
     _.each(messages, message_store.set_message_booleans);
