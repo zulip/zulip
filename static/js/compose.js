@@ -794,6 +794,12 @@ exports.initialize = function () {
         $("#compose-send-status").hide();
     });
 
+    $("#compose-send-status").on('click', '#compose_not_subscribed_close', function (event) {
+        event.preventDefault();
+
+        $("#compose-send-status").hide();
+    });
+
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
         event.preventDefault();
 
