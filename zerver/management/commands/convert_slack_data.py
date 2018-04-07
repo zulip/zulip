@@ -18,9 +18,6 @@ class Command(BaseCommand):
                             metavar='<slack data zip>',
                             help="Zipped slack data")
 
-        parser.add_argument('realm_name', metavar='<realm_name>',
-                            type=str, help="Realm Name")
-
         parser.add_argument('--token', metavar='<slack_token>',
                             type=str, help='Slack legacy token of the organsation')
 
@@ -36,12 +33,7 @@ class Command(BaseCommand):
         else:
             output_dir = os.path.realpath(output_dir)
 
-        realm_name = options['realm_name']
         token = options['token']
-        if realm_name is None:
-            print("Enter realm name!")
-            exit(1)
-
         if token is None:
             print("Enter slack legacy token!")
             exit(1)
@@ -52,4 +44,4 @@ class Command(BaseCommand):
                 exit(1)
 
             print("Converting Data ...")
-            do_convert_data(path, realm_name, output_dir, token)
+            do_convert_data(path, output_dir, token)

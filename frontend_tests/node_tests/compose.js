@@ -101,8 +101,12 @@ people.add(bob);
 
     sub.subscribed = false;
     stream_data.add_sub('social', sub);
+    templates.render = function (template_name) {
+        assert.equal(template_name, 'compose_not_subscribed');
+        return 'compose_not_subscribed_stub';
+    };
     assert(!compose.validate_stream_message_address_info('social'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>You're not subscribed to the stream <b>social</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
     global.page_params.narrow_stream = false;
     channel.post = function (payload) {
@@ -121,7 +125,7 @@ people.add(bob);
         payload.success(payload.data);
     };
     assert(!compose.validate_stream_message_address_info('Frontend'));
-    assert.equal($('#compose-error-msg').html(), "translated: <p>You're not subscribed to the stream <b>Frontend</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>");
+    assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'Frontend');
@@ -161,6 +165,13 @@ people.add(bob);
 
         $("#zephyr-mirror-error").is = noop;
         $("#private_message_recipient").select(noop);
+
+        set_global('templates', {
+            render: function (fn) {
+                assert.equal(fn, 'input_pill');
+                return '<div>pill-html</div>';
+            },
+        });
     }
 
     function add_content_to_compose_box() {
@@ -497,7 +508,10 @@ people.add(bob);
         compose_state.subject('');
         compose_state.set_message_type('private');
         page_params.user_id = 101;
-        compose_state.recipient('alice@example.com');
+        compose_state.recipient = function () {
+            return 'alice@example.com';
+        };
+
         echo.try_deliver_locally = function () {
             stub_state.local_id_counter += 1;
             return stub_state.local_id_counter;
@@ -682,7 +696,10 @@ people.add(bob);
         $("#markdown_preview").hide();
         $("#compose-textarea").val('foobarfoobar');
         compose_state.set_message_type('private');
-        compose_state.recipient('bob@example.com');
+        compose_state.recipient = function () {
+            return 'bob@example.com';
+        };
+
         var compose_finished_event_checked = false;
         $.stub_selector(document, {
             trigger: function (e) {
@@ -1214,6 +1231,8 @@ function test_raw_file_drop(raw_drop_func) {
     }());
 
     (function test_video_link_compose_clicked() {
+        page_params.jitsi_server_url = 'https://meet.jit.si';
+
         var syntax_to_insert;
 
         compose_ui.insert_syntax_and_focus = function (syntax) {
@@ -1408,7 +1427,10 @@ function test_raw_file_drop(raw_drop_func) {
     global.compose_state.get_message_type = function () {
         return 'private';
     };
-    compose_state.recipient('alice@example.com,    bob@example.com');
+    compose_state.recipient = function () {
+        return 'alice@example.com,    bob@example.com';
+    };
+
     message = compose.create_message_object();
     assert.deepEqual(message.to, ['alice@example.com', 'bob@example.com']);
     assert.equal(message.to_user_ids, '31,32');

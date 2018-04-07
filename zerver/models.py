@@ -31,8 +31,8 @@ from zerver.lib.timestamp import datetime_to_timestamp
 from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
-from zerver.lib.validator import check_int, check_float, check_string, \
-    check_short_string
+from zerver.lib.validator import check_int, check_float, \
+    check_short_string, check_long_string
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator
 
@@ -155,15 +155,17 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
     disallow_disposable_email_addresses = models.BooleanField(default=True)  # type: bool
-    description = models.TextField(null=True)  # type: Optional[Text]
+    description = models.TextField(default=u"")  # type: Text
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
-
     allow_message_deleting = models.BooleanField(default=False)  # type: bool
     allow_message_editing = models.BooleanField(default=True)  # type: bool
     DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS = 600  # if changed, also change in admin.js
     message_content_edit_limit_seconds = models.IntegerField(default=DEFAULT_MESSAGE_CONTENT_EDIT_LIMIT_SECONDS)  # type: int
     message_retention_days = models.IntegerField(null=True)  # type: Optional[int]
     allow_edit_history = models.BooleanField(default=True)  # type: bool
+    DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
+    allow_community_topic_editing = models.BooleanField(default=False)  # type: bool
+    default_twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -185,8 +187,8 @@ class Realm(models.Model):
     authentication_methods = BitField(flags=AUTHENTICATION_FLAGS,
                                       default=2**31 - 1)  # type: BitHandler
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
-    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: int
-    message_visibility_limit = models.IntegerField(null=True)  # type: int
+    _max_invites = models.IntegerField(null=True, db_column='max_invites')  # type: Optional[int]
+    message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
 
@@ -198,6 +200,7 @@ class Realm(models.Model):
         bot_creation_policy=int,
         create_stream_by_admins_only=bool,
         default_language=Text,
+        default_twenty_four_hour_time = bool,
         description=Text,
         disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,
@@ -411,20 +414,17 @@ def get_realm_domains(realm: Realm) -> List[Dict[str, Text]]:
     return list(realm.realmdomain_set.values('domain', 'allow_subdomains'))
 
 class RealmEmoji(models.Model):
-    author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)
+    author = models.ForeignKey('UserProfile', blank=True, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     # Second part of the regex (negative lookbehind) disallows names ending with
     # one of the punctuation characters
     name = models.TextField(validators=[MinLengthValidator(1),
                                         RegexValidator(regex=r'^[0-9a-z.\-_]+(?<![.\-_])$',
                                                        message=_("Invalid characters in emoji name"))])  # type: Text
-    file_name = models.TextField(db_index=True, null=True)  # type: Optional[Text]
+    file_name = models.TextField(db_index=True, null=True, blank=True)  # type: Optional[Text]
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    PATH_ID_TEMPLATE = "{realm_id}/emoji/{emoji_file_name}"
-
-    class Meta:
-        unique_together = ("realm", "name")
+    PATH_ID_TEMPLATE = "{realm_id}/emoji/images/{emoji_file_name}"
 
     def __str__(self) -> Text:
         return "<RealmEmoji(%s): %s %s %s %s>" % (self.realm.string_id,
@@ -449,18 +449,22 @@ def get_realm_emoji_dicts(realm: Realm,
                 'email': realm_emoji.author.email,
                 'full_name': realm_emoji.author.full_name}
         emoji_url = get_emoji_url(realm_emoji.file_name, realm_emoji.realm_id)
-        d[realm_emoji.name] = dict(id=str(realm_emoji.id),
-                                   name=realm_emoji.name,
-                                   source_url=emoji_url,
-                                   deactivated=realm_emoji.deactivated,
-                                   author=author)
+        d[str(realm_emoji.id)] = dict(id=str(realm_emoji.id),
+                                      name=realm_emoji.name,
+                                      source_url=emoji_url,
+                                      deactivated=realm_emoji.deactivated,
+                                      author=author)
     return d
 
 def get_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
     return get_realm_emoji_dicts(realm)
 
 def get_active_realm_emoji_uncached(realm: Realm) -> Dict[str, Dict[str, Any]]:
-    return get_realm_emoji_dicts(realm, only_active_emojis=True)
+    realm_emojis = get_realm_emoji_dicts(realm, only_active_emojis=True)
+    d = {}
+    for emoji_id, emoji_dict in realm_emojis.items():
+        d[emoji_dict['name']] = emoji_dict
+    return d
 
 def flush_realm_emoji(sender: Any, **kwargs: Any) -> None:
     realm = kwargs['instance'].realm
@@ -605,7 +609,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: Text
     tos_version = models.CharField(null=True, max_length=10)  # type: Optional[Text]
-    last_active_message_id = models.IntegerField(null=True)  # type: int
+    last_active_message_id = models.IntegerField(null=True)  # type: Optional[int]
 
     ### Notifications settings. ###
 
@@ -633,7 +637,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     ###
 
-    last_reminder = models.DateTimeField(default=timezone_now, null=True)  # type: Optional[datetime.datetime]
+    last_reminder = models.DateTimeField(default=None, null=True)  # type: Optional[datetime.datetime]
     rate_limits = models.CharField(default=u"", max_length=100)  # type: Text # comma-separated list of range:max pairs
 
     # Default streams
@@ -853,7 +857,7 @@ post_save.connect(flush_user_profile, sender=UserProfile)
 
 class PreregistrationUser(models.Model):
     email = models.EmailField()  # type: Text
-    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # Optional[UserProfile]
+    referred_by = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     streams = models.ManyToManyField('Stream')  # type: Manager
     invited_at = models.DateTimeField(auto_now=True)  # type: datetime.datetime
     realm_creation = models.BooleanField(default=False)
@@ -867,7 +871,7 @@ class PreregistrationUser(models.Model):
 
     realm = models.ForeignKey(Realm, null=True, on_delete=CASCADE)  # type: Optional[Realm]
 
-    invited_as_admin = models.BooleanField(default=False)  # type: Optional[bool]
+    invited_as_admin = models.BooleanField(default=False)  # type: bool
 
 class MultiuseInvite(models.Model):
     referred_by = models.ForeignKey(UserProfile, on_delete=CASCADE)  # Optional[UserProfile]
@@ -949,6 +953,14 @@ class Stream(models.Model):
     def is_public(self) -> bool:
         # All streams are private in Zephyr mirroring realms.
         return not self.invite_only and not self.is_in_zephyr_realm
+
+    def is_history_realm_public(self) -> bool:
+        return self.is_public()
+
+    def is_history_public_to_subscribers(self) -> bool:
+        if settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS:
+            return True
+        return self.is_public()
 
     class Meta:
         unique_together = ("name", "realm")
@@ -1783,9 +1795,9 @@ class AbstractScheduledJob(models.Model):
 class ScheduledEmail(AbstractScheduledJob):
     # Exactly one of user or address should be set. These are used to
     # filter the set of ScheduledEmails.
-    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: UserProfile
+    user = models.ForeignKey(UserProfile, null=True, on_delete=CASCADE)  # type: Optional[UserProfile]
     # Just the address part of a full "name <address>" email address
-    address = models.EmailField(null=True, db_index=True)  # type: Text
+    address = models.EmailField(null=True, db_index=True)  # type: Optional[Text]
 
     # Valid types are below
     WELCOME = 1
@@ -1803,7 +1815,7 @@ class ScheduledMessage(models.Model):
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH)  # type: Text
     content = models.TextField()  # type: Text
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
-    stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Stream
+    stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     scheduled_timestamp = models.DateTimeField(db_index=True)  # type: datetime.datetime
     delivered = models.BooleanField(default=False)  # type: bool
@@ -1864,17 +1876,13 @@ class CustomProfileField(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.CharField(max_length=100)  # type: Text
 
-    INTEGER = 1
-    FLOAT = 2
-    SHORT_TEXT = 3
-    LONG_TEXT = 4
+    SHORT_TEXT = 1
+    LONG_TEXT = 2
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
-        (INTEGER, u'Integer', check_int, int),
-        (FLOAT, u'Float', check_float, float),
         (SHORT_TEXT, u'Short Text', check_short_string, str),
-        (LONG_TEXT, u'Long Text', check_string, str),
+        (LONG_TEXT, u'Long Text', check_long_string, str),
     ]  # type: List[Tuple[int, Text, Validator, Callable[[Any], Any]]]
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
@@ -1963,6 +1971,13 @@ class Service(models.Model):
 
 def get_bot_services(user_profile_id: str) -> List[Service]:
     return list(Service.objects.filter(user_profile__id=user_profile_id))
+
+def get_services_for_bots(bot_profiles: List[UserProfile]) -> Dict[int, List[Service]]:
+    services = Service.objects.filter(user_profile__in=bot_profiles).select_related()
+    services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
+    for service in services:
+        services_by_uid[service.user_profile.id].append(service)
+    return services_by_uid
 
 def get_service_profile(user_profile_id: str, service_name: str) -> Service:
     return Service.objects.get(user_profile__id=user_profile_id, name=service_name)

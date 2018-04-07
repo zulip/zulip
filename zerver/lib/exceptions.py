@@ -2,6 +2,7 @@ from enum import Enum
 from typing import Any, Dict, List, Optional, Text, Type
 
 from django.core.exceptions import PermissionDenied
+from django.utils.translation import ugettext as _
 
 class AbstractEnum(Enum):
     '''An enumeration whose members are used strictly for their names.'''
@@ -29,6 +30,7 @@ class ErrorCode(AbstractEnum):
     BAD_IMAGE = ()
     REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
+    STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
     BAD_EVENT_QUEUE_ID = ()
     CSRF_FAILED = ()
@@ -133,6 +135,17 @@ class JsonableError(Exception):
 
     def __str__(self) -> str:
         return self.msg
+
+class StreamDoesNotExistError(JsonableError):
+    code = ErrorCode.STREAM_DOES_NOT_EXIST
+    data_fields = ['stream']
+
+    def __init__(self, stream: str) -> None:
+        self.stream = stream
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Stream '{stream}' does not exist")
 
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:

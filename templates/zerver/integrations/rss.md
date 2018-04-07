@@ -1,6 +1,12 @@
 Get service alerts, news, and new blog posts right in Zulip with our
 RSS integration!
 
+!!! tip ""
+    Note that [the Zapier integration][1] is usually a simpler way to
+    integrate RSS with Zulip.
+
+[1]: ./zapier
+
 {!create-stream.md!}
 
 Next, on your {{ settings_html|safe }}, create an RSS bot.

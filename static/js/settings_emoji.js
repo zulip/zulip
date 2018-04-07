@@ -47,11 +47,11 @@ exports.populate_emoji = function (emoji_data) {
 
     var emoji_table = $('#admin_emoji_table').expectOne();
     emoji_table.find('tr.emoji_row').remove();
-    _.each(emoji_data, function (data, name) {
+    _.each(emoji_data, function (data) {
         if (data.deactivated !== true) {
             emoji_table.append(templates.render('admin_emoji_list', {
                 emoji: {
-                    name: name, source_url: data.source_url,
+                    name: data.name, source_url: data.source_url,
                     display_url: data.source_url,
                     author: data.author || '',
                     can_admin_emoji: can_admin_emoji(data),
@@ -78,13 +78,7 @@ exports.set_up = function () {
         channel.del({
             url: '/json/realm/emoji/' + encodeURIComponent(btn.attr('data-emoji-name')),
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    btn.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    btn.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, btn);
             },
             success: function () {
                 var row = btn.parents('tr');
@@ -95,7 +89,7 @@ exports.set_up = function () {
 
     var emoji_widget = emoji.build_emoji_upload_widget();
 
-    $(".organization").on("submit", "form.admin-emoji-form", function (e) {
+    $(".organization form.admin-emoji-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var emoji_status = $('#admin-emoji-status');

@@ -213,6 +213,7 @@ $(function () {
     });
     $("body").on("click", ".topic_edit_save", function (e) {
         var recipient_row = $(this).closest(".recipient_row");
+        message_edit.show_topic_edit_spinner(recipient_row);
         message_edit.save(recipient_row, true);
         e.stopPropagation();
         popovers.hide_all();
@@ -456,7 +457,8 @@ $(function () {
     });
 
     $("body").on("click", "[data-overlay-trigger]", function () {
-        ui.show_info_overlay($(this).attr("data-overlay-trigger"));
+        var target = $(this).attr("data-overlay-trigger");
+        info_overlay.show(target);
     });
 
     function handle_compose_click(e) {
@@ -493,27 +495,6 @@ $(function () {
         stream_list.toggle_filter_displayed(e);
     });
 
-    $("body").on("click", ".default_stream_row .remove-default-stream", function () {
-        var row = $(this).closest(".default_stream_row");
-        var stream_name = row.attr("id");
-
-        channel.del({
-            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
-            error: function (xhr) {
-                var button = row.find("button");
-                if (xhr.status.toString().charAt(0) === "4") {
-                    button.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    button.text(i18n.t("Failed!"));
-                }
-            },
-            success: function () {
-                row.remove();
-            },
-        });
-    });
 
     // FEEDBACK
 

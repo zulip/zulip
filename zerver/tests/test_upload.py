@@ -19,7 +19,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_image, delete_message_image, LocalUploadBackend, \
+    upload_message_file, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
@@ -946,7 +946,7 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_file_upload_local(self) -> None:
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -977,7 +977,7 @@ class S3Test(ZulipTestCase):
         bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
@@ -999,7 +999,7 @@ class S3Test(ZulipTestCase):
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
-        uri = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))

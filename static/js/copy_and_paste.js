@@ -35,6 +35,45 @@ function find_boundary_tr(initial_tr, iterate_row) {
     return [rows.id(tr), skip_same_td_check];
 }
 
+function construct_recipient_header(message_row) {
+    var message_header_content = rows.get_message_recipient_header(message_row)
+                                     .text()
+                                     .replace(/\s+/g, " ")
+                                     .replace(/^\s/, "").replace(/\s$/, "");
+    return $('<p>').append($('<strong>').text(message_header_content));
+}
+
+function construct_copy_div(div, start_id, end_id) {
+    var start_row = current_msg_list.get_row(start_id);
+    var start_recipient_row = rows.get_message_recipient_row(start_row);
+    var start_recipient_row_id = rows.id_for_recipient_row(start_recipient_row);
+    var should_include_start_recipient_header = false;
+
+    var last_recipient_row_id = start_recipient_row_id;
+    for (var row = start_row;
+         rows.id(row) <= end_id;
+         row = rows.next_visible(row)) {
+        var recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
+        // if we found a message from another recipient,
+        // it means that we have messages from several recipients,
+        // so we have to add new recipient's bar to final copied message
+        // and wouldn't forget to add start_recipient's bar at the beginning of final message
+        if (recipient_row_id !== last_recipient_row_id) {
+            div.append(construct_recipient_header(row));
+            last_recipient_row_id = recipient_row_id;
+            should_include_start_recipient_header = true;
+        }
+        var message = current_msg_list.get(rows.id(row));
+        var message_firstp = $(message.content).slice(0, 1);
+        message_firstp.prepend(message.sender_full_name + ": ");
+        div.append(message_firstp);
+        div.append($(message.content).slice(1));
+    }
+
+    if (should_include_start_recipient_header) {
+        div.prepend(construct_recipient_header(start_row));
+    }
+}
 
 function copy_handler() {
     var selection = window.getSelection();
@@ -46,13 +85,10 @@ function copy_handler() {
     var initial_end_tr;
     var start_id;
     var end_id;
-    var row;
-    var message;
     var start_data;
     var end_data;
     var skip_same_td_check = false;
     var div = $('<div>');
-    var content;
     for (i = 0; i < selection.rangeCount; i += 1) {
         range = selection.getRangeAt(i);
         ranges.push(range);
@@ -96,22 +132,8 @@ function copy_handler() {
             return;
         }
 
-            // Construct a div for what we want to copy (div)
-        for (row = current_msg_list.get_row(start_id);
-             rows.id(row) <= end_id;
-             row = rows.next_visible(row)) {
-             if (row.prev().hasClass("message_header")) {
-                content = $('<div>').text(row.prev().text()
-                                            .replace(/\s+/g, " ")
-                                            .replace(/^\s/, "").replace(/\s$/, ""));
-                div.append($('<p>').append($('<strong>').text(content.text())));
-            }
-            message = current_msg_list.get(rows.id(row));
-            var message_firstp = $(message.content).slice(0, 1);
-            message_firstp.prepend(message.sender_full_name + ": ");
-            div.append(message_firstp);
-            div.append($(message.content).slice(1));
-        }
+        // Construct a div for what we want to copy (div)
+        construct_copy_div(div, start_id, end_id);
     }
 
     if (window.bridge !== undefined) {
@@ -191,12 +213,22 @@ exports.paste_handler_converter = function (paste_html) {
 
 exports.paste_handler = function (event) {
     var clipboardData = event.originalEvent.clipboardData;
+    if (!clipboardData) {
+        // On IE11, ClipboardData isn't defined.  One can instead
+        // access it with `window.clipboardData`, but even that
+        // doesn't support text/html, so this code path couldn't do
+        // anything special anyway.  So we instead just let the
+        // default paste handler run on IE11.
+        return;
+    }
 
-    var paste_html = clipboardData.getData('text/html');
-    if (paste_html) {
-        event.preventDefault();
-        var text = exports.paste_handler_converter(paste_html);
-        compose_ui.insert_syntax_and_focus(text);
+    if (clipboardData.getData) {
+        var paste_html = clipboardData.getData('text/html');
+        if (paste_html) {
+            event.preventDefault();
+            var text = exports.paste_handler_converter(paste_html);
+            compose_ui.insert_syntax_and_focus(text);
+        }
     }
 };
 

@@ -64,6 +64,10 @@ exports.update_person = function update(person) {
         message_live_update.update_avatar(person_obj.user_id, person.avatar_url);
     }
 
+    if (_.has(person, 'custom_profile_field')) {
+        people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
+    }
+
      if (_.has(person, 'timezone')) {
          person_obj.timezone = person.timezone;
     }

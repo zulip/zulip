@@ -284,6 +284,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
     WebhookIntegration('crashlytics', ['monitoring']),
+    WebhookIntegration('dialogflow', ['customer-support'], display_name='Dialogflow'),
     WebhookIntegration('delighted', ['customer-support', 'marketing'], display_name='Delighted'),
     WebhookIntegration(
         'deskdotcom',
@@ -314,6 +315,7 @@ WEBHOOK_INTEGRATIONS = [
         stream_name='github'
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),
+    WebhookIntegration('gocd', ['continuous-integration'], display_name='GoCD'),
     WebhookIntegration('gogs', ['version-control'], stream_name='commits'),
     WebhookIntegration('gosquared', ['marketing'], display_name='GoSquared'),
     WebhookIntegration('greenhouse', ['hr'], display_name='Greenhouse'),

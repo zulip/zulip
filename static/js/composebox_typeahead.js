@@ -375,7 +375,8 @@ exports.compose_content_begins_typeahead = function (query) {
         this.completing = 'mention';
         this.token = current_token;
         var all_item = {
-            special_item_text: "all (Notify everyone)",
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: "all"}),
             email: "all",
             // Always sort above, under the assumption that names will
             // be longer and only contain "all" as a substring.
@@ -383,7 +384,8 @@ exports.compose_content_begins_typeahead = function (query) {
             full_name: "all",
         };
         var everyone_item = {
-            special_item_text: "everyone (Notify everyone)",
+            special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
+                                      {wildcard_mention_token: "everyone"}),
             email: "everyone",
             pm_recipient_count: Infinity,
             full_name: "everyone",

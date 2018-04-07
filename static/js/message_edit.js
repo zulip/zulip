@@ -18,7 +18,10 @@ exports.editability_types = editability_types;
 
 function get_editability(message, edit_limit_seconds_buffer) {
     edit_limit_seconds_buffer = edit_limit_seconds_buffer || 0;
-    if (!(message && message.sent_by_me)) {
+    if (!message) {
+        return editability_types.NO;
+    }
+    if (!(message.sent_by_me || page_params.realm_allow_community_topic_editing)) {
         return editability_types.NO;
     }
     if (message.failed_request) {
@@ -40,14 +43,20 @@ function get_editability(message, edit_limit_seconds_buffer) {
         return editability_types.NO;
     }
 
-    if (page_params.realm_message_content_edit_limit_seconds === 0) {
+    if (page_params.realm_message_content_edit_limit_seconds === 0 && message.sent_by_me) {
         return editability_types.FULL;
     }
 
     var now = new XDate();
-    if (page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
-        now.diffSeconds(message.timestamp * 1000) > 0) {
+    if ((page_params.realm_message_content_edit_limit_seconds + edit_limit_seconds_buffer +
+        now.diffSeconds(message.timestamp * 1000) > 0) && message.sent_by_me) {
         return editability_types.FULL;
+    }
+
+    // TODO: Change hardcoded value (24 hrs) to be realm setting
+    if (!message.sent_by_me && (
+        86400 + edit_limit_seconds_buffer + now.diffSeconds(message.timestamp * 1000) <= 0)) {
+        return editability_types.NO;
     }
     // time's up!
     if (message.type === 'stream') {
@@ -115,9 +124,8 @@ exports.save = function (row, from_topic_edited_only) {
         url: '/json/messages/' + message.id,
         data: request,
         success: function () {
-            if (msg_list === current_msg_list) {
-                row.find(".edit_error").text(i18n.t("Message successfully edited!")).removeClass("alert-error").addClass("alert-success").show();
-            }
+            var spinner = row.find(".topic_edit_spinner");
+            loading.destroy_indicator(spinner);
         },
         error: function (xhr) {
             if (msg_list === current_msg_list) {
@@ -137,6 +145,14 @@ exports.update_message_topic_editing_pencil = function () {
     }
 };
 
+exports.show_topic_edit_spinner = function (row) {
+    var spinner = row.find(".topic_edit_spinner");
+    loading.make_indicator(spinner);
+    $(spinner).removeAttr("style");
+    $(".topic_edit_save").hide();
+    $(".topic_edit_cancel").hide();
+};
+
 function handle_edit_keydown(from_topic_edited_only, e) {
     var row;
     var code = e.keyCode || e.which;
@@ -148,6 +164,7 @@ function handle_edit_keydown(from_topic_edited_only, e) {
         row = $(e.target).closest(".message_row");
     } else if (e.target.id === "inline_topic_edit" && code === 13) {
         row = $(e.target).closest(".recipient_row");
+        exports.show_topic_edit_spinner(row);
     } else {
         return;
     }
@@ -215,7 +232,7 @@ function edit_message(row, raw_content) {
     if (editability === editability_types.NO) {
         message_edit_content.prop("readonly", "readonly");
         message_edit_topic.prop("readonly", "readonly");
-        new Clipboard(copy_message[0]);
+        new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.NO_LONGER) {
         // You can currently only reach this state in non-streams. If that
         // changes (e.g. if we stop allowing topics to be modified forever
@@ -223,12 +240,12 @@ function edit_message(row, raw_content) {
         // row.find('input.message_edit_topic') as well.
         message_edit_content.prop("readonly", "readonly");
         message_edit_countdown_timer.text(i18n.t("View source"));
-        new Clipboard(copy_message[0]);
+        new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.TOPIC_ONLY) {
         message_edit_content.prop("readonly", "readonly");
         // Hint why you can edit the topic but not the message content
         message_edit_countdown_timer.text(i18n.t("Topic editing only"));
-        new Clipboard(copy_message[0]);
+        new ClipboardJS(copy_message[0]);
     } else if (editability === editability_types.FULL) {
         copy_message.remove();
         var edit_id = "#message_edit_content_" + rows.id(row);

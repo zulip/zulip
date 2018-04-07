@@ -131,9 +131,12 @@ class MarkdownComparer {
     assertEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
+        message = message || '';
+        message += '\n';
+
         if (comparison_results.are_equivalent === false) {
             throw new assert.AssertionError({
-                message : message || this._output_formatter(
+                message : message + this._output_formatter(
                     comparison_results.html.actual,
                     comparison_results.html.expected
                 ),
@@ -144,9 +147,12 @@ class MarkdownComparer {
     assertNotEqual(actual, expected, message) {
         const comparison_results = this._compare(actual, expected);
 
+        message = message || '';
+        message += '\n';
+
         if (comparison_results.are_equivalent) {
             throw new assert.AssertionError({
-                message : message || [
+                message : message + [
                     "actual and expected output produce semantially identical HTML",
                     actual,
                     "==",

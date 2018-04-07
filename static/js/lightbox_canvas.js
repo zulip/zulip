@@ -32,6 +32,12 @@ var LightboxCanvas = (function () {
 
     var funcs = {
         setZoom: function (meta, zoom) {
+            // condition to handle zooming event by zoom hotkeys
+            if (zoom === '+') {
+                zoom = meta.zoom * 1.2;
+            } else if (zoom === '-') {
+                zoom = meta.zoom / 1.2;
+            }
             // make sure the zoom is above 1 and below the maxZoom.
             meta.zoom = Math.min(Math.max(zoom, 1), meta.maxZoom);
         },
@@ -132,6 +138,29 @@ var LightboxCanvas = (function () {
                     funcs.displayImage(canvas, context, meta);
                 }
             });
+
+            // event listener to handle zoom in and out from using keyboard keys z/Z and +/-
+            // in the canvas
+            // these hotkeys are not implemented in static/js/hotkey.js as the code in
+            // static/js/lightbox_canvas.js and static/js/lightbox.js isn't written a way
+            // that the LightboxCanvas instance created in lightbox.js can be
+            // accessed from hotkey.js. Major code refactoring is required in lightbox.js
+            // to implement these keyboard shortcuts in hotkey.js
+            document.addEventListener('keydown', function (e) {
+                if (!overlays.lightbox_open()) {
+                    return;
+                }
+                if (e.key === "Z" || e.key === '+') {
+                    funcs.setZoom(meta, '+');
+                    funcs.displayImage(canvas, context, meta);
+                } else if (e.key === "z" || e.key === '-') {
+                    funcs.setZoom(meta, '-');
+                    funcs.displayImage(canvas, context, meta);
+                }
+                e.preventDefault();
+                e.stopPropagation();
+            });
+
 
             // make sure that when the mousedown is lifted on <canvas>to prevent
             // panning events.

@@ -58,8 +58,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             allow_message_editing: noop,
             bot_creation_policy: settings_bots.update_bot_permissions_ui,
             create_stream_by_admins_only: noop,
-            default_language: settings_org.reset_realm_default_language,
-            description: settings_org.update_realm_description,
+            default_language: noop,
+            default_twenty_four_hour_time: noop,
+            description: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
             inline_image_preview: noop,
@@ -67,7 +68,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             invite_by_admins_only: noop,
             invite_required: noop,
             mandatory_topics: noop,
-            message_retention_days: settings_org.update_message_retention_days,
+            message_content_edit_limit_seconds: noop,
+            message_retention_days: noop,
             name: notifications.redraw_title,
             name_changes_disabled: settings_account.update_name_change_display,
             notifications_stream_id: noop,
@@ -79,6 +81,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         if (event.op === 'update' && _.has(realm_settings, event.property)) {
             page_params['realm_' + event.property] = event.value;
             realm_settings[event.property]();
+            settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
                     page_params.can_create_streams = (!page_params.
@@ -86,16 +89,25 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(
-                    page_params.realm_notifications_stream_id);
+                    page_params.realm_notifications_stream_id,
+                    $('#realm_notifications_stream_name'));
             } else if (event.property === 'signup_notifications_stream_id') {
-                settings_org.render_signup_notifications_stream_ui(
-                    page_params.realm_signup_notifications_stream_id);
+                settings_org.render_notifications_stream_ui(
+                    page_params.realm_signup_notifications_stream_id,
+                    $('#realm_signup_notifications_stream_name'));
+            }
+
+            if (event.property === 'name' && window.electron_bridge !== undefined) {
+                window.electron_bridge.send_event('realm_name', event.value);
             }
         } else if (event.op === 'update_dict' && event.property === 'default') {
             _.each(event.data, function (value, key) {
                 page_params['realm_' + key] = value;
                 if (key === 'allow_message_editing') {
                     message_edit.update_message_topic_editing_pencil();
+                }
+                if (_.has(realm_settings, key)) {
+                    settings_org.sync_realm_settings(key);
                 }
             });
             if (event.data.authentication_methods !== undefined) {
@@ -105,6 +117,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             page_params.realm_icon_url = event.data.icon_url;
             page_params.realm_icon_source = event.data.icon_source;
             realm_icon.rerender();
+
+            var electron_bridge = window.electron_bridge;
+            if (electron_bridge !== undefined) {
+                electron_bridge.send_event('realm_icon_url', event.data.icon_url);
+            }
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }
@@ -144,6 +161,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         page_params.realm_filters = event.realm_filters;
         markdown.set_realm_filters(page_params.realm_filters);
         settings_filters.populate_filters(page_params.realm_filters);
+        break;
+
+    case 'custom_profile_fields':
+        page_params.custom_profile_fields = event.fields;
+        settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
+        settings_profile_fields.report_success(event.op);
         break;
 
     case 'realm_domains':
@@ -208,12 +231,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 if (page_params.realm_notifications_stream_id === stream.stream_id) {
                     page_params.realm_notifications_stream_id = -1;
                     settings_org.render_notifications_stream_ui(
-                        page_params.realm_notifications_stream_id);
+                        page_params.realm_notifications_stream_id,
+                        $('#realm_notifications_stream_name'));
                 }
                 if (page_params.realm_signup_notifications_stream_id === stream.stream_id) {
                     page_params.realm_signup_notifications_stream_id = -1;
-                    settings_org.render_signup_notifications_stream_ui(
-                        page_params.realm_signup_notifications_stream_id);
+                    settings_org.render_notifications_stream_ui(
+                        page_params.realm_signup_notifications_stream_id,
+                        $('#realm_signup_notifications_stream_name'));
                 }
             });
         }
@@ -369,15 +394,14 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
 
     case 'delete_message':
         var msg_id = event.message_id;
-        var message = message_store.get(msg_id);
         // message is passed to unread.get_unread_messages,
         // which returns all the unread messages out of a given list.
         // So double marking something as read would not occur
-        unread_ops.mark_message_as_read(message);
-        if (message.type === 'stream') {
+        unread_ops.process_read_messages_event([msg_id]);
+        if (event.message_type === 'stream') {
             topic_data.remove_message({
-                stream_id: message.stream_id,
-                topic_name: message.subject,
+                stream_id: event.stream_id,
+                topic_name: event.topic,
             });
             stream_list.update_streams_sidebar();
         }

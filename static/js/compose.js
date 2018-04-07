@@ -185,6 +185,19 @@ function nonexistent_stream_reply_error() {
     }, 5000);
 }
 
+function compose_not_subscribed_error(error_text, bad_input) {
+    $('#compose-send-status').removeClass(common.status_classes)
+               .addClass('home-error-bar')
+               .stop(true).fadeTo(0, 1);
+    $('#compose-error-msg').html(error_text);
+    $("#compose-send-button").prop('disabled', false);
+    $("#sending-indicator").hide();
+    $(".compose-send-status-close").hide();
+    if (bad_input !== undefined) {
+        bad_input.focus().select();
+    }
+}
+
 exports.nonexistent_stream_reply_error = nonexistent_stream_reply_error;
 
 function clear_compose_box() {
@@ -513,8 +526,8 @@ exports.validation_error = function (error_type, stream_name) {
         compose_error(i18n.t("Error checking subscription"), $("#stream"));
         return false;
     case "not-subscribed":
-        response = i18n.t("<p>You're not subscribed to the stream <b>__stream_name__</b>.</p><p>Manage your subscriptions <a href='#streams/all'>on your Streams page</a>.</p>", context);
-        compose_error(response, $('#stream'));
+        var new_row = templates.render("compose_not_subscribed");
+        compose_not_subscribed_error(new_row, $('#stream'));
         return false;
     }
     return true;
@@ -769,6 +782,18 @@ exports.initialize = function () {
         compose.finish();
     });
 
+    $("#compose-send-status").on('click', '.sub_unsub_button', function (event) {
+        event.preventDefault();
+
+        var stream_name = $('#stream').val();
+        if (stream_name === undefined) {
+            return;
+        }
+        var sub = stream_data.get_sub(stream_name);
+        subs.sub_or_unsub(sub);
+        $("#compose-send-status").hide();
+    });
+
     $("#compose_invite_users").on('click', '.compose_invite_link', function (event) {
         event.preventDefault();
 
@@ -905,8 +930,12 @@ exports.initialize = function () {
     $('#compose').on('click', '#video_link', function (e) {
         e.preventDefault();
 
+        if (page_params.jitsi_server_url === null) {
+            return;
+        }
+
         var video_call_id = util.random_int(100000000000000, 999999999999999);
-        var video_call_link = 'https://meet.jit.si/' +  video_call_id;
+        var video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
         var video_call_link_text = '[' + _('Click to join video call') + '](' + video_call_link + ')';
         compose_ui.insert_syntax_and_focus(video_call_link_text);
     });

@@ -34,7 +34,7 @@ function message_hover(message_row) {
     message_row.addClass('message_hovered');
     current_message_hover = message_row;
 
-    if (!message.sent_by_me) {
+    if (!message.sent_by_me && !page_params.realm_allow_community_topic_editing) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
@@ -281,6 +281,7 @@ $(function () {
     drafts.initialize();
     sent_messages.initialize();
     hotspots.initialize();
+    info_overlay.initialize();
     ui.initialize();
     panels.initialize();
     typing.initialize();

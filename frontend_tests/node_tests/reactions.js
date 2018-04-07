@@ -10,13 +10,13 @@ set_global('emoji', {
         smile: '1f604',
     },
     all_realm_emojis: {
-        realm_emoji: {
+        991: {
             id: '991',
             emoji_name: 'realm_emoji',
             emoji_url: 'TBD',
             deactivated: false,
         },
-        inactive_realm_emoji: {
+        992: {
             id: '992',
             emoji_name: 'inactive_realm_emoji',
             emoji_url: 'TBD',

@@ -51,13 +51,7 @@ exports.set_up = function () {
         channel.del({
             url: '/json/realm/filters/' + encodeURIComponent(btn.attr('data-filter-id')),
             error: function (xhr) {
-                if (xhr.status.toString().charAt(0) === "4") {
-                    btn.closest("td").html(
-                        $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                    );
-                } else {
-                    btn.text(i18n.t("Failed!"));
-                }
+                ui_report.generic_row_button_error(xhr, btn);
             },
             success: function () {
                 var row = btn.parents('tr');
@@ -66,7 +60,7 @@ exports.set_up = function () {
         });
     });
 
-    $(".organization").on("submit", "form.admin-filter-form", function (e) {
+    $(".organization form.admin-filter-form").off('submit').on('submit', function (e) {
         e.preventDefault();
         e.stopPropagation();
         var filter_status = $('#admin-filter-status');

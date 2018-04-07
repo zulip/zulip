@@ -4,7 +4,7 @@
 from django.db import connection
 from django.test import override_settings
 from sqlalchemy.sql import (
-    and_, select, column, table,
+    and_, select, column, table, literal, join, literal_column,
 )
 from sqlalchemy.sql import compiler
 
@@ -38,6 +38,7 @@ from zerver.views.messages import (
     get_messages_backend, ok_to_include_history,
     NarrowBuilder, BadNarrowOperator, Query,
     post_process_limited_query,
+    find_first_unread_anchor,
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
@@ -365,32 +366,40 @@ class BuildNarrowFilterTest(TestCase):
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
-        realm = get_realm('zulip')
-        self.make_stream('public_stream', realm=realm)
+        user_profile = self.example_user("hamlet")
+        self.make_stream('public_stream', realm=user_profile.realm)
 
         # Negated stream searches should not include history.
         narrow = [
             dict(operator='stream', operand='public_stream', negated=True),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # Definitely forbid seeing history on private streams.
+        self.make_stream('private_stream', realm=user_profile.realm, invite_only=True)
+        subscribed_user_profile = self.example_user("cordelia")
+        self.subscribe(subscribed_user_profile, 'private_stream')
         narrow = [
             dict(operator='stream', operand='private_stream'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
+
+        with self.settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True):
+            # Verify that with this setting, subscribed users can access history.
+            self.assertFalse(ok_to_include_history(narrow, user_profile))
+            self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
 
         # History doesn't apply to PMs.
         narrow = [
             dict(operator='is', operand='private'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # History doesn't apply to unread messages.
         narrow = [
             dict(operator='is', operand='unread'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # If we are looking for something like starred messages, there is
         # no point in searching historical messages.
@@ -398,20 +407,20 @@ class IncludeHistoryTest(ZulipTestCase):
             dict(operator='stream', operand='public_stream'),
             dict(operator='is', operand='starred'),
         ]
-        self.assertFalse(ok_to_include_history(narrow, realm))
+        self.assertFalse(ok_to_include_history(narrow, user_profile))
 
         # simple True case
         narrow = [
             dict(operator='stream', operand='public_stream'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, realm))
+        self.assertTrue(ok_to_include_history(narrow, user_profile))
 
         narrow = [
             dict(operator='stream', operand='public_stream'),
             dict(operator='topic', operand='whatever'),
             dict(operator='search', operand='needle in haystack'),
         ]
-        self.assertTrue(ok_to_include_history(narrow, realm))
+        self.assertTrue(ok_to_include_history(narrow, user_profile))
 
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:
@@ -1719,6 +1728,69 @@ class GetOldMessagesTest(ZulipTestCase):
                 return
         raise AssertionError("get_messages query not found")
 
+    def test_find_first_unread_anchor(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+        othello = self.example_user('othello')
+
+        self.make_stream('England')
+
+        # Send a few messages that Hamlet won't have UserMessage rows for.
+        unsub_message_id = self.send_stream_message(cordelia.email, 'England')
+        self.send_personal_message(cordelia.email, othello.email)
+
+        self.subscribe(hamlet, 'England')
+
+        muted_topics = [
+            ['England', 'muted'],
+        ]
+        set_topic_mutes(hamlet, muted_topics)
+
+        # send a muted message
+        muted_message_id = self.send_stream_message(cordelia.email, 'England', topic_name='muted')
+
+        # finally send Hamlet a "normal" message
+        first_message_id = self.send_stream_message(cordelia.email, 'England')
+
+        # send a few more messages
+        extra_message_id = self.send_stream_message(cordelia.email, 'England')
+        self.send_personal_message(cordelia.email, hamlet.email)
+
+        sa_conn = get_sqlalchemy_connection()
+
+        user_profile = hamlet
+
+        anchor = find_first_unread_anchor(
+            sa_conn=sa_conn,
+            user_profile=user_profile,
+            narrow=[],
+        )
+        self.assertEqual(anchor, first_message_id)
+
+        # With the same data setup, we now want to test that a reasonable
+        # search still gets the first message sent to Hamlet (before he
+        # subscribed) and other recent messages to the stream.
+        query_params = dict(
+            use_first_unread_anchor='true',
+            anchor=0,
+            num_before=10,
+            num_after=10,
+            narrow='[["stream", "England"]]'
+        )
+        request = POSTRequestMock(query_params, user_profile)
+
+        payload = get_messages_backend(request, user_profile)
+        result = ujson.loads(payload.content)
+        self.assertEqual(result['anchor'], first_message_id)
+        self.assertEqual(result['found_newest'], True)
+        self.assertEqual(result['found_oldest'], True)
+
+        messages = result['messages']
+        self.assertEqual(
+            {msg['id'] for msg in messages},
+            {unsub_message_id, muted_message_id, first_message_id, extra_message_id}
+        )
+
     def test_use_first_unread_anchor_with_some_unread_messages(self) -> None:
         user_profile = self.example_user('hamlet')
 
@@ -1899,7 +1971,7 @@ class GetOldMessagesTest(ZulipTestCase):
         # the `message_id = LARGER_THAN_MAX_MESSAGE_ID` hack.
         queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
         self.assertEqual(len(queries), 1)
-        self.assertIn('AND message_id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
+        self.assertIn('AND zerver_message.id = %d' % (LARGER_THAN_MAX_MESSAGE_ID,),
                       queries[0]['sql'])
 
     def test_exclude_muting_conditions(self) -> None:

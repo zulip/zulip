@@ -16,6 +16,9 @@ class RemoteZulipServer(models.Model):
     contact_email = models.EmailField(blank=True, null=False)  # type: Text
     last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 
+    def __str__(self) -> str:
+        return "<RemoteZulipServer %s %s>" % (self.hostname, self.uuid[0:12])
+
 # Variant of PushDeviceToken for a remote server.
 class RemotePushDeviceToken(AbstractPushDeviceToken):
     server = models.ForeignKey(RemoteZulipServer, on_delete=models.CASCADE)  # type: RemoteZulipServer
@@ -25,6 +28,9 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 
     class Meta:
         unique_together = ("server", "token")
+
+    def __str__(self) -> str:
+        return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)
 
 class Customer(models.Model):
     stripe_customer_id = models.CharField(max_length=255, unique=True)

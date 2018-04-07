@@ -14,7 +14,7 @@ from zerver.lib.actions import decode_email_address, get_email_gateway_message_s
 from zerver.lib.notifications import convert_html_to_markdown
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.redis_utils import get_redis_client
-from zerver.lib.upload import upload_message_image
+from zerver.lib.upload import upload_message_file
 from zerver.lib.utils import generate_random_token
 from zerver.lib.str_utils import force_text
 from zerver.lib.send_email import FromAddress
@@ -256,10 +256,10 @@ def extract_and_upload_attachments(message: message.Message, realm: Realm) -> Te
         if filename:
             attachment = part.get_payload(decode=True)
             if isinstance(attachment, bytes):
-                s3_url = upload_message_image(filename, len(attachment), content_type,
-                                              attachment,
-                                              user_profile,
-                                              target_realm=realm)
+                s3_url = upload_message_file(filename, len(attachment), content_type,
+                                             attachment,
+                                             user_profile,
+                                             target_realm=realm)
                 formatted_link = "[%s](%s)" % (filename, s3_url)
                 attachment_links.append(formatted_link)
             else:

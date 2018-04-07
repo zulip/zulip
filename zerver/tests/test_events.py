@@ -97,7 +97,7 @@ from zerver.lib.message import (
     UnreadMessagesResult,
 )
 from zerver.lib.test_helpers import POSTRequestMock, get_subscription, \
-    stub_event_queue_user_events, queries_captured
+    get_test_image_file, stub_event_queue_user_events, queries_captured
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
@@ -910,7 +910,9 @@ class EventsRegisterTest(ZulipTestCase):
     def test_custom_profile_fields_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('custom_profile_fields')),
+            ('op', equals('add')),
             ('fields', check_list(check_dict_only([
+                ('id', check_int),
                 ('type', check_int),
                 ('name', check_string),
             ]))),
@@ -918,7 +920,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         events = self.do_test(
             lambda: notify_realm_custom_profile_fields(
-                self.user_profile.realm),
+                self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -1085,7 +1087,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('remove')),
             ('group_id', check_int),
         ])
-        events = self.do_test(lambda: check_delete_user_group(backend.id, backend.realm))
+        events = self.do_test(lambda: check_delete_user_group(backend.id, othello))
         error = user_group_remove_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1334,6 +1336,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('data', check_dict_only([
                 ('allow_message_editing', check_bool),
                 ('message_content_edit_limit_seconds', check_int),
+                ('allow_community_topic_editing', check_bool),
             ])),
         ])
         # Test every transition among the four possibilities {T,F} x {0, non-0}
@@ -1343,7 +1346,8 @@ class EventsRegisterTest(ZulipTestCase):
             events = self.do_test(
                 lambda: do_set_realm_message_editing(self.user_profile.realm,
                                                      allow_message_editing,
-                                                     message_content_edit_limit_seconds))
+                                                     message_content_edit_limit_seconds,
+                                                     False))
             error = schema_checker('events[0]', events[0])
             self.assert_on_error(error)
 
@@ -1488,8 +1492,12 @@ class EventsRegisterTest(ZulipTestCase):
             ('op', equals('update')),
             ('realm_emoji', check_dict([])),
         ])
-        events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"), "my_emoji",
-                                                            "https://realm.com/my_emoji"))
+        author = self.example_user('iago')
+        with get_test_image_file('img.png') as img_file:
+            events = self.do_test(lambda: check_add_realm_emoji(get_realm("zulip"),
+                                                                "my_emoji",
+                                                                author,
+                                                                img_file))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -2015,13 +2023,37 @@ class EventsRegisterTest(ZulipTestCase):
         error = add_schema_checker('events[1]', events[1])
         self.assert_on_error(error)
 
-    def test_do_delete_message(self) -> None:
+    def test_do_delete_message_stream(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('delete_message')),
             ('message_id', check_int),
             ('sender', check_string),
+            ('message_type', equals("stream")),
+            ('stream_id', check_int),
+            ('topic', check_string),
         ])
         msg_id = self.send_stream_message("hamlet@zulip.com", "Verona")
+        message = Message.objects.get(id=msg_id)
+        events = self.do_test(
+            lambda: do_delete_message(self.user_profile, message),
+            state_change_expected=True,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_do_delete_message_personal(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('delete_message')),
+            ('message_id', check_int),
+            ('sender', check_string),
+            ('message_type', equals("private")),
+            ('recipient_user_ids', check_int),
+        ])
+        msg_id = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.user_profile.email,
+            "hello",
+        )
         message = Message.objects.get(id=msg_id)
         events = self.do_test(
             lambda: do_delete_message(self.user_profile, message),
@@ -2488,7 +2520,7 @@ class ClientDescriptorsTest(ZulipTestCase):
         self.assertEqual(dct['client'].apply_markdown, True)
         self.assertEqual(dct['client'].client_gravatar, True)
         self.assertEqual(dct['client'].user_profile_id, hamlet.id)
-        self.assertEqual(dct['flags'], None)
+        self.assertEqual(dct['flags'], [])
         self.assertEqual(dct['is_sender'], False)
 
         message_event = dict(

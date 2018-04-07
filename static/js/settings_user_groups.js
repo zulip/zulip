@@ -20,10 +20,15 @@ exports.reload = function () {
     exports.populate_user_groups();
 };
 
+exports.can_edit = function (group_id) {
+   var me = people.get_person_from_user_id(people.my_current_user_id());
+   return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
+};
+
 exports.populate_user_groups = function () {
+
     var user_groups_section = $('#user-groups').expectOne();
     var user_groups_array = user_groups.get_realm_user_groups();
-
     _.each(user_groups_array, function (data) {
         user_groups_section.append(templates.render('admin_user_group_list', {
             user_group: {
@@ -32,7 +37,6 @@ exports.populate_user_groups = function () {
                 description: data.description,
             },
         }));
-
         var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
         var pills = input_pill.create({
             container: pill_container,
@@ -51,6 +55,7 @@ exports.populate_user_groups = function () {
             });
         }
 
+        var userg = $('div.user-group[id="' + data.id + '"]');
         data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
 
@@ -60,6 +65,29 @@ exports.populate_user_groups = function () {
                 blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
             }
         });
+
+        function update_membership(group_id) {
+            if (exports.can_edit(group_id)) {
+                return;
+            }
+            userg.find('.name').attr('contenteditable','false');
+            userg.find('.description').attr('contenteditable','false');
+            userg.addClass('ntm');
+            pill_container.find('.input').attr('contenteditable','false');
+            pill_container.find('.input').css('display', 'none');
+            pill_container.addClass('notmem');
+            pill_container.off('keydown', '.pill');
+            pill_container.off('keydown', '.input');
+            pill_container.off('click');
+            pill_container.on('click', function (e) {
+                e.stopPropagation();
+            });
+            pill_container.find('.pill').hover(function () {
+                pill_container.find('.pill').find('.exit').css('opacity', '0.5');
+                    }, function () {}
+            );
+        }
+        update_membership(data.id);
 
         function is_user_group_changed() {
             var draft_group = get_pill_user_ids();
@@ -77,6 +105,9 @@ exports.populate_user_groups = function () {
         }
 
         function update_cancel_button() {
+            if (!exports.can_edit(data.id)) {
+                return;
+            }
             var cancel_button = $('#user-groups #' + data.id + ' .cancel');
             var saved_button = $('#user-groups #' + data.id + ' .saved');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
@@ -97,7 +128,6 @@ exports.populate_user_groups = function () {
             var cancel_button = $('#user-groups #' + data.id + ' .cancel');
             var saved_button = $('#user-groups #' + data.id + ' .saved');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
-
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
@@ -113,7 +143,6 @@ exports.populate_user_groups = function () {
             if (!draft_group.length || same_groups) {
                 return;
             }
-
             var added = _.difference(draft_group, original_group);
             var removed = _.difference(original_group, draft_group);
             channel.post({
@@ -166,6 +195,10 @@ exports.populate_user_groups = function () {
         }
 
         function auto_save(class_name, event) {
+            if (!exports.can_edit(data.id)) {
+                return;
+            }
+
             if (do_not_blur(class_name, event)) {
                 return;
             }
@@ -197,52 +230,59 @@ exports.populate_user_groups = function () {
         });
 
         var input = pill_container.children('.input');
+        (function set_up_typeahead() {
+            if (!exports.can_edit(data.id)) {
+                return;
+            }
+            input.typeahead({
+                items: 5,
+                fixed: true,
+                dropup: true,
+                source: function () {
+                    return user_pill.typeahead_source(pills);
+                },
+                highlighter: function (item) {
+                    return typeahead_helper.render_person(item);
+                },
+                matcher: function (item) {
+                    var query = this.query.toLowerCase();
+                    return (item.email.toLowerCase().indexOf(query) !== -1
+                            || item.full_name.toLowerCase().indexOf(query) !== -1);
+                },
+                sorter: function (matches) {
+                    return typeahead_helper.sort_recipientbox_typeahead(
+                        this.query, matches, "");
+                },
+                updater: function (user) {
+                    append_user(user);
+                    input.focus();
+                    update_cancel_button();
+                },
+                stopAdvance: true,
+            });
+        }());
 
-        input.typeahead({
-            items: 5,
-            fixed: true,
-            dropup: true,
-            source: function () {
-                return user_pill.typeahead_source(pills);
-            },
-            highlighter: function (item) {
-                return typeahead_helper.render_person(item);
-            },
-            matcher: function (item) {
-                var query = this.query.toLowerCase();
-                return (item.email.toLowerCase().indexOf(query) !== -1
-                        || item.full_name.toLowerCase().indexOf(query) !== -1);
-            },
-            sorter: function (matches) {
-                return typeahead_helper.sort_recipientbox_typeahead(
-                    this.query, matches, "");
-            },
-            updater: function (user) {
-                append_user(user);
-                input.focus();
+        (function pill_remove() {
+            if (!exports.can_edit(data.id)) {
+                return;
+            }
+            pills.onPillRemove(function () {
+                // onPillRemove is fired before the pill is removed from
+                // the DOM.
                 update_cancel_button();
-            },
-            stopAdvance: true,
-        });
-
-        pills.onPillRemove(function () {
-            // onPillRemove is fired before the pill is removed from
-            // the DOM.
-            update_cancel_button();
-            setTimeout(function () {
-                input.focus();
-            }, 100);
-        });
-
+                setTimeout(function () {
+                    input.focus();
+                }, 100);
+            });
+        }());
     });
 };
 
 exports.set_up = function () {
     meta.loaded = true;
-
     exports.populate_user_groups();
 
-    $(".organization").on("submit", "form.admin-user-group-form", function (e) {
+    $(".organization form.admin-user-group-form").off("submit").on("submit", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
@@ -277,9 +317,11 @@ exports.set_up = function () {
 
     $('#user-groups').on('click', '.delete', function () {
         var group_id = $(this).parents('.user-group').attr('id');
+        if (!exports.can_edit(group_id)) {
+            return;
+        }
         var user_group = user_groups.get_user_group_from_id(group_id);
         var btn = $(this);
-
         channel.del({
             url: "/json/user_groups/" + group_id,
             data: {

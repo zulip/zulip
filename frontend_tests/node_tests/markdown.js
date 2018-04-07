@@ -24,8 +24,11 @@ set_global('window', {
 set_global('page_params', {
     realm_users: [],
     realm_emoji: {
-        burrito: {display_url: '/static/generated/emoji/images/emoji/burrito.png',
-                  source_url: '/static/generated/emoji/images/emoji/burrito.png'},
+        1: {id: 1,
+            name: 'burrito',
+            source_url: '/static/generated/emoji/images/emoji/burrito.png',
+            deactivated: false,
+        },
     },
     realm_filters: [
         [
@@ -177,17 +180,24 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     var tests = bugdown_data.regular_tests;
 
     tests.forEach(function (test) {
+
+        // Ignore tests if specified
+        if (test.ignore === true) {
+            return;
+        }
+
         var message = {raw_content: test.input};
+        page_params.translate_emoticons = test.translate_emoticons || false;
         markdown.apply_markdown(message);
         var output = message.content;
-
+        var error_message = `Failure in test: ${test.name}`;
         if (test.marked_expected_output) {
-            global.bugdown_assert.notEqual(test.expected_output, output);
-            global.bugdown_assert.equal(test.marked_expected_output, output);
+            global.bugdown_assert.notEqual(test.expected_output, output, error_message);
+            global.bugdown_assert.equal(test.marked_expected_output, output, error_message);
         } else if (test.backend_only_rendering) {
             assert.equal(markdown.contains_backend_only_syntax(test.input), true);
         } else {
-            global.bugdown_assert.equal(test.expected_output, output);
+            global.bugdown_assert.equal(test.expected_output, output, error_message);
         }
     });
 }());
@@ -214,6 +224,7 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
         {input: 'hello', expected: '<p>hello</p>'},
         {input: 'hello there', expected: '<p>hello there</p>'},
         {input: 'hello **bold** for you', expected: '<p>hello <strong>bold</strong> for you</p>'},
+        {input: 'hello ***foo*** for you', expected: '<p>hello <strong><em>foo</em></strong> for you</p>'},
         {input: '__hello__', expected: '<p>__hello__</p>'},
         {input: '\n```\nfenced code\n```\n\nand then after\n',
          expected: '<div class="codehilite"><pre><span></span>fenced code\n</pre></div>\n\n\n<p>and then after</p>'},
@@ -288,6 +299,12 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
          expected: '<p>@*notagroup*</p>'},
         {input: 'This is a realm filter `hello` with text after it',
          expected: '<p>This is a realm filter <code>hello</code> with text after it</p>'},
+        // Test the emoticon conversion
+        {input: ':)',
+         expected: '<p>:)</p>'},
+        {input: ':)',
+         expected: '<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>',
+         translate_emoticons: true},
     ];
 
     // We remove one of the unicode emoji we put as input in one of the test
@@ -296,6 +313,9 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     delete emoji_codes.codepoint_to_name['1f6b2'];
 
     test_cases.forEach(function (test_case) {
+        // Disable emoji conversion by default.
+        page_params.translate_emoticons = test_case.translate_emoticons || false;
+
         var input = test_case.input;
         var expected = test_case.expected;
 
@@ -305,17 +325,6 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
 
         assert.equal(expected, output);
     });
-
-    // Here to arrange 100% test coverage for the new emoticons code
-    // path.  TODO: Have a better way to test this setting in both
-    // states, once we implement the local echo feature properly.
-    // Probably a good technique would be to support toggling the
-    // page_params setting inside the `test_cases.forEach` loop above.
-    page_params.translate_emoticons = true;
-    var message = {raw_content: ":)"};
-    markdown.apply_markdown(message);
-    assert.equal('<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>', message.content);
-    page_params.translate_emoticons = false;
 }());
 
 (function test_subject_links() {

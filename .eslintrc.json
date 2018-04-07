@@ -33,6 +33,8 @@
         "server_events": false,
         "server_events_dispatch": false,
         "message_scroll": false,
+        "keydown_util": false,
+        "info_overlay": false,
         "ui": false,
         "ui_report": false,
         "night_mode": false,
@@ -61,6 +63,7 @@
         "settings_filters": false,
         "settings_invites": false,
         "settings_user_groups": false,
+        "settings_profile_fields": false,
         "settings": false,
         "resize": false,
         "loading": false,
@@ -165,12 +168,13 @@
         "emoji_codes": false,
         "drafts": false,
         "katex": false,
-        "Clipboard": false,
+        "ClipboardJS": false,
         "emoji_picker": false,
         "hotspots": false,
         "compose_ui": false,
         "common": false,
-        "panels": false
+        "panels": false,
+        "PerfectScrollbar": false
     },
     "plugins": [
         "eslint-plugin-empty-returns"

@@ -1,3 +1,4 @@
+set_global('i18n', global.stub_i18n);
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
@@ -894,13 +895,13 @@ user_pill.get_user_ids = function () {
 
     var all_items = [
         {
-            special_item_text: 'all (Notify everyone)',
+            special_item_text: 'translated: all (Notify stream)',
             email: 'all',
             pm_recipient_count: Infinity,
             full_name: 'all',
         },
         {
-            special_item_text: 'everyone (Notify everyone)',
+            special_item_text: 'translated: everyone (Notify stream)',
             email: 'everyone',
             pm_recipient_count: Infinity,
             full_name: 'everyone',
@@ -1092,13 +1093,13 @@ user_pill.get_user_ids = function () {
 (function test_typeahead_results() {
     var all_items = [
         {
-            special_item_text: 'all (Notify everyone)',
+            special_item_text: 'all (translated: Notify stream)',
             email: 'all',
             pm_recipient_count: Infinity,
             full_name: 'all',
         },
         {
-            special_item_text: 'everyone (Notify everyone)',
+            special_item_text: 'everyone (translated: Notify stream)',
             email: 'everyone',
             pm_recipient_count: Infinity,
             full_name: 'everyone',

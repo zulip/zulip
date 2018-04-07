@@ -160,6 +160,9 @@ DEFAULT_SETTINGS = {
     'LOCAL_UPLOADS_DIR': None,
     'MAX_FILE_UPLOAD_SIZE': 25,
 
+    # JITSI video call integration; set to None to disable integration.
+    'JITSI_SERVER_URL': 'https://meet.jit.si/',
+
     # Feedback bot settings
     'ENABLE_FEEDBACK': PRODUCTION,
     'FEEDBACK_EMAIL': None,
@@ -173,7 +176,7 @@ DEFAULT_SETTINGS = {
     # External service configuration
     'CAMO_URI': '',
     'MEMCACHED_LOCATION': '127.0.0.1:11211',
-    'RABBITMQ_HOST': 'localhost',
+    'RABBITMQ_HOST': '127.0.0.1',
     'RABBITMQ_USERNAME': 'zulip',
     'REDIS_HOST': '127.0.0.1',
     'REDIS_PORT': 6379,
@@ -226,9 +229,6 @@ DEFAULT_SETTINGS.update({
     # ERROR_BOT sends Django exceptions to an "errors" stream in the
     # system realm.
     'ERROR_BOT': None,
-    # NEW_USER_BOT sends notifications about new user signups to a
-    # "signups" stream in the system realm.
-    'NEW_USER_BOT': None,
     # These are extra bot users for our end-to-end Nagios message
     # sending tests.
     'NAGIOS_STAGING_SEND_BOT': None,
@@ -291,6 +291,11 @@ DEFAULT_SETTINGS.update({
     # TODO: Investigate whether this should be removed and set one way or other.
     'SAVE_FRONTEND_STACKTRACES': False,
 
+    # If True, disable rate-limiting and other filters on sending error messages
+    # to admins, and enable logging on the error-reporting itself.  Useful
+    # mainly in development.
+    'DEBUG_ERROR_REPORTING': False,
+
     # Whether to flush memcached after data migrations.  Because of
     # how we do deployments in a way that avoids reusing memcached,
     # this is disabled in production, but we need it in development.
@@ -305,6 +310,12 @@ DEFAULT_SETTINGS.update({
     'MAX_AVATAR_FILE_SIZE': 5,
     'MAX_ICON_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
+
+    # TODO: This server setting is a hack to help with folks who are
+    # finding our private stream security model painful.  Future work
+    # will migrate this to be a property of Stream or maybe Realm and
+    # this setting will be deprecated.
+    'PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS': False,
 
     # Limits to help prevent spam, in particular by sending invitations.
     #
@@ -372,6 +383,9 @@ DEFAULT_SETTINGS.update({
     # because some transactional email providers reject sending such
     # emails since they can look like spam.
     'SEND_MISSED_MESSAGE_EMAILS_AS_USER': False,
+    # Whether to send periodic digests of activity.  Off by default
+    # because this feature is in beta.
+    'SEND_DIGEST_EMAILS': False,
 
     # Used to change the Zulip logo in portico pages.
     'CUSTOM_LOGO_URL': None,
@@ -899,7 +913,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
-                'styles/dark.css',
+                'styles/night_mode.css',
                 # We don't want fonts.css on QtWebKit, so its omitted here
             ),
             'output_filename': 'min/app-fontcompat.css'
@@ -933,7 +947,7 @@ PIPELINE = {
                 'styles/media.css',
                 'styles/typing_notifications.css',
                 'styles/hotspots.css',
-                'styles/dark.css',
+                'styles/night_mode.css',
             ),
             'output_filename': 'min/app.css'
         },
@@ -942,7 +956,7 @@ PIPELINE = {
                 'third/bootstrap/css/bootstrap.css',
                 'third/bootstrap/css/bootstrap-btn.css',
                 'third/bootstrap/css/bootstrap-responsive.css',
-                'node_modules/perfect-scrollbar/dist/css/perfect-scrollbar.css',
+                'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
             ),
             'output_filename': 'min/common.css'
         },
@@ -991,7 +1005,7 @@ JS_SPECS = {
             'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
-            'node_modules/perfect-scrollbar/dist/js/perfect-scrollbar.jquery.js',
+            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
             'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/sockjs/sockjs-0.3.4.js',
@@ -1009,6 +1023,7 @@ JS_SPECS = {
             'js/loading.js',
             'js/util.js',
             'js/dynamic_text.js',
+            'js/keydown_util.js',
             'js/lightbox_canvas.js',
             'js/rtl.js',
             'js/dict.js',
@@ -1072,6 +1087,7 @@ JS_SPECS = {
             'js/lightbox.js',
             'js/ui_report.js',
             'js/message_scroll.js',
+            'js/info_overlay.js',
             'js/ui.js',
             'js/night_mode.js',
             'js/ui_util.js',
@@ -1131,12 +1147,12 @@ JS_SPECS = {
             'js/settings_filters.js',
             'js/settings_invites.js',
             'js/settings_user_groups.js',
+            'js/settings_profile_fields.js',
             'js/settings.js',
             'js/admin_sections.js',
             'js/admin.js',
             'js/tab_bar.js',
             'js/emoji.js',
-            'js/custom_markdown.js',
             'js/bot_data.js',
             'js/reactions.js',
             'js/typing.js',
@@ -1303,8 +1319,9 @@ if IS_WORKER:
     FILE_LOG_PATH = WORKER_LOG_PATH
 else:
     FILE_LOG_PATH = SERVER_LOG_PATH
-# Used for test_logging_handlers
-LOGGING_NOT_DISABLED = True
+
+# This is disabled in a few tests.
+LOGGING_ENABLED = True
 
 DEFAULT_ZULIP_HANDLERS = (
     (['zulip_admins'] if ERROR_REPORTING else []) +
@@ -1358,8 +1375,8 @@ LOGGING = {
         'zulip_admins': {
             'level': 'ERROR',
             'class': 'zerver.logging_handlers.AdminNotifyHandler',
-            # For manual testing of this handler, delete the `filters` line.
-            'filters': ['ZulipLimiter', 'require_debug_false', 'require_really_deployed'],
+            'filters': (['ZulipLimiter', 'require_debug_false', 'require_really_deployed']
+                        if not DEBUG_ERROR_REPORTING else []),
             'formatter': 'default'
         },
         'console': {
@@ -1446,8 +1463,19 @@ LOGGING = {
         # },
 
         # other libraries, alphabetized
-        'pika.adapters': {  # This library is super chatty on INFO.
+        'pika.adapters': {
+            # pika is super chatty on INFO.
             'level': 'WARNING',
+            # pika spews a lot of ERROR logs when a connection fails.
+            # We reconnect automatically, so those should be treated as WARNING --
+            # write to the log for use in debugging, but no error emails/Zulips.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
+        },
+        'pika.connection': {
+            # Leave `zulip_admins` out of the handlers.  See pika.adapters above.
+            'handlers': ['console', 'file', 'errors_file'],
+            'propagate': False,
         },
         'requests': {
             'level': 'WARNING',

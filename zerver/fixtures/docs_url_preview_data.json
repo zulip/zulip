@@ -1,0 +1,26 @@
+{
+    "https://zulip.readthedocs.io/en/latest/subsystems/analytics.html": {
+        "description": "Zulip has a cool analytics system for tracking various useful statistics\nthat currently power the /stats page, and over time will power other\nfeatures, like showing usage statistics for the various streams. It is\ndesigned around the following goals:",
+        "title": "Analytics — Zulip 1.7.1+git documentation"
+    },
+    "https://zulip.readthedocs.io/en/latest/subsystems/client.html": {
+        "description": "zerver.models.Client is Zulip analogue of the HTTP User-Agent\nheader (and is populated from User-Agent).  It exists for use in\nanalytics and other places to provide human-readable summary data\nabout which Zulip client was used for an operation (e.g. was it the\nAndroid app, the desktop app, or a bot?).",
+        "title": "Clients in Zulip — Zulip 1.7.1+git documentation"
+    },
+    "https://zulip.readthedocs.io/en/latest/subsystems/emoji.html": {
+        "description": "Emoji seem like a simple idea, but there actually a ton of\ncomplexity that goes into an effective emoji implementation.  This\ndocument discusses a number of these issues.",
+        "title": "Emoji — Zulip 1.7.1+git documentation"
+    },
+    "https://zulip.readthedocs.io/en/latest/subsystems/full-text-search.html": {
+        "description": "Zulip supports full-text search, which can be combined arbitrarily\nwith Zulip full suite of narrowing operators.  By default, it only\nsupports English text, but there is an experimental\nPGroonga integration that provides\nfull-text search for all languages.",
+        "title": "Full-text search — Zulip 1.7.1+git documentation"
+    },
+    "https://zulip.readthedocs.io/en/latest/subsystems/logging.html": {
+        "description": "Having a good system for logging error reporting is essential to\nmaking a large project like Zulip successful.  Without reliable error\nreporting, one has to rely solely on bug reports from users in order\nto produce a working product.",
+        "title": "Logging and Error reporting — Zulip 1.7.1+git documentation"
+    },
+    "https://zulip.readthedocs.io/en/latest/translating/translating.html": {
+        "description": "To make Zulip even better for users around the world, the Zulip UI is\nbeing translated into a number of major languages, including Spanish,\nGerman, Hindi, French, Chinese, Russian, and Japanese, with varying levels of\nprogress. If you speak a language other than English, your help with\ntranslating Zulip would be greatly appreciated!",
+        "title": "Translation Guidelines — Zulip 1.7.1+git documentation"
+    }
+}

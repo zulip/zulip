@@ -44,7 +44,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, Cus
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
     custom_profile_fields_for_realm, get_realm_domains, \
-    get_default_stream_groups
+    get_default_stream_groups, CustomProfileField
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
@@ -124,6 +124,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(user_profile.realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
+        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
 
     if want('attachments'):
         state['attachments'] = user_attachments(user_profile)
@@ -160,6 +161,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         realm = user_profile.realm
         state['realm_authentication_methods'] = realm.authentication_methods_dict()
         state['realm_allow_message_editing'] = realm.allow_message_editing
+        state['realm_allow_community_topic_editing'] = realm.allow_community_topic_editing
         state['realm_message_content_edit_limit_seconds'] = realm.message_content_edit_limit_seconds
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
@@ -167,7 +169,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_presence_disabled'] = realm.presence_disabled
-        state['realm_show_digest_email'] = realm.show_digest_email
+        state['realm_show_digest_email'] = realm.show_digest_email and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)

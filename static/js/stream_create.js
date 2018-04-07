@@ -232,11 +232,15 @@ exports.show_new_stream_modal = function () {
     var all_users = people.get_rest_of_realm();
     // Add current user on top of list
     all_users.unshift(people.get_person_from_user_id(page_params.user_id));
-    $('#people_to_add').html(templates.render('new_stream_users', {
+    var html = templates.render('new_stream_users', {
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
         is_admin: page_params.is_admin,
-    }));
+    });
+
+    var container = $('#people_to_add');
+    container.html(html);
+    exports.create_handlers_for_users(container);
 
     // Make the options default to the same each time:
     // public, "announce stream" on.
@@ -271,11 +275,12 @@ exports.show_new_stream_modal = function () {
     });
 };
 
-$(function () {
-    $('body').on('change', '#user-checkboxes input, #make-invite-only input', update_announce_stream_state);
+exports.create_handlers_for_users = function (container) {
+    // container should be $('#people_to_add')...see caller to verify
+    container.on('change', '#user-checkboxes input', update_announce_stream_state);
 
     // 'Check all' and 'Uncheck all' visible users
-    $(document).on('click', '.subs_set_all_users', function (e) {
+    container.on('click', '.subs_set_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if  (li.style.display !== "none") {
                 $(li.firstElementChild).prop('checked', true);
@@ -285,7 +290,7 @@ $(function () {
         update_announce_stream_state();
     });
 
-    $(document).on('click', '.subs_unset_all_users', function (e) {
+    container.on('click', '.subs_unset_all_users', function (e) {
         $('#user-checkboxes .checkbox').each(function (idx, li) {
             if (li.style.display !== "none") {
                 // The first checkbox is the one for ourself; this is the code path for:
@@ -300,7 +305,7 @@ $(function () {
         update_announce_stream_state();
     });
 
-    $(document).on('click', '#copy-from-stream-expand-collapse', function (e) {
+    container.on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
         e.preventDefault();
@@ -308,7 +313,7 @@ $(function () {
     });
 
     // Search People or Streams
-    $(document).on('input', '.add-user-list-filter', function (e) {
+    container.on('input', '.add-user-list-filter', function (e) {
         var user_list = $(".add-user-list-filter");
         if (user_list === 0) {
             return;
@@ -346,8 +351,15 @@ $(function () {
         update_announce_stream_state();
         e.preventDefault();
     });
+};
 
-    $(".subscriptions").on("submit", "#stream_creation_form", function (e) {
+
+exports.set_up_handlers = function () {
+    var container = $('#stream-creation').expectOne();
+
+    container.on('change', '#make-invite-only input', update_announce_stream_state);
+
+    container.on("submit", "#stream_creation_form", function (e) {
         e.preventDefault();
         clear_error_display();
 
@@ -378,23 +390,23 @@ $(function () {
         }
     });
 
-    $(document).on("click", ".close-invites-warning-modal", function () {
+    container.on("click", ".close-invites-warning-modal", function () {
         $("#invites-warning-overlay").remove();
     });
 
-    $(document).on("click", ".confirm-invites-warning-modal", function () {
+    container.on("click", ".confirm-invites-warning-modal", function () {
         create_stream();
         $("#invites-warning-overlay").remove();
     });
 
-    $(".subscriptions").on("input", "#create_stream_name", function () {
+    container.on("input", "#create_stream_name", function () {
         var stream_name = $.trim($("#create_stream_name").val());
 
         // This is an inexpensive check.
         stream_name_error.pre_validate(stream_name);
     });
 
-    $("body").on("mouseover", "#announce-stream-docs", function (e) {
+    container.on("mouseover", "#announce-stream-docs", function (e) {
         var announce_stream_docs = $("#announce-stream-docs");
         announce_stream_docs.popover({placement: "right",
                                       content: templates.render('announce_stream_docs', {
@@ -405,12 +417,12 @@ $(function () {
         announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');
         e.stopPropagation();
     });
-    $("body").on("mouseout", "#announce-stream-docs", function (e) {
+    container.on("mouseout", "#announce-stream-docs", function (e) {
         $("#announce-stream-docs").popover('hide');
         e.stopPropagation();
     });
 
-});
+};
 
 return exports;
 

@@ -76,14 +76,16 @@ class RedirectAndLogIntoSubdomainTestCase(ZulipTestCase):
         email = self.example_email("hamlet")
         response = redirect_and_log_into_subdomain(realm, name, email)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': False})
 
         response = redirect_and_log_into_subdomain(realm, name, email,
                                                    is_signup=True)
         data = load_subdomain_token(response)
-        self.assertDictEqual(data, {'name': name, 'email': email,
+        self.assertDictEqual(data, {'name': name, 'next': '',
+                                    'email': email,
                                     'subdomain': realm.subdomain,
                                     'is_signup': True})
 
@@ -832,6 +834,21 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         result = self.submit_reg_form_for_user("foo@mailnator.com", "password")
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please sign up using a real email address.", result)
+
+    def test_invalid_email_check_after_confirming_email(self) -> None:
+        self.login(self.example_email("hamlet"))
+        email = "test@zulip.com"
+
+        self.assert_json_success(self.invite(email, ["Denmark"]))
+
+        obj = Confirmation.objects.get(confirmation_key=find_key_by_email(email))
+        prereg_user = obj.content_object
+        prereg_user.email = "invalid.email"
+        prereg_user.save()
+
+        result = self.submit_reg_form_for_user(email, "password")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("The email address you are trying to sign up with is not valid", result)
 
     def test_invite_with_non_ascii_streams(self) -> None:
         """
@@ -1588,6 +1605,34 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(user_profile.timezone, timezone)
         from django.core.mail import outbox
         outbox.pop()
+
+    def test_default_twenty_four_hour_time(self) -> None:
+        """
+        Check if the default twenty_four_hour_time setting of new user
+        is the default twenty_four_hour_time of the realm.
+        """
+        email = self.nonreg_email('newguy')
+        password = "newpassword"
+        realm = get_realm('zulip')
+        do_set_realm_property(realm, 'default_twenty_four_hour_time', True)
+
+        result = self.client_post('/accounts/home/', {'email': email})
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # Visit the confirmation link.
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url)
+        self.assertEqual(result.status_code, 200)
+
+        result = self.submit_reg_form_for_user(email, password)
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.nonreg_user('newguy')
+        self.assertEqual(user_profile.twenty_four_hour_time, realm.default_twenty_four_hour_time)
 
     def test_signup_already_active(self) -> None:
         """
@@ -2612,7 +2657,7 @@ class LoginOrAskForRegistrationTestCase(ZulipTestCase):
         user_id = get_session_dict_user(getattr(request, 'session'))
         self.assertEqual(user_id, user_profile.id)
         self.assertEqual(response.status_code, 302)
-        self.assertIn('http://zulip.testserver', response.url)
+        self.assertEqual('http://zulip.testserver', response.url)
 
 class FollowupEmailTest(ZulipTestCase):
     def test_followup_day2_email(self) -> None:

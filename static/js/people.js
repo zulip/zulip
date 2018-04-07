@@ -819,6 +819,14 @@ exports.set_full_name = function (person_obj, new_full_name) {
     person_obj.full_name = new_full_name;
 };
 
+exports.set_custom_profile_field_data = function (user_id, field) {
+    if (field.id === undefined) {
+        blueslip.error("Unknown field id " + field.id);
+        return;
+    }
+    people_by_user_id_dict.get(user_id).profile_data[field.id] = field.value;
+};
+
 exports.is_current_user = function (email) {
     if (email === null || email === undefined) {
         return false;
@@ -841,6 +849,14 @@ exports.my_current_email = function () {
 
 exports.my_current_user_id = function () {
     return my_user_id;
+};
+
+exports.my_custom_profile_data = function (field_id) {
+    if (field_id === undefined) {
+        blueslip.error("Undefined field id");
+        return;
+    }
+    return people_by_user_id_dict.get(my_user_id).profile_data[field_id];
 };
 
 exports.is_my_user_id = function (user_id) {

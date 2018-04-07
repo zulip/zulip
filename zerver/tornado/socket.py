@@ -121,7 +121,7 @@ class SocketConnection(sockjs.tornado.SockJSConnection):
 
         if 'csrf_token' not in msg['request']:
             # Debugging code to help with understanding #6961
-            logging.error("Invalid websockets auth request: %s" % (msg['request'],))
+            logging.error("CSRF token missing from websockets auth request: %s" % (msg['request'],))
             raise JsonableError(_('CSRF token entry missing from request'))
         if not _compare_salted_tokens(msg['request']['csrf_token'], self.csrf_token):
             raise JsonableError(_('CSRF token does not match that in cookie'))

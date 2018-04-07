@@ -11,6 +11,7 @@ var consts = {
     num_before_pointer: 200,
     num_after_pointer: 200,
     backward_batch_size: 100,
+    forward_batch_size: 100,
     catch_up_batch_size: 1000,
 };
 
@@ -130,20 +131,54 @@ exports.load_messages = function (opts) {
 };
 
 exports.load_messages_for_narrow = function (opts) {
+    var msg_list = message_list.narrowed;
+
+    msg_list.fetch_status.start_initial_narrow();
+
     message_fetch.load_messages({
         anchor: opts.then_select_id.toFixed(),
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
-        msg_list: message_list.narrowed,
+        msg_list: msg_list,
         use_first_unread_anchor: opts.use_initial_narrow_pointer,
-        cont: function () {
-            // TODO: if we know we got all the messages for this
-            // narrow, call message_list.narrow.fetch_status
-            // to prevent more fetching
+        cont: function (data) {
+            msg_list.fetch_status.finish_initial_narrow({
+                found_oldest: data.found_oldest,
+                found_newest: data.found_newest,
+            });
             message_scroll.hide_indicators();
             opts.cont();
         },
     });
+};
+
+exports.get_backfill_anchor = function (msg_list) {
+    var oldest_message_id;
+
+    if (msg_list === home_msg_list) {
+        msg_list = message_list.all;
+    }
+
+    if (msg_list.first() === undefined) {
+        oldest_message_id = page_params.pointer;
+    } else {
+        oldest_message_id = msg_list.first().id;
+    }
+    return oldest_message_id;
+};
+
+exports.get_frontfill_anchor = function (msg_list) {
+    if (msg_list === home_msg_list) {
+        msg_list = message_list.all;
+    }
+
+    var last_msg = msg_list.last();
+
+    if (last_msg) {
+        return last_msg.id;
+    }
+
+    return page_params.pointer;
 };
 
 exports.maybe_load_older_messages = function (opts) {
@@ -151,41 +186,104 @@ exports.maybe_load_older_messages = function (opts) {
     // of your window, and you want to get messages older
     // than what the browers originally fetched.
     var msg_list = opts.msg_list;
-    var oldest_message_id;
     if (!msg_list.fetch_status.can_load_older_messages()) {
         // We may already be loading old messages or already
         // got the oldest one.
         return;
     }
+
     opts.show_loading();
+    exports.do_backfill({
+        msg_list: msg_list,
+        num_before: consts.backward_batch_size,
+        cont: function () {
+            opts.hide_loading();
+        },
+    });
+};
+
+exports.do_backfill = function (opts) {
+    var msg_list = opts.msg_list;
+
     msg_list.fetch_status.start_older_batch();
-    if (msg_list.first() === undefined) {
-        oldest_message_id = page_params.pointer;
-    } else {
-        oldest_message_id = msg_list.first().id;
+    if (msg_list === home_msg_list) {
+        message_list.all.fetch_status.start_older_batch();
     }
 
-    var batch_size = consts.backward_batch_size;
+    var anchor = exports.get_backfill_anchor(msg_list).toFixed();
 
     exports.load_messages({
-        anchor: oldest_message_id.toFixed(),
-        num_before: batch_size,
+        anchor: anchor,
+        num_before: opts.num_before,
         num_after: 0,
         msg_list: msg_list,
         cont: function (data) {
-            opts.hide_loading();
             msg_list.fetch_status.finish_older_batch({
                 found_oldest: data.found_oldest,
             });
+            if (msg_list === home_msg_list) {
+                message_list.all.fetch_status.finish_older_batch({
+                    found_oldest: data.found_oldest,
+                });
+            }
+            if (opts.cont) {
+                opts.cont();
+            }
         },
     });
+};
+
+exports.maybe_load_newer_messages = function (opts) {
+    // This function gets called when you scroll to the top
+    // of your window, and you want to get messages newer
+    // than what the browers originally fetched.
+    var msg_list = opts.msg_list;
+
+    if (!msg_list.fetch_status.can_load_newer_messages()) {
+        // We may already be loading new messages or already
+        // got the newest one.
+        return;
+    }
+
+    msg_list.fetch_status.start_newer_batch();
+    if (msg_list === home_msg_list) {
+        message_list.all.fetch_status.start_newer_batch();
+    }
+
+    var anchor = exports.get_frontfill_anchor(msg_list).toFixed();
+
+    exports.load_messages({
+        anchor: anchor,
+        num_before: 0,
+        num_after: consts.forward_batch_size,
+        msg_list: msg_list,
+        cont: function (data) {
+            msg_list.fetch_status.finish_newer_batch({
+                found_newest: data.found_newest,
+            });
+            if (msg_list === home_msg_list) {
+                message_list.all.fetch_status.finish_newer_batch({
+                    found_newest: data.found_newest,
+                });
+            }
+        },
+    });
+};
+
+exports.start_backfilling_messages = function () {
+    // backfill more messages after the user is idle
+    $(document).idle({idle: consts.backfill_idle_time,
+                      onIdle: function () {
+                          exports.do_backfill({
+                              num_before: consts.backfill_batch_size,
+                              msg_list: home_msg_list,
+                          });
+                      }});
 };
 
 exports.initialize = function () {
     // get the initial message list
     function load_more(data) {
-        var messages = data.messages;
-
         // If we received the initially selected message, select it on the client side,
         // but not if the user has already selected another one during load.
         //
@@ -197,37 +295,38 @@ exports.initialize = function () {
                                      target_scroll_offset: page_params.initial_offset});
         }
 
-        // catch the user up
-        if (messages.length !== 0) {
-            var latest_id = messages[messages.length-1].id;
-            if (latest_id < page_params.max_message_id) {
-                exports.load_messages({
-                    anchor: latest_id.toFixed(),
-                    num_before: 0,
-                    num_after: consts.catch_up_batch_size,
-                    msg_list: home_msg_list,
-                    cont: load_more,
-                });
-                return;
-            }
+        home_msg_list.fetch_status.finish_newer_batch({
+            found_newest: data.found_newest,
+        });
+
+        message_list.all.fetch_status.finish_newer_batch({
+            found_newest: data.found_newest,
+        });
+
+        if (data.found_newest) {
+            server_events.home_view_loaded();
+            exports.start_backfilling_messages();
+            return;
         }
 
-        server_events.home_view_loaded();
+        // If we fall through here, we need to keep fetching more data, and
+        // we'll call back to the function we're in.
+        var messages = data.messages;
+        var latest_id = messages[messages.length-1].id;
 
-        // backfill more messages after the user is idle
-        $(document).idle({idle: consts.backfill_idle_time,
-                          onIdle: function () {
-                              var first_id = message_list.all.first().id;
-                              exports.load_messages({
-                                  anchor: first_id,
-                                  num_before: consts.backfill_batch_size,
-                                  num_after: 0,
-                                  msg_list: home_msg_list,
-                              });
-                          }});
+        exports.load_messages({
+            anchor: latest_id.toFixed(),
+            num_before: 0,
+            num_after: consts.catch_up_batch_size,
+            msg_list: home_msg_list,
+            cont: load_more,
+        });
+
     }
 
     if (page_params.have_initial_messages) {
+        home_msg_list.fetch_status.start_newer_batch();
+        message_list.all.fetch_status.start_newer_batch();
         exports.load_messages({
             anchor: page_params.pointer,
             num_before: consts.num_before_pointer,

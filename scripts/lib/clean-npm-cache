@@ -40,12 +40,12 @@ def get_caches_in_use(threshold_days):
         caches_in_use.add(CURRENT_CACHE)
 
     for setup_dir in setups_to_check:
-        PACKAGES_FILE = os.path.join(setup_dir, "package.json")
-        if os.path.exists(PACKAGES_FILE):
+        node_modules_link_path = os.path.join(setup_dir, "node_modules")
+        if not os.path.islink(node_modules_link_path):
             # If 'package.json' file doesn't exist then no node_modules
             # cache is associated with this setup.
-            sha1sum = generate_sha1sum_node_modules(setup_dir=setup_dir)
-            caches_in_use.add(os.path.join(NODE_MODULES_CACHE_PATH, sha1sum))
+            continue
+        caches_in_use.add(os.readlink(node_modules_link_path))
 
     return caches_in_use
 

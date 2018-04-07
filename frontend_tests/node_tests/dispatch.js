@@ -1,6 +1,7 @@
 var noop = function () {};
 
 set_global('document', 'document-stub');
+set_global('window', {});
 set_global('$', function () {
     return {
         trigger: noop,
@@ -45,9 +46,7 @@ set_global('settings_notifications', {
 });
 
 set_global('settings_org', {
-    reset_realm_default_language: noop,
-    update_message_retention_days: noop,
-    update_realm_description: noop,
+    sync_realm_settings: noop,
 });
 
 set_global('message_edit', {
@@ -210,6 +209,13 @@ var event_fixtures = {
         type: 'realm',
         op: 'update',
         property: 'disallow_disposable_email_addresses',
+        value: false,
+    },
+
+    realm__update_default_twenty_four_hour_time: {
+        type: 'realm',
+        op: 'update',
+        property: 'default_twenty_four_hour_time',
         value: false,
     },
 
@@ -473,6 +479,17 @@ var event_fixtures = {
     delete_message: {
         type: 'delete_message',
         message_id: 1337,
+        message_type: "stream",
+        stream_id: 99,
+        topic: 'topic1',
+    },
+
+    custom_profile_fields: {
+        type: 'custom_profile_fields',
+        fields: [
+            {id: 1, name: 'teams', type: 1},
+            {id: 2, name: 'hobbies', type: 1},
+        ],
     },
 };
 
@@ -491,6 +508,16 @@ with_overrides(function (override) {
     var event = event_fixtures.alert_words;
     dispatch(event);
     assert_same(global.alert_words.words, ['fire', 'lunch']);
+
+});
+
+with_overrides(function (override) {
+    // custom profile fields
+    var event = event_fixtures.custom_profile_fields;
+    override('settings_profile_fields.populate_profile_fields', noop);
+    override('settings_profile_fields.report_success', noop);
+    dispatch(event);
+    assert_same(global.page_params.custom_profile_fields, event.fields);
 
 });
 
@@ -908,7 +935,7 @@ with_overrides(function (override) {
     });
 });
 
-// mark_message_as_read requires message_store and these dependencies.
+// notify_server_message_read requires message_store and these dependencies.
 zrequire('unread_ops');
 zrequire('unread');
 zrequire('topic_data');
@@ -918,13 +945,6 @@ set_global('message_store', {});
 with_overrides(function (override) {
     // delete_message
     var event = event_fixtures.delete_message;
-    message_store.get = function (msg_id) {
-        return { id: msg_id,
-             reactions: [],
-             stream_id: 99,
-             subject: 'topic1',
-             type: 'stream'};
-    };
 
     override('stream_list.update_streams_sidebar', noop);
     global.with_stub(function (stub) {
@@ -934,10 +954,10 @@ with_overrides(function (override) {
         assert_same(args.message_id, 1337);
     });
     global.with_stub(function (stub) {
-        override('unread_ops.mark_message_as_read', stub.f);
+        override('unread_ops.process_read_messages_event', stub.f);
         dispatch(event);
-        var args = stub.get_args('message');
-        assert_same(args.message.id, 1337);
+        var args = stub.get_args('message_ids');
+        assert_same(args.message_ids, [1337]);
     });
     global.with_stub(function (stub) {
         override('topic_data.remove_message', stub.f);

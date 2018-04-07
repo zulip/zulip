@@ -11,12 +11,14 @@ from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
 from django.utils.timezone import timedelta as timezone_timedelta
 
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, \
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, \
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
     try_add_realm_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
+from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.upload import upload_backend
+from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
@@ -249,27 +251,26 @@ class Command(BaseCommand):
             Subscription.objects.bulk_create(subscriptions_to_add)
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
-            if not options['test_suite']:
-                # Create custom profile field data
-                phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
-                                                                  CustomProfileField.SHORT_TEXT)
-                biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
-                                                               CustomProfileField.LONG_TEXT)
-                favorite_integer = try_add_realm_custom_profile_field(zulip_realm, "Favorite integer",
-                                                                      CustomProfileField.INTEGER)
+            # Create custom profile field data
+            phone_number = try_add_realm_custom_profile_field(zulip_realm, "Phone number",
+                                                              CustomProfileField.SHORT_TEXT)
+            biography = try_add_realm_custom_profile_field(zulip_realm, "Biography",
+                                                           CustomProfileField.LONG_TEXT)
+            favorite_food = try_add_realm_custom_profile_field(zulip_realm, "Favorite food",
+                                                               CustomProfileField.SHORT_TEXT)
 
-                # Fill in values for Iago and Hamlet
-                hamlet = get_user("hamlet@zulip.com", zulip_realm)
-                do_update_user_custom_profile_data(iago, [
-                    {"id": phone_number.id, "value": "+1-234-567-8901"},
-                    {"id": biography.id, "value": "Betrayer of Othello."},
-                    {"id": favorite_integer.id, "value": 17},
-                ])
-                do_update_user_custom_profile_data(hamlet, [
-                    {"id": phone_number.id, "value": "+0-11-23-456-7890"},
-                    {"id": biography.id, "value": "Prince of Denmark, and other things!"},
-                    {"id": favorite_integer.id, "value": 12},
-                ])
+            # Fill in values for Iago and Hamlet
+            hamlet = get_user("hamlet@zulip.com", zulip_realm)
+            do_update_user_custom_profile_data(iago, [
+                {"id": phone_number.id, "value": "+1-234-567-8901"},
+                {"id": biography.id, "value": "Betrayer of Othello."},
+                {"id": favorite_food.id, "value": "Apples"},
+            ])
+            do_update_user_custom_profile_data(hamlet, [
+                {"id": phone_number.id, "value": "+0-11-23-456-7890"},
+                {"id": biography.id, "value": "Prince of Denmark, and other things!"},
+                {"id": favorite_food.id, "value": "Dark chocolate"},
+            ])
         else:
             zulip_realm = get_realm("zulip")
             recipient_streams = [klass.type_id for klass in
@@ -280,16 +281,8 @@ class Command(BaseCommand):
 
         # Create a test realm emoji.
         IMAGE_FILE_PATH = os.path.join(settings.STATIC_ROOT, 'images', 'test-images', 'checkbox.png')
-        UPLOADED_EMOJI_FILE_NAME = 'green_tick.png'
         with open(IMAGE_FILE_PATH, 'rb') as fp:
-            upload_backend.upload_emoji_image(fp, UPLOADED_EMOJI_FILE_NAME, iago)
-            RealmEmoji.objects.create(
-                name='green_tick',
-                author=iago,
-                realm=zulip_realm,
-                deactivated=False,
-                file_name=UPLOADED_EMOJI_FILE_NAME,
-            )
+            check_add_realm_emoji(zulip_realm, 'green_tick', iago, fp)
 
         if not options["test_suite"]:
             # Populate users with some bar data
@@ -316,6 +309,15 @@ class Command(BaseCommand):
 
         # Generate a new set of test data.
         create_test_data()
+
+        # prepopulate the URL preview/embed data for the links present
+        # in the config.generate_data.json data set.  This makes it
+        # possible for populate_db to run happily without Internet
+        # access.
+        with open("zerver/fixtures/docs_url_preview_data.json", "r") as f:
+            urls_with_preview_data = ujson.load(f)
+            for url in urls_with_preview_data:
+                cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)
 
         threads = options["threads"]
         jobs = []  # type: List[Tuple[int, List[List[int]], Dict[str, Any], Callable[[str], int], int]]

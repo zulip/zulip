@@ -18,7 +18,7 @@ from zerver.lib.queue import queue_json_publish
 from version import ZULIP_VERSION
 
 def try_git_describe() -> Optional[str]:
-    try:
+    try:  # nocoverage
         return subprocess.check_output(
             ['git',
              '--git-dir', os.path.join(os.path.dirname(__file__), '../.git'),
@@ -121,6 +121,12 @@ class AdminNotifyHandler(logging.Handler):
             report['message'] = "Exception in preparing exception report!"
             logging.warning(report['message'], exc_info=True)
             report['stack_trace'] = "See /var/log/zulip/errors.log"
+
+        if settings.DEBUG_ERROR_REPORTING:  # nocoverage
+            logging.warning("Reporting an error to admins...")
+            logging.warning("Reporting an error to admins: {} {} {} {} {}" .format(
+                record.levelname, report['logger_name'], report['log_module'],
+                report['message'], report['stack_trace']))
 
         try:
             if settings.STAGING_ERROR_NOTIFICATIONS:

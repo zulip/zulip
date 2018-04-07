@@ -351,12 +351,113 @@ input[type=checkbox] + .inline-block {
     margin-bottom: 0px;
 }
 
+#settings_page .icon-button {
+    min-width: auto;
+    border-width: 2px;
+    -moz-border-radius: 28px;
+    -webkit-border-radius: 28px;
+    border-radius: 5px;
+    border: 1px solid hsl(0,0%,80%);
+    display: inline-block;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 3px 14px 4px 11px;
+    text-decoration: none;
+    color: hsl(0, 0%, 46%);
+    font-weight: 400;
+}
+
+#settings_page .icon-button:hover {
+    background: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 61%);
+    color: hsl(0, 0%, 18%);
+}
+
+#settings_page .icon-button:hover .icon-button-icon {
+    color: hsl(0, 0%, 47%);
+}
+
+#settings_page .icon-button.primary:hover {
+    background-color: hsl(166, 35%, 57%);
+    border: 1px solid hsl(166, 35%, 57%);
+}
+
+#settings_page .icon-button.primary {
+    background-color: hsl(156, 30%, 50%);
+    color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(155, 30%, 50%);
+}
+
+#settings_page .icon-button .icon-button-icon {
+    vertical-align: bottom;
+    margin-right: 3px;
+    font-size: 24px;
+    line-height: 19px;
+    font-weight: 600;
+}
+
+#settings_page .icon-button.primary .icon-button-icon {
+    width: 10px;
+    margin-bottom: 2px;
+    margin-right: 3px;
+}
+
+#settings_page .icon-button .icon-button-text {
+    vertical-align: baseline;
+}
+
+#settings_page .save-button-controls {
+    display: inline;
+    margin-left: 15px;
+}
+
+#settings_page .save-button-controls.hide {
+    display: none;
+}
+
+#settings_page .save-button {
+    margin-right: 5px;
+}
+
+#settings_page .icon-button.save-button.saving {
+    background: hsl(156, 14%, 40%);
+    border-color: hsl(156, 14%, 40%);
+}
+
+#settings_page .save-button.saving .icon-button-icon {
+    display: none;
+}
+
+#settings_page .save-button.saving .icon-button-loading {
+    display: inline-block;
+    margin-right: 2px;
+}
+
+#settings_page .save-button .icon-button-loading {
+    display: none;
+}
+
 .organization-settings-parent div:first-of-type {
     margin-top: 10px;
 }
 
 .org-settings-form .organization-submission {
     margin-top: 0px;
+}
+
+.admin-realm-form .subsection-header h3 {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] {
+    display: inline;
+}
+
+.admin-realm-form .subsection-header div[class*="subsection-changes"] button.show {
+    display: inline-block;
+    margin-top: -4px;
+    min-width: 80px;
+    line-height: 10px;
 }
 
 #default_language {
@@ -408,6 +509,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form,
     #settings .settings-section .new-alert-word-form,
     #filter-settings .new-filter-form,
+    #profile-field-settings .new-profile-field-form,
     #settings .settings-section .notification-settings-form,
     #settings .settings-section .display-settings-form,
     #settings .settings-section .edit-bot-form-box {
@@ -419,6 +521,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .control-label,
     #settings .settings-section .new-alert-word-form .control-label,
     #filter-settings .new-filter-form .control-label,
+    #profile-field-settings .new-profile-field-form .control-label,
     #settings .settings-section .edit-bot-form-box .control-label {
         display: block;
         width: 120px;
@@ -434,6 +537,7 @@ input[type=checkbox].inline-block {
     #settings .settings-section .new-bot-form .controls,
     #settings .settings-section .new-alert-word-form button,
     #filter-settings .new-filter-form .controls,
+    #profile-field-settings .new-profile-field-form .controls,
     #settings .settings-section .edit-bot-form-box .controls {
         margin: auto;
         text-align: center;
@@ -453,14 +557,13 @@ input[type=checkbox].inline-block {
     width: auto !important;
 
     background: transparent;
-    border: 1px solid hsl(178, 100%, 40%);
-    color: hsl(178, 100%, 40%);
-
-    padding: 2px 5px;
     border-radius: 4px;
-
     margin-top: 14px;
     margin-left: 10px;
+    border: 1px solid hsl(156, 30%, 50%);
+    color: hsl(156, 30%, 50%);
+    padding: 3px 10px;
+    font-size: 15px;
 }
 
 #settings_page .alert-notification.alert-error {
@@ -472,11 +575,7 @@ input[type=checkbox].inline-block {
     width: 13px;
     height: 20px;
     margin: 0;
-}
-
-/* make the spinner green like the text and box. */
-#settings_page .alert-notification .loading_indicator_spinner svg path {
-    fill: hsl(178, 100%, 40%);
+    margin-right: 3px;
 }
 
 #settings_page .alert-notification .loading_indicator_text {
@@ -486,7 +585,9 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .alert-notification img {
-    margin-right: 5px;
+    margin-right: 6px;
+    vertical-align: middle;
+    margin-top: -2px;
 }
 
 #notification-settings .notification-reminder {
@@ -554,8 +655,7 @@ input[type=checkbox].inline-block {
     padding: 6px;
 }
 
-.add-new-emoji-box #emoji-file-name,
-.add-new-emoji-box #emoji_file_input_error {
+.add-new-emoji-box #emoji-file-name {
     width: 0;
     top: -19px;
     left: 3px;
@@ -567,10 +667,15 @@ input[type=checkbox].inline-block {
     font-style: italic;
 }
 
+#emoji_file_input_error {
+    vertical-align: middle;
+}
+
 .add-new-emoji-box #emoji-file-name {
     color: hsl(0, 0%, 66%);
 }
 
+.add-new-profile-field-box button,
 .add-new-filter-box button {
     margin-left: calc(10em - -20px) !important;
 }
@@ -579,10 +684,12 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
+.admin_profile_fields_table,
 .admin_filters_table {
     margin-top: 20px;
 }
 
+#admin-profile-field-name-status,
 #admin-filter-pattern-status,
 #admin-filter-format-status {
     margin: 20px 0 0 0;
@@ -762,6 +869,7 @@ input[type=checkbox].inline-block {
 #get_api_key_box .control-label,
 .admin-emoji-form .control-label,
 .admin-filter-form .control-label,
+.admin-profile-field-form .control-label,
 .edit_bot_form .control-label {
     width: 10em;
     text-align: right;
@@ -924,6 +1032,11 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group span[contenteditable] {
     display: inline-block;
+    word-break: break-all;
+}
+
+#user-groups .ntm {
+    cursor: not-allowed;
 }
 
 #user-groups .user-group span[contenteditable]:empty::before {
@@ -933,7 +1046,7 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .user-group span[contenteditable]:focus,
-#user-groups .user-group span[contenteditable]:hover {
+#user-groups .user-group span[contenteditable="true"]:hover {
     border-bottom: 1px solid hsl(0, 0%, 80%);
     outline: none;
 }
@@ -945,6 +1058,15 @@ input[type=checkbox].inline-block {
 
 #user-groups .user-group h4 > .button {
     vertical-align: 1px;
+}
+
+#user-groups .ntm h4 > .button {
+    cursor: not-allowed;
+    display: none;
+}
+
+#user-groups .ntm h4 > .button:hover {
+    border-color: hsl(4, 56%, 82%);
 }
 
 #user-groups .save-status {
@@ -1210,6 +1332,15 @@ input[type=checkbox].inline-block {
 
 #settings_page #change_password_modal {
     width: auto;
+}
+
+#settings_page .custom_user_field {
+    padding-bottom: 20px;
+}
+
+#settings_page .custom_user_field textarea {
+    width: 320px;
+    height: 80px;
 }
 
 #settings_page #change_password_modal .change_password_info,

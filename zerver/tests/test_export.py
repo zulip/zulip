@@ -8,7 +8,7 @@ import shutil
 import ujson
 
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Set
+from typing import Any, Dict, List, Set, Optional
 
 from zerver.lib.actions import (
     do_claim_attachments,
@@ -20,7 +20,7 @@ from zerver.lib.export import (
 )
 from zerver.lib.upload import (
     claim_attachment,
-    upload_message_image,
+    upload_message_file,
 )
 from zerver.lib.utils import (
     query_chunker,
@@ -181,7 +181,7 @@ class ExportTest(ZulipTestCase):
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    def _export_realm(self, realm: Realm, exportable_user_ids: Set[int]=None) -> Dict[str, Any]:
+    def _export_realm(self, realm: Realm, exportable_user_ids: Optional[Set[int]]=None) -> Dict[str, Any]:
         output_dir = self._make_output_dir()
         with patch('logging.info'), patch('zerver.lib.export.create_soft_link'):
             do_export_realm(
@@ -212,7 +212,7 @@ class ExportTest(ZulipTestCase):
     def test_attachment(self) -> None:
         message = Message.objects.all()[0]
         user_profile = message.sender
-        url = upload_message_image(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,

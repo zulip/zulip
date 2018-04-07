@@ -29,6 +29,7 @@ enforce_fully_covered = {
     'static/js/channel.js',
     'static/js/colorspace.js',
     'static/js/common.js',
+    'static/js/components.js',
     'static/js/compose_state.js',
     'static/js/compose_ui.js',
     'static/js/composebox_typeahead.js',
@@ -93,6 +94,12 @@ os.environ['TZ'] = 'UTC'
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 
+# Add ".js" to the end of all the file arguments, so index.js
+# can actually verify if the file exists or not.
+for index, arg in enumerate(options.args):
+    if not arg.endswith('.js'):
+        options.args[index] = arg + '.js'
+
 # The index.js test runner is the real "driver" here, and we launch
 # with either istanbul or node, depending on whether we want coverage
 # reports.  Running under istanbul is slower and creates funny
@@ -144,9 +151,6 @@ if options.coverage and ret == 0:
     except IOError:
         print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
         raise
-    print()
-    print("=============================================================================")
-    print("Checking enforced fully covered files...")
     for relative_path in enforce_fully_covered:
         path = ROOT_DIR + "/" + relative_path
         if not (path in coverage_json):
@@ -157,17 +161,12 @@ if options.coverage and ret == 0:
         if not check_line_coverage(line_coverage, line_mapping):
             ret = 1
     if ret:
+        print()
         print("It looks like your changes lost 100% test coverage in one or more files.")
         print("Usually, the right fix for this is to add some tests.")
         print("But also check out the include/exclude lists in `tools/test-js-with-node`.")
         print("To run this check locally, use `test-js-with-node --coverage`.")
-    else:
-        print("Success: All enforced fully covered files still have 100% test coverage!")
-    print("=============================================================================")
-    print()
 
-    print("=============================================================================")
-    print("Checking for fully covered files that are not enforced yet...")
     ok = True
     for path in coverage_json:
         if '/static/js/' in path:
@@ -178,15 +177,13 @@ if options.coverage and ret == 0:
                     and not (relative_path in enforce_fully_covered):
                 ok = False
                 print("ERROR: %s has complete node test coverage and is not enforced." % (relative_path,))
-    if ok:
-        print("Success: There are no fully covered files that are not enforced yet!")
-    else:
+    if not ok:
+        print()
         print("There are one or more fully covered files that are not enforced.")
         print("Add the file(s) to enforce_fully_covered in `tools/test-js-with-node`.")
         ret = 1
-    print("=============================================================================")
-    print()
 
+print()
 if ret == 0:
     if options.coverage:
         print("View coverage reports at http://127.0.0.1:9991/node-coverage/index.html")

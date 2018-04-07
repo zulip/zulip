@@ -59,7 +59,7 @@ function init_email_clipboard() {
             var copy_email_icon = email_el.find('i');
             copy_email_icon.removeClass('hide_copy_icon');
 
-            var copy_email_clipboard = new Clipboard(copy_email_icon[0]);
+            var copy_email_clipboard = new ClipboardJS(copy_email_icon[0]);
             copy_email_clipboard.on('success', copy_email_handler);
         }
     });
@@ -281,6 +281,12 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_collapse = !message.locally_echoed && !message.collapsed;
         var should_display_uncollapse = !message.locally_echoed && message.collapsed;
 
+        var should_display_edit_and_view_source =
+                message.content !== '<p>(deleted)</p>' ||
+                editability === message_edit.editability_types.FULL ||
+                editability === message_edit.editability_types.TOPIC_ONLY;
+        var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
+
         var args = {
             message: message,
             use_edit_icon: use_edit_icon,
@@ -295,6 +301,8 @@ exports.toggle_actions_popover = function (element, id) {
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
+            should_display_edit_and_view_source: should_display_edit_and_view_source,
+            should_display_quote_and_reply: should_display_quote_and_reply,
         };
 
         var ypos = elt.offset().top;
@@ -822,7 +830,7 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
-    new Clipboard('.copy_link');
+    new ClipboardJS('.copy_link');
 
     $('body').on('click', '.copy_link', function (e) {
         popovers.hide_actions_popover();

@@ -78,7 +78,7 @@ var keypress_mappings = {
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
     65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
-    67: {name: 'compose_private_message', message_view_only: true}, // 'C'
+    67: {name: 'C_deprecated', message_view_only: true}, // 'C'
     68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
@@ -102,6 +102,7 @@ var keypress_mappings = {
     117: {name: 'show_sender_info', message_view_only: true}, // 'u'
     118: {name: 'show_lightbox', message_view_only: true}, // 'v'
     119: {name: 'query_users', message_view_only: false}, // 'w'
+    120: {name: 'compose_private_message', message_view_only: true}, // 'x'
 };
 
 exports.get_keydown_hotkey = function (e) {
@@ -622,7 +623,7 @@ exports.process_hotkey = function (e, hotkey) {
             gear_menu.open();
             return true;
         case 'show_shortcuts': // Show keyboard shortcuts page
-            ui.maybe_show_keyboard_shortcuts();
+            info_overlay.maybe_show_keyboard_shortcuts();
             return true;
         case 'stream_cycle_backward':
             narrow.stream_cycle_backward();
@@ -643,6 +644,9 @@ exports.process_hotkey = function (e, hotkey) {
             // Note that you can "enter" to respond to messages as well,
             // but that is handled in process_enter_key().
             compose_actions.respond_to_message({trigger: 'hotkey'});
+            return true;
+        case 'C_deprecated':
+            ui.maybe_show_deprecation_notice('C');
             return true;
     }
 
@@ -706,10 +710,7 @@ exports.process_hotkey = function (e, hotkey) {
             reactions.open_reactions_popover();
             return true;
         case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-            // Use canonical name.
-            var thumbs_up_codepoint = '1f44d';
-            var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_codepoint];
-            reactions.toggle_emoji_reaction(msg.id, canonical_name);
+            reactions.toggle_emoji_reaction(msg.id, "thumbs_up");
             return true;
         case 'toggle_mute':
             muting_ui.toggle_mute(msg);

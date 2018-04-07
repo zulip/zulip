@@ -166,7 +166,7 @@ def api_pivotal_webhook(request: HttpRequest, user_profile: UserProfile) -> Http
         # Attempt to parse v5 JSON payload
         subject, content = api_pivotal_webhook_v5(request, user_profile)
 
-    if subject is None or content is None:
+    if subject is None or content is None or not content:
         return json_error(_("Unable to handle Pivotal payload"))
 
     check_send_webhook_message(request, user_profile, subject, content)

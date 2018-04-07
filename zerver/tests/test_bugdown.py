@@ -37,6 +37,7 @@ from zerver.models import (
     Message,
     Stream,
     Realm,
+    RealmEmoji,
     RealmFilter,
     Recipient,
     UserProfile,
@@ -241,18 +242,38 @@ class BugdownTest(ZulipTestCase):
 
         return test_fixtures, data['linkify_tests']
 
+    def test_bugdown_no_ignores(self) -> None:
+        # We do not want any ignored tests to be committed and merged.
+        format_tests, linkify_tests = self.load_bugdown_tests()
+        for name, test in format_tests.items():
+            message = 'Test "%s" shouldn\'t be ignored.' % (name,)
+            is_ignored = test.get('ignore', False)
+            self.assertFalse(is_ignored, message)
+
     @slow("Aggregate of runs dozens of individual markdown tests")
     def test_bugdown_fixtures(self) -> None:
         format_tests, linkify_tests = self.load_bugdown_tests()
-        valid_keys = set(['name', "input", "expected_output",
+        valid_keys = set(["name", "input", "expected_output",
                           "backend_only_rendering",
-                          "marked_expected_output", "text_content"])
+                          "marked_expected_output", "text_content",
+                          "translate_emoticons", "ignore"])
 
         for name, test in format_tests.items():
             # Check that there aren't any unexpected keys as those are often typos
             self.assertEqual(len(set(test.keys()) - valid_keys), 0)
 
-            converted = bugdown_convert(test['input'])
+            # Ignore tests if specified
+            if test.get('ignore', False):
+                return  # nocoverage
+
+            if test.get('translate_emoticons', False):
+                # Create a userprofile and send message with it.
+                user_profile = self.example_user('othello')
+                do_set_user_display_setting(user_profile, 'translate_emoticons', True)
+                msg = Message(sender=user_profile, sending_client=get_client("test"))
+                converted = render_markdown(msg, test['input'])
+            else:
+                converted = bugdown_convert(test['input'])
 
             print("Running Bugdown test %s" % (name,))
             self.assertEqual(converted, test['expected_output'])
@@ -600,7 +621,10 @@ class BugdownTest(ZulipTestCase):
         # Needs to mock an actual message because that's how bugdown obtains the realm
         msg = Message(sender=self.example_user('hamlet'))
         converted = bugdown.convert(":green_tick:", message_realm=realm, message=msg)
-        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', 'green_tick.png', realm.id)))
+        realm_emoji = RealmEmoji.objects.filter(realm=realm,
+                                                name='green_tick',
+                                                deactivated=False).get()
+        self.assertEqual(converted, '<p>%s</p>' % (emoji_img(':green_tick:', realm_emoji.file_name, realm.id)))
 
         # Deactivate realm emoji.
         do_remove_realm_emoji(realm, 'green_tick')
@@ -1063,58 +1087,6 @@ class BugdownTest(ZulipTestCase):
                          '<p>There #<strong>Nonexistentstream</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
-    def test_stream_subscribe_button_simple(self) -> None:
-        msg = '!_stream_subscribe_button(simple)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_in_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple (not\\))'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple (not)">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple (not)</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
-    def test_stream_subscribe_button_after_name(self) -> None:
-        msg = '!_stream_subscribe_button(simple) (not)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            ' (not)</p>'
-        )
-
-    def test_stream_subscribe_button_slash(self) -> None:
-        msg = '!_stream_subscribe_button(simple\\\\)'
-        converted = bugdown_convert(msg)
-        self.assertEqual(
-            converted,
-            '<p>'
-            '<span class="inline-subscribe" data-stream-name="simple\\">'
-            '<button class="inline-subscribe-button btn">Subscribe to simple\\</button>'
-            '<span class="inline-subscribe-error"></span>'
-            '</span>'
-            '</p>'
-        )
-
     def test_in_app_modal_link(self) -> None:
         msg = '!modal_link(#settings, Settings page)'
         converted = bugdown_convert(msg)
@@ -1211,6 +1183,17 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(
             bugdown.convert(msg, message_realm=realm, message=message),
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">http://zulip.testserver/#narrow/stream/999-hello</a></p>'
+        )
+
+    def test_relative_link_streams_page(self) -> None:
+        realm = get_realm("zulip")
+        sender_user_profile = self.example_user('othello')
+        message = Message(sender=sender_user_profile, sending_client=get_client("test"))
+        msg = "http://zulip.testserver/#streams/all"
+
+        self.assertEqual(
+            bugdown.convert(msg, message_realm=realm, message=message),
+            '<p><a href="#streams/all" target="_blank" title="#streams/all">http://zulip.testserver/#streams/all</a></p>'
         )
 
     def test_md_relative_link(self) -> None:

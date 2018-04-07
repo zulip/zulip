@@ -3,11 +3,15 @@ var transmit = (function () {
 var exports = {};
 
 var socket;
-if (page_params.use_websockets) {
-    socket = new Socket("/sockjs");
-}
-// For debugging.  The socket will eventually move out of this file anyway.
-exports._socket = socket;
+$(function () {
+    // We initialize the socket inside a function so that this code
+    // runs after `csrf_token` is initialized in setup.js.
+    if (page_params.use_websockets) {
+        socket = new Socket("/sockjs");
+    }
+    // For debugging.  The socket will eventually move out of this file anyway.
+    exports._socket = socket;
+});
 
 function send_message_socket(request, success, error) {
     request.socket_user_agent = navigator.userAgent;

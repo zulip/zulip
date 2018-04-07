@@ -40,56 +40,76 @@ exports.toggle = (function () {
             return _component;
         }(opts));
 
-        // store once a copy of the tabs inside the parent in a jQuery object/array.
         var meta = {
             $ind_tab: component.find(".ind-tab"),
-            last_value: null,
+            idx: -1,
         };
+
+        function select_tab(idx, payload) {
+            meta.$ind_tab.removeClass("selected");
+
+            var elem = meta.$ind_tab.eq(idx);
+            elem.addClass("selected");
+
+            if (idx !== meta.idx) {
+                meta.idx = idx;
+                if (opts.callback) {
+                    opts.callback(
+                        opts.values[idx].label,
+                        opts.values[idx].key,
+                        payload || {}
+                    );
+                }
+            }
+
+            if (!opts.child_wants_focus) {
+                elem.focus();
+            }
+        }
+
+        function maybe_go_left() {
+            if (meta.idx > 0) {
+                select_tab(meta.idx - 1);
+                return true;
+            }
+        }
+
+        function maybe_go_right() {
+            if (meta.idx < opts.values.length - 1) {
+                select_tab(meta.idx + 1);
+                return true;
+            }
+        }
 
         (function () {
             meta.$ind_tab.click(function () {
-                meta.$ind_tab.removeClass("selected");
-                $(this).addClass("selected");
-                if (opts.callback) {
-                    var id = +$(this).data("tab-id");
-
-                    if (meta.last_value !== opts.values[id].label) {
-                        meta.last_value = opts.values[id].label;
-                        opts.callback(meta.last_value, opts.values[id].key, {});
-                    }
-                }
-                $(this).focus();
-            });
-
-            meta.$ind_tab.keydown(function (e) {
-                var key = e.which || e.keyCode;
                 var idx = $(this).data("tab-id");
-
-                if (key === 37) {
-                    if (idx > 0) {
-                        $(this).prev().click();
-                    }
-                } else if (key === 39) {
-                    if (idx < opts.values.length - 1) {
-                        $(this).next().click();
-                    }
-                }
+                select_tab(idx);
             });
+
+            keydown_util.handle({
+                elem: meta.$ind_tab,
+                handlers: {
+                    left_arrow: maybe_go_left,
+                    right_arrow: maybe_go_right,
+                },
+            });
+
             if (typeof opts.selected === "number") {
-                $(component).find(".ind-tab[data-tab-id='" + opts.selected + "']").click();
+                select_tab(opts.selected);
             }
         }());
 
         var prototype = {
-            value: function () {
-                // find whatever is visually selected in the tab switcher.
-                var sel = component.find(".selected");
+            maybe_go_left: maybe_go_left,
+            maybe_go_right: maybe_go_right,
 
-                if (sel.length > 0) {
-                    var id = +sel.eq(0).data("tab-id");
-                    return opts.values[id].label;
+            value: function () {
+                if (meta.idx >= 0) {
+                    return opts.values[meta.idx].label;
                 }
             },
+
             get: function () {
                 return component;
             },
@@ -106,18 +126,10 @@ exports.toggle = (function () {
                 });
 
                 var idx = opts.values.indexOf(value);
-                var $this_tab = meta.$ind_tab.filter("[data-tab-id='" + idx + "']");
 
-                if (idx !== -1 && idx !== meta.last_value) {
-                    meta.$ind_tab.removeClass("selected");
-                    $this_tab.addClass("selected");
-
-                    opts.callback(value.label, value.key, payload || {});
-
-                    meta.last_value = idx;
+                if (idx >= 0) {
+                    select_tab(idx, payload);
                 }
-
-                $this_tab.focus();
             },
         };
 

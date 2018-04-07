@@ -222,9 +222,6 @@ class RealmTest(ZulipTestCase):
 
         new_signup_notifications_stream_id = 4
         req = dict(signup_notifications_stream_id = ujson.dumps(new_signup_notifications_stream_id))
-        with self.settings(NEW_USER_BOT=None):
-            result = self.client_patch("/json/realm", req)
-            self.assert_json_error(result, 'NEW_USER_BOT must configured first.')
 
         result = self.client_patch('/json/realm', req)
         self.assert_json_success(result)
@@ -365,13 +362,22 @@ class RealmAPITest(ZulipTestCase):
         """Tests updating the realm property 'allow_message_editing'."""
         self.set_up_db('allow_message_editing', False)
         self.set_up_db('message_content_edit_limit_seconds', 0)
+        self.set_up_db('allow_community_topic_editing', False)
         realm = self.update_with_api('allow_message_editing', True)
         realm = self.update_with_api('message_content_edit_limit_seconds', 100)
+        realm = self.update_with_api('allow_community_topic_editing', True)
         self.assertEqual(realm.allow_message_editing, True)
         self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        self.assertEqual(realm.allow_community_topic_editing, True)
         realm = self.update_with_api('allow_message_editing', False)
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 100)
+        self.assertEqual(realm.allow_community_topic_editing, True)
         realm = self.update_with_api('message_content_edit_limit_seconds', 200)
         self.assertEqual(realm.allow_message_editing, False)
         self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.allow_community_topic_editing, True)
+        realm = self.update_with_api('allow_community_topic_editing', False)
+        self.assertEqual(realm.allow_message_editing, False)
+        self.assertEqual(realm.message_content_edit_limit_seconds, 200)
+        self.assertEqual(realm.allow_community_topic_editing, False)

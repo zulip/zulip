@@ -168,19 +168,19 @@ exports.set_up = function () {
         default_stream_input[0].value = "";
     });
 
-    $("#settings_content").on("click", "#do_deactivate_stream_button", function () {
-        if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
-            blueslip.error("Stream deactivation canceled due to non-matching fields.");
-            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
-               $("#home-error"), 'alert-error');
-        }
-        overlays.close_modal('deactivation_stream_modal');
-        $("#deactivation_stream_modal").remove();
-        $(".active_stream_row button").prop("disabled", true).text(i18n.t("Working…"));
-        var stream_name = $(".active_stream_row").find('.stream_name').text();
-        var stream_id = stream_data.get_sub(stream_name).stream_id;
-        var row = $(".active_stream_row");
-        exports.delete_stream(stream_id, $("#organization-status"), row);
+    $("body").on("click", ".default_stream_row .remove-default-stream", function (e) {
+        var row = $(this).closest(".default_stream_row");
+        var stream_name = row.attr("id");
+
+        channel.del({
+            url: "/json/default_streams" + "?" + $.param({ stream_name: stream_name }),
+            error: function (xhr) {
+                ui_report.generic_row_button_error(xhr, $(e.target));
+            },
+            success: function () {
+                row.remove();
+            },
+        });
     });
 
     $("#settings_content").on("hide.bs.modal", "#deactivation_stream_modal", function () {
@@ -199,6 +199,23 @@ exports.delete_stream = function (stream_id, alert_element, stream_row) {
         },
     });
 };
+
+$(function () {
+    $("#settings_overlay_container").on("click", "#do_deactivate_stream_button", function () {
+        if ($("#deactivation_stream_modal .stream_name").text() !== $(".active_stream_row").find('.stream_name').text()) {
+            blueslip.error("Stream deactivation canceled due to non-matching fields.");
+            ui_report.message(i18n.t("Deactivation encountered an error. Please reload and try again."),
+               $("#home-error"), 'alert-error');
+        }
+        overlays.close_modal('deactivation_stream_modal');
+        $("#deactivation_stream_modal").remove();
+        $(".active_stream_row button").prop("disabled", true).text(i18n.t("Working…"));
+        var stream_name = $(".active_stream_row").find('.stream_name').text();
+        var stream_id = stream_data.get_sub(stream_name).stream_id;
+        var row = $(".active_stream_row");
+        exports.delete_stream(stream_id, $("#organization-status"), row);
+    });
+});
 
 return exports;
 }());

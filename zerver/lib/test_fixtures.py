@@ -95,9 +95,9 @@ def _check_hash(target_hash_file: str, status_dir: str) -> bool:
 
 def is_template_database_current(
         database_name: str='zulip_test_template',
-        migration_status: str=None,
+        migration_status: Optional[str]=None,
         settings: str='zproject.test_settings',
-        status_dir: str=None,
+        status_dir: Optional[str]=None,
         check_files: Optional[List[str]]=None) -> bool:
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
@@ -106,6 +106,10 @@ def is_template_database_current(
             'zerver/lib/generate_test_data.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
+            'zproject/dev_settings.py',
+            'zproject/prod_settings_template.py',
+            'zproject/settings.py',
+            'zproject/test_settings.py',
         ]
     if status_dir is None:
         status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')

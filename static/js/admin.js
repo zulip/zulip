@@ -20,12 +20,15 @@ exports.show_or_hide_menu_item = function () {
             .find("input:not(.search), button, select").attr("disabled", true);
         $(".organization-box [data-name='filter-settings']")
             .find("input, button, select").attr("disabled", true);
+        $(".organization-box [data-name='profile-field-settings']")
+            .find("input, button, select").attr("disabled", true);
         $(".control-label-disabled").css("color", "#333333");
     }
 };
 
 function _setup_page() {
     var options = {
+        custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
         realm_description: page_params.realm_description,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
@@ -48,7 +51,6 @@ function _setup_page() {
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,
-        new_user_bot_configured: page_params.new_user_bot_configured,
         realm_default_language: page_params.realm_default_language,
         realm_waiting_period_threshold: page_params.realm_waiting_period_threshold,
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
@@ -60,6 +62,23 @@ function _setup_page() {
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_disallow_disposable_email_addresses:
             page_params.realm_disallow_disposable_email_addresses,
+        realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
+    };
+
+    options.admin_settings_label = {
+        // Organization settings
+        realm_allow_message_editing: i18n.t("Users can edit their messages"),
+        realm_allow_edit_history: i18n.t("Enable message edit history"),
+        realm_mandatory_topics: i18n.t("Require topics in stream messages"),
+        realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),
+        realm_inline_url_embed_preview: i18n.t("Show previews of linked websites"),
+        realm_default_twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
+        realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
+
+        // Organization permissions
+        realm_invite_required: i18n.t("Users need an invitation to join"),
+        realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
+        realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
     };
 
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;

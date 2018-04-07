@@ -124,6 +124,11 @@ class DocPageTest(ZulipTestCase):
             # be rendered instead
             self._test('/integrations/', 'native integrations.')
 
+class HelpTest(ZulipTestCase):
+    def test_html_settings_links(self) -> None:
+        result = self.client_get('/help/message-a-stream-by-email')
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
 
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
@@ -153,10 +158,10 @@ class IntegrationTest(TestCase):
         self.assertEqual(context["api_url"], "http://mysubdomain.testserver/api")
         self.assertTrue(context["html_settings_links"])
 
-    def test_integration_view_html_settings_links(self) -> None:
-        context = dict()
-        context['html_settings_links'] = False
-        add_integrations_context(context)
+    def test_html_settings_links(self) -> None:
+        context = dict()  # type: Dict[str, Any]
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            add_api_uri_context(context, HostRequestMock())
         self.assertEqual(
             context['settings_html'],
             'Zulip settings page')
@@ -165,14 +170,23 @@ class IntegrationTest(TestCase):
             'streams page')
 
         context = dict()
-        context['html_settings_links'] = True
-        add_integrations_context(context)
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            add_api_uri_context(context, HostRequestMock(host="mysubdomain.testserver"))
         self.assertEqual(
             context['settings_html'],
-            '<a href="../../#settings">Zulip settings page</a>')
+            '<a href="/#settings">Zulip settings page</a>')
         self.assertEqual(
             context['subscriptions_html'],
-            '<a target="_blank" href="../../#streams">streams page</a>')
+            '<a target="_blank" href="/#streams">streams page</a>')
+
+        context = dict()
+        add_api_uri_context(context, HostRequestMock())
+        self.assertEqual(
+            context['settings_html'],
+            '<a href="/#settings">Zulip settings page</a>')
+        self.assertEqual(
+            context['subscriptions_html'],
+            '<a target="_blank" href="/#streams">streams page</a>')
 
 class AboutPageTest(ZulipTestCase):
     def setUp(self) -> None:

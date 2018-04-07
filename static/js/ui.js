@@ -14,20 +14,25 @@ exports.replace_emoji_with_text = function (element) {
 };
 
 exports.set_up_scrollbar = function (element) {
-    element.perfectScrollbar({
+    var perfectScrollbar = new PerfectScrollbar(element[0], {
         suppressScrollX: true,
         useKeyboard: false,
         wheelSpeed: 0.68,
+        scrollingThreshold: 50,
+        minScrollbarLength: 40,
     });
+    element[0].perfectScrollbar = perfectScrollbar;
 };
 
 exports.update_scrollbar = function (element) {
     element.scrollTop = 0;
-    element.perfectScrollbar('update');
+    if (element[0].perfectScrollbar !== undefined) {
+        element[0].perfectScrollbar.update();
+    }
 };
 
 exports.destroy_scrollbar = function (element) {
-    element.perfectScrollbar('destroy');
+    element[0].perfectScrollbar.destroy();
 };
 
 function update_message_in_all_views(message_id, callback) {
@@ -118,75 +123,35 @@ exports.show_failed_message_success = function (message_id) {
     });
 };
 
-function adjust_mac_shortcuts() {
-    var keys_map = [
-        ['Backspace', 'Delete'],
-        ['Enter', 'Return'],
-        ['Home', 'Fn + Left'],
-        ['End', 'Fn + Right'],
-        ['PgUp', 'Fn + Up'],
-        ['PgDn', 'Fn + Down'],
-    ];
-
-    $(".hotkeys_table").each(function () {
-        var html = $(this).html();
-        keys_map.forEach(function (pair) {
-            html = html.replace(new RegExp(pair[0]), pair[1]);
-        });
-        $(this).html(html);
-    });
-}
-
-function _setup_info_overlay() {
-    var info_overlay_toggle = components.toggle({
-        name: "info-overlay-toggle",
-        selected: 0,
-        values: [
-            { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
-            { label: i18n.t("Message formatting"), key: "markdown-help" },
-            { label: i18n.t("Search operators"), key: "search-operators" },
-        ],
-        callback: function (name, key) {
-            $(".overlay-modal").hide();
-            $("#" + key).show();
-            $("#" + key).find(".modal-body").focus();
-        },
-    }).get();
-
-    $(".informational-overlays .overlay-tabs")
-        .append($(info_overlay_toggle).addClass("large"));
-
-    if (/Mac/i.test(navigator.userAgent)) {
-        adjust_mac_shortcuts();
-    }
-}
-
-exports.show_info_overlay = function (target) {
-    var overlay = $(".informational-overlays");
-
-    if (!overlay.hasClass("show")) {
-        overlays.open_overlay({
-            name:  'informationalOverlays',
-            overlay: overlay,
-            on_close: function () {
-                hashchange.changehash("");
-            },
-        });
-    }
-
-    if (target) {
-        components.toggle.lookup("info-overlay-toggle").goto(target);
-    }
-};
-
-exports.maybe_show_keyboard_shortcuts = function () {
-    if (overlays.is_active()) {
+var shown_deprecation_notices = [];
+exports.maybe_show_deprecation_notice = function (key) {
+    var message;
+    if (key === 'C') {
+        message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
+    } else {
+        blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;
     }
-    if (popovers.any_active()) {
-        return;
+
+    // Here we handle the tracking for showing deprecation notices,
+    // whether or not local storage is available.
+    if (localstorage.supported()) {
+        var notices_from_storage = JSON.parse(localStorage.getItem('shown_deprecation_notices'));
+        if (notices_from_storage !== null) {
+            shown_deprecation_notices = notices_from_storage;
+        } else {
+            shown_deprecation_notices = [];
+        }
     }
-    ui.show_info_overlay("keyboard-shortcuts");
+
+    if (shown_deprecation_notices.indexOf(key) === -1) {
+        $('#deprecation-notice-modal').modal('show');
+        $('#deprecation-notice-message').text(message);
+        shown_deprecation_notices.push(key);
+        if (localstorage.supported()) {
+            localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
+        }
+    }
 };
 
 /* EXPERIMENTS */
@@ -241,7 +206,6 @@ $(function () {
 });
 
 exports.initialize = function () {
-    i18n.ensure_i18n(_setup_info_overlay);
     exports.show_error_for_unsupported_platform();
 
     if (page_params.night_mode) {

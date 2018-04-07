@@ -172,6 +172,8 @@ def patch_bot_backend(
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
+    if not bot.is_bot:
+        return json_error(_('No such bot'))
     if not user_profile.can_admin_user(bot):
         return json_error(_('Insufficient permission'))
 

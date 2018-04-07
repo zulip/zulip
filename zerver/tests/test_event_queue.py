@@ -1,4 +1,5 @@
 import mock
+import time
 import ujson
 
 from django.http import HttpRequest, HttpResponse
@@ -9,6 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
+    allocate_client_descriptor, process_message_event, clear_client_event_queues_for_testing, \
     get_client_descriptor, missedmessage_hook
 from zerver.tornado.views import get_events_backend
 
@@ -116,6 +118,47 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                      user_profile: UserProfile, post_data: Dict[str, Any]) -> HttpResponse:
         request = POSTRequestMock(post_data, user_profile)
         return view_func(request, user_profile)
+
+    def test_stream_watchers(self) -> None:
+        '''
+        We used to have a bug with stream_watchers, where we set their flags to
+        None.
+        '''
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+        stream_name = 'Denmark'
+
+        self.unsubscribe(hamlet, stream_name)
+
+        clear_client_event_queues_for_testing()
+
+        queue_data = dict(
+            all_public_streams=True,
+            apply_markdown=True,
+            client_gravatar=True,
+            client_type_name='home grown api program',
+            event_types=['message'],
+            last_connection_time=time.time(),
+            queue_timeout=0,
+            realm_id=realm.id,
+            user_profile_id=hamlet.id,
+        )
+
+        client = allocate_client_descriptor(queue_data)
+
+        self.send_stream_message(cordelia.email, stream_name)
+
+        self.assertEqual(len(client.event_queue.contents()), 1)
+
+        # This next line of code should silently succeed and basically do
+        # nothing under the covers.  This test is here to prevent a bug
+        # from re-appearing.
+        missedmessage_hook(
+            user_profile_id=hamlet.id,
+            client=client,
+            last_for_client=True,
+        )
 
     def test_end_to_end_missedmessage_hook(self) -> None:
         """Tests what arguments missedmessage_hook passes into maybe_enqueue_notifications.

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from typing import List, Any
+from mypy_extensions import NoReturn
 import glob
 import argparse
 import os
@@ -60,7 +61,6 @@ not_yet_fully_covered = {
     'zerver/lib/management.py',
     'zerver/lib/message.py',
     'zerver/lib/notifications.py',
-    'zerver/lib/rest.py',
     'zerver/lib/send_email.py',
     'zerver/lib/soft_deactivation.py',
     'zerver/lib/upload.py',
@@ -72,7 +72,6 @@ not_yet_fully_covered = {
     'zerver/storage.py',
     'zerver/lib/bot_lib.py',
     'zerver/lib/camo.py',
-    'zerver/lib/db.py',
     'zerver/lib/debug.py',
     'zerver/lib/digest.py',
     'zerver/lib/email_mirror.py',
@@ -80,9 +79,7 @@ not_yet_fully_covered = {
     'zerver/lib/export.py',
     'zerver/lib/feedback.py',
     'zerver/lib/fix_unreads.py',
-    'zerver/lib/hotspots.py',
     'zerver/lib/html_diff.py',
-    'zerver/lib/initial_password.py',
     'zerver/lib/logging_util.py',
     'zerver/lib/migrate.py',
     'zerver/lib/outgoing_webhook.py',
@@ -94,16 +91,13 @@ not_yet_fully_covered = {
     'zerver/lib/sqlalchemy_utils.py',
     'zerver/lib/str_utils.py',
     'zerver/lib/stream_recipient.py',
-    'zerver/lib/tex.py',
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',
-    'zerver/lib/user_agent.py',
     'zerver/lib/utils.py',
     # Low priority for coverage
     'zerver/lib/bulk_create.py',
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
-    'zerver/lib/initial_password',
     'zerver/lib/statistics.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
@@ -160,7 +154,7 @@ def block_internet():
     # We are blocking internet currently by assuming mostly any test would use
     # httplib2 to access internet.
     def internet_guard(*args, **kwargs):
-        # type: (*Any, **Any) -> None
+        # type: (*Any, **Any) -> NoReturn
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
@@ -409,6 +403,20 @@ if __name__ == "__main__":
             print("But also check out the include/exclude lists in tools/test-backend.")
             print("If this line intentionally is not tested, you can use a # nocoverage comment.")
             print("To run this check locally, use `test-backend --coverage`.")
+        ok = True
+        for path in not_yet_fully_covered:
+            try:
+                missing_lines = cov.analysis2(path)[3]
+                if len(missing_lines) == 0:
+                    print("ERROR: %s has complete backend test coverage but is still in not_yet_fully_covered." % (path,))
+                    ok = False
+            except coverage.misc.NoSource:
+                continue
+        if not ok:
+            print()
+            print("There are one or more fully covered files that are still in not_yet_fully_covered.")
+            print("Remove the file(s) from not_yet_fully_covered in `tools/test-backend`.")
+            failures = True
     if options.profile:
         prof.disable()
         prof.dump_stats("/tmp/profile.data")

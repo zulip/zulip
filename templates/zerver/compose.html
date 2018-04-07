@@ -27,7 +27,7 @@
                 <span class="new_message_button">
                     <button type="button" class="button small rounded compose_private_button"
                         id="left_bar_compose_private_button_big"
-                        title="{{ _('New private message') }} (C)">
+                        title="{{ _('New private message') }} (x)">
                         <span class="compose_private_button_label">{{ _('New private message') }}</span>
                     </button>
                 </span>
@@ -49,6 +49,7 @@
             <div id="compose_invite_users" class="alert home-error-bar"></div>
             <div id="compose-all-everyone" class="alert home-error-bar"></div>
             <div id="compose-announce" class="alert home-error-bar"></div>
+            <div id="compose_not_subscribed" class="alert home-error-bar"></div>
             <div id="compose_private_stream_alert" class="alert home-error-bar"></div>
             <div id="out-of-view-notification" class="notification-alert"></div>
             <div class="composition-area">
@@ -109,8 +110,10 @@
                                            id="attach_dropbox_files" href="#" title="{{ _('Attach files from Dropbox') }}"></a>
                                         <a class="message-control-button icon-vector-paper-clip notdisplayed"
                                            id="attach_files" href="#" title="{{ _('Attach files') }}"></a>
+                                        {% if jitsi_server_url %}
                                         <a class="message-control-button fa fa-video-camera"
                                            id="video_link" href="#" title="{{ _('Add video call') }}"></a>
+                                        {% endif %}
                                         <a id="undo_markdown_preview"
                                             class="message-control-button icon-vector-edit"
                                             style="display:none;" title="{{ _('Write') }}"></a>

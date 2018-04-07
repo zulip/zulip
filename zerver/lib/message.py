@@ -482,17 +482,28 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
             # You can't access private messages you didn't receive
             raise JsonableError(_("Invalid message(s)"))
         stream = Stream.objects.get(id=message.recipient.type_id)
-        if not stream.is_public():
-            # You can't access messages sent to invite-only streams
-            # that you didn't receive
-            raise JsonableError(_("Invalid message(s)"))
-        # So the message is to a public stream
         if stream.realm != user_profile.realm:
             # You can't access public stream messages in other realms
             raise JsonableError(_("Invalid message(s)"))
 
-    # Otherwise, the message must have been sent to a public
-    # stream in your realm, so return the message, user_message pair
+        if not stream.is_public():
+            if not stream.is_history_public_to_subscribers():
+                # You can't access messages sent to invite-only streams
+                # that you didn't receive
+                raise JsonableError(_("Invalid message(s)"))
+
+            # This stream is an invite-only stream where message
+            # history is available to subscribers.  So we check if
+            # you're subscribed.
+            if not Subscription.objects.filter(user_profile=user_profile, active=True,
+                                               recipient=message.recipient).exists():
+                raise JsonableError(_("Invalid message(s)"))
+
+            # You are subscribed, so let this fall through to the public stream case.
+        else:
+            # Otherwise, the message was sent to a public stream in
+            # your realm, so return the message, user_message pair
+            pass
     return (message, user_message)
 
 def render_markdown(message: Message,

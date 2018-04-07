@@ -313,9 +313,10 @@
         "var_name": "content"
     },
     "nonexistent-stream-error": {
-        "code": "BAD_REQUEST",
+        "code": "STREAM_DOES_NOT_EXIST",
         "msg": "Stream 'nonexistent_stream' does not exist",
-        "result": "error"
+        "result": "error",
+        "stream": "nonexistent_stream"
     },
     "private-message": {
         "id": 134,

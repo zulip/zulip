@@ -20,7 +20,7 @@ below, and add more to your repertoire as needed.
 
 * **New stream message**: `c` — Start a new topic in the current stream.
 
-* **New private message**: `C`
+* **New private message**: `x`
 
 * **Cancel compose**: `Esc` or `Ctrl + [` — Close the compose box and save
   the unsent message as a draft.
@@ -93,7 +93,7 @@ below, and add more to your repertoire as needed.
 
 * **New stream message**: `c` — For starting a new topic in a stream.
 
-* **New private message**: `C`
+* **New private message**: `x`
 
 ### In the compose box
 

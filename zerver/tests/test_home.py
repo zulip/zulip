@@ -51,6 +51,7 @@ class HomeTest(ZulipTestCase):
             "bot_types",
             "can_create_streams",
             "cross_realm_bots",
+            "custom_profile_field_types",
             "custom_profile_fields",
             "debug_mode",
             "default_desktop_notifications",
@@ -80,6 +81,7 @@ class HomeTest(ZulipTestCase):
             "hotspots",
             "initial_servertime",
             "is_admin",
+            "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
             "last_event_id",
@@ -95,7 +97,6 @@ class HomeTest(ZulipTestCase):
             "narrow_stream",
             "needs_tutorial",
             "never_subscribed",
-            "new_user_bot_configured",
             "night_mode",
             "password_min_guesses",
             "password_min_length",
@@ -106,6 +107,7 @@ class HomeTest(ZulipTestCase):
             "prompt_for_invites",
             "queue_id",
             "realm_add_emoji_by_admins_only",
+            "realm_allow_community_topic_editing",
             "realm_allow_edit_history",
             "realm_allow_message_deleting",
             "realm_allow_message_editing",
@@ -117,6 +119,7 @@ class HomeTest(ZulipTestCase):
             "realm_default_language",
             "realm_default_stream_groups",
             "realm_default_streams",
+            "realm_default_twenty_four_hour_time",
             "realm_description",
             "realm_disallow_disposable_email_addresses",
             "realm_domains",
@@ -189,8 +192,8 @@ class HomeTest(ZulipTestCase):
             with patch('zerver.lib.cache.cache_set') as cache_mock:
                 result = self._get_home_page(stream='Denmark')
 
-        self.assert_length(queries, 44)
-        self.assert_length(cache_mock.call_args_list, 8)
+        self.assert_length(queries, 43)
+        self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
 
@@ -223,6 +226,17 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_num_queries_for_realm_admin(self) -> None:
+        # Verify number of queries for Realm admin isn't much higher than for normal users.
+        self.login(self.example_email("iago"))
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            with patch('zerver.lib.cache.cache_set') as cache_mock:
+                result = self._get_home_page()
+                self.assertEqual(result.status_code, 200)
+                self.assert_length(cache_mock.call_args_list, 6)
+            self.assert_length(queries, 39)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:

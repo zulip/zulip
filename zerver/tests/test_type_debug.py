@@ -43,7 +43,7 @@ class TypesPrintTest(TestCase):
         def empty_func() -> None:
             pass
         self.check_signature("empty_func() -> None", None, empty_func)
-        self.check_signature("<lambda>() -> None", None, (lambda: None))  # type: ignore # https://github.com/python/mypy/issues/1932
+        self.check_signature("<lambda>() -> None", None, (lambda: None))
 
     def test_basic(self) -> None:
         self.check_signature("add(float, int) -> float",

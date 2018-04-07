@@ -32,7 +32,7 @@
                     {# SSO users don't have a password. #}
 
                     <div class="login-sso">
-                        <a href="/accounts/login/sso" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
+                        <a id="sso-login" href="/accounts/login/sso/?next={{ next }}" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
                     </div>
 
                 {% else %}
@@ -118,14 +118,15 @@
                                 </form>
 
                                 {% if any_oauth_backend_enabled %}
-                                <div class="or">or</div>
+                                <div class="or"><span>{{ _('OR') }}</span></div>
                                 {% endif %}
 
                             {% endif %} <!-- if password_auth_enabled -->
 
                             {% if google_auth_enabled %}
                             <div class="login-google">
-                                <form class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
+                                <form id='google_login_form' class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
                                     <button class="login-social-button login-google-button full-width">{{ _('Log in with Google') }}</button>
                                 </form>
                             </div>
@@ -133,7 +134,8 @@
 
                             {% if github_auth_enabled %}
                             <div class="login-github">
-                                <form class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
+                                <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
+                                    <input type="hidden" name="next" value="{{ next }}">
                                     <button class="login-social-button login-github-button github">{{ _('Log in with GitHub') }}</button>
                                 </form>
                             </div>
@@ -155,7 +157,16 @@
     </div>
     <script type="text/javascript">
     if (window.location.hash.substring(0, 1) === "#") {
-        document.login_form.action += window.location.hash;
+        /* We append the location.hash to the formaction so that URL can be
+        preserved after user is logged in. See this:
+        https://stackoverflow.com/questions/5283395/url-hash-is-persisting-between-redirects */
+        var email_formaction = $("#login_form").attr('action');
+        $("#login_form").attr('action', email_formaction + '/' + window.location.hash);
+        $("#google_login_form input[name='next']").attr('value', '/' + window.location.hash);
+        $("#social_login_form input[name='next']").attr('value', '/' + window.location.hash);
+
+        var sso_address = $("#sso-login").attr('href');
+        $("#sso-login").attr('href', sso_address + window.location.hash);
     }
     </script>
 

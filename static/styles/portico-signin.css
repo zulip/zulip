@@ -542,34 +542,33 @@ html {
 }
 
 .portico-page .or {
-    width: 328px;
+    width: 100%;
     display: block;
     margin: 10px auto;
     color: hsl(0, 0%, 34%);
     font-weight: 600;
     text-align: center;
-    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
 }
 
-.portico-page .or::before,
-.portico-page .or::after {
+.portico-page .or::before {
     content: " ";
 
     display: inline-block;
-    position: relative;
-    width: calc(149px);
-    top: -3px;
+    position: absolute;
+    width: calc(100% - 5px);
+    top: calc(50% - 2px);
+    left: 0;
+    z-index: -1;
 
     border-bottom: 2px solid hsl(0, 0%, 86%);
 
 }
 
-.portico-page .or::before {
-    left: -5px;
-}
-
-.portico-page .or::after {
-    left: 5px;
+.portico-page .or span {
+    background-color: hsl(0, 0%, 100%);
+    padding: 0 5px;
 }
 
 .login-google {

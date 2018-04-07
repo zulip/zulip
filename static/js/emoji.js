@@ -21,7 +21,7 @@ var zulip_emoji = {
 // Emoticons, and which emoji they should become (without colons). Duplicate
 // emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
 // and `templates/zerver/help/enable-emoticon-translations.md`.
-var EMOTICON_CONVERSIONS = {
+exports.EMOTICON_CONVERSIONS = {
     ':)': 'smiley',
     '(:': 'smiley',
     ':(': 'slightly_frowning_face',
@@ -31,28 +31,28 @@ var EMOTICON_CONVERSIONS = {
 };
 
 exports.update_emojis = function update_emojis(realm_emojis) {
-    // exports.all_realm_emojis is emptied before adding the realm-specific emoji to it.
-    // This makes sure that in case of deletion, the deleted realm_emojis don't
-    // persist in exports.all_realm_emojis or exports.active_realm_emojis.
+    // exports.all_realm_emojis is emptied before adding the realm-specific emoji
+    // to it. This makes sure that in case of deletion, the deleted realm_emojis
+    // don't persist in exports.active_realm_emojis.
     exports.all_realm_emojis = {};
     exports.active_realm_emojis = {};
 
     // Copy the default emoji list and add realm-specific emoji to it
     exports.emojis = default_emojis.slice(0);
-    _.each(realm_emojis, function (data, name) {
-        exports.all_realm_emojis[name] = {id: data.id,
-                                          emoji_name: name,
-                                          emoji_url: data.source_url,
-                                          deactivated: data.deactivated};
+    _.each(realm_emojis, function (data) {
+        exports.all_realm_emojis[data.id] = {id: data.id,
+                                             emoji_name: data.name,
+                                             emoji_url: data.source_url,
+                                             deactivated: data.deactivated};
         if (data.deactivated !== true) {
             // export.emojis are used in composebox autocomplete. This condition makes sure
             // that deactivated emojis don't appear in the autocomplete.
-            exports.emojis.push({emoji_name: name,
+            exports.emojis.push({emoji_name: data.name,
                                  emoji_url: data.source_url,
                                  is_realm_emoji: true});
-            exports.active_realm_emojis[name] = {id: data.id,
-                                                 emoji_name: name,
-                                                 emoji_url: data.source_url};
+            exports.active_realm_emojis[data.name] = {id: data.id,
+                                                      emoji_name: data.name,
+                                                      emoji_url: data.source_url};
         }
     });
     // Add the Zulip emoji to the realm emojis list
@@ -124,13 +124,35 @@ exports.get_canonical_name = function (emoji_name) {
 // Translates emoticons in a string to their colon syntax.
 exports.translate_emoticons_to_names = function translate_emoticons_to_names(text) {
     var translated = text;
+    var replacement_text;
+    var terminal_symbols = ',.;?!()[] "\'\n\t'; // From composebox_typeahead
+    var symbols_except_space = terminal_symbols.replace(' ', '');
 
-    for (var emoticon in EMOTICON_CONVERSIONS) {
-        if (EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
-            var emoticon_reg_ex = new RegExp(util.escape_regexp(emoticon), "g");
-            translated = translated.replace(
-                emoticon_reg_ex,
-                ':' + EMOTICON_CONVERSIONS[emoticon] + ':');
+    var emoticon_replacer = function (match, g1, offset, str) {
+        var prev_char = str[offset - 1];
+        var next_char = str[offset + match.length];
+
+        var symbol_at_start = terminal_symbols.indexOf(prev_char) !== -1;
+        var symbol_at_end = terminal_symbols.indexOf(next_char) !== -1;
+        var non_space_at_start = symbols_except_space.indexOf(prev_char) !== -1;
+        var non_space_at_end = symbols_except_space.indexOf(next_char) !== -1;
+        var valid_start = symbol_at_start || offset === 0;
+        var valid_end = symbol_at_end || offset === str.length - match.length;
+
+        if (non_space_at_start && non_space_at_end) { // Hello!:)?
+            return match;
+        }
+        if (valid_start && valid_end) {
+            return replacement_text;
+        }
+        return match;
+    };
+
+    for (var emoticon in exports.EMOTICON_CONVERSIONS) {
+        if (exports.EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
+            replacement_text = ':' + exports.EMOTICON_CONVERSIONS[emoticon] + ':';
+            var emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
+            translated = translated.replace(emoticon_regex, emoticon_replacer);
         }
     }
 

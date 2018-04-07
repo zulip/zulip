@@ -302,7 +302,7 @@ casper.thenClick('a[data-code="en"]');
  * Changing the language back to English so that subsequent tests pass.
  */
 casper.waitUntilVisible('#language-settings-status a', function () {
-    casper.test.assertSelectorHasText('#language-settings-status', 'Saved. Please reload for the change to take effect.');
+    casper.test.assertSelectorHasText('#language-settings-status', 'Gespeichert. Bitte lade die Seite neu um die Änderungen zu aktivieren.');
 });
 
 casper.thenOpen("http://zulip.zulipdev.com:9981/");

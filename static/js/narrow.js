@@ -399,7 +399,7 @@ exports.by_subject = function (target_id, opts) {
         exports.by_recipient(target_id, opts);
         return;
     }
-    unread_ops.mark_message_as_read(original);
+    unread_ops.notify_server_message_read(original);
     var search_terms = [
         {operator: 'stream', operand: original.stream},
         {operator: 'topic', operand: original.subject},
@@ -413,7 +413,7 @@ exports.by_recipient = function (target_id, opts) {
     opts = _.defaults({}, opts, {then_select_id: target_id});
     // don't use current_msg_list as it won't work for muted messages or for out-of-narrow links
     var message = message_store.get(target_id);
-    unread_ops.mark_message_as_read(message);
+    unread_ops.notify_server_message_read(message);
     switch (message.type) {
     case 'private':
         exports.by('pm-with', message.reply_to, opts);
@@ -457,7 +457,7 @@ exports.deactivate = function () {
     $("#zfilt").removeClass('focused_table');
     $("#zhome").addClass('focused_table');
     current_msg_list = home_msg_list;
-    condense.condense_and_collapse($("#zhome tr.message_row"));
+    condense.condense_and_collapse($("#zhome div.message_row"));
 
     $('#search_query').val('');
     message_scroll.hide_indicators();

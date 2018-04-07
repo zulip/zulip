@@ -332,6 +332,9 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
     var data = {};
     var key;
     for (key in time_series_data) {
+        if (!time_series_data.hasOwnProperty(key)) {
+            continue;
+        }
         if (time_series_data[key].length < num_steps) {
             num_steps = time_series_data[key].length;
         }

@@ -25,9 +25,8 @@ var other_notification_settings = [
 
 exports.notification_settings = other_notification_settings.concat(
     pm_mention_notification_settings,
-    _.map(stream_notification_settings, function (item) {
-        return item.setting;
-    }));
+    _.pluck(stream_notification_settings, 'setting')
+);
 
 function maybe_bulk_update_stream_notification_setting(notification_checkbox,
                                                        propagate_setting_function) {

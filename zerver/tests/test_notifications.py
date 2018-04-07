@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from email.utils import formataddr
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Text, Optional
 
 from zerver.lib.notifications import fix_emojis, \
     handle_missedmessage_emails, relative_to_full_url
@@ -39,7 +39,7 @@ class TestMissedMessages(ZulipTestCase):
     def _test_cases(self, tokens: List[str], msg_id: int, body: str, subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
-                    verify_body_does_not_include: List[str]=None) -> None:
+                    verify_body_does_not_include: Optional[List[str]]=None) -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
         handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
@@ -422,7 +422,9 @@ class TestMissedMessages(ZulipTestCase):
         msg_id = self.send_personal_message(
             self.example_email('othello'), self.example_email('hamlet'),
             'Extremely personal message with a realm emoji :green_tick:!')
-        body = '<img alt=":green_tick:" src="http://zulip.testserver/user_avatars/1/emoji/green_tick.png" title="green tick" style="height: 20px;">'
+        realm_emoji_id = get_realm('zulip').get_active_emoji()['green_tick']['id']
+        realm_emoji_url = "http://zulip.testserver/user_avatars/1/emoji/images/%s.png" % (realm_emoji_id,)
+        body = '<img alt=":green_tick:" src="%s" title="green tick" style="height: 20px;">' % (realm_emoji_url,)
         subject = 'Othello, the Moor of Venice sent you a message'
         self._test_cases(tokens, msg_id, body, subject, send_as_user=False, verify_html_body=True)
 

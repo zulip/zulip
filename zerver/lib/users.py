@@ -3,10 +3,11 @@ from typing import Dict, List, Optional, Text
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
 
-from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id
+from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
+    user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id
+    get_user_profile_by_id, query_for_ids
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -65,7 +66,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
                    base_query: 'QuerySet[UserProfile]'=None) -> Dict[str, UserProfile]:
     if base_query is None:
         assert realm is not None
-        base_query = UserProfile.objects.filter(realm=realm, is_active=True)
+        query = UserProfile.objects.filter(realm=realm, is_active=True)
         realm_id = realm.id
     else:
         # WARNING: Currently, this code path only really supports one
@@ -74,6 +75,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
         # If you're using this flow, you'll need to re-do any filters
         # in base_query in the code itself; base_query is just a perf
         # optimization.
+        query = base_query
         realm_id = 0
 
     def fetch_users_by_email(emails: List[str]) -> List[UserProfile]:
@@ -89,7 +91,7 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
 
         upper_list = ", ".join(["UPPER(%s)"] * len(emails))
         where_clause = "UPPER(zerver_userprofile.email::text) IN (%s)" % (upper_list,)
-        return base_query.select_related("realm").extra(
+        return query.select_related("realm").extra(
             where=[where_clause],
             params=emails)
 
@@ -103,18 +105,28 @@ def bulk_get_users(emails: List[str], realm: Optional[Realm],
     )
 
 def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
-    # TODO: Change this to do a single bulk query with
-    # generic_bulk_cached_fetch; it'll be faster.
-    #
     # TODO: Consider adding a flag to control whether deactivated
     # users should be included.
-    user_profiles = []
-    for user_id in user_ids:
-        try:
-            user_profile = get_user_profile_by_id(user_id)
-        except UserProfile.DoesNotExist:
-            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
+
+    def fetch_users_by_id(user_ids: List[int]) -> List[UserProfile]:
+        if len(user_ids) == 0:
+            return []
+
+        return list(UserProfile.objects.filter(id__in=user_ids).select_related())
+
+    user_profiles_by_id = generic_bulk_cached_fetch(
+        cache_key_function=user_profile_by_id_cache_key,
+        query_function=fetch_users_by_id,
+        object_ids=user_ids
+    )  # type: Dict[int, UserProfile]
+
+    found_user_ids = user_profiles_by_id.keys()
+    missed_user_ids = [user_id for user_id in user_ids if user_id not in found_user_ids]
+    if missed_user_ids:
+        raise JsonableError(_("Invalid user ID: %s" % (missed_user_ids[0])))
+
+    user_profiles = list(user_profiles_by_id.values())
+    for user_profile in user_profiles:
         if user_profile.realm != realm:
-            raise JsonableError(_("Invalid user ID: %s" % (user_id,)))
-        user_profiles.append(user_profile)
+            raise JsonableError(_("Invalid user ID: %s" % (user_profile.id,)))
     return user_profiles

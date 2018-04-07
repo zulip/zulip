@@ -117,14 +117,10 @@
                 </div>
             </form>
 
-            <form class="deactivate_account grid">
-                <div class="input-group">
-                    <label for="" class="inline-block"></label>
-                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
-                        {{t 'Deactivate account' }}
-                    </button>
-                </div>
-            </form>
+            <h3 class="inline-block" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
+            <div class="alert-notification" id="custom-field-status"></div>
+            <form class="form-horizontal custom-profile-fields-form grid"></form>
+
         </div>
 
         <div class="inline-block user-avatar-section">
@@ -137,7 +133,6 @@
                         <a href="https://en.gravatar.com/" target="_blank" class="white-color">{{t "Avatar from Gravatar" }}</a>
                     </div>
                 </div>
-                <div id="user_avatar_file_input_error" class="text-error"></div>
                 <input type="file" name="user_avatar_file_input" class="notvisible" id="user_avatar_file_input" value="{{t 'Upload avatar' }}" />
                 <div id="upload_avatar_spinner"></div>
             </div>
@@ -145,6 +140,7 @@
                 <button class="button rounded sea-green w-200 block" id="user_avatar_upload_button">
                     {{t 'Upload new avatar' }}
                 </button>
+                <div id="user_avatar_file_input_error" class="text-error"></div>
                 <button class="button rounded btn-danger w-200 m-t-20 block" id="user_avatar_delete_button">
                     {{t 'Delete avatar' }}
                 </button>
@@ -216,6 +212,15 @@
             <div id="user_api_key_error text-error">
             </div>
         </div>
-
+        <div class="inline-block">
+            <h3>{{t "Deactivate account" }}</h3>
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

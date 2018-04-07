@@ -113,9 +113,9 @@ def generate_random_token(length: int) -> str:
     return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
 
 def query_chunker(queries: List[Any],
-                  id_collector: Set[int]=None,
+                  id_collector: Optional[Set[int]]=None,
                   chunk_size: int=1000,
-                  db_chunk_size: int=None) -> Iterable[Any]:
+                  db_chunk_size: Optional[int]=None) -> Iterable[Any]:
     '''
     This merges one or more Django ascending-id queries into
     a generator that returns chunks of chunk_size row objects

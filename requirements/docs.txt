@@ -14,7 +14,7 @@ chardet==3.0.4            # via requests
 commonmark==0.5.4
 docutils==0.14
 idna==2.6                 # via requests
-imagesize==0.7.1
+imagesize==1.0.0
 jinja2==2.10              # via sphinx
 markupsafe==1.0           # via jinja2
 packaging==16.8           # via sphinx
@@ -26,7 +26,7 @@ requests==2.18.4          # via sphinx
 six==1.11.0               # via packaging, sphinx
 snowballstemmer==1.2.1
 sphinx-rtd-theme==0.2.4
-sphinx==1.7.0
+sphinx==1.7.2
 sphinxcontrib-websupport==1.0.1  # via sphinx
 typing==3.6.4
 urllib3==1.22             # via requests

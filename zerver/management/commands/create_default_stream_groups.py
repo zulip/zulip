@@ -2,7 +2,7 @@
 from argparse import ArgumentParser
 from typing import Any
 
-from zerver.lib.actions import create_stream_if_needed
+from zerver.lib.actions import ensure_stream
 from zerver.lib.management import ZulipBaseCommand
 from zerver.models import DefaultStreamGroup
 
@@ -46,7 +46,7 @@ Create default stream groups which the users can choose during sign up.
         streams = []
         stream_names = set([stream.strip() for stream in options["streams"].split(",")])
         for stream_name in set(stream_names):
-            stream, _ = create_stream_if_needed(realm, stream_name)
+            stream = ensure_stream(realm, stream_name)
             streams.append(stream)
 
         try:

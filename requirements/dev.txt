@@ -11,8 +11,8 @@
 
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/python-zulip-api.git@0.4.1#egg=zulip==0.4.1_git&subdirectory=zulip
-git+https://github.com/zulip/python-zulip-api.git@192e9e101d934a3171677ada511a11c26899cc96#egg=zulip_bots&subdirectory=zulip_bots
+git+https://github.com/zulip/python-zulip-api.git@0.4.3#egg=zulip==0.4.3_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@0.4.3#egg=zulip_bots==0.4.3+git&subdirectory=zulip_bots
 alabaster==0.7.10
 apns2==0.3.0
 argon2-cffi==18.1.0
@@ -30,19 +30,19 @@ boto==2.48.0
 botocore==1.7.46          # via boto3, moto, s3transfer
 cchardet==2.1.1
 certifi==2018.1.18
-cffi==1.11.4
+cffi==1.11.5
 chardet==3.0.4
 click==6.6                # via gitlint, pip-tools
 commonmark==0.5.4
 constantly==15.1.0        # via twisted
 cookies==2.2.1            # via moto
 coverage==4.5.1
-cryptography==2.1.4
+cryptography==2.2.2
 cssselect==1.0.1          # via parsel, premailer, scrapy
 cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
-disposable-email-domains==0.0.20
+disposable-email-domains==0.0.23
 django-auth-ldap==1.3.0
 django-bitfield==1.9.3
 django-formtools==2.1     # via django-two-factor-auth
@@ -52,8 +52,8 @@ django-pipeline==1.6.14
 django-sendfile==0.3.11
 django-statsd-mozilla==0.4.0
 django-two-factor-auth==1.7.0
-django-webpack-loader==0.5.0
-django==1.11.6
+django-webpack-loader==0.6.0
+django==1.11.11
 docker-pycreds==0.2.1     # via docker
 docker==2.6.1             # via moto
 docopt==0.6.2
@@ -62,17 +62,17 @@ fakeldap==0.6.1
 first==2.0.1              # via pip-tools
 gitdb==0.6.4
 gitlint==0.9.0
-google-api-python-client==1.6.5
+google-api-python-client==1.6.6
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
-httplib2==0.10.3
+httplib2==0.11.3
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==17.3.1         # via twisted
 idna==2.6                 # via cryptography, requests
 ijson==2.3
-imagesize==0.7.1
+imagesize==1.0.0
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.2.1
@@ -82,17 +82,17 @@ jinja2==2.10
 jmespath==0.9.3           # via boto3, botocore
 jsondiff==1.1.1           # via moto
 jsonpickle==0.9.5         # via aws-xray-sdk, python-digitalocean
-lxml==4.1.1
+lxml==4.2.1
 markdown-include==0.5.1
 markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
-moto==1.2.0
-mypy==0.570
+moto==1.3.1
+mypy==0.580
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.4
 oauth2client==4.1.2
-oauthlib==2.0.6
+oauthlib==2.0.7
 ordereddict==1.1          # via gitlint
 packaging==16.8           # via sphinx
 parsel==1.2.0             # via scrapy
@@ -101,7 +101,7 @@ pbr==3.1.1                # via mock
 pexpect==4.3.0            # via ipython
 phonenumberslite==8.8.6   # via django-phonenumber-field
 pickleshare==0.7.4        # via ipython
-pika==0.11.0
+pika==0.11.2
 pillow==5.0.0
 pip-tools==1.11.0
 polib==1.1.0
@@ -119,8 +119,8 @@ pycrypto==2.6.1
 pydispatcher==2.0.5       # via scrapy
 pyflakes==1.6.0
 pygments==2.2.0
-pyjwt==1.5.3
-pyldap==2.4.37
+pyjwt==1.6.1
+pyldap==3.0.0.post1       # via django-auth-ldap, fakeldap
 pylibmc==1.5.2
 pyoembed==0.1.2
 pyopenssl==17.3.0         # via ndg-httpsclient, scrapy, service-identity
@@ -129,7 +129,8 @@ pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-digitalocean==1.13.2
 python-gcm==0.4
-python-twitter==3.3
+python-ldap==3.0.0        # via pyldap
+python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.3
 pyyaml==3.12              # via pyaml
@@ -155,16 +156,16 @@ social-auth-core==1.5.0   # via social-auth-app-django
 sockjs-tornado==1.0.3
 sourcemap==0.2.1
 sphinx-rtd-theme==0.2.4
-sphinx==1.7.0
+sphinx==1.7.2
 sphinxcontrib-websupport==1.0.1  # via sphinx
-sqlalchemy==1.2.4
+sqlalchemy==1.2.6
 statsd==3.2.1             # via django-statsd-mozilla
-stripe==1.77.2
+stripe==1.79.1
 tblib==1.3.2
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
 transifex-client==0.12.5
-twilio==6.10.3
+twilio==6.11.0
 twisted==17.9.0
 typed-ast==1.1.0          # via mypy
 typing==3.6.4

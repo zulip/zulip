@@ -57,6 +57,28 @@ $("body").ready(function () {
     });
 });
 
+function setup_settings_label() {
+    exports.settings_label = {
+        // settings_notification
+        // stream_notification_settings
+        enable_stream_desktop_notifications: i18n.t("Visual desktop notifications"),
+        enable_stream_sounds: i18n.t("Audible desktop notifications"),
+        enable_stream_push_notifications: i18n.t("Mobile notifications"),
+
+        // pm_mention_notification_settings
+        enable_desktop_notifications: i18n.t("Visual desktop notifications"),
+        enable_offline_email_notifications: i18n.t("Email notifications when offline"),
+        enable_offline_push_notifications: i18n.t("Mobile notifications when offline"),
+        enable_online_push_notifications: i18n.t("Mobile notifications always (even when online)"),
+        enable_sounds: i18n.t("Audible desktop notifications"),
+        pm_content_in_desktop_notifications: i18n.t("Include content of private messages"),
+
+        // other_notification_settings
+        enable_digest_emails: i18n.t("Send digest emails when I'm away"),
+        message_content_in_email_notifications: i18n.t("Include content of private messages"),
+        realm_name_in_notifications: i18n.t("Include organization name in subject of missed message emails"),
+    };
+}
 
 function _setup_page() {
     ui.set_up_scrollbar($("#settings_page .sidebar.left"));
@@ -86,6 +108,7 @@ function _setup_page() {
             "filter-settings": i18n.t("Filter settings"),
             "invites-list-admin": i18n.t("Invitations"),
             "user-groups-admin": i18n.t("User groups"),
+            "profile-field-settings": i18n.t("Profile field settings"),
         };
     }
 
@@ -99,7 +122,7 @@ function _setup_page() {
         return tab;
     }());
 
-    settings_bots.setup_bot_creation_policy_values();
+    setup_settings_label();
 
     var settings_tab = templates.render('settings_tab', {
         full_name: people.my_full_name(),
@@ -110,6 +133,7 @@ function _setup_page() {
         admin_only_bot_creation: page_params.is_admin ||
             page_params.realm_bot_creation_policy !==
             settings_bots.bot_creation_policy_values.admins_only.code,
+        settings_label: settings.settings_label,
     });
 
     $(".settings-box").html(settings_tab);

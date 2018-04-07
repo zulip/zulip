@@ -81,14 +81,15 @@ STREAM_LINK_REGEX = r"""
 class BugdownRenderingException(Exception):
     pass
 
-def rewrite_if_relative_link(link: str) -> str:
+def rewrite_local_links_to_relative(link: str) -> str:
     """ If the link points to a local destination we can just switch to that
     instead of opening a new tab. """
 
     if db_data:
-        if link.startswith(db_data['realm_uri']):
+        realm_uri_prefix = db_data['realm_uri'] + "/"
+        if link.startswith(realm_uri_prefix):
             # +1 to skip the `/` before the hash link.
-            return link[len(db_data['realm_uri']) + 1:]
+            return link[len(realm_uri_prefix):]
 
     return link
 
@@ -1013,9 +1014,8 @@ def unicode_emoji_to_codepoint(unicode_emoji: Text) -> Text:
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
     def handleMatch(self, match: Match[Text]) -> Optional[Element]:
-        # If there is `db_data` and it is false, then don't do translating.
-        # If there is no `db_data`, such as during tests, translate.
-        if db_data is not None and not db_data['translate_emoticons']:
+        # If there is `db_data` and it is True, proceed with translating.
+        if db_data is None or not db_data['translate_emoticons']:
             return None
 
         emoticon = match.group('emoticon')
@@ -1053,26 +1053,6 @@ class Emoji(markdown.inlinepatterns.Pattern):
 
 def content_has_emoji_syntax(content: Text) -> bool:
     return re.search(EMOJI_REGEX, content) is not None
-
-class StreamSubscribeButton(markdown.inlinepatterns.Pattern):
-    # This markdown extension has required javascript in
-    # static/js/custom_markdown.js
-    def handleMatch(self, match: Match[Text]) -> Element:
-        stream_name = match.group('stream_name')
-        stream_name = stream_name.replace('\\)', ')').replace('\\\\', '\\')
-
-        span = markdown.util.etree.Element('span')
-        span.set('class', 'inline-subscribe')
-        span.set('data-stream-name', stream_name)
-
-        button = markdown.util.etree.SubElement(span, 'button')
-        button.text = 'Subscribe to ' + stream_name
-        button.set('class', 'inline-subscribe-button btn')
-
-        error = markdown.util.etree.SubElement(span, 'span')
-        error.set('class', 'inline-subscribe-error')
-
-        return span
 
 class ModalLink(markdown.inlinepatterns.Pattern):
     """
@@ -1182,8 +1162,8 @@ def url_to_a(url: Text, text: Optional[Text]=None) -> Union[Element, Text]:
     if text is None:
         text = markdown.util.AtomicString(url)
 
-    href = rewrite_if_relative_link(href)
-    target_blank = href[:1] != '#' and 'mailto:' not in href[:7]
+    href = rewrite_local_links_to_relative(href)
+    target_blank = not href.startswith("#narrow") and not href.startswith('mailto:')
 
     a.set('href', href)
     a.text = text
@@ -1348,7 +1328,7 @@ class LinkPattern(markdown.inlinepatterns.Pattern):
         if href is None:
             return None
 
-        href = rewrite_if_relative_link(href)
+        href = rewrite_local_links_to_relative(href)
 
         el = markdown.util.etree.Element('a')
         el.text = m.group(2)
@@ -1547,6 +1527,12 @@ class Bugdown(markdown.Extension):
             BacktickPattern(r'(?:(?<!\\)((?:\\{2})+)(?=`+)|(?<!\\)(`+)(.+?)(?<!`)\3(?!`))'),
             "_begin")
 
+        md.inlinePatterns.add(
+            'strong_em',
+            markdown.inlinepatterns.DoubleTagPattern(
+                r'(\*\*\*)(?!\s+)([^\*^\n]+)(?<!\s)\*\*\*', 'strong,em'),
+            '>backtick')
+
         # Custom bold syntax: **foo** but not __foo__
         md.inlinePatterns.add('strong',
                               markdown.inlinepatterns.SimpleTagPattern(r'(\*\*)([^\n]+?)\2', 'strong'),
@@ -1579,11 +1565,6 @@ class Bugdown(markdown.Extension):
         md.inlinePatterns.add('avatar', Avatar(AVATAR_REGEX), '>backtick')
         md.inlinePatterns.add('gravatar', Avatar(GRAVATAR_REGEX), '>backtick')
 
-        md.inlinePatterns.add(
-            'stream_subscribe_button',
-            StreamSubscribeButton(
-                r'!_stream_subscribe_button\((?P<stream_name>(?:[^)\\]|\\\)|\\)*)\)'),
-            '>backtick')
         md.inlinePatterns.add(
             'modal_link',
             ModalLink(r'!modal_link\((?P<relative_url>[^)]*), (?P<text>[^)]*)\)'),

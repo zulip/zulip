@@ -126,7 +126,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     # Reset our don't-spam-users-with-email counter since the
     # user has since logged in
-    if user_profile.last_reminder is not None:
+    if user_profile.last_reminder is not None:  # nocoverage
+        # TODO: Look into the history of last_reminder; we may have
+        # eliminated that as a useful concept for non-bot users.
         user_profile.last_reminder = None
         user_profile.save(update_fields=["last_reminder"])
 
@@ -172,7 +174,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # These end up in a global JavaScript Object named 'page_params'.
     page_params = dict(
         # Server settings.
-        new_user_bot_configured = settings.NEW_USER_BOT is not None,
         development_environment = settings.DEVELOPMENT,
         debug_mode            = settings.DEBUG,
         test_suite            = settings.TEST_SUITE,
@@ -189,6 +190,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         server_inline_url_embed_preview = settings.INLINE_URL_EMBED_PREVIEW,
         password_min_length = settings.PASSWORD_MIN_LENGTH,
         password_min_guesses  = settings.PASSWORD_MIN_GUESSES,
+        jitsi_server_url      = settings.JITSI_SERVER_URL,
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,

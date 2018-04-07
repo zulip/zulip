@@ -62,7 +62,9 @@ end
 # atlas.hashicorp.com, which means that removal broke the fetching and
 # updating of boxes (since the old URL doesn't work).  See
 # https://github.com/hashicorp/vagrant/issues/9442
-Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+if Vagrant::DEFAULT_SERVER_URL == "atlas.hashicorp.com"
+  Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+end
 
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
@@ -165,7 +167,7 @@ Welcome to the Zulip development environment!  Popular commands:
 * tools/lint - Run the linter (quick and catches many problmes)
 * tools/test-* - Run tests (use --help to learn about options)
 
-Read https://zulip.readthedocs.io/en/latest/testing.html to learn
+Read https://zulip.readthedocs.io/en/latest/testing/testing.html to learn
 how to run individual test suites so that you can get a fast debug cycle.
 
 EndOfMessage'
@@ -189,6 +191,19 @@ export SKIP_VENV_SHELL_WARNING=1
 # message after a successful run.
 set +x
 
+# Check if the zulip directory is writable
+if [ ! -w /srv/zulip ]; then
+    echo "The vagrant user is unable to write to the zulip directory."
+    echo "To fix this, run the following commands on the host machine:"
+    # sudo is required since our uid is not 1000
+    echo '    vagrant halt -f'
+    echo '    rm -rf /PATH/TO/ZULIP/CLONE/.vagrant'
+    echo '    sudo chown -R 1000:$(whoami) /PATH/TO/ZULIP/CLONE'
+    echo "Replace /PATH/TO/ZULIP/CLONE with the path to where zulip code is cloned."
+    echo "You can resume setting up your vagrant environment by running:"
+    echo "    vagrant up"
+    exit 1
+fi
 # Provision the development environment
 ln -nsf /srv/zulip ~/zulip
 /srv/zulip/tools/provision

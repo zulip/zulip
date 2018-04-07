@@ -72,7 +72,7 @@ group. However, "讨论组" has one more Chinese character than "频道
 * Invite-Only/Public Stream - **私有/公开频道**
 
 "Invite-Only Stream" requires users must be invited explicitly to
-subscribe, which assures a high privacy. Other users can not perceive
+subscribe, which assures a high privacy. Other users cannot perceive
 the presence of such streams. Since literal translation is hard to
 read, it is translated sense to sense as "私有频道(Private Stream)"。
 

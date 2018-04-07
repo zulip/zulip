@@ -9,7 +9,7 @@ var exports = {};
    type- used to define more complex logic for special cases
 */
 
-exports.message = function (response, status_box, cls, type) {
+exports.message = function (response, status_box, cls, type, remove_after) {
     if (cls === undefined) {
         cls = 'alert';
     }
@@ -22,7 +22,11 @@ exports.message = function (response, status_box, cls, type) {
     // via i18n.t when interpolating data.
     status_box.removeClass(common.status_classes).addClass(cls)
               .html(response).stop(true).fadeTo(0, 1);
-
+    if (remove_after) {
+        setTimeout(function () {
+            status_box.fadeTo(200, 0);
+        }, remove_after);
+    }
     status_box.addClass("show");
 };
 
@@ -45,8 +49,8 @@ exports.error = function (response, xhr, status_box, type) {
     exports.message(response, status_box, 'alert-error', type);
 };
 
-exports.success = function (response, status_box, type) {
-    exports.message(response, status_box, 'alert-success', type);
+exports.success = function (response, status_box, type, remove_after) {
+    exports.message(response, status_box, 'alert-success', type, remove_after);
 };
 
 exports.generic_embed_error = function (error) {
@@ -54,6 +58,16 @@ exports.generic_embed_error = function (error) {
     var $exit = "<div class='exit'></div>";
 
     $(".alert-box").append($alert.html($exit + "<div class='content'>" + error + "</div>").addClass("show"));
+};
+
+exports.generic_row_button_error = function (xhr, btn) {
+    if (xhr.status.toString().charAt(0) === "4") {
+        btn.closest("td").html(
+            $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
+        );
+    } else {
+        btn.text(i18n.t("Failed!"));
+    }
 };
 
 exports.hide_error = function ($target) {

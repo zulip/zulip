@@ -336,8 +336,8 @@ exports.get_unread_message_ids = function (message_ids) {
     return _.filter(message_ids, unread_messages.has);
 };
 
-exports.get_unread_messages = function (message) {
-    return _.filter(message, function (message) {
+exports.get_unread_messages = function (messages) {
+    return _.filter(messages, function (message) {
         return unread_messages.has(message.id);
     });
 };

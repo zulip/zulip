@@ -305,6 +305,20 @@ body {
     top: -2px;
 }
 
+.portico-landing.integrations ol {
+    margin-left: 0;
+}
+
+.portico-landing.integrations ol > li > p:not(:first-child) {
+    padding-left: 24px;
+    margin-left: 5px;
+}
+
+.portico-landing.integrations ol ul {
+    padding-left: 40px;
+    margin-left: 5px;
+}
+
 .markdown ol > li > ul {
     padding-left: 20px;
 }
@@ -950,7 +964,8 @@ input#desktop:checked ~ #tab-desktop,
 input#mobile:checked ~ #tab-mobile,
 input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
-input#zulipbot:checked ~ #tab-zulipbot {
+input#zulipbot:checked ~ #tab-zulipbot,
+input#terminal:checked ~ #tab-terminal {
     border-top: 1px solid #eee;
     padding-top: 20px;
     display: grid;
@@ -1611,6 +1626,7 @@ input.new-organization-button {
     box-shadow: none;
 }
 
+.integration-instructions .tip,
 .markdown .warn,
 .markdown .tip {
     position: relative;
@@ -1622,16 +1638,19 @@ input.new-organization-button {
     margin: 5px 0px;
 }
 
+.integration-instructions .tip,
 .markdown .tip {
     background-color: hsl(46, 63%, 95%);
     border: 1px solid hsl(46, 63%, 84%);
 }
 
+.integration-instructions .tip,
 .markdown .warn p,
 .markdown .tip p {
     margin-bottom: 0;
 }
 
+.integration-instructions .tip::before,
 .markdown .tip::before {
     display: inline;
     content: "\f0eb   Tip:  ";
@@ -1639,8 +1658,13 @@ input.new-organization-button {
     font-weight: 600;
 }
 
+.integration-instructions .tip p:first-of-type,
 .markdown .tip p:first-of-type {
     display: inline;
+}
+
+.integration-instructions .help-content h3 {
+    margin: 20px 0;
 }
 
 .markdown ol > li > div.tip,
@@ -1689,14 +1713,6 @@ input.new-organization-button {
 
 .markdown ul li {
     margin: 5px 0px;
-}
-
-.markdown .footer {
-    position: relative;
-    margin-top: -240px;
-    height: auto;
-    width: calc(100% - 40px);
-    max-width: calc(768px - -20px);
 }
 
 .error_page {
@@ -1799,7 +1815,7 @@ input.new-organization-button {
         -webkit-filter: brightness(0.7);
     }
 
-    .app.help .sidebar:not(.show) .ps__scrollbar-y-rail {
+    .app.help .sidebar:not(.show) .ps__rail-y {
         display: none; /* Hide y-scrollbar on collapsed sidebar view */
     }
 }
@@ -1863,13 +1879,6 @@ input.new-organization-button {
     .signup-section {
         display: inline-block;
         margin-top: 10px;
-    }
-}
-
-@media (max-width: 648px) {
-    /* this is when the .markdown .footer collapses to two lines. */
-    .markdown .footer {
-        margin-top: -95px;
     }
 }
 

@@ -10,6 +10,9 @@ var noop = function () {};
 var pills = {
     pill: {},
 };
+
+var create_item_handler;
+
 set_global('channel', {});
 set_global('templates', {});
 set_global('blueslip', {});
@@ -23,6 +26,33 @@ set_global('ui_report', {});
 set_global('people', {
     my_current_user_id: noop,
 });
+function reset_test_setup(pill_container_stub) {
+    function input_pill_stub(opts) {
+        assert.equal(opts.container, pill_container_stub);
+        create_item_handler = opts.create_item_from_text;
+        assert(create_item_handler);
+        return pills;
+    }
+    set_global('input_pill', {
+        create: input_pill_stub,
+    });
+}
+
+(function test_can_edit() {
+    var me = {
+        is_admin: false,
+    };
+    people.get_person_from_user_id = function (id) {
+        assert.equal(id, undefined);
+        return me;
+    };
+    user_groups.is_member_of = function (group_id, user_id) {
+        assert.equal(group_id, 1);
+        assert.equal(user_id, undefined);
+        return false;
+    };
+    settings_user_groups.can_edit(1);
+}());
 
 var user_group_selector = "#user-groups #1";
 var cancel_selector = "#user-groups #1 .cancel";
@@ -61,6 +91,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     user_groups.get_realm_user_groups = function () {
         return [realm_user_group];
     };
+
     var templates_render_called = false;
     var fake_rendered_temp = $.create('fake_admin_user_group_list_template_rendered');
     templates.render = function (template, args) {
@@ -84,12 +115,19 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         if (user_id === iago.user_id) {
             return iago;
         }
+        if (user_id === undefined) {
+            return noop;
+        }
         assert.equal(user_id, 4);
         blueslip.warn = function (err_msg) {
             assert.equal(err_msg, 'Unknown user ID 4 in members of user group Mobile');
             blueslip_warn_called = true;
         };
         get_person_from_user_id_called = true;
+    };
+
+    settings_user_groups.can_edit = function () {
+        return true;
     };
 
     var all_pills = {};
@@ -109,14 +147,6 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         text_cleared = true;
     };
 
-    var create_item_handler;
-
-    function input_pill_stub(opts) {
-        assert.equal(opts.container, pill_container_stub);
-        create_item_handler = opts.create_item_from_text;
-        assert(create_item_handler);
-        return pills;
-    }
     var input_field_stub = $.create('fake-input-field');
     pill_container_stub.children = function () {
         return input_field_stub;
@@ -261,9 +291,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         handler();
     };
 
-    set_global('input_pill', {
-        create: input_pill_stub,
-    });
+    reset_test_setup(pill_container_stub);
     settings_user_groups.set_up();
     assert(templates_render_called);
     assert(user_groups_list_append_called);
@@ -273,9 +301,176 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
-    assert.equal(typeof($('.organization').get_on_handler("submit", "form.admin-user-group-form")), 'function');
+    assert.equal(typeof($('.organization form.admin-user-group-form').get_on_handler("submit")), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('click', '.delete')), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
+}());
+(function test_with_external_user() {
+
+    var realm_user_group = {
+        id: 1,
+        name: 'Mobile',
+        description: 'All mobile people',
+        members: Dict.from_array([2, 4]),
+    };
+
+    user_groups.get_realm_user_groups = function () {
+        return [realm_user_group];
+    };
+
+    // We return noop because these are already tested, so we skip them
+    people.get_realm_persons = function () {
+        return noop;
+    };
+
+    templates.render = function () {
+        return noop;
+    };
+
+    people.get_person_from_user_id = function () {
+        return noop;
+    };
+
+    user_pill.append_person = function () {
+        return noop;
+    };
+
+    var can_edit_called = 0;
+    settings_user_groups.can_edit = function () {
+        can_edit_called += 1;
+        return false;
+    };
+
+    // Reset zjquery to test stuff with user who cannot edit
+    set_global('$', global.make_zjquery());
+
+    var user_group_find_called = 0;
+    var user_group_stub = $('div.user-group[id="1"]');
+    var name_field_stub = $.create('fake-name-field');
+    var description_field_stub = $.create('fake-description-field');
+    var input_stub = $.create('fake-input');
+    user_group_stub.find = function (elem) {
+        if (elem === '.name') {
+            user_group_find_called += 1;
+            return name_field_stub;
+        }
+        if (elem === '.description') {
+            user_group_find_called += 1;
+            return description_field_stub;
+        }
+    };
+
+    var pill_container_stub = $('.pill-container[data-group-pills="Mobile"]');
+    var pill_stub = $.create('fake-pill');
+    var pill_container_find_called = 0;
+    pill_container_stub.find = function (elem) {
+        if (elem === '.input') {
+            pill_container_find_called += 1;
+            return input_stub;
+        }
+        if (elem === '.pill') {
+            pill_container_find_called += 1;
+            return pill_stub;
+        }
+    };
+
+    input_stub.css = function (property, val) {
+        assert.equal(property, 'display');
+        assert.equal(val, 'none');
+    };
+
+    // Test the 'off' handlers on the pill-container
+    var turned_off = {};
+    pill_container_stub.off = function (event_name, sel) {
+        if (sel === undefined) {
+           sel = 'whole';
+        }
+        turned_off[event_name + '/' + sel] = true;
+    };
+
+    var pill_hover_called = false;
+    var callback;
+    var empty_fn;
+    pill_stub.hover = function (one, two) {
+        callback = one;
+        empty_fn = two;
+        pill_hover_called = true;
+        assert.equal(typeof(one), 'function');
+        assert.equal(typeof(two), 'function');
+    };
+
+    var exit_button = $.create('fake-pill-exit');
+    pill_stub.set_find_results('.exit', exit_button);
+    var exit_button_called=false;
+    exit_button.css = function (property, value) {
+        exit_button_called = true;
+        assert.equal(property, 'opacity');
+        assert.equal(value, '0.5');
+    };
+
+    // We return noop because these are already tested, so we skip them
+    pill_container_stub.children = function () {
+        return noop;
+    };
+
+    $('#user-groups').append = function () {
+        return noop;
+    };
+
+    reset_test_setup(pill_container_stub);
+
+    settings_user_groups.set_up();
+
+    var set_parents_result_called = 0;
+    var set_attributes_called = 0;
+
+    // Test different handlers with an external user
+    var delete_handler = $('#user-groups').get_on_handler('click', '.delete');
+    var fake_delete = $.create('fk-#user-groups.delete_btn');
+    fake_delete.set_parents_result('.user-group', $('.user-group'));
+    set_parents_result_called += 1;
+    $('.user-group').attr('id', '1');
+    set_attributes_called += 1;
+
+    var name_update_handler = $(user_group_selector).get_on_handler("input", ".name");
+
+    var des_update_handler = $(user_group_selector).get_on_handler("input", ".description");
+
+    var member_change_handler = $(user_group_selector).get_on_handler("blur", ".input");
+
+    var name_change_handler = $(user_group_selector).get_on_handler("blur", ".name");
+
+    var des_change_handler = $(user_group_selector).get_on_handler("blur", ".description");
+
+    var event = {
+        stopPropagation: noop,
+    };
+    var pill_click_called = false;
+    var pill_click_handler = pill_container_stub.get_on_handler('click');
+    pill_click_called = true;
+
+    assert(callback);
+    assert(empty_fn);
+    callback();
+    empty_fn();
+    pill_click_handler(event);
+    assert.equal(delete_handler.call(fake_delete), undefined);
+    assert.equal(name_update_handler(), undefined);
+    assert.equal(des_update_handler(), undefined);
+    assert.equal(member_change_handler(), undefined);
+    assert.equal(name_change_handler(), undefined);
+    assert.equal(des_change_handler(), undefined);
+    assert.equal(set_parents_result_called, 1);
+    assert.equal(set_attributes_called, 1);
+    assert.equal(can_edit_called, 9);
+    assert(exit_button_called);
+    assert(pill_click_called);
+    assert(pill_hover_called);
+    assert.equal(user_group_find_called, 2);
+    assert.equal(pill_container_find_called, 4);
+    assert.equal(turned_off['keydown/.pill'], true);
+    assert.equal(turned_off['keydown/.input'], true);
+    assert.equal(turned_off['click/whole'], true);
 }());
 
 (function test_reload() {
@@ -296,8 +491,13 @@ var instructions_selector = "#user-groups #1 .save-instructions";
 }());
 
 (function test_on_events() {
+
+    settings_user_groups.can_edit = function () {
+        return true;
+    };
+
     (function test_admin_user_group_form_submit_triggered() {
-        var handler = $('.organization').get_on_handler("submit", "form.admin-user-group-form");
+        var handler = $('.organization form.admin-user-group-form').get_on_handler("submit");
         var event = {
             stopPropagation: noop,
             preventDefault: noop,

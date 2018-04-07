@@ -29,7 +29,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.response import json_success, json_error
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
-from zerver.lib.streams import access_stream_by_id, is_public_stream_by_name
+from zerver.lib.streams import access_stream_by_id, can_access_stream_history_by_name
 from zerver.lib.timestamp import datetime_to_timestamp, convert_to_UTC
 from zerver.lib.timezone import get_timezone
 from zerver.lib.topic_mutes import exclude_topic_mutes
@@ -491,8 +491,7 @@ def narrow_parameter(json: str) -> Optional[List[Dict[str, Any]]]:
 
     return list(map(convert_term, data))
 
-def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], realm: Realm) -> bool:
-
+def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], user_profile: UserProfile) -> bool:
     # There are occasions where we need to find Message rows that
     # have no corresponding UserMessage row, because the user is
     # reading a public stream that might include messages that
@@ -507,7 +506,7 @@ def ok_to_include_history(narrow: Optional[Iterable[Dict[str, Any]]], realm: Rea
     if narrow is not None:
         for term in narrow:
             if term['operator'] == "stream" and not term.get('negated', False):
-                if is_public_stream_by_name(term['operand'], realm):
+                if can_access_stream_history_by_name(user_profile, term['operand']):
                     include_history = True
         # Disable historical messages if the user is narrowing on anything
         # that's a property on the UserMessage table.  There cannot be
@@ -558,6 +557,129 @@ def exclude_muting_conditions(user_profile: UserProfile,
 
     return conditions
 
+def get_base_query_for_search(user_profile: UserProfile,
+                              need_message: bool,
+                              need_user_message: bool) -> Tuple[Query, ColumnElement]:
+    if need_message and need_user_message:
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       join(table("zerver_usermessage"), table("zerver_message"),
+                            literal_column("zerver_usermessage.message_id") ==
+                            literal_column("zerver_message.id")))
+        inner_msg_id_col = column("message_id")
+        return (query, inner_msg_id_col)
+
+    if need_user_message:
+        query = select([column("message_id"), column("flags")],
+                       column("user_profile_id") == literal(user_profile.id),
+                       table("zerver_usermessage"))
+        inner_msg_id_col = column("message_id")
+        return (query, inner_msg_id_col)
+
+    else:
+        assert(need_message)
+        query = select([column("id").label("message_id")],
+                       None,
+                       table("zerver_message"))
+        inner_msg_id_col = literal_column("zerver_message.id")
+        return (query, inner_msg_id_col)
+
+def add_narrow_conditions(user_profile: UserProfile,
+                          inner_msg_id_col: ColumnElement,
+                          query: Query,
+                          narrow: List[Dict[str, Any]]) -> Tuple[Query, bool]:
+    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
+    if first_visible_message_id > 0:
+        query = query.where(inner_msg_id_col >= first_visible_message_id)
+
+    is_search = False  # for now
+
+    if narrow is None:
+        return (query, is_search)
+
+    # Build the query for the narrow
+    builder = NarrowBuilder(user_profile, inner_msg_id_col)
+    search_operands = []
+
+    # As we loop through terms, builder does most of the work to extend
+    # our query, but we need to collect the search operands and handle
+    # them after the loop.
+    for term in narrow:
+        if term['operator'] == 'search':
+            search_operands.append(term['operand'])
+        else:
+            query = builder.add_term(query, term)
+
+    if search_operands:
+        is_search = True
+        query = query.column(column("subject")).column(column("rendered_content"))
+        search_term = dict(
+            operator='search',
+            operand=' '.join(search_operands)
+        )
+        query = builder.add_term(query, search_term)
+
+    return (query, is_search)
+
+def find_first_unread_anchor(sa_conn: Any,
+                             user_profile: UserProfile,
+                             narrow: List[Dict[str, Any]]) -> int:
+    # We always need UserMessage in our query, because it has the unread
+    # flag for the user.
+    need_user_message = True
+
+    # Because we will need to call exclude_muting_conditions, unless
+    # the user hasn't muted anything, we will need to include Message
+    # in our query.  It may be worth eventually adding an optimization
+    # for the case of a user who hasn't muted anything to avoid the
+    # join in that case, but it's low priority.
+    need_message = True
+
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
+
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
+
+    condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
+
+    # We exclude messages on muted topics when finding the first unread
+    # message in this narrow
+    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+    if muting_conditions:
+        condition = and_(condition, *muting_conditions)
+
+    # The mobile app uses narrow=[] and use_first_unread_anchor=True to
+    # determine what messages to show when you first load the app.
+    # Unfortunately, this means that if you have a years-old unread
+    # message, the mobile app could get stuck in the past.
+    #
+    # To fix this, we enforce that the "first unread anchor" must be on or
+    # after the user's current pointer location. Since the pointer
+    # location refers to the latest the user has read in the home view,
+    # we'll only apply this logic in the home view (ie, when narrow is
+    # empty).
+    if not narrow:
+        pointer_condition = inner_msg_id_col >= user_profile.pointer
+        condition = and_(condition, pointer_condition)
+
+    first_unread_query = query.where(condition)
+    first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
+    first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
+    if len(first_unread_result) > 0:
+        anchor = first_unread_result[0][0]
+    else:
+        anchor = LARGER_THAN_MAX_MESSAGE_ID
+
+    return anchor
+
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          anchor: int=REQ(converter=int),
@@ -568,38 +690,38 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
-    include_history = ok_to_include_history(narrow, user_profile.realm)
+    include_history = ok_to_include_history(narrow, user_profile)
 
-    if include_history and not use_first_unread_anchor:
+    if include_history:
         # The initial query in this case doesn't use `zerver_usermessage`,
         # and isn't yet limited to messages the user is entitled to see!
         #
         # This is OK only because we've made sure this is a narrow that
         # will cause us to limit the query appropriately later.
         # See `ok_to_include_history` for details.
-        query = select([column("id").label("message_id")], None, table("zerver_message"))
-        inner_msg_id_col = literal_column("zerver_message.id")
-    elif narrow is None and not use_first_unread_anchor:
-        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       table("zerver_usermessage"))
-        inner_msg_id_col = column("message_id")
+        need_message = True
+        need_user_message = False
+    elif narrow is None:
+        # We need to limit to messages the user has received, but we don't actually
+        # need any fields from Message
+        need_message = False
+        need_user_message = True
     else:
-        # This is limited to messages the user received, as recorded in `zerver_usermessage`.
-        # TODO: Don't do this join if we're not doing a search
-        query = select([column("message_id"), column("flags")],
-                       column("user_profile_id") == literal(user_profile.id),
-                       join(table("zerver_usermessage"), table("zerver_message"),
-                            literal_column("zerver_usermessage.message_id") ==
-                            literal_column("zerver_message.id")))
-        inner_msg_id_col = column("message_id")
+        need_message = True
+        need_user_message = True
 
-    first_visible_message_id = get_first_visible_message_id(user_profile.realm)
-    if first_visible_message_id > 0:
-        query = query.where(inner_msg_id_col >= first_visible_message_id)
+    query, inner_msg_id_col = get_base_query_for_search(
+        user_profile=user_profile,
+        need_message=need_message,
+        need_user_message=need_user_message,
+    )
 
-    is_search = False
+    query, is_search = add_narrow_conditions(
+        user_profile=user_profile,
+        inner_msg_id_col=inner_msg_id_col,
+        query=query,
+        narrow=narrow,
+    )
 
     if narrow is not None:
         # Add some metadata to our logging data for narrows
@@ -611,67 +733,22 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 verbose_operators.append(term['operator'])
         request._log_data['extra'] = "[%s]" % (",".join(verbose_operators),)
 
-        # Build the query for the narrow
-        builder = NarrowBuilder(user_profile, inner_msg_id_col)
-        search_term = {}  # type: Dict[str, Any]
-        for term in narrow:
-            if term['operator'] == 'search':
-                if not is_search:
-                    search_term = term
-                    query = query.column(column("subject")).column(column("rendered_content"))
-                    is_search = True
-                else:
-                    # Join the search operators if there are multiple of them
-                    search_term['operand'] += ' ' + term['operand']
-            else:
-                query = builder.add_term(query, term)
-        if is_search:
-            query = builder.add_term(query, search_term)
-
     sa_conn = get_sqlalchemy_connection()
 
-    anchored_to_right = False  # till we know better
-
     if use_first_unread_anchor:
-        condition = column("flags").op("&")(UserMessage.flags.read.mask) == 0
-
-        # We exclude messages on muted topics when finding the first unread
-        # message in this narrow
-        muting_conditions = exclude_muting_conditions(user_profile, narrow)
-        if muting_conditions:
-            condition = and_(condition, *muting_conditions)
-
-        # The mobile app uses narrow=[] and use_first_unread_anchor=True to
-        # determine what messages to show when you first load the app.
-        # Unfortunately, this means that if you have a years-old unread
-        # message, the mobile app could get stuck in the past.
-        #
-        # To fix this, we enforce that the "first unread anchor" must be on or
-        # after the user's current pointer location. Since the pointer
-        # location refers to the latest the user has read in the home view,
-        # we'll only apply this logic in the home view (ie, when narrow is
-        # empty).
-        if not narrow:
-            pointer_condition = inner_msg_id_col >= user_profile.pointer
-            condition = and_(condition, pointer_condition)
-
-        first_unread_query = query.where(condition)
-        first_unread_query = first_unread_query.order_by(inner_msg_id_col.asc()).limit(1)
-        first_unread_result = list(sa_conn.execute(first_unread_query).fetchall())
-        if len(first_unread_result) > 0:
-            anchor = first_unread_result[0][0]
-        else:
-            # Set values that will be used to short circuit the after_query
-            # altogether and avoid needless conditions in the before_query.
-            anchored_to_right = True
-            num_after = None
-
-            # We only use LARGER_THAN_MAX_MESSAGE_ID for an edge case hack
-            # where num_before and num_after are 0, and it produces a query
-            # that returns zero results.
-            anchor = LARGER_THAN_MAX_MESSAGE_ID
+        anchor = find_first_unread_anchor(
+            sa_conn,
+            user_profile,
+            narrow,
+        )
 
     anchored_to_left = (anchor == 0)
+
+    # Set values that will be used to short circuit the after_query
+    # altogether and avoid needless conditions in the before_query.
+    anchored_to_right = (anchor == LARGER_THAN_MAX_MESSAGE_ID)
+    if anchored_to_right:
+        num_after = None
 
     query = limit_query_to_range(
         query=query,
@@ -740,7 +817,7 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                 # No coverage for this block since it should be
                 # impossible, and we plan to remove it once we've
                 # debugged the case that makes it happen.
-                raise Exception(str(err), message_id, search_term)
+                raise Exception(str(err), message_id, narrow)
 
     message_list = messages_for_ids(
         message_ids=message_ids,
@@ -1213,11 +1290,13 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # you change this value also change those two parameters in message_edit.js.
     # 1. You sent it, OR:
     # 2. This is a topic-only edit for a (no topic) message, OR:
-    # 3. This is a topic-only edit and you are an admin.
+    # 3. This is a topic-only edit and you are an admin, OR:
+    # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
     elif (content is None) and ((message.topic_name() == "(no topic)") or
-                                user_profile.is_realm_admin):
+                                user_profile.is_realm_admin or
+                                user_profile.realm.allow_community_topic_editing):
         pass
     else:
         raise JsonableError(_("You don't have permission to edit this message"))
@@ -1230,6 +1309,15 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     edit_limit_buffer = 20
     if content is not None and user_profile.realm.message_content_edit_limit_seconds > 0:
         deadline_seconds = user_profile.realm.message_content_edit_limit_seconds + edit_limit_buffer
+        if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
+            raise JsonableError(_("The time limit for editing this message has past"))
+
+    # If there is a change to the topic, check that the user is allowed to
+    # edit it and that it has not been too long. If this is not the user who
+    # sent the message, they are not the admin, and the time limit for editing
+    # topics is passed, raise an error.
+    if content is None and message.sender != user_profile and not user_profile.is_realm_admin:
+        deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has past"))
 

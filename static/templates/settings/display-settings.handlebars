@@ -86,19 +86,6 @@
         <div class="alert-notification" id="emoji-settings-status"></div>
 
         <div class="input-group side-padded-container">
-            <label class="checkbox">
-                <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
-                       {{#if page_params.translate_emoticons}}
-                       checked="checked"
-                       {{/if}} />
-                <span></span>
-            </label>
-            <label for="translate_emoticons" class="inline-block">
-                {{t "Translate emoticons (convert <code>:)</code> to 😃 in messages)" }}
-            </label>
-        </div>
-
-        <div class="input-group side-padded-container">
             <div class="emojiset_choices grey-box">
                 {{#each page_params.emojiset_choices }}
                 <label>
@@ -117,6 +104,19 @@
                 </label>
                 {{/each}}
             </div>
+        </div>
+
+        <div class="input-group">
+            <label class="checkbox">
+                <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
+                       {{#if page_params.translate_emoticons}}
+                       checked="checked"
+                       {{/if}} />
+                <span></span>
+            </label>
+            <label for="translate_emoticons" class="inline-block">
+                {{t "Translate emoticons (convert <code>:)</code> to 😃 in messages)" }}
+            </label>
         </div>
     </form>
 </div>

@@ -149,7 +149,7 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abefhlmotxyz');
+    assert_unmapped('abefhlmotyz');
     assert_unmapped('BEFHILNOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -215,7 +215,7 @@ function stubbing(func_name_to_stub, test_function) {
     test_normal_typing();
     overlays.is_active = return_false;
 
-    assert_mapping('?', 'ui.maybe_show_keyboard_shortcuts');
+    assert_mapping('?', 'info_overlay.maybe_show_keyboard_shortcuts');
     assert_mapping('/', 'search.initiate_search');
     assert_mapping('w', 'activity.initiate_search');
     assert_mapping('q', 'stream_list.initiate_search');
@@ -224,7 +224,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('D', 'narrow.stream_cycle_forward');
 
     assert_mapping('c', 'compose_actions.start');
-    assert_mapping('C', 'compose_actions.start');
+    assert_mapping('x', 'compose_actions.start');
     assert_mapping('P', 'narrow.by');
     assert_mapping('g', 'gear_menu.open');
 

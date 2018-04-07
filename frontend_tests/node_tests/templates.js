@@ -61,6 +61,7 @@ function render(template_name, args) {
             subject: "testing",
             sender_full_name: "King Lear",
         },
+        should_display_quote_and_reply: true,
         can_edit_message: true,
         can_mute_topic: true,
         narrowed: true,
@@ -72,6 +73,27 @@ function render(template_name, args) {
     var link = $(html).find("a.respond_button");
     assert.equal(link.text().trim(), 'translated: Quote and reply');
     global.write_handlebars_output("actions_popover_content", html);
+
+    var deletedArgs = {
+        message: {
+            is_stream: true,
+            id: "100",
+            stream: "devel",
+            subject: "testing",
+            sender_full_name: "King Lear",
+        },
+        should_display_edit_and_view_source: false,
+        should_display_quote_and_reply: false,
+        narrowed: true,
+    };
+
+    var deletedHtml = '<div style="height: 250px">';
+    deletedHtml += render('actions_popover_content', deletedArgs);
+    deletedHtml += "</div>";
+    var viewSourceLink = $(deletedHtml).find("a.popover_edit_message");
+    assert.equal(viewSourceLink.length, 0);
+    var quoteLink = $(deletedHtml).find("a.respond_button");
+    assert.equal(quoteLink.length, 0);
 }());
 
 (function admin_realm_domains_list() {
@@ -171,6 +193,55 @@ function render(template_name, args) {
 
     assert.equal(emoji_name.text(), 'MouseFace');
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
+}());
+
+(function admin_profile_field_list() {
+
+    // When the logged in user is admin
+    var args = {
+        profile_field: {
+            name: "teams",
+            type: "Long Text",
+        },
+        can_modify: true,
+    };
+
+    var html = '';
+    html += '<tbody id="admin_profile_fields_table">';
+    html += render('admin_profile_field_list', args);
+    html += '</tbody>';
+
+    var field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
+    var field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
+    var td = $(html).find('tr.profile-field-row:first td');
+
+    assert.equal(field_name.text(), 'teams');
+    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(td.length, 3);
+
+    // When the logged in user is not admin
+    args = {
+        profile_field: {
+            name: "teams",
+            type: "Long Text",
+        },
+        can_modify: false,
+    };
+
+    html = '';
+    html += '<tbody id="admin_profile_fields_table">';
+    html += render('admin_profile_field_list', args);
+    html += '</tbody>';
+
+    global.write_test_output('admin_profile_field_list', html);
+
+    field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
+    field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
+    td = $(html).find('tr.profile-field-row:first td');
+
+    assert.equal(field_name.text(), 'teams');
+    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(td.length, 2);
 }());
 
 (function admin_filter_list() {
@@ -551,6 +622,13 @@ function render(template_name, args) {
     assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
 }());
 
+(function compose_not_subscribed() {
+    var html = render('compose_not_subscribed');
+    global.write_handlebars_output("compose_not_subscribed", html);
+    var button = $(html).find("button:first");
+    assert.equal(button.text(), "translated: Subscribe");
+}());
+
 (function compose_notification() {
     var args = {
         note: "You sent a message to a muted topic.",
@@ -577,6 +655,14 @@ function render(template_name, args) {
     var expected_text = 'translated: Warning: Denmark is a private stream.';
     assert(actual_text.indexOf(expected_text) >= 1);
     global.write_handlebars_output("compose_stream_alert", html);
+}());
+
+(function custom_user_profile_field() {
+    var args = {field_name: "GitHub user name", field_id: 2, field_value: "@GitHub", field_type: "text"};
+    var html = render('custom-user-profile-field', args);
+    assert.equal($(html).find('input').attr('id'), 2);
+    assert.equal($(html).find('input').val(), "@GitHub");
+    global.write_handlebars_output("custom-user-profile-field", html);
 }());
 
 (function deactivate_stream_modal() {
@@ -789,6 +875,18 @@ function render(template_name, args) {
     );
 }());
 
+(function input_pill() {
+    var args = {
+        id: 22,
+        display_value: 'King Hamlet',
+    };
+
+    var html = render('input_pill', args);
+    global.write_handlebars_output("input_pill", html);
+
+    assert($(html).hasClass('pill'));
+}());
+
 (function invite_subscription() {
     var args = {
         streams: [
@@ -971,6 +1069,33 @@ function render(template_name, args) {
 
     var label = $(html).find("label:first");
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
+}());
+
+(function non_editable_user_group() {
+    var args = {
+        user_group: {
+            id: "9",
+            name: "uranohoshi",
+            description: "Students at Uranohoshi Academy",
+        },
+    };
+
+    var html = '';
+    html += '<div id="user-groups">';
+    html += render('non_editable_user_group', args);
+    html += '</div>';
+
+    global.write_handlebars_output('non_editable_user_group', html);
+
+    var group_id = $(html).find('.user-group:first').prop('id');
+    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
+    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
+    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+
+    assert.equal(group_id, '9');
+    assert.equal(group_name_pills, 'uranohoshi');
+    assert.equal(group_name_display, 'uranohoshi');
+    assert.equal(group_description, 'Students at Uranohoshi Academy');
 }());
 
 (function notification() {

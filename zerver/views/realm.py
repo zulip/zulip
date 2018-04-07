@@ -41,6 +41,7 @@ def update_realm(
         add_emoji_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_deleting: Optional[bool]=REQ(validator=check_bool, default=None),
         allow_message_editing: Optional[bool]=REQ(validator=check_bool, default=None),
+        allow_community_topic_editing: Optional[bool]=REQ(validator=check_bool, default=None),
         mandatory_topics: Optional[bool]=REQ(validator=check_bool, default=None),
         message_content_edit_limit_seconds: Optional[int]=REQ(converter=to_non_negative_int, default=None),
         allow_edit_history: Optional[bool]=REQ(validator=check_bool, default=None),
@@ -51,7 +52,8 @@ def update_realm(
         signup_notifications_stream_id: Optional[int]=REQ(validator=check_int, default=None),
         message_retention_days: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
-        bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None)
+        bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
+        default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -65,8 +67,6 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
-    if signup_notifications_stream_id is not None and settings.NEW_USER_BOT is None:
-        return json_error(_("NEW_USER_BOT must configured first."))
 
     # Additional validation of permissions values to add new bot
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:
@@ -97,17 +97,23 @@ def update_realm(
         data['authentication_methods'] = authentication_methods
     # The message_editing settings are coupled to each other, and thus don't fit
     # into the do_set_realm_property framework.
-    if (allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or \
-       (message_content_edit_limit_seconds is not None and
-            realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds):
+    if ((allow_message_editing is not None and realm.allow_message_editing != allow_message_editing) or
+        (message_content_edit_limit_seconds is not None and
+            realm.message_content_edit_limit_seconds != message_content_edit_limit_seconds) or
+        (allow_community_topic_editing is not None and
+            realm.allow_community_topic_editing != allow_community_topic_editing)):
         if allow_message_editing is None:
             allow_message_editing = realm.allow_message_editing
         if message_content_edit_limit_seconds is None:
             message_content_edit_limit_seconds = realm.message_content_edit_limit_seconds
+        if allow_community_topic_editing is None:
+            allow_community_topic_editing = realm.allow_community_topic_editing
         do_set_realm_message_editing(realm, allow_message_editing,
-                                     message_content_edit_limit_seconds)
+                                     message_content_edit_limit_seconds,
+                                     allow_community_topic_editing)
         data['allow_message_editing'] = allow_message_editing
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
+        data['allow_community_topic_editing'] = allow_community_topic_editing
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:

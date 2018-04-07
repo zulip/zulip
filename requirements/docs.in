@@ -8,7 +8,7 @@
 # See requirements/README.md for more detail.
 
 # Needed to build RTD docs
-sphinx==1.7.0
+sphinx==1.7.2
 sphinx-rtd-theme==0.2.4
 
 # Needed to build markdown docs
@@ -22,7 +22,7 @@ babel==2.5.3
 # https://github.com/rtfd/recommonmark/issues/24
 CommonMark==0.5.4
 docutils==0.14
-imagesize==0.7.1
+imagesize==1.0.0
 snowballstemmer==1.2.1
 
 # Include typing explicitly, since it's needed on Python 3.4

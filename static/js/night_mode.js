@@ -83,12 +83,12 @@ var object_to_css = function (object) {
         // we can also query for this in the DOM with the
         // `.night-mode-stylesheet` class.
         stylesheet.disabled = false;
-        $("body").addClass("dark-mode");
+        $("body").addClass("night-mode");
     };
 
     exports.disable = function () {
         stylesheet.disabled = true;
-        $("body").removeClass("dark-mode");
+        $("body").removeClass("night-mode");
     };
 }());
 

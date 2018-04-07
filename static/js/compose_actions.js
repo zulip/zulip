@@ -191,9 +191,12 @@ exports.start = function (msg_type, opts) {
     exports.expand_compose_box();
 
     opts = fill_in_opts_from_current_narrowed_view(msg_type, opts);
-    // If we are invoked by a compose hotkey (c or C), do not assume that we know
-    // what the message's topic or PM recipient should be.
-    if ((opts.trigger === "compose_hotkey") || (opts.trigger === "new topic button")) {
+    // If we are invoked by a compose hotkey (c or x) or new topic button
+    // or sidebar stream actions (in stream popover), do not assume that we know what
+    // the message's topic or PM recipient should be.
+    if ((opts.trigger === "compose_hotkey") ||
+        (opts.trigger === "new topic button") ||
+        (opts.trigger === "sidebar stream actions")) {
         opts.subject = '';
         opts.private_message_recipient = '';
     }
@@ -285,7 +288,7 @@ exports.respond_to_message = function (opts) {
         return;
     }
 
-    unread_ops.mark_message_as_read(message);
+    unread_ops.notify_server_message_read(message);
 
     var stream = '';
     var subject = '';
@@ -346,28 +349,26 @@ exports.on_topic_narrow = function () {
         return;
     }
 
-    if (compose_state.subject()) {
-        // If the user has filled in a subject, we have
-        // a risk of a mix, and we can't reliably guess
-        // whether the old topic is appropriate (otherwise,
-        // why did they narrow?) or the new one is
-        // appropriate (after all, they were starting to
-        // compose on the old topic and may now be looking
-        // for info), so we punt and cancel.
-
-        // If subject is not same as topic narrowed to then
-        // stop composing
-        if (compose_state.subject().toLowerCase() !== narrow_state.topic().toLowerCase()) {
-            exports.cancel();
-        }
+    if (compose_state.subject() && compose_state.has_message_content()) {
+        // If the user has written something to a different topic,
+        // they probably want that content, so leave compose open.
+        //
+        // This effectively uses the heuristic of whether there is
+        // content in compose to determine whether the user had firmly
+        // decided to compose to the old topic or is just looking to
+        // reply to what they see.
+        compose_fade.update_message_list();
         return;
     }
 
-    // If we got this far, then the compose box has the correct
-    // stream filled in, and we just need to update the topic.
-    // See #3300 for context--a couple users specifically asked
-    // for this convenience.
+    // If we got this far, then the compose box has the correct stream
+    // filled in, and either compose is empty or no topic was set, so
+    // we should update the compose topic to match the new narrow.
+    // See #3300 for context--a couple users specifically asked for
+    // this convenience.
     compose_state.subject(narrow_state.topic());
+    compose_fade.set_focused_recipient("stream");
+    compose_fade.update_message_list();
     $('#compose-textarea').focus().select();
 };
 
