@@ -64,6 +64,8 @@ function add_custom_profile_fields_to_settings() {
         // 1 & 2 type represent textual data.
         if (field.type === 1 || field.type === 2) {
             type = "text";
+        } else if (field.type === 3) {
+            type = "choice";
         } else {
             blueslip.error("Undefined field type.");
         }

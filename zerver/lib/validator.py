@@ -25,17 +25,30 @@ A simple example of composition is this:
 To extend this concept, it's simply a matter of writing your own validator
 for any particular type of object.
 '''
+import ujson
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, cast, \
+    Dict
 
 from zerver.lib.request import JsonableError
-from zerver.lib.types import Validator
+from zerver.lib.types import Validator, ProfileFieldData
 
 def check_string(var_name: str, val: object) -> Optional[str]:
     if not isinstance(val, str):
         return _('%s is not a string') % (var_name,)
+    return None
+
+def check_required_string(var_name: str, val: object) -> Optional[str]:
+    error = check_string(var_name, val)
+    if error:
+        return error
+
+    val = cast(str, val)
+    if not val.strip():
+        return _("{item} cannot be blank.").format(item=var_name)
+
     return None
 
 def check_short_string(var_name: str, val: object) -> Optional[str]:
@@ -174,3 +187,33 @@ def check_url(var_name: str, val: object) -> Optional[str]:
         return None
     except ValidationError as err:
         return _('%s is not a URL') % (var_name,)
+
+def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:
+    """
+    This function is used to validate the data sent to the server while
+    creating/editing choices of the choice field in Organization settings.
+    """
+    validator = check_dict_only([
+        ('text', check_required_string),
+        ('order', check_required_string),
+    ])
+
+    for key, value in field_data.items():
+        if not key.strip():
+            return _("'{item}' cannot be blank.").format(item='value')
+
+        error = validator('field_data', value)
+        if error:
+            return error
+
+    return None
+
+def validate_choice_field(var_name: str, field_data: str, value: object) -> None:
+    """
+    This function is used to validate the value selected by the user against a
+    choice field. This is not used to validate admin data.
+    """
+    field_data_dict = ujson.loads(field_data)
+    if value not in field_data_dict:
+        msg = _("'{value}' is not a valid choice for '{field_name}'.")
+        return msg.format(value=value, field_name=var_name)

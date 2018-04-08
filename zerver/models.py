@@ -32,9 +32,10 @@ from django.db.models.signals import pre_save, post_save, post_delete
 from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, \
-    check_short_string, check_long_string
+    check_short_string, check_long_string, validate_choice_field
 from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.lib.types import Validator, ProfileDataElement, ProfileData
+from zerver.lib.types import Validator, ExtendedValidator, \
+    ProfileDataElement, ProfileData, FieldTypeData
 
 from django.utils.encoding import force_text
 
@@ -1891,19 +1892,35 @@ class CustomProfileField(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     name = models.CharField(max_length=100)  # type: Text
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default='', null=True)  # type: Optional[Text]
+    # There is no performance overhead of using TextField in PostGreSQL.
+    # See https://www.postgresql.org/docs/9.0/static/datatype-character.html
+    field_data = models.TextField(default='', null=True)  # type: Optional[Text]
 
     SHORT_TEXT = 1
     LONG_TEXT = 2
+    CHOICE = 3
+
+    # These are the fields whose validators require field_data
+    # argument as well.
+    EXTENDED_FIELD_TYPE_DATA = [
+        (CHOICE, 'Choice', validate_choice_field, str),
+    ]  # type: FieldTypeData
+
+    EXTENDED_FIELD_VALIDATORS = {
+        item[0]: item[2] for item in EXTENDED_FIELD_TYPE_DATA
+    }  # type: Dict[int, ExtendedValidator]
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
         (SHORT_TEXT, u'Short Text', check_short_string, str),
         (LONG_TEXT, u'Long Text', check_long_string, str),
-    ]  # type: List[Tuple[int, Text, Validator, Callable[[Any], Any]]]
+    ]  # type: FieldTypeData
+
+    ALL_FIELD_TYPES = FIELD_TYPE_DATA + EXTENDED_FIELD_TYPE_DATA
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
-    FIELD_CONVERTERS = {item[0]: item[3] for item in FIELD_TYPE_DATA}  # type: Dict[int, Callable[[Any], Any]]
-    FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in FIELD_TYPE_DATA]  # type: List[Tuple[int, Text]]
+    FIELD_CONVERTERS = {item[0]: item[3] for item in ALL_FIELD_TYPES}  # type: Dict[int, Callable[[Any], Any]]
+    FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in ALL_FIELD_TYPES]  # type: List[Tuple[int, Text]]
 
     field_type = models.PositiveSmallIntegerField(choices=FIELD_TYPE_CHOICES,
                                                   default=SHORT_TEXT)  # type: int
@@ -1917,6 +1934,7 @@ class CustomProfileField(models.Model):
             'name': self.name,
             'type': self.field_type,
             'hint': self.hint,
+            'field_data': self.field_data,
         }
 
     def __str__(self) -> str:
