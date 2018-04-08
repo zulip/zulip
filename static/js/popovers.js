@@ -150,6 +150,7 @@ function show_user_info_popover(element, user, message) {
             private_message_class: "respond_personal_button",
             is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
+            is_online_and_active: presence.get_status(user.user_id) === "active",
             is_bot: people.get_person_from_user_id(user.user_id).is_bot,
             is_sender_popover: message.sender_id === user.user_id,
         };
@@ -656,6 +657,7 @@ exports.register_click_handlers = function () {
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
+            is_online_and_active: presence.get_status(user.user_id) === "active",
             is_bot: user.is_bot,
             is_sender_popover: false,
         };
