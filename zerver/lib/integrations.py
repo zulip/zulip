@@ -47,6 +47,8 @@ CATEGORIES = {
     'productivity': _('Productivity'),
     'version-control': _('Version control'),
     'bots': _('Interactive bots'),
+    'zapier-integration': _('Zapier Integrations'),
+    'ifttt-integration': _('IFTTT Integrations'),
 }  # type: Dict[str, str]
 
 class Integration:
@@ -85,6 +87,9 @@ class Integration:
 
     def is_enabled(self) -> bool:
         return True
+
+    def is_hidden(self) -> bool:
+        return False
 
     def get_logo_url(self) -> Optional[str]:
         logo_file_path_svg = str(pathlib.PurePath(
@@ -201,12 +206,18 @@ class HubotIntegration(Integration):
             git_url = self.GIT_URL_TEMPLATE.format(name)
         self.hubot_docs_url = git_url
 
+        if logo is None:
+            logo = "static/images/integrations/logos/hubot.png"
+
         super().__init__(
             name, name, categories,
             logo=logo, display_name=display_name,
             doc = 'zerver/integrations/hubot_common.md',
             legacy=legacy
         )
+
+    def is_hidden(self) -> bool:
+        return True
 
 class GithubIntegration(WebhookIntegration):
     """
@@ -476,8 +487,6 @@ HUBOT_INTEGRATIONS = [
     HubotIntegration('chartbeat', ['marketing'], display_name='Chartbeat'),
     HubotIntegration('darksky', ['misc'], display_name='Dark Sky',
                      logo_alt='Dark Sky logo'),
-    HubotIntegration('google-hangouts', ['communication'], display_name='Google Hangouts',
-                     logo_alt='Google Hangouts logo'),
     HubotIntegration('instagram', ['misc'], display_name='Instagram'),
     HubotIntegration('mailchimp', ['communication', 'marketing'],
                      display_name='MailChimp'),

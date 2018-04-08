@@ -92,7 +92,10 @@
                                     class="integration-lozenge integration-{{ integration.name }}"
                                     {% endif %}
                                     data-categories="{{ integration.categories }}"
-                                    data-name="{{ integration.name }}">
+                                    data-name="{{ integration.name }}"
+                                    {% if integration.is_hidden() %}
+                                    style="display: none;"
+                                    {% endif %}>
                                     <img class="integration-logo" src="/{{ integration.logo }}"
                                          alt="{{ integration.display_name }} logo"/>
                                     {% if integration.secondary_line_text %}
