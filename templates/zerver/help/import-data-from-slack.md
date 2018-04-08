@@ -1,7 +1,8 @@
 # Import data from Slack (beta)
 
-Zulip supports importing data from Slack, including users, channels,
-messages, attachments, avatars, custom emoji, and emoji reactions.
+Starting with Zulip 1.8, Zulip supports importing data from Slack,
+including users, channels, messages, attachments, avatars, custom
+emoji, and emoji reactions.
 
 !!! warn ""
     These instructions require shell access to the Zulip server. If you'd like
