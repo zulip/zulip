@@ -58,6 +58,9 @@ exports.hide_sub_settings = function (sub) {
 };
 
 exports.show_sub_settings = function (sub) {
+    if (!exports.is_sub_settings_active(sub)) {
+        return;
+    }
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     if ($settings.find(".email-address").val().length === 0) {
         // Rerender stream email address, if not.
