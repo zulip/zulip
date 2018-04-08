@@ -27,6 +27,10 @@
         {{#if user_time}}
         <li>{{#tr this}}Local time{{/tr}}: {{ user_time }} </li>
         {{/if}}
+
+        {{#unless is_online_and_active}}
+            <li>{{user_last_seen_time_status}}</li>
+        {{/unless}}
     </div>
     <hr />
     {{#if is_active}}
