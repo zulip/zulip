@@ -70,30 +70,33 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     var minutes = Math.floor(last_active_date.diffMinutes(current_date));
     if (minutes <= 2) {
-        return i18n.t("Last seen just now");
+        return i18n.t("Last online: just now");
     }
     if (minutes < 60) {
-        return i18n.t("Last seen __minutes__ minutes ago", {minutes: minutes});
+        return i18n.t("Last online: __minutes__ minutes ago", {minutes: minutes});
     }
 
     var hours = Math.floor(minutes / 60);
     if (hours === 1) {
-         return i18n.t("Last seen an hour ago");
+         return i18n.t("Last online: an hour ago");
     }
     if (hours < 24) {
-        return i18n.t("Last seen __hours__ hours ago", {hours: hours});
+        return i18n.t("Last online: __hours__ hours ago", {hours: hours});
     }
 
     var days = Math.floor(hours / 24);
     if (days === 1) {
-        return [i18n.t("Last seen yesterday")];
+        return [i18n.t("Last online: yesterday")];
+    }
+    if (days < 7){
+        return i18n.t("Last online: __days__ days ago", {days: days});
     }
     if (days < 365) {
-        return i18n.t("Last seen on __last_active__",
+        return i18n.t("Last online: __last_active__",
                       {last_active: last_active_date.toString("MMM\xa0dd")});
     }
 
-    return i18n.t("Last seen on __last_active_date__",
+    return i18n.t("Last online:  __last_active_date__",
                   {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
 };
 
