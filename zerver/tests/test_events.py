@@ -917,6 +917,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('type', check_int),
                 ('name', check_string),
                 ('hint', check_string),
+                ('field_data', check_string),
             ]))),
         ])
 

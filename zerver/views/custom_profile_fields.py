@@ -1,6 +1,7 @@
 
 from typing import Union, List, Dict, Optional
 import logging
+import ujson
 
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError, connection
@@ -14,7 +15,9 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
                                 do_update_user_custom_profile_data)
 from zerver.lib.response import json_success, json_error
-from zerver.lib.validator import check_dict, check_list, check_int, check_capped_string
+from zerver.lib.types import ProfileFieldData
+from zerver.lib.validator import (check_dict, check_list, check_int,
+                                  validate_field_data, check_capped_string)
 
 from zerver.models import (custom_profile_fields_for_realm, UserProfile,
                            CustomProfileField, custom_profile_fields_for_realm)
@@ -30,6 +33,8 @@ hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
 def create_realm_custom_profile_field(request: HttpRequest,
                                       user_profile: UserProfile, name: str=REQ(),
                                       hint: str=REQ(default=''),
+                                      field_data: ProfileFieldData=REQ(default={},
+                                                                       converter=ujson.loads),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
@@ -42,10 +47,15 @@ def create_realm_custom_profile_field(request: HttpRequest,
     if field_type not in field_types:
         return json_error(_("Invalid field type."))
 
+    error = validate_field_data(field_data)
+    if error:
+        return json_error(error)
+
     try:
         field = try_add_realm_custom_profile_field(
             realm=user_profile.realm,
             name=name,
+            field_data=field_data,
             field_type=field_type,
             hint=hint,
         )
@@ -69,7 +79,9 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 @has_request_variables
 def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
                                       field_id: int, name: str=REQ(),
-                                      hint: str=REQ(default='')
+                                      hint: str=REQ(default=''),
+                                      field_data: ProfileFieldData=REQ(default={},
+                                                                       converter=ujson.loads),
                                       ) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
@@ -78,6 +90,10 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
     if error:
         return json_error(error, data={'field': 'hint'})
 
+    error = validate_field_data(field_data)
+    if error:
+        return json_error(error)
+
     realm = user_profile.realm
     try:
         field = CustomProfileField.objects.get(realm=realm, id=field_id)
@@ -85,7 +101,8 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
         return json_error(_('Field id {id} not found.').format(id=field_id))
 
     try:
-        try_update_realm_custom_profile_field(realm, field, name, hint=hint)
+        try_update_realm_custom_profile_field(realm, field, name, hint=hint,
+                                              field_data=field_data)
     except IntegrityError:
         return json_error(_('A field with that name already exists.'))
     return json_success()
@@ -104,8 +121,21 @@ def update_user_custom_profile_data(
         except CustomProfileField.DoesNotExist:
             return json_error(_('Field id {id} not found.').format(id=field_id))
 
-        validator = CustomProfileField.FIELD_VALIDATORS[field.field_type]
-        result = validator('value[{}]'.format(field_id), item['value'])
+        validators = CustomProfileField.FIELD_VALIDATORS
+        extended_validators = CustomProfileField.EXTENDED_FIELD_VALIDATORS
+        field_type = field.field_type
+        value = item['value']
+        if field_type in validators:
+            validator = validators[field_type]
+            var_name = 'value[{}]'.format(field_id)
+            result = validator(var_name, value)
+        else:
+            # Check extended validators.
+            extended_validator = extended_validators[field_type]
+            field_data = field.field_data
+            var_name = 'value[{}]'.format(field_id)
+            result = extended_validator(var_name, field_data, value)
+
         if result is not None:
             return json_error(result)
 
