@@ -13,7 +13,8 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
-                                do_update_user_custom_profile_data)
+                                do_update_user_custom_profile_data,
+                                try_move_realm_custom_profile_field)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (check_dict, check_list, check_int,
@@ -140,4 +141,13 @@ def update_user_custom_profile_data(
 
     do_update_user_custom_profile_data(user_profile, data)
     # We need to call this explicitly otherwise constraints are not check
+    return json_success()
+
+@human_users_only
+@has_request_variables
+def move_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
+                                    order: List[int]=REQ(validator=check_list(
+                                        check_int))) -> HttpResponse:
+    realm = user_profile.realm
+    try_move_realm_custom_profile_field(realm, order)
     return json_success()

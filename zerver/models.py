@@ -1927,6 +1927,7 @@ class CustomProfileField(models.Model):
 
     field_type = models.PositiveSmallIntegerField(choices=FIELD_TYPE_CHOICES,
                                                   default=SHORT_TEXT)  # type: int
+    order = models.IntegerField(default=0)  # type: int
 
     class Meta:
         unique_together = ('realm', 'name')
@@ -1938,13 +1939,14 @@ class CustomProfileField(models.Model):
             'type': self.field_type,
             'hint': self.hint,
             'field_data': self.field_data,
+            'order': self.order,
         }
 
     def __str__(self) -> str:
-        return "<CustomProfileField: %s %s %s>" % (self.realm, self.name, self.field_type)
+        return "<CustomProfileField: %s %s %s %d>" % (self.realm, self.name, self.field_type, self.order)
 
 def custom_profile_fields_for_realm(realm_id: int) -> List[CustomProfileField]:
-    return CustomProfileField.objects.filter(realm=realm_id).order_by('name')
+    return CustomProfileField.objects.filter(realm=realm_id).order_by('order')
 
 class CustomProfileFieldValue(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
