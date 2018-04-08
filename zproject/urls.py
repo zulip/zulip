@@ -105,6 +105,7 @@ v1_api_and_json_patterns = [
     # realm/profile_fields -> zerver.views.custom_profile_fields
     url(r'^realm/profile_fields$', rest_dispatch,
         {'GET': 'zerver.views.custom_profile_fields.list_realm_custom_profile_fields',
+         'PATCH': 'zerver.views.custom_profile_fields.reorder_realm_custom_profile_fields',
          'POST': 'zerver.views.custom_profile_fields.create_realm_custom_profile_field'}),
     url(r'^realm/profile_fields/(?P<field_id>\d+)$', rest_dispatch,
         {'PATCH': 'zerver.views.custom_profile_fields.update_realm_custom_profile_field',
