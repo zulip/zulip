@@ -1,0 +1,40 @@
+[33mcommit 6cff5120fc613ba68daa150b6c856b34083d6d4b[m
+Author: Aastha Gupta <aastha.gupta4104@gmail.com>
+Date:   Thu Mar 22 00:23:20 2018 +0530
+
+    node: Fix test failure due to pm recipient validation
+
+[33mcommit 493e5959c70cf8a26a1cdc96728aa6034f4135be[m
+Author: Aastha Gupta <aastha.gupta4104@gmail.com>
+Date:   Wed Mar 21 11:57:53 2018 +0530
+
+    search: Do not update pm list for invalid user.
+    
+    If the operands for 'pm-with' are all invalid then,
+    do not update pm list.
+    
+    Fixes #3380
+
+[33mcommit fbc3af355bde93214c93c3719fd84c17a66bec4a[m
+Author: Aastha Gupta <aastha.gupta4104@gmail.com>
+Date:   Wed Mar 21 11:55:26 2018 +0530
+
+    search: In 'pm-with' show invalid user message.
+    
+    Incase of operands of 'pm-with' search operator are all invalid,
+    show non-existent user message.
+
+[33mcommit 41ee9971fb22d759fa42083e0acb3e0f7f0116e3[m
+Author: Aastha Gupta <aastha.gupta4104@gmail.com>
+Date:   Wed Mar 21 11:52:19 2018 +0530
+
+    search: Cancel compose if invalid users.
+    
+    In case of 'pm-with', if all the users are non existent,
+    then do not open compose box.
+
+[33mcommit 1bba6cc4ce100906cf5b1851ac23ab0ffe470e0f[m
+Author: Rhea Parekh <rheaparekh12@gmail.com>
+Date:   Fri Mar 30 16:08:03 2018 +0530
+
+    slack importer: Support custom emoji reactions.

@@ -2331,6 +2331,23 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-top: 5px;
 }
 
+#invite-user #add_invite_stream_input {
+    display: inline-block;
+    padding: 0px 5px;
+    outline: none;
+    border: none;
+    margin: 0;
+    width: auto;
+    max-width: inherit;
+    font-size: inherit;
+    font-family: inherit;
+}
+
+#scrollable-dropdown-menu {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
 .settings-dropdown-caret {
     margin-left: 8px;
     margin-right: 8px;
