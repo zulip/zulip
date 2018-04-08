@@ -546,6 +546,7 @@ a:hover code {
     margin-top: 3px;
     margin-left: 6px;
     opacity: 0.5;
+    cursor: pointer;
 }
 
 #message_edit_tooltip:hover {
@@ -2528,6 +2529,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 /* Reduce some of the heavy padding from Bootstrap. */
 #message_edit_form {
     margin-bottom: 10px;
+    cursor: default;
 }
 
 #message_edit_form .edit-controls {
