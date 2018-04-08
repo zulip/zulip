@@ -8,23 +8,23 @@
             <p>{{t "Unless I say otherwise for a particular stream, I want:" }}</p>
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_stream_desktop_notifications"
-            "is_checked" page_params.enable_stream_desktop_notifications
-            "label" settings_label.enable_stream_desktop_notifications
-            "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+              "setting_name" "enable_stream_desktop_notifications"
+              "is_checked" page_params.enable_stream_desktop_notifications
+              "label" settings_label.enable_stream_desktop_notifications
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_stream_sounds"
-            "is_checked" page_params.enable_stream_sounds
-            "label" settings_label.enable_stream_sounds
-            "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+              "setting_name" "enable_stream_sounds"
+              "is_checked" page_params.enable_stream_sounds
+              "label" settings_label.enable_stream_sounds
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_stream_push_notifications"
-            "is_checked" page_params.enable_stream_push_notifications
-            "label" settings_label.enable_stream_push_notifications
-            "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
+              "setting_name" "enable_stream_push_notifications"
+              "is_checked" page_params.enable_stream_push_notifications
+              "label" settings_label.enable_stream_push_notifications
+              "end_content" '<div class="propagate_stream_notifications_change"></div>'}}
 
             <p class="notification-settings-note">
                 {{#tr this}}Change notification settings for individual streams on your <a href="/#streams">Streams page</a>.{{/tr}}
@@ -37,18 +37,18 @@
             <p>{{t "I want:" }}</p>
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_desktop_notifications"
-            "is_checked" page_params.enable_desktop_notifications
-            "label" settings_label.enable_desktop_notifications}}
+              "setting_name" "enable_desktop_notifications"
+              "is_checked" page_params.enable_desktop_notifications
+              "label" settings_label.enable_desktop_notifications}}
 
             <div class="input-group disableable {{#unless page_params.enable_desktop_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="pm_content_in_desktop_notifications"
-                            id="pm_content_in_desktop_notifications"
-                        {{#unless page_params.enable_desktop_notifications}}disabled="disabled"{{/unless}}
-                        {{#if page_params.pm_content_in_desktop_notifications}}
-                        checked="checked"
-                        {{/if}} />
+                      id="pm_content_in_desktop_notifications"
+                      {{#unless page_params.enable_desktop_notifications}}disabled="disabled"{{/unless}}
+                      {{#if page_params.pm_content_in_desktop_notifications}}
+                      checked="checked"
+                      {{/if}} />
                     <span></span>
                 </label>
                 <label for="pm_content_in_desktop_notifications" id="pm_content_in_desktop_notifications_label" class="inline-block">
@@ -57,27 +57,27 @@
             </div>
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_sounds"
-            "is_checked" page_params.enable_sounds
-            "label" settings_label.enable_sounds}}
+              "setting_name" "enable_sounds"
+              "is_checked" page_params.enable_sounds
+              "label" settings_label.enable_sounds}}
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_offline_email_notifications"
-            "is_checked" page_params.enable_offline_email_notifications
-            "label" settings_label.enable_offline_email_notifications}}
+              "setting_name" "enable_offline_email_notifications"
+              "is_checked" page_params.enable_offline_email_notifications
+              "label" settings_label.enable_offline_email_notifications}}
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_offline_push_notifications"
-            "is_checked" page_params.enable_offline_push_notifications
-            "label" settings_label.enable_offline_push_notifications}}
+              "setting_name" "enable_offline_push_notifications"
+              "is_checked" page_params.enable_offline_push_notifications
+              "label" settings_label.enable_offline_push_notifications}}
 
             <div class="input-group disableable {{#unless page_params.enable_offline_push_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="enable_online_push_notifications" id="enable_online_push_notifications"
-                        {{#unless page_params.enable_offline_push_notifications}}disabled="disabled"{{/unless}}
-                        {{#if page_params.enable_online_push_notifications}}
-                        checked="checked"
-                        {{/if}} />
+                      {{#unless page_params.enable_offline_push_notifications}}disabled="disabled"{{/unless}}
+                      {{#if page_params.enable_online_push_notifications}}
+                      checked="checked"
+                      {{/if}} />
                     <span></span>
                 </label>
                 <label for="enable_online_push_notifications" id="enable_online_push_notifications_label" class="inline-block">
@@ -92,18 +92,18 @@
             <div class="alert-notification" id="other-notify-settings-status"></div>
 
             {{partial "settings_checkbox"
-            "setting_name" "enable_digest_emails"
-            "is_checked" page_params.enable_digest_emails
-            "label" settings_label.enable_digest_emails}}
+              "setting_name" "enable_digest_emails"
+              "is_checked" page_params.enable_digest_emails
+              "label" settings_label.enable_digest_emails}}
 
             <div class="input-group {{#unless page_params.enable_offline_email_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="message_content_in_email_notifications"
-                              id="message_content_in_email_notifications"
-                           {{#unless page_params.enable_offline_email_notifications}}disabled="disabled"{{/unless}}
-                           {{#if page_params.message_content_in_email_notifications}}
-                           checked="checked"
-                           {{/if}} />
+                      id="message_content_in_email_notifications"
+                      {{#unless page_params.enable_offline_email_notifications}}disabled="disabled"{{/unless}}
+                      {{#if page_params.message_content_in_email_notifications}}
+                      checked="checked"
+                      {{/if}} />
                     <span></span>
                 </label>
                 <label for="message_content_in_email_notifications" id="message_content_in_email_notifications_label" class="inline-block">
@@ -112,9 +112,9 @@
             </div>
 
             {{partial "settings_checkbox"
-            "setting_name" "realm_name_in_notifications"
-            "is_checked" page_params.realm_name_in_notifications
-            "label" settings_label.realm_name_in_notifications}}
+              "setting_name" "realm_name_in_notifications"
+              "is_checked" page_params.realm_name_in_notifications
+              "label" settings_label.realm_name_in_notifications}}
         </div>
     </form>
 

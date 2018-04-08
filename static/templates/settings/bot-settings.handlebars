@@ -28,13 +28,13 @@
 
         <div id="add-a-new-bot-form">
             <form id="create_bot_form"
-                class="form-horizontal no-padding {{#unless admin_only_bot_creation}}hide{{/unless}}">
+              class="form-horizontal no-padding {{#unless admin_only_bot_creation}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
                         <label for="bot_type">
                             {{t "Bot type" }}
                             <i class="icon-vector-question-sign settings-info-icon bot_type_tooltip" data-toggle="tooltip"
-                             title='{{t "Incoming webhooks can only send messages." }}'></i>
+                              title='{{t "Incoming webhooks can only send messages." }}'></i>
                         </label>
                         <select name="bot_type" id="create_bot_type">
                             {{#each page_params.bot_types}}
@@ -55,13 +55,13 @@
                     <div class="input-group">
                         <label for="create_bot_name">{{t "Full name" }}</label>
                         <input type="text" name="bot_name" id="create_bot_name" class="required"
-                               maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
+                          maxlength=100 placeholder="{{t 'Cookie Bot' }}" value="" />
                         <div><label for="create_bot_name" generated="true" class="text-error"></label></div>
                     </div>
                     <div class="input-group">
                         <label for="bot_short_name">{{t "Username" }}</label>
                         <input type="text" name="bot_short_name" id="create_bot_short_name" class="required bot_local_part"
-                               placeholder="{{t 'cookie' }}" value="" />
+                          placeholder="{{t 'cookie' }}" value="" />
                         -bot@{{ page_params.realm_bot_domain }}
                         <div>
                             <label for="create_bot_short_name" generated="true" class="text-error"></label>
@@ -71,7 +71,7 @@
                         <div class="input-group">
                             <label for="create_payload_url">{{t "Endpoint URL" }}</label>
                             <input type="text" name="payload_url" id="create_payload_url"
-                                maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
+                              maxlength=100 placeholder="https://hostname.example.com/bots/followup" value="" />
                             <div><label for="create_payload_url" generated="true" class="text-error"></label></div>
                         </div>
                         <div class="input-group">
