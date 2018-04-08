@@ -13,7 +13,8 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
-                                do_update_user_custom_profile_data)
+                                do_update_user_custom_profile_data,
+                                try_reorder_realm_custom_profile_fields)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (check_dict, check_list, check_int,
@@ -105,6 +106,14 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
                                               field_data=field_data)
     except IntegrityError:
         return json_error(_('A field with that name already exists.'))
+    return json_success()
+
+@require_realm_admin
+@has_request_variables
+def reorder_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile,
+                                        order: List[int]=REQ(validator=check_list(
+                                            check_int))) -> HttpResponse:
+    try_reorder_realm_custom_profile_fields(user_profile.realm, order)
     return json_success()
 
 @human_users_only

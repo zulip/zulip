@@ -17,6 +17,12 @@
         <button class="button rounded small btn-warning open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
             <i class="icon-vector-pencil"></i>
         </button>
+        <button class="button rounded small btn-warning move-field-up" {{#if ../first}}disabled="disabled"{{/if}} title="{{t 'Up' }}" data-profile-field-id="{{id}}">
+            <i class="icon-vector-chevron-up"></i>
+        </button>
+        <button class="button rounded small btn-warning move-field-down" {{#if ../last}}disabled="disabled"{{/if}} title="{{t 'Down' }}" data-profile-field-id="{{id}}">
+            <i class="icon-vector-chevron-down"></i>
+        </button>
     </td>
     {{/if}}
 </tr>

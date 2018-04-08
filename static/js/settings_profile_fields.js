@@ -6,6 +6,8 @@ var meta = {
     loaded: false,
 };
 
+var order = [];
+
 function field_type_id_to_string(type_id) {
     var name = _.find(page_params.custom_profile_field_types, function (type) {
         return type[0] === type_id;
@@ -67,6 +69,26 @@ function delete_choice_row(e) {
     row.remove();
 }
 
+function move_field(e, btn, direction) {
+    e.preventDefault();
+    e.stopPropagation();
+    var button_id = parseInt(btn.attr('data-profile-field-id'), 10);
+    var button_index = order.indexOf(button_id);
+    order[button_index] = order[button_index + direction];
+    order[button_index + direction] = button_id;
+    settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields",
+                                   {order: JSON.stringify(order)},
+                                   $('#admin-profile-field-status').expectOne());
+}
+
+function move_field_up(e) {
+    move_field(e, $(this), -1);
+}
+
+function move_field_down(e) {
+    move_field(e, $(this), 1);
+}
+
 function get_profile_field_info(id) {
     var info = {};
     info.row = $("tr.profile-field-row[data-profile-field-id='" + id + "']");
@@ -123,7 +145,9 @@ exports.populate_profile_fields = function (profile_fields_data) {
     var profile_fields_table = $("#admin_profile_fields_table").expectOne();
     profile_fields_table.find("tr.profile-field-row").remove();  // Clear all rows.
     profile_fields_table.find("tr.profile-field-form").remove();  // Clear all rows.
-    _.each(profile_fields_data, function (profile_field) {
+    order = [];
+    _.each(profile_fields_data, function (profile_field, index) {
+        order.push(profile_field.id);
         var field_data = {};
         if (profile_field.field_data !== "") {
             field_data = JSON.parse(profile_field.field_data);
@@ -161,6 +185,8 @@ exports.populate_profile_fields = function (profile_fields_data) {
                         is_choice_field: is_choice_field,
                     },
                     can_modify: page_params.is_admin,
+                    first: index === 0,
+                    last: index === _.size(profile_fields_data) - 1,
                 }
             )
         );
@@ -199,7 +225,8 @@ exports.set_up = function () {
     $('#admin_profile_fields_table').on('click', '.delete', delete_profile_field);
     $(".organization").on("submit", "form.admin-profile-field-form", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
-
+    $("#admin_profile_fields_table").on("click", ".move-field-up", move_field_up);
+    $("#admin_profile_fields_table").on("click", ".move-field-down", move_field_down);
     set_up_choices_field();
 };
 
