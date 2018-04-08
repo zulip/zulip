@@ -259,7 +259,7 @@ exports.update_settings_for_subscribed = function (sub) {
         exports.add_sub_to_table(sub);
     }
 
-    if (stream_edit.is_sub_settings_active(sub)) {
+    if (stream_edit.is_sub_settings_active(sub) && sub.invite_only) {
         stream_edit.rerender_subscribers_list(sub);
     }
 

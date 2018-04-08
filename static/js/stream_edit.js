@@ -74,10 +74,8 @@ exports.add_me_to_member_list = function (sub) {
     // Add the user to the member list if they're currently
     // viewing the members of this stream
     var stream_settings = settings_for_sub(sub);
-    if (sub.render_subscribers && stream_settings.hasClass('in')) {
-        exports.prepend_subscriber(
-            stream_settings,
-            people.my_current_email());
+    if (sub.render_subscribers && overlays.streams_open()) {
+        exports.prepend_subscriber(stream_settings, people.my_current_email());
     }
 };
 
