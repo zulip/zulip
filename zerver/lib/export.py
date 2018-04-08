@@ -1461,6 +1461,11 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
         for record in records:
             if record['s3_path'].endswith('.original'):
                 user_profile = get_user_profile_by_id(record['user_profile_id'])
+                avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
+                medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                                avatar_path) + '-medium.png'
+                if os.path.exists(medium_file_path):
+                    os.remove(medium_file_path)
                 # If medium sized avatar does not exist, this creates it using the original image
                 upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
