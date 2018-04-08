@@ -632,12 +632,12 @@ $(function () {
 
     $(document).on('peer_subscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_list(sub);
+        subs.rerender_subscriptions_settings(sub);
     });
 
     $(document).on('peer_unsubscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_list(sub);
+        subs.rerender_subscriptions_settings(sub);
     });
 
 });

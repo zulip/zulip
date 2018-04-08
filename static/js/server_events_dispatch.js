@@ -246,9 +246,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'subscription':
-        var person;
-        var email;
-
         if (event.op === 'add') {
             _.each(event.subscriptions, function (rec) {
                 var sub = stream_data.get_sub_by_id(rec.stream_id);
@@ -260,29 +257,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
                 }
             });
         } else if (event.op === 'peer_add') {
-            // TODO: remove email shim here and fix called functions
-            //       to use user_ids
-            person = people.get_person_from_user_id(event.user_id);
-            email = person.email;
             _.each(event.subscriptions, function (sub) {
                 if (stream_data.add_subscriber(sub, event.user_id)) {
-                    $(document).trigger(
-                        'peer_subscribe.zulip',
-                        {stream_name: sub, user_email: email});
+                    $(document).trigger('peer_subscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_add event');
                 }
             });
         } else if (event.op === 'peer_remove') {
-            // TODO: remove email shim here and fix called functions
-            //       to use user_ids
-            person = people.get_person_from_user_id(event.user_id);
-            email = person.email;
             _.each(event.subscriptions, function (sub) {
                 if (stream_data.remove_subscriber(sub, event.user_id)) {
-                    $(document).trigger(
-                        'peer_unsubscribe.zulip',
-                        {stream_name: sub, user_email: email});
+                    $(document).trigger('peer_unsubscribe.zulip', {stream_name: sub});
                 } else {
                     blueslip.warn('Cannot process peer_remove event.');
                 }
