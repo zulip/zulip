@@ -203,6 +203,10 @@ function add_email_hint_handler() {
 }
 
 exports.add_sub_to_table = function (sub) {
+    if (exports.is_sub_already_present(sub)) {
+        return;
+    }
+
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (stream_create.get_name() === sub.name) {
@@ -222,6 +226,14 @@ exports.add_sub_to_table = function (sub) {
         row_for_stream_id(sub.stream_id).click();
         stream_create.reset_created_stream();
     }
+};
+
+exports.is_sub_already_present = function (sub) {
+    var button = button_for_sub(sub);
+    if (button.length !== 0) {
+        return true;
+    }
+    return false;
 };
 
 exports.remove_stream = function (stream_id) {
