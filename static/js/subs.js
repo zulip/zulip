@@ -16,7 +16,7 @@ exports.show_subs_pane = {
     },
 };
 
-function button_for_sub(sub) {
+function check_button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
@@ -229,7 +229,7 @@ exports.add_sub_to_table = function (sub) {
 };
 
 exports.is_sub_already_present = function (sub) {
-    var button = button_for_sub(sub);
+    var button = check_button_for_sub(sub);
     if (button.length !== 0) {
         return true;
     }
@@ -244,7 +244,7 @@ exports.remove_stream = function (stream_id) {
 };
 
 exports.update_settings_for_subscribed = function (sub) {
-    var button = button_for_sub(sub);
+    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     $('.add_subscribers_container').show();
 
@@ -268,7 +268,7 @@ exports.update_settings_for_subscribed = function (sub) {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    var button = button_for_sub(sub);
+    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
 
     button.toggleClass("checked");
