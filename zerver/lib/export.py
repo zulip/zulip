@@ -24,6 +24,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
+    CustomProfileField, CustomProfileFieldValue, \
     get_display_recipient, Attachment, get_system_bot, email_to_username
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
@@ -1233,6 +1234,8 @@ id_maps = {
     'useractivity': {},
     'useractivityinterval': {},
     'usermessage': {},
+    'customprofilefield': {},
+    'customprofilefield_value': {},
     'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
@@ -1688,6 +1691,23 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_model_ids(UserActivityInterval, data, 'zerver_useractivityinterval',
                      'useractivityinterval')
     bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
+
+    if 'zerver_customprofilefield' in data:
+        # As the export of Custom Profile fields is not supported, Zulip exported
+        # data would not contain this field.
+        # However this is supported in slack importer script
+        re_map_foreign_keys(data, 'zerver_customprofilefield', 'realm', related_table="realm")
+        update_model_ids(CustomProfileField, data, 'zerver_customprofilefield',
+                         related_table="customprofilefield")
+        bulk_import_model(data, CustomProfileField, 'zerver_customprofilefield')
+
+        re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'user_profile',
+                            related_table="user_profile")
+        re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'field',
+                            related_table="customprofilefield")
+        update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefield_value',
+                         related_table="customprofilefield_value")
+        bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefield_value')
 
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
