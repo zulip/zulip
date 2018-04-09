@@ -71,8 +71,9 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
                  zerver_useractivityinterval=[],
                  zerver_realmfilter=[])
 
-    zerver_userprofile, avatars, added_users = users_to_zerver_userprofile(
-        slack_data_dir, user_list, realm_id, int(NOW), domain_name)
+    zerver_userprofile, avatars, added_users, zerver_customprofilefield, \
+        zerver_customprofilefield_value = users_to_zerver_userprofile(slack_data_dir, user_list,
+                                                                      realm_id, int(NOW), domain_name)
     channels_to_zerver_stream_fields = channels_to_zerver_stream(slack_data_dir,
                                                                  realm_id,
                                                                  added_users,
@@ -83,6 +84,10 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     # See https://zulipchat.com/help/set-default-streams-for-new-users
     # for documentation on zerver_defaultstream
     realm['zerver_userprofile'] = zerver_userprofile
+
+    # Custom profile fields
+    realm['zerver_customprofilefield'] = zerver_customprofilefield
+    realm['zerver_customprofilefield_value'] = zerver_customprofilefield_value
 
     realm['zerver_defaultstream'] = channels_to_zerver_stream_fields[0]
     realm['zerver_stream'] = channels_to_zerver_stream_fields[1]
@@ -130,13 +135,17 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
 def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                 timestamp: Any, domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                            List[ZerverFieldsT],
-                                                                           AddedUsersT]:
+                                                                           AddedUsersT,
+                                                                           List[ZerverFieldsT],
+                                                                           List[ZerverFieldsT]]:
     """
     Returns:
     1. zerver_userprofile, which is a list of user profile
     2. avatar_list, which is list to map avatars to zulip avatard records.json
     3. added_users, which is a dictionary to map from slack user id to zulip
        user id
+    4. zerver_customprofilefield, which is a list of all custom profile fields
+    5. zerver_customprofilefield_values, which is a list of user profile fields
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     zerver_userprofile = []
@@ -269,7 +278,8 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
-    return zerver_userprofile, avatar_list, added_users
+    return zerver_userprofile, avatar_list, added_users, zerver_customprofilefield, \
+        zerver_customprofilefield_values
 
 def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: ZerverFieldsT,
                               customprofilefield_id: int, realm_id: int,
