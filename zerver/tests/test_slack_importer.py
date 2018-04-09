@@ -145,7 +145,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    def test_users_to_zerver_userprofile(self) -> None:
+    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
+    def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
         user_data = [{"id": "U08RGD1RD",
                       "team_id": "T5YFFM2QY",
                       "name": "john",
@@ -179,6 +180,8 @@ class SlackImporter(ZulipTestCase):
                             'U09TYF5Sk': 2}
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
+        mock_get_data_file.return_value = user_data
+
         zerver_userprofile, avatar_list, added_users = users_to_zerver_userprofile(
             slack_data_dir, user_data, 1, timestamp, 'test_domain')
 

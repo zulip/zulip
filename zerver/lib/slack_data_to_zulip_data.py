@@ -140,13 +140,30 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     """
     logging.info('######### IMPORTING USERS STARTED #########\n')
     zerver_userprofile = []
+    zerver_customprofilefield = []  # type: List[ZerverFieldsT]
+    zerver_customprofilefield_values = []  # type: List[ZerverFieldsT]
     avatar_list = []  # type: List[ZerverFieldsT]
     added_users = {}
+
+    # The user data we get from the slack api does not contain custom profile data
+    # Hence we get it from the slack zip file
+    slack_data_file_user_list = get_data_file(slack_data_dir + '/users.json')
+
+    # To map user id with the custom profile fields of the corresponding user
+    slack_user_custom_field_map = {}
+    # To store custom fields corresponding to their ids
+    custom_field_map = {}  # type: ZerverFieldsT
+
+    for user in slack_data_file_user_list:
+        if 'fields' in user['profile']:
+            # Make sure the content of fields is not 'None'
+            if user['profile']['fields']:
+                slack_user_custom_field_map[user['id']] = user['profile']['fields']
 
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
     # This is to import the primary owner first from all the users
-    user_id_count = 0
+    user_id_count = custom_field_id_count = customprofilefield_id = 0
     primary_owner_id = user_id_count
     user_id_count += 1
 
@@ -173,6 +190,17 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
         # timezone
         timezone = get_user_timezone(user)
+
+        # Check for custom profile fields
+        if slack_user_id in slack_user_custom_field_map:
+            # For processing the fields
+            custom_field_map, customprofilefield_id = build_customprofile_field(
+                zerver_customprofilefield, slack_user_custom_field_map[slack_user_id],
+                customprofilefield_id, realm_id, custom_field_map)
+            # Store the custom field values for the corresponding user
+            custom_field_id_count = build_customprofilefields_values(
+                custom_field_map, slack_user_custom_field_map[slack_user_id], user_id,
+                custom_field_id_count, zerver_customprofilefield_values)
 
         userprofile = dict(
             enable_desktop_notifications=DESKTOP_NOTIFICATION,
@@ -238,8 +266,53 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
             user_id_count += 1
 
         logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
+
+    process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
     return zerver_userprofile, avatar_list, added_users
+
+def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: ZerverFieldsT,
+                              customprofilefield_id: int, realm_id: int,
+                              custom_field_map: ZerverFieldsT) -> Tuple[ZerverFieldsT, int]:
+    # The name of the custom profile field is not provided in the slack data
+    # Hash keys of the fields are provided
+    # Reference: https://api.slack.com/methods/users.profile.set
+    for field, value in fields.items():
+        if field not in custom_field_map:
+            field_name = ("slack custom field %s" % str(customprofilefield_id + 1))
+            customprofilefield = dict(
+                id=customprofilefield_id,
+                realm=realm_id,
+                name=field_name,
+                field_type=1  # For now this is defaulted to 'SHORT_TEXT'
+                              # Processing is done in the function 'process_customprofilefields'
+            )
+            custom_field_map[field] = customprofilefield_id
+            customprofilefield_id += 1
+            customprofile_field.append(customprofilefield)
+    return custom_field_map, customprofilefield_id
+
+def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: ZerverFieldsT,
+                                     user_id: int, custom_field_id: int,
+                                     custom_field_values: List[ZerverFieldsT]) -> int:
+    for field, value in fields.items():
+        custom_field_value = dict(
+            id=custom_field_id,
+            user_profile=user_id,
+            field=custom_field_map[field],
+            value=value['value'])
+        custom_field_values.append(custom_field_value)
+        custom_field_id += 1
+    return custom_field_id
+
+def process_customprofilefields(customprofilefield: List[ZerverFieldsT],
+                                customprofilefield_value: List[ZerverFieldsT]) -> None:
+    # Process the field types by checking all field values
+    for field in customprofilefield:
+        for field_value in customprofilefield_value:
+            if field_value['field'] == field['id'] and len(field_value['value']) > 50:
+                field['field_type'] = 2  # corresponding to Long Text
+                break
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:
     if 'email' in user['profile']:
