@@ -923,4 +923,4 @@ def get_slack_api_data(token: str, slack_api_url: str, get_param: str) -> Any:
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
-    json.dump(data, open(output_file, 'w'))
+    json.dump(data, open(output_file, 'w'), indent=4)
