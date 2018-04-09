@@ -2,6 +2,8 @@ from contextlib import contextmanager
 from typing import (cast, Any, Callable, Dict, Iterable, Iterator, List, Mapping, Optional,
                     Sized, Tuple, Union, Text)
 
+from django.apps import apps
+from django.db.migrations.state import StateApps
 from django.urls import resolve
 from django.conf import settings
 from django.test import TestCase
@@ -10,6 +12,8 @@ from django.test.client import (
 )
 from django.test.testcases import SerializeMixin
 from django.http import HttpResponse
+from django.db.migrations.executor import MigrationExecutor
+from django.db import connection
 from django.db.utils import IntegrityError
 
 from zerver.lib.initial_password import initial_password
@@ -702,3 +706,35 @@ class WebhookTestCase(ZulipTestCase):
     def do_test_message(self, msg: Message, expected_message: Optional[Text]) -> None:
         if expected_message is not None:
             self.assertEqual(msg.content, expected_message)
+
+class MigrationsTestCase(ZulipTestCase):
+
+    @property
+    def app(self) -> str:
+        return apps.get_containing_app_config(type(self).__module__).name
+
+    migrate_from = None  # type: Optional[str]
+    migrate_to = None  # type: Optional[str]
+
+    def setUp(self) -> None:
+        assert self.migrate_from and self.migrate_to, \
+            "TestCase '{}' must define migrate_from and migrate_to properties".format(type(self).__name__)
+        migrate_from = [(self.app, self.migrate_from)]  # type: List[Tuple[str, str]]
+        migrate_to = [(self.app, self.migrate_to)]  # type: List[Tuple[str, str]]
+        executor = MigrationExecutor(connection)
+        old_apps = executor.loader.project_state(migrate_from).apps
+
+        # Reverse to the original migration
+        executor.migrate(migrate_from)
+
+        self.setUpBeforeMigration(old_apps)
+
+        # Run the migration to test
+        executor = MigrationExecutor(connection)
+        executor.loader.build_graph()  # reload.
+        executor.migrate(migrate_to)
+
+        self.apps = executor.loader.project_state(migrate_to).apps
+
+    def setUpBeforeMigration(self, apps: StateApps) -> None:
+        pass  # nocoverage
