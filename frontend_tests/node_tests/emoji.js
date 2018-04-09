@@ -3,6 +3,7 @@ set_global('page_params', {
     emojiset: 'google',
 });
 set_global('upload_widget', {});
+set_global('blueslip', global.make_zblueslip());
 
 zrequire('emoji_codes', 'generated/emoji/emoji_codes');
 zrequire('emoji');
@@ -66,15 +67,10 @@ zrequire('util');
     canonical_name = emoji.get_canonical_name('+1');
     assert.equal(canonical_name, '+1');
 
-    var errored = false;
-    set_global('blueslip', {
-        error: function (error) {
-            assert.equal(error, "Invalid emoji name: non_existent");
-            errored = true;
-        },
-    });
+    blueslip.set_test_data('error', 'Invalid emoji name: non_existent');
     emoji.get_canonical_name('non_existent');
-    assert(errored);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 }());
 
 (function test_translate_emoticons_to_names() {
