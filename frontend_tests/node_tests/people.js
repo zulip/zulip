@@ -366,6 +366,31 @@ people.init();
 
 initialize();
 
+(function test_small_avatar_url_for_person() {
+    var charles = {
+        email: 'charles@example.com',
+        user_id: 451,
+        full_name: 'Charles Dickens',
+        avatar_url: 'charles.com/foo.png',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 452,
+        full_name: 'Maria Athens',
+    };
+    people.add(charles);
+    people.add(maria);
+
+    assert.equal(
+        people.small_avatar_url_for_person(charles),
+        'charles.com/foo.png&s=50'
+    );
+    assert.equal(
+        people.small_avatar_url_for_person(maria),
+        'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
+    );
+}());
+
 (function test_message_methods() {
     var charles = {
         email: 'charles@example.com',
