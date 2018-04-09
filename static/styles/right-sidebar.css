@@ -140,10 +140,10 @@
     position: relative;
     top: 3px;
     border-radius: 4px;
+    margin-right: 15px;
 }
 
 .user_sidebar_entry .count {
-    margin-right: 15px;
     margin-left: 2px;
     display: none;
 }
