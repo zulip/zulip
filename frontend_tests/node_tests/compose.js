@@ -21,7 +21,9 @@ set_global('templates', {});
 
 var noop = function () {};
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip({
+    error: false, // Ignore errors. We only check for warnings in this module.
+}));
 set_global('drafts', {
     delete_draft_after_send: noop,
 });
@@ -295,9 +297,6 @@ people.add(bob);
 }());
 
 (function test_markdown_shortcuts() {
-    blueslip.error = noop;
-    blueslip.log = noop;
-
     var queryCommandEnabled = true;
     var event = {
         keyCode: 66,
@@ -456,8 +455,6 @@ people.add(bob);
 }());
 
 (function test_send_message_success() {
-    blueslip.error = noop;
-    blueslip.log = noop;
     $("#compose-textarea").val('foobarfoobar');
     $("#compose-textarea").blur();
     $("#compose-send-status").show();
@@ -1087,9 +1084,7 @@ function test_raw_file_drop(raw_drop_func) {
         assert(!container_removed);
 
         // !sub will result false here and we check the failure code path.
-        blueslip.warn = function (err_msg) {
-            assert.equal(err_msg, 'Stream no longer exists: no-stream');
-        };
+        blueslip.set_test_data('warn', 'Stream no longer exists: no-stream');
         $('#stream').val('no-stream');
         container.data = function (field) {
             assert.equal(field, 'useremail');
@@ -1106,6 +1101,8 @@ function test_raw_file_drop(raw_drop_func) {
         assert(target.attr('disabled'));
         assert(!invite_user_to_stream_called);
         assert(!container_removed);
+        assert.equal(blueslip.get_test_logs('warn').length, 1);
+        blueslip.clear_test_data();
 
         // !sub will result in true here and we check the success code path.
         stream_data.add_sub('test', subscription);
