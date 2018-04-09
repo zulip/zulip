@@ -4,6 +4,7 @@
         "./static/js/portico/header.js"
     ],
     "common": [
+               "string.prototype.startswith",
                "./node_modules/jquery/dist/jquery.js",
                "./node_modules/underscore/underscore.js",
                "./static/js/blueslip.js",
