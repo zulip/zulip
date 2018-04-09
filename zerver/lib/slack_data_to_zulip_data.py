@@ -897,12 +897,13 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[Z
     """
     logging.info('######### GETTING ATTACHMENTS #########\n')
     logging.info('DOWNLOADING ATTACHMENTS .......\n')
+    session = requests.session()
     for upload in upload_list:
         upload_url = upload['path']
         upload_s3_path = upload['s3_path']
 
         upload_path = os.path.join(upload_dir, upload_s3_path)
-        response = requests.get(upload_url, stream=True)
+        response = session.get(upload_url, stream=True)
         os.makedirs(os.path.dirname(upload_path), exist_ok=True)
         with open(upload_path, 'wb') as upload_file:
             shutil.copyfileobj(response.raw, upload_file)
