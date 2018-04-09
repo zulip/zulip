@@ -39,6 +39,9 @@ global.walk = render.walk;
 // Set up fake jQuery
 global.make_zjquery = require('./zjquery.js').make_zjquery;
 
+// Set up fake blueslip
+global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
+
 // Set up fake translation
 global.stub_i18n = require('./i18n.js');
 
