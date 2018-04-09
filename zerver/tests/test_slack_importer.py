@@ -147,12 +147,17 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
+        custom_profile_field_user1 = {"Xf06054BBB": {"value": "random1"},
+                                      "Xf023DSCdd": {"value": "employee"}}
+        custom_profile_field_user2 = {"Xf06054BBB": {"value": "random2"},
+                                      "Xf023DSCdd": {"value": "employer"}}
         user_data = [{"id": "U08RGD1RD",
                       "team_id": "T5YFFM2QY",
                       "name": "john",
                       "deleted": False,
                       "real_name": "John Doe",
-                      "profile": {"image_32": "", "email": "jon@gmail.com", "avatar_hash": "hash"}},
+                      "profile": {"image_32": "", "email": "jon@gmail.com", "avatar_hash": "hash",
+                                  "fields": custom_profile_field_user1}},
                      {"id": "U0CBK5KAT",
                       "team_id": "T5YFFM2QY",
                       "is_admin": True,
@@ -163,6 +168,7 @@ class SlackImporter(ZulipTestCase):
                       "real_name": "Jane Doe",
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random.png",
+                                  "fields": custom_profile_field_user2,
                                   "email": "jane@foo.com", "avatar_hash": "hash"}},
                      {"id": "U09TYF5Sk",
                       "team_id": "T5YFFM2QY",
@@ -173,6 +179,7 @@ class SlackImporter(ZulipTestCase):
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random1.png",
                                   "email": "bot1@zulipchat.com", "avatar_hash": "hash"}}]
 
+        mock_get_data_file.return_value = user_data
         # As user with slack_id 'U0CBK5KAT' is the primary owner, that user should be imported first
         # and hence has zulip_id = 1
         test_added_users = {'U08RGD1RD': 1,
@@ -181,9 +188,18 @@ class SlackImporter(ZulipTestCase):
         slack_data_dir = './random_path'
         timestamp = int(timezone_now().timestamp())
         mock_get_data_file.return_value = user_data
+        zerver_userprofile, avatar_list, added_users, customprofilefield, \
+            customprofilefield_value = users_to_zerver_userprofile(slack_data_dir, user_data, 1,
+                                                                   timestamp, 'test_domain')
 
-        zerver_userprofile, avatar_list, added_users = users_to_zerver_userprofile(
-            slack_data_dir, user_data, 1, timestamp, 'test_domain')
+        # Test custom profile fields
+        self.assertEqual(customprofilefield[0]['field_type'], 1)
+        self.assertEqual(customprofilefield[1]['name'], 'slack custom field 2')
+
+        self.assertEqual(len(customprofilefield_value), 4)
+        self.assertEqual(customprofilefield_value[0]['field'], 0)
+        self.assertEqual(customprofilefield_value[0]['user_profile'], 1)
+        self.assertEqual(customprofilefield_value[2]['user_profile'], 0)
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(added_users, test_added_users)
@@ -319,7 +335,7 @@ class SlackImporter(ZulipTestCase):
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_realm", return_value=[{}])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.users_to_zerver_userprofile",
-                return_value=[[], [], {}])
+                return_value=[[], [], {}, [], []])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.channels_to_zerver_stream",
                 return_value=[[], [], {}, [], [], {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
