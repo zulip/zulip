@@ -2929,6 +2929,15 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         assert_um_count(cordelia, general_user_msg_count + 1)
         assert_last_um_content(cordelia, message)
 
+        general_user_msg_count = len(get_user_messages(cordelia))
+        soft_deactivated_user_msg_count = len(get_user_messages(long_term_idle_user))
+        message = 'Test @**stream** mention'
+        send_stream_message(message)
+        assert_last_um_content(long_term_idle_user, message)
+        assert_um_count(long_term_idle_user, soft_deactivated_user_msg_count + 1)
+        assert_um_count(cordelia, general_user_msg_count + 1)
+        assert_last_um_content(cordelia, message)
+
         # Test UserMessage row is not created while user is deactivated if there
         # is a alert word in message.
         do_add_alert_words(long_term_idle_user, ['test_alert_word'])
