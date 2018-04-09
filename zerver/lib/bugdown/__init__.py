@@ -629,6 +629,18 @@ class BacktickPattern(markdown.inlinepatterns.Pattern):
         else:
             return m.group(2).replace('\\\\', self.ESCAPED_BSLASH)
 
+def is_image_url(url: str) -> bool:
+    parsed_url = urllib.parse.urlparse(url)
+    # remove html urls which end with img extensions that can not be shorted
+    if parsed_url.netloc == 'pasteboard.co':
+        return False
+
+    # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
+    for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
+        if parsed_url.path.lower().endswith(ext):
+            return True
+    return False
+
 class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     TWITTER_MAX_IMAGE_HEIGHT = 400
     TWITTER_MAX_TO_PREVIEW = 3
@@ -654,16 +666,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
     def is_image(self, url: str) -> bool:
         if not self.markdown.image_preview_enabled:
             return False
-        parsed_url = urllib.parse.urlparse(url)
-        # remove html urls which end with img extensions that can not be shorted
-        if parsed_url.netloc == 'pasteboard.co':
-            return False
-
-        # List from http://support.google.com/chromeos/bin/answer.py?hl=en&answer=183093
-        for ext in [".bmp", ".gif", ".jpg", "jpeg", ".png", ".webp"]:
-            if parsed_url.path.lower().endswith(ext):
-                return True
-        return False
+        return is_image_url(url)
 
     def corrected_image_source(self, url: str) -> str:
         # This function adjusts any urls from linx.li and
@@ -1805,6 +1808,11 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
 # Markdown link, breaking up the link.  This is a monkey-patch, but it
 # might be worth sending a version of this change upstream.
 class AtomicLinkPattern(CompiledPattern):
+    def is_image(self, url: str) -> bool:
+        if not self.markdown.image_preview_enabled:
+            return False
+        return is_image_url(url)
+
     def get_element(self, m: Match[str]) -> Optional[Element]:
         href = m.group(9)
         if not href:
@@ -1821,7 +1829,8 @@ class AtomicLinkPattern(CompiledPattern):
 
         el = markdown.util.etree.Element('a')
         text = m.group(2)
-        if not text.strip():
+        is_inline_preview = self.is_image(href)
+        if not text.strip() and not is_inline_preview:
             text = href
         el.text = text
         el.set('href', href)

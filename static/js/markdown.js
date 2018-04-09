@@ -439,8 +439,13 @@ exports.initialize = function () {
     // Our links have title= and target=_blank
     r.link = function (href, title, text) {
         title = title || href;
-        if (!text.trim()) {
-            text = href;
+        // If we have an image link with empty title, we should render only
+        // the image (done by the backend) and not the link's url.
+        var is_backend_preview = _.find(backend_only_markdown_re, function (re) {
+            return re.test(href);
+        });
+        if (!text.trim() && !is_backend_preview) {
+            text = href; // Replace blank text with the link href.
         }
         var out = '<a href="' + href + '"' + ' target="_blank" title="' +
                   title + '"' + '>' + text + '</a>';
