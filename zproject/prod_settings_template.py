@@ -111,6 +111,7 @@ AUTHENTICATION_BACKENDS = (
     # 'zproject.backends.GitHubAuthBackend',  # GitHub auth, setup below
     # 'zproject.backends.ZulipLDAPAuthBackend',  # LDAP, setup below
     # 'zproject.backends.ZulipRemoteUserBackend',  # Local SSO, setup docs on readthedocs
+    # 'zproject.backends.SAMLAuthBackend', # SAML auth, setup below
 )
 
 ########
@@ -173,6 +174,41 @@ AUTHENTICATION_BACKENDS = (
 # to include this subdomain.
 #
 #SOCIAL_AUTH_SUBDOMAIN = 'auth'
+
+########
+# SAML Auth.
+# To set up SAML autentication, you'll need to create a private key
+# and put it in zulip-secrets.conf as `social_auth_saml_sp_private_key`
+# and set the following variables:
+#
+#SOCIAL_AUTH_SAML_SP_ENTITY_ID = "https://saml.example.com/"
+#SOCIAL_AUTH_SAML_SP_PUBLIC_CERT = "... X.509 certificate string ..."
+#SOCIAL_AUTH_SAML_ORG_INFO = {
+#    "en-US": {
+#        "name": "example",
+#        "displayname": "Example Inc.",
+#        "url": "http://example.com"
+#    }
+#}
+#SOCIAL_AUTH_SAML_TECHNICAL_CONTACT = {
+#    "givenName": "Tech Gal",
+#    "emailAddress": "technical@example.com"
+#}
+#SOCIAL_AUTH_SAML_SUPPORT_CONTACT = {
+#    "givenName": "Support Guy",
+#    "emailAddress": "support@example.com"
+#}
+#SOCIAL_AUTH_SAML_ENABLED_IDPS = {
+#    "testshib": {
+#        "entity_id": "https://idp.testshib.org/idp/shibboleth",
+#        "url": "https://idp.testshib.org/idp/profile/SAML2/Redirect/SSO",
+#        "x509cert": "MIIEDjCCAvagAwIBAgIBADANBgkqhkiG9w0B...
+#                    ...8Bbnl+ev0peYzxFyF5sQA==",
+#    }
+#}
+# Optional settings:
+#SOCIAL_AUTH_SAML_SP_EXTRA = {}
+#SOCIAL_AUTH_SAML_SECURITY_CONFIG = {}
 
 ########
 # SSO via REMOTE_USER.
