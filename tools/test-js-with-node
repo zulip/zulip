@@ -30,6 +30,7 @@ enforce_fully_covered = {
     'static/js/colorspace.js',
     'static/js/common.js',
     'static/js/components.js',
+    'static/js/compose_pm_pill.js',
     'static/js/compose_state.js',
     'static/js/compose_ui.js',
     'static/js/composebox_typeahead.js',
