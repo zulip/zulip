@@ -15,6 +15,10 @@ function settings_for_sub(sub) {
 }
 
 exports.is_sub_settings_active = function (sub) {
+    // This function return true if given stream is currently open/active in
+    // subscription modal. This helps to decide whether we want to rerender
+    // stream subscription page or not. i.e. To check "Denmark" stream subscription
+    // settings are active or not, pass sub of stream "Denmark".
     var active_stream = subs.active_stream();
     if (active_stream !== undefined && active_stream.id === sub.stream_id) {
         return true;
@@ -59,6 +63,7 @@ exports.hide_sub_settings = function (sub) {
 
 exports.show_sub_settings = function (sub) {
     if (!exports.is_sub_settings_active(sub)) {
+        // If given stream page is not active/opened, we don't need to render, return.
         return;
     }
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
