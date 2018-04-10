@@ -38,7 +38,8 @@ def create_realm_custom_profile_field(request: HttpRequest,
     if error:
         return json_error(error)
 
-    if field_type not in CustomProfileField.FIELD_VALIDATORS:
+    field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
+    if field_type not in field_types:
         return json_error(_("Invalid field type."))
 
     try:
