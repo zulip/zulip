@@ -56,6 +56,10 @@
                     {{ render_markdown_path('zerver/github-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
                     {% endif %}
 
+                    {% if saml_error %}
+                    {{ render_markdown_path('zerver/saml-error.md', {"root_domain_uri": root_domain_uri, "settings_path": settings_path, "secrets_path": secrets_path}) }}
+                    {% endif %}
+
                     {% if google_error or github_error %}
                         {% if development_environment %}
                         <p>
