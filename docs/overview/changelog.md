@@ -166,6 +166,22 @@ discoverable.
 - Backend test coverage is now 95%.
 - Countless other little bug fixes both in the backend and the UI.
 
+### 1.7.2 -- 2018-04-12
+
+This is a security release, with a handful of cherry-picked changes
+since 1.7.1.  All Zulip server admins are encouraged to upgrade
+promptly.
+
+- CVE-2018-9986: Fix XSS issues with frontend markdown processor.
+- CVE-2018-9987: Fix XSS issue with muting notifications.
+- CVE-2018-9990: Fix XSS issue with stream names in topic typeahead.
+- CVE-2018-9999: Fix XSS issue with user uploads.  The fix for this
+  adds a Content-Security-Policy for the `LOCAL_UPLOADS_DIR` storage
+  backend for user-uploaded files.
+
+Thanks to Suhas Sunil Gaikwad for reporting CVE-2018-9987 and w2w for
+reporting CVE-2018-9986 and CVE-2018-9990.
+
 ### 1.7.1 -- 2017-11-21
 
 This is a security release, with a handful of cherry-picked changes
