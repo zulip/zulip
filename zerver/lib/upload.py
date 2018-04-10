@@ -179,10 +179,19 @@ def upload_image_to_s3(
     key.set_metadata("user_profile_id", str(user_profile.id))
     key.set_metadata("realm_id", str(user_profile.realm_id))
 
+    attachment = True
+    if content_type is not None and (content_type.startswith("image/") or
+                                     content_type == "application/pdf"):
+        attachment = False
+
+    headers = {}  # type: Dict[Text, Text]
     if content_type is not None:
-        headers = {'Content-Type': content_type}  # type: Optional[Dict[Text, Text]]
-    else:
-        headers = None
+        headers['Content-Type'] = content_type
+    if attachment:
+        parts = ["attachment"]
+        quoted_filename = urllib.parse.quote(os.path.basename(file_name))
+        parts.append("filename*=UTF-8''%s" % (quoted_filename))
+        headers['Content-Disposition'] = '; '.join(parts)
 
     key.set_contents_from_string(contents, headers=headers)  # type: ignore # https://github.com/python/typeshed/issues/1552
 
