@@ -1517,6 +1517,7 @@ class FetchAuthBackends(ZulipTestCase):
                 ('authentication_methods', check_dict_only([
                     ('google', check_bool),
                     ('github', check_bool),
+                    ('saml', check_bool),
                     ('email', check_bool),
                     ('ldap', check_bool),
                     ('dev', check_bool),
@@ -1554,7 +1555,7 @@ class FetchAuthBackends(ZulipTestCase):
         data = result.json()
         self.assertEqual(set(data.keys()),
                          {'msg', 'password', 'github', 'google', 'email', 'ldap',
-                          'dev', 'result', 'remoteuser', 'zulip_version'})
+                          'saml', 'dev', 'result', 'remoteuser', 'zulip_version'})
         for backend in set(data.keys()) - {'msg', 'result', 'zulip_version'}:
             self.assertTrue(isinstance(data[backend], bool))
 
@@ -1568,6 +1569,7 @@ class FetchAuthBackends(ZulipTestCase):
                 'msg': '',
                 'password': False,
                 'github': False,
+                'saml': False,
                 'google': True,
                 'dev': True,
                 'email': False,
@@ -1586,6 +1588,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'msg': '',
                     'password': False,
                     'github': False,
+                    'saml': False,
                     'google': True,
                     'email': False,
                     'ldap': False,
@@ -1612,6 +1615,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'msg': '',
                     'password': False,
                     'github': False,
+                    'saml': False,
                     'google': False,
                     'email': False,
                     'ldap': False,
@@ -1635,6 +1639,7 @@ class FetchAuthBackends(ZulipTestCase):
                     'msg': '',
                     'password': False,
                     'github': False,
+                    'saml': False,
                     'google': False,
                     'email': False,
                     'remoteuser': False,
