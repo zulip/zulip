@@ -245,7 +245,6 @@ function get_default_suggestion(operators) {
     }
     var search_string = Filter.unparse(operators);
     var description = Filter.describe(operators);
-    description = Handlebars.Utils.escapeExpression(description);
     return {description: description, search_string: search_string};
 }
 

@@ -2,6 +2,7 @@ zrequire('util');
 zrequire('unread');
 zrequire('stream_data');
 zrequire('people');
+zrequire('Handlebars', 'handlebars');
 zrequire('Filter', 'js/filter');
 
 set_global('page_params', {});
@@ -585,7 +586,7 @@ function make_sub(name, stream_id) {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'JS'},
     ];
-    string = 'stream devel > JS';
+    string = 'stream devel &gt; JS';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
