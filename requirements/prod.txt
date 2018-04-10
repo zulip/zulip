@@ -60,6 +60,7 @@ idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
+isodate==0.6.0            # via python3-saml
 jedi==0.11.0              # via ipython
 jinja2==2.10
 libthumbor==1.3.2
@@ -80,6 +81,7 @@ phonenumberslite==8.8.6   # via django-phonenumber-field
 pickleshare==0.7.4        # via ipython
 pika==0.11.0
 pillow==5.2.0
+pkgconfig==1.3.1          # via xmlsec
 polib==1.1.0
 premailer==3.2.0
 prompt-toolkit==1.0.15    # via ipython
@@ -102,6 +104,7 @@ python-ldap==3.1.0        # via django-auth-ldap
 python-twitter==3.4.2
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.5
+python3-saml==1.4.1
 pyyaml==3.12              # via yamole
 qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
@@ -128,4 +131,5 @@ urllib3==1.22             # via requests
 uwsgi==2.0.17.1
 virtualenv-clone==0.3.0
 wcwidth==0.1.7            # via prompt-toolkit
+xmlsec==1.3.3             # via python3-saml
 yamole==2.1.5
