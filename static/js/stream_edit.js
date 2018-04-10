@@ -15,6 +15,10 @@ function settings_for_sub(sub) {
 }
 
 exports.is_sub_settings_active = function (sub) {
+    // This function return whether the provided given sub object is
+    // currently being viewed/edited in the stream edit UI.  This is
+    // used to determine whether we need to rerender the stream edit
+    // UI when a sub object is modified by an event.
     var active_stream = subs.active_stream();
     if (active_stream !== undefined && active_stream.id === sub.stream_id) {
         return true;

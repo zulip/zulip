@@ -167,6 +167,8 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
 };
 
 exports.rerender_subscriptions_settings = function (sub) {
+    // This rerendes the subscriber data for a given sub object
+    // where it might have already been rendered in the subscriptions UI.
     if (typeof sub === "undefined") {
         blueslip.error('Undefined sub passed to function rerender_subscriptions_settings');
         return;
@@ -204,6 +206,11 @@ function add_email_hint_handler() {
 
 exports.add_sub_to_table = function (sub) {
     if (exports.is_sub_already_present(sub)) {
+        // If a stream is already listed/added in subscription modal,
+        // return.  This can happen in some corner cases (which might
+        // be backend bugs) where a realm adminsitrator is subscribed
+        // to a private stream, in which case they might get two
+        // stream-create events.
         return;
     }
 
@@ -229,6 +236,8 @@ exports.add_sub_to_table = function (sub) {
 };
 
 exports.is_sub_already_present = function (sub) {
+    // This checks if a stream is already listed the "Manage streams"
+    // UI, by checking for its subscribe/unsubscribe checkmark button.
     var button = check_button_for_sub(sub);
     if (button.length !== 0) {
         return true;
