@@ -469,6 +469,10 @@ body.night-mode .email_tooltip:after {
     border-bottom-color: #404c59 !important;
 }
 
+body.night-mode .ps__rail-y {
+    background: hsl(212, 28%, 18%);
+}
+
 @-moz-document url-prefix() {
     body.night-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);

@@ -4,6 +4,7 @@ from typing import Any, Dict, Tuple, List
 # stubs
 ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
+AddedChannelsT = Dict[str, Tuple[str, int]]
 
 # Slack link can be in the format <http://www.foo.com|www.foo.com> and <http://foo.com/>
 LINK_REGEX = r"""
@@ -66,6 +67,7 @@ def get_user_full_name(user: ZerverFieldsT) -> str:
 
 # Markdown mapping
 def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
+                              added_channels: AddedChannelsT,
                               added_users: AddedUsersT) -> Tuple[str, List[int], bool]:
     mentioned_users_id = []
     text = convert_markdown_syntax(text, SLACK_BOLD_REGEX, "**")
@@ -73,8 +75,17 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
     text = convert_markdown_syntax(text, SLACK_ITALIC_REGEX, "*")
 
     # Map Slack's mention all: '<!everyone>' to '@**all** '
+    # Map Slack's mention all: '<!channel>' to '@**all** '
+    # Map Slack's mention all: '<!here>' to '@**all** '
     # No regex for this as it can be present anywhere in the sentence
     text = text.replace('<!everyone>', '@**all**')
+    text = text.replace('<!channel>', '@**all**')
+    text = text.replace('<!here>', '@**all**')
+
+    # Map Slack channel mention: '<#C5Z73A7RA|general>' to '#**general**'
+    for cname, ids in added_channels.items():
+        cid = ids[0]
+        text = text.replace('<#%s|%s>' % (cid, cname), '#**' + cname + '**')
 
     tokens = text.split(' ')
     for iterator in range(len(tokens)):

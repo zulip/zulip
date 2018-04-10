@@ -5,10 +5,10 @@ import re
 
 # Match multi-word string between @** ** or match any one-word
 # sequences after @
-find_mentions = r'(?<![^\s\'\"\(,:<])@(\*\*[^\*]+\*\*|all|everyone)'
+find_mentions = r'(?<![^\s\'\"\(,:<])@(\*\*[^\*]+\*\*|all|everyone|stream)'
 user_group_mentions = r'(?<![^\s\'\"\(,:<])@(\*[^\*]+\*)'
 
-wildcards = ['all', 'everyone']
+wildcards = ['all', 'everyone', 'stream']
 
 def user_mention_matches_wildcard(mention: Text) -> bool:
     return mention in wildcards
@@ -20,7 +20,7 @@ def extract_name(s: Text) -> Optional[Text]:
             return None
         return name
 
-    # We don't care about @all or @everyone
+    # We don't care about @all, @everyone or @stream
     return None
 
 def possible_mentions(content: Text) -> Set[Text]:

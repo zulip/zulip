@@ -169,33 +169,34 @@ zrequire('marked', 'third/marked/lib/marked');
 
     stream_data.set_subscribers(sub, [fred.user_id, george.user_id]);
     stream_data.update_calculated_fields(sub);
-    assert(stream_data.user_is_subscribed('Rome', 'FRED@zulip.com'));
-    assert(stream_data.user_is_subscribed('Rome', 'fred@zulip.com'));
-    assert(stream_data.user_is_subscribed('Rome', 'george@zulip.com'));
-    assert(!stream_data.user_is_subscribed('Rome', 'not_fred@zulip.com'));
+    assert(stream_data.is_user_subscribed('Rome', fred.user_id));
+    assert(stream_data.is_user_subscribed('Rome', george.user_id));
+    assert(!stream_data.is_user_subscribed('Rome', not_fred.user_id));
 
     stream_data.set_subscribers(sub, []);
 
-    var email = 'brutus@zulip.com';
     var brutus = {
-        email: email,
+        email: 'brutus@zulip.com',
         full_name: 'Brutus',
         user_id: 104,
     };
     people.add(brutus);
-    assert(!stream_data.user_is_subscribed('Rome', email));
+    assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
 
     // add
     var ok = stream_data.add_subscriber('Rome', brutus.user_id);
     assert(ok);
-    assert(stream_data.user_is_subscribed('Rome', email));
+    assert(stream_data.is_user_subscribed('Rome', brutus.user_id));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
+    var sub_email = "Rome:214125235@zulipdev.com:9991";
+    stream_data.update_stream_email_address(sub, sub_email);
+    assert.equal(sub.email_address, sub_email);
 
     // verify that adding an already-added subscriber is a noop
     stream_data.add_subscriber('Rome', brutus.user_id);
-    assert(stream_data.user_is_subscribed('Rome', email));
+    assert(stream_data.is_user_subscribed('Rome', brutus.user_id));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 1);
@@ -203,20 +204,22 @@ zrequire('marked', 'third/marked/lib/marked');
     // remove
     ok = stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(ok);
-    assert(!stream_data.user_is_subscribed('Rome', email));
+    assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
 
-    // verify that checking subscription with bad email is a noop
-    var bad_email = 'notbrutus@zulip.org';
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, "Unknown email for get_user_id: " + bad_email);
-    };
+    // verify that deactivating user should unsubscribe user from all streams
+    assert(stream_data.add_subscriber('Rome', george.user_id));
+    set_global('subs', { rerender_subscriptions_settings: function () {} });
+    stream_data.remove_deactivated_user_from_all_streams(george.user_id);
+    assert(!stream_data.is_user_subscribed('Rome', george.user_id));
+
+    // verify that checking subscription with undefined user id
     global.blueslip.warn = function (msg) {
-        assert.equal(msg, "Bad email passed to user_is_subscribed: " + bad_email);
+        assert.equal(msg, "Undefined user_id passed to function is_user_subscribed");
     };
-    assert(!stream_data.user_is_subscribed('Rome', bad_email));
+    assert.equal(stream_data.is_user_subscribed('Rome', undefined), undefined);
 
     // Verify noop for bad stream when removing subscriber
     var bad_stream = 'UNKNOWN';
@@ -233,7 +236,7 @@ zrequire('marked', 'third/marked/lib/marked');
     // verify that removing an already-removed subscriber is a noop
     ok = stream_data.remove_subscriber('Rome', brutus.user_id);
     assert(!ok);
-    assert(!stream_data.user_is_subscribed('Rome', email));
+    assert(!stream_data.is_user_subscribed('Rome', brutus.user_id));
     sub = stream_data.get_sub('Rome');
     stream_data.update_subscribers_count(sub);
     assert.equal(sub.subscriber_count, 0);
@@ -244,24 +247,24 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.add_sub('Rome', sub);
     stream_data.add_subscriber('Rome', brutus.user_id);
     sub.subscribed = true;
-    assert(stream_data.user_is_subscribed('Rome', email));
+    assert(stream_data.is_user_subscribed('Rome', brutus.user_id));
 
     // Verify that we noop and don't crash when unsubscribed.
     sub.subscribed = false;
     stream_data.update_calculated_fields(sub);
     ok = stream_data.add_subscriber('Rome', brutus.user_id);
     assert(ok);
-    assert.equal(stream_data.user_is_subscribed('Rome', email), true);
+    assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), true);
     stream_data.remove_subscriber('Rome', brutus.user_id);
-    assert.equal(stream_data.user_is_subscribed('Rome', email), false);
+    assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), false);
     stream_data.add_subscriber('Rome', brutus.user_id);
-    assert.equal(stream_data.user_is_subscribed('Rome', email), true);
+    assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), true);
 
     sub.invite_only = true;
     stream_data.update_calculated_fields(sub);
-    assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
+    assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), undefined);
     stream_data.remove_subscriber('Rome', brutus.user_id);
-    assert.equal(stream_data.user_is_subscribed('Rome', email), undefined);
+    assert.equal(stream_data.is_user_subscribed('Rome', brutus.user_id), undefined);
 
     // Verify that we don't crash and return false for a bad stream.
     ok = stream_data.add_subscriber('UNKNOWN', brutus.user_id);

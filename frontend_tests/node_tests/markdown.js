@@ -386,6 +386,20 @@ var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver
     assert.equal(message.mentioned, true);
     assert.equal(message.mentioned_me_directly, true);
 
+    input = "test @**everyone**";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.is_me_message, false);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, false);
+
+    input = "test @**stream**";
+    message = {subject: "No links here", raw_content: input};
+    markdown.apply_markdown(message);
+    assert.equal(message.is_me_message, false);
+    assert.equal(message.mentioned, true);
+    assert.equal(message.mentioned_me_directly, false);
+
     input = "test @all";
     message = {subject: "No links here", raw_content: input};
     markdown.apply_markdown(message);

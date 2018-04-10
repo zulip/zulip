@@ -735,8 +735,8 @@ exports.initialize = function () {
         if (data !== undefined && data.mentioned !== undefined) {
             var email = data.mentioned.email;
 
-            // warn if @all or @everyone is mentioned
-            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone') {
+            // warn if @all, @everyone or @stream is mentioned
+            if (data.mentioned.full_name  === 'all' || data.mentioned.full_name === 'everyone' || data.mentioned.full_name === 'stream') {
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
@@ -791,6 +791,12 @@ exports.initialize = function () {
         }
         var sub = stream_data.get_sub(stream_name);
         subs.sub_or_unsub(sub);
+        $("#compose-send-status").hide();
+    });
+
+    $("#compose-send-status").on('click', '#compose_not_subscribed_close', function (event) {
+        event.preventDefault();
+
         $("#compose-send-status").hide();
     });
 

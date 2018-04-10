@@ -60,6 +60,9 @@ def tokenize(text):
         # type: () -> bool
         return looking_at("{#")
 
+    def looking_at_handlebarpartial() -> bool:
+        return looking_at("{{partial")
+
     def looking_at_html_start():
         # type: () -> bool
         return looking_at("<") and not looking_at("</")
@@ -101,6 +104,10 @@ def tokenize(text):
                 s = get_django_comment(text, state.i)
                 tag = s[2:-2]
                 kind = 'django_comment'
+            elif looking_at_handlebarpartial():
+                s = get_handlebar_partial(text, state.i)
+                tag = s[9:-2]
+                kind = 'handlebars_singleton'
             elif looking_at_html_start():
                 s = get_html_tag(text, state.i)
                 tag_parts = s[1:-1].split()
@@ -155,12 +162,10 @@ def tokenize(text):
         )
         tokens.append(token)
         advance(len(s))
-        if kind == 'html_singleton':
-            # Here we insert a Pseudo html_singleton_end tag so as to have
-            # ease of detection of end of singleton html tags which might be
-            # needed in some cases as with our html pretty printer.
+
+        def add_pseudo_end_token(kind: str) -> None:
             token = Token(
-                kind='html_singleton_end',
+                kind=kind,
                 s='</' + tag + '>',
                 tag=tag,
                 line=state.line,
@@ -168,6 +173,16 @@ def tokenize(text):
                 line_span=1
             )
             tokens.append(token)
+
+        if kind == 'html_singleton':
+            # Here we insert a Pseudo html_singleton_end tag so as to have
+            # ease of detection of end of singleton html tags which might be
+            # needed in some cases as with our html pretty printer.
+            add_pseudo_end_token('html_singleton_end')
+        if kind == 'handlebars_singleton':
+            # We insert a pseudo handlbar end tag for singleton cases of
+            # handlebars like the partials. This helps in indenting multi line partials.
+            add_pseudo_end_token('handlebars_singleton_end')
 
     return tokens
 
@@ -382,3 +397,15 @@ def get_django_comment(text, i):
             unclosed_end = end
         end += 1
     raise TokenizationException('Unclosed comment', text[i:unclosed_end])
+
+def get_handlebar_partial(text, i):
+    # type: (str, int) -> str
+    end = i + 10
+    unclosed_end = 0
+    while end <= len(text):
+        if text[end-2:end] == '}}':
+            return text[i:end]
+        if not unclosed_end and text[end] == '<':
+            unclosed_end = end
+        end += 1
+    raise TokenizationException('Unclosed partial', text[i:unclosed_end])

@@ -43,6 +43,7 @@ set_global('notifications', {
     notify_above_composebox: noop,
     clear_compose_notifications: noop,
 });
+set_global('subs', {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -1144,6 +1145,51 @@ function test_raw_file_drop(raw_drop_func) {
         assert(container_removed);
         assert(all_invite_children_called);
         assert(!$("#compose_invite_users").visible());
+    }());
+
+    (function test_compose_not_subscribed_clicked() {
+        var handler = $("#compose-send-status")
+                      .get_on_handler('click', '.sub_unsub_button');
+        var subscription = {
+            stream_id: 102,
+            name: 'test',
+            subscribed: false,
+        };
+        var compose_not_subscribed_called = false;
+        subs.sub_or_unsub = function () {
+            compose_not_subscribed_called = true;
+        };
+
+        setup_parents_and_mock_remove('compose-send-status',
+                                      'sub_unsub_button',
+                                      '.compose_not_subscribed');
+
+        handler(event);
+
+        assert(compose_not_subscribed_called);
+
+        stream_data.add_sub('test', subscription);
+        $('#stream').val('test');
+        $("#compose-send-status").show();
+
+        handler(event);
+
+        assert(!$("#compose-send-status").visible());
+    }());
+
+    (function test_compose_not_subscribed_close_clicked() {
+        var handler = $("#compose-send-status")
+                      .get_on_handler('click', '#compose_not_subscribed_close');
+
+        setup_parents_and_mock_remove('compose_user_not_subscribed_close',
+                                      'compose_not_subscribed_close',
+                                      '.compose_not_subscribed');
+
+        $("#compose-send-status").show();
+
+        handler(event);
+
+        assert(!$("#compose-send-status").visible());
     }());
 
     event = {

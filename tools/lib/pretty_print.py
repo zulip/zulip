@@ -39,7 +39,7 @@ def pretty_print_html(html, num_spaces=4):
     # we proceed, we will push/pop info dictionaries on/off a stack.
     for token in tokens:
 
-        if token.kind in ('html_start', 'handlebars_start',
+        if token.kind in ('html_start', 'handlebars_start', 'handlebars_singleton',
                           'html_singleton', 'django_start') and stack[-1]['tag'] != 'pre':
             # An HTML start tag should only cause a new indent if we
             # are on a new line.
@@ -95,7 +95,7 @@ def pretty_print_html(html, num_spaces=4):
                     )
                 stack.append(info)
         elif (token.kind in ('html_end', 'handlebars_end', 'html_singleton_end',
-                             'django_end') and
+                             'django_end', 'handlebars_singleton_end') and
               (stack[-1]['tag'] != 'pre' or token.tag == 'pre')):
             info = stack.pop()
             if info['block']:
@@ -114,19 +114,22 @@ def pretty_print_html(html, num_spaces=4):
                     offsets[start_line] = info['offset']
                     line = lines[token.line - 1]
                     adjustment = len(line)-len(line.lstrip()) + 1
-                    if adjustment == token.col:
+                    if adjustment == token.col and token.kind != 'html_singleton_end':
                         offsets[end_line] = (info['offset'] +
                                              info['adjustment'] -
                                              adjustment +
                                              info['extra_indent'] -
                                              info['extra_indent_prev'])
                     elif (start_line + info['line_span'] - 1 == end_line and
-                            info['line_span'] > 2 and token.kind != 'html_singleton_end'):
+                            info['line_span'] > 1):
                         offsets[end_line] = (1 + info['extra_indent'] +
                                              (info['depth'] + 1) * num_spaces) - adjustment
+                        # We would like singleton tags and tags which spread over
+                        # multiple lines to have 2 space indentation.
+                        offsets[end_line] -= 2
                     elif token.line != info['line']:
                         offsets[end_line] = info['offset']
-                if token.tag != 'pre' and token.kind != 'html_singleton_end' and token.tag != 'script':
+                if token.tag != 'pre' and token.tag != 'script':
                     for line_num in range(start_line + 1, end_line):
                         # Be careful not to override offsets that happened
                         # deeper in the HTML within our block.
@@ -140,6 +143,10 @@ def pretty_print_html(html, num_spaces=4):
                             extra_indent = info['extra_indent']
                             adjustment = len(line)-len(line.lstrip()) + 1
                             offset = (1 + extra_indent + new_depth * num_spaces) - adjustment
+                            if line_num <= start_line + info['line_span'] - 1:
+                                # We would like singleton tags and tags which spread over
+                                # multiple lines to have 2 space indentation.
+                                offset -= 2
                             offsets[line_num] = offset
                         elif (token.kind in ('handlebars_end', 'django_end') and
                                 info['indenting'] and

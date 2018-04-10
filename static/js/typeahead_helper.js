@@ -79,14 +79,21 @@ var rendered = { persons: new Dict(), streams: new Dict(), user_groups: new Dict
 
 exports.render_person = function (person) {
     if (person.special_item_text) {
-        return exports.render_typeahead_item({ primary: person.special_item_text });
+        return exports.render_typeahead_item({
+            primary: person.special_item_text,
+            is_person: true,
+        });
     }
 
     var html = rendered.persons.get(person.user_id);
     if (html === undefined) {
+        var avatar_url = people.small_avatar_url_for_person(person);
+
         html = exports.render_typeahead_item({
             primary: person.full_name,
             secondary: person.email,
+            img_src: avatar_url,
+            is_person: true,
         });
         rendered.persons.set(person.user_id, html);
     }
@@ -104,6 +111,7 @@ exports.render_user_group = function (user_group) {
         html = exports.render_typeahead_item({
             primary: user_group.name,
             secondary: user_group.description,
+            is_user_group: true,
         });
         rendered.user_groups.set(user_group.id, html);
     }
@@ -177,17 +185,17 @@ exports.compare_by_pms = function (user_a, user_b) {
 };
 
 function compare_for_at_mentioning(person_a, person_b, tertiary_compare, current_stream) {
-    // give preference to "all" or "everyone"
-    if (person_a.email === "all" || person_a.email === "everyone") {
+    // give preference to "all", "everyone" or "stream"
+    if (person_a.email === "all" || person_a.email === "everyone" || person_a.email === "stream") {
         return -1;
-    } else if (person_b.email === "all" || person_b.email === "everyone") {
+    } else if (person_b.email === "all" || person_b.email === "everyone" || person_b.email === "stream") {
         return 1;
     }
 
     // give preference to subscribed users first
     if (current_stream !== undefined) {
-        var a_is_sub = stream_data.user_is_subscribed(current_stream, person_a.email);
-        var b_is_sub = stream_data.user_is_subscribed(current_stream, person_b.email);
+        var a_is_sub = stream_data.is_user_subscribed(current_stream, person_a.user_id);
+        var b_is_sub = stream_data.is_user_subscribed(current_stream, person_b.user_id);
 
         if (a_is_sub && !b_is_sub) {
             return -1;

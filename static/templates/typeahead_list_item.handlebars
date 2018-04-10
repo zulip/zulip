@@ -5,6 +5,18 @@
     <span class='emoji emoji-{{ codepoint }}' />
     {{/if}}
     &nbsp;&nbsp;
+{{else}}
+    {{#if is_person}}
+        {{#if has_image}}
+        <img class="typeahead-image" src="{{ img_src }}" />
+        {{else}}
+        <span class='typeahead-image fa fa-bullhorn'></span>
+        {{/if}}
+    {{else}}
+        {{#if is_user_group}}
+        <i class="typeahead-image icon icon-vector-group"></i>
+        {{/if}}
+    {{/if}}
 {{/if}}
 <strong>
     {{~ primary ~}}
@@ -17,6 +29,6 @@
 {{#if is_unsubscribed}}
 &nbsp;
 <span class="fa fa-exclamation-triangle unsubscribed_icon"
-title="{{t 'You are not currently subscribed to this stream.' }}"></span>
+  title="{{t 'You are not currently subscribed to this stream.' }}"></span>
 {{/if}}
 {{~/if}}

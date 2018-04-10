@@ -33,11 +33,10 @@ var upload_opts = upload.options({ mode: "compose" });
     };
     $("#compose-error-msg").html('');
     var test_html = '<div class="progress progress-striped active">' +
-                    '<div class="bar" id="compose-upload-bar" style="width: 00%;">' +
-                    '</div></div>';
-    $("<p>").after = function (html) {
+                    '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
+                    '</div>';
+    $("#compose-send-status").append = function (html) {
         assert.equal(html, test_html);
-        return 'fake-html';
     };
 
     upload_opts.drop();
@@ -46,7 +45,6 @@ var upload_opts = upload.options({ mode: "compose" });
     assert($("#compose-send-status").hasClass("alert-info"));
     assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), 'translated: Uploading…');
-    assert.equal($("#compose-error-msg").html(), 'fake-html');
 }());
 
 (function test_progress_updated() {
@@ -65,6 +63,10 @@ var upload_opts = upload.options({ mode: "compose" });
         $("#compose-send-status").addClass("alert-info");
         $("#compose-send-button").attr("disabled", 'disabled');
         $("#compose-error-msg").text('');
+
+        $("#compose-upload-bar").parent = function () {
+            return { remove: function () {} };
+        };
     }
 
     function assert_side_effects(msg) {
@@ -144,8 +146,17 @@ var upload_opts = upload.options({ mode: "compose" });
             }
         }
 
+        global.patch_builtin('setTimeout', function (func) {
+            func();
+        });
+
+        $("#compose-upload-bar").width = function (width_percent) {
+            assert.equal(width_percent, '100%');
+        };
+
         setup();
         upload_opts.uploadFinished(i, {}, response);
+        upload_opts.progressUpdated(1, '', 100);
         assert_side_effects();
     }
 

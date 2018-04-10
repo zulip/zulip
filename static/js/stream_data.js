@@ -174,6 +174,10 @@ exports.update_subscribers_count = function (sub) {
     sub.subscriber_count = count;
 };
 
+exports.update_stream_email_address = function (sub, email) {
+    sub.email_address = email;
+};
+
 exports.get_subscriber_count = function (stream_name) {
     var sub = exports.get_sub_by_name(stream_name);
     if (sub === undefined) {
@@ -345,6 +349,16 @@ exports.add_subscriber = function (stream_name, user_id) {
     return true;
 };
 
+exports.remove_deactivated_user_from_all_streams = function (user_id) {
+    (stream_info.values()).forEach(function (stream) {
+        if (exports.is_user_subscribed(stream.name, user_id)) {
+            exports.remove_subscriber(stream.name, user_id);
+            var sub = exports.get_sub(stream.name);
+            subs.rerender_subscriptions_settings(sub);
+        }
+    });
+};
+
 exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
@@ -361,18 +375,17 @@ exports.remove_subscriber = function (stream_name, user_id) {
     return true;
 };
 
-exports.user_is_subscribed = function (stream_name, user_email) {
+exports.is_user_subscribed = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined' || !sub.can_access_subscribers) {
         // If we don't know about the stream, or we ourselves cannot access subscriber list,
         // so we return undefined (treated as falsy if not explicitly handled).
-        blueslip.warn("We got a user_is_subscribed call for a non-existent or inaccessible stream.");
+        blueslip.warn("We got a is_user_subscribed call for a non-existent or inaccessible stream.");
         return;
     }
-    var user_id = people.get_user_id(user_email);
-    if (!user_id) {
-        blueslip.warn("Bad email passed to user_is_subscribed: " + user_email);
-        return false;
+    if (typeof user_id === "undefined") {
+        blueslip.warn("Undefined user_id passed to function is_user_subscribed");
+        return;
     }
 
     return sub.subscribers.has(user_id);

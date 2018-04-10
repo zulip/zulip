@@ -16,7 +16,7 @@ exports.show_subs_pane = {
     },
 };
 
-function button_for_sub(sub) {
+function check_button_for_sub(sub) {
     var id = parseInt(sub.stream_id, 10);
     return $(".stream-row[data-stream-id='" + id + "'] .check");
 }
@@ -166,6 +166,22 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     }
 };
 
+exports.rerender_subscriptions_settings = function (sub) {
+    if (typeof sub === "undefined") {
+        blueslip.error('Undefined sub passed to function rerender_subscriptions_settings');
+        return;
+    }
+
+    if (overlays.streams_open()) {
+        // Render subscriptions templates only if subscription tab is open
+        exports.rerender_subscribers_count(sub);
+        if (stream_edit.is_sub_settings_active(sub)) {
+            // Render subscriptions only if stream settings is open
+            stream_edit.rerender_subscribers_list(sub);
+        }
+    }
+};
+
 function add_email_hint_handler() {
     // Add a popover explaining stream e-mail addresses on hover.
 
@@ -187,6 +203,10 @@ function add_email_hint_handler() {
 }
 
 exports.add_sub_to_table = function (sub) {
+    if (exports.is_sub_already_present(sub)) {
+        return;
+    }
+
     var html = templates.render('subscription', sub);
     var settings_html = templates.render('subscription_settings', sub);
     if (stream_create.get_name() === sub.name) {
@@ -208,6 +228,14 @@ exports.add_sub_to_table = function (sub) {
     }
 };
 
+exports.is_sub_already_present = function (sub) {
+    var button = check_button_for_sub(sub);
+    if (button.length !== 0) {
+        return true;
+    }
+    return false;
+};
+
 exports.remove_stream = function (stream_id) {
     // It is possible that row is empty when we deactivate a
     // stream, but we let jQuery silently handle that.
@@ -216,7 +244,7 @@ exports.remove_stream = function (stream_id) {
 };
 
 exports.update_settings_for_subscribed = function (sub) {
-    var button = button_for_sub(sub);
+    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     $('.add_subscribers_container').show();
 
@@ -231,8 +259,7 @@ exports.update_settings_for_subscribed = function (sub) {
         exports.add_sub_to_table(sub);
     }
 
-    var active_stream = exports.active_stream();
-    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
+    if (stream_edit.is_sub_settings_active(sub) && sub.invite_only) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
@@ -241,20 +268,16 @@ exports.update_settings_for_subscribed = function (sub) {
 };
 
 exports.update_settings_for_unsubscribed = function (sub) {
-    var button = button_for_sub(sub);
+    var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).addClass("unsubscribed").show();
 
     button.toggleClass("checked");
     settings_button.text(i18n.t("Subscribe"));
-
-    exports.rerender_subscribers_count(sub);
-
     stream_edit.hide_sub_settings(sub);
+    exports.rerender_subscriptions_settings(sub);
 
-    var active_stream = exports.active_stream();
-    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
-        stream_edit.rerender_subscribers_list(sub);
-
+    stream_data.update_stream_email_address(sub, "");
+    if (stream_edit.is_sub_settings_active(sub)) {
         // If user unsubscribed from private stream then user cannot subscribe to
         // stream without invitation and cannot add subscribers to stream.
         if (!sub.should_display_subscription_button) {
@@ -791,17 +814,6 @@ $(function () {
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
-
-    $(document).on('peer_subscribe.zulip', function (e, data) {
-        var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_count(sub);
-    });
-
-    $(document).on('peer_unsubscribe.zulip', function (e, data) {
-        var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_count(sub);
-    });
-
 });
 
 function focus_on_narrowed_stream() {

@@ -1775,6 +1775,27 @@ blockquote p {
     color: hsl(96, 7%, 73%);
 }
 
+.typeahead-image {
+    display: inline-block;
+    height: 21px;
+    width: 21px;
+    position: relative;
+    margin-top: -7px;
+    vertical-align: middle;
+    top: 2px;
+    right: 8px;
+    border-radius: 4px;
+
+    /* For FontAwesome icons used in place of images for some users. */
+    font-size: 19px;
+    text-align: center;
+}
+
+.typeahead-image.icon {
+    /* This aligns the icon vertically. */
+    top: 0px;
+}
+
 .nav .dropdown-menu:after {
     position: absolute;
     width: 0px;

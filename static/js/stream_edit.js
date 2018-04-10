@@ -14,6 +14,14 @@ function settings_for_sub(sub) {
     return $("#subscription_overlay .subscription_settings[data-stream-id='" + id + "']");
 }
 
+exports.is_sub_settings_active = function (sub) {
+    var active_stream = subs.active_stream();
+    if (active_stream !== undefined && active_stream.id === sub.stream_id) {
+        return true;
+    }
+    return false;
+};
+
 function get_email_of_subscribers(subscribers) {
     var emails = [];
     subscribers.each(function (o, i) {
@@ -45,10 +53,20 @@ exports.rerender_subscribers_list = function (sub) {
 exports.hide_sub_settings = function (sub) {
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
     $settings.find(".regular_subscription_settings").removeClass('in');
+    // Clear email address widget
+    $settings.find(".email-address").html("");
 };
 
 exports.show_sub_settings = function (sub) {
+    if (!exports.is_sub_settings_active(sub)) {
+        return;
+    }
     var $settings = $(".subscription_settings[data-stream-id='" + sub.stream_id + "']");
+    if ($settings.find(".email-address").val().length === 0) {
+        // Rerender stream email address, if not.
+        $settings.find(".email-address").html(sub.email_address);
+        $settings.find(".stream-email-box").show();
+    }
     $settings.find(".regular_subscription_settings").addClass('in');
 };
 
@@ -56,10 +74,8 @@ exports.add_me_to_member_list = function (sub) {
     // Add the user to the member list if they're currently
     // viewing the members of this stream
     var stream_settings = settings_for_sub(sub);
-    if (sub.render_subscribers && stream_settings.hasClass('in')) {
-        exports.prepend_subscriber(
-            stream_settings,
-            people.my_current_email());
+    if (sub.render_subscribers && overlays.streams_open()) {
+        exports.prepend_subscriber(stream_settings, people.my_current_email());
     }
 };
 
@@ -206,7 +222,7 @@ function show_subscription_settings(sub_row) {
             // Case-insensitive.
             var item_matches = (item.email.toLowerCase().indexOf(query) !== -1) ||
                                (item.full_name.toLowerCase().indexOf(query) !== -1);
-            var is_subscribed = stream_data.user_is_subscribed(sub.name, item.email);
+            var is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
             return item_matches && !is_subscribed;
         },
         sorter: function (matches) {
@@ -614,12 +630,12 @@ $(function () {
 
     $(document).on('peer_subscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_list(sub);
+        subs.rerender_subscriptions_settings(sub);
     });
 
     $(document).on('peer_unsubscribe.zulip', function (e, data) {
         var sub = stream_data.get_sub(data.stream_name);
-        exports.rerender_subscribers_list(sub);
+        subs.rerender_subscriptions_settings(sub);
     });
 
 });

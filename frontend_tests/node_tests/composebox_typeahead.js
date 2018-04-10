@@ -12,6 +12,9 @@ zrequire('stream_data');
 zrequire('user_pill');
 zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
+set_global('md5', function (s) {
+    return 'md5-' + s;
+});
 
 var ct = composebox_typeahead;
 var noop = function () {};
@@ -447,17 +450,17 @@ user_pill.get_user_ids = function () {
         // corresponding parts in bold.
         options.query = 'oth';
         actual_value = options.highlighter(othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         options.query = 'Lear';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         options.query = 'othello@zulip.com, co';
         actual_value = options.highlighter(cordelia);
-        expected_value = '<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-cordelia@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Cordelia Lear</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">cordelia@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -562,12 +565,12 @@ user_pill.get_user_ids = function () {
         // content_highlighter.
         fake_this = { completing: 'mention', token: 'othello' };
         actual_value = options.highlighter.call(fake_this, othello);
-        expected_value = '<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
+        expected_value = '        <img class="typeahead-image" src="https://secure.gravatar.com/avatar/md5-othello@zulip.com?d&#x3D;identicon&amp;s&#x3D;50" />\n<strong>Othello, the Moor of Venice</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">othello@zulip.com</small>\n';
         assert.equal(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'hamletcharacters' };
         actual_value = options.highlighter.call(fake_this, hamletcharacters);
-        expected_value = '<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
+        expected_value = '        <i class="typeahead-image icon icon-vector-group"></i>\n<strong>hamletcharacters</strong>&nbsp;&nbsp;\n<small class="autocomplete_secondary">Characters of Hamlet</small>\n';
         assert.equal(actual_value, expected_value);
 
         // options.matcher()
@@ -893,20 +896,14 @@ user_pill.get_user_ids = function () {
         assert.deepEqual(returned, reference);
     }
 
-    var all_items = [
-        {
-            special_item_text: 'translated: all (Notify stream)',
-            email: 'all',
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            email: mention,
             pm_recipient_count: Infinity,
-            full_name: 'all',
-        },
-        {
-            special_item_text: 'translated: everyone (Notify stream)',
-            email: 'everyone',
-            pm_recipient_count: Infinity,
-            full_name: 'everyone',
-        },
-    ];
+            full_name: mention,
+        };
+    });
 
     var people_with_all = global.people.get_realm_persons().concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
@@ -1091,20 +1088,14 @@ user_pill.get_user_ids = function () {
 }());
 
 (function test_typeahead_results() {
-    var all_items = [
-        {
-            special_item_text: 'all (translated: Notify stream)',
-            email: 'all',
+    var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
+        return {
+            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            email: mention,
             pm_recipient_count: Infinity,
-            full_name: 'all',
-        },
-        {
-            special_item_text: 'everyone (translated: Notify stream)',
-            email: 'everyone',
-            pm_recipient_count: Infinity,
-            full_name: 'everyone',
-        },
-    ];
+            full_name: mention,
+        };
+    });
     var people_with_all = global.people.get_realm_persons().concat(all_items);
     var all_mentions = people_with_all.concat(global.user_groups.get_realm_user_groups());
     var stream_list = [denmark_stream, sweden_stream, netherland_stream];

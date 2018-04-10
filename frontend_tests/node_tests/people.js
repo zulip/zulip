@@ -381,6 +381,8 @@ initialize();
     people.add(charles);
     people.add(maria);
 
+    assert.equal(people.small_avatar_url_for_person(maria),
+                 'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50');
     var message = {
         type: 'private',
         display_recipient: [

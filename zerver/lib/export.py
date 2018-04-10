@@ -24,6 +24,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
+    CustomProfileField, CustomProfileFieldValue, \
     get_display_recipient, Attachment, get_system_bot, email_to_username
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
@@ -1233,6 +1234,8 @@ id_maps = {
     'useractivity': {},
     'useractivityinterval': {},
     'usermessage': {},
+    'customprofilefield': {},
+    'customprofilefield_value': {},
     'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
@@ -1255,9 +1258,8 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
             if item[field_name] is not None:
                 item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
-def fix_slack_upload_links(data: TableData, message_table: TableName) -> None:
-    """This is slack importer specific for now, though arguably it shouldn't be.
-
+def fix_upload_links(data: TableData, message_table: TableName) -> None:
+    """
     Because the URLs for uploaded files encode the realm ID of the
     organization being imported (which is only determined at import
     time), we need to rewrite the URLs of links to uploaded files
@@ -1265,15 +1267,11 @@ def fix_slack_upload_links(data: TableData, message_table: TableName) -> None:
     """
     for message in data[message_table]:
         if message['has_attachment'] is True:
-            # This code path needs to be kept in sync with the
-            # specific placeholder 'SlackImportAttachment' in the
-            # Slack import attachment code path.  See the function
-            # 'get_attachment_path_and_content' in the
-            # 'slack_data_to_zulip_data' module.
-            if 'SlackImportAttachment' in message['content']:
-                for key, value in path_maps['attachment_path'].items():
-                    if key in message['content']:
-                        message['content'] = message['content'].replace(key, value)
+            for key, value in path_maps['attachment_path'].items():
+                if key in message['content']:
+                    message['content'] = message['content'].replace(key, value)
+                    if message['rendered_content']:
+                        message['rendered_content'] = message['rendered_content'].replace(key, value)
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -1466,7 +1464,15 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
         for record in records:
             if record['s3_path'].endswith('.original'):
                 user_profile = get_user_profile_by_id(record['user_profile_id'])
-                # If medium sized avatar does not exist, this creates it using the original image
+                avatar_path = user_avatar_path_from_ids(user_profile.id, record['realm_id'])
+                medium_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
+                                                avatar_path) + '-medium.png'
+                if os.path.exists(medium_file_path):
+                    # We remove the image here primarily to deal with
+                    # issues when running the import script multiple
+                    # times in development (where one might reuse the
+                    # same realm ID from a previous iteration).
+                    os.remove(medium_file_path)
                 upload_backend.ensure_medium_avatar_image(user_profile=user_profile)
 
 def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False,
@@ -1632,6 +1638,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_message_foreign_keys(import_dir)
 
     fix_datetime_fields(data, 'zerver_userprofile')
+    update_model_ids(UserProfile, data, 'zerver_userprofile', 'user_profile')
     re_map_foreign_keys(data, 'zerver_userprofile', 'realm', related_table="realm")
     re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userprofile', 'default_sending_stream',
@@ -1646,8 +1653,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
-
-    update_model_ids(UserProfile, data, 'zerver_userprofile', 'user_profile')
 
     user_profiles = [UserProfile(**item) for item in data['zerver_userprofile']]
     for user_profile in user_profiles:
@@ -1686,6 +1691,23 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_model_ids(UserActivityInterval, data, 'zerver_useractivityinterval',
                      'useractivityinterval')
     bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
+
+    if 'zerver_customprofilefield' in data:
+        # As the export of Custom Profile fields is not supported, Zulip exported
+        # data would not contain this field.
+        # However this is supported in slack importer script
+        re_map_foreign_keys(data, 'zerver_customprofilefield', 'realm', related_table="realm")
+        update_model_ids(CustomProfileField, data, 'zerver_customprofilefield',
+                         related_table="customprofilefield")
+        bulk_import_model(data, CustomProfileField, 'zerver_customprofilefield')
+
+        re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'user_profile',
+                            related_table="user_profile")
+        re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'field',
+                            related_table="customprofilefield")
+        update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefield_value',
+                         related_table="customprofilefield_value")
+        bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefield_value')
 
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
@@ -1762,7 +1784,7 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
         # Parser to update message content with the updated attachment urls
-        fix_slack_upload_links(data, 'zerver_message')
+        fix_upload_links(data, 'zerver_message')
 
         re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
         bulk_import_model(data, Message, 'zerver_message')

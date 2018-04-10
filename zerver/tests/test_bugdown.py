@@ -833,6 +833,17 @@ class BugdownTest(ZulipTestCase):
                          '</span> test</p>')
         self.assertTrue(msg.mentions_wildcard)
 
+    def test_mention_stream(self) -> None:
+        user_profile = self.example_user('othello')
+        msg = Message(sender=user_profile, sending_client=get_client("test"))
+
+        content = "@**stream** test"
+        self.assertEqual(render_markdown(msg, content),
+                         '<p><span class="user-mention" data-user-id="*">'
+                         '@stream'
+                         '</span> test</p>')
+        self.assertTrue(msg.mentions_wildcard)
+
     def test_mention_at_wildcard(self) -> None:
         user_profile = self.example_user('othello')
         msg = Message(sender=user_profile, sending_client=get_client("test"))

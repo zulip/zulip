@@ -277,7 +277,8 @@ class SlackImporter(ZulipTestCase):
         zerver_recipient = channel_to_zerver_stream_output[4]
         added_recipient = channel_to_zerver_stream_output[5]
 
-        test_added_channels = {'feedback': 3, 'general': 1, 'general1': 2, 'random': 0}
+        test_added_channels = {'feedback': ("C061A0HJG", 3), 'general': ("C061A0YJG", 1),
+                               'general1': ("C061A0YJP", 2), 'random': ("C061A0WJG", 0)}
         test_added_recipient = {'feedback': 3, 'general': 1, 'general1': 2, 'random': 0}
 
         # zerver defaultstream already tested in helper functions
@@ -311,7 +312,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[0]['invite_only'], False)
         self.assertEqual(zerver_stream[0]['realm'], realm_id)
         self.assertEqual(zerver_stream[2]['id'],
-                         test_added_channels[zerver_stream[2]['name']])
+                         test_added_channels[zerver_stream[2]['name']][1])
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_realm", return_value=[{}])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.users_to_zerver_userprofile",
@@ -407,9 +408,11 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = []  # type: List[Dict[str, Any]]
         zerver_subscription = []  # type: List[Dict[str, Any]]
+        added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
         zerver_message, zerver_usermessage, attachment, uploads, \
             reaction = channel_message_to_zerver_message(1, user_data, added_users, added_recipient,
-                                                         all_messages, zerver_subscription, [], 'domain')
+                                                         all_messages, zerver_subscription, [],
+                                                         added_channels, 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -449,7 +452,7 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_all_messages")
     def test_convert_slack_workspace_messages(self, mock_get_all_messages: mock.Mock,
                                               mock_message: mock.Mock) -> None:
-        added_channels = {'random': 1, 'general': 2}
+        added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
         zerver_message = [{'id': 1}, {'id': 5}]
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]

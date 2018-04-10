@@ -68,7 +68,8 @@ yarn_verify_integrity() {
 
   printf "Verifying integrity...\n"
   # Grab the public key if it doesn't already exist
-  gpg --list-keys $gpg_key >/dev/null 2>&1 || (curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --import)
+  # Zulip patch: Fix the fact that Yarn has extended this keyring and we should always redownload.
+  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --import
 
   if [ ! -f "$1.asc" ]; then
     printf "$red> Could not download GPG signature for this Yarn release. This means the release cannot be verified!$reset\n"

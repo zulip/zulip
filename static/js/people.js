@@ -489,6 +489,20 @@ exports.sender_is_bot = function (message) {
     return false;
 };
 
+function gravatar_url_for_email(email) {
+    var hash = md5(email);
+    var avatar_url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
+    var small_avatar_url = exports.format_small_avatar_url(avatar_url);
+    return small_avatar_url;
+}
+
+exports.small_avatar_url_for_person = function (person) {
+    if (person.avatar_url) {
+        return exports.format_small_avatar_url(person.avatar_url);
+    }
+    return gravatar_url_for_email(person.email);
+};
+
 exports.small_avatar_url = function (message) {
     // Try to call this function in all places where we need 25px
     // avatar images, so that the browser can help
@@ -498,9 +512,7 @@ exports.small_avatar_url = function (message) {
     // We actually request these at s=50, so that we look better
     // on retina displays.
 
-    var url = "";
     var person;
-
     if (message.sender_id) {
         // We should always have message.sender_id, except for in the
         // tutorial, where it's ok to fall back to the url in the fake
@@ -508,36 +520,30 @@ exports.small_avatar_url = function (message) {
         person = exports.get_person_from_user_id(message.sender_id);
     }
 
-    var email;
-
     // The first time we encounter a sender in a message, we may
     // not have person.avatar_url set, but if we do, then use that.
-    if (person) {
-        url = person.avatar_url;
-        email = person.email;
+    if (person && person.avatar_url) {
+        return exports.small_avatar_url_for_person(person);
     }
 
     // Try to get info from the message if we didn't have a `person` object
     // or if the avatar was missing. We do this verbosely to avoid false
     // positives on line coverage (we don't do branch checking).
-    if (!url) {
-        url = message.avatar_url;
+    if (message.avatar_url) {
+        return exports.format_small_avatar_url(message.avatar_url);
     }
 
-    if (!email) {
+    // For computing the user's email, we first trust the person
+    // object since that is updated via our real-time sync system, but
+    // if unavailable, we use the sender email.
+    var email;
+    if (person) {
+        email = person.email;
+    } else {
         email = message.sender_email;
     }
 
-    if (!url) {
-        var hash = md5(email);
-        url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
-    }
-
-    if (url) {
-        url = exports.format_small_avatar_url(url);
-    }
-
-    return url;
+    return gravatar_url_for_email(email);
 };
 
 exports.is_valid_email_for_compose = function (email) {
