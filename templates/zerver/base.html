@@ -10,6 +10,7 @@
             <title>{{user_profile.realm.name}} - Zulip</title>
             {% else %}
             <title>Zulip</title>
+            {% include 'zerver/meta_tags.html' %}
             {% endif %}
         {% endblock %}
         <link href="/static/favicon.ico?v=2" rel="shortcut icon">
