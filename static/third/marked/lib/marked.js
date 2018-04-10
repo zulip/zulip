@@ -433,9 +433,10 @@ var inline = {
   autolink: /^<([^ >]+(@|:\/)[^ >]+)>/,
   url: noop,
   tag: /^<!--[\s\S]*?-->|^<\/?\w+(?:"[^"]*"|'[^']*'|[^'">])*?>/,
-  link: /^!?\[(inside)\]\(href\)/,
-  reflink: /^!?\[(inside)\]\s*\[([^\]]*)\]/,
-  nolink: /^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
+  // Disable matching image syntax.
+  link: /^\[(inside)\]\(href\)/,
+  reflink: /^\[(inside)\]\s*\[([^\]]*)\]/,
+  nolink: /^\[((?:\[[^\]]*\]|[^\[\]])*)\]/,
   strong: /^__([\s\S]+?)__(?!_)|^\*\*([\s\S]+?)\*\*(?!\*)/,
   em: /^\b_((?:[^_]|__)+?)_\b|^\*((?:\*\*|[\s\S])+?)\*(?!\*)/,
   code: /^(`+)(\s*[\s\S]*?[^`]\s*)\1(?!`)/,
@@ -824,10 +825,9 @@ InlineLexer.prototype.output = function(src) {
 InlineLexer.prototype.outputLink = function(cap, link) {
   var href = escape(link.href)
     , title = link.title ? escape(link.title) : null;
-
-  return cap[0].charAt(0) !== '!'
-    ? this.renderer.link(href, title, this.output(cap[1]))
-    : this.renderer.image(href, title, escape(cap[1]));
+  // We do not want images to be processed. Instead, text like `![]()`
+  // should be converted to `!<a href></a>`.
+  return this.renderer.link(href, title, this.output(cap[1]));
 };
 InlineLexer.prototype.emoji = function (name) {
   name = escape(name)

@@ -1606,10 +1606,9 @@ def get_link_re() -> str:
         (NOBRACKET + r'\])*')*6 +
         NOBRACKET + r')\]'
     )
-    NOIMG = r'(?<!\!)'
 
     # [text](url) or [text](<url>) or [text](url "title")
-    LINK_RE = NOIMG + BRK + \
+    LINK_RE = BRK + \
         r'''\(\s*(<.*?>|((?:(?:\(.*?\))|[^\(\)]))*?)\s*((['"])(.*?)\12\s*)?\)'''
     return normal_compile(LINK_RE)
 
