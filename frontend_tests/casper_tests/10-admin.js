@@ -198,9 +198,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('div#admin-profile-field-status', function () {
-        casper.test.assertSelectorHasText('div#admin-profile-field-status',
-                                          'Custom profile field added!');
+    casper.waitUntilVisible('#admin-profile-field-status img', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
         casper.click('.profile-field-row button.open-edit-form');
@@ -217,9 +216,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('div#admin-profile-field-status', function () {
-        casper.test.assertSelectorHasText('div#admin-profile-field-status',
-                                          'Custom profile field updated!');
+    casper.waitUntilVisible('#admin-profile-field-status img', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'team');
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
         casper.click('.profile-field-row button.delete');
@@ -227,9 +225,8 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('div#admin-profile-field-status', function () {
-        casper.test.assertSelectorHasText('div#admin-profile-field-status',
-                                          'Custom profile field deleted!');
+    casper.waitUntilVisible('#admin-profile-field-status img', function () {
+        casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
     });
 });
 

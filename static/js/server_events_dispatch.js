@@ -166,7 +166,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'custom_profile_fields':
         page_params.custom_profile_fields = event.fields;
         settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
-        settings_profile_fields.report_success(event.op);
         break;
 
     case 'realm_domains':

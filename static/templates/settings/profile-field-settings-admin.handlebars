@@ -1,6 +1,7 @@
 <div id="profile-field-settings" class="settings-section" data-name="profile-field-settings">
+    <h3 class="inline-block">{{t "Custom profile fields" }}</h3>
+    <div class="alert-notification" id="admin-profile-field-status"></div>
     <div class="admin-table-wrapper">
-        <div class="alert" id="admin-profile-field-status"></div>
         <table class="table table-condensed table-striped admin_profile_fields_table">
             <tbody id="admin_profile_fields_table">
                 <th>{{t "Label" }}</th>
@@ -19,7 +20,6 @@
                 <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
                     <input type="text" id="profile_field_name" name="name" />
-                    <div class="alert" id="admin-profile-field-name-status"></div>
                 </div>
                 <div class="control-group">
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
