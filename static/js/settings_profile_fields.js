@@ -16,38 +16,19 @@ function field_type_id_to_string(type_id) {
 function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
-    var btn = $(this);
 
-    channel.del({
-        url: '/json/realm/profile_fields/' + encodeURIComponent(btn.attr('data-profile-field-id')),
-        error: function (xhr) {
-            if (xhr.status.toString().charAt(0) === "4") {
-                btn.closest("td").html(
-                    $("<p>").addClass("text-error").text(JSON.parse(xhr.responseText).msg)
-                );
-            } else {
-                btn.text(i18n.t("Failed!"));
-            }
-        },
-    });
+    settings_ui.do_settings_change(
+        channel.del,
+        "/json/realm/profile_fields/" + encodeURIComponent($(this).attr('data-profile-field-id')),
+        {}, $('#admin-profile-field-status').expectOne());
 }
 
 function create_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
 
-    var name_status = $('#admin-profile-field-name-status');
-    name_status.hide();
-
-    channel.post({
-        url: "/json/realm/profile_fields",
-        data: $(this).serialize(),
-        error: function (xhr) {
-            var response = JSON.parse(xhr.responseText);
-            xhr.responseText = JSON.stringify({msg: response.msg});
-            ui_report.error(i18n.t("Failed"), xhr, name_status);
-        },
-    });
+    settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", $(this).serialize(),
+                                   $('#admin-profile-field-status').expectOne());
 }
 
 function get_profile_field_info(id) {
@@ -73,23 +54,15 @@ function open_edit_form(e) {
         e.preventDefault();
         e.stopPropagation();
 
-        var profile_field_status = $('#admin-profile-field-status');
-        profile_field_status.hide();
+        var profile_field_status = $('#admin-profile-field-status').expectOne();
 
         // For some reason jQuery's serialize() is not working with
         // channel.patch even though it is supported by $.ajax.
         var data = {};
         data.name = profile_field.form.find('input[name=name]').val();
 
-        channel.patch({
-            url: "/json/realm/profile_fields/" + field_id,
-            data: data,
-            error: function (xhr) {
-                var response = JSON.parse(xhr.responseText);
-                xhr.responseText = JSON.stringify({msg: response.msg});
-                ui_report.error(i18n.t("Failed"), xhr, profile_field_status);
-            },
-        });
+        settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields/" + field_id,
+                                       data, profile_field_status);
     });
 }
 
@@ -133,22 +106,6 @@ exports.set_up = function () {
     $('#admin_profile_fields_table').on('click', '.delete', delete_profile_field);
     $(".organization").on("submit", "form.admin-profile-field-form", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
-};
-
-exports.report_success = function (operation) {
-    var profile_field_status = $('#admin-profile-field-status');
-    profile_field_status.hide();
-    var msg;
-
-    if (operation === 'add') {
-        msg = i18n.t('Custom profile field added!');
-    } else if (operation === 'delete') {
-        msg = i18n.t('Custom profile field deleted!');
-    } else if (operation === 'update') {
-        msg = i18n.t('Custom profile field updated!');
-    }
-
-    ui_report.success(msg, profile_field_status);
 };
 
 return exports;
