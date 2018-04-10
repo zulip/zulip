@@ -1,5 +1,0 @@
-#!/bin/bash
-set -e
-
-./manage.py sqlsequencereset zerver | ./manage.py dbshell
-echo "Sequence has been reset successfully!"
