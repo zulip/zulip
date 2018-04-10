@@ -608,7 +608,7 @@ init();
         return suggestions.lookup_table[q].description;
     }
     assert.equal(describe('te'), "Search for te");
-    assert.equal(describe('stream:office topic:team'), "Stream office > team");
+    assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
 
     suggestions = search.get_suggestions('topic:staplers stream:office');
     expected = [

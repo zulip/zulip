@@ -483,7 +483,7 @@ Filter.operator_to_prefix = function (operator, negated) {
 };
 
 // Convert a list of operators to a human-readable description.
-Filter.describe = function (operators) {
+function describe_unescaped(operators) {
     if (operators.length === 0) {
         return 'Go to Home view';
     }
@@ -530,8 +530,11 @@ Filter.describe = function (operators) {
         return "unknown operator";
     });
     return parts.concat(more_parts).join(', ');
-};
+}
 
+Filter.describe = function (operators) {
+    return Handlebars.Utils.escapeExpression(describe_unescaped(operators));
+};
 
 return Filter;
 

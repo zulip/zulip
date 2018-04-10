@@ -1,4 +1,5 @@
 add_dependencies({
+    Handlebars: 'handlebars',
     people: 'js/people.js',
     stream_data: 'js/stream_data.js',
     util: 'js/util.js',
@@ -589,7 +590,7 @@ function make_sub(name, stream_id) {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'JS'},
     ];
-    string = 'stream devel > JS';
+    string = 'stream devel &gt; JS';
     assert.equal(Filter.describe(narrow), string);
 
     narrow = [
