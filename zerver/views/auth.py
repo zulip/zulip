@@ -655,12 +655,14 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
     return json_success({"api_key": user_profile.api_key, "email": user_profile.email})
 
 @csrf_exempt
-def api_dev_get_emails(request: HttpRequest) -> HttpResponse:
+def api_dev_get_accounts(request: HttpRequest) -> HttpResponse:
     if not dev_auth_enabled() or settings.PRODUCTION:
         return json_error(_("Dev environment not enabled."))
     users = get_dev_users()
-    return json_success(dict(direct_admins=[u.email for u in users if u.is_realm_admin],
-                             direct_users=[u.email for u in users if not u.is_realm_admin]))
+    return json_success(dict(direct_admins=[dict(email=u.email, realm_uri=u.realm.uri)
+                                            for u in users if u.is_realm_admin],
+                             direct_users=[dict(email=u.email, realm_uri=u.realm.uri)
+                                           for u in users if not u.is_realm_admin]))
 
 @csrf_exempt
 @require_post
