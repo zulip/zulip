@@ -262,13 +262,11 @@ exports.update_settings_for_subscribed = function (sub) {
 
         button.toggleClass("checked");
         settings_button.text(i18n.t("Unsubscribe"));
-
-        stream_edit.add_me_to_member_list(sub);
     } else {
         exports.add_sub_to_table(sub);
     }
 
-    if (stream_edit.is_sub_settings_active(sub) && sub.invite_only) {
+    if (stream_edit.is_sub_settings_active(sub)) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
