@@ -32,8 +32,8 @@ var upload_opts = upload.options({ mode: "compose" });
         assert(handler);
     };
     $("#compose-error-msg").html('');
-    var test_html = '<div class="progress progress-striped active">' +
-                    '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
+    var test_html = '<div class="progress active">' +
+                    '<div class="bar" id="compose-upload-bar" style="width: 0"></div>' +
                     '</div>';
     $("#compose-send-status").append = function (html) {
         assert.equal(html, test_html);

@@ -245,6 +245,11 @@ div[id^="message-edit-send-status"],
     display: none;
 }
 
+#compose-send-status .progress {
+    height: 10px;
+    margin-bottom: 10px;
+}
+
 #nonexistent_stream_reply_error {
     padding: 8px 14px 8px 14px;
     margin-bottom: 8px;

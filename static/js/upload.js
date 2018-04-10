@@ -71,8 +71,8 @@ exports.options = function (config) {
         send_status.addClass("alert-info").show();
         send_status_close.one('click', compose.abort_xhr);
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
-        send_status.append('<div class="progress progress-striped active">' +
-                           '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
+        send_status.append('<div class="progress active">' +
+                           '<div class="bar" id="' + upload_bar + '" style="width: 0"></div>' +
                            '</div>');
         should_hide_upload_status = false;
     };
