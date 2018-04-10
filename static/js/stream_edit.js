@@ -46,6 +46,7 @@ exports.rerender_subscribers_list = function (sub) {
         // Perform re-rendering only when the stream settings form of the corresponding
         // stream is open.
         if (subscribers_list) {
+            exports.sort_but_pin_current_user_on_top(emails);
             subscribers_list.data(emails);
             subscribers_list.render();
             ui.update_scrollbar($(".subscriber_list_container"));
@@ -73,15 +74,6 @@ exports.show_sub_settings = function (sub) {
         $settings.find(".stream-email-box").show();
     }
     $settings.find(".regular_subscription_settings").addClass('in');
-};
-
-exports.add_me_to_member_list = function (sub) {
-    // Add the user to the member list if they're currently
-    // viewing the members of this stream
-    var stream_settings = settings_for_sub(sub);
-    if (sub.render_subscribers && overlays.streams_open()) {
-        exports.prepend_subscriber(stream_settings, people.my_current_email());
-    }
 };
 
 exports.show_stream_row = function (node, show_settings) {
@@ -120,11 +112,6 @@ exports.update_stream_description = function (sub) {
     var stream_settings = settings_for_sub(sub);
     stream_settings.find('input.description').val(sub.description);
     stream_settings.find('.stream-description-editable').html(sub.rendered_description);
-};
-
-exports.prepend_subscriber = function (sub_row, email) {
-    var list = get_subscriber_list(sub_row);
-    list.prepend(format_member_list_elem(email));
 };
 
 exports.invite_user_to_stream = function (user_email, sub, success, failure) {
@@ -173,6 +160,21 @@ function get_sub_for_target(target) {
     return sub;
 }
 
+exports.sort_but_pin_current_user_on_top = function (emails) {
+    if (emails === undefined) {
+        blueslip.error("Undefined emails are passed to function sort_but_pin_current_user_on_top");
+        return;
+    }
+    // Set current user top of subscription list, if subscribed.
+    if (emails.indexOf(people.my_current_email()) > -1) {
+        emails.splice(emails.indexOf(people.my_current_email()), 1);
+        emails.sort();
+        emails.unshift(people.my_current_email());
+    } else {
+        emails.sort();
+    }
+};
+
 function show_subscription_settings(sub_row) {
     var stream_id = sub_row.data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
@@ -190,8 +192,9 @@ function show_subscription_settings(sub_row) {
     list.empty();
 
     var emails = get_email_of_subscribers(sub.subscribers);
+    exports.sort_but_pin_current_user_on_top(emails);
 
-    list_render(list, emails.sort(), {
+    list_render(list, emails, {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
             return format_member_list_elem(item);
