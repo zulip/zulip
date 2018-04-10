@@ -138,6 +138,8 @@ def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
+    MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
+    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
@@ -191,6 +193,7 @@ class Realm(models.Model):
     message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
+    video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
 
     # Define the types of the various automatically managed properties
     property_types = dict(
