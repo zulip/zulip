@@ -82,8 +82,5 @@ import a database dump from one or more JSON files."""
 
             print("Processing dump: %s ..." % (path,))
             realm = do_import_realm(path, subdomain)
-            print("Resetting auto-increment sequence for Postgres......")
-            subprocess.check_call([os.path.join(settings.DEPLOY_ROOT,
-                                  "scripts/setup/postgres-reset-sequences")])
             print("Checking the system bots.")
             do_import_system_bots(realm)
