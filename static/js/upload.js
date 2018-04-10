@@ -24,6 +24,8 @@ exports.options = function (config) {
     var send_status_close;
     var error_msg;
     var upload_bar;
+    var upload_bar_percent;
+    var should_hide_upload_status;
     var file_input;
 
     switch (config.mode) {
@@ -34,6 +36,7 @@ exports.options = function (config) {
         send_status_close = $('.compose-send-status-close');
         error_msg = $('#compose-error-msg');
         upload_bar = 'compose-upload-bar';
+        upload_bar_percent = 'compose-upload-bar-percent';
         file_input = 'file_input';
         break;
     case 'edit':
@@ -43,24 +46,52 @@ exports.options = function (config) {
         send_status_close = send_status.find('.send-status-close');
         error_msg = send_status.find('.error-msg');
         upload_bar = 'message-edit-upload-bar-' + config.row;
+        upload_bar_percent = 'message-edit-upload-bar-percent-' + config.row;
         file_input = 'message_edit_file_input_' + config.row;
         break;
     default:
         throw Error("Invalid upload mode!");
     }
 
+    var maybe_hide_upload_status = function () {
+        // The first time `maybe_hide_upload_status`, it will not hide the
+        // status; the second time it will. This guarantees that whether
+        // `progressUpdated` or `uploadFinished` is called first, the status
+        // is hidden only after the animation is finished.
+        if (should_hide_upload_status) {
+            setTimeout(function () {
+                send_button.prop("disabled", false);
+                send_status.removeClass("alert-info").hide();
+                $("#" + upload_bar).parent().remove();
+            }, 200);
+        } else {
+            should_hide_upload_status = true;
+        }
+    }
+
     var uploadStarted = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', compose.abort_xhr);
-        error_msg.html($("<p>").text(i18n.t("Uploading…"))
-            .after('<div class="progress progress-striped active">' +
-                   '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
-                   '</div>'));
+        error_msg.html($("<p>").text(i18n.t("Uploading…")));
+        send_status.append('<div class="progress progress-striped active">' +
+                           '<div class="bar" id="' + upload_bar + '" style="width: 00%;"></div>' +
+                           '<p class="progress-bar-percent" id="' + upload_bar_percent + '">' +
+                           '0%</p>' +
+                           '</div>');
+        should_hide_upload_status = false;
     };
 
     var progressUpdated = function (i, file, progress) {
-        $("#" + upload_bar).width(progress + "%");
+        $("#" + upload_bar).stop();
+        $("#" + upload_bar).animate({
+            width: progress + "%",
+        }, 500, "linear", function () {
+            if (progress === 100) {
+                maybe_hide_upload_status();
+            }
+        });
+        $("#" + upload_bar_percent).text(progress + "%");
     };
 
     var uploadError = function (error_code, server_response, file) {
@@ -68,6 +99,7 @@ exports.options = function (config) {
         send_status.addClass("alert-error")
             .removeClass("alert-info");
         send_button.prop("disabled", false);
+        $("#" + upload_bar).parent().remove();
         switch (error_code) {
         case 'BrowserNotSupported':
             msg = i18n.t("File upload is not yet available for your browser.");
@@ -120,8 +152,8 @@ exports.options = function (config) {
             compose_ui.insert_syntax_and_focus(filename_uri, textarea);
         }
         compose_ui.autosize_textarea();
-        send_button.prop("disabled", false);
-        send_status.removeClass("alert-info").hide();
+
+        maybe_hide_upload_status();
 
         // In order to upload the same file twice in a row, we need to clear out
         // the file input element, so that the next time we use the file dialog,

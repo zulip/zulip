@@ -2071,6 +2071,35 @@ div.floating_recipient {
     display: inline-block;
 }
 
+.progress {
+    /* Setting `background-image` to none overrides Bootstrap and allows for
+    `background-color` to be used instead. */
+    background-image: none;
+    background-color: #fff;
+
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.progress .bar {
+    background-image: none;
+    background-color: hsl(170, 47%, 54%);
+
+    /* Override Bootstrap's progress bar transitions. */
+    -webkit-transition: none;
+    -moz-transition: none;
+    -ms-transition: none;
+    -o-transition: none;
+    transition: none;
+}
+
+.progress-bar-percent {
+    position: absolute;
+    left: 0px;
+    right: 0px;
+    color: #333;
+}
+
 .settings-section #default_language {
     text-decoration: none;
     vertical-align: bottom;

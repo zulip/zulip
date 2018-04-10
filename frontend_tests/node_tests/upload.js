@@ -33,11 +33,12 @@ var upload_opts = upload.options({ mode: "compose" });
     };
     $("#compose-error-msg").html('');
     var test_html = '<div class="progress progress-striped active">' +
-                    '<div class="bar" id="compose-upload-bar" style="width: 00%;">' +
-                    '</div></div>';
-    $("<p>").after = function (html) {
+                    '<div class="bar" id="compose-upload-bar" style="width: 00%;"></div>' +
+                    '<p class="progress-bar-percent" id="compose-upload-bar-percent">' +
+                    '0%</p>' +
+                    '</div>';
+    $("#compose-send-status").append = function (html) {
         assert.equal(html, test_html);
-        return 'fake-html';
     };
 
     upload_opts.drop();
@@ -46,13 +47,12 @@ var upload_opts = upload.options({ mode: "compose" });
     assert($("#compose-send-status").hasClass("alert-info"));
     assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), 'translated: Uploading…');
-    assert.equal($("#compose-error-msg").html(), 'fake-html');
 }());
 
 (function test_progress_updated() {
     var width_update_checked = false;
-    $("#compose-upload-bar").width = function (width_percent) {
-        assert.equal(width_percent, '39%');
+    $("#compose-upload-bar").animate = function (css) {
+        assert.equal(css.width, '39%');
         width_update_checked = true;
     };
     upload_opts.progressUpdated(1, '', 39);
@@ -65,6 +65,10 @@ var upload_opts = upload.options({ mode: "compose" });
         $("#compose-send-status").addClass("alert-info");
         $("#compose-send-button").attr("disabled", 'disabled');
         $("#compose-error-msg").text('');
+
+        $("#compose-upload-bar").parent = function () {
+            return { remove: function () {} };
+        };
     }
 
     function assert_side_effects(msg) {
@@ -121,6 +125,10 @@ var upload_opts = upload.options({ mode: "compose" });
             $("#compose-send-status").addClass("alert-info");
             $("#compose-send-status").show();
 
+            $("#compose-upload-bar").animate = function (css, delay, type, callback) {
+                callback();
+            };
+
             $('#file_input').clone = function (param) {
                 assert(param);
                 return $('#file_input');
@@ -144,8 +152,13 @@ var upload_opts = upload.options({ mode: "compose" });
             }
         }
 
+        global.patch_builtin('setTimeout', function (func) {
+            func();
+        });
+
         setup();
         upload_opts.uploadFinished(i, {}, response);
+        upload_opts.progressUpdated(1, '', 100);
         assert_side_effects();
     }
 
