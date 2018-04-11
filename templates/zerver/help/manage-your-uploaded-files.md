@@ -42,7 +42,7 @@ You can delete any of your uploaded files from your organization; however, doing
 so may confuse some of the other users in your organization since they can no
 longer view the file, so please be careful!
 
-{!go-to-the.md!} [Uploaded files](/#settings/uploaded-files)
+1. Go to the [Uploaded files](/#settings/uploaded-files)
 {!settings.md!}
 
 2. Locate the file you want to delete in the **Uploaded files** section; the

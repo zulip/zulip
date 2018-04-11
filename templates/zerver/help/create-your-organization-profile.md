@@ -6,7 +6,7 @@ There are several aspects to your organization's profile that can be
 configured to customize how your organization appears to users and people
 searching for your organization.
 
-{!go-to-the.md!} [Organization profile](/#organization/organization-profile)
+1. Go to the [Organization profile](/#organization/organization-profile)
 {!admin.md!}
 
 ## Change your organization's name

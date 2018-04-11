@@ -15,7 +15,7 @@ or
 />
 automatically by Zulip.
 
-{!go-to-the.md!} [Display settings](/#settings/display-settings)
+1. Go to the [Display settings](/#settings/display-settings)
 {!settings.md!}
 
 2. Select the option labeled

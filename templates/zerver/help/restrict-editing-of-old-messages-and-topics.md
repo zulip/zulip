@@ -6,7 +6,7 @@ You can easily change the time limit that your organization's users have to
 change their messages after sending them. Alternatively, you can choose to
 disable message editing for your organization users.
 
-{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+1. Go to the [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
 4. Under the **Message editing** section, find the **Users can edit their messages**

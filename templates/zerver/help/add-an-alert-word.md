@@ -9,7 +9,7 @@ alert word is included in a message sent to a stream that you are subscribed to.
 Alert words will be highlighted within messages, and you will be alerted in
 accordance with your [notification settings](/#settings/notifications).
 
-{!go-to-the.md!} [Alert words](/#settings/alert-words)
+1. Go to the [Alert words](/#settings/alert-words)
 {!settings.md!}
 
 2. In the section labeled **Add a new alert word**, input the word/phrase you

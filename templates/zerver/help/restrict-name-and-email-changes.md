@@ -3,7 +3,7 @@
 {!admin-only.md!}
 
 
-{!go-to-the.md!} [Organization permissions](/#organization/organization-permissions)
+1. Go to the [Organization permissions](/#organization/organization-permissions)
 {!admin.md!}
 
 # Prevent users from changing their email address

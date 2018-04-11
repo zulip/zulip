@@ -4,7 +4,7 @@ Bots and integrations are features that are accessible to all members of an orga
 
 ## Add a bot
 
-{!go-to-the.md!} [Your bots](/#settings/your-bots)
+1. Go to the [Your bots](/#settings/your-bots)
 {!settings.md!}
 
 2. On this page, under the **Add a new bot** view, enter the bot type,

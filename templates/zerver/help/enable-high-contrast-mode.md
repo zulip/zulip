@@ -10,7 +10,7 @@ buttons, links and unread counts) are intentionally light in order to
 avoid having too much emphasis. However, you can choose to increase
 the contrast of the user interface by using the following procedure:
 
-{!go-to-the.md!} [Display settings](/#settings/display-settings)
+1. Go to the [Display settings](/#settings/display-settings)
 {!settings.md!}
 
 2. Select the option labeled **Enable high contrast mode**.
@@ -21,7 +21,7 @@ You might also wish to change the way emoji reactions to messages are
 displayed to increase readability. With this setting, a heart emoji
 will instead be displayed as `:heart:`.
 
-{!go-to-the.md!} [Display settings](/#settings/display-settings)
+1. Go to the [Display settings](/#settings/display-settings)
 {!settings.md!}
 
 2. Select the option labeled **Display emoji reactions as text**.

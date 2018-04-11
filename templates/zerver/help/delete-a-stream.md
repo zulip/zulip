@@ -7,7 +7,7 @@ However, Zulip organization administrators must use the Zulip
 **[organization administration interface](/help/change-your-organization-settings)**
 to delete streams.
 
-{!go-to-the.md!} [Delete streams](/#organization/streams-list-admin)
+1. Go to the [Delete streams](/#organization/streams-list-admin)
 {!admin.md!}
 
 2. Find the stream you want to delete, and click the **Delete stream** button to

@@ -2,7 +2,7 @@
 
 {!follow-steps.md!} change your mobile notification settings.
 
-{!go-to-the.md!} [Notifications](/#settings/notifications)
+1. Go to the [Notifications](/#settings/notifications)
 {!settings.md!}
 
 2. Under the **Private messages and @-mentions** section, check the
