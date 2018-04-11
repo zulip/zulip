@@ -3,7 +3,7 @@
 We'd be sorry to see you go, but you can follow the following steps to
 deactivate your Zulip account.
 
-{!go-to-the.md!} [Your account](/#settings/your-account)
+1. Go to the [Your account](/#settings/your-account)
 {!settings.md!}
 
 2. Click the **Deactivate account** button on the bottom of the

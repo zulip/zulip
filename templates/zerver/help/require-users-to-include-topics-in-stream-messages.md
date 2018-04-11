@@ -11,7 +11,7 @@ Some organizations prefer to require that every message to a stream
 includes a topic.  Organization administrators can choose to enforce
 the use of topics in new messages to streams:
 
-{!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+1. Go to the [Organization settings](/#organization/organization-settings)
 {!admin.md!}
 
 2. Select the **Require topics in messages to streams** checkbox under the

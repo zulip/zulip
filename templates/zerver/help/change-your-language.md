@@ -14,7 +14,7 @@ your Zulip account using the following procedure.
     the Zulip UI have been translated, you may still see English words
     interspersed throughout Zulip.
 
-{!go-to-the.md!} [Display settings](/#settings/display-settings)
+1. Go to the [Display settings](/#settings/display-settings)
 {!settings.md!}
 
 2. Next to the **Default language** heading, select the **[Change]** link.

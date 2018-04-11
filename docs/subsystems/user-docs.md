@@ -249,9 +249,9 @@ always create a new macro by adding a new file to that folder.
 
 ### **Organization settings** `{!admin.md!}` macro
 
-* **About:** Links to the **Organization settings** documentation.
-Usually preceded by the [**Go to the** macro](#go-to-the-go-to-the-md-macro)
-and a link to a particular section on the **Organization settings** page.
+* **About:** Links to the **Organization settings** documentation. Usually
+preceded by a link to a particular section on the **Organization settings**
+page.
 
 * **Contents:**
     ```md
@@ -260,7 +260,7 @@ and a link to a particular section on the **Organization settings** page.
 
 * **Example usage and rendering:**
     ```md
-    {!go-to-the.md!} [Organization settings](/#organization/organization-settings)
+    1. Go to theOrganization settings](/#organization/organization-settings)
     {!admin.md!}
     ```
     ```md
@@ -346,27 +346,6 @@ macro](#message-actions-message-actions-md-macro).
     1. Hover over a message to replace the message's timestamp with its message
     actions, represented by three icons. From the icons that appear, select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
-    ```
-
-### **Go to the** `{!go-to-the.md}` macro
-
-* **About:** Usually precedes the [**Settings** macro](#settings-settings-md-macro)
-or the [**Organization settings** macro](#organization-settings-admin-md-macro). Transforms
-following content into a step.
-
-* **Contents:**
-    ```md
-    1. Go to the
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!go-to-the.md!} [Notifications](/#settings/notifications)
-    {!settings.md!}
-    ```
-    ```md
-    1. Go to the [Notifications](/#settings/notifications) tab on the
-    [Settings](/help/edit-settings) page.
     ```
 
 ### **Filter streams** `{!filter-streams.md!}` macro
@@ -456,8 +435,7 @@ describing the settings they modified.
 ### **Settings** `{!settings.md!}` macro
 
 * **About:** Links to the **Edit Settings** documentation. Usually preceded by
-the [**Go to the** macro](#go-to-the-go-to-the-md-macro) and a link to a
-particular section on the **Settings** page.
+a link to a particular section on the **Settings** page.
 
 * **Contents:**
     ```md
@@ -466,7 +444,7 @@ particular section on the **Settings** page.
 
 * **Example usage and rendering:**
     ```md
-    {!go-to-the.md!} [Notifications](/#settings/notifications)
+    1. Go to the [Notifications](/#settings/notifications)
     {!settings.md!}
     ```
     ```md

@@ -3,7 +3,7 @@
 You can configure your settings to receive desktop notifications for messages
 sent while Zulip is offscreen.
 
-{!go-to-the.md!} [Notifications](/#settings/notifications)
+1. Go to the [Notifications](/#settings/notifications)
 {!settings.md!}
 
     * If you want desktop notifications for each new message from a stream,
