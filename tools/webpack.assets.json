@@ -4,6 +4,7 @@
         "./static/js/portico/header.js"
     ],
     "common": [
+               "string.prototype.endswith",
                "string.prototype.startswith",
                "string.prototype.codepointat",
                "./node_modules/jquery/dist/jquery.js",
