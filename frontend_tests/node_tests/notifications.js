@@ -12,6 +12,7 @@ set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
+set_global('$', () => {});
 
 zrequire('notifications');
 

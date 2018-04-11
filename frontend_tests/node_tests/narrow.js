@@ -77,9 +77,12 @@ function set_filter(operators) {
 
     var hide_id;
     var show_id;
-    global.$ = function (id) {
-      return {hide: function () {hide_id = id;}, show: function () {show_id = id;}};
-    };
+    set_global('$', (id) => {
+        return {
+            hide: () => {hide_id = id;},
+            show: () => {show_id = id;},
+        };
+    });
 
     narrow_state.reset_current_filter();
     narrow.show_empty_narrow_message();
