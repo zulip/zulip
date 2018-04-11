@@ -4,7 +4,7 @@
 
 {% block page_params %}
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
-<script type="text/javascript">
+<script type="text/javascript" nonce="{{ csp_nonce }}">
     {% autoescape off %}
     var page_params = {{ page_params }};
     {% endautoescape %}
@@ -49,7 +49,7 @@
 <div id="css-loading">
     <h3>{{ _('Loading...') }}</h3>
     <p>{% trans %}If this message does not go away, please wait a couple seconds and <a id="reload-lnk">reload</a> the page.{% endtrans %}</p>
-    <script>
+    <script nonce="{{ csp_nonce }}">
         document.addEventListener('DOMContentLoaded', function () {
             function reload() {
                 location.reload(true);

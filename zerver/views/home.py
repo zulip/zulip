@@ -26,7 +26,7 @@ from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
-from zerver.lib.utils import statsd
+from zerver.lib.utils import statsd, generate_random_token
 
 import calendar
 import datetime
@@ -236,9 +236,12 @@ def home_real(request: HttpRequest) -> HttpResponse:
         show_invites = False
 
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
+
+    csp_nonce = generate_random_token(48)
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'page_params': JSONEncoderForHTML().encode(page_params),
+                               'csp_nonce': csp_nonce,
                                'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':
