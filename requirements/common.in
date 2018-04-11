@@ -95,7 +95,8 @@ oauthlib==2.0.7
 ndg-httpsclient==0.4.4
 
 # Needed to access rabbitmq
-pika==0.11.2
+# See #8466 for why we're not using the latest version.
+pika==0.11.0
 
 # Needed to access our database
 psycopg2==2.7.4 --no-binary psycopg2
