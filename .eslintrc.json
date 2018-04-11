@@ -15,7 +15,6 @@
         "XDate": false,
         "zxcvbn": false,
         "LazyLoad": false,
-        "Dropbox": false,
         "SockJS": false,
         "marked": false,
         "md5": false,

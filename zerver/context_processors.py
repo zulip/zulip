@@ -136,9 +136,3 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'settings_comments_path': settings_comments_path,
         'platform': platform,
     }
-
-
-def add_metrics(request: HttpRequest) -> Dict[str, str]:
-    return {
-        'dropboxAppKey': settings.DROPBOX_APP_KEY
-    }

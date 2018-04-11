@@ -705,22 +705,6 @@ exports.initialize = function () {
 
     upload.feature_check($("#compose #attach_files"));
 
-    // Lazy load the Dropbox script, since it can slow our page load
-    // otherwise, and isn't enabled for all users. Also, this Dropbox
-    // script isn't under an open source license, so we can't (for legal
-    // reasons) minify it with our own code.
-    if (feature_flags.dropbox_integration) {
-        LazyLoad.js('https://www.dropbox.com/static/api/1/dropins.js', function () {
-            // Successful load. We should now have window.Dropbox.
-            if (! _.has(window, 'Dropbox')) {
-                blueslip.error('Dropbox script reports loading but window.Dropbox undefined');
-            } else if (Dropbox.isBrowserSupported()) {
-                Dropbox.init({appKey: window.dropboxAppKey});
-                $("#compose #attach_dropbox_files").removeClass("notdisplayed");
-            }
-        });
-    }
-
     // Show a warning if a user @-mentions someone who will not receive this message
     $(document).on('usermention_completed.zulip', function (event, data) {
         if (compose_state.get_message_type() !== 'stream') {
@@ -996,24 +980,6 @@ exports.initialize = function () {
     $("#compose").on("click", "#undo_markdown_preview", function (e) {
         e.preventDefault();
         exports.clear_preview_area();
-    });
-
-    $("#compose").on("click", "#attach_dropbox_files", function (e) {
-        e.preventDefault();
-        var options = {
-            // Required. Called when a user selects an item in the Chooser.
-            success: function (files) {
-                var textbox = $("#compose-textarea");
-                var links = _.map(files, function (file) { return '[' + file.name + '](' + file.link +')'; })
-                             .join(' ') + ' ';
-                textbox.val(textbox.val() + links);
-            },
-            // Optional. A value of false (default) limits selection to a single file, while
-            // true enables multiple file selection.
-            multiselect: true,
-            iframe: true,
-        };
-        Dropbox.choose(options);
     });
 
     $("#compose").filedrop(
