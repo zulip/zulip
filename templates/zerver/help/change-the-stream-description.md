@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} change the description of any stream in your
+Follow the following steps to change the description of any stream in your
 organization.
 
 {!subscriptions.md!}

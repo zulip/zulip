@@ -1,6 +1,6 @@
 # Send a new stream message
 
-{!follow-steps.md!} send a new stream message.
+Follow the following steps to send a new stream message.
 
 1. Click the **New topic** button located in the compose box
 at the bottom of your screen.  The compose box will open, showing the

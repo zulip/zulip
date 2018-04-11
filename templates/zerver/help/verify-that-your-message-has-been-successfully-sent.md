@@ -20,7 +20,7 @@ rerenders the message to display the timestamp, so you can look for
 the timestamp to determine whether a message has been successfully
 received by the server.
 
-{!follow-steps.md!} to see this in action.
+Follow the following steps to to see this in action.
 
 1. Disconnect your computer from the Internet.
 

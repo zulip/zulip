@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} set the default streams that new users are automatically
+Follow the following steps to set the default streams that new users are automatically
 subscribed to.
 
 1. Go to the [Default streams](/#organization/default-streams-list)
