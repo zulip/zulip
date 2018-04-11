@@ -125,6 +125,7 @@
     right: 15px;
     max-width: 125px;
     max-height: 70px;
+    overflow:auto;
 
     border: none;
 
