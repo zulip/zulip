@@ -4,12 +4,14 @@ from typing import Any, Dict, Optional, Text, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
-
+from django.utils.translation import ugettext as _
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 from zerver.decorator import human_users_only, \
     to_non_negative_int
 from zerver.lib.bugdown import privacy_clean_markdown
 from zerver.lib.request import has_request_variables, REQ
-from zerver.lib.response import json_success
+from zerver.lib.response import json_success, json_error
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.unminify import SourceMap
 from zerver.lib.utils import statsd, statsd_key
@@ -18,6 +20,8 @@ from zerver.models import UserProfile
 
 import subprocess
 import os
+import logging
+import ujson
 
 js_source_map = None
 
@@ -139,5 +143,29 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: Text=
             more_info = more_info,
         )
     ))
+
+    return json_success()
+
+@csrf_exempt
+@require_POST
+@has_request_variables
+def report_csp_violations(request: HttpRequest,
+                          csp_report: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
+    def get_attr(csp_report_attr: str) -> str:
+        return csp_report.get(csp_report_attr, '')
+
+    logging.warning("CSP Violation in Document('%s'). "
+                    "Blocked URI('%s'), Original Policy('%s'), "
+                    "Violated Directive('%s'), Effective Directive('%s'), "
+                    "Disposition('%s'), Referrer('%s'), "
+                    "Status Code('%s'), Script Sample('%s')" % (get_attr('document-uri'),
+                                                                get_attr('blocked-uri'),
+                                                                get_attr('original-policy'),
+                                                                get_attr('violated-directive'),
+                                                                get_attr('effective-directive'),
+                                                                get_attr('disposition'),
+                                                                get_attr('referrer'),
+                                                                get_attr('status-code'),
+                                                                get_attr('script-sample')))
 
     return json_success()

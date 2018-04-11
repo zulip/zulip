@@ -10,6 +10,7 @@ from zerver.lib.utils import statsd
 
 import mock
 import ujson
+import os
 
 def fix_params(raw_params: Dict[str, Any]) -> Dict[str, str]:
     # A few of our few legacy endpoints need their
@@ -150,3 +151,11 @@ class TestReport(ZulipTestCase):
         self.assert_json_success(result)
         # fix_params (see above) adds quotes when JSON encoding.
         annotate.assert_called_once_with('"trace"')
+
+    def test_report_csp_violations(self) -> None:
+        fixture_data_file = open(os.path.join(os.path.dirname(__file__),
+                                 '../fixtures/csp_report.json'), 'r')
+        fixture_data = ujson.load(fixture_data_file)
+        params = ujson.dumps(fixture_data)
+        result = self.client_post("/report/csp_violations", params, content_type="application/json")
+        self.assert_json_success(result)
