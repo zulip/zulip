@@ -32,17 +32,13 @@
     text-overflow: ellipsis;
 }
 
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    display: none;
-}
-
 #user_presences li,
 #group-pms li {
     list-style-type: none;
 
     border-radius: 4px;
     margin: 1px 0px;
+    padding-right: 15px;
 }
 
 #user_presences .arrow {
@@ -63,7 +59,7 @@
     border-radius: 50%;
     border: 1px solid;
     float: left;
-    position: relative;
+    position: absolute;
     top: 5px;
 }
 
@@ -98,6 +94,7 @@
 #user_presences a,
 #group-pms a {
     color: inherit;
+    margin-left: 20px;
 }
 
 #invite-user-link i {
@@ -106,74 +103,53 @@
 }
 
 .group-pms-sidebar-entry .selectable_sidebar_block {
-    width: 235px;
-    display: block;
+    width: calc(100% - 30px);
 }
 
+.group-pm-link,
 .user_sidebar_entry .selectable_sidebar_block {
-    width: 208px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block.user-with-mobile {
-    width: 204px;
-}
-
-.group-pm-link {
-    margin-left: 17px;
-    display: block;
-}
-
-.user_sidebar_entry .selectable_sidebar_block {
-    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-.user_sidebar_entry.user-with-count .selectable_sidebar_block {
-    width: 200px;
-}
-
-.user_sidebar_entry.user-with-count .selectable_sidebar_block.user-with-mobile {
-    width: 180px;
-}
-
-.user_sidebar_entry.user-with-count .count {
-    display: inherit;
-}
-
-.group-pms-sidebar-entry.group-with-count .selectable_sidebar_block {
-    width: 185px;
+.group-pm-link {
+    display: block;
 }
 
 .selectable_sidebar_block {
     cursor: pointer;
 }
 
+.group-pms-sidebar-entry,
+.user_sidebar_entry {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
-    position: absolute;
-    right: 29px;
-    top: 4px;
-    padding: 1px 4px 2px 4px;
+    padding: 1px 4px;
     background: hsl(105, 2%, 50%);
     border-radius: 0px;
     color: hsl(0, 0%, 100%);
     font-size: 12px;
+    line-height: 13px;
     font-weight: normal;
     letter-spacing: 0.6px;
-
+    position: relative;
+    top: 3.5px;
     border-radius: 4px;
 }
 
-.group-pms-sidebar-entry .count {
-    right: 29px;
+.user_sidebar_entry .count {
+    margin-right: 15px;
+    margin-left: 2px;
+    display: none;
 }
 
-.user_sidebar_entry .count,
-.group-pms-sidebar-entry .count {
-    line-height: 13px;
-    top: 2px;
+.user_sidebar_entry.user-with-count .count {
+    display: block;
 }
 
 #userlist-toggle {
