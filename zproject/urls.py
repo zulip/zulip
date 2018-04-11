@@ -523,6 +523,10 @@ urls += url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
             {'GET': ('zerver.views.upload.serve_file_backend',
                      {'override_api_url_scheme'})}),
 
+# This url serves as a way to recieve CSP violation reports from the users.
+# We use this endpoint to just log these reports.
+urls += url(r'^report/csp_violations$', zerver.views.report.report_csp_violations,
+            name='zerver.views.report.report_csp_violations'),
 # Incoming webhook URLs
 # We don't create urls for particular git integrations here
 # because of generic one below

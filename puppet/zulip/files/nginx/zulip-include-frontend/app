@@ -4,6 +4,9 @@ error_log /var/log/nginx/error.log;
 # Enable HSTS: tell browsers to always use HTTPS
 add_header Strict-Transport-Security max-age=15768000;
 
+# Add CSP header to add security against XSS
+add_header Content-Security-Policy-Report-Only "default-src 'self'; img-src https:; media-src https:; report-uri /report/csp_violations";
+
 # Serve a custom error page when the app is down
 error_page 502 503 504 /static/html/5xx.html;
 
