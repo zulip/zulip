@@ -167,6 +167,8 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
 };
 
 exports.rerender_subscriptions_settings = function (sub) {
+    // This function is used to rerender all informations related subscriptions,
+    // subscriber list in stream settings and subscriber count.
     if (typeof sub === "undefined") {
         blueslip.error('Undefined sub passed to function rerender_subscriptions_settings');
         return;
@@ -204,6 +206,11 @@ function add_email_hint_handler() {
 
 exports.add_sub_to_table = function (sub) {
     if (exports.is_sub_already_present(sub)) {
+        // If stream is already listed/added in subscription modal return.
+        // This can be possible, as whenever user subscribe to private stream,
+        // we get the private stream creation event but there might be case
+        // that we already have created & added private stream. i.e. if user
+        // is realm admin.
         return;
     }
 
@@ -229,6 +236,7 @@ exports.add_sub_to_table = function (sub) {
 };
 
 exports.is_sub_already_present = function (sub) {
+    // This function check if stream is already listed in subscription modal.
     var button = check_button_for_sub(sub);
     if (button.length !== 0) {
         return true;
@@ -253,13 +261,11 @@ exports.update_settings_for_subscribed = function (sub) {
 
         button.toggleClass("checked");
         settings_button.text(i18n.t("Unsubscribe"));
-
-        stream_edit.add_me_to_member_list(sub);
     } else {
         exports.add_sub_to_table(sub);
     }
 
-    if (stream_edit.is_sub_settings_active(sub) && sub.invite_only) {
+    if (stream_edit.is_sub_settings_active(sub)) {
         stream_edit.rerender_subscribers_list(sub);
     }
 
