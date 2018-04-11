@@ -1,6 +1,6 @@
 # Send a private message
 
-{!follow-steps.md!} send a new private message.
+Follow the following steps to send a new private message.
 
 ## Open a new compose box for private messaging
 

@@ -284,7 +284,7 @@ immediately after the title.
     ```md
     {!admin-only.md!}
 
-    {!follow-steps.md!} change who can join your stream by changing the stream's
+    Follow the following steps to change who can join your stream by changing the stream's
     accessibility.
     ```
     ```md
@@ -369,24 +369,6 @@ macro](#message-actions-message-actions-md-macro).
     1. [Find the relevant stream](/help/browse-and-join-streams#browse-streams) on the
     [Streams](/#streams) page. You can search for specific streams by entering the
     name of the stream in the **Filter streams** input.
-    ```
-
-### **Follow steps** `{!follow-steps.md!}` macro
-
-* **About:** Prepends phrases with instructions to follow the following steps.
-
-* **Contents:**
-    ```md
-    Follow the following steps to
-    ```
-
-* **Example usage and rendering:**
-    ```md
-    {!follow-steps.md!}  change your mobile notification settings.
-    ```
-    ```md
-    Follow the following steps to change your mobile notification
-    settings.
     ```
 
 ### **Message actions** `{!message-actions.md!}` macro

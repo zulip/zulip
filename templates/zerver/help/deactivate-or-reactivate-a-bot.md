@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} deactivate or reactivate any bots
+Follow the following steps to deactivate or reactivate any bots
 in your organization.
 
 !!! tip ""

@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} rename existing streams in your organization.
+Follow the following steps to rename existing streams in your organization.
 
 {!subscriptions.md!}
 {!filter-streams.md!}

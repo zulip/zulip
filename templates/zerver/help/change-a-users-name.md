@@ -4,7 +4,7 @@
 
 Ordinary users can [change their own names](/help/change-your-name), but
 administrators can change users' names when users are
-unavailable. {!follow-steps.md!} change the name of a user.
+unavailable. Follow the following steps to change the name of a user.
 
 1. Go to the [Users](/#organization/user-list-admin)
 {!admin.md!}

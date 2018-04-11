@@ -4,7 +4,7 @@
 
 By default, everyone in an organization is a user; this limits them from
 modifying organization-wide settings, such as changing the organization name,
-activating or deactivating users, deleting streams, etc. {!follow-steps.md!}
+activating or deactivating users, deleting streams, etc. Follow the following steps to
 give any user in your organization administrative rights.
 
 1. Go to the [Users](/#organization/user-list-admin)

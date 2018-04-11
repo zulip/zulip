@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} deactivate or reactivate any user's account in your
+Follow the following steps to deactivate or reactivate any user's account in your
 organization.
 
 ## Deactivate a user

@@ -1,6 +1,6 @@
 # Manage your uploaded files
 
-{!follow-steps.md!} view and manage the uploaded files to your organization.
+Follow the following steps to view and manage the uploaded files to your organization.
 
 ## View your uploaded files
 

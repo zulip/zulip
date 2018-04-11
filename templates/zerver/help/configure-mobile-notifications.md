@@ -1,6 +1,6 @@
 # Configure mobile push notifications
 
-{!follow-steps.md!} change your mobile notification settings.
+Follow the following steps to change your mobile notification settings.
 
 1. Go to the [Notifications](/#settings/notifications)
 {!settings.md!}

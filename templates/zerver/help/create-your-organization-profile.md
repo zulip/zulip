@@ -11,7 +11,7 @@ searching for your organization.
 
 ## Change your organization's name
 
-{!follow-steps.md!} change the name of your organization.
+Follow the following steps to change the name of your organization.
 
 2. Edit your organization's name in the **Your organization's name** textbox.
 You can choose any name of up to 40 characters for your organization.
@@ -20,7 +20,7 @@ You can choose any name of up to 40 characters for your organization.
 
 ## Change your organization's description
 
-{!follow-steps.md!} change the description of your organization.
+Follow the following steps to change the description of your organization.
 
 2. Edit your organization's description in the **Your organization's description**
 textbox. Markdown syntax is supported.
@@ -29,7 +29,7 @@ textbox. Markdown syntax is supported.
 
 ## Change your organization's avatar
 
-{!follow-steps.md!} change the avatar your organization uses.
+Follow the following steps to change the avatar your organization uses.
 
 2. Under the **Organization avatar** section, click the **Upload new icon**
 button and select the image you would like to use from your computer.

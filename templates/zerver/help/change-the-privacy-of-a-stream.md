@@ -2,7 +2,7 @@
 
 {!admin-only.md!}
 
-{!follow-steps.md!} change who can join your stream by changing the stream's
+Follow the following steps to change who can join your stream by changing the stream's
 privacy.
 
 Please note that any users that were previously subscribed to the stream will
