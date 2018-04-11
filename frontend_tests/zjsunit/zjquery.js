@@ -315,6 +315,7 @@ exports.make_zjquery = function () {
             ('<#.'.indexOf(selector[0]) >= 0) ||
             (selector === 'window-stub') ||
             (selector === 'document-stub') ||
+            (selector === 'body') ||
             (selector === 'html') ||
             (selector.location) ||
             (selector.indexOf('#') >= 0) ||
