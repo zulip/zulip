@@ -209,7 +209,7 @@ td .button {
 .settings-section .settings-section-title {
     font-size: 1.4em;
     font-weight: 500;
-    margin: 0px 0px 10px 0px;
+    margin: 10px 0px 10px 0px;
 }
 
 .settings-section .settings-section-title.transparent {
@@ -322,7 +322,7 @@ td .button {
 
 .button,
 .input-group {
-    margin: 20px 0px;
+    margin: 0 0 20px 0;
 }
 
 .input-group.thinner {
@@ -348,7 +348,7 @@ input[type=checkbox] + .inline-block {
 }
 
 .admin-realm-form h3 {
-    margin-bottom: 0px;
+    margin-bottom: 10px;
 }
 
 #settings_page .icon-button {
@@ -443,6 +443,14 @@ input[type=checkbox] + .inline-block {
 
 .org-settings-form .organization-submission {
     margin-top: 0px;
+}
+
+.realm-icon-section {
+    margin-bottom: 20px;
+}
+
+.inline-block.organization-permissions-parent div:first-of-type {
+    margin-top: 10px;
 }
 
 .admin-realm-form .subsection-header h3 {
@@ -925,7 +933,6 @@ input[type=checkbox].inline-block {
 
 .emojiset_choices {
     width: 250px;
-    margin-top: 10px;
     padding: 0px 10px;
 }
 
