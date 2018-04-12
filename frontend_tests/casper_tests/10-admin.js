@@ -193,7 +193,7 @@ casper.then(function () {
             name: 'Teams',
             field_type: '1',
         });
-        casper.click('form.admin-profile-field-form button.button');
+        casper.click("form.admin-profile-field-form button[type='submit']");
     });
 });
 
