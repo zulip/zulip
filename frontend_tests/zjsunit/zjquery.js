@@ -6,6 +6,15 @@ exports.make_zjquery = function () {
 
     var elems = {};
 
+    // Our fn structure helps us simulate extending jQuery.
+    var fn = {};
+
+    function add_extensions(obj) {
+        _.each(fn, (v, k) => {
+            obj[k] = v;
+        });
+    }
+
     function new_elem(selector) {
         var html = 'never-been-set';
         var text = 'never-been-set';
@@ -281,6 +290,8 @@ exports.make_zjquery = function () {
 
         self[0] = 'you-must-set-the-child-yourself';
 
+        add_extensions(self);
+
         return self;
     }
 
@@ -373,6 +384,8 @@ exports.make_zjquery = function () {
     zjquery.extend = function (content, container) {
         return _.extend(content, container);
     };
+
+    zjquery.fn = fn;
 
     return zjquery;
 };

@@ -174,3 +174,26 @@ set_global('$', global.make_zjquery());
     obj2.addClass('.striped');
     assert(obj2.hasClass('.striped'));
 }());
+
+(function test_extensions() {
+    // You can extend $.fn so that all subsequent objects
+    // we create get a new function.
+
+    $.fn.area = function () {
+        return this.width() * this.height();
+    };
+
+    // Before we use area, though, let's illustrate that
+    // the predominant Zulip testing style is to stub objects
+    // using direct syntax:
+
+    var rect = $.create('rectangle');
+    rect.width = () => { return 5; };
+    rect.height = () => { return 7; };
+
+    assert.equal(rect.width(), 5);
+    assert.equal(rect.height(), 7);
+
+    // But we also have area available from general extension.
+    assert.equal(rect.area(), 35);
+}());
