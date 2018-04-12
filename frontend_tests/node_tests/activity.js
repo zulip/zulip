@@ -40,7 +40,7 @@ zrequire('activity');
 zrequire('stream_list');
 
 set_global('blueslip', {
-    log: function () {},
+    log: () => {},
 });
 
 set_global('popovers', {
@@ -58,10 +58,10 @@ set_global('stream_popover', {
 
 
 set_global('reload', {
-    is_in_progress: function () {return false;},
+    is_in_progress: () => false,
 });
 set_global('resize', {
-    resize_page_components: function () {},
+    resize_page_components: () => {},
 });
 set_global('window', 'window-stub');
 
@@ -114,10 +114,10 @@ people.add_in_realm(zoe);
 people.add_in_realm(me);
 people.initialize_current_user(me.user_id);
 
-compose_fade.update_faded_users = function () {};
+compose_fade.update_faded_users = () => {};
 
 const real_update_huddles = activity.update_huddles;
-activity.update_huddles = function () {};
+activity.update_huddles = () => {};
 
 global.compile_template('user_presence_row');
 global.compile_template('user_presence_rows');
@@ -479,7 +479,7 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
 
 (function test_focus_user_filter() {
     const e = {
-        stopPropagation: function () {},
+        stopPropagation: () => {},
     };
     var click_handler = $('.user-list-filter').get_on_handler('click');
     click_handler(e);
@@ -554,9 +554,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
     };
 
     $.stub_selector('#user_presences li', {
-        toArray: function () {
-            return [];
-        },
+        toArray: () => [],
     });
     activity.insert_user_into_list(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
@@ -718,18 +716,14 @@ $('.user-list-filter').parent = function () {
     count.set_parent(li);
 
     const real_get_huddles = activity.get_huddles;
-    activity.get_huddles = function () {
-        return ['1,2'];
-    };
+    activity.get_huddles = () => ['1,2'];
     activity.update_huddles = real_update_huddles;
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), false);
     page_params.realm_presence_disabled = false;
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), true);
-    activity.get_huddles = function () {
-        return [];
-    };
+    activity.get_huddles = () => [];
     activity.redraw();
     assert.equal($('#group-pm-list').hasClass('show'), false);
     activity.get_huddles = real_get_huddles;
@@ -751,9 +745,7 @@ $('.user-list-filter').parent = function () {
     $('#user_presences').append = function () {};
 
     $.stub_selector('#user_presences li', {
-        toArray: function () {
-            return [];
-        },
+        toArray: () => [],
     });
     presence.presence_info[alice.user_id] = undefined;
     activity.set_user_status(me.email, info, server_time);
@@ -765,7 +757,7 @@ $('.user-list-filter').parent = function () {
     blueslip.warn = function (msg) {
         assert.equal(msg, 'unknown email: foo@bar.com');
     };
-    blueslip.error = function () {};
+    blueslip.error = () => {};
     activity.set_user_status('foo@bar.com', info, server_time);
 }());
 
@@ -775,10 +767,8 @@ $('.user-list-filter').parent = function () {
           func();
       },
   });
-  $(window).focus = function (func) {
-      func();
-  };
-  $(window).idle = function () {};
+  $(window).focus = func => func();
+  $(window).idle = () => {};
 
   channel.post = function (payload) {
       payload.success({});
@@ -800,9 +790,8 @@ $('.user-list-filter').parent = function () {
           zephyr_mirror_active: false,
       });
   };
-  global.setInterval = function (func) {
-      func();
-  };
+  global.setInterval = (func) => func();
+
   activity.initialize();
   assert($('#zephyr-mirror-error').hasClass('show'));
   assert(!activity.new_user_input);
