@@ -288,7 +288,7 @@ set_global('current_msg_list', {
 
     reactions.set_reaction_count(reaction_element, 5);
 
-    assert.equal(count_element.html(), '5');
+    assert.equal(count_element.text(), '5');
 }());
 
 (function test_get_reaction_section() {
@@ -388,7 +388,7 @@ set_global('current_msg_list', {
 
     reactions.add_reaction(bob_event);
     assert(title_set);
-    assert.equal(count_element.html(), '2');
+    assert.equal(count_element.text(), '2');
 
     // Now, remove Bob's 8ball emoji.  The event has the same exact
     // structure as the add event.
@@ -402,7 +402,7 @@ set_global('current_msg_list', {
 
     reactions.remove_reaction(bob_event);
     assert(title_set);
-    assert.equal(count_element.html(), '1');
+    assert.equal(count_element.text(), '1');
 
     var current_emojis = reactions.get_emojis_used_by_user_for_message_id(1001);
     assert.deepEqual(current_emojis, ['smile', 'inactive_realm_emoji', '8ball']);
