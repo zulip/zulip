@@ -1,3 +1,6 @@
+var path = require('path');
+var fs = require('fs');
+
 global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
@@ -52,6 +55,13 @@ var noop = function () {};
 module = require('module');
 module.prototype.hot = {
     accept: noop,
+};
+
+// Set up fixtures.
+global.read_fixture_data = (fn) => {
+    var full_fn = path.join(__dirname, '../../zerver/fixtures/', fn);
+    var data = JSON.parse(fs.readFileSync(full_fn, 'utf8', 'r'));
+    return data;
 };
 
 // Set up bugdown comparison helper
