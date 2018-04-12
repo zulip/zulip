@@ -13,7 +13,6 @@ zrequire('stream_data');
 zrequire('narrow');
 zrequire('hash_util');
 zrequire('marked', 'third/marked/lib/marked');
-var _ = require('node_modules/underscore/underscore.js');
 var th = zrequire('typeahead_helper');
 
 stream_data.create_streams([
