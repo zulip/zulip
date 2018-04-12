@@ -292,6 +292,7 @@ exports.make_zjquery = function () {
 
         add_extensions(self);
 
+        self.selector = selector;
         return self;
     }
 
@@ -308,9 +309,8 @@ exports.make_zjquery = function () {
             // the element itself if it's been created with
             // zjquery.
             // This may happen in cases like $(this).
-            if (arg.debug) {
-                var this_selector = arg.debug().selector;
-                if (elems[this_selector]) {
+            if (arg.selector) {
+                if (elems[arg.selector]) {
                     return arg;
                 }
             }
