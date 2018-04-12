@@ -41,6 +41,11 @@ if [ "$current_node_version" != "v$node_version" ]; then
     sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
 fi
 
+# Work around the fact that apparently sudo doesn't clear the HOME
+# environment variable in some cases; we don't want root
+# accessing/storing yarn configuration in the non-root user's home
+# directory.
+export HOME=/root
+
 # Install yarn if not installed
 bash "$ZULIP_PATH/scripts/lib/third/install-yarn.sh" "$ZULIP_SRV" --version "$yarn_version"
-sudo chown -R "$(whoami)" "$HOME/.config/yarn"
