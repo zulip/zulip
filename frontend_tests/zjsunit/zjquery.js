@@ -262,7 +262,7 @@ exports.make_zjquery = function () {
                 // legitimate for code to trigger multiple handlers.
                 // But up until now, we haven't needed this, and if
                 // you come across this assertion, it's possible that
-                // you can sselfify your tests by just doing your own
+                // you can simplify your tests by just doing your own
                 // mocking of trigger().  If you really know what you
                 // are doing, you can remove this limitation.
                 assert(funcs.length <= 1, 'multiple functions set up');
