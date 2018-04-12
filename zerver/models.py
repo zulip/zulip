@@ -34,7 +34,7 @@ from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, \
     check_short_string, check_long_string
 from zerver.lib.name_restrictions import is_disposable_domain
-from zerver.lib.types import Validator
+from zerver.lib.types import Validator, ProfileDataElement, ProfileData
 
 from django.utils.encoding import force_text
 
@@ -748,10 +748,10 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         unique_together = (('realm', 'email'),)
 
     @property
-    def profile_data(self) -> List[Dict[str, Union[int, float, Optional[Text]]]]:
+    def profile_data(self) -> ProfileData:
         values = CustomProfileFieldValue.objects.filter(user_profile=self)
         user_data = {v.field_id: v.value for v in values}
-        data = []  # type: List[Dict[str, Union[int, float, Optional[Text]]]]
+        data = []  # type: ProfileData
         for field in custom_profile_fields_for_realm(self.realm_id):
             value = user_data.get(field.id, None)
             field_type = field.field_type
@@ -759,7 +759,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
                 converter = field.FIELD_CONVERTERS[field_type]
                 value = converter(value)
 
-            field_data = {}  # type: Dict[str, Union[int, float, Optional[Text]]]
+            field_data = {}  # type: ProfileDataElement
             for k, v in field.as_dict().items():
                 field_data[k] = v
             field_data['value'] = value
@@ -1911,7 +1911,7 @@ class CustomProfileField(models.Model):
     class Meta:
         unique_together = ('realm', 'name')
 
-    def as_dict(self) -> Dict[str, Union[int, Optional[Text]]]:
+    def as_dict(self) -> ProfileDataElement:
         return {
             'id': self.id,
             'name': self.name,
