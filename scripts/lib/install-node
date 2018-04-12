@@ -43,3 +43,4 @@ fi
 
 # Install yarn if not installed
 bash "$ZULIP_PATH/scripts/lib/third/install-yarn.sh" "$ZULIP_SRV" --version "$yarn_version"
+sudo chown -R "$(whoami)" "$HOME/.config/yarn"
