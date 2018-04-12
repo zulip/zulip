@@ -314,6 +314,15 @@ exports.make_zjquery = function () {
                     return arg;
                 }
             }
+
+            // We occasionally create stub objects that know
+            // they want to be wrapped by jQuery (so they can
+            // in turn return stubs).  The convention is that
+            // they provide a to_$ attribute.
+            if (arg.to_$) {
+                assert(typeof arg.to_$ === "function");
+                return arg.to_$();
+            }
         }
 
         if (arg2 !== undefined) {
