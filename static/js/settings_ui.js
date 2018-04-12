@@ -4,9 +4,9 @@ var exports = {};
 
 exports.display_checkmark = function ($elem) {
     var check_mark = document.createElement("img");
-    check_mark.src = "/static/images/icon-checkbox-green.svg";
+    check_mark.src = "/static/images/checkbox-green.svg";
     $elem.prepend(check_mark);
-    $(check_mark).css("width", "10px");
+    $(check_mark).css("width", "13px");
 };
 
 exports.strings = {};

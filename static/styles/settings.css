@@ -397,9 +397,9 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button.primary .icon-button-icon {
-    width: 10px;
-    margin-bottom: 2px;
-    margin-right: 3px;
+    font-size: 15px;
+    font-weight: lighter;
+    color: white;
 }
 
 #settings_page .icon-button .icon-button-text {
