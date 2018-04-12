@@ -19,12 +19,7 @@ jobs:
               dirs=(/srv/zulip-{npm,venv}-cache)
               sudo mkdir -p "${dirs[@]}"
               sudo chown -R circleci "${dirs[@]}"
-              
-              # circleci has some sort of permission
-              # issues when installing new yarn verions
-              # so we just create and chown it to circleci
-              mkdir -p ~/.config
-              sudo chown -R circleci ~/.config
+
       - restore_cache:
           keys:
           - v1-npm-base.trusty.1
@@ -106,8 +101,6 @@ jobs:
               sudo mkdir -p "${dirs[@]}"
               sudo chown -R circleci "${dirs[@]}"
 
-              mkdir -p ~/.config
-              sudo chown -R circleci ~/.config
       - restore_cache:
           keys:
           - v1-npm-base.xenial.1
