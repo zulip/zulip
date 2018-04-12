@@ -248,7 +248,7 @@ def main(options):
         print("No changes to apt dependencies, so skipping apt operations.")
 
     # Here we install node.
-    run(["sudo", "scripts/lib/install-node"])
+    run(["sudo", "-H", "scripts/lib/install-node"])
 
     # This is a wrapper around `yarn`, which we run last since
     # it can often fail due to network issues beyond our control.

@@ -10,6 +10,11 @@ YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
 node_version=8.11.1
 yarn_version=1.5.1
 
+# This is a fix for the fact that nvm uses $HOME to determine which
+# user account's home directory to ~/.config to.  Ideally, we'd have a
+# more systematic fix, like using `sudo -H` everywhere.
+export HOME=/root
+
 current_node_version="none"
 if hash node 2>/dev/null; then
     current_node_version="$(node --version)"
