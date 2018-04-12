@@ -3,8 +3,7 @@ var return_false = function () { return false; };
 var return_true = function () { return true; };
 
 set_global('document', {
-    location: {
-    },
+    location: {}, // we need this to load compose.js
 });
 
 set_global('page_params', {
@@ -25,6 +24,8 @@ zrequire('compose');
 zrequire('util');
 zrequire('compose_state');
 zrequire('compose_actions');
+
+set_global('document', 'document-stub');
 
 var start = compose_actions.start;
 var cancel = compose_actions.cancel;

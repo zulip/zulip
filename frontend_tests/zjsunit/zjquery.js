@@ -304,25 +304,26 @@ exports.make_zjquery = function () {
             // so we just call it right away.
             arg();
             return;
-        } else if (typeof arg === "object") {
-            // If somebody is passing us an element, we return
-            // the element itself if it's been created with
-            // zjquery.
-            // This may happen in cases like $(this).
-            if (arg.selector) {
-                if (elems[arg.selector]) {
-                    return arg;
-                }
-            }
+        }
 
-            // We occasionally create stub objects that know
-            // they want to be wrapped by jQuery (so they can
-            // in turn return stubs).  The convention is that
-            // they provide a to_$ attribute.
-            if (arg.to_$) {
-                assert(typeof arg.to_$ === "function");
-                return arg.to_$();
+
+        // If somebody is passing us an element, we return
+        // the element itself if it's been created with
+        // zjquery.
+        // This may happen in cases like $(this).
+        if (arg.selector) {
+            if (elems[arg.selector]) {
+                return arg;
             }
+        }
+
+        // We occasionally create stub objects that know
+        // they want to be wrapped by jQuery (so they can
+        // in turn return stubs).  The convention is that
+        // they provide a to_$ attribute.
+        if (arg.to_$) {
+            assert(typeof arg.to_$ === "function");
+            return arg.to_$();
         }
 
         if (arg2 !== undefined) {
@@ -331,13 +332,17 @@ exports.make_zjquery = function () {
 
         var selector = arg;
 
+        if (typeof selector !== "string") {
+            console.info(arg);
+            throw Error("zjquery does not know how to wrap this object yet");
+        }
+
         var valid_selector =
             ('<#.'.indexOf(selector[0]) >= 0) ||
             (selector === 'window-stub') ||
             (selector === 'document-stub') ||
             (selector === 'body') ||
             (selector === 'html') ||
-            (selector.location) ||
             (selector.indexOf('#') >= 0) ||
             (selector.indexOf('.') >= 0) ||
             (selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('['));

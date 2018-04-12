@@ -402,14 +402,14 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     domain_obj.text(domain);
 
 
-    var elem_obj = $('<elem html>');
+    var elem_obj = $.create('<elem html>');
     var parents_obj = $.create('parents object');
 
     elem_obj.set_parents_result('tr', parents_obj);
     parents_obj.set_find_results('.domain', domain_obj);
     elem_obj.prop('checked', allow);
 
-    change_allow_subdomains.apply('<elem html>', [ev]);
+    change_allow_subdomains.apply(elem_obj, [ev]);
 
     success_callback();
     assert.equal(info.val(),
@@ -420,7 +420,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
 
     allow = false;
     elem_obj.prop('checked', allow);
-    change_allow_subdomains.apply('<elem html>', [ev]);
+    change_allow_subdomains.apply(elem_obj, [ev]);
     success_callback();
     assert.equal(info.val(),
                  'translated: Update successful: Subdomains no longer allowed for example.com');

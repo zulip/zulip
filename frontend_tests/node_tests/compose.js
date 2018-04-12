@@ -636,6 +636,8 @@ people.add(bob);
     }());
 }());
 
+set_global('document', 'document-stub');
+
 (function test_enter_with_preview_open() {
     // Test sending a message with content.
     compose_state.set_message_type('stream');
@@ -702,12 +704,10 @@ people.add(bob);
         };
 
         var compose_finished_event_checked = false;
-        $.stub_selector(document, {
-            trigger: function (e) {
-                assert.equal(e.name, 'compose_finished.zulip');
-                compose_finished_event_checked = true;
-            },
-        });
+        $(document).trigger = function (e) {
+            assert.equal(e.name, 'compose_finished.zulip');
+            compose_finished_event_checked = true;
+        };
         var send_message_called = false;
         compose.send_message = function () {
             send_message_called = true;
