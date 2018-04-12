@@ -260,7 +260,7 @@ page.
 
 * **Example usage and rendering:**
     ```md
-    1. Go to theOrganization settings](/#organization/organization-settings)
+    1. Go to the [Organization settings](/#organization/organization-settings)
     {!admin.md!}
     ```
     ```md
