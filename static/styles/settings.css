@@ -612,7 +612,8 @@ input[type=checkbox].inline-block {
 }
 
 .disableable {
-    margin-left: 25px;
+    margin-left: 22px;
+    margin-top: -10px;
 }
 
 .admin-realm-message-content-edit-limit-minutes {
