@@ -16,7 +16,7 @@ recommended, and you may break your server. Make sure you have backups
 and a provisioning script ready to go to wipe and restore your
 existing services if (when) your server goes down.
 
-These instructions are only for experts.  If you're not an experiecned
+These instructions are only for experts.  If you're not an experienced
 Linux sysadmin, you will have a much better experience if you get a
 dedicated VM to install Zulip on instead (or [use zulipchat.com](https://zulipchat.com).
 
