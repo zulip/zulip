@@ -1322,6 +1322,8 @@ div.message_table {
     margin-left: auto;
     display: none;
     width: 100%;
+    /* Ensure GPU acceleration is used for this component to speed up scrolling */
+    transform: translateZ(0);
 }
 
 .message_row {
