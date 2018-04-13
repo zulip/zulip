@@ -187,7 +187,7 @@ $(function () {
                 });
             }
             if (event.target_scroll_offset !== undefined) {
-                message_viewport.set_message_offset(event.target_scroll_offset);
+                current_msg_list.view.set_message_offset(event.target_scroll_offset);
             } else {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,

@@ -196,7 +196,7 @@ exports.activate = function (raw_operators, opts) {
                 // Scroll so that the selected message is in the same
                 // position in the viewport as it was prior to
                 // narrowing
-                message_viewport.set_message_offset(then_select_offset);
+                message_list.narrowed.view.set_message_offset(then_select_offset);
             }
             unread_ops.process_visible();
         }

@@ -223,11 +223,6 @@ exports.scrollTop = function viewport_scrollTop(target_scrollTop) {
     return ret;
 };
 
-exports.set_message_offset = function viewport_set_message_offset(offset) {
-    var msg = current_msg_list.selected_row();
-    exports.scrollTop(exports.scrollTop() + msg.offset().top - offset);
-};
-
 function make_dimen_wrapper(dimen_name, dimen_func) {
     dimensions[dimen_name] = new util.CachedValue({
         compute_value: function () {

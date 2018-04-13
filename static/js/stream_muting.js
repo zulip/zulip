@@ -33,7 +33,7 @@ exports.update_in_home_view = function (sub, value) {
             home_msg_list.select_id(home_msg_list.selected_id(),
                                     {use_closest: true, empty_ok: true});
             if (current_msg_list.selected_id() !== -1) {
-                message_viewport.set_message_offset(msg_offset);
+                current_msg_list.view.set_message_offset(msg_offset);
             }
         }
 

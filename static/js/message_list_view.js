@@ -485,7 +485,7 @@ MessageListView.prototype = {
 
         function restore_scroll_position() {
             if (list === current_msg_list && orig_scrolltop_offset !== undefined) {
-                message_viewport.set_message_offset(orig_scrolltop_offset);
+                list.view.set_message_offset(orig_scrolltop_offset);
                 list.reselect_selected_id();
             }
         }
@@ -815,6 +815,11 @@ MessageListView.prototype = {
         return this.rerender_with_target_scrolltop(selected_row, old_offset);
     },
 
+    set_message_offset: function (offset) {
+        var msg = this.selected_row();
+        message_viewport.scrollTop(message_viewport.scrollTop() + msg.offset().top - offset);
+    },
+
     rerender_with_target_scrolltop: function (selected_row, target_offset) {
         // target_offset is the target number of pixels between the top of the
         // viewable window and the selected message
@@ -831,7 +836,7 @@ MessageListView.prototype = {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
 
-            message_viewport.set_message_offset(target_offset);
+            this.set_message_offset(target_offset);
         }
     },
 
