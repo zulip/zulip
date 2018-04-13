@@ -812,20 +812,26 @@ MessageListView.prototype = {
         if (selected_in_view) {
             old_offset = selected_row.offset().top;
         }
+        return this.rerender_with_target_scrolltop(selected_row, old_offset);
+    },
 
+    rerender_with_target_scrolltop: function (selected_row, target_offset) {
+        // target_offset is the target number of pixels between the top of the
+        // viewable window and the selected message
         this.clear_table();
-        this.render(this.list.all_messages().slice(this._render_win_start, this._render_win_end), 'bottom');
+        this.render(this.list.all_messages().slice(this._render_win_start,
+                                                   this._render_win_end), 'bottom');
 
         // If we could see the newly selected message, scroll the
         // window such that the newly selected message is at the
         // same location as it would have been before we
         // re-rendered.
-        if (selected_in_view) {
+        if (target_offset !== undefined) {
             if (this.selected_row().length === 0 && this.list.selected_id() > -1) {
                 this.list.select_id(this.list.selected_id(), {use_closest: true});
             }
 
-            message_viewport.set_message_offset(old_offset);
+            message_viewport.set_message_offset(target_offset);
         }
     },
 
