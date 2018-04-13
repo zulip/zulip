@@ -4,6 +4,7 @@ class zulip::postfix_localmail {
   if $fqdn == '' {
     fail("Your system does not have a fully-qualified domain name defined. See hostname(1).")
   }
+  $postfix_mailname = zulipconf("postfix", "mailname", $fqdn)
   package { $postfix_packages:
     ensure => "installed",
     require => File['/etc/mailname'],
