@@ -549,6 +549,15 @@ exports.MessageList.prototype = {
         this._selected_id = this.closest_id(this._selected_id);
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
+
+        if (this === exports.narrowed) {
+            if (this.empty()) {
+                narrow.show_empty_narrow_message();
+            } else {
+                narrow.hide_empty_narrow_message();
+            }
+        }
+
         this.view.rerender_preserving_scrolltop();
         if (this._selected_id !== -1) {
             this.select_id(this._selected_id);
