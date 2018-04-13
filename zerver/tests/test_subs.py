@@ -60,6 +60,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_description,
     do_change_default_stream_group_name,
     lookup_default_stream_groups,
+    can_access_stream_user_ids,
 )
 
 from zerver.views.streams import (
@@ -413,6 +414,24 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
         stream_name_mixed_exists = get_stream(u'français name', realm)
         self.assertTrue(stream_name_mixed_exists)
+
+        # Test case for notified users in private streams.
+        stream_private = self.make_stream('stream_private_name1', realm=user_profile.realm, invite_only=True)
+        self.subscribe(self.example_user('cordelia'), 'stream_private_name1')
+        del events[:]
+        with tornado_redirected_to_list(events):
+            stream_id = get_stream('stream_private_name1', realm).id
+            result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                       {'new_name': ujson.dumps('stream_private_name2')})
+        self.assert_json_success(result)
+        notified_user_ids = set(events[1]['users'])
+        self.assertEqual(notified_user_ids, can_access_stream_user_ids(stream_private))
+        self.assertIn(user_profile.id,
+                      notified_user_ids)
+        self.assertIn(self.example_user('cordelia').id,
+                      notified_user_ids)
+        self.assertNotIn(self.example_user('prospero').id,
+                         notified_user_ids)
 
     def test_rename_stream_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')
