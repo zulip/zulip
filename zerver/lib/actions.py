@@ -173,11 +173,13 @@ def log_event(event: MutableMapping[str, Any]) -> None:
 
 def can_access_stream_user_ids(stream: Stream) -> Set[int]:
     # return user ids of users who can access the attributes of
-    # a stream, such as its name/description
+    # a stream, such as its name/description.
     if stream.is_public():
+        # For a public stream, this is everyone in the realm
         return set(active_user_ids(stream.realm_id))
     else:
-        return private_stream_user_ids(stream.id)
+        # for a private stream, it's subscribers plus realm admins.
+        return private_stream_user_ids(stream.id) | {user.id for user in stream.realm.get_admin_users()}
 
 def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
