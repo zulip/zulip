@@ -485,6 +485,23 @@ def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], View
         return _wrapped_func_arguments
     return _wrapped_view_func
 
+# This API endpoint is used only for the mobile apps.  It is part of a
+# workaround for the fact that React Native doesn't support setting
+# HTTP basic authentication headers.
+def authenticated_uploads_api_view() -> Callable[[ViewFuncT], ViewFuncT]:
+    def _wrapped_view_func(view_func: ViewFuncT) -> ViewFuncT:
+        @csrf_exempt
+        @has_request_variables
+        @wraps(view_func)
+        def _wrapped_func_arguments(request: HttpRequest,
+                                    api_key: str=REQ(),
+                                    *args: Any, **kwargs: Any) -> HttpResponse:
+            user_profile = validate_api_key(request, None, api_key, False)
+            limited_func = rate_limit()(view_func)
+            return limited_func(request, user_profile, *args, **kwargs)
+        return _wrapped_func_arguments
+    return _wrapped_view_func
+
 # A more REST-y authentication decorator, using, in particular, HTTP Basic
 # authentication.
 #
