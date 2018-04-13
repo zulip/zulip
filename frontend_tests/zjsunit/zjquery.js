@@ -2,7 +2,7 @@ var noop = function () {};
 
 var exports = {};
 
-exports.make_zjquery = function () {
+exports.make_zjquery = function (opts) {
 
     var elems = {};
 
@@ -91,7 +91,9 @@ exports.make_zjquery = function () {
                 if (child) {
                     return child;
                 }
-
+                if (opts.silent) {
+                    return self;
+                }
                 throw Error("Cannot find " + child_selector + " in " + selector);
             },
             focus: function () {
