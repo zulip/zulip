@@ -253,6 +253,8 @@ MessageListView.prototype = {
             }
 
             message_container.sender_is_bot = people.sender_is_bot(message_container.msg);
+            message_container.sender_is_realm_admin =
+                people.sender_is_realm_admin(message_container.msg);
 
             self._add_msg_timestring(message_container);
 

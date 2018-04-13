@@ -1179,18 +1179,18 @@ td.pointer {
     color: hsl(200, 100%, 40%);
 }
 
-.message_sender i.zulip-icon.bot,
-.popover_info i.zulip-icon.bot {
+.message_sender i.zulip-icon,
+.popover_info i.zulip-icon {
     color: hsl(180, 5%, 74%);
     vertical-align: top;
     padding: 0 2px;
 }
 
-.message_sender i.zulip-icon.bot {
+.message_sender i.zulip-icon {
     font-size: 12px;
 }
 
-.popover_info i.zulip-icon.bot {
+.popover_info i.zulip-icon {
     margin-top: 3px;
 }
 

@@ -462,6 +462,24 @@ initialize();
 
     message = { sender_id: undefined };
     assert.equal(people.sender_is_bot(message), false);
+
+    // Test sender_is_realm_admin
+    var david = {
+        email: 'david@example.com',
+        user_id: 39,
+        full_name: 'David',
+        is_admin: true,
+    };
+    people.add(david);
+
+    message = { sender_id: david.user_id };
+    assert.equal(people.sender_is_realm_admin(message), true);
+
+    message = { sender_id: maria.user_id };
+    assert.equal(people.sender_is_realm_admin(message), undefined);
+
+    message = { sender_id: undefined };
+    assert.equal(people.sender_is_realm_admin(message), false);
 }());
 
 initialize();

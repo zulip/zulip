@@ -2,13 +2,16 @@
 <ul class="nav nav-list actions_popover info_popover_actions" data-user-id="{{user_id}}">
     <div class="popover_info">
         <li class="user_{{presence_status}}">
-            <b>{{user_full_name}}</b>
             {{#if is_active }}
                 {{#if is_bot}}
                 <i class="zulip-icon bot" aria-hidden="true"></i>
                 {{else}}
                 <span class="user-status-indicator popover_user_presence" title="{{user_last_seen_time_status}}"></span>
                 {{/if}}
+            {{/if}}
+            <b>{{user_full_name}}</b>
+            {{#if is_admin}}
+            <i class="zulip-icon crown" title="{{t 'Admin' }}" aria-hidden="true"></i>
             {{/if}}
         </li>
 
