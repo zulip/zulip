@@ -16,7 +16,7 @@
                                 <span class="sender-status">
                                     <span class="sender_name-in-status auto-select sender_info_hover">{{msg/sender_full_name}}</span>
                                     {{#if sender_is_bot}}
-                                    <i class="zulip-icon bot" aria-hidden="true"></i>
+                                    <i class="zulip-icon bot" title="{{t 'Bot' }}" aria-hidden="true"></i>
                                     {{else if sender_is_realm_admin}}
                                     <i class="zulip-icon crown" title="{{t 'Admin' }}" aria-hidden="true"></i>
                                     {{/if}}
@@ -30,7 +30,7 @@
                             {{else}}
                                 <span class="sender_name auto-select">{{msg/sender_full_name}}</span>
                                 {{#if sender_is_bot}}
-                                <i class="zulip-icon bot" aria-hidden="true"></i>
+                                <i class="zulip-icon bot" title="{{t 'Bot' }}" aria-hidden="true"></i>
                                 {{else if sender_is_realm_admin}}
                                 <i class="zulip-icon crown" title="{{t 'Admin' }}" aria-hidden="true"></i>
                                 {{/if}}
