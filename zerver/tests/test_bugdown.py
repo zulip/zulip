@@ -1261,7 +1261,7 @@ class BugdownErrorTests(ZulipTestCase):
 
     def test_ultra_long_rendering(self) -> None:
         """A message with an ultra-long rendering throws an exception"""
-        msg = u'* a\n' * (MAX_MESSAGE_LENGTH // 5)  # Rendering is >20K characters
+        msg = u'* a\n' * MAX_MESSAGE_LENGTH  # Rendering is >100K characters
 
         with self.simulated_markdown_failure():
             with self.assertRaises(bugdown.BugdownRenderingException):

@@ -1970,8 +1970,8 @@ def do_convert(content: Text,
         # Throw an exception if the content is huge; this protects the
         # rest of the codebase from any bugs where we end up rendering
         # something huge.
-        if len(rendered_content) > MAX_MESSAGE_LENGTH * 2:
-            raise BugdownRenderingException()
+        if len(rendered_content) > MAX_MESSAGE_LENGTH * 10:
+            raise BugdownRenderingException('Rendered Content Length Exceeded')
         return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
