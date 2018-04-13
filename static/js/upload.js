@@ -69,7 +69,10 @@ exports.options = function (config) {
     var uploadStarted = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
-        send_status_close.one('click', compose.abort_xhr);
+        send_status_close.one('click', function () {
+            maybe_hide_upload_status();
+            compose.abort_xhr();
+        });
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
         send_status.append('<div class="progress active">' +
                            '<div class="bar" id="' + upload_bar + '" style="width: 0"></div>' +
