@@ -6,7 +6,7 @@ from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 from zerver.decorator import authenticated_json_view, authenticated_rest_api_view, \
-    process_as_post
+    process_as_post, authenticated_uploads_api_view
 from zerver.lib.response import json_method_not_allowed, json_unauthorized
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.conf import settings
@@ -84,8 +84,15 @@ def rest_dispatch(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         # uploaded), we support using the same url for web and API clients.
         if ('override_api_url_scheme' in view_flags and
                 request.META.get('HTTP_AUTHORIZATION', None) is not None):
-            # This request  API based authentication.
+            # This request uses standard API based authentication.
             target_function = authenticated_rest_api_view()(target_function)
+        elif ('override_api_url_scheme' in view_flags and
+              request.GET.get('api_key') is not None):
+            # This request uses legacy API authentication.  We
+            # unfortunately need that in the React Native mobile
+            # apps, because there's no way to set
+            # HTTP_AUTHORIZATION in React Native.
+            target_function = authenticated_uploads_api_view()(target_function)
         # /json views (web client) validate with a session token (cookie)
         elif not request.path.startswith("/api") and request.user.is_authenticated:
             # Authenticated via sessions framework, only CSRF check needed

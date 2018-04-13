@@ -77,12 +77,42 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         # Download file via API
         self.logout()
         response = self.api_get(self.example_email("hamlet"), uri)
+        self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
         # Files uploaded through the API should be accesible via the web client
         self.login(self.example_email("hamlet"))
         self.assert_url_serves_contents_of_file(uri, b"zulip!")
+
+    def test_mobile_api_endpoint(self) -> None:
+        """
+        Tests the /api/v1/user_uploads api endpoint with ?api_key
+        auth. Here a single file is uploaded and downloaded using a
+        username and api_key
+        """
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+
+        # Upload file via API
+        result = self.api_post(self.example_email("hamlet"), '/api/v1/user_uploads', {'file': fp})
+        self.assertIn("uri", result.json())
+        uri = result.json()['uri']
+        base = '/user_uploads/'
+        self.assertEqual(base, uri[:len(base)])
+
+        self.logout()
+
+        # Try to download file via API, passing URL and invalid API key
+        user_profile = self.example_user("hamlet")
+
+        response = self.client_get(uri + "?api_key=" + "invalid")
+        self.assertEqual(response.status_code, 400)
+
+        response = self.client_get(uri + "?api_key=" + user_profile.api_key)
+        self.assertEqual(response.status_code, 200)
+        data = b"".join(response.streaming_content)
+        self.assertEqual(b"zulip!", data)
 
     def test_filename_encoding(self) -> None:
         """
