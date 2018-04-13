@@ -117,6 +117,7 @@ exports.update_messages = function update_messages(events) {
     var msgs_to_rerender = [];
     var topic_edited = false;
     var changed_narrow = false;
+    var changed_compose = false;
     var message_content_edited = false;
 
     _.each(events, function (event) {
@@ -157,7 +158,9 @@ exports.update_messages = function update_messages(events) {
             if (going_forward_change && stream_name && compose_stream_name) {
                 if (stream_name.toLowerCase() === compose_stream_name.toLowerCase()) {
                     if (event.orig_subject === compose_state.subject()) {
+                        changed_compose = true;
                         compose_state.subject(event.subject);
+                        compose_fade.set_focused_recipient("stream");
                     }
                 }
             }
@@ -263,6 +266,13 @@ exports.update_messages = function update_messages(events) {
             home_msg_list.view.rerender_messages(msgs_to_rerender);
         }
     }
+
+    if (changed_compose) {
+        // We need to do this after we rerender the message list, to
+        // produce correct results.
+        compose_fade.update_message_list();
+    }
+
     unread_ui.update_unread_counts();
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
