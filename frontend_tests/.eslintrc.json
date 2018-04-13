@@ -11,6 +11,7 @@
         "zrequire": false
     },
     "rules": {
-        "no-sync": 0
+        "no-sync": 0,
+        "prefer-const": "error"
     }
 }
