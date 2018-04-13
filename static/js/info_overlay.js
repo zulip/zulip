@@ -21,6 +21,10 @@ function adjust_mac_shortcuts() {
     });
 }
 
+// Make it explicit that our toggler is undefined until
+// _setup_info_overlay is called via ensure_i18n.
+exports.toggler = undefined;
+
 function _setup_info_overlay() {
     var opts = {
         name: "info-overlay-toggle",
@@ -63,6 +67,8 @@ function _setup_info_overlay() {
     if (/Mac/i.test(navigator.userAgent)) {
         adjust_mac_shortcuts();
     }
+
+    exports.toggler = toggler;
 }
 
 exports.show = function (target) {
@@ -79,7 +85,9 @@ exports.show = function (target) {
     }
 
     if (target) {
-        components.toggle.lookup("info-overlay-toggle").goto(target);
+        if (exports.toggler) {
+            exports.toggler.goto(target);
+        }
     }
 };
 
