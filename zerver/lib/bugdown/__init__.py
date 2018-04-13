@@ -1962,9 +1962,11 @@ def do_convert(content: Text,
         }
 
     try:
-        # Spend at most 5 seconds rendering.
-        # Sometimes Python-Markdown is really slow; see
-        # https://trac.zulip.net/ticket/345
+        # Spend at most 5 seconds rendering; this protects the backend
+        # from being overloaded by bugs (e.g. markdown logic that is
+        # extremely inefficient in corner cases) as well as user
+        # errors (e.g. a realm filter that makes some syntax
+        # infinite-loop).
         rendered_content = timeout(5, _md_engine.convert, content)
 
         # Throw an exception if the content is huge; this protects the
