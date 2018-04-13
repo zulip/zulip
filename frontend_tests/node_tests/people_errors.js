@@ -1,6 +1,8 @@
 zrequire('people');
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip({
+    debug: true, // testing for debug is disabled by default.
+}));
 
 var me = {
     email: 'me@example.com',
@@ -14,68 +16,61 @@ people.add(me);
 people.initialize_current_user(me.user_id);
 
 (function test_report_late_add() {
-    var message;
-    global.blueslip.error = function (msg) {
-        message = msg;
-    };
-
+    blueslip.set_test_data('error', 'Added user late: user_id=55 email=foo@example.com');
     people.report_late_add(55, 'foo@example.com');
-    assert.equal(message, 'Added user late: user_id=55 email=foo@example.com');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 }());
 
 (function test_blueslip() {
     var unknown_email = "alicebobfred@example.com";
 
-    global.blueslip.debug = function (msg) {
-        assert.equal(msg, 'User email operand unknown: ' + unknown_email);
-    };
-
-    var warning;
-    global.blueslip.warn = function (w) {
-        warning = w;
-    };
-
+    blueslip.set_test_data('debug', 'User email operand unknown: ' + unknown_email);
     people.id_matches_email_operand(42, unknown_email);
+    assert.equal(blueslip.get_test_logs('debug').length, 1);
+    blueslip.clear_test_data();
 
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown email for get_user_id: ' + unknown_email);
-    };
+    blueslip.set_test_data('error', 'Unknown email for get_user_id: ' + unknown_email);
     people.get_user_id(unknown_email);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
+    blueslip.set_test_data('warn', 'No user_id provided for person@example.com');
     var person = {
         email: 'person@example.com',
         user_id: undefined,
         full_name: 'Person Person',
     };
     people.add(person);
-    assert.equal(warning, 'No user_id provided for person@example.com');
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'No user_id found for person@example.com');
-    };
+    blueslip.set_test_data('error', 'No user_id found for person@example.com');
     var user_id = people.get_user_id('person@example.com');
     assert.equal(user_id, undefined);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown user ids: 1,2');
-    };
+    blueslip.set_test_data('error', 'Unknown user ids: 1,2');
     people.user_ids_string_to_emails_string('1,2');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
-    global.blueslip.warn = function (msg) {
-        assert.equal(msg, 'Unknown emails: ' + unknown_email);
-    };
+    blueslip.set_test_data('warn', 'Unknown emails: ' + unknown_email);
     people.email_list_to_user_ids_string(unknown_email);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 
     var message = {
         type: 'private',
         display_recipient: [],
         sender_id: me.user_id,
     };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Empty recipient list in message');
-    };
+    blueslip.set_test_data('error', 'Empty recipient list in message');
     people.pm_with_user_ids(message);
     people.group_pm_with_user_ids(message);
+    assert.equal(blueslip.get_test_logs('error').length, 2);
+    blueslip.clear_test_data();
 
     var charles = {
         email: 'charles@example.com',
@@ -100,18 +95,17 @@ people.initialize_current_user(me.user_id);
         ],
         sender_id: charles.user_id,
     };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown user id in message: 42');
-    };
+    blueslip.set_test_data('error', 'Unknown user id in message: 42');
     var reply_to = people.pm_reply_to(message);
     assert(reply_to.indexOf('?') > -1);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     people.pm_with_user_ids = function () { return [42]; };
     people.get_person_from_user_id = function () { return; };
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Unknown people in message');
-    };
+    blueslip.set_test_data('error', 'Unknown people in message');
     var uri = people.pm_with_url({});
     assert.equal(uri.indexOf('unk'), uri.length - 3);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 }());
-
