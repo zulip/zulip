@@ -332,7 +332,13 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> Text:
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[Text]) -> Optional[str]:
     # if there is no 'action' attribute, then this is a test payload
     # and we should ignore it
-    event = request.META['HTTP_X_GITLAB_EVENT']
+    event = request.META.get('HTTP_X_GITLAB_EVENT')
+    if event is None:
+        # Suppress events from old versions of GitLab that don't set
+        # this header.  TODO: We probably want a more generic solution
+        # to this category of issue that throws a 40x error to the
+        # user, e.g. some sort of InvalidWebhookRequest exception.
+        return None
     if event in ['Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
         action = payload['object_attributes'].get('action')
         if action is None:
