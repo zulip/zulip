@@ -36,5 +36,6 @@ Subsystems Documentation
    documentation
    conversion
    input-pills
+   presence
    unread_messages
    user-docs
