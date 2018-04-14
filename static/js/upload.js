@@ -24,7 +24,6 @@ exports.options = function (config) {
     var send_status_close;
     var error_msg;
     var upload_bar;
-    var should_hide_upload_status;
     var file_input;
 
     switch (config.mode) {
@@ -50,41 +49,29 @@ exports.options = function (config) {
         throw Error("Invalid upload mode!");
     }
 
-    var maybe_hide_upload_status = function () {
-        // The first time `maybe_hide_upload_status`, it will not hide the
-        // status; the second time it will. This guarantees that whether
-        // `progressUpdated` or `uploadFinished` is called first, the status
-        // is hidden only after the animation is finished.
-        if (should_hide_upload_status) {
-            setTimeout(function () {
-                send_button.prop("disabled", false);
-                send_status.removeClass("alert-info").hide();
-                $("#" + upload_bar).parent().remove();
-            }, 500);
-        } else {
-            should_hide_upload_status = true;
-        }
+    var hide_upload_status = function () {
+        setTimeout(function () {
+            send_button.prop("disabled", false);
+            send_status.removeClass("alert-info").hide();
+            $("#" + upload_bar).parent().remove();
+        }, 500);
     };
 
     var drop = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', function () {
-            maybe_hide_upload_status();
+            hide_upload_status();
             compose.abort_xhr();
         });
         error_msg.html($("<p>").text(i18n.t("Uploading…")));
         send_status.append('<div class="progress active">' +
                            '<div class="bar" id="' + upload_bar + '" style="width: 0"></div>' +
                            '</div>');
-        should_hide_upload_status = false;
     };
 
     var progressUpdated = function (i, file, progress) {
         $("#" + upload_bar).width(progress + "%");
-        if (progress === 100) {
-            maybe_hide_upload_status();
-        }
     };
 
     var uploadError = function (error_code, server_response, file) {
@@ -146,7 +133,7 @@ exports.options = function (config) {
         }
         compose_ui.autosize_textarea();
 
-        maybe_hide_upload_status();
+        hide_upload_status();
 
         // In order to upload the same file twice in a row, we need to clear out
         // the file input element, so that the next time we use the file dialog,
