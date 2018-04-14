@@ -66,7 +66,7 @@ exports.options = function (config) {
         }
     };
 
-    var uploadStarted = function () {
+    var drop = function () {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', function () {
@@ -169,7 +169,7 @@ exports.options = function (config) {
             csrfmiddlewaretoken: csrf_token,
         },
         raw_droppable: ['text/uri-list', 'text/plain'],
-        drop: uploadStarted,
+        drop: drop,
         progressUpdated: progressUpdated,
         error: uploadError,
         uploadFinished: uploadFinished,
@@ -189,7 +189,7 @@ exports.options = function (config) {
 if (window.bridge) {
     var opts = exports.options({ mode: "compose" });
 
-    exports.uploadStarted = opts.drop;
+    exports.drop = opts.drop;
     exports.progressUpdated = opts.progressUpdated;
     exports.uploadError = opts.error;
     exports.uploadFinished = opts.uploadFinished;
