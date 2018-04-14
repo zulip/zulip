@@ -33,13 +33,14 @@ var upload_opts = upload.options({ mode: "compose" });
     };
     $("#compose-error-msg").html('');
     var test_html = '<div class="progress active">' +
-                    '<div class="bar" id="compose-upload-bar" style="width: 0"></div>' +
+                    '<div class="bar" id="compose-upload-bar-1549958107000" style="width: 0"></div>' +
                     '</div>';
     $("#compose-send-status").append = function (html) {
         assert.equal(html, test_html);
     };
 
     upload_opts.drop();
+    upload_opts.uploadStarted(0, {lastModified: 1549958107000}, 1);
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -49,11 +50,11 @@ var upload_opts = upload.options({ mode: "compose" });
 
 (function test_progress_updated() {
     var width_update_checked = false;
-    $("#compose-upload-bar").width = function (width_percent) {
+    $("#compose-upload-bar-1549958107000").width = function (width_percent) {
         assert.equal(width_percent, '39%');
         width_update_checked = true;
     };
-    upload_opts.progressUpdated(1, '', 39);
+    upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 39);
     assert(width_update_checked);
 }());
 
@@ -64,7 +65,7 @@ var upload_opts = upload.options({ mode: "compose" });
         $("#compose-send-button").attr("disabled", 'disabled');
         $("#compose-error-msg").text('');
 
-        $("#compose-upload-bar").parent = function () {
+        $("#compose-upload-bar-1549958107000").parent = function () {
             return { remove: function () {} };
         };
     }
@@ -78,6 +79,7 @@ var upload_opts = upload.options({ mode: "compose" });
 
     function test(err, msg, server_response=null, file={}) {
         setup_test();
+        file.lastModified = 1549958107000;
         upload_opts.error(err, server_response, file);
         assert_side_effects(msg);
     }
@@ -132,6 +134,10 @@ var upload_opts = upload.options({ mode: "compose" });
                 assert.equal(elem, $('#file_input'));
                 file_input_clear = true;
             };
+
+            $("#compose-upload-bar-1549958107000").parent = function () {
+                return { remove: function () {$('div.progress.active').length = 0;} };
+            };
         }
 
         function assert_side_effects() {
@@ -150,13 +156,13 @@ var upload_opts = upload.options({ mode: "compose" });
             func();
         });
 
-        $("#compose-upload-bar").width = function (width_percent) {
+        $("#compose-upload-bar-1549958107000").width = function (width_percent) {
             assert.equal(width_percent, '100%');
         };
 
         setup();
-        upload_opts.uploadFinished(i, {}, response);
-        upload_opts.progressUpdated(1, '', 100);
+        upload_opts.uploadFinished(i, {lastModified: 1549958107000}, response);
+        upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 100);
         assert_side_effects();
     }
 
