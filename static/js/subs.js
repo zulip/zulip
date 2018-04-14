@@ -419,6 +419,18 @@ exports.actually_filter_streams = function () {
 
 var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
+// Make it explicit that our toggler is not created right away.
+exports.toggler = undefined;
+
+function maybe_select_tab(tab_name) {
+    if (!exports.toggler) {
+        blueslip.warn('We tried to go to a tab before setup completed: ' + tab_name);
+        return;
+    }
+
+    exports.toggler.goto(tab_name);
+}
+
 exports.setup_page = function (callback) {
     // We should strongly consider only setting up the page once,
     // but I am writing these comments write before a big release,
@@ -434,7 +446,7 @@ exports.setup_page = function (callback) {
     // continue the strategy that we re-render everything from scratch.
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
-        var stream_filter_toggle = components.toggle({
+        exports.toggler = components.toggle({
             name: "stream-filter-toggle",
             values: [
                 { label: i18n.t("Subscribed"), key: "subscribed" },
@@ -455,10 +467,11 @@ exports.setup_page = function (callback) {
                 exports.actually_filter_streams();
                 remove_temporarily_miscategorized_streams();
             },
-        }).get();
+        });
 
         if (should_list_all_streams()) {
-            $("#subscriptions_table .search-container").prepend(stream_filter_toggle);
+            var toggler_elem = exports.toggler.get();
+            $("#subscriptions_table .search-container").prepend(toggler_elem);
         }
 
         // show the "Stream settings" header by default.
@@ -546,9 +559,9 @@ exports.change_state = (function () {
             if (hash.arguments[0] === "new") {
                 exports.new_stream_clicked();
             } else if (hash.arguments[0] === "all") {
-                components.toggle.lookup("stream-filter-toggle").goto("all-streams");
+                maybe_select_tab("all-streams");
             } else if (hash.arguments[0] === "subscribed") {
-                components.toggle.lookup("stream-filter-toggle").goto("subscribed");
+                maybe_select_tab("subscribed");
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
                 var stream_row = row_for_stream_id(hash.arguments[0]);
