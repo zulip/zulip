@@ -27,7 +27,6 @@ exports.toggler = undefined;
 
 function _setup_info_overlay() {
     var opts = {
-        name: "info-overlay-toggle",
         selected: 0,
         child_wants_focus: true,
         values: [

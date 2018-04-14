@@ -125,7 +125,6 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
 
     var widget;
     widget = components.toggle({
-        name: "info-overlay-toggle",
         selected: 0,
         values: [
             { label: i18n.t("Keyboard shortcuts"), key: "keyboard-shortcuts" },
@@ -157,7 +156,7 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
 
     callback_args = undefined;
 
-    components.toggle.lookup("info-overlay-toggle").goto('markdown-help');
+    widget.goto('markdown-help');
     assert.equal(focused_tab, 1);
     assert.equal(tabs[0].class, 'first');
     assert.equal(tabs[1].class, 'middle selected');

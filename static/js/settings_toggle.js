@@ -12,7 +12,6 @@ exports.highlight_toggle = function (tab_name) {
 
 exports.create_toggler = function () {
     toggler = components.toggle({
-        name: "settings-toggle",
         values: [
             { label: i18n.t("Settings"), key: "settings" },
             { label: i18n.t("Organization"), key: "organization" },
