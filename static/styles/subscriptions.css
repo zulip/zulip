@@ -762,6 +762,10 @@ form#add_new_subscription {
     margin: 8px 0px;
 }
 
+.add-user-list-filter {
+    width: calc(100% - 10px);
+}
+
 #stream_creation_form {
     margin: 0px;
 }
