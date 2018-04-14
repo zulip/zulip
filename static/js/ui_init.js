@@ -270,6 +270,7 @@ $(function () {
     notifications.initialize();
     gear_menu.initialize();
     settings_sections.initialize();
+    settings_toggle.initialize();
     hashchange.initialize();
     pointer.initialize();
     unread_ui.initialize();
