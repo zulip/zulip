@@ -1,0 +1,11 @@
+{
+    "env": {
+        "node": true,
+        "es6": true
+    },
+    "parserOptions": { "ecmaVersion": 2018 },
+    "rules": {
+        "no-sync": 0,
+        "prefer-const": "error"
+    }
+}

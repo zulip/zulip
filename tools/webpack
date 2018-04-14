@@ -27,14 +27,14 @@ def run():
 
 def run_watch(host, port, minify, disable_host_check):
     # type: (str, str, bool, bool) -> None
-    """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
-    webpack_args += ['--config', 'tools/webpack.config.ts', '--port', port, "--host", host]
+    """watches and rebuilds on changes, serving files from memory via webpack-dev-server
+    and restarts webpack process on webpack config changes"""
+    webpack_dev_args = ['./tools/webpack-dev', '--port', port, "--host", host]
     if minify:
-        webpack_args.append('--optimize-minimize')
+        webpack_dev_args.append('--optimize-minimize')
     if disable_host_check:
-        webpack_args.append('--disable-host-check')
-    subprocess.Popen(webpack_args)
+        webpack_dev_args.append('--disable-host-check')
+    subprocess.Popen(webpack_dev_args)
 
 def run_test():
     # type: () -> None
