@@ -95,6 +95,7 @@ exports.toggle = (function () {
                 },
             });
 
+            // We should arguably default opts.selected to 0.
             if (typeof opts.selected === "number") {
                 select_tab(opts.selected);
             }

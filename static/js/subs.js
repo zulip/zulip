@@ -420,6 +420,19 @@ exports.actually_filter_streams = function () {
 var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
 exports.setup_page = function (callback) {
+    // We should strongly consider only setting up the page once,
+    // but I am writing these comments write before a big release,
+    // so it's too risky a change for now.
+    //
+    // The history behind setting up the page from scratch every
+    // time we go into "Manage Streams" is that we used to have
+    // some live-update issues, so being able to re-launch the
+    // streams page is kind of a workaround for those bugs, since
+    // we will re-populate the widget.
+    //
+    // For now, every time we go back into the widget we'll
+    // continue the strategy that we re-render everything from scratch.
+    // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
         var stream_filter_toggle = components.toggle({
             name: "stream-filter-toggle",
@@ -427,6 +440,7 @@ exports.setup_page = function (callback) {
                 { label: i18n.t("Subscribed"), key: "subscribed" },
                 { label: i18n.t("All streams"), key: "all-streams" },
             ],
+            selected: 0,
             callback: function (value, key) {
                 // if you aren't on a particular stream (`streams/:id/:name`)
                 // then redirect to `streams/all` when you click "all-streams".
