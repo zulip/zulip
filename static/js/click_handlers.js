@@ -762,34 +762,6 @@ $(function () {
 
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
-
-    (i18n.ensure_i18n(function () {
-        var settings_toggle = components.toggle({
-            name: "settings-toggle",
-            values: [
-                { label: i18n.t("Settings"), key: "settings" },
-                { label: i18n.t("Organization"), key: "organization" },
-            ],
-            callback: function (name, key, payload) {
-                $(".sidebar li").hide();
-
-                if (key === "organization") {
-                    $("li.admin").show();
-                    if (!payload.dont_switch_tab) {
-                        $("li[data-section='organization-profile']").click();
-                    }
-                } else {
-                    $(".settings-list li:not(.admin)").show();
-                    if (!payload.dont_switch_tab) {
-                        $("li[data-section='your-account']").click();
-                    }
-                }
-            },
-        }).get();
-
-        $("#settings_overlay_container .tab-container")
-            .append(settings_toggle);
-    }));
 });
 
 return exports;

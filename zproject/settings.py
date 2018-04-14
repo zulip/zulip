@@ -1093,6 +1093,7 @@ JS_SPECS = {
             'js/ui_util.js',
             'js/pointer.js',
             'js/click_handlers.js',
+            'js/settings_toggle.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',
             'js/copy_and_paste.js',
