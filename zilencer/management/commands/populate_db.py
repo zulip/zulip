@@ -25,6 +25,7 @@ from zerver.models import CustomProfileField, DefaultStream, Message, Realm, Rea
     UserMessage, UserPresence, UserProfile, clear_database, \
     email_to_username, get_client, get_huddle, get_realm, get_stream, \
     get_system_bot, get_user, get_user_profile_by_id
+from analytics.models import StreamCount
 
 settings.TORNADO_SERVER = None
 # Disable using memcached caches to avoid 'unsupported pickle
@@ -209,16 +210,27 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
-                "Verona": {"description": "A city in Italy", "invite_only": False},
-                "Denmark": {"description": "A Scandinavian country", "invite_only": False},
-                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
-                "Venice": {"description": "A northeastern Italian city", "invite_only": False},
+                "Verona": {"description": "A city in Italy", "invite_only": False,
+                           "date_created": timezone_now() - timezone_timedelta(days = 100)},
+                "Denmark": {"description": "A Scandinavian country", "invite_only": False,
+                            "date_created": timezone_now() - timezone_timedelta(days = 80)},
+                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False,
+                             "date_created": timezone_now() - timezone_timedelta(days = 90)},
+                "Venice": {"description": "A northeastern Italian city", "invite_only": False,
+                           "date_created": timezone_now() - timezone_timedelta(days = 110)},
                 "Rome": {"description": "Yet another Italian city", "invite_only": False}
             }  # type: Dict[Text, Dict[Text, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list]  # type: List[int]
+
+            # Populate db for non zero Average Weekly Traffic
+            for stream_id in recipient_streams:
+                StreamCount.objects.create(
+                    property='messages_in_stream:is_bot:day',
+                    subgroup="true", end_time=timezone_now(),
+                    value=random.randint(1, 101), stream_id=stream_id, realm=zulip_realm)
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list

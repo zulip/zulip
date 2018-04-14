@@ -4,6 +4,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.models import Realm, Stream, UserProfile, Huddle, \
     Subscription, Recipient, Client, RealmAuditLog, get_huddle_hash
 from zerver.lib.create_user import create_user_profile
+from django.utils.timezone import now as timezone_now
 
 def bulk_create_users(realm: Realm,
                       users_raw: Set[Tuple[Text, Text, Text, bool]],
@@ -66,10 +67,15 @@ def bulk_create_streams(realm: Realm,
     streams_to_create = []  # type: List[Stream]
     for name, options in stream_dict.items():
         if name.lower() not in existing_streams:
+            if "date_created" in options:
+                date_created = options["date_created"]
+            else:
+                date_created = timezone_now()
             streams_to_create.append(
                 Stream(
                     realm=realm, name=name, description=options["description"],
                     invite_only=options["invite_only"],
+                    date_created=date_created,
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 )
             )
