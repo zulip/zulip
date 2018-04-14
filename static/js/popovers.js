@@ -658,6 +658,7 @@ exports.register_click_handlers = function () {
             private_message_class: "compose_private_message",
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
+            is_admin: user.is_admin,
             is_sender_popover: false,
         };
 
