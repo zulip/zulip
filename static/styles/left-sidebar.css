@@ -79,8 +79,8 @@
     width: 100%;
 }
 
-.stream-list-filter {
-    margin-left: 1ex;
+.input-append input[type=text].stream-list-filter {
+    margin-left: 10px;
 }
 
 #global_filters li:hover,

@@ -208,8 +208,3 @@
     border-bottom: 1px solid hsl(0, 0%, 88%);
     margin-right: 10px;
 }
-
-.user-list-filter,
-.add-user-list-filter {
-    width: 80%;
-}
