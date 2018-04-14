@@ -546,7 +546,7 @@
                            index: e.target.index };
 
         do_xhr(fileName, fileData, file.type, extra_opts, "", finished_callback, on_error);
-
+        opts.uploadStarted(index, file, files_count);
       };
 
       // Initiate the processing loop
