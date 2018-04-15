@@ -2811,18 +2811,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
 
         do_soft_activate_users([long_term_idle_user])
         self.subscribe(long_term_idle_user, stream_name)
-        self.unsubscribe(long_term_idle_user, stream_name)
-        send_fake_message('Test Message 9', stream)
-        # Send a (not fake) message to another stream that the user is
-        # subscribed to so that their last_active_message_id field will
-        # be greater than the event_last_message_id of the unsubscription.
-        other_stream_name = 'Verona'
-        self.subscribe(long_term_idle_user, other_stream_name)
+        # Send a real message to update last_active_message_id
         sent_message_id = self.send_stream_message(
-            sender.email, other_stream_name, 'Test Message 10')
+            sender.email, stream_name, 'Test Message 9')
+        self.unsubscribe(long_term_idle_user, stream_name)
         # Soft deactivate and send another message to the unsubscribed stream.
         do_soft_deactivate_users([long_term_idle_user])
-        send_fake_message('Test Message 11', stream)
+        send_fake_message('Test Message 10', stream)
 
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
@@ -2844,13 +2839,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         private_stream = self.make_stream('Core', invite_only=True)
         self.subscribe(self.example_user("iago"), stream_name)
         sent_message_list = []
-        send_fake_message('Test Message 12', private_stream)
+        send_fake_message('Test Message 11', private_stream)
         self.subscribe(self.example_user("hamlet"), stream_name)
-        sent_message_list.append(send_fake_message('Test Message 13', private_stream))
+        sent_message_list.append(send_fake_message('Test Message 12', private_stream))
         self.unsubscribe(long_term_idle_user, stream_name)
-        send_fake_message('Test Message 14', private_stream)
+        send_fake_message('Test Message 13', private_stream)
         self.subscribe(long_term_idle_user, stream_name)
-        sent_message_list.append(send_fake_message('Test Message 15', private_stream))
+        sent_message_list.append(send_fake_message('Test Message 14', private_stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
