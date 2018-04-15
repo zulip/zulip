@@ -833,7 +833,7 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
             zerver_usermessage.append(usermessage)
     return usermessage_id
 
-def do_convert_data(slack_zip_file: str, output_dir: str, token: str) -> None:
+def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
     domain_name = settings.EXTERNAL_HOST
@@ -873,16 +873,16 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str) -> None:
 
     emoji_folder = os.path.join(output_dir, 'emoji')
     os.makedirs(emoji_folder, exist_ok=True)
-    emoji_records = process_emojis(realm['zerver_realmemoji'], emoji_folder, emoji_url_map)
+    emoji_records = process_emojis(realm['zerver_realmemoji'], emoji_folder, emoji_url_map, threads)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
 
     uploads_folder = os.path.join(output_dir, 'uploads')
     os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
-    uploads_records = process_uploads(uploads_list, uploads_folder)
+    uploads_records = process_uploads(uploads_list, uploads_folder, threads)
     attachment = {"zerver_attachment": zerver_attachment}
 
     # IO realm.json
@@ -906,7 +906,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str) -> None:
     logging.info("Zulip data dump created at %s" % (output_dir))
 
 def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
-                   emoji_url_map: ZerverFieldsT) -> List[ZerverFieldsT]:
+                   emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
     """
     This function gets the custom emojis and saves in the output emoji folder
     """
@@ -943,14 +943,14 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_emojis, upload_emoji_list):
+    for (status, job) in run_parallel(get_emojis, upload_emoji_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records
 
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
-                    realm_id: int) -> List[ZerverFieldsT]:
+                    realm_id: int, threads: int) -> List[ZerverFieldsT]:
     """
     This function gets the avatar of size 512 px and saves it in the
     user's avatar directory with both the extensions
@@ -990,13 +990,14 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list):
+    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
 
-def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[ZerverFieldsT]:
+def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
+                    threads: int) -> List[ZerverFieldsT]:
     """
     This function gets the uploads and saves it in the realm's upload directory
     """
@@ -1022,7 +1023,7 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[Z
 
     # Run downloads parallely
     output = []
-    for (status, job) in run_parallel(get_uploads, upload_url_list):
+    for (status, job) in run_parallel(get_uploads, upload_url_list, threads=threads):
         output.append(job)
 
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')

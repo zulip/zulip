@@ -6,7 +6,7 @@ import tempfile
 import shutil
 from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand, CommandParser, CommandError
 
 from zerver.lib.slack_data_to_zulip_data import do_convert_data
 
@@ -24,6 +24,13 @@ class Command(BaseCommand):
         parser.add_argument('--output', dest='output_dir',
                             action="store", default=None,
                             help='Directory to write exported data to.')
+
+        parser.add_argument('--threads',
+                            dest='threads',
+                            action="store",
+                            default=6,
+                            help='Threads to use in exporting UserMessage objects in parallel')
+
         parser.formatter_class = argparse.RawTextHelpFormatter
 
     def handle(self, *args: Any, **options: Any) -> None:
@@ -38,10 +45,14 @@ class Command(BaseCommand):
             print("Enter slack legacy token!")
             exit(1)
 
+        num_threads = int(options['threads'])
+        if num_threads < 1:
+            raise CommandError('You must have at least one thread.')
+
         for path in options['slack_data_zip']:
             if not os.path.exists(path):
                 print("Slack data directory not found: '%s'" % (path,))
                 exit(1)
 
             print("Converting Data ...")
-            do_convert_data(path, output_dir, token)
+            do_convert_data(path, output_dir, token, threads=num_threads)
