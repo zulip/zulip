@@ -20,6 +20,7 @@ from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
+from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.upload import random_name, sanitize_name
@@ -978,20 +979,31 @@ def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[Z
     """
     This function gets the uploads and saves it in the realm's upload directory
     """
-    logging.info('######### GETTING ATTACHMENTS #########\n')
-    logging.info('DOWNLOADING ATTACHMENTS .......\n')
-    session = requests.session()
-    for upload in upload_list:
-        upload_url = upload['path']
-        upload_s3_path = upload['s3_path']
+    def get_uploads(upload: List[str]) -> int:
+        upload_url = upload[0]
+        upload_path = upload[1]
+        upload_path = os.path.join(upload_dir, upload_path)
 
-        upload_path = os.path.join(upload_dir, upload_s3_path)
-        response = session.get(upload_url, stream=True)
+        response = requests.get(upload_url, stream=True)
         os.makedirs(os.path.dirname(upload_path), exist_ok=True)
         with open(upload_path, 'wb') as upload_file:
             shutil.copyfileobj(response.raw, upload_file)
+        return 0
 
+    logging.info('######### GETTING ATTACHMENTS #########\n')
+    logging.info('DOWNLOADING ATTACHMENTS .......\n')
+    upload_url_list = []
+    for upload in upload_list:
+        upload_url = upload['path']
+        upload_s3_path = upload['s3_path']
+        upload_url_list.append([upload_url, upload_s3_path])
         upload['path'] = upload_s3_path
+
+    # Run downloads parallely
+    output = []
+    for (status, job) in run_parallel(get_uploads, upload_url_list):
+        output.append(job)
+
     logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
     return upload_list
 
