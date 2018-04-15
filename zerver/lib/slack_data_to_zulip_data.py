@@ -910,7 +910,19 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
     """
     This function gets the custom emojis and saves in the output emoji folder
     """
+    def get_emojis(upload: List[str]) -> int:
+        slack_emoji_url = upload[0]
+        emoji_path = upload[1]
+        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
+
+        response = requests.get(slack_emoji_url, stream=True)
+        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
+        with open(upload_emoji_path, 'wb') as emoji_file:
+            shutil.copyfileobj(response.raw, emoji_file)
+        return 0
+
     emoji_records = []
+    upload_emoji_list = []
     logging.info('######### GETTING EMOJIS #########\n')
     logging.info('DOWNLOADING EMOJIS .......\n')
     for emoji in zerver_realmemoji:
@@ -919,11 +931,7 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
             realm_id=emoji['realm'],
             emoji_file_name=emoji['name'])
 
-        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
-        response = requests.get(slack_emoji_url, stream=True)
-        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-        with open(upload_emoji_path, 'wb') as emoji_file:
-            shutil.copyfileobj(response.raw, emoji_file)
+        upload_emoji_list.append([slack_emoji_url, emoji_path])
 
         emoji_record = dict(emoji)
         emoji_record['path'] = emoji_path
@@ -932,6 +940,12 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
         emoji_record.pop('realm')
 
         emoji_records.append(emoji_record)
+
+    # Run downloads parallely
+    output = []
+    for (status, job) in run_parallel(get_emojis, upload_emoji_list):
+        output.append(job)
+
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records
 
