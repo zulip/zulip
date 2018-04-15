@@ -452,7 +452,8 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
 def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
     @wraps(view_func)
-    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any,
+                           **kwargs: Any) -> HttpResponse:
         if not user_profile.is_staff:
             raise JsonableError(_("Must be an server administrator"))
         return view_func(request, user_profile, *args, **kwargs)

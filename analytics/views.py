@@ -26,9 +26,10 @@ from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
     RealmCount, StreamCount, UserCount, last_successful_fill
-from zerver.decorator import require_server_admin, \
+from zerver.decorator import require_server_admin, require_server_admin_api, \
     to_non_negative_int, to_utc_datetime, zulip_login_required
 from zerver.lib.exceptions import JsonableError
+from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.timestamp import ceiling_to_day, \
@@ -36,17 +37,48 @@ from zerver.lib.timestamp import ceiling_to_day, \
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
-@zulip_login_required
-def stats(request: HttpRequest) -> HttpResponse:
+def render_stats(request: HttpRequest, realm: Realm) -> HttpRequest:
+    page_params = dict(
+        is_staff        = request.user.is_staff,
+        stats_realm     = realm.string_id,
+        debug_mode      = False,
+    )
+
     return render(request,
                   'analytics/stats.html',
-                  context=dict(realm_name = request.user.realm.name))
+                  context=dict(target_realm_name=realm.name,
+                               page_params=JSONEncoderForHTML().encode(page_params)))
+
+@zulip_login_required
+def stats(request: HttpRequest) -> HttpResponse:
+    realm = request.user.realm
+    return render_stats(request, realm)
+
+@require_server_admin
+@has_request_variables
+def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
+    realm = get_realm(realm_str)
+    if realm is None:
+        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+
+    return render_stats(request, realm)
+
+@require_server_admin_api
+@has_request_variables
+def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
+                             realm_str: str, **kwargs: Any) -> HttpResponse:
+    realm = get_realm(realm_str)
+    if realm is None:
+        raise JsonableError(_("Invalid organization"))
+
+    return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
 
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: Text=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                    start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
-                   end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None)) -> HttpResponse:
+                   end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
+                   realm: Optional[Realm]=None) -> HttpResponse:
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
@@ -88,7 +120,8 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
 
-    realm = user_profile.realm
+    if realm is None:
+        realm = user_profile.realm
     if start is None:
         start = realm.date_created
     if end is None:

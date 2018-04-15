@@ -24,6 +24,24 @@ class TestStatsEndpoint(ZulipTestCase):
         # Check that we get something back
         self.assert_in_response("Zulip analytics for", result)
 
+    def test_stats_for_realm(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/stats/realm/zulip/')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+
+        result = self.client_get('/stats/realm/not_existing_realm/')
+        self.assertEqual(result.status_code, 302)
+
+        result = self.client_get('/stats/realm/zulip/')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Zulip analytics for", result)
+
 class TestGetChartData(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm('zulip')
@@ -232,6 +250,28 @@ class TestGetChartData(ZulipTestCase):
             result = self.client_get('/json/analytics/chart_data',
                                      {'chart_name': 'number_of_humans'})
         self.assert_json_error_contains(result, 'No analytics data available')
+
+    def test_get_chart_data_for_realm(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/json/analytics/chart_data/realm/zulip/',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_error(result, "Must be an server administrator", 400)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+        stat = COUNT_STATS['realm_active_humans::day']
+        self.insert_data(stat, [None], [])
+
+        result = self.client_get('/json/analytics/chart_data/realm/not_existing_realm',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_error(result, 'Invalid organization', 400)
+
+        result = self.client_get('/json/analytics/chart_data/realm/zulip',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_success(result)
 
 class TestGetChartDataHelpers(ZulipTestCase):
     # last_successful_fill is in analytics/models.py, but get_chart_data is

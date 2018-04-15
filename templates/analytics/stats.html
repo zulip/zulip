@@ -1,5 +1,11 @@
 {% extends "zerver/base.html" %}
 
+{% block page_params %}
+<script type="text/javascript">
+    var page_params = {{ page_params|safe }};
+</script>
+{% endblock %}
+
 {% block customhead %}
 {% stylesheet 'portico' %}
 {% endblock %}
@@ -14,7 +20,7 @@
     <div class="page-content">
         <div id="id_stats_errors" class="alert alert-error"></div>
         <div class="center-charts">
-            <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ realm_name }}{% endtrans %}</h1>
+            <h1 class="analytics-page-header">{% trans %}Zulip analytics for {{ target_realm_name }}{% endtrans %}</h1>
 
             <div class="left">
                 <div class="chart-container">
