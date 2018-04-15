@@ -492,6 +492,36 @@ var event_fixtures = {
             {id: 2, name: 'hobbies', type: 1},
         ],
     },
+    user_group__add: {
+        type: 'user_group',
+        op: 'add',
+        group: {
+            name: 'Mobile',
+            id: '1',
+            members: [1],
+        },
+    },
+    user_group__add_members: {
+        type: 'user_group',
+        op: 'add_members',
+        group_id: 1,
+        user_ids: [2],
+    },
+    user_group__remove_members: {
+        type: 'user_group',
+        op: 'remove_members',
+        group_id: 3,
+        user_ids: [99, 100],
+    },
+    user_group__update: {
+        type: 'user_group',
+        op: 'update',
+        group_id: 3,
+        data: {
+            name: 'Frontend',
+            description: 'All Frontend people',
+        },
+    },
 };
 
 function assert_same(actual, expected) {
@@ -510,6 +540,46 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(global.alert_words.words, ['fire', 'lunch']);
 
+});
+
+with_overrides(function (override) {
+    // User groups
+    var event = event_fixtures.user_group__add;
+    override('settings_user_groups.reload', noop);
+    global.with_stub(function (stub) {
+        override('user_groups.add', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group');
+        assert_same(args.group, event.group);
+    });
+
+    event = event_fixtures.user_group__add_members;
+    global.with_stub(function (stub) {
+        override('user_groups.add_members', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group_id', 'user_ids');
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.user_ids, event.user_ids);
+    });
+
+    event = event_fixtures.user_group__remove_members;
+    global.with_stub(function (stub) {
+        override('user_groups.remove_members', stub.f);
+        dispatch(event);
+        var args = stub.get_args('group_id', 'user_ids');
+        assert_same(args.group_id, event.group_id);
+        assert_same(args.user_ids, event.user_ids);
+    });
+
+    event = event_fixtures.user_group__update;
+    global.with_stub(function (stub) {
+        override('user_groups.update', stub.f);
+        dispatch(event);
+        var args = stub.get_args('event');
+        assert_same(args.event.group_id, event.group_id);
+        assert_same(args.event.data.name, event.data.name);
+        assert_same(args.event.data.description, event.data.description);
+    });
 });
 
 with_overrides(function (override) {
