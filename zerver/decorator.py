@@ -449,6 +449,15 @@ def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
         return add_logging_data(view_func)(request, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
+def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
+    @zulip_login_required
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any, **kwargs: Any) -> HttpResponse:
+        if not user_profile.is_staff:
+            raise JsonableError(_("Must be an server administrator"))
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # authenticated_api_view will add the authenticated user's
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
