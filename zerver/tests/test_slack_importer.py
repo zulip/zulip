@@ -104,28 +104,6 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_zerver_realm_dict['name'], realm_subdomain)
         self.assertEqual(test_zerver_realm_dict['date_created'], time)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_avatar")
-    @mock.patch("os.stat")
-    def test_user_avatars(self, mock_get_avatar: mock.Mock, mock_os: mock.Mock) -> None:
-        avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format('T5YFFM2QY', 'U6006P1CN',
-                                                                 'gd41c3c33cbe')
-        self.assertEqual(build_avatar_url('U6006P1CN', 'T5YFFM2QY', 'gd41c3c33cbe'), avatar_url)
-
-        avatar_list = []  # type: List[Dict[str, Any]]
-        timestamp = int(timezone_now().timestamp())
-        build_avatar(1, 1, 'email', avatar_url, timestamp, avatar_list)
-        self.assertEqual(avatar_list[0]['path'], avatar_url)
-        self.assertEqual(avatar_list[0]['s3_path'], '')
-        self.assertEqual(avatar_list[0]['user_profile_id'], 1)
-
-        avatar_list = process_avatars(avatar_list, './avatar_dir', 3)
-        avatar_hash = user_avatar_path_from_ids(1, 3)
-        image_path = ('%s/%s.png' % ('./avatar_dir', avatar_hash))
-        original_image_path = ('%s/%s.original' % ('./avatar_dir', avatar_hash))
-
-        self.assertEqual(avatar_list[0]['path'], image_path)
-        self.assertEqual(avatar_list[1]['path'], original_image_path)
-
     def test_get_admin(self) -> None:
         user_data = [{'is_admin': True, 'is_owner': False, 'is_primary_owner': False},
                      {'is_admin': True, 'is_owner': True, 'is_primary_owner': False},

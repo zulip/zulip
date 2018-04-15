@@ -956,9 +956,21 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
     user's avatar directory with both the extensions
     '.png' and '.original'
     """
+    def get_avatar(avatar_upload_list: List[str]) -> int:
+        # get avatar of size 512
+        slack_avatar_url = avatar_upload_list[0]
+        image_path = avatar_upload_list[1]
+        original_image_path = avatar_upload_list[2]
+        response = requests.get(slack_avatar_url + '-512', stream=True)
+        with open(image_path, 'wb') as image_file:
+            shutil.copyfileobj(response.raw, image_file)
+        shutil.copy(image_path, original_image_path)
+        return 0
+
     logging.info('######### GETTING AVATARS #########\n')
     logging.info('DOWNLOADING AVATARS .......\n')
     avatar_original_list = []
+    avatar_upload_list = []
     for avatar in avatar_list:
         avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
         slack_avatar_url = avatar['path']
@@ -967,27 +979,22 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
         image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
         original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
 
-        # Fetch the avatars from the url
-        get_avatar(slack_avatar_url, image_path, original_image_path)
-        image_size = os.stat(image_path).st_size
+        avatar_upload_list.append([slack_avatar_url, image_path, original_image_path])
 
         avatar['path'] = image_path
         avatar['s3_path'] = image_path
-        avatar['size'] = image_size
 
         avatar_original['path'] = original_image_path
         avatar_original['s3_path'] = original_image_path
-        avatar_original['size'] = image_size
         avatar_original_list.append(avatar_original)
+
+    # Run downloads parallely
+    output = []
+    for (status, job) in run_parallel(get_avatar, avatar_upload_list):
+        output.append(job)
+
     logging.info('######### GETTING AVATARS FINISHED #########\n')
     return avatar_list + avatar_original_list
-
-def get_avatar(slack_avatar_url: str, image_path: str, original_image_path: str) -> None:
-    # get avatar of size 512
-    response = requests.get(slack_avatar_url + '-512', stream=True)
-    with open(image_path, 'wb') as image_file:
-        shutil.copyfileobj(response.raw, image_file)
-    shutil.copy(image_path, original_image_path)
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str) -> List[ZerverFieldsT]:
     """
