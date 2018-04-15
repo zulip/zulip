@@ -20,7 +20,8 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, delete_message_image, LocalUploadBackend, \
-    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar
+    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
+    resize_emoji, BadImageError
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -29,7 +30,7 @@ from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
-
+from zerver.lib.request import JsonableError
 from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
@@ -834,6 +835,30 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             with self.settings(MAX_AVATAR_FILE_SIZE=0):
                 result = self.client_post("/json/users/me/avatar", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
+
+    def tearDown(self) -> None:
+        destroy_uploads()
+
+class EmojiTest(UploadSerializeMixin, ZulipTestCase):
+    def test_resize_emoji(self) -> None:
+        # Test unequal width and height of animated GIF image
+        animated_unequal_img_data = open(get_test_image_file('animated_unequal_img.gif').name, 'rb').read()
+        with self.assertRaises(JsonableError):
+            resize_emoji(animated_unequal_img_data)
+
+        # Test for large image (128x128)
+        animated_large_img_data = open(get_test_image_file('animated_large_img.gif').name, 'rb').read()
+        with self.assertRaises(JsonableError):
+            resize_emoji(animated_large_img_data)
+
+        # Test for no resize case
+        animated_img_data = open(get_test_image_file('animated_img.gif').name, 'rb').read()
+        self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
+
+        # Test corrupt image exception
+        corrupted_img_data = open(get_test_image_file('corrupt.gif').name, 'rb').read()
+        with self.assertRaises(BadImageError):
+            resize_emoji(corrupted_img_data)
 
     def tearDown(self) -> None:
         destroy_uploads()
