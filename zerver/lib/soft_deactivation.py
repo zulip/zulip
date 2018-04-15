@@ -119,7 +119,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub['recipient__type_id']]
         if (stream_subscription_logs[-1].event_type == 'subscription_deactivated' and
-                stream_subscription_logs[-1].event_last_message_id < user_profile.last_active_message_id):
+                stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id):
             # We are going to short circuit this iteration as its no use
             # iterating since user unsubscribed before soft-deactivation
             continue
