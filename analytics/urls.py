@@ -11,6 +11,8 @@ i18n_urlpatterns = [
         name='analytics.views.get_realm_activity'),
     url(r'^user_activity/(?P<email>[\S]+)/$', analytics.views.get_user_activity,
         name='analytics.views.get_user_activity'),
+    url(r'^stats/realm/(?P<realm_str>[\S]+)/$', analytics.views.stats_for_realm,
+        name='analytics.views.stats_for_realm'),
 
     # User-visible stats page
     url(r'^stats$', analytics.views.stats,
@@ -29,6 +31,8 @@ v1_api_and_json_patterns = [
     # get data for the graphs at /stats
     url(r'^analytics/chart_data$', rest_dispatch,
         {'GET': 'analytics.views.get_chart_data'}),
+    url(r'^analytics/chart_data/realm/(?P<realm_str>[\S]+)$', rest_dispatch,
+        {'GET': 'analytics.views.get_chart_data_for_realm'}),
 ]
 
 i18n_urlpatterns += [

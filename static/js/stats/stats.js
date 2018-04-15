@@ -72,9 +72,17 @@ $(function () {
     });
 });
 
+
 function get_chart_data(data, callback) {
+    var url;
+    if (page_params.is_staff) {
+        url = '/json/analytics/chart_data/realm/' + page_params.stats_realm;
+    } else {
+        url = '/json/analytics/chart_data';
+    }
+
     $.get({
-        url: '/json/analytics/chart_data',
+        url: url,
         data: data,
         idempotent: true,
         success: function (data) {
