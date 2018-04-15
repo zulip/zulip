@@ -21,7 +21,7 @@ from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError
+    resize_emoji, BadImageError, get_realm_for_filename
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -1117,6 +1117,16 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
         medium_image_key = bucket.get_key(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
+
+    @use_s3_backend
+    def test_get_realm_for_filename(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
