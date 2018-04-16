@@ -129,16 +129,16 @@
 
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
-    padding: 1px 4px;
+    padding: 1px 4px 1px 4px;
     background: hsl(105, 2%, 50%);
     border-radius: 0px;
     color: hsl(0, 0%, 100%);
     font-size: 12px;
-    line-height: 13px;
+    line-height: 12px;
     font-weight: normal;
     letter-spacing: 0.6px;
     position: relative;
-    top: 3.5px;
+    top: 3px;
     border-radius: 4px;
 }
 

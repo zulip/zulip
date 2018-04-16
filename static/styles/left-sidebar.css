@@ -177,7 +177,6 @@ li.active-sub-filter {
     line-height: 12px;
     background: hsl(105, 2%, 50%);
     padding: 1px 4px;
-    border-radius: 0px;
     color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
@@ -316,6 +315,7 @@ ul.filters li.out_of_home_view li.muted_topic {
     line-height: 1.1;
     position: relative;
     width: 100%;
+    padding-right: 2px;
 }
 
 #stream_filters .subscription_block.stream-with-count {
