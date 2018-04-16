@@ -1,0 +1,518 @@
+0d164fa message_edit_form: Show default cursor instead of pointer.
+f4aea3e invite: Clarify variable names for rendered_email_msg.
+1207a08 CVE-2018-9987: Fix XSS issue with muting notifications.
+0259564 subscription: Fix error in appending current user on top of subscriber list.
+ed70a92 subscription: Fix error in being re-subscribed to private stream.
+24f5173 subscription: Add real time sync for user-just-deactivated case.
+386c56b stream_data.js: Replace user_email with user_id in func is_user_subscribed.
+47f9e83 compose: Close the compose error message box on clicking X.
+21d1133 subscriptions: Clear email address on unsubscriptions from stream.
+f15ddc9 create stream: Fix stream email not rendering on stream creation.
+e92838a registration: Catch email validation error and show error message.
+95634b9 ui: Add ability to hide ui feedback messages.
+605916f compose: Add subscribe button to the not subscribed stream error message.
+b12368a compose: Fix fading when topic changes on re-narrow.
+5a5b473 compose_actions: Keep the compose box open on topic change.
+b9acdd9 compose_state: Re-fade message list when switching topics.
+4216b81 Fix Subscribed/All Streams bug.
+27770d7 Fix recent pitfall in toggle component.
+53e47e6 messages: Modify access_message for is_history_public_to_subscribers.
+aeef925 custom fields: Fix error in rendering long textual custom fields.
+a613f3c get_owned_bot_dicts: Optimize admin's bot dicts loading from database.
+ee939f4 message_list: Fix unnecessary work re-rendering all_msg_list.
+e792fc6 spelling: Correctly write "cannot".
+b58cd46 profile: Fix field types on the frontend.
+e48f8bd check_short_string: Use check_capped_string for impl.
+7fdf043 profile: Set max length for long text to 500.
+1d4b744 check_short_string: Change max_length to 50.
+cd0871b Import script: Add id allocation functions.
+15d42f8 left sidebar: Fix "Compose" in stream actions popover prefills topic.
+9ce9c2f Extract info_overlay.js.
+90e10a1 components: Simplify toggle component.
+7885dd4 profile: Send field types to client side.
+f6fb885 profile: Send operation in the event.
+80ed829 Suppress local echo when we are not caught up.
+bcdd127 Ignore new messages when lists are behind.
+6dda3fe emoji: Do selective local echo of emoticon conversions.
+6279a9e message view: Hide "view source" and "quote" for deleted messages.
+43ec04d narrow: Fix a buggy condense_and_collapse call.
+97b90c1 condense: Re-condense all messages on window resize.
+3b29d00 setup-apt-repo: Fix use of shasum alias for sha1sum.
+954fcee stream_create: Make handlers more modular for users.
+e30b619 Fix leaky O(N) email hint handler.
+0b3b363 zilencer: Fix buggy RemotePushDeviceToken __str__.
+62c0d27 push_notifications: Handle errors with token reuse.
+886e77e subscription: Fix bug in display email hint popover on hover.
+917b214 subscription: Improve email-hint popover style.
+f900f95 message edit: show spinner on topic change.
+f4d660d custom profile data: Change size of textarea input field.
+b7f6dbf input-pill: Force words to break to prevent text overflow.
+af8271a message-view: Align controls and timestamps to the right on mobile.
+fcd2653 message editing: Fix buggy timestamp check.
+8535625 parse_user_agent: Assert user agent is not None.
+22ab571 org permissions: Extract logic to complete request data for subsection.
+e8bc781 Use message_list.all for backfill anchor for home view.
+2a178b5 logging: Suppress error mail from routine pika connection failures.
+4edf66f Track fetch status of initial home message load.
+c282b94 Track fetch status for initial narrow.
+0169a06 stream_data: Fix traceback with opening the compose box.
+679941b compose: Fix "compose fade" not working when private message focused.
+2cbfcbb subscription: Fix unexpected blueslip warnings on add subscriber.
+64dac1b Docs: Added "connect the zulip upstream repo" to more places.
+333b8b0 subscriptions: Use tooltips for stream info hover content.
+f2e8fff ifttt: Support topic as preferred alternative to subject.
+7485461 notifications: Check if localstorage is enabled.
+ae08028 subscriptions: Prevent long stream names from overflowing header area.
+b34b8cd hotspots: Fix real-time sync for dismissing hotspots.
+120ebc8 hotspots: Move the code for closing hotspot icon to hotspots.js.
+22071a4 antispam: Add a sitewide ratelimit on invites by new realms.
+c3f94fa stream_create: Fix use of "realm" in an error string.
+209c813 decorator: Improve error message for a deactivated organization.
+0e5c954 users: Fix error string for disposable email addresses.
+c147d2e notifications: Fix missed-message emails for presence-idle users.
+610f2cb notification email: Send followup_day2 email two days later.
+6ffe2cc compose: Fix "New Topic" button behaviour auto-populates the current topic.
+58c1427 message_fetch: Use found_oldest flag from server.
+a4a8527 search: Return info flags in payload.
+c6839e0 search: Fix num_after/num_before semantics precisely.
+bd95b37 search: Make `num_after`/`num_after` more consistent.
+5a9b1f8 drafts: Fix same day's timestamp when language is other than english.
+40958e0 emoji: Switch to 64px 256 color indexed sprite sheets.
+5eccb9f components: Add ":focus" styles to button classes.
+4631a2b Set REALM_HOSTS based on EXTERNAL_HOST if it is available.
+29c6d23 user profiles: Add copy-to-clipboard btn for long emails.
+a44255e emails: Add backend for disallowing disposable email addresses.
+41f8618 email: Use PyPi module for disposable email providers list.
+dc60b3a compose: Don't clear compose box on narrow if it matches compose.
+ef92fcb topic history: Fix fetching topic history of public streams.
+56b1239 populate_db: Include some initial data for custom profile fields.
+02b8453 custom profiles: Send custom profile data to frontend.
+6d64fd6 custom profile data: Provide a clear print statement.
+f876fd1 streams page: Show weekly stream traffic.
+ddef398 subs: Reverse conditional for rerender_subscribers_count.
+dfbe1e4 notifications: Improve "why you were away" content lines.
+382ac24 create stream: Fix real time sync bug in private stream creation.
+7cc675c create stream: On stream create event, add sub to stream lists.
+9183d59 create stream: Restrict non-admin to create stream without subscribing.
+b8fd24b stream_create: Clear errors when re-submitting form.
+e9e6b12 create stream: Don't allow creating stream with zero subscribers.
+c3a289b create stream: Add div element indicating stream creation result.
+0e8cadf compose: Move "Sending..." to appear to the right of "Drafts".
+616a06e Use msg_list.fetch_status instead of load_enabled.
+fef2840 Add FetchStatus class.
+cbadecb emails: Replace signing in with logging in.
+077475c compose: Don't warn if mentioned stream members form a superset.
+617aea7 Fix clipping of stream and topic name in left sidebar
+1aba722 user_pill: Add Zephyr logic.
+5e251e5 compose: Improve line wrapping for multiline compose box alerts.
+f0f6bdf compose: Improve error message for mentioning unsubcribed users.
+06cabc1 popovers: Fix issue with user-info-popover in legacy mention messages.
+5ee6c60 message edit: Allow uploading files.
+787d5c5 upload: Inline clear_out_file_list.
+f531d37 Reorder "create bot UI" for embedded bots.
+038579b streams: Fix counts using only one data point.
+8cd3e55 default stream: Fix default stream suggestion do not include private stream.
+81ba7a1 Mark DigestWorker and PushNotificationsWorker as nocoverage.
+93b2f0e Mark MissedMessageSendingWorker as nocoverage.
+c7650c0 streams: send data for recent streams traffic to frontend.
+385ee95 streams: Show subscriber count icon before count.
+b5a860b analytics: Populate messages_in_stream:is_bot:day in dev.
+bfcfe84 compose: Append space when text added at the end of textarea.
+e15a22d message-editing: Topic_data.remove_message on delete_message dispatch.
+f0d651f invites: Only admins should be able to create multiuse invites.
+895b564 commit-message-list: Don't print anything if no commits.
+6d35a69 antispam: Don't let new accounts in open realms immediately send invites.
+36f6ad7 admin ui: Set usergroup name input maxlength to 100.
+ed4fbcf admin ui: Set usergroup description input maxlength to 300.
+e4a62aa compose: Add a function for handling validation errors.
+695b3e4 frontend: Add embedded bot config data editing.
+044b0be frontend: Store embedded bot data in bot_data.js.
+48b2e4e backend: Add bot config data patching.
+ade077f backend: Add bot config data to initial state data.
+d6a3890 compose: Fix clearing of existing text on replying from popovers.
+dcac002 compose: Use insert_syntax_and_focus to insert text in compose textarea.
+c995c1a popovers: Fix two click handler attached to (rightbar) user_popovers.
+cab3c8c populate_db: Spread message timestamps over a few days.
+65767e5 localhost_sso: Fix missing enabling of mod_wsgi.
+f50e325 RealmAuditLog: Fill subscription events with event_last_message_id=None.
+90c89dc copy_and_paste: Fix quirks with some parts of toMarkdown.
+31baf25 emoji picker: Change the delimiter used in `emoji_id`.
+4cd25fb input-pill: Add multiple pill support with pasting.
+dedef11 thumbor: Upgrade thumbor to v6.4.1.
+1a1bc84 subdomain: Check for invalid characters before length.
+d34dd4c signup: Show subdomain availability during signup.
+da65e1d drafts: Sort drafts by last modified.
+804a5f3 drafts: Add timestamps showing when last modified.
+a474af8 Use newer stream urls in missed message emails.
+46a4977 Add stream ids to urls for stream-related narrows.
+dea7d1d profile menu: Show profile-edit option when a user clicks on self-profile.
+693a9a5 push notifs: For group PMs, identify the users in the group.
+9802264 message-editing: Mark message as read before deleting it.
+1dbab64 landing-page: Change "Help Center" => "Why Zulip".
+55feafb unread_ops: Add a quick comment explaining an interface.
+a46e21e bankruptcy: Add UI widget to mark all messages as read.
+c4285ef gitignore: Ignore a Transifex secrets file.
+ced9cba hotspots: Fix resizing of ``Got It!`` box.
+9de7a69 upload: Move compose initialization back to compose module.
+7af769a upload: Extract upload.options structure.
+81f18bd actions: Create do_create_multiuse_invite_link function.
+003cb04 stripe: Use sources.list instead of sources.all.
+a0b58b1 activity: Add a link to copy list of realm admins.
+ad4e976 streams: Have new streams list only populate once.
+7f6a171 APNs: Don't try to send anything when not configured.
+1d581a9 nagios: Add nagios check for analytics state.
+02bc506 bot_data.js: Fix dict indentation.
+561e0ff frontend: Delete page_params.realm_bots after first usage.
+6e30da9 doc: Add blog link to CONTRIBUTING.
+afda05a rate limiting: Increase default rate limits.
+9cd7f59 recent senders: Use message ids instead of timestamps for sorting.
+15eaafa Add underscores to thumbs_up and thumbs_down emoji
+d7903d2 pypi_packages: Upgrade to release 0.4.1.
+a9752c5 left-sidebar: Add back link underlines on hover, just for topics and PMs.
+52c5705 left-sidebar: Strengthen global filter icons partway back.
+ecbb763 notifications: Handle an edge case in relative_to_full_url.
+06f3cb2 message-feed: Add some styling to open graph previews.
+1a93cd4 panels: Give admins a red warning banner when email isn't configured.
+48791b7 create_realm: Let server admin skip confirming email.
+b21cc81 confirmation: Presume email valid when admin creates realm.
+c8d038a popovers: Fix user-mention popover errors of `@all` mention.
+79e731e hello: Add links to contributor stats of chat applications.
+302e106 compose: Add parentheses for correct precedence.
+eef0d2a create stream: Use English grammar for message about announcement.
+957d1ee landing-page: Click anywhere to close sidebar.
+a446c03 plans: Move LDAP into the community support column.
+9798bb5 notifications: Restore a comment explaining `received_messages`.
+cad4083 export: Fix an unnecessary Any.
+f9b1295 stripe: Move error handling into stripe.py too.
+0b81762 billing: Move most Stripe code to its own file.
+5feb31a billing: Start pulling apart the page from the logic.
+c2ceb3c EmailSendingWorker: Fix retry for sending emails.
+8e268b5 Fix favicon generator script.
+43a6439 upload: Enforce per-realm quota.
+b698735 upload: Handle JSON errors from server generically.
+fe787c6 upload: Add a quota field to Realm.
+0fcf0c5 thumbor: Add thumbor on port 9995 in development.
+53e4dc1 left sidebar: Clicking on a stream clears the stream search.
+c98d355 right-sidebar: Fix clicking between Users label and search icon.
+709ffe6 informational-overlays: Fix category duplication bug, change map to array.
+c129bba informational-overlays: Move CSS => informational-overlays.css.
+e5f04c5 informational-overlays: "Spacebar" => "Space".
+151b3e9 language_options: Add newline at the end.
+c6bfac0 language_name_map: Add newline at the end.
+a11b742 messages: Calculate value of first visible message ID using cron job.
+e0ffab8 emoji picker: Fix categories overflow in Firefox at 90% zoom.
+0bf02e5 compose: Change "reply" button to be normal coloring.
+7b78c3e message-feed: Change message edit buttons to new style.
+9ed2a94 nagios: Add configuration designed for full-stack servers.
+97acdb7 ui_util: Move `place_caret_at_end` to ui_util module.
+0ec50d8 reminders: Hide message menu reminder's option behind features_flag.
+dd0e6c8 reminders: Fix issue with log file permissions in production.
+7ac7100 messages: Make checking for status message consistent with backend.
+4cc8c74 frontend: Internally refer to bots by ID.
+9a15c4e Add bot services to page_params.
+06fb868 Send an event to bot owners when a bot is created.
+b762b83 stripe: Make newly added card default source.
+01510c1 all streams: Show lock-icon for subscriber count, if user can't access.
+1324d2e reminders: Make shortcuts to setup reminder in message feed work.
+7d8d7f7 reminders: Add alert message for set reminder success or failure.
+7323218 scheduledmessage: Adjust schedule_message to accept callbacks.
+9efc1b0 reminders: Add slash command to set reminders from reminder bot.
+f272ea9 scheduledmessages: Start using/expecting delivery_type as a param.
+dcce8e7 scheduledmessages: Add delivery_type field to the table.
+c770bda reminder_bot: Add infra for adding reminder bot to every realm.
+9565a53 version: Belatedly bump PROVISION_VERSION.
+2c16c76 beeminder: Fix buggy coding tag at top of file.
+1ef2d9d billing: Simplify logging of Stripe errors.
+3d423a3 logging: Fix corrupted default format for our logfiles.
+e8ceea7 billing: Send logs to a dedicated file.
+3aa5529 billing: Better error message for dev on lacking Stripe credentials.
+0bca028 billing: Integrate Stripe, using Stripe Checkout.
+a978336 billing: Create model for customers paying with Stripe.
+3accf7b embedded bots UI: Fix wrong _.each argument order.
+ec1297c schedulemessages: Add delivery system for scheduled message.
+c64766e scheduledmessages: Add funcs to verify and schedule messages.
+6c36cf3 scheduledmessages: Add model for the ScheduledMessage table.
+d1d8365 embedded bots: Add config data UI.
+9a4cd54 zilencer: Add a simple management command to create a RemoteZulipServer.
+da06832 right-sidebar: Make Search people input collapsible with search icon.
+7c1a803 left-sidebar: Fix styling of Streams header to not use links.
+ed7208f Make EmbeddedBotHandler.get_config_info comply with ExternalBotHandler.
+9cc059f bot_config.py: Raise exception when getting config data from bot without config entries.
+de13dd4 stream narrow: Set message if narrows to never-subscribed private stream.
+6a94b33 stream membership: Display add-subscribers option only if user can add.
+2aad083 create stream: Disable announce stream label, not only checkbox.
+ae25f07 create stream: Show notification stream name for announcement.
+b530ee1 click_handlers: Include expanded mobile sidebars as popovers.
+e6d3f88 messages: Create function to calculate first visible message id.
+6f87927 manage.py: Move the maximum digits calculation to outside of a loop.
+ff5a73e manage.py: Make it easy to create lots of streams with `populate_db`.
+277d463 messages: Add option to limit users message history.
+50be484 onboarding: Fix error-password overlap bug
+781e8b4 general UI: Add a description for the message view source icon.
+e71970c general UI: Add a description for the message edit icon.
+29905ad create stream: Before sending notificaion, check if NOTIFICATION_BOT exists.
+4a27f41 Try to avoid codecov spam.
+80477da quick fix: Stop tracebacks with missedmessage_hook.
+f6c41a5 Avoid overwriting message.unread for message edits.
+58ec5f9 Use throttle, not debounce, to "read" messages.
+0a3d769 local echo: Bypass message.flags array.
+7a36286 frontend: Simplify saving collapsed/uncollapsed flags.
+d52552d Simplify/unify starring messages from the frontend.
+d5d11ff Disable message menu for locally echoed messages.
+94da59f local echo: Don't show collapse/uncollapse items.
+28b0ebd Embedded bots: Add UI for adding embedded bots.
+94c8e8b embedded bots: Strip @-mention from message.
+e62d974 emails: Fix notify_new_login emails have unserializable context.
+c284766 reactions: Implement local echo functionality.
+a34c017 errors: Compute deployment metadata on the right deployment.
+eea1ceb errors: Show what logger and source code the message comes from.
+77e4790 errors: Stop showing a long list of Nones when there's no request.
+5604259 compose: Notify when drafts are saved.
+0960889 compose: Re-open the compose editor after restoring a draft.
+8bb230f Increase code coverage threshold to 0.07.
+898acc4 missed-message-worker: Send email through email_senders.
+6851395 email-worker: Create EmailSendingWorker.
+8ea39d2 input-pill: Wrap "values" in IIFE.
+e9d7161 compose: Warn users when posting to the #announce stream.
+27a8ef8 actions: Add realm deactivation and reactivation to RealmAuditLog.
+4261307 emails: Clear ScheduledEmail emails on realm deactivation.
+776af2e push notifs: Simplify content-truncation code slightly.
+014900c push notifs: Include same stream and sender info on GCM as on APNs.
+e077d6f push notifs: Factor out common payload fields for APNs and GCM.
+5b49259 compose box:Add a reply button. Fixes #5578
+bc37317 invites: Differentiate users invited as admin by showing bolt icon.
+10149b7 stats: Add per-graph loading indicator
+20f3b0f popovers: Apply email overflow changes to ".message-info-popover".
+97c3d5f user profiles: add tooltip for too long email.
+ffe3776 create stream: Show current user on top of "People to add" list
+b830b44 logging: Reduce `create_logger` to new `log_to_file`.
+1c810ba logging: Stop calling basicConfig in `create_logger`.
+b6491fd logging: Eliminate log_level from create_logger.
+ebcf0b4 logging: Stop having `create_logger` force loglevels to INFO.
+20b2c11 activity: Show the time the data is from.
+bdea096 activity: Supply a missing field.
+1e1f381 activity: Explain highlighting of young realms.
+e6cdc55 activity: Use real ≥ signs, not ">=".
+d36b1cd activity: Correct description of message-history figures.
+8ed7f73 IRC mirror: No longer require IRC stream names to start with #.
+08b3967 invitations:  remove reformatting on error
+98943a8 Include data of stream/private sender details in apns push notifications
+9094498 signup: Redirect to /register instead of sending mail when user has no account.
+d9ce33d registration: Clarify realm_creation conditionals in accounts_register.
+e545a68 registration: Use standard pattern for returning link_does_not_exist.
+dbe3576 registration: Enforce realm is None only if realm_creation.
+9682ad4 left sidebar: Add margin to bottom of Streams list.
+4a26271 Better errror message for narrow to a nonexistent stream. Fixes #6862
+36ade63 compose: Fix bug in undo operation
+799e4ad compose: Align Press Enter to send checkbox with label.
+59b0776 left-sidebar: Lighten global filter icons.
+aebf63c sidebars: Change to more muted hover/active colors.
+60e018e sidebars: Add 1px of vertical margin to all <li>.
+eddf3a7 components: Change cursor to pointer for checkbox labels.
+5f48049 invitations: Make stream labels click targets.
+6787fbd invitations: Change rate limiting to use invites_sent::day.
+fbd8dde invitations: Add LoggingCountStat to keep track of sent invitations.
+100167f invitations: Change error messages for resend/revoke views.
+cb5eb47 invitations: Move resend/revoke error handling out of actions.py.
+b348242 invitations: Adjust a few blank lines for clarity and compactness.
+cb527fd invitations: Move spammer check from do_invite_users into its own function.
+9a3a9be compose: Restyle `#out-of-view-notification` alert.
+83d9844 compose: Center "x" vertically and horizontally on cross-stream warning.
+a3dac75 bankruptcy: Change to new default button styles.
+8d0ccd2 narrow_state: Make set_compose_defaults return opts.
+dd97c7e nfs: Allow read and write in NFS share.
+8b1c3c0 plans: Make the feature thead separator narrower.
+58a20b3 plans: Change the positioning of the commercial hosting price.
+3ef5296 plans: Swap the order of the two blocks within .pricing-container.
+ef2f279 activity: Explain "active sites", and which sites show up in table.
+34ee019 activity: Consistently define "user" as non-deactivated, non-bot.
+0ebfc2f activity: Highlight recently-created realms.
+8de34c9 activity: Show each realm's creation date.
+2c9b698 activity: Replace "at-risk users" with WAU.
+c5a3218 activity: Explain what the numbers mean.
+2310794 bots: Don't allow embedded bots bot type in production.
+6d58357 Informational-overlays: Change "Search Operators" red to better red.
+675cb85 message-feed: Increase font weight of "(EDITED)".
+b2194e8 message-feed: Reduce animation time for date.
+afce6b1 muting: Change muting overlay to use standard buttons.
+30475ba Sidebars: Add border radius to hovered <li>.
+7d1c88f invitations: Limit realms to 100 invites per day.
+8dc0adb confirmation: Add Confirmation.realm.
+331a9be confirmation: Add Confirmation.REALM_CREATION.
+c32b167 tornado: Use spiffy new `call_later` rather than `add_timeout`.
+6d8d5f7 invite-users: Change buttons to new style.
+377cad7 css: Deduplicate user-group-mention CSS.
+b2cb443 subs: Fix clearing unread counts when leaving private streams.
+176e4a2 lightbox: Allow for clicking top and bottom to close overlay.
+3d6340e subs: Add padding to Announce stream tooltip content.
+6bc1a68 notifications: Separate push and email notifications checks.
+5dedb48 roadmap: Rewrite roadmap to no longer point to milestones.
+50e451c populate_db: Create an email-reusing Cordelia in the "lear" realm.
+5f38b37 register: Activate existing mirror dummy only if on same realm.
+191f8f1 left sidebar: Change Home to All messages.
+274bba8 two_factor: Add configuration and URLs.
+2d7536b Document the add_mentor.py tool.
+e92a8ac subs: Properly focus on Stream name box while creating a new stream.
+b9826e9 Add filters for toMarkdown to paste data to compose-box.
+cb8f2cf git cheat sheet: Be a bit less agressively anti-git-pull.
+0445322 compose: Export the major upload-related methods.
+df58f0f compose: Export some upload-related variables.
+c8a5ae7 embedded bots: Consistently use 'storage' instead of 'state.'
+83149a9 copy paste: Turn off toMarkdown in production.
+d4ee302 registration: Require an explicit realm on PreregistrationUser.
+985768b registration: Check realm against PreregistrationUser realm.
+339b67f get_cross_realm_dicts: Harden against caching bug in last commit.
+646ba5b bulk_get_users: Fix issues with users in multiple realms.
+f423dc4 check_send_receive_time: Fix parsing bug.
+025b8c1 Simplify code to warn about private stream links.
+1d826ae composebox: Warn when linked to private streams.
+be56a99 popover: Populate compose_box with popover user's email.
+649b7b8 internal_send_message: Enforce being passed cross-realm bots.
+ae8e203 actions: Merge internal_prep_message into internal_send_message.
+6952dcb embedded bots: Stop using internal_send_message for non-system-bots.
+2758278 embedded bots: Flip around ordering of rate-limiting check.
+5306a96 email_mirror: Rewrite to not use internal_send_message.
+2210f62 signup: Switch active mirror-dummy users to an AssertionError.
+610eb55 backend: Make password reset form support multi realm membership.
+9f22536 register: Make /register redirect to find accounts in root domain without realm.
+15bf0eb css: Fix overflowing long URLs in Markdown macros.
+146aed3 gitignore: Ignore package-lock.json generated by npm.
+b607d26 lightbox: Fix image metadata not displaying at full width when possible.
+711f7bc upload: Fix typo in animated GIF error message.
+fbbd5b0 changelog: Document 1.7.1 release.
+2e7d0cb digests: Fix new stream links.
+b4e67fa bot_lib: Fix storage bug introduced by rebase error.
+585b71b email-mirror-postfix: Replace optparse with argparse.
+54fb88f scripts: Replace optparse with argparse.
+5f6dbe6 fixtures: replace optparse example with argparse.
+e526d0c embedded bots: Add views to access state.
+d2af8d4 embedded bots: Support multi-entry state modification.
+cbadd3d embedded bots: Simplify StateError exception messages.
+141cf21 bulk_create: Fix buggy logic for generating recipients_by_email.
+766511e actions: Mark all messages as read when user unsubscribes from stream.
+5206999 compose: Preserve links when pasting html.
+9fa58a3 compose_ui: Automatically resize textarea after adding new syntax.
+e0b56c7 ldap: Simplify logic for user creation.
+c4c8879 ldap: Fix the error message for deactivated users.
+104a8de ldap: Shrink unnecessary scope of missing user block.
+236c4b5 contributing: Improve discussion of internships.
+a0275a6 actions: Send new user messages to signup_notifications_stream.
+3d17897 onboarding: Move signup notifications stream creation to do_create_realm.
+84b9147 gitignore: Add static/generated/icons.
+b97bb3a frontend: Move checkbox to the left of label text
+df4d10a custom_check.py: Fix the comment for ignoring long lines.
+29408d2 emoji: Rework reactions validation to have a single function.
+2d4c7b7 reactions: Move legacy endpoint code further down in file.
+432c9d3 email_log: Reset the value of email after email change process.
+0667a62 password reset: Simplify password reset form logic.
+9c50819 email: Add reset button to password reset email.
+c8edbae password reset: Fix error message for invalid realm.
+95ba3e7 password_reset: Send email unconditionally.
+8b152fc email: Fix identification of chrome as safari on ios
+81adc92 actions: Use get_system_bot for fetching WELCOME_BOT.
+cd95c09 forms: Use an AssertionError for unexpected DNS errors.
+a194f17 gitignore: Ignore several artifacts of a prod deployment.
+bd5905d error_notify: Use `git describe --always`.
+a0cfe45 analytics: Wrap some longer lines.
+06b57e8 style: Merge css of social login/register buttons.
+bdaf327 message feed: Fix display height of empty messages.
+2b6587c overlays: Move overlays earlier in index.html.
+53616cc gear-menu: Inherit body color.
+3df96a2 message-feed: Make stream labels inherit color.
+3c49002 streams: Fix width bug with stream creation form footer.
+1514ea9 streams: Inherit base color rather than redefining text color.
+3ebccda left-sidebar: Make <ul> links inherit body color.
+9852861 compose: Change white background to be on #compose.
+395f1e9 embedded bots: Add database config storage.
+3828305 error_notify: Try `git describe` too.
+41ecdd8 error_notify: Add some idea of the deployed code version.
+a696141 search: Add more extensive logging for Unicode errors in highlight_string.
+66179ea bulk_add_members_to_user_group: Pass user group.
+f02e5b9 cross_realm: Use bulk_get_users to fix handling of missing users.
+c7a975e users: Move check_change_full_name to actions.py.
+6f955fb actions: Replace stream.add with stream.append in process_new_human_user.
+c84f168 emoji: Display emoji in messages as text as well as reactions.
+bafba95 Text-wrap the remaining long lines exceeding 110.
+09af29b zerver/lib: Text-wrap long lines exceeding 110.
+d3914a5 confirmation: Text-wrap long lines exceeding 110.
+dbcc76b Fix MissedMessageWorker.
+ae5ba7f Add a couple cross-realm bots.
+36f2976 emails: Add option to forward mails send in dev env to external email.
+d5a3691 media: Display stream list filter at full width.
+7d2672c popovers: Include expanded mobile sidebars as active popovers.
+cceba20 Use makedirs directly instead of wrapping it in mkdirs.
+72ce1c6 Use a more concise `mkdir -p` when the situation permits.
+a86968c landing_nav: Fix missing login_link_disabled check.
+8fccf36 bots: Wrap StateError exceptions around BotUserData exceptions.
+a23378a check_short_string: Verify string before checking length.
+a93b7c4 zerver: Text-wrap long lines exceeding 110.
+23a481c zerver/lib/actions.py: Text-wrap long lines exceeding 110.
+53e37aa scripts: Text-wrap long lines exceeding 110.
+51c1a6d analytics: Text-wrap long lines exceeding 110.
+5ff690d zulip-export: Convert to using argparse from optparse.
+70a14d8 bootstrap: Patch bootstrap.js to support contenteditable.
+00d11fb input-pill: Add styling.
+74d91bf input-pill: Add `onpillcreate` method.
+93141cb input-pill: Have all clicks directly on container focus input.
+1bcc07f popovers: Add bot icon to user profile popovers for bots.
+a3e5f2a message view: Use new custom bot icon in messages.
+0b800b0 icons: Create framework for custom icons and add new bot icon.
+982bd9c Fix push notifications for soft-deactivated users.
+c99d20d push_notifications: Shrink scope of try/except block.
+8084f2d Add: Profile picture popover on clicking mentions in chats.
+65838bb email_gateway: Disable code block processor for email gateway.
+19bc55a Fix various typos.
+4817ba4 tab-switcher: Switch tabs with left/right arrows.
+4108797 Eliminate the parse_usermessage_flags interface.
+ae0b27a Extract messages_for_ids.
+7e13d74 tornado: Fix hardcoding of URI scheme in sockjs_url.
+2968353 zerver/views: Text-wrap long lines exceeding 110.
+22e1456 zerver/tornado: Text-wrap long lines exceeding 110.
+548c96a zilencer: Text-wrap long lines exceeding 110.
+8616a4e Use client_gratavar=True for users on in page_params.
+54ac11f left-sidebar: Fixup line height issues with unread counts.
+15b3a8e email change: Use confirmation object user to determine changeability.
+1823d46 unsubscribe: Use a custom confirmation error page.
+3c63367 delete: Fix bug in appearance of popover in mobile-screen.
+576be51 message feed: Change sub button styling to new style.
+95f34b2 left-sidebar: Increase line-height to not cut off text bottom.
+c5eaf30 left-sidebar: Allow for more space for unread counts.
+8450f0e Register client_gravar=True for the webapp.
+5be13fb Add cachify decorator.
+7a6e0dd static: Optimize SVG images.
+b2d3587 decorator: Set the user_activity query in another case.
+1a54024 require_server_admin: Cut a redundant bit of request-mutation.
+b871aa9 user_activity: Allow passing the `query` more directly.
+c3db951 tornado: Delete fake_message_sender.
+119bc14 alias domains: Add a v1 of this feature.
+9767029 Allow generic bots to be mentioned.
+4af9e11 left-sidebar: Add overflow ellipsis on long stream names.
+c9af964 list_render: Add sorting reversal.
+26dd785 list_render: Use correct arrow for ascending.
+85f605a Fix bug with EmailLogBackend.send_messages.
+9689168 Simplify highlight_string logic.
+ee61e1b search: Fix misaligned highlights due to unicode characters.
+aab0eeb popovers: Hide opened popover on navigating back.
+8c9ea94 scripts: Fix an issue in `purge-old-deployments` script.
+22e5110 subdomains: Dedupe out the last copy of Realm.host_for_subdomain.
+fef828a compose: Add video link button, powered by Jitsi.
+bb80c0c compose_state: Extract insert_syntax_and_focus.
+72774de compose: Wrap more message control button icon lines.
+48d1325 Make `our_realm` explicit in `bulk_remove_subscriptions`.
+692db3f embedded bots: Move StateHandler query logic to separate file.
+126e14d Add zerver/lib/stream_subscription.py.
+6421151 Avoid mutation in get_recipient_from_user_ids.
+5020ba4 emoji: Allow users to change emoji set.
+4c077a7 notifications: Instead of regex use lxml for fixing emojis.
+5b5dffe get_messages_backend: Tweak how search fields are added.
+d80d15c GoogleSubdomainLoginTest: Suppress unnecessary logging output.
+e4b4f67 subdomains: Tighten search for EXTERNAL_HOST in get_subdomain.
+09cd47c Add UI for viewing and cancelling open Zulip invitations.
+8c68a16 backend: Allow Administrators to invite new users as admins.
+cab39dc get_service_bot_events: Add some future-proofing.
+b897c76 get_recipient_info: Simplify active_user_ids construction.
+a70ede6 Allow "default" bots to see mentions on all streams.
+c771873 informational-overlays: Make tab-switcher full-size.
+635675f Reduce queries needed for sending messages.
+1d94119 actions: Call send_initial_pms from process_new_human_user.
+a03f322 version: Bump version following 1.7 release.

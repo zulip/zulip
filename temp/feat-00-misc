@@ -1,0 +1,15 @@
+Listing misc user facing improvements here:
+
+1. Allow users to choose emoji style.
+2. Jitsi meet support.
+3. Domain aliases: 119bc14 alias domains: Add a v1 of this feature.
+4. Improvements on /stats and /team pages.
+5. 191f8f1 left sidebar: Change Home to All messages.
+6. 7d1c88f invitations: Limit realms to 100 invites per day.
+7. e9d7161 compose: Warn users when posting to the #announce stream.
+8. Improvements to drafts (notify draft save, delete hotkey, 30 day limit, sorting){could be separate major listing}.
+9. Scheduled messages.
+10. Authentication checks in file uploads and downloads.
+11. Improved bankruptcy UI.
+12. Significant work on custom profile fields. {is this ready for advertising?}.
+13. 1207a08 CVE-2018-9987: Fix XSS issue with muting notifications.

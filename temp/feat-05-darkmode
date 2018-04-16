@@ -1,0 +1,88 @@
+One of the major changes in Zulip 1.8 is the Night Mode. Zulip's default
+visual theme has a white background, and the new Night Mode has a dark blue
+background and each interface element has been styled for consistency with
+the overall theme. Each individual user can now activate this setting as
+described [here](https://zulipchat.com/help/enable-night-mode)!
+
+3ed5a64 Dark-mode: Update rail-y to match dark theme.
+7def65d style: Give inputs with `type="number"` a dark background in night mode.
+013a888 styles: Rename dark.css to night_mode.css.
+d92af69 styles: Rename dark-mode to night-mode.
+93f7324 dark-mode: Darken background color of unread topic/PM counts.
+9d89d0e dark-mode: Change miscolored popover arrow colors.
+149cc01 dark-mode: Change grey color of .subscriber-count and .message-count.
+40316ed components: Make "sea-green" button darker.
+413ea99 email tooltip: Adjust background color of email toolip in dark-mode.
+f215fbe dark-mode: Show dark background in popover while avatar loads.
+dcec2e3 dark-mode: Make all modals compatible with night mode.
+e82564c dark-mode: Fix bug with open graph previews.
+693ad9e dark-mode: Make .dropdown-menu links base color in dark mode.
+90ffef8 dark-mode: Make deactivate self modal compatible.
+535e19e dark-mode: Make change full name modal compatible.
+5c335b5 dark-mode: Make change email modal compatible.
+f733466 dark-mode: Make message deletion modal compatible.
+b336bb7 dark-mode: Make language settings modal compatible.
+6559237 dark-mode: Fix background color of dropdown menus.
+931261f dark-mode: Make all ".modal-bg .modal-header" styles the same.
+ca548e8 dark-mode: Add support for password inputs.
+b1e16d5 dark-mode: Fix text color of emoji_alt_code.
+d06fd9c dark-mode: Make settings page code blocks compatible.
+189832d dark-mode: Make "error" alerts compatible.
+ca6ea11 dark-mode: Make "success" alerts compatible with dark mode.
+2d18bad dark-mode: Make settings "tip" boxes more compatible.
+f18307a informational-overlays: Fix <hr> to be dark mode responsive.
+9fe284b dark-mode: Fix background color of table headers.
+a028097 dark-mode: Change Stream list chevrons colors to have more contrast.
+56f341f dark-mode: Combine similar CSS selectors together.
+842afd1 dark-mode: Make alert words compatible.
+7651144 Added darken to perfect-scrollbar on scroll
+240511c dark-mode: Compact common background-color declarations.
+86f87bc dark-mode: Change hex color codes to HSL.
+45d0b2b dark-mode: Fix background colors of modals and sidebars in mobile view.
+2252d7e Revert "dark-mode: Add "T" hotkey for dark mode theme."
+db55fd8 Revert "Make dark theme toggle only run in dev mode."
+0ed9da9 compose: Make compose alerts dark-mode compatible.
+0e4eef6 dark-mode: Make bankruptcy modal dark-mode compatible.
+a5da626 dark-mode: Make all states of navbar <li> dark mode compatible.
+2a7ea5c dark-mode: Change star color to be lighter.
+5735f82 dark-mode: Make typeaheads dark mode compatible.
+9d255ac dark-mode: Respect ".no-style" attr on buttons.
+525e8e3 dark-mode: Fix tab list stream to not inherit color.
+03c15fd dark-mode: Change edit notice medium grey to translucent.
+f6bbc1f dark-mode: Change date row from medium grey to translucent.
+4f81bdd message-edit-history: Make dark mode compatible.
+625c163 dark-mode: Convert medium grey to translucent base color.
+7883897 muted-topics: Enable dark mode for mute notifications.
+bc11b0f Revert "dark-mode: Remove unnecessary CSS and fix dark mode bugs."
+e7ec21b dark-mode: Add pigments support for dark mode.
+a7c2258 dark-mode: Change drafts container to be dark.
+387bdd3 dark-mode: Change top-of-messages colors for dark mode.
+d883f33 dark-mode: Refactor top-of-messages logo to have CSS styles.
+a2729c5 dark-mode: Fix incorrect hover colors on `.stream_label`.
+618455c dark-mode: Fix invite overlay to have a dark background and borders.
+836bfd8 dark-mode: Refactor gear-menu icon to be translucent.
+e37838c dark-mode: Refactor compose icons to be translucent.
+edffa56 dark-mode: Style alerts to be darker red.
+89b38ff dark-mode: Change all links to be brighter blue on hover.
+76f6051 dark-mode: Change popover arrows to all be dark.
+ad9c71b dark-mode: Change emoji reaction overlay to be dark mode compatible.
+1716d69 dark-mode: Fix @-mention colors.
+e62ba13 dark-mode: Change `background-image` and `background-color` to background.
+64381b6 dark-mode: Remove unnecessary CSS and fix dark mode bugs.
+59870b2 Make dark theme toggle only run in dev mode.
+4fb7292 message-feed: Add dark mode support for inline code.
+aeed2e6 dark-mode: Remove unnecessary CSS and fix dark mode bugs.
+b76578c Add an experimental dark mode stylesheet.
+ce62abc dark-mode: Add "T" hotkey for dark mode theme.
+3ed5a64 Dark-mode: Update rail-y to match dark theme.
+93f7324 dark-mode: Darken background color of unread topic/PM counts.
+70b80a2 landing-page: Darken body when mobile sidebar is open.
+7def65d style: Give inputs with `type="number"` a dark background in night mode.
+382f931 night mode: Fix unreadable new user tips.
+013a888 styles: Rename dark.css to night_mode.css.
+d92af69 styles: Rename dark-mode to night-mode.
+14f1f10 display_settings: Mark night mode as no longer experimental.
+dcec2e3 dark-mode: Make all modals compatible with night mode.
+a05631d night-mode: Add experimental text.
+e023664 night-mode: Add custom CSS through JS.
+f9f0f35 settings: Add backend storage and interface for night mode.

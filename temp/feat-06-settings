@@ -1,0 +1,201 @@
+We have made several small changes to our various user facing and admin
+facing settings and interface. Most f the work has gone into making the
+settings pages more robust and reliable. Some of the prominent changes are:
+
+1. An improved and fine grained settings backend with real time sync.
+2. Realm admins can now view and remove members from private subs.
+3. Allow viewing and cancelling pending invitations.
+4. Improve interface for stream renames and deletion.
+5. Improve notifications settings, and allow configuring signup notifications.
+6. Allow admins to invite new users as admins.
+7. Improve password reset experience.
+8. Show weekly traffic in stream pages.
+
+Full changelog:
+
+c852185 stream settings: Make deactivate stream handler global.
+bec71d7 messages: Add a server-level setting to control private stream history.
+f4d6b2a org settings: Split "Language and notifications" section.
+aca2364 settings: Focus "Add a new bot" tab when there is no active bot.
+c14cefc settings: Add support for adding/removing custom profile fields.
+2f496ff org profile: Use new org setting changes saving framework.
+4b8dda2 display-settings: Move emoticons option after emoji style.
+b42a7b1 digest: Add a server setting, and disable by default.
+82c8d43 custom profile data: Enable user to edit custom field's value in settings.
+b404d0e custom profile data: Set custom field's values in user setting page on load.
+14fba1b user settings: Move deactivate account setting to the bottom of page.
+9ca335b org settings: Add discard button to discard changes for a subsection.
+62f6468 org settings: Show "save" button only when setting is changed.
+be02983 org settings: Make each subsection independent for saving changes.
+f29a191 hotspots: Add ALWAYS_SEND_ALL_HOTSPOTS in dev_settings.
+1e45398 stream settings: Fix exceptions when rerendering subscribers.
+dc1eeef antispam: Make a setting for default Realm.max_invites.
+0281079 stream settings: Send all private streams subs to realm admins on load.
+72a440a stream settings: Fix error in real time sync in subs add/remove event.
+4fb1704 settings: Add save instructions below pill container on changes.
+dd5ce49 settings: Add button to cancel user group auto save on blur.
+40d6ee5 settings: Move user group delete button to top right corner.
+28f0ac2 settings: Save user group name/desc changes along with member changes.
+9aec2b8 settings: Auto save user group members on blur.
+c4fda0e org settings: Extend populate_data_for_request for selected property types.
+c4d0fb6 org settings: Split `property_types` according to sections.
+0bd5a7c settings_ui: Extend `do_settings_change` for other request methods also.
+01a160d settings_ui: Extend do_settings_change for other optional parameters.
+c89ae4e stream settings: Improve strings in traffic level section.
+242f6d6 stream settings: Show subscriber counts unconditionally.
+ae7fe85 stream settings: Improves visual appearance of "subscriber counts".
+233e1b4 org settings: Clear input fields of filter settings on success.
+efffc07 stream settings: Don't show add-subs-btn if user can't add subscribers.
+4d55dc9 alerts: Fix z-index of alert panels to be above settings.
+1a3ae8a stream settings: Fix inadvertently merged broken whitespace.
+93ee0aa stream settings: Allow realm admins to remove others from any stream.
+2031118 stream settings: Allow realm admins to access all private stream subs.
+1cb06cb organization-settings: Fix organization description textarea style.
+3da2a1e admin: Add a realm setting to disallow signups using disposable emails.
+e3c09e0 settings: Prevent multiple requests while adding custom emoji.
+158f0f3 stream settings: Fix display of stream subscribers count.
+b6408a0 stream settings: Fix sub-unsub btn not showing on private stream creation.
+ff6d83b stream settings: Fix subscribers not showing on private stream creation.
+12db219 stream settings: Fix subscriber counts when creating invite-only streams.
+32407b4 stream settings: Hide stream members immediately on unsub, if can't access.
+ee87c14 settings: If message content disabled, flush all missed emails informations.
+c94b21e settings: Add setting to disable message content in missed message emails.
+cc2eb60 stream settings: Fix error in rendering stream members in UI.
+7778417 stream settings: Hide stream membership part, if can't access subs.
+c1f9b04 stream settings: Don't show never subscribed private stream's preview-link.
+f3413d3 org settings: Fix confusing label for custom emoji settings.
+777b6de org settings: Add setting to prevent users from adding bots.
+0d29864 setting: De-duplicate logic for bulk-updating notifications settings.
+b55f881 settings: Split notification_settings into a few sub-variables.
+b358fb2 org settings: Hide table-list-data until page gets load.
+f46d925 org settings: Fix issue, loading spinners are not visible.
+a581254 settings: Fix real-time sync with notifications settings.
+416f110 user settings: Display avatar source.
+8ba91e4 stream settings: Add delete stream button.
+fb34081 display_settings: Fix pencil being lost updating default language.
+9acf30b display_settings: Fix real-time sync of default language.
+c672a1c settings: Fix real-time sync for display settings.
+cec3430 settings_ui: Move main function for new settings system to library code.
+4d8e18e settings: Move display_checkmark to settings_ui.js.
+6a06e45 display_settings: Extend de-duplication of unnecessary logic.
+7dbd515 settings: De-duplicate code for managing display settings.
+5aa7098 display_settings: Change success/failure feedback interface.
+b846ab1 settings: Change wordings of all alert-status in Display settings.
+c8ad1cf settings: Improve warning in signup notifications.
+59cf670 settings: Add generic func to disable settings elements in UI.
+f5a24ef static/js: Add `settings_ui.js` file for common settings UI functions.
+72a3115 settings: Move name/email change display commits to correct file.
+9fe0f81 settings: Simplify is_admin logic for name changes.
+63db3e0 settings: Fix erroneous meta.loaded check for name/email change.
+9b8c541 settings: Set state of name/email change fields from data.
+ce46cd9 settings: Allow admin to change email/name even if it is disabled in realm.
+7b7f4cc bot settings: Generate embedded bot selector in handlebars.
+d124597 org-settings: Add setting to turn off welcome emails.
+2f99e6b settings: Add loading indicator for account deactivation.
+87a5cd3 org settings: Fix bug of reloading page on Enter in active user setting.
+105093e org settings: Fix bug in edit user-name-form in active user setting.
+4119eb3 org settings: Display error message on top of active user setting page.
+dc2b505 org settings: Fix bug in error reporting on active users setting.
+9feae47 org settings: Add button to deactivate organization.
+4103996 org-settings: Fix styling of Allowed Domains modal.
+b12a5a2 stream settings: Use a bulk query when changing all streams.
+995138d settings: Allow uploading same image as avatar after deleting.
+3e1b817 bot settings: Move config item generation from js to handlebars.
+33322fe bot_settings.js: Narrow config item selector.
+7539512 settings-bots.js: Restructure bot edit event handler.
+f371c79 settings-bots.js: Fully generate bot owner list in handlebars.
+032cc84 settings sidebar: Extract bot edit form.
+08533ba stream settings: Show message in case of no stream description.
+9bb267a settings: Force strings to wrap in Filter settings table.
+7781741 settings: Change wordings of a few notification settings.
+b875fe0 settings: Added setting to turn on and off realm name in email subject.
+f485abf page_params: Pass through settings.WARN_NO_EMAIL, as `warn_no_email`.
+16162b7 settings: Move "High contrast mode" later.
+9a71a0f settings: Change <h3> to be smaller, bolder.
+0f443c8 settings: Allow selecting 'restrict to domain' even if no domains selected.
+e280e3b settings: Properly center deactivation modal.
+93e2962 settings: In ALLOWED_HOSTS example, show a list and an IP address.
+32ede6a settings: Restrict opening full name and email change overlay modal.
+ef42bb2 settings: Fix real-time sync for account settings.
+77fefcf settings: Change design of your-account-page in user settings.
+d62cce4 settings: Move full-name-change form before password form.
+7e8da54 settings: Move full name setting UI into modal.
+8582e75 settings: Improve email change modal in user setting.
+21cbdfd settings: Improve password change modal UI.
+39604eb user settings: Add method and action in account setting ajax form.
+70079e0 settings: Makes selector look better in firefox.
+6da9ece settings: Set a flag when email isn't configured, so we can warn.
+08bbd7e settings: Slightly simplify EMAIL_BACKEND logic.
+15dd940 org settings: Handle NEW_USER_BOT not being set.
+2ca0fb4 user setting: Move password change flow in UI into modal.
+849d63d settings: Change error for "no data" to something more friendly.
+2b133ee settings: When overlay modal opens, remove previous alert messages.
+2691c27 stream settings: Hide create-stream-btn if user not allowed.
+81599cf stream settings: Display warning if user can not access subscribers.
+8f65de1 stream settings: Always show stream type, regardless of subscribed or not.
+8905744 stream settings: Add period at the end of error messages.
+0f71a7e reminders: Add UI for setting up reminders for messages in the feed.
+be21f83 settings: Normalize white boxes in settings.
+e176444 user settings: Change alert words styling to match other settings forms.
+8530ed0 org settings: Make button-clicking code more clear.
+374025e settings UI: Fix settings sidebar.
+6dbc7c5 org-settings: Fix pointers near disabled checkboxes.
+b523fd5 user setting: Disable email field if, user not allowed to change email.
+28ca52b user setting: Enhance email change modal.
+88b2498 user setting: Change wording of strings in email change modal.
+0a92dfd user setting: Set email change warning icon inline to email field.
+82db9a2 bot settings: Set converter as default in embedded bot list.
+5b70bb8 org settings: Add typeahead to user group member inputs.
+7da0c12 org settings: Add user group deletion functionality.
+168e7bb org settings: Add user group creation functionality.
+8c8cd5f org settings: Render user group data dynamically.
+d80d5a2 stream settings: Restore original stream name in UI on error.
+7ccaf2d stream settings: Hide subscribe/unsubscribe as needed.
+690e82e stream settings: Display edit icon only if user is allowed to edit.
+bb250f4 settings: Apply 'settings-info-icon' style to informational tooltip icons.
+2124f4c settings: Add style for settings informational icons.
+19eef98 stream setting: Change email address popover placement to right.
+8c7d4bb stream setting: Fix bug in email address popover.
+ce43daa stream settings: Fix all dead code related to #subscriptions-status.
+d026ad4 settings_display: Change two "!" to one.
+45f0c76 settings: Limit the creation of generic bots.
+daf86eb settings: Add "text" option to emoji_set model.
+dd406e8 settings: Check if xhr response text include ':' or not.
+27f7bdf casper: Attempt to fix flakes with message edit settings.
+f84a49c bot settings: Fetch embedded bots list from page_params.
+1589c59 settings: Show local time instead of UTC in invitations tab.
+c9596e1 user settings: fix uploaded files UI
+b3d7a87 user settings: Change file size display format
+25f7428 user settings: change 'Date uploaded' display format
+1df3e04 bot settings: Clear typeahead when renaming a bot
+48afc55 settings: Reword notifications settings strings.
+7ae9c29 org settings: Change wording of restrict to domains setting.
+9bf0c96 modals: Make settings page selectors more specific.
+e8b33f2 settings_invites: Change wording on resend button.
+3be8e95 settings: Send bot types from the backend instead of hardcoding them.
+1e03c15 settings_display: Change dev check to correct attribute.
+954c363 dev_settings: Convert hostname to lower case when setting external host.
+ba70b54 notification settings: Add stream email notifications setting.
+8b935f4 settings: Add setting for SYSTEM_BOT_REALM.
+585cd36 setting: Align elements properly in invite users.
+13a1b44 settings: Fix missing target=_blank on realm emoji images.
+3468937 settings: Create UI and backend for setting signups stream.
+5221ea5 settings: Make CSS selector more specific in table rows in org settings.
+e806300 settings: Use `.modal-bg` class to control background color.
+7957679 thumbor: Auto generate thumbor_key and add it to zulip settings.
+2c000c0 settings: Increase specificity of sidebar <li> selector.
+8a46ddf dev_settings: Add localhost:9991 as realm host for zulip realm.
+d707e3b bots: Add USER_STATE_SIZE_LIMIT setting.
+ca2f93d settings: Restyle "emoji style" section.
+439bc29 settings: Change the control for selecting emojiset to radio group.
+de67bf8 org settings: Allow users to delete their message.
+9930cb4 stream_settings: Add loading spinner when creating a new stream.
+b33d981 settings: Simplify setting ALLOWED_HOSTS, by handling EXTERNAL_HOST.
+6a4e7ad user settings: Enhance Uploaded files sorting.
+5d9327a user settings: Improve Uploaded Files design.
+56f26c2 zproject/settings.py: Correct emoji sprite CSS files.
+45c21b7 settings ui: Restrict file type for image file pickers.
+0667a62 password reset: Simplify password reset form logic.
+9c50819 email: Add reset button to password reset email.
+c8edbae password reset: Fix error message for invalid realm.
+95ba3e7 password_reset: Send email unconditionally.

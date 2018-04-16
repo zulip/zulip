@@ -1,0 +1,160 @@
+We have made significant progress in the Webhooks and Integrations area. We have
+added and improved several integrations, including but not limited to:
+
+1. Beeminder
+2. Front
+3. Dialogflow
+4. Flock
+5. Dropbox
+
+We have also added a reminder bot and slash commands to trigger reminders on
+individual messages. {insert doc link here}. There are minor refinements in the
+interface for creating bots and consistency in how the bot profiles are visible
+in the user interface.
+
+Full changelog:
+
+026ff48 webhooks/bitbucket2: Detect pushes that remove branches correctly.
+f839d52 decorators: Log custom HTTP headers in webhook requests.
+e1eabe2 integrations: Add Gocd webhook integration.
+4886d92 webhooks/pivotal: Check if content == "" before sending a message.
+538746f webhooks: Stop raising an exception if stream does not exist.
+4b8bd0b webhooks: Add Dialogflow integration.
+9286a97 webhooks/gitlab: Stop filtering comments when description is null.
+4accf06 webhooks/front: Update text and remove screenshots.
+9ae0cc0 webhooks/front: Remove numbers from fixture names.
+05386f2 webhooks/front: Use a separate function for each event.
+428e505 webhooks/front: Eliminate unnecessary error handling.
+500fa9d webhooks: Improve explanation of setting specific topics.
+8fbd8c6 webhooks: Update macros to specify custom topics and default PMs.
+857569c webhooks/teamcity: Use check_send_webhook_message.
+34e165c webhooks: Fix passing client string to authenticated webhook API views.
+a497941 webhooks: Migrate most integrations to use check_send_webhook_message.
+a1e3c91 webhooks: Delete duplicate statuspage.io fixtures from GCI.
+93678e8 webhooks: Migrate 14 webhooks to use check_send_webhook_message.
+af56df7 webhooks: Enable custom topics and default PM notifications.
+5c1858e webhooks/taiga: Update text to conform to the new style guide.
+f89b3fd webhooks/heroku: Update text to conform to new style guide.
+71619f7 webhooks/insping: Update text to conform to style guide.
+5fdb066 webhooks/zapier: Update text to conform to doc style guide.
+0a39615 webhooks/ifttt: Update text to conform to doc style guide.
+c63b898 models: Delete legacy convert_bot_to_outgoing_webhook.
+d6213c3 models: Delete unused function get_realm_outgoing_webhook_services_name.
+9e52a9f webhooks/flock: Add flock integration.
+7c830c5 webhooks/beeminder: Mock time.time() to avoid race.
+fa8525c webhooks/hellosign: Update text to conform to doc style guide.
+f3590dc webhooks/gosquared: Update text to conform to doc style guide.
+12396dd webhooks/gogs: Update text to conform to doc style guide.
+88a1980 webhooks/gitlab: Update text to conform to doc style guide.
+f7a21b1 webhooks/github_webhook: Update text to conform to doc style guide.
+b6fc33e webhooks/gci: Update text to conform to doc style guide.
+fa1583b webhooks/dropbox: Update text to conform to doc style guide.
+4f039e4 webhooks/delighted: Update text to conform to doc style guide.
+18c6cd9 webhooks/codeship: Update text to conform to doc style guide.
+1c44a9c webhooks/bitbucket2: Update text to conform to doc style guide.
+f551f3a webhooks/beanstalk: Update text to conform to doc style guide.
+9de9064 webhooks/basecamp: Update text to conform to doc style guide.
+7ee7d4a webhooks/appfollow: Update text to conform to doc style guide.
+12c4a82 webhooks/crashlytics: Update the text.
+53ccbdc webhooks/dropbox: Update text and remove screenshots.
+75ce126 webhooks/github: Log payloads that aren't handled properly.
+5069683 decorators: Refactor the webhook_logger code.
+c45acad integrations: Add webhook payloads for Front.
+1516e51 webhooks/gitlab: Support both "Build Hook" and "Job Hook" events.
+fbbdc01 webhooks/gitlab: Replace "Build Hook" with "Job Hook".
+6ddc0b7 webhook_md_macros: Stop using transition words.
+096c0b6 webhooks/basecamp: Update text and remove screenshots.
+3b75980 webhooks/appfollow: Update text and remove screenshot.
+ed34542 webhooks/airbrake: Combine instructions into 4 steps.
+4d410a5 webhooks/gci: Update text.
+9667594 webhook/delighted: Update text and remove screenshot.
+e139d29 webhooks/codeship: Update text and remove screenshots.
+0d39b05 webhooks/beanstalk: Update text and remove screenshots.
+bd787c1 webhooks/bitbucket2: Update text and remove screenshots.
+03624b7 webhooks: Add Facebook integration.
+76c56ad webhooks/beeminder: Make deadline time (time_remain) positive.
+f57d592 edit-outgoing-webhook-service.handlebars: Fix typo.
+338bba7 edit_bot.handlebars: Extract outgoing webhook form.
+ea0fe90 webhooks/beeminder/doc.md: Use better macros.
+4414f2b webhooks/beeminder: Use create-a-bot.md macro.
+db152da webhooks/beeminder/doc.md: Add instructions for creating a bot.
+77760d9 webhooks/beeminder: Update sample message screenshot.
+1303248 integration: Add statuspage.io webhook integration.
+e8fe4a6 webhooks/gitlab: Filter out hidden comments from issue descriptions.
+bd6fa38 frontend: Add outgoing webhook config entries to the "edit bot" menu.
+a90e99d webhooks: Add Beeminder webhook.
+457c5a7 webhooks/gci: Support 'outoftime' event.
+93f47fa outgoing webhooks: Rename "Base URL" to "Endpoint URL".
+68d86b6 integrations: Add webhook payloads for rollbar.
+e417a99 webhooks/gitlab: Support topic parameter to specify a topic.
+4f700dd integrations: Add webhook payloads for Raygun.
+7c113d1 integrations: Add webhook payloads for Facebook.
+18c3bec webhooks/gci: Support "unassign" event type.
+2c7f4d2 webhooks/gci: Support "extend" event type.
+e7f1a9e inetgrations: Add webhook payloads for Honeybadger.
+39fc26d integrations: Add webhook payloads for Runscope.
+de62e11 integrations: Add webhook payloads for StatusPage.io.
+bebd8df zerver/webhooks/github/view: Sweep force_str.
+99cb001 zerver/webhooks/beanstalk/view.py: Sweep force_bytes and force_str.
+2f575cc Add Dropbox webhook integration.
+c8aadaa integrations: Add webhook payloads for Intercom.
+8936d03 webhooks/gitlab: Support Merge Request Hook approved event type.
+21008a4 webhooks/gci: Support approve-pending-pc event type.
+3792bd2 integrations: Add webhook payloads for Groove.
+1d202e3 integrations: Add webhook payloads for Opbeat.
+bea653f webhooks/gci: Improve message formatting.
+5b8f38f webhooks/bitbucket2: Ignore push events with no changes.
+23162a1 github_webhook: Use indented Markdown macros.
+1dca7cc webhooks/beanstalk: Use indented Markdown macros.
+8b43e07 webhooks/codebase: Use indented Markdown macros.
+73a668e python: Sort imports in webhooks.
+04eaec6 zerver/webhooks: Text-wrap long lines exceeding 110.
+969cc50 zerver/webhooks: Use python 3 syntax for typing.
+aaaed74 webhooks: Import REQ, has_request_variables from zerver.lib.request.
+20f3e9b webhooks/gci: Support 'needswork' event_type.
+9969a3a webhooks/gci: Replace 'type' -> 'event_type', 'uuid' -> 'id'.
+d0c0b14 bot services: Rename add_outgoing_webhook_service to add_service.
+bd814ee webhooks/taiga: Support relateduserstory events.
+a613f3c get_owned_bot_dicts: Optimize admin's bot dicts loading from database.
+f531d37 Reorder "create bot UI" for embedded bots.
+b5a860b analytics: Populate messages_in_stream:is_bot:day in dev.
+695b3e4 frontend: Add embedded bot config data editing.
+044b0be frontend: Store embedded bot data in bot_data.js.
+48b2e4e backend: Add bot config data patching.
+ade077f backend: Add bot config data to initial state data.
+02bc506 bot_data.js: Fix dict indentation.
+561e0ff frontend: Delete page_params.realm_bots after first usage.
+4cc8c74 frontend: Internally refer to bots by ID.
+9a15c4e Add bot services to page_params.
+06fb868 Send an event to bot owners when a bot is created.
+9efc1b0 reminders: Add slash command to set reminders from reminder bot.
+c770bda reminder_bot: Add infra for adding reminder bot to every realm.
+3accf7b embedded bots UI: Fix wrong _.each argument order.
+d1d8365 embedded bots: Add config data UI.
+ed7208f Make EmbeddedBotHandler.get_config_info comply with ExternalBotHandler.
+9cc059f bot_config.py: Raise exception when getting config data from bot without config entries.
+29905ad create stream: Before sending notificaion, check if NOTIFICATION_BOT exists.
+28b0ebd Embedded bots: Add UI for adding embedded bots.
+94c8e8b embedded bots: Strip @-mention from message.
+9682ad4 left sidebar: Add margin to bottom of Streams list.
+34ee019 activity: Consistently define "user" as non-deactivated, non-bot.
+2310794 bots: Don't allow embedded bots bot type in production.
+c8a5ae7 embedded bots: Consistently use 'storage' instead of 'state.'
+649b7b8 internal_send_message: Enforce being passed cross-realm bots.
+6952dcb embedded bots: Stop using internal_send_message for non-system-bots.
+2758278 embedded bots: Flip around ordering of rate-limiting check.
+b4e67fa bot_lib: Fix storage bug introduced by rebase error.
+e526d0c embedded bots: Add views to access state.
+d2af8d4 embedded bots: Support multi-entry state modification.
+cbadd3d embedded bots: Simplify StateError exception messages.
+81adc92 actions: Use get_system_bot for fetching WELCOME_BOT.
+395f1e9 embedded bots: Add database config storage.
+ae5ba7f Add a couple cross-realm bots.
+8fccf36 bots: Wrap StateError exceptions around BotUserData exceptions.
+1bcc07f popovers: Add bot icon to user profile popovers for bots.
+a3e5f2a message view: Use new custom bot icon in messages.
+0b800b0 icons: Create framework for custom icons and add new bot icon.
+9767029 Allow generic bots to be mentioned.
+692db3f embedded bots: Move StateHandler query logic to separate file.
+cab39dc get_service_bot_events: Add some future-proofing.
+a70ede6 Allow "default" bots to see mentions on all streams.
