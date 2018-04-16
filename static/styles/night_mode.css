@@ -26,7 +26,7 @@ body.night-mode .message_embed .data-container::after {
 body.night-mode .column-left .left-sidebar,
 body.night-mode #settings_page .form-sidebar,
 body.night-mode .column-right .right-sidebar {
-    border-left-color: hsla(0, 0%, 0%, 0.2);
+    border-color: hsla(0, 0%, 0%, 0.2);
 }
 
 body.night-mode .dark .message_label_clickable.stream_label,
@@ -198,6 +198,7 @@ body.night-mode .popover.bottom .arrow {
     border-bottom-color: hsl(235, 18%, 7%);
 }
 
+body.night-mode .stream_label:before,
 body.night-mode .popover.left .arrow {
     border-left-color: hsl(235, 18%, 7%);
 }

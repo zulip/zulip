@@ -174,7 +174,6 @@ li.active-sub-filter {
 #global_filters .count,
 #stream_filters .count {
     float: right;
-    margin-top: 3px;
     line-height: 12px;
     background: hsl(105, 2%, 50%);
     padding: 1px 4px;
@@ -200,8 +199,10 @@ li.active-sub-filter {
 
 .topic-box {
     padding-left: 5px;
+    margin-right: 30px;
 }
 
+.conversation-partners,
 .topic-name {
     display: block;
     line-height: 1.1;
@@ -209,6 +210,7 @@ li.active-sub-filter {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    padding-right: 2px;
 }
 
 .left-sidebar li a.topic-name:hover {
@@ -217,10 +219,7 @@ li.active-sub-filter {
 
 .topic-unread-count,
 .private_message_count {
-    display: block;
-    position: absolute;
     line-height: 1em;
-    top: 4px;
     padding: 1px 4px 1px 4px;
     background: hsl(107, 5%, 66%);
     color: hsl(0, 0%, 100%);
@@ -229,15 +228,6 @@ li.active-sub-filter {
     font-weight: normal;
     letter-spacing: 0.6px;
     border-radius: 4px;
-}
-
-.topic-unread-count {
-    right: 30px;
-    top: 3px;
-}
-
-.private_message_count {
-    right: 20px;
 }
 
 ul.filters i {
@@ -303,8 +293,14 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block {
     padding: 0px;
-    margin-right: 18px;
+    margin-right: 25px;
     margin-left: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 #stream_filters .subscription_block::after {
@@ -315,15 +311,11 @@ ul.filters li.out_of_home_view li.muted_topic {
 
 #stream_filters .subscription_block .stream-name {
     display: inline-block;
-    width: calc(100% - 76px);
-
-    text-overflow: ellipsis;
-    white-space: nowrap;
     overflow: hidden;
-
+    text-overflow: ellipsis;
     line-height: 1.1;
     position: relative;
-    top: 3px;
+    width: 100%;
 }
 
 #stream_filters .subscription_block.stream-with-count {
@@ -386,14 +378,15 @@ li.expanded_private_message a {
 
 .pm-box,
 .topic-box {
-    display: block;
-    margin-right: 38px;
+    display: flex;
+    justify-content: center;
     padding-top: 1px;
     cursor: pointer;
 }
 
 .pm-box {
-    line-height: 1;
+    margin-right: 20px;
+    align-items: center;
 }
 
 .zero-subject-unreads .pm-box,
@@ -441,7 +434,7 @@ li.expanded_private_message a {
 }
 
 .zero_count {
-    display: none;
+    visibility: hidden;
 }
 
 li.show-more-topics a {
