@@ -806,7 +806,7 @@ td.pointer {
     margin-top: -14px;
     border-style: solid;
     border-width: 14px 0 14px 6px;
-    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) #ffffff;
+    border-color: hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) hsla(0, 0%, 0%, 0.0) transparent;
     z-index: 1;
     -moz-transform: scale(.9999);
 }
