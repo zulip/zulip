@@ -2,18 +2,18 @@ var noop = function () {};
 
 var exports = {};
 
-exports.make_new_elem = function (selector, opts) {
-    var html = 'never-been-set';
-    var text = 'never-been-set';
-    var value;
-    var shown = false;
-    var focused = false;
-    var find_results = new Dict();
-    var my_parent;
-    var parents_result = new Dict();
-    var properties = new Dict();
-    var attrs = new Dict();
-    var classes = new Dict();
+exports.make_event_store = (selector) => {
+    /*
+
+       This function returns an event_store object that
+       simulates the behavior of .on and .off from jQuery.
+
+       It also has methods to retrieve handlers that have
+       been set via .on (or similar methods), which can
+       be useful for tests that want to test the actual
+       handlers.
+
+    */
     var on_functions = new Dict();
     var child_on_functions = new Dict();
 
@@ -29,6 +29,108 @@ exports.make_new_elem = function (selector, opts) {
             handler(arg);
         }
     }
+
+    var self = {
+        generic_event: generic_event,
+
+        get_on_handler: function (name, child_selector) {
+            var funcs = self.get_on_handlers(name, child_selector);
+            assert.equal(funcs.length, 1, 'We expected to have exactly one handler here.');
+            return funcs[0];
+        },
+
+        get_on_handlers: function (name, child_selector) {
+            if (child_selector === undefined) {
+                return on_functions.get(name) || [];
+            }
+
+            var child_on = child_on_functions.get(child_selector) || {};
+            if (!child_on) {
+                return [];
+            }
+
+            return child_on.get(name) || [];
+        },
+
+        off: function () {
+            var event_name;
+
+            if (arguments.length === 2) {
+                event_name = arguments[0];
+                on_functions[event_name] = [];
+            } else if (arguments.length === 3) {
+                event_name = arguments[0];
+                var sel = arguments[1];
+                var child_on = child_on_functions.setdefault(sel, new Dict());
+                child_on[event_name] = [];
+            }
+        },
+
+        on: function () {
+            // parameters will either be
+            //    (event_name, handler) or
+            //    (event_name, sel, handler)
+            var event_name;
+            var sel;
+            var handler;
+
+            // For each event_name (or event_name/sel combo), we will store an
+            // array of functions that are mapped to the event (or event/selector).
+            //
+            // Usually funcs is an array of just one element, but not always.
+            var funcs;
+
+            if (arguments.length === 2) {
+                event_name = arguments[0];
+                handler = arguments[1];
+                funcs = on_functions.setdefault(event_name, []);
+                funcs.push(handler);
+            } else if (arguments.length === 3) {
+                event_name = arguments[0];
+                sel = arguments[1];
+                handler = arguments[2];
+                assert.equal(typeof(sel), 'string', 'String selectors expected here.');
+                assert.equal(typeof(handler), 'function', 'An handler function expected here.');
+                var child_on = child_on_functions.setdefault(sel, new Dict());
+                funcs = child_on.setdefault(event_name, []);
+                funcs.push(handler);
+            }
+        },
+
+        trigger: function (ev) {
+            var ev_name = typeof ev === 'string' ? ev : ev.name;
+            var funcs = on_functions.get(ev_name) || [];
+            // The following assertion is temporary.  It can be
+            // legitimate for code to trigger multiple handlers.
+            // But up until now, we haven't needed this, and if
+            // you come across this assertion, it's possible that
+            // you can simplify your tests by just doing your own
+            // mocking of trigger().  If you really know what you
+            // are doing, you can remove this limitation.
+            assert(funcs.length <= 1, 'multiple functions set up');
+
+            _.each(funcs, function (f) {
+                f(ev.data);
+            });
+        },
+    };
+
+    return self;
+};
+
+exports.make_new_elem = function (selector, opts) {
+    var html = 'never-been-set';
+    var text = 'never-been-set';
+    var value;
+    var shown = false;
+    var focused = false;
+    var find_results = new Dict();
+    var my_parent;
+    var parents_result = new Dict();
+    var properties = new Dict();
+    var attrs = new Dict();
+    var classes = new Dict();
+    var event_store = exports.make_event_store(selector);
 
     var self = {
         add_child: function () {
@@ -52,7 +154,7 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         click: function (arg) {
-            generic_event('click', arg);
+            event_store.generic_event('click', arg);
             return self;
         },
         css: noop,
@@ -93,21 +195,10 @@ exports.make_new_elem = function (selector, opts) {
             return selector;
         },
         get_on_handler: function (name, child_selector) {
-            var funcs = self.get_on_handlers(name, child_selector);
-            assert.equal(funcs.length, 1, 'We expected to have exactly one handler here.');
-            return funcs[0];
+            return event_store.get_on_handler(name, child_selector);
         },
         get_on_handlers: function (name, child_selector) {
-            if (child_selector === undefined) {
-                return on_functions.get(name) || [];
-            }
-
-            var child_on = child_on_functions.get(child_selector) || {};
-            if (!child_on) {
-                return [];
-            }
-
-            return child_on.get(name) || [];
+            return event_store.get_on_handlers(name, child_selector);
         },
         hasClass: function (class_name) {
             return classes.has(class_name);
@@ -136,57 +227,19 @@ exports.make_new_elem = function (selector, opts) {
             return focused;
         },
         keydown: function (arg) {
-            generic_event('keydown', arg);
+            event_store.generic_event('keydown', arg);
             return self;
         },
         keyup: function (arg) {
-            generic_event('keyup', arg);
+            event_store.generic_event('keyup', arg);
             return self;
         },
         off: function () {
-            var event_name;
-
-            if (arguments.length === 2) {
-                event_name = arguments[0];
-                on_functions[event_name] = [];
-            } else if (arguments.length === 3) {
-                event_name = arguments[0];
-                var sel = arguments[1];
-                var child_on = child_on_functions.setdefault(sel, new Dict());
-                child_on[event_name] = [];
-            }
-
+            event_store.off.apply(undefined, arguments);
             return self;
         },
         on: function () {
-            // parameters will either be
-            //    (event_name, handler) or
-            //    (event_name, sel, handler)
-            var event_name;
-            var sel;
-            var handler;
-
-            // For each event_name (or event_name/sel combo), we will store an
-            // array of functions that are mapped to the event (or event/selector).
-            //
-            // Usually funcs is an array of just one element, but not always.
-            var funcs;
-
-            if (arguments.length === 2) {
-                event_name = arguments[0];
-                handler = arguments[1];
-                funcs = on_functions.setdefault(event_name, []);
-                funcs.push(handler);
-            } else if (arguments.length === 3) {
-                event_name = arguments[0];
-                sel = arguments[1];
-                handler = arguments[2];
-                assert.equal(typeof(sel), 'string', 'String selectors expected here.');
-                assert.equal(typeof(handler), 'function', 'An handler function expected here.');
-                var child_on = child_on_functions.setdefault(sel, new Dict());
-                funcs = child_on.setdefault(event_name, []);
-                funcs.push(handler);
-            }
+            event_store.on.apply(undefined, arguments);
             return self;
         },
         parent: function () {
@@ -221,7 +274,7 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         select: function (arg) {
-            generic_event('select', arg);
+            event_store.generic_event('select', arg);
             return self;
         },
         set_find_results: function (find_selector, jquery_object) {
@@ -248,20 +301,7 @@ exports.make_new_elem = function (selector, opts) {
             return text;
         },
         trigger: function (ev) {
-            var ev_name = typeof ev === 'string' ? ev : ev.name;
-            var funcs = on_functions.get(ev_name) || [];
-            // The following assertion is temporary.  It can be
-            // legitimate for code to trigger multiple handlers.
-            // But up until now, we haven't needed this, and if
-            // you come across this assertion, it's possible that
-            // you can simplify your tests by just doing your own
-            // mocking of trigger().  If you really know what you
-            // are doing, you can remove this limitation.
-            assert(funcs.length <= 1, 'multiple functions set up');
-
-            _.each(funcs, function (f) {
-                f(ev.data);
-            });
+            event_store.trigger(ev);
             return self;
         },
         val: function () {
