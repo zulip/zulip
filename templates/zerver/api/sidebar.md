@@ -16,6 +16,7 @@
 
 ## REST API
 
+* [Overview](/api/rest)
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
 * [Error handling](/api/rest_error_handling)
