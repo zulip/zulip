@@ -18,6 +18,7 @@
 
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
+* [Error handling](/api/rest_error_handling)
 
 #### Messages
 
@@ -45,7 +46,3 @@
 * [Register a queue](/api/register-queue)
 * [Get events from queue](/api/get-events-from-queue)
 * [Delete a queue](/api/delete-queue)
-
-#### Common Errors
-
-* [Example payloads](/api/common-error-payloads)
