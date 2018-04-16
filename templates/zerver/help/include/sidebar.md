@@ -105,7 +105,7 @@
 * [Tips for Zulip on Android](/help/zulip-on-android)
 * [Zulip in a Terminal](/help/zulip-in-a-terminal)
 <!-- Zulip on macOS -->
-<!-- Zulip on Linux -->
+* [Tips for Zulip on Linux](/help/zulip-on-linux)
 <!-- Zulip on iOS -->
 <!-- Connect to Zulip over IRC/etc (not implemented?) -->
 
