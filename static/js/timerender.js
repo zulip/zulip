@@ -88,7 +88,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
     if (days === 1) {
         return [i18n.t("Last online: yesterday")];
     }
-    if (days < 7){
+    if (days < 7) {
         return i18n.t("Last online: __days__ days ago", {days: days});
     }
     if (days < 365) {
