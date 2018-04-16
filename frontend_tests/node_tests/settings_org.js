@@ -162,18 +162,6 @@ function createSaveButtons() {
     );
     var props  = {};
     props.hidden = false;
-    props.status = "";
-    stub_save_button.attr = function (name, val) {
-        if (name === "data-status") {
-            if (val !== null) {
-                props.status = val;
-                return;
-            }
-            return props.status;
-        } else if (name === "id") {
-            return 'org-submit-msg-editing';
-        }
-    };
     save_btn_controls.animate = function (obj) {
         if (obj.opacity === 0) {
             props.hidden = true;
@@ -239,29 +227,30 @@ function test_change_save_button_state() {
     var $save_btn_controls = stubs.save_button_controls;
     var $save_btn_text = stubs.save_button_text;
     var $save_btn = stubs.save_button;
+    $save_btn.attr("id", "org-submit-msg-editing");
     var props = stubs.props;
     settings_org.change_save_button_state($save_btn_controls, "unsaved");
     assert.equal($save_btn_text.text(), 'translated: Save changes');
     assert.equal(props.hidden, false);
-    assert.equal(props.status, "unsaved");
+    assert.equal($save_btn.attr("data-status"), "unsaved");
     settings_org.change_save_button_state($save_btn_controls, "saved");
     assert.equal($save_btn_text.text(), 'translated: Save changes');
     assert.equal(props.hidden, true);
-    assert.equal(props.status, "");
+    assert.equal($save_btn.attr("data-status"), "");
     settings_org.change_save_button_state($save_btn_controls, "saving");
     assert.equal($save_btn_text.text(), 'translated: Saving');
-    assert.equal(props.status, "saving");
+    assert.equal($save_btn.attr("data-status"), "saving");
     assert.equal($save_btn.hasClass('saving'), true);
     settings_org.change_save_button_state($save_btn_controls, "discarded");
     assert.equal(props.hidden, true);
     assert.equal($save_btn.hasClass('saving'), false);
     settings_org.change_save_button_state($save_btn_controls, "succeeded");
     assert.equal(props.hidden, true);
-    assert.equal(props.status, "saved");
+    assert.equal($save_btn.attr("data-status"), "saved");
     assert.equal($save_btn_text.text(), 'translated: Saved');
     settings_org.change_save_button_state($save_btn_controls, "failed");
     assert.equal(props.hidden, false);
-    assert.equal(props.status, "failed");
+    assert.equal($save_btn.attr("data-status"), "failed");
     assert.equal($save_btn_text.text(), 'translated: Save changes');
 }
 
@@ -511,8 +500,9 @@ function test_extract_property_name() {
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
-    settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
     test_change_save_button_state();
+
+    settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
 }());
 
 (function test_misc() {
