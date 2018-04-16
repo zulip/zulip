@@ -69,6 +69,7 @@ exports.activate = function (raw_operators, opts) {
             exports.narrow_title = filter.operands("stream")[0];
         }
     } else if (filter.has_operator("is")) {
+        compose.change_to_private();
         exports.narrow_title = filter.operands("is")[0];
     } else if (filter.has_operator("pm-with")) {
         compose.change_to_private();
