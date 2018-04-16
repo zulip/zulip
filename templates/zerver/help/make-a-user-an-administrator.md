@@ -7,8 +7,9 @@ modifying organization-wide settings, such as changing the organization name,
 activating or deactivating users, deleting streams, etc. Follow the following steps to
 give any user in your organization administrative rights.
 
-1. Go to the [Users](/#organization/user-list-admin)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Users**.
 
 4. Click on the **Make admin** button for the user that you wish to make an
 administrator.
@@ -20,8 +21,9 @@ reload and the user will gain administrative privileges immediately.
 
 Administrators can also revoke the administrative rights given to a user.
 
-1. Go to the [Users](/#organization/user-list-admin)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Users**.
 
 2. Click on the **Remove admin** button.
 

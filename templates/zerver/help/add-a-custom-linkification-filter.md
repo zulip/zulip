@@ -9,8 +9,9 @@ define a filter to automatically linkify #1234 to
 https://github.com/zulip/zulip/pulls/1234, Z1234 to link to that
 Zendesk ticket ID, or anything similar.
 
-1. Go to the [Filter settings](/#organization/filter-settings)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Filter settings**.
 
 5. In the green section labeled **Add a new filter**, find the **Regular expression**
 and **URL format string** fields.

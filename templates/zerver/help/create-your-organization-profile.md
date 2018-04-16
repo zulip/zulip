@@ -6,8 +6,9 @@ There are several aspects to your organization's profile that can be
 configured to customize how your organization appears to users and people
 searching for your organization.
 
-1. Go to the [Organization profile](/#organization/organization-profile)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization profile**.
 
 ## Change your organization's name
 

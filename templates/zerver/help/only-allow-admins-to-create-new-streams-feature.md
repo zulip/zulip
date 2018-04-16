@@ -5,8 +5,9 @@
 By default, any user can create new streams. You can enable a setting that
 only allows administrators to create new streams in the organization.
 
-1. Go to the [Organization permissions](/#organization/organization-permissions)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization permissions**.
 
 2. Select the **Prevent users from creating streams** checkbox under the
 **Streams & custom emoji** section.

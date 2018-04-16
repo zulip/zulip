@@ -17,8 +17,9 @@ Instead, you should deactivate the user’s account using the Zulip
 **[organization administration interface](/help/change-your-organization-settings)**;
 this will also automatically deactivate any bots the user has created.
 
-1. Go to the [Users](/#organization/user-list-admin)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Users**.
 
  4. Click the **Deactivate** button to the right of the user account that you
 want to deactivate.
@@ -42,8 +43,9 @@ disappear, confirming the success of the account's deactivation.
 Zulip organization administrators can choose to reactivate a user's deactivated account
 by following the following steps.
 
-1. Go to the [Deactivated users](/#organization/deactivated-users-admin)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Deactivated users**.
 
 4. Click the **Reactivate** button to the right of the user account that you
 want to reactivate.

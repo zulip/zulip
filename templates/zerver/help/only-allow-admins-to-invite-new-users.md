@@ -6,8 +6,9 @@ By default, any user in your Zulip organization can invite new users. You
 can change your organization's settings to only allow administrators to
 invite new users.
 
-1. Go to the [Organization permissions](/#organization/organization-permissions)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization permissions**.
 
 2. Select the **Users need an invitation to join** and **Only admins can invite new users**
 checkboxes under the **Joining the organization** section.
