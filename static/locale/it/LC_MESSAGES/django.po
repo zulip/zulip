@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-04-03 17:14+0000\n"
+"POT-Creation-Date: 2018-04-16 20:20+0000\n"
 "PO-Revision-Date: 2017-09-04 03:34+0000\n"
 "Last-Translator: Greg Price <gnprice@gmail.com>\n"
 "Language-Team: Italian (http://www.transifex.com/zulip/zulip/language/it/)\n"
@@ -205,16 +205,16 @@ msgstr "Chiudi"
 msgid "Welcome back"
 msgstr ""
 
-#: templates/zerver/bankruptcy.html:13
+#: templates/zerver/bankruptcy.html:12
 msgid "Yes, please!"
 msgstr ""
 
-#: templates/zerver/bankruptcy.html:15
+#: templates/zerver/bankruptcy.html:14
 msgid "No, I'll catch up."
 msgstr ""
 
 #: templates/zerver/compose.html:12 templates/zerver/compose.html:14
-#: templates/zerver/compose.html:121
+#: templates/zerver/compose.html:120
 #: templates/zerver/keyboard_shortcuts.html:241
 msgid "Drafts"
 msgstr ""
@@ -237,80 +237,76 @@ msgstr ""
 msgid "Reply"
 msgstr ""
 
-#: templates/zerver/compose.html:55 templates/zerver/keyboard_shortcuts.html:25
+#: templates/zerver/compose.html:56 templates/zerver/keyboard_shortcuts.html:25
 #: templates/zerver/keyboard_shortcuts.html:149
 msgid "Cancel compose"
 msgstr ""
 
-#: templates/zerver/compose.html:69
+#: templates/zerver/compose.html:70
 msgid "This is an invite-only stream"
 msgstr ""
 
-#: templates/zerver/compose.html:73
+#: templates/zerver/compose.html:74
 msgid "Stream"
 msgstr "Flusso"
 
-#: templates/zerver/compose.html:77
+#: templates/zerver/compose.html:78
 msgid "Topic"
 msgstr "Argomento"
 
-#: templates/zerver/compose.html:82
+#: templates/zerver/compose.html:83
 msgid "To"
 msgstr ""
 
-#: templates/zerver/compose.html:86
+#: templates/zerver/compose.html:87
 msgid "You and"
 msgstr ""
 
-#: templates/zerver/compose.html:88
+#: templates/zerver/compose.html:89
 msgid "Add one or more users"
 msgstr ""
 
-#: templates/zerver/compose.html:88
+#: templates/zerver/compose.html:89
 msgid "Add another user..."
 msgstr ""
 
-#: templates/zerver/compose.html:96
+#: templates/zerver/compose.html:97
 msgid "Compose your message here"
 msgstr ""
 
-#: templates/zerver/compose.html:96
+#: templates/zerver/compose.html:97
 msgid "Compose your message here..."
 msgstr ""
 
-#: templates/zerver/compose.html:105
+#: templates/zerver/compose.html:106
 msgid "Add emoji"
 msgstr ""
 
-#: templates/zerver/compose.html:107
+#: templates/zerver/compose.html:108
 msgid "Formatting"
 msgstr ""
 
-#: templates/zerver/compose.html:109
-msgid "Attach files from Dropbox"
-msgstr ""
-
-#: templates/zerver/compose.html:111
+#: templates/zerver/compose.html:110
 msgid "Attach files"
 msgstr ""
 
-#: templates/zerver/compose.html:114
+#: templates/zerver/compose.html:113
 msgid "Add video call"
 msgstr ""
 
-#: templates/zerver/compose.html:118
+#: templates/zerver/compose.html:117
 msgid "Write"
 msgstr ""
 
-#: templates/zerver/compose.html:120
+#: templates/zerver/compose.html:119
 msgid "Preview"
 msgstr ""
 
-#: templates/zerver/compose.html:125
+#: templates/zerver/compose.html:124
 msgid "Press Enter to send"
 msgstr ""
 
-#: templates/zerver/compose.html:127
+#: templates/zerver/compose.html:126
 msgid "Send"
 msgstr ""
 
@@ -676,21 +672,21 @@ msgstr ""
 
 #: templates/zerver/index.html:51
 msgid ""
-"If this message does not go away, please wait a couple seconds and <a href="
-"\"javascript:location.reload(true)\">reload</a> the page."
+"If this message does not go away, please wait a couple seconds and <a id="
+"\"reload-lnk\">reload</a> the page."
 msgstr ""
 
-#: templates/zerver/index.html:75
+#: templates/zerver/index.html:83
 msgid ""
 "<strong class=\"message\">Unable to connect to\n"
 "            Zulip.</strong>  Updates may be delayed."
 msgstr ""
 
-#: templates/zerver/index.html:76
+#: templates/zerver/index.html:84
 msgid "Retrying soon..."
 msgstr ""
 
-#: templates/zerver/index.html:76
+#: templates/zerver/index.html:84
 msgid "Try now."
 msgstr ""
 
@@ -739,6 +735,14 @@ msgid "Hi there! Thank you for your interest in Zulip."
 msgstr ""
 
 #: templates/zerver/invalid_email.html:10
+msgid ""
+"\n"
+"        The email address you are trying to sign up with is not valid.\n"
+"        Please sign up using a valid email address.\n"
+"        "
+msgstr ""
+
+#: templates/zerver/invalid_email.html:19
 #, python-format
 msgid ""
 "\n"
@@ -748,7 +752,7 @@ msgid ""
 "        "
 msgstr ""
 
-#: templates/zerver/invalid_email.html:20
+#: templates/zerver/invalid_email.html:29
 #, python-format
 msgid ""
 "The organization you are trying to join,\n"
@@ -1584,7 +1588,7 @@ msgstr ""
 msgid "Organization permissions"
 msgstr ""
 
-#: templates/zerver/settings_overlay.html:61 zerver/models.py:1286
+#: templates/zerver/settings_overlay.html:61 zerver/models.py:1294
 msgid "Custom emoji"
 msgstr ""
 
@@ -1695,8 +1699,8 @@ msgid ""
 "    "
 msgstr ""
 
-#: zerver/decorator.py:128 zerver/lib/emoji.py:100 zerver/lib/users.py:51
-#: zerver/lib/users.py:54 zerver/views/invite.py:26 zerver/views/invite.py:28
+#: zerver/decorator.py:128 zerver/lib/emoji.py:100 zerver/lib/users.py:52
+#: zerver/lib/users.py:55 zerver/views/invite.py:26 zerver/views/invite.py:28
 #: zerver/views/invite.py:105
 #, fuzzy
 #| msgid "Administrators"
@@ -1731,23 +1735,23 @@ msgstr ""
 msgid "This endpoint does not accept bot requests."
 msgstr ""
 
-#: zerver/decorator.py:506
+#: zerver/decorator.py:523
 msgid "This endpoint requires HTTP basic authentication."
 msgstr ""
 
-#: zerver/decorator.py:509
+#: zerver/decorator.py:526
 msgid "Invalid authorization header for basic auth"
 msgstr ""
 
-#: zerver/decorator.py:560
+#: zerver/decorator.py:577
 msgid "Not logged in"
 msgstr ""
 
-#: zerver/decorator.py:565
+#: zerver/decorator.py:582
 msgid "Webhook bots can only access webhooks"
 msgstr ""
 
-#: zerver/decorator.py:621
+#: zerver/decorator.py:638
 msgid "Access denied"
 msgstr ""
 
@@ -1823,8 +1827,8 @@ msgid "hello"
 msgstr ""
 
 #: zerver/lib/actions.py:1613 zerver/lib/actions.py:4433
-#: zerver/views/messages.py:1088 zerver/views/messages.py:1095
-#: zerver/views/messages.py:1118
+#: zerver/views/messages.py:1165 zerver/views/messages.py:1172
+#: zerver/views/messages.py:1195
 msgid "User not authorized for this query"
 msgstr ""
 
@@ -1838,6 +1842,7 @@ msgid "You can't send private messages outside of your organization."
 msgstr ""
 
 #: zerver/lib/actions.py:1770 zerver/lib/streams.py:101
+#: zerver/lib/streams.py:156
 #, python-format
 msgid "Invalid stream name '%s'"
 msgstr ""
@@ -1945,7 +1950,8 @@ msgstr ""
 
 #: zerver/lib/actions.py:3438 zerver/lib/actions.py:3440
 #: zerver/lib/message.py:472 zerver/lib/message.py:483
-#: zerver/lib/message.py:488 zerver/lib/message.py:492
+#: zerver/lib/message.py:487 zerver/lib/message.py:493
+#: zerver/lib/message.py:500
 msgid "Invalid message(s)"
 msgstr ""
 
@@ -2010,7 +2016,7 @@ msgstr ""
 msgid "Missing topic"
 msgstr ""
 
-#: zerver/lib/addressee.py:118 zerver/views/messages.py:1252
+#: zerver/lib/addressee.py:118 zerver/views/messages.py:1329
 #: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:22
 msgid "Topic can't be empty"
 msgstr ""
@@ -2198,7 +2204,7 @@ msgstr ""
 msgid "Argument \"%s\" is not valid JSON."
 msgstr ""
 
-#: zerver/lib/rest.py:112 zerver/lib/rest.py:115
+#: zerver/lib/rest.py:119 zerver/lib/rest.py:122
 msgid "Not logged in: API authentication or user session required"
 msgstr ""
 
@@ -2211,16 +2217,16 @@ msgstr ""
 msgid "Stream name '%s' is already taken."
 msgstr ""
 
-#: zerver/lib/streams.py:220
+#: zerver/lib/streams.py:234
 msgid "User cannot create streams."
 msgstr ""
 
-#: zerver/lib/streams.py:222
+#: zerver/lib/streams.py:236
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr ""
 
-#: zerver/lib/streams.py:240
+#: zerver/lib/streams.py:254
 #, python-format
 msgid "Default stream group with id '%s' does not exist."
 msgstr ""
@@ -2246,35 +2252,35 @@ msgstr ""
 msgid "Invalid user group"
 msgstr ""
 
-#: zerver/lib/users.py:16
+#: zerver/lib/users.py:17
 msgid "Name too long!"
 msgstr ""
 
-#: zerver/lib/users.py:18
+#: zerver/lib/users.py:19
 msgid "Name too short!"
 msgstr ""
 
-#: zerver/lib/users.py:20
+#: zerver/lib/users.py:21
 msgid "Invalid characters in name!"
 msgstr ""
 
-#: zerver/lib/users.py:26 zerver/views/users.py:300 zerver/views/users.py:457
+#: zerver/lib/users.py:27 zerver/views/users.py:300 zerver/views/users.py:457
 msgid "Bad name or username"
 msgstr ""
 
-#: zerver/lib/users.py:41
+#: zerver/lib/users.py:42
 msgid "Invalid configuration data!"
 msgstr ""
 
-#: zerver/lib/users.py:58
+#: zerver/lib/users.py:59
 msgid "Invalid bot type"
 msgstr ""
 
-#: zerver/lib/users.py:62
+#: zerver/lib/users.py:63
 msgid "Invalid interface type"
 msgstr ""
 
-#: zerver/lib/users.py:117 zerver/lib/users.py:119
+#: zerver/lib/users.py:126 zerver/lib/users.py:131
 #, python-format
 msgid "Invalid user ID: %s"
 msgstr ""
@@ -2357,11 +2363,11 @@ msgstr ""
 msgid "API usage exceeded rate limit"
 msgstr ""
 
-#: zerver/models.py:1285
+#: zerver/models.py:1293
 msgid "Unicode emoji"
 msgstr ""
 
-#: zerver/models.py:1287
+#: zerver/models.py:1295
 msgid "Zulip extra emoji"
 msgstr ""
 
@@ -2439,11 +2445,11 @@ msgstr ""
 msgid "Dev environment not enabled."
 msgstr ""
 
-#: zerver/views/auth.py:646 zerver/views/auth.py:691
+#: zerver/views/auth.py:646 zerver/views/auth.py:693
 msgid "This organization has been deactivated."
 msgstr ""
 
-#: zerver/views/auth.py:649 zerver/views/auth.py:688
+#: zerver/views/auth.py:649 zerver/views/auth.py:690
 msgid "Your account has been disabled."
 msgstr ""
 
@@ -2451,27 +2457,27 @@ msgstr ""
 msgid "This user is not registered."
 msgstr ""
 
-#: zerver/views/auth.py:694
+#: zerver/views/auth.py:696
 msgid "Password auth is disabled in your team."
 msgstr ""
 
-#: zerver/views/auth.py:700
+#: zerver/views/auth.py:702
 msgid "This user is not registered; do so from a browser."
 msgstr ""
 
-#: zerver/views/auth.py:702 zerver/views/auth.py:785
+#: zerver/views/auth.py:704 zerver/views/auth.py:787
 msgid "Your username or password is incorrect."
 msgstr ""
 
-#: zerver/views/auth.py:726
+#: zerver/views/auth.py:728
 msgid "Invalid subdomain"
 msgstr ""
 
-#: zerver/views/auth.py:732
+#: zerver/views/auth.py:734
 msgid "Subdomain required"
 msgstr ""
 
-#: zerver/views/auth.py:791
+#: zerver/views/auth.py:793
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr ""
 
@@ -2528,57 +2534,57 @@ msgstr ""
 msgid "Invalid narrow operator: {desc}"
 msgstr ""
 
-#: zerver/views/messages.py:939
+#: zerver/views/messages.py:1016
 #, python-format
 msgid "No such topic '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1049
+#: zerver/views/messages.py:1126
 msgid "Invalid timestamp for scheduling message."
 msgstr ""
 
-#: zerver/views/messages.py:1059
+#: zerver/views/messages.py:1136
 msgid "Invalid timestamp for scheduling message. Choose a time in future."
 msgstr ""
 
-#: zerver/views/messages.py:1098
+#: zerver/views/messages.py:1175
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1116
+#: zerver/views/messages.py:1193
 msgid "Missing sender"
 msgstr ""
 
-#: zerver/views/messages.py:1122
+#: zerver/views/messages.py:1199
 msgid "Invalid mirrored message"
 msgstr ""
 
-#: zerver/views/messages.py:1124
+#: zerver/views/messages.py:1201
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1130
+#: zerver/views/messages.py:1207
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr ""
 
-#: zerver/views/messages.py:1191
+#: zerver/views/messages.py:1268
 msgid "Message edit history is disabled in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1208
+#: zerver/views/messages.py:1285
 msgid "Your organization has turned off message editing"
 msgstr ""
 
-#: zerver/views/messages.py:1225 zerver/views/messages.py:1305
+#: zerver/views/messages.py:1302 zerver/views/messages.py:1382
 msgid "You don't have permission to edit this message"
 msgstr ""
 
-#: zerver/views/messages.py:1236 zerver/views/messages.py:1245
+#: zerver/views/messages.py:1313 zerver/views/messages.py:1322
 msgid "The time limit for editing this message has past"
 msgstr ""
 
-#: zerver/views/messages.py:1248
+#: zerver/views/messages.py:1325
 msgid "Nothing to change"
 msgstr ""
 
@@ -2704,11 +2710,11 @@ msgstr ""
 msgid "You must upload exactly one icon."
 msgstr ""
 
-#: zerver/views/registration.py:339
+#: zerver/views/registration.py:343
 msgid "The organization creation link has expired or is not valid."
 msgstr ""
 
-#: zerver/views/registration.py:344
+#: zerver/views/registration.py:348
 msgid "New organization creation disabled."
 msgstr ""
 
@@ -2890,14 +2896,6 @@ msgstr ""
 
 #: zerver/views/zephyr.py:54
 msgid "We were unable to setup mirroring for you"
-msgstr ""
-
-#: zerver/webhooks/facebook/view.py:88
-msgid "Error: Token is wrong"
-msgstr ""
-
-#: zerver/webhooks/facebook/view.py:89
-msgid "Error: Unsupported method"
 msgstr ""
 
 #: zerver/webhooks/freshdesk/view.py:122
