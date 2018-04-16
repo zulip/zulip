@@ -62,6 +62,7 @@ exports.activate = function (raw_operators, opts) {
     // If the operator is something other than "stream", "topic", or
     // "is", we shouldn't update the narrow title
     if (filter.has_operator("stream")) {
+        compose.change_to_stream();
         if (filter.has_operator("topic")) {
             exports.narrow_title = filter.operands("topic")[0];
         } else {
@@ -70,8 +71,10 @@ exports.activate = function (raw_operators, opts) {
     } else if (filter.has_operator("is")) {
         exports.narrow_title = filter.operands("is")[0];
     } else if (filter.has_operator("pm-with")) {
+        compose.change_to_private();
         exports.narrow_title = "private";
     } else if (filter.has_operator("group-pm-with")) {
+        compose.change_to_private();
         exports.narrow_title = "private group";
     }
 
