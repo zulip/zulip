@@ -3618,6 +3618,9 @@ def do_update_message(user_profile: UserProfile, message: Message, topic_name: O
         stream_id = message.recipient.type_id
         event['stream_name'] = Stream.objects.get(id=stream_id).name
 
+    #if Stream.objects.get(id=stream_id).is_history_public_to_subscribers:
+      #  print("hello")
+
     ums = UserMessage.objects.filter(message=message.id)
 
     if content is not None:
