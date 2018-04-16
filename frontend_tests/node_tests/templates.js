@@ -72,7 +72,6 @@ function render(template_name, args) {
     html += "</div>";
     var link = $(html).find("a.respond_button");
     assert.equal(link.text().trim(), 'translated: Quote and reply');
-    global.write_handlebars_output("actions_popover_content", html);
 
     var deletedArgs = {
         message: {
@@ -117,8 +116,6 @@ function render(template_name, args) {
     assert.equal(domain.text(), "zulip.org");
 
     assert.equal(subdomains_checkbox.prop('checked'), true);
-
-    global.write_handlebars_output("admin-realm-domains-list", html);
 }());
 
 (function admin_realm_dropdown_stream_list() {
@@ -139,8 +136,6 @@ function render(template_name, args) {
     assert.equal(link.text().trim(), "Italy");
     assert(list_item.hasClass("stream_name"));
     assert.equal(list_item.attr("data-stream-id"), "18");
-
-    global.write_handlebars_output("admin-realm-dropdown-stream-list", html);
 }());
 
 (function admin_default_streams_list() {
@@ -169,7 +164,6 @@ function render(template_name, args) {
     html += "</table>";
     span = $(html).find(".default_stream_name:first");
     assert.equal(span.text(), "devel");
-    global.write_handlebars_output("admin_default_streams_list", html);
 }());
 
 (function admin_emoji_list() {
@@ -185,8 +179,6 @@ function render(template_name, args) {
     html += '<tbody id="admin_emoji_table">';
     html += render('admin_emoji_list', args);
     html += '</tbody>';
-
-    global.write_handlebars_output('admin_emoji_list', html);
 
     var emoji_name = $(html).find('tr.emoji_row:first span.emoji_name');
     var emoji_url = $(html).find('tr.emoji_row:first span.emoji_image img');
@@ -233,8 +225,6 @@ function render(template_name, args) {
     html += render('admin_profile_field_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_profile_field_list', html);
-
     field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
     field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
     td = $(html).find('tr.profile-field-row:first td');
@@ -280,8 +270,6 @@ function render(template_name, args) {
     html += render('admin_filter_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_filter_list', html);
-
     filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
     filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
 
@@ -322,8 +310,6 @@ function render(template_name, args) {
 
     var icon = $(html).find(".icon-vector-bolt");
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
-
-    global.write_handlebars_output("admin_invites_list", html);
 }());
 
 (function admin_streams_list() {
@@ -336,7 +322,6 @@ function render(template_name, args) {
     html += "</table>";
     var span = $(html).find(".stream_name:first");
     assert.equal(span.text(), "devel");
-    global.write_handlebars_output("admin_streams_list", html);
 }());
 
 (function admin_tab() {
@@ -351,7 +336,6 @@ function render(template_name, args) {
         assert.notEqual($(html).find("#" + admin_feature).length, 0);
     });
     assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
-    global.write_handlebars_output("admin_tab", html);
 }());
 
 (function admin_user_group_list() {
@@ -367,8 +351,6 @@ function render(template_name, args) {
     html += '<div id="user-groups">';
     html += render('admin_user_group_list', args);
     html += '</div>';
-
-    global.write_handlebars_output('admin_user_group_list', html);
 
     var group_id = $(html).find('.user-group:first').prop('id');
     var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
@@ -429,8 +411,6 @@ function render(template_name, args) {
 
     buttons = $(html).find('.button');
     assert.equal($(buttons).length, 6);
-
-    global.write_handlebars_output("admin_user_list", html);
 }());
 
 (function alert_word_settings_item() {
@@ -449,7 +429,6 @@ function render(template_name, args) {
     };
     html += render('alert_word_settings_item', args);
     html += "</ul>";
-    global.write_handlebars_output("alert_word_settings_item", html);
 
     var li = $(html).find("li.alert-word-item:first");
     var value = li.find('.value');
@@ -475,13 +454,11 @@ function render(template_name, args) {
 }());
 
 (function all_messages_sidebar_actions() {
-    var html = render('all_messages_sidebar_actions');
-    global.write_handlebars_output("all_messages_sidebar_actions", html);
+    render('all_messages_sidebar_actions');
 }());
 
 (function announce_stream_docs() {
-    var html = render('announce_stream_docs');
-    global.write_handlebars_output("announce_stream_docs", html);
+    render('announce_stream_docs');
 }());
 
 (function bankruptcy_modal() {
@@ -489,7 +466,6 @@ function render(template_name, args) {
         unread_count: 99,
     };
     var html = render('bankruptcy_modal', args);
-    global.write_handlebars_output("bankruptcy_modal", html);
     var count = $(html).find("p b");
     assert.equal(count.text(), 99);
 }());
@@ -507,8 +483,6 @@ function render(template_name, args) {
     html += render('admin_auth_methods_list', args);
     html += '</tbody>';
 
-    global.write_test_output('admin_auth_methods_list.handlebars', html);
-
     var method = $(html).find('tr.method_row:first span.method');
     assert.equal(method.text(), 'Email');
     assert.equal(method.is("checked"), false);
@@ -522,12 +496,9 @@ function render(template_name, args) {
         subscribed: true,
     };
     var html;
-    var all_html = '';
 
     html = render('bookend', args);
     assert.equal($(html).text().trim(), "subscribed to stream\n    \n        \n            translated: Unsubscribe");
-
-    all_html += html;
 
     args = {
         bookend_content: "Not subscribed to stream",
@@ -538,18 +509,10 @@ function render(template_name, args) {
     html = render('bookend', args);
     assert.equal($(html).text().trim(), 'Not subscribed to stream\n    \n        \n            translated: Subscribe');
 
-    all_html += '<hr />';
-    all_html += html;
-
-    global.write_handlebars_output("bookend", all_html);
 }());
 
 (function bot_avatar_row() {
     var html = '';
-    html += '<div id="settings">';
-    html += '<div id="bot-settings" class="settings-section">';
-    html += '<div class="bot-settings-form">';
-    html += '<ol id="active_bots_list" style="display: block">';
     var args = {
         email: "hamlet@zulip.com",
         api_key: "123456ABCD",
@@ -557,12 +520,7 @@ function render(template_name, args) {
         avatar_url: "/hamlet/avatar/url",
     };
     html += render('bot_avatar_row', args);
-    html += '</ol>';
-    html += '</div>';
-    html += '</div>';
-    html += '</div>';
 
-    global.write_handlebars_output("bot_avatar_row", html);
     var img = $(html).find("img");
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
 }());
@@ -579,7 +537,6 @@ function render(template_name, args) {
         ],
     };
     var html = render('bot_owner_select', args);
-    global.write_handlebars_output("bot_owner_select", html);
     var option = $(html).find("option:last");
     assert.equal(option.val(), "hamlet@zulip.com");
     assert.equal(option.text(), "Hamlet");
@@ -592,7 +549,6 @@ function render(template_name, args) {
         name: 'Hamlet',
     };
     var html = render('compose-invite-users', args);
-    global.write_handlebars_output("compose-invite-users", html);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
 }());
@@ -603,7 +559,6 @@ function render(template_name, args) {
         name: 'all',
     };
     var html = render('compose_all_everyone', args);
-    global.write_handlebars_output("compose_all_everyone", html);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
@@ -615,7 +570,6 @@ function render(template_name, args) {
         count: '101',
     };
     var html = render('compose_announce', args);
-    global.write_handlebars_output("compose_announce", html);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Yes, send");
     var error_msg = $(html).find('span.compose-announce-msg').text().trim();
@@ -624,7 +578,6 @@ function render(template_name, args) {
 
 (function compose_not_subscribed() {
     var html = render('compose_not_subscribed');
-    global.write_handlebars_output("compose_not_subscribed", html);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
 }());
@@ -639,7 +592,6 @@ function render(template_name, args) {
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
     html += '</div>';
-    global.write_handlebars_output("compose_notification", html);
     var a = $(html).find("a.compose_notification_narrow_by_subject");
     assert.equal(a.text(), "Narrow to here");
 }());
@@ -654,7 +606,6 @@ function render(template_name, args) {
     var actual_text = $(html).text();
     var expected_text = 'translated: Warning: Denmark is a private stream.';
     assert(actual_text.indexOf(expected_text) >= 1);
-    global.write_handlebars_output("compose_stream_alert", html);
 }());
 
 (function custom_user_profile_field() {
@@ -662,7 +613,6 @@ function render(template_name, args) {
     var html = render('custom-user-profile-field', args);
     assert.equal($(html).find('input').attr('id'), 2);
     assert.equal($(html).find('input').val(), "@GitHub");
-    global.write_handlebars_output("custom-user-profile-field", html);
 }());
 
 (function deactivate_stream_modal() {
@@ -670,7 +620,6 @@ function render(template_name, args) {
         stream_name: "Public stream",
     };
     var html = render('deactivation-stream-modal', args);
-    global.write_handlebars_output("deactivation-stream-modal", html);
 
     var modal_header = $(html).find("#deactivation_stream_modal_label");
     assert.equal(modal_header.text(), "translated: Delete stream " + args.stream_name);
@@ -680,8 +629,7 @@ function render(template_name, args) {
 }());
 
 (function dev_env_email_access() {
-    var html = render('dev_env_email_access');
-    global.write_handlebars_output("dev_env_email_access", html);
+    render('dev_env_email_access');
 }());
 
 (function draft_table_body() {
@@ -709,8 +657,6 @@ function render(template_name, args) {
     html += render('draft_table_body', args);
     html += '</div>';
 
-    global.write_handlebars_output("draft_table_body", html);
-
     var row_1 = $(html).find(".draft-row[data-draft-id='1']");
     assert.equal(row_1.find(".stream_label").text().trim(), "all");
     assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
@@ -729,7 +675,6 @@ function render(template_name, args) {
 
 (function email_address_hint() {
     var html = render('email_address_hint');
-    global.write_handlebars_output("email_address_hint", html);
     var li = $(html).find("li:first");
     assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
 }());
@@ -743,7 +688,6 @@ function render(template_name, args) {
     html += "</div>";
     var popover = $(html).find(".popover");
     assert(popover.hasClass("emoji-info-popover"));
-    global.write_handlebars_output("emoji_popover", html);
 }());
 
 (function emoji_popover_content() {
@@ -788,8 +732,6 @@ function render(template_name, args) {
 
     var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test']");
     assert(category_1.hasClass("active"));
-
-    global.write_handlebars_output("emoji_popover_content", html);
 }());
 
 (function emoji_popover_search_results() {
@@ -813,7 +755,6 @@ function render(template_name, args) {
     var html = "<div>";
     html += render("emoji_popover_search_results", args);
     html += "</div>";
-    global.write_handlebars_output("emoji_popover_search_results", html);
     var used_emoji = $(html).find(".emoji-test-2").parent();
     assert(used_emoji.hasClass("reaction"));
     assert(used_emoji.hasClass("reacted"));
@@ -836,7 +777,6 @@ function render(template_name, args) {
     assert(emoji_div.hasClass("emoji-1f44d"));
     assert.equal(canonical_name.text(), "thumbs_up");
     assert.equal(canonical_name.attr("title"), "thumbs_up");
-    global.write_handlebars_output("emoji_showcase", html);
 }());
 
 (function group_pms() {
@@ -851,7 +791,6 @@ function render(template_name, args) {
         ],
     };
     var html = render('group_pms', args);
-    global.write_handlebars_output("group_pms", html);
 
     var a = $(html).find("a:first");
     assert.equal(a.text(), 'Alice and Bob');
@@ -865,7 +804,6 @@ function render(template_name, args) {
     };
 
     var html = render('hotspot_overlay', args);
-    global.write_handlebars_output("hotspot_overlay", html);
 
     assert.equal($(html).attr('id'), 'hotspot_intro_compose_overlay');
     assert.equal($(html).find('.hotspot-title').text(), 'Start a new conversation');
@@ -882,7 +820,6 @@ function render(template_name, args) {
     };
 
     var html = render('input_pill', args);
-    global.write_handlebars_output("input_pill", html);
 
     assert($(html).hasClass('pill'));
 }());
@@ -899,7 +836,6 @@ function render(template_name, args) {
         ],
     };
     var html = render('invite_subscription', args);
-    global.write_handlebars_output("invite_subscription", html);
 
     var input = $(html).find("label:first");
     assert.equal(input.text().trim(), "devel");
@@ -922,8 +858,6 @@ function render(template_name, args) {
     var html = render('single_message', message);
     html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
-    global.write_handlebars_output("message", html);
-
     var first_message = $(html).find("div.messagebox:first");
 
     var first_message_text = first_message.find(".message_content").text().trim();
@@ -940,7 +874,6 @@ function render(template_name, args) {
         is_stream: true,
     };
     var html = render('message_edit_form', args);
-    global.write_handlebars_output("message_edit_form", html);
 
     var textarea = $(html).find("textarea.message_edit_content");
     assert.equal(textarea.text(), "Let's go to lunch!");
@@ -995,8 +928,6 @@ function render(template_name, args) {
 
     var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
     assert.equal(highlighted_subject_word, 'two');
-
-    global.write_handlebars_output("message_group", html);
 }());
 
 (function message_edit_history() {
@@ -1017,7 +948,6 @@ function render(template_name, args) {
     var html = render('message_edit_history', {
             edited_messages: message.edit_history,
         });
-    global.write_test_output("message_edit_history.handlebars", html);
     var edited_message = $(html).find("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
                 "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
@@ -1040,12 +970,10 @@ function render(template_name, args) {
     var reaction = $(html).find(".message_reaction");
     assert.equal(reaction.data("reaction-id"), "unicode_emoji,smile,1f604");
     assert(reaction.find(".emoji").hasClass("emoji-1f604"));
-    global.write_handlebars_output("message_reaction", html);
 }());
 
 (function more_topics() {
     var html = render('more_topics');
-    global.write_handlebars_output("more_topics", html);
 
     assert($(html).hasClass('show-more-topics'));
 }());
@@ -1065,7 +993,6 @@ function render(template_name, args) {
     };
 
     var html = render('new_stream_users', args);
-    global.write_handlebars_output("new_stream_users", html);
 
     var label = $(html).find("label:first");
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
@@ -1084,8 +1011,6 @@ function render(template_name, args) {
     html += '<div id="user-groups">';
     html += render('non_editable_user_group', args);
     html += '</div>';
-
-    global.write_handlebars_output('non_editable_user_group', html);
 
     var group_id = $(html).find('.user-group:first').prop('id');
     var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
@@ -1106,7 +1031,6 @@ function render(template_name, args) {
     };
 
     var html = render('notification', args);
-    global.write_handlebars_output("notification", html);
 
     var title = $(html).find(".title");
     assert.equal(title.text().trim(), 'You have a notification');
@@ -1114,7 +1038,6 @@ function render(template_name, args) {
 
 (function propagate_notification_change() {
     var html = render('propagate_notification_change');
-    global.write_handlebars_output("propagate_notification_change", html);
 
     var button_area = $(html).find(".propagate-notifications-controls");
     assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'translated: Yes');
@@ -1140,7 +1063,6 @@ function render(template_name, args) {
     html += "</div>";
     var link = $(html).find("a.remind.custom");
     assert.equal(link.text().trim(), 'translated: Select date and time');
-    global.write_handlebars_output("remind_me_popover_content", html);
 }());
 
 (function settings_tab() {
@@ -1170,7 +1092,6 @@ function render(template_name, args) {
 
     // Render with all booleans set to true.
     var html = render('settings_tab', {page_params: page_params});
-    global.write_handlebars_output("settings_tab", html);
 
     // All checkboxes should be checked.
     _.each(checkbox_ids, function (checkbox) {
@@ -1222,8 +1143,6 @@ function render(template_name, args) {
     var conversations = $(html).find('a').text().trim().split('\n');
     assert.equal(conversations[0], 'alice,bob');
     assert.equal(conversations[1].trim(), '(translated: more conversations)');
-
-    global.write_handlebars_output("sidebar_private_message_list", html);
 }());
 
 (function stream_member_list_entry() {
@@ -1250,8 +1169,6 @@ function render(template_name, args) {
     _.each(admin_items, function (item) {
         assert.equal($(html).find("." + item).length, 1);
     });
-
-    global.write_handlebars_output("stream_member_list_entry", html);
 }());
 
 (function stream_sidebar_actions() {
@@ -1265,7 +1182,6 @@ function render(template_name, args) {
     };
 
     var html = render('stream_sidebar_actions', args);
-    global.write_handlebars_output("stream_sidebar_actions", html);
 
     var li = $(html).find("li:first");
     assert.equal(li.text().trim(), 'translated: Stream settings');
@@ -1284,8 +1200,6 @@ function render(template_name, args) {
     html += render('stream_sidebar_row', args);
     html += '</ul>';
 
-    global.write_handlebars_output("stream_sidebar_row", html);
-
     var swatch = $(html).find(".stream-privacy");
     assert.equal(swatch.attr('id'), 'stream_sidebar_privacy_swatch_999');
 
@@ -1295,8 +1209,6 @@ function render(template_name, args) {
 
 (function subscription_invites_warning_modal() {
     var html = render('subscription_invites_warning_modal');
-
-    global.write_handlebars_output("subscription_invites_warning_modal", html);
 
     var button = $(html).find(".close-invites-warning-modal").last();
     assert.equal(button.text(), 'translated: Go back');
@@ -1322,8 +1234,6 @@ function render(template_name, args) {
     var html = '';
     html += render('subscription_settings', sub);
 
-    global.write_handlebars_output("subscription_settings", html);
-
     var div = $(html).find(".subscription-type");
     assert(div.text().indexOf('invite-only stream') > 0);
 
@@ -1339,8 +1249,6 @@ function render(template_name, args) {
         is_private: true,
     };
     var html = render('subscription_stream_privacy_modal', args);
-
-    global.write_handlebars_output("subscription_stream_privacy_modal", html);
 
     var stream_desc = $(html).find(".modal-body b");
     assert.equal(stream_desc.text(), 'an invite-only stream');
@@ -1381,8 +1289,6 @@ function render(template_name, args) {
     html += render('subscription_table_body', args);
     html += '</div>';
 
-    global.write_handlebars_output("subscription_table_body", html);
-
     var span = $(html).find(".stream-name:first");
     assert.equal(span.text(), 'devel');
 }());
@@ -1408,16 +1314,12 @@ function render(template_name, args) {
 
     var html = render('tab_bar', args);
 
-    global.write_handlebars_output("tab_bar", html);
-
     var a = $(html).find("li:first");
     assert.equal(a.text().trim(), 'Home');
 }());
 
 (function topic_edit_form() {
     var html = render('topic_edit_form');
-
-    global.write_handlebars_output("topic_edit_form", html);
 
     var button = $(html).find("button:first");
     assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
@@ -1433,8 +1335,6 @@ function render(template_name, args) {
 
     var html = render('topic_list_item', args);
 
-    global.write_handlebars_output("topic_list_item", html);
-
     assert.equal($(html).attr('data-topic-name'), 'lunch');
 }());
 
@@ -1446,8 +1346,6 @@ function render(template_name, args) {
         can_mute_topic: true,
     };
     var html = render('topic_sidebar_actions', args);
-
-    global.write_handlebars_output("topic_sidebar_actions", html);
 
     var a = $(html).find("a.narrow_to_topic");
     assert.equal(a.text().trim(), 'translated: Narrow to topic lunch');
@@ -1465,7 +1363,6 @@ function render(template_name, args) {
     };
 
     var html = '<div>' + render('typeahead_list_item', args) + '</div>';
-    global.write_handlebars_output('typeahead_list_item', html);
 
     assert.equal($(html).find('.emoji').attr('src'), 'https://zulip.org');
     assert.equal($(html).find('strong').text().trim(), 'primary-text');
@@ -1485,7 +1382,6 @@ function render(template_name, args) {
     html += render('typing_notifications', args);
     html += '</ul>';
 
-    global.write_handlebars_output('typing_notifications', html);
     var li = $(html).find('li:first');
     assert.equal(li.text(), 'Hamlet is typing...');
 
@@ -1493,7 +1389,6 @@ function render(template_name, args) {
 
 (function user_group_info_popover() {
     var html = render('user_group_info_popover');
-    global.write_handlebars_output("user_group_info_popover", html);
 
     $(html).hasClass('popover message-info-popover group-info-popover');
 }());
@@ -1525,7 +1420,6 @@ function render(template_name, args) {
     };
 
     var html = render('user_group_info_popover_content', args);
-    global.write_handlebars_output("user_group_info_popover_content", html);
 
     var allUsers = $(html).find("li");
     assert.equal(allUsers[0].classList.contains("user_active"), true);
@@ -1540,7 +1434,6 @@ function render(template_name, args) {
 
 (function user_info_popover() {
     var html = render('user_info_popover', {class: 'message-info-popover'});
-    global.write_handlebars_output("user_info_popover", html);
 
     $(html).hasClass('popover message-info-popover');
 }());
@@ -1559,7 +1452,6 @@ function render(template_name, args) {
     };
 
     var html = render('user_info_popover_content', args);
-    global.write_handlebars_output("user_info_popover_content", html);
 
     var a = $(html).find("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'translated: View private messages');
@@ -1567,7 +1459,6 @@ function render(template_name, args) {
 
 (function user_info_popover_title() {
     var html = render('user_info_popover_title', {user_avatar: 'avatar/hamlet@zulip.com'});
-    global.write_handlebars_output("user_info_popover_title", html);
 
     html = '<div>' + html + '</div>';
     assert.equal($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
@@ -1622,8 +1513,6 @@ function render(template_name, args) {
     html += '<ul class="filters">';
     html += render('user_presence_rows', args);
     html += '</ul>';
-
-    global.write_handlebars_output("user_presence_rows", html);
 
     var a = $(html).find("a:first");
     assert.equal(a.text(), 'King Lear');
