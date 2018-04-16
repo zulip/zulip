@@ -7,7 +7,7 @@ zrequire('settings_org');
 zrequire('settings_ui');
 zrequire('settings_ui');
 
-var noop = function () {};
+const noop = () => {};
 
 set_global('loading', {
     make_indicator: noop,
@@ -29,6 +29,9 @@ set_global('channel', {
 });
 
 set_global('templates', {
+});
+
+set_global('overlays', {
 });
 
 (function test_unloaded() {
@@ -137,13 +140,14 @@ function test_realms_domain_modal(add_realm_domain) {
     error_callback({});
     assert.equal(info.val(), 'translated: Failed');
 }
-function createSaveButtons() {
+
+function createSaveButtons(subsection) {
     var stub_save_button_header = $('.subsection-header');
-    var save_btn_controls = $.create('.save-btn-controls');
-    var stub_save_button = $('#org-submit-msg-editing');
-    var stub_save_button_text = $.create('.icon-button-text');
+    var save_btn_controls = $('.save-btn-controls');
+    var stub_save_button = $(`#org-submit-${subsection}`);
+    var stub_save_button_text = $('.icon-button-text');
     stub_save_button_header.prevAll = function () {
-        return $.create('<stub failed alert status element>');
+        return $('<stub failed alert status element>');
     };
     stub_save_button.closest = function () {
         return stub_save_button_header;
@@ -158,7 +162,7 @@ function createSaveButtons() {
         '.save-button-controls', save_btn_controls
     );
     stub_save_button_header.set_find_results(
-        '.subsection-changes-discard .button', $.create('#org-discard-msg-editing')
+        '.subsection-changes-discard .button', $(`#org-discard-${subsection}`)
     );
     var props  = {};
     props.hidden = false;
@@ -177,53 +181,74 @@ function createSaveButtons() {
         save_button_text: stub_save_button_text,
     };
 }
+
 function test_submit_settings_form(submit_form) {
-    var ev = {
+    global.patch_builtin('setTimeout', (func) => func());
+    const ev = {
         preventDefault: noop,
         stopPropagation: noop,
-        currentTarget: '#org-submit-msg-editing',
     };
 
-    $('#id_realm_default_language').val('fr');
-
-    var patched;
-    var success_callback;
-
-    channel.patch = function (req) {
+    let patched;
+    let data;
+    let success_callback;
+    channel.patch = (req) => {
         patched = true;
         assert.equal(req.url, '/json/realm');
+        data = req.data;
         success_callback = req.success;
     };
 
-    createSaveButtons();
+    ev.currentTarget = '#org-submit-other-permissions';
+    let stubs = createSaveButtons('other-permissions');
+    let save_button = stubs.save_button;
+    save_button.attr('id', 'org-submit-other-permissions');
+    patched = false;
+    $("#id_realm_create_stream_permission").val("by_anyone");
+    $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
+    $("#id_realm_message_retention_days").val("15");
+    $("#id_realm_bot_creation_policy").val("1");
 
     submit_form(ev);
     assert(patched);
 
-    var response_data = {
-        allow_message_editing: true,
-        message_content_edit_limit_seconds: 210,
+    let expected_value = {
+        bot_creation_policy: '1',
+        message_retention_days: '15',
+        add_emoji_by_admins_only: false,
+        create_stream_by_admins_only: false,
+        waiting_period_threshold: 0,
     };
-    success_callback(response_data);
+    assert.deepEqual(data, expected_value);
 
-    var updated_value_from_response = $('#id_realm_message_content_edit_limit_minutes').val();
-    assert(updated_value_from_response, 3);
 
-    $('#id_realm_message_content_edit_limit_minutes').val = function (time_limit) {
-        updated_value_from_response = time_limit;
+    ev.currentTarget = '#org-submit-user-defaults';
+    stubs = createSaveButtons('user-defaults');
+    save_button = stubs.save_button;
+    save_button.attr('id', 'org-submit-user-defaults');
+
+    $("#id_realm_default_language").val("en");
+    $("#id_realm_default_twenty_four_hour_time").prop("checked", true);
+
+    submit_form(ev);
+    assert(patched);
+
+    expected_value = {
+        default_language: '"en"',
+        default_twenty_four_hour_time: 'true',
     };
+    assert.deepEqual(data, expected_value);
 
-    response_data = {
-        allow_message_editing: true,
-        message_content_edit_limit_seconds: 10,
-    };
-    success_callback(response_data);
-    assert(updated_value_from_response, 0);
+
+    // Testing only once for since callback is same for all cases
+    success_callback();
+    assert.equal(stubs.props.hidden, true);
+    assert.equal(save_button.attr("data-status"), "saved");
+    assert.equal(stubs.save_button_text.text(), 'translated: Saved');
 }
 
 function test_change_save_button_state() {
-    set_global('$', global.make_zjquery());
-    var stubs = createSaveButtons();
+    var stubs = createSaveButtons('msg-editing');
     var $save_btn_controls = stubs.save_button_controls;
     var $save_btn_text = stubs.save_button_text;
     var $save_btn = stubs.save_button;
@@ -437,14 +462,32 @@ function test_extract_property_name() {
     );
 }
 
+function test_sync_realm_settings() {
+    overlays.settings_open = () => true;
+
+    const property_elem = $('#id_realm_create_stream_permission');
+    property_elem.length = 1;
+    property_elem.attr('id', 'id_realm_create_stream_permission');
+
+    const waiting_period_input_parent = $.create('stub-waiting-period-input-parent');
+    $("#id_realm_waiting_period_threshold").set_parent(waiting_period_input_parent);
+
+    page_params.realm_create_stream_by_admins_only = false;
+    page_params.realm_waiting_period_threshold = 3;
+
+    settings_org.sync_realm_settings('create_stream_by_admins_only');
+    assert.equal($("#id_realm_create_stream_permission").val(), "by_admin_user_with_three_days_old");
+    assert.equal(waiting_period_input_parent.visible(), false);
+}
+
 (function test_set_up() {
     var callbacks = {};
 
-    function set_callback(name) {
-        return function (f) {
+    var set_callback = (name) => {
+        return (f) => {
             callbacks[name] = f;
         };
-    }
+    };
 
     var verify_realm_domains = simulate_realm_domains_table();
     simulate_auth_methods();
@@ -462,9 +505,6 @@ function test_extract_property_name() {
         if (selector === '.subsection-header .subsection-changes-save .button') {
             assert.equal(action, 'click');
             submit_settings_form = f;
-        }
-        if (selector === 'button.save-language-org-settings') {
-            assert.equal(action, 'click');
         }
     };
 
@@ -501,6 +541,7 @@ function test_extract_property_name() {
     test_change_allow_subdomains(change_allow_subdomains);
     test_extract_property_name();
     test_change_save_button_state();
+    test_sync_realm_settings();
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
 }());
