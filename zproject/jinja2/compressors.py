@@ -10,9 +10,9 @@ from django.template import TemplateSyntaxError
 from zerver.templatetags.minified_js import MinifiedJSNode
 
 
-def minified_js(sourcefile: str) -> Text:
+def minified_js(sourcefile: str, csp_nonce: str) -> Text:
     if sourcefile not in settings.JS_SPECS:
         raise TemplateSyntaxError(
             "Invalid argument: no JS file %s".format(sourcefile))
 
-    return MinifiedJSNode(sourcefile).render({})
+    return MinifiedJSNode(sourcefile, csp_nonce).render({})

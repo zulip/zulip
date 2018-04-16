@@ -35,7 +35,7 @@
     {% else %}
     {% stylesheet 'app' %}
     {% endif %}
-    {{ minified_js('app')|safe }}
+    {{ minified_js('app', csp_nonce)|safe }}
 
     {{ render_bundle('translations') }}
 
