@@ -98,6 +98,20 @@ function user_last_seen_time_status(user_id) {
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
 
+function user_last_online_time_status(user_id) {
+    if (page_params.realm_is_zephyr_mirror_realm) {
+        // We don't send presence data to clients in Zephyr mirroring realms
+        return i18n.t("Unknown");
+    }
+
+    var last_active_date = presence.last_active_date(user_id);
+    if (last_active_date === undefined) {
+        return i18n.t("Unknown");
+    }
+    return timerender.last_online_status_from_date(last_active_date.clone());
+}
+
+
 function calculate_info_popover_placement(size, elt) {
   var ypos = elt.offset().top;
 
@@ -143,7 +157,7 @@ function show_user_info_popover(element, user, message) {
             user_id: user.user_id,
             user_time: people.get_user_time(user.user_id),
             presence_status: presence.get_status(user.user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user.user_id),
+            user_last_seen_time_status: user_last_online_time_status(user.user_id),
             pm_with_uri: narrow.pm_with_uri(user.email),
             sent_by_uri: narrow.by_sender_uri(user.email),
             narrowed: narrow_state.active(),
@@ -652,7 +666,7 @@ exports.register_click_handlers = function () {
             user_id: user_id,
             user_time: people.get_user_time(user_id),
             presence_status: presence.get_status(user_id),
-            user_last_seen_time_status: user_last_seen_time_status(user_id),
+            user_last_seen_time_status: user_last_online_time_status(user_id),
             pm_with_uri: narrow.pm_with_uri(user_email),
             sent_by_uri: narrow.by_sender_uri(user_email),
             private_message_class: "compose_private_message",
