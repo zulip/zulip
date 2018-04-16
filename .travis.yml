@@ -31,14 +31,14 @@ cache:
   yarn: true
   apt: false
   directories:
-    - $HOME/zulip-venv-cache
-    - $HOME/zulip-npm-cache
-    - $HOME/zulip-emoji-cache
-    - $HOME/node
-    - $HOME/misc
+    $HOME/zulip-venv-cache
+    $HOME/zulip-npm-cache
+    $HOME/zulip-emoji-cache
+    $HOME/node
+    $HOME/misc
 env:
   global:
-    - BOTO_CONFIG=/tmp/nowhere
+    BOTO_CONFIG=/tmp/nowhere
 language: python
 # Our test suites generally run on Python 3.4, the version in
 # Ubuntu 14.04 trusty, which is the oldest OS release we support.
@@ -57,8 +57,8 @@ addons:
     paths:
       # Casper debugging data (screenshots, etc.) is super useful for
       # debugging test flakes.
-      - $(ls var/casper/* | tr "\n" ":")
-      - $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
+      $(ls var/casper/* | tr "\n" ":")
+      $(ls /tmp/zulip-test-event-log/* | tr "\n" ":")
   postgresql: "9.3"
   apt:
     packages:
