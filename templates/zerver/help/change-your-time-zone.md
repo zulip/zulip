@@ -4,10 +4,7 @@ Zulip will detect your time zone based off of your browser's settings in order
 to display times. You can also set your time zone explicitly in order to
 display to others when they look up your profile to find out more about you.
 
-1. From your desktop, click on the **gear**
-   (<i class="icon-vector-cog"></i>) in the upper right corner.
-
-1. Select **Settings** from the dropdown.
+{!go-to-settings.md!}
 
 1. On the left, click **Display Settings**.
 
