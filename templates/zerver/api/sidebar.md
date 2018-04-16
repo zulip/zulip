@@ -9,7 +9,7 @@
 * [Walkthrough](/api/webhook-walkthrough)
 * [Documenting integrations](/api/integration-docs-guide)
 
-## Interactive bots (experimental)
+## Interactive bots (beta)
 
 * [Running bots](/api/running-bots)
 * [Writing bots](/api/writing-bots)
