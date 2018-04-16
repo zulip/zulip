@@ -97,6 +97,7 @@
 
     display: flex;
     align-content: center;
+    flex-wrap: wrap;
 }
 
 .pm_recipient .pill-container .input {
