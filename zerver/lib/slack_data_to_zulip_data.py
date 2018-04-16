@@ -981,6 +981,10 @@ def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
 
         avatar_upload_list.append([slack_avatar_url, image_path, original_image_path])
 
+        # We don't add the size information here in avatar's records.json, as it is not
+        # required while importing the avatars.
+        # Check the function 'import_uploads_local' and 'import_uploads_s3'
+        # in 'export.py' for this.
         avatar['path'] = image_path
         avatar['s3_path'] = image_path
 
