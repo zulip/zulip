@@ -11,6 +11,8 @@
 
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
+git+https://github.com/zulip/python-zulip-api.git@0.4.4#egg=zulip==0.4.4_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@0.4.4#egg=zulip_bots==0.4.4+git&subdirectory=zulip_bots
 apns2==0.3.0
 argon2-cffi==18.1.0
 asn1crypto==0.23.0        # via cryptography
@@ -98,7 +100,7 @@ qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio, zulip
+requests==2.18.4          # via premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==3.4.2
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
@@ -119,5 +121,3 @@ urllib3==1.22             # via requests
 uwsgi==2.0.17
 virtualenv-clone==0.3.0
 wcwidth==0.1.7            # via prompt-toolkit
-zulip==0.4.4
-zulip_bots==0.4.4
