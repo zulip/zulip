@@ -260,7 +260,6 @@ exports.respond_to_message = function (opts) {
 
     message = current_msg_list.selected_message();
 
-
     if (message === undefined) { // empty narrow implementation
         if (!narrow_state.narrowed_by_pm_reply() &&
             !narrow_state.narrowed_by_stream_reply() &&

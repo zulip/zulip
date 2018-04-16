@@ -181,7 +181,6 @@ $(function () {
         // Note that we may have an href here, but we trust the stream id more,
         // so we re-encode the hash.
         var stream = stream_data.get_sub_by_id($(this).attr('data-stream-id'));
-        $('.compose_reply_button').removeClass('button_disabled');
         if (stream) {
             window.location.href = '/#narrow/stream/' + hash_util.encode_stream_name(stream.name);
             return;

@@ -564,7 +564,6 @@ function pick_empty_narrow_banner() {
         // in which you were never subscribed.
         var stream_sub = stream_data.get_sub(narrow_state.stream());
         if (!stream_sub || stream_sub.invite_only) {
-            $('.compose_reply_button').addClass('button_disabled');
             return $("#nonsubbed_private_nonexistent_stream_narrow_message");
         }
         return $("#nonsubbed_stream_narrow_message");
@@ -617,7 +616,7 @@ exports.by_sender_uri = function (reply_to) {
     ]);
 };
 
-exports.by_stream_uri = function (stream) {    
+exports.by_stream_uri = function (stream) {
     return "#narrow/stream/" + hash_util.encode_stream_name(stream);
 };
 
