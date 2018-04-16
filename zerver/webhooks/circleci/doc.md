@@ -3,10 +3,17 @@ your build statuses.
 
 1. {!create-stream.md!}
 
-2. {!create-bot-construct-url-indented.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-3. Next, modify your `circle.yml` as described
-   [here](https://circleci.com/docs/configuration/#notify).
+1. Add the following to the bottom of your `circle.yml` file:
+
+    ```
+    notify:
+      webhooks:
+        - url: <URL constructed above>
+    ```
+
+    Set **url** to the URL constructed above. Push this change to your repository.
 
 {!congrats.md!}
 

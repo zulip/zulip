@@ -1047,6 +1047,10 @@ input#terminal:checked ~ #tab-terminal {
     margin-left: 220px;
 }
 
+.integration-instructions .help-content ol li p:not(:first-child) {
+    display: block;
+}
+
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
