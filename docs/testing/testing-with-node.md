@@ -3,9 +3,10 @@
 As an alternative to the black-box whole-app testing, you can unit test
 individual JavaScript files.
 
-If you are writing JavaScript code that manipulates data (as opposed
-to coordinating UI changes), then you probably modify existing unit test
-modules to ensure the quality of your code and prevent regressions.
+You can run tests as follow:
+```
+    tools/test-js-with-node
+```
 
 The JS unit tests are written to work with node.  You can find them
 in `frontend_tests/node_tests`.  Here is an example test from
@@ -40,9 +41,14 @@ and add your own tests.
 You can automatically generate coverage reports for the JavaScript unit
 tests like this:
 
->     tools/test-js-with-node --coverage
+```
+    tools/test-js-with-node --coverage
+```
 
-Then open `coverage/lcov-report/js/index.html` in your browser. Modules
+If tests pass, you will get instructions to view coverage reports
+in your browser.
+
+Note that modules that
 we don't test *at all* aren't listed in the report, so this tends to
 overstate how good our overall coverage is, but it's accurate for
 individual files. You can also click a filename to see the specific
@@ -55,12 +61,7 @@ good goal.
 The following scheme helps avoid tests leaking globals between each
 other.
 
-First, if you can avoid globals, do it, and the code that is directly
-under test can simply be handled like this:
-
->     var search = require('js/search_suggestion.js');
-
-For deeper dependencies, you want to categorize each module as follows:
+You want to categorize each module as follows:
 
 -   Exercise the module's real code for deeper, more realistic testing?
 -   Stub out the module's interface for more control, speed, and
@@ -82,7 +83,7 @@ like this:
 >     });
 >
 >     // then maybe further down
->     global.page_params.email = 'alice@zulip.com';
+>     page_params.email = 'alice@zulip.com';
 
 Finally, there's the hybrid situation, where you want to borrow some of
 a module's real functionality but stub out other pieces. Obviously, this
@@ -90,51 +91,28 @@ is a pretty strong smell that the other module might be lacking in
 cohesion, but that code might be outside your jurisdiction. The pattern
 here is this:
 
->     // Use real versions of parse/unparse
->     var narrow = require('js/narrow.js');
->     set_global('narrow', {
->         parse: narrow.parse,
->         unparse: narrow.unparse
->     });
+>     // Import real code.
+>     zrequire('narrow');
 >
->     // But later, I want to stub the stream without having to call super-expensive
->     // real code like narrow.activate().
->     global.narrow.stream = function () {
+>     // And later...
+>     narrow.stream = function () {
 >         return 'office';
 >     };
 
 ## Creating new test modules
 
+The test runner (`index.js`) automatically runs all .js files in the
+`frontend_tests/node directory`, so you can simply start editing a file
+in that directory to create a new test.
+
 The nodes tests rely on JS files that use the module pattern. For example, to
-test the `foobar.js` file, you would first add the following to the
-bottom of `foobar.js`:
+test the `foobar.js` file, you would first ensure that code like below
+is at the bottom of `foobar.js`:
 
 >     if (typeof module !== 'undefined') {
 >         module.exports = foobar;
 >     }
 
-This makes `foobar.js` follow the CommonJS module pattern, so it can be
+This means `foobar.js` follow the CommonJS module pattern, so it can be
 required in Node.js, which runs our tests.
 
-Now create `frontend_tests/node_tests/foobar.js`. At the top, require
-the [Node.js assert module](http://nodejs.org/api/assert.html), and the
-module you're testing, like so:
-
->     var assert = require('assert');
->     var foobar = require('js/foobar.js');
-
-And of course, if the module you're testing depends on other modules,
-or modifies global state, you may need to review the
-[section on handling dependencies](#handling-dependencies-in-unit-tests) above.
-
-Define and call some tests using the [assert
-module](http://nodejs.org/api/assert.html). Note that for "equal"
-asserts, the *actual* value comes first, the *expected* value second.
-
->     (function test_somefeature() {
->         assert.strictEqual(foobar.somefeature('baz'), 'quux');
->         assert.throws(foobar.somefeature('Invalid Input'));
->     }());
-
-The test runner (`index.js`) automatically runs all .js files in the
-frontend\_tests/node directory.
