@@ -78,9 +78,6 @@ var org_permissions = {
         },
     },
     other_permissions: {
-        add_emoji_by_admins_only: {
-            type: 'bool',
-        },
         bot_creation_policy: {
             type: 'integer',
         },
