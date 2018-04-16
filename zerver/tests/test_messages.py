@@ -50,8 +50,12 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 
-from zerver.lib.soft_deactivation import add_missing_messages, do_soft_deactivate_users, \
+from zerver.lib.soft_deactivation import (
+    add_missing_messages,
+    do_soft_activate_users,
+    do_soft_deactivate_users,
     maybe_catch_up_soft_deactivated_user
+)
 
 from zerver.models import (
     MAX_MESSAGE_LENGTH, MAX_SUBJECT_LENGTH,
@@ -2801,6 +2805,32 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         self.assertEqual(len(idle_user_msg_list), idle_user_msg_count + 2)
         for sent_message in sent_message_list:
             self.assertEqual(idle_user_msg_list.pop(), sent_message)
+
+        # Test for when user unsubscribes before soft deactivation
+        # (must reactivate them in order to do this).
+
+        do_soft_activate_users([long_term_idle_user])
+        self.subscribe(long_term_idle_user, stream_name)
+        # Send a real message to update last_active_message_id
+        sent_message_id = self.send_stream_message(
+            sender.email, stream_name, 'Test Message 9')
+        self.unsubscribe(long_term_idle_user, stream_name)
+        # Soft deactivate and send another message to the unsubscribed stream.
+        do_soft_deactivate_users([long_term_idle_user])
+        send_fake_message('Test Message 10', stream)
+
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        idle_user_msg_count = len(idle_user_msg_list)
+        self.assertEqual(idle_user_msg_list[-1].id, sent_message_id)
+        with queries_captured() as queries:
+            add_missing_messages(long_term_idle_user)
+        # There are no streams to fetch missing messages from, so
+        # the Message.objects query will be avoided.
+        self.assert_length(queries, 4)
+        idle_user_msg_list = get_user_messages(long_term_idle_user)
+        # No new UserMessage rows should have been created.
+        self.assertEqual(len(idle_user_msg_list), idle_user_msg_count)
+
         # Note: At this point in this test we have long_term_idle_user
         # unsubscribed from the 'Denmark' stream.
 
@@ -2809,13 +2839,13 @@ class SoftDeactivationMessageTest(ZulipTestCase):
         private_stream = self.make_stream('Core', invite_only=True)
         self.subscribe(self.example_user("iago"), stream_name)
         sent_message_list = []
-        send_fake_message('Test Message 9', private_stream)
-        self.subscribe(self.example_user("hamlet"), stream_name)
-        sent_message_list.append(send_fake_message('Test Message 10', private_stream))
-        self.unsubscribe(long_term_idle_user, stream_name)
         send_fake_message('Test Message 11', private_stream)
-        self.subscribe(long_term_idle_user, stream_name)
+        self.subscribe(self.example_user("hamlet"), stream_name)
         sent_message_list.append(send_fake_message('Test Message 12', private_stream))
+        self.unsubscribe(long_term_idle_user, stream_name)
+        send_fake_message('Test Message 13', private_stream)
+        self.subscribe(long_term_idle_user, stream_name)
+        sent_message_list.append(send_fake_message('Test Message 14', private_stream))
         sent_message_list.reverse()
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         idle_user_msg_count = len(idle_user_msg_list)
