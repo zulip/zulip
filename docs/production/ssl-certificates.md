@@ -13,10 +13,14 @@ If you already have an SSL certificate, just install (or symlink) its
 files into place at the following paths:
 * `/etc/ssl/private/zulip.key` for the private key
 * `/etc/ssl/certs/zulip.combined-chain.crt` for the certificate.
-  Because Zulip uses nginx as its web server, this should be in the
-  format of a [chained certificate bundle][nginx-https].
 
-[nginx-https]: http://nginx.org/en/docs/http/configuring_https_servers.html
+Your certificate file should contain not only your own certificate but
+its full chain, including any intermediate certificates used by your
+CA.  See the [nginx documentation][nginx-chains] for details on what
+this means and how to do it and test it.  If you're missing part of
+the chain, your server may work with some browsers but not others.
+
+[nginx-chains]: http://nginx.org/en/docs/http/configuring_https_servers.html#chains
 
 ## Certbot (recommended)
 
