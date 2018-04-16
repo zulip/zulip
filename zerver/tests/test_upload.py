@@ -20,7 +20,8 @@ from zerver.lib.test_helpers import (
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, delete_message_image, LocalUploadBackend, \
-    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar
+    ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
+    resize_emoji, BadImageError, get_realm_for_filename
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -29,7 +30,7 @@ from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
-
+from zerver.lib.request import JsonableError
 from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
@@ -835,6 +836,26 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
                 result = self.client_post("/json/users/me/avatar", {'file': fp})
         self.assert_json_error(result, "Uploaded file is larger than the allowed limit of 0 MB")
 
+    def test_resize_emoji(self) -> None:
+        # Test unequal width and height of animated GIF image
+        animated_unequal_img_data = open(get_test_image_file('animated_unequal_img.gif').name, 'rb').read()
+        with self.assertRaises(JsonableError):
+            resize_emoji(animated_unequal_img_data)
+
+        # Test for large image (128x128)
+        animated_large_img_data = open(get_test_image_file('animated_large_img.gif').name, 'rb').read()
+        with self.assertRaises(JsonableError):
+            resize_emoji(animated_large_img_data)
+
+        # Test for no resize case
+        animated_img_data = open(get_test_image_file('animated_img.gif').name, 'rb').read()
+        self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
+
+        # Test corrupt image exception
+        corrupted_img_data = open(get_test_image_file('corrupt.gif').name, 'rb').read()
+        with self.assertRaises(BadImageError):
+            resize_emoji(corrupted_img_data)
+
     def tearDown(self) -> None:
         destroy_uploads()
 
@@ -1092,6 +1113,16 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
         medium_image_key = bucket.get_key(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
+
+    @use_s3_backend
+    def test_get_realm_for_filename(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
