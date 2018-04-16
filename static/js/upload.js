@@ -50,10 +50,8 @@ exports.options = function (config) {
     }
 
     var hide_upload_status = function () {
-        setTimeout(function () {
-            send_button.prop("disabled", false);
-            send_status.removeClass("alert-info").hide();
-        }, 500);
+        send_button.prop("disabled", false);
+        send_status.removeClass("alert-info").hide();
         $('div.progress.active').remove();
     };
 
@@ -61,7 +59,9 @@ exports.options = function (config) {
         send_button.attr("disabled", "");
         send_status.addClass("alert-info").show();
         send_status_close.one('click', function () {
-            hide_upload_status();
+            setTimeout(function () {
+                hide_upload_status();
+            }, 500);
             compose.abort_xhr();
         });
     };
@@ -140,10 +140,12 @@ exports.options = function (config) {
         }
         compose_ui.autosize_textarea();
 
-        $("#" + upload_bar  + '-' + file.lastModified).parent().remove();
-        if ($('div.progress.active').length === 0) {
-            hide_upload_status();
-        }
+        setTimeout(function () {
+            $("#" + upload_bar  + '-' + file.lastModified).parent().remove();
+            if ($('div.progress.active').length === 0) {
+                hide_upload_status(file);
+            }
+        }, 500);
 
         // In order to upload the same file twice in a row, we need to clear out
         // the file input element, so that the next time we use the file dialog,
