@@ -47,6 +47,15 @@ cd ~/zulip
 ./manage.py import --import-into-nonempty <subdomain> converted_slack_data
 ```
 
+### Increase Performance
+
+Add the option `--threads` in the `convert_slack_data` management command and replace `<threads>`
+by the number of threads you want to run this script on, to increase performance.
+```
+./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
+--threads <threads>
+```
+
 ## Caveats
 
 - Slack doesn't export private channels or direct messages unless you pay
