@@ -7,13 +7,15 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 1.8.0 -- 2018-04-17
+
 **Highlights:**
-- Added a new "night mode" theme for dark environments.
-- Added a video call integration powered by Jitsi.
 - Dramatically simplified the server installation process; it's now possible
   to install Zulip without first setting up outgoing email.
 - Added experimental support for importing an organization's history
   from Slack.
+- Added a new "night mode" theme for dark environments.
+- Added a video call integration powered by Jitsi.
 - Lots of visual polish improvements.
 - Countless small bugfixes both in the backend and the UI.
 
@@ -57,7 +59,6 @@ in bursts.
 - Added support for mentioning groups of users.
 - Added a setting to allow users to delete their messages.
 - Added support for uploading files in the message-edit UI.
-- Added new compose features for pasting HTML.
 - Redesigned the compose are for private messages to use pretty pills
   rather than raw email addresses to display recipients.
 - Added new ctrl+B, ctrl+I, ctrl+L compose shortcuts for inserting
@@ -97,6 +98,7 @@ in bursts.
   message being condensed ([More] appearing on every message).
 - Improved typeahead's handling of editing an already-completed mention.
 - Improved syntax for inline LaTeX to be more convenient.
+- Improved syntax for permanent links to streams in Zulip.
 - Improved behavior of copy-pasting a large number of messages.
 - Improved handling of browser undo in compose.
 - Improved saved drafts system to garbage-collect old drafts and sort
@@ -169,7 +171,7 @@ in bursts.
 
 **Mobile apps backend:**
 - Added support for logging into the mobile apps with RemoteUserBackend.
-- Improved mobile notifications to support narrowing when one click a
+- Improved mobile notifications to support narrowing when one clicks a
   mobile push notification.
 - Statistics on the fraction of strings that are translated now
   include strings in the mobile apps as well.

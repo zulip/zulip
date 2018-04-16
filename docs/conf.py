@@ -44,7 +44,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'Zulip'
-copyright = '2015-2017, The Zulip Team'
+copyright = '2015-2018, The Zulip Team'
 author = 'The Zulip Team'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -52,9 +52,9 @@ author = 'The Zulip Team'
 # built documents.
 #
 # The short X.Y version.
-version = '1.7+git'
+version = '1.8'
 # The full version, including alpha/beta/rc tags.
-release = '1.7.2+git'
+release = '1.8.0'
 
 # This allows us to insert a warning that appears only on an unreleased
 # version, e.g. to say that something is likely to have changed.
