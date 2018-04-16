@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import os
+import shutil
 import subprocess
 import sys
 from typing import Dict, Any
@@ -102,22 +103,24 @@ for index, arg in enumerate(options.args):
     if not arg.endswith('.js'):
         options.args[index] = arg + '.js'
 
+individual_files = options.args
+
 # The index.js test runner is the real "driver" here, and we launch
 # with either istanbul or node, depending on whether we want coverage
 # reports.  Running under istanbul is slower and creates funny
 # tracebacks, so you generally want to get coverage reports only
 # after making sure tests will pass.
 if options.coverage:
-    if options.args:
-        print('BAD ARGS! Coverage reports run against all files.')
-        sys.exit(1)
-
+    coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
+    shutil.rmtree(coverage_dir, True)
     istanbul = os.path.join(ROOT_DIR, 'node_modules/.bin/istanbul')
-    command = [istanbul, 'cover', INDEX_JS, '--dir', 'var/node-coverage']
+    command = [istanbul, 'cover', '--dir', coverage_dir, INDEX_JS]
 else:
     # Normal testing, no coverage analysis.
     # Run the index.js test runner, which runs all the other tests.
-    command = ['node', '--stack-trace-limit=100', INDEX_JS] + options.args
+    command = ['node', '--stack-trace-limit=100', INDEX_JS]
+
+command += individual_files
 
 print('Starting node tests...')
 
@@ -128,8 +131,8 @@ except OSError:
     print('Bad command: %s' % (command,))
     raise
 
-def check_line_coverage(line_coverage, line_mapping, log=True):
-    # type: (Dict[Any, Any], Dict[Any, Any], bool) -> bool
+def check_line_coverage(fn, line_coverage, line_mapping, log=True):
+    # type: (str, Dict[Any, Any], Dict[Any, Any], bool) -> bool
     missing_lines = []
     for line in line_coverage:
         if line_coverage[line] == 0:
@@ -137,7 +140,7 @@ def check_line_coverage(line_coverage, line_mapping, log=True):
             missing_lines.append(str(actual_line["start"]["line"]))
     if missing_lines:
         if log:
-            print("ERROR: %s no longer has complete node test coverage" % (relative_path,))
+            print("ERROR: %s no longer has complete node test coverage" % (fn,))
             print("  Lines missing coverage: %s" % (", ".join(sorted(missing_lines, key=int)),))
             print()
         return False
@@ -145,7 +148,7 @@ def check_line_coverage(line_coverage, line_mapping, log=True):
 
 NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
 
-if options.coverage and ret == 0:
+def read_coverage() -> Any:
     coverage_json = None
     try:
         with open(NODE_COVERAGE_PATH, 'r') as f:
@@ -153,6 +156,10 @@ if options.coverage and ret == 0:
     except IOError:
         print(NODE_COVERAGE_PATH + " doesn't exist. Cannot enforce fully covered files.")
         raise
+    return coverage_json
+
+def enforce_proper_coverage(coverage_json: Any) -> bool:
+    coverage_lost = False
     for relative_path in enforce_fully_covered:
         path = ROOT_DIR + "/" + relative_path
         if not (path in coverage_json):
@@ -160,30 +167,40 @@ if options.coverage and ret == 0:
             continue
         line_coverage = coverage_json[path]['s']
         line_mapping = coverage_json[path]['statementMap']
-        if not check_line_coverage(line_coverage, line_mapping):
-            ret = 1
-    if ret:
+        if not check_line_coverage(relative_path, line_coverage, line_mapping):
+            coverage_lost = True
+    if coverage_lost:
         print()
         print("It looks like your changes lost 100% test coverage in one or more files.")
         print("Usually, the right fix for this is to add some tests.")
         print("But also check out the include/exclude lists in `tools/test-js-with-node`.")
         print("To run this check locally, use `test-js-with-node --coverage`.")
 
-    ok = True
+    coverage_not_enforced = False
     for path in coverage_json:
         if '/static/js/' in path:
             relative_path = os.path.relpath(path, ROOT_DIR)
             line_coverage = coverage_json[path]['s']
             line_mapping = coverage_json[path]['statementMap']
-            if check_line_coverage(line_coverage, line_mapping, log=False) \
+            if check_line_coverage(relative_path, line_coverage, line_mapping, log=False) \
                     and not (relative_path in enforce_fully_covered):
-                ok = False
+                coverage_not_enforced = True
                 print("ERROR: %s has complete node test coverage and is not enforced." % (relative_path,))
-    if not ok:
+
+    if coverage_not_enforced:
         print()
         print("There are one or more fully covered files that are not enforced.")
         print("Add the file(s) to enforce_fully_covered in `tools/test-js-with-node`.")
-        ret = 1
+
+    problems_encountered = (coverage_lost or coverage_not_enforced)
+    return problems_encountered
+
+if options.coverage and ret == 0:
+    if not individual_files:
+        coverage_json = read_coverage()
+        problems_encountered = enforce_proper_coverage(coverage_json)
+        if problems_encountered:
+            ret = 1
 
 print()
 if ret == 0:
