@@ -468,6 +468,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     # formatting
     for row in rows:
+        row['stats_link'] = realm_stats_link(row['string_id'])
         row['string_id'] = realm_activity_link(row['string_id'])
 
     # Count active sites
@@ -489,6 +490,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     rows.append(dict(
         string_id='Total',
+        stats_link = '',
         date_created_day='',
         realm_admin_email='',
         dau_count=total_dau_count,
@@ -933,6 +935,12 @@ def realm_activity_link(realm_str: str) -> mark_safe:
     url = reverse(url_name, kwargs=dict(realm_str=realm_str))
     realm_link = '<a href="%s">%s</a>' % (url, realm_str)
     return mark_safe(realm_link)
+
+def realm_stats_link(realm_str: str) -> mark_safe:
+    url_name = 'analytics.views.stats_for_realm'
+    url = reverse(url_name, kwargs=dict(realm_str=realm_str))
+    stats_link = '<a href="{}"><i class="fa fa-pie-chart"></i></a>'.format(url, realm_str)
+    return mark_safe(stats_link)
 
 def realm_client_table(user_summaries: Dict[str, Dict[str, Dict[str, Any]]]) -> str:
     exclude_keys = [

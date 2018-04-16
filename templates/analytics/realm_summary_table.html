@@ -37,7 +37,7 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
-            <th><i class="fa fa-envelope"></i></th>
+            <th></th>
             <th>DAU</th>
             <th>WAU</th>
             <th>Total users</th>
@@ -63,12 +63,13 @@
                 {{ row.date_created_day }}
             </td>
 
-            <td class="envelope">
+            <td>
                 {% if not loop.last %}
                 <a class="envelope-link" data-value="{{ row.realm_admin_email }}">
                     <i class="fa fa-envelope"></i>
                 </a>
                 {% endif %}
+                {{ row.stats_link }}
             </td>
 
             <td class="number">
