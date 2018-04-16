@@ -74,6 +74,16 @@ exports.clear_announce_warnings = function () {
     $("#compose-send-status").hide();
 };
 
+exports.change_to_private = function () {
+    $('left_bar_compose_stream_message_button_big').show();
+    $('left_bar_compose_stream_button_big').hide();
+}
+
+exports.change_to_stream = function () {
+    $('left_bar_compose_stream_message_button_big').hide();
+    $('left_bar_compose_stream_button_big').show();
+}
+
 exports.clear_invites = function () {
     $("#compose_invite_users").hide();
     $("#compose_invite_users").empty();
