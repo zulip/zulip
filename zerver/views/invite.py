@@ -14,7 +14,10 @@ from zerver.lib.streams import access_stream_by_name, access_stream_by_id
 from zerver.lib.validator import check_string, check_list, check_bool, check_int
 from zerver.models import PreregistrationUser, Stream, UserProfile
 
+from urllib import request as req 
+from urllib import error
 import re
+import json
 
 @has_request_variables
 def invite_users_backend(request: HttpRequest, user_profile: UserProfile,
@@ -56,10 +59,23 @@ def get_invitee_emails_set(invitee_emails_raw: str) -> Set[str]:
     invitee_emails_list = set(re.split(r'[,\n]', invitee_emails_raw))
     invitee_emails = set()
     for email in invitee_emails_list:
-        is_email_with_name = re.search(r'<(?P<email>.*)>', email)
-        if is_email_with_name:
-            email = is_email_with_name.group('email')
-        invitee_emails.add(email.strip())
+        regexp = re.compile(r'git<(.*)>')
+        gitexp = regexp.search(email)
+        if gitexp:
+            github_username = gitexp.group(1)
+            try:
+                with req.urlopen("https://api.github.com/users/" + github_username) as r:
+                    return_response = json.loads(r.read().decode(r.headers.get_content_charset('utf-8')))
+                github_email = return_response["email"]
+                if github_email:
+                    invitee_emails.add(github_email)
+            except error.HTTPError as ex:
+                pass
+        else:
+            is_email_with_name = re.search(r'<(?P<email>.*)>', email)
+            if is_email_with_name:
+                email = is_email_with_name.group('email')
+            invitee_emails.add(email.strip())
     return invitee_emails
 
 @require_realm_admin
