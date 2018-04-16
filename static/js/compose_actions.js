@@ -65,7 +65,6 @@ exports.set_focus = function (msg_type, opts) {
 
 // Show the compose box.
 function show_box(msg_type, opts) {
-    $('.compose_reply_button').removeClass('button_disabled');
     if (msg_type === "stream") {
         $('#private-message').hide();
         $('#stream-message').show();
@@ -260,7 +259,6 @@ exports.respond_to_message = function (opts) {
     drafts.update_draft();
 
     message = current_msg_list.selected_message();
-    //$('#compose_buttons').removeClass('button_disabled');
 
 
     if (message === undefined) { // empty narrow implementation
@@ -276,7 +274,6 @@ exports.respond_to_message = function (opts) {
         var first_operand = first_term.operand;
 
         if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
-            //$('.compose_reply_button').addClass('button_disabled');
             compose.nonexistent_stream_reply_error();
             return;
         }
