@@ -25,8 +25,10 @@ in bursts.
   organization administrators can remove users, edit descriptions, and
   rename private streams they are not subscribed to.  See Zulip's
   security model documentation for details.
-- The local uploads backend now does the same security checks that the
-  S3 backend did before serving files to users.
+- On Xenial, the local uploads backend now does the same security
+  checks that the S3 backend did before serving files to users.
+  Ubuntu Trusty's version of nginx is too old to support this and so
+  the legacy model is the default; we recommend upgrading.
 - Added an organization setting to limit creation of bots.
 - Refactored the authentication backends codebase to be much easier to
   verify.
