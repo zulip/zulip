@@ -19,6 +19,8 @@ in bursts.
 
 
 **Security and privacy:**
+- Several important security fixes since 1.7.0, which were released
+  already in 1.7.1 and 1.7.2.
 - The security model for private streams has changed.  Now
   organization administrators can remove users, edit descriptions, and
   rename private streams they are not subscribed to.  See Zulip's
