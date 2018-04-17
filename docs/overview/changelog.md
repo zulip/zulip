@@ -37,12 +37,12 @@ in bursts.
 
 
 **Visual and UI:**
+- Added a user setting to translate emoticons/smileys to emoji.
 - Added a user setting to choose the emoji set used in Zulip: Google,
   Twitter, Apple, or Emoji One.
-- Added a display setting to translate emoticons/smileys to emoji.
 - Expanded setting for displaying emoji as text to cover all display
   settings (previously only affected reactions).
-- Overhauled our settings system to eliminate the ugly "save changes"
+- Overhauled our settings system to eliminate the old "save changes"
   button system.
 - Redesigned the "uploaded files" UI.
 - Redesigned the "account settings" UI.
