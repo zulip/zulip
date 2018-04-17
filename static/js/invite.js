@@ -102,7 +102,8 @@ exports.initialize = function () {
                               .empty()
                               .append($('<p>').text(arr.msg))
                               .append(error_list)
-                              .show();
+                              .append('If admin: You can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>. \nIf not admin: Organization administrators can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>.')
+			      .show();
                 invitee_emails_group.addClass('warning');
 
                 if (arr.sent_invitations) {

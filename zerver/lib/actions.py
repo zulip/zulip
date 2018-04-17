@@ -4098,6 +4098,8 @@ def validate_email_for_realm(target_realm: Realm, email: Text) -> None:
         # Mirror dummy users to be activated must be inactive
         if existing_user_profile.is_active:
             raise AssertionError("Mirror dummy user is already active!")
+    elif not existing_user_profile.is_active:
+        raise ValidationError('%s Has an account that has been deactivated.')
     else:
         # Other users should not already exist at all.
         raise ValidationError('%s already has an account' % (email,))
