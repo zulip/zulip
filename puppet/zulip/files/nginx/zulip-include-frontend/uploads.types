@@ -2,6 +2,8 @@
 types {
     text/plain                            txt;
 
+    application/pdf                       pdf;
+
     image/gif                             gif;
     image/jpeg                            jpeg jpg;
     image/png                             png;
