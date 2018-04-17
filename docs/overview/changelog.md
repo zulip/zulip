@@ -8,113 +8,74 @@ This section lists notable unreleased changes; it is generally updated
 in bursts.
 
 **Highlights:**
-
-- Added a user setting to choose the emoji set used in Zulip: Google,
-  Twitter, Apple, or Emoji One.
+- Added a new "night mode" theme for dark environments.
 - Added a video call integration powered by Jitsi.
 - Dramatically simplified the server installation process; it's now possible
   to install Zulip without first setting up outgoing email.
-- Added certbot support to the installer for getting certificates.
-- Added support for mentioning groups of users.
-- Added a new "night mode" theme for dark environments.
 - Added experimental support for importing an organization's history
   from Slack.
-- Overhauled our settings system to eliminate the ugly "save changes"
-  button system.
-- Rewrote our API documentation to be much more friendly and
-  expansive; it now covers most important endpoints, with nice examples.
+- Lots of visual polish improvements.
+- Countless small bugfixes both in the backend and the UI.
+
+
+**Security and privacy:**
 - The security model for private streams has changed.  Now
   organization administrators can remove users, edit descriptions, and
   rename private streams they are not subscribed to.  See Zulip's
   security model documentation for details.
-- Lots of visual polish improvements.
-
-**Full feature changelog:**
-
-- New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove,
-  Raygun, Insping, Dialogflow, Dropbox, Front, Intercom,
-  Statuspage.io, Flock and Beeminder.
 - The local uploads backend now does the same security checks that the
   S3 backend did before serving files to users.
-- Added support for users in multiple realms having the same email.
-- Added support for embedded interactive bots.
-- Added inline preview + player for Vimeo videos.
-- Added a setting to allow users to delete their messages.
 - Added an organization setting to limit creation of bots.
+- Refactored the authentication backends codebase to be much easier to
+  verify.
+- Added a user setting to control whether email notifications include
+  message content (or just the fact that there are new messages).
+
+
+**Visual and UI:**
+- Added a user setting to choose the emoji set used in Zulip: Google,
+  Twitter, Apple, or Emoji One.
+- Added a display setting to translate emoticons/smileys to emoji.
+- Expanded setting for displaying emoji as text to cover all display
+  settings (previously only affected reactions).
+- Overhauled our settings system to eliminate the ugly "save changes"
+  button system.
+- Redesigned the "uploaded files" UI.
+- Redesigned the "account settings" UI.
+- Redesigned error pages for the various email confirmation flows.
+- Our emoji now display at full resolution on retina displays.
+- Improved placement of text when inserting emoji via picker.
+- Improved the descriptions and UI for many settings.
+- Improved visual design of the help center (/help/).
+
+
+**Core chat experience:**
+- Added support for mentioning groups of users.
+- Added a setting to allow users to delete their messages.
 - Added support for uploading files in the message-edit UI.
-- Added new event types and fixed bugs in several webhook integrations.
-- Added a display for whether the user is logged-in in logged-out
-  pages.
-- Added support for hosting multiple domains, not all as subdomains of
-  the same base domain.
-- Added a new /team/ page explaining the team, with a nice
-  visualization of our contributors.
-- Added support for default bots to receive messages when they're
-mentioned, even if they are not subscribed.
-- Added support for inviting a new user as an administrator.
-- Added a new organization settings page for managing invites.
-- Added a user setting to control whether the organization's name is
-  included in email subject lines.
-- Added support for clicking on a mention to see a user's profile.
 - Added new compose features for pasting HTML.
 - Redesigned the compose are for private messages to use pretty pills
   rather than raw email addresses to display recipients.
 - Added new ctrl+B, ctrl+I, ctrl+L compose shortcuts for inserting
   common syntax.
 - Added warning when linking to a private stream via typeahead.
-- Added rate-limiting on inviting users to join a realm (prevents spam).
 - Added support for automatically-numbered markdown lists.
 - Added a big warning when posting to #announce.
-- Added a user setting to control whether email notifications include
-  message content (or just the fact that there are new messages).
 - Added a notification when drafts are saved, to make them more
-discoverable.
+  discoverable.
 - Added a fast local echo to emoji reactions.
-- Added new "basics" section to keyboard shortcuts documentation.
-- Added a new ">" keyboard shortcut for quote-and-reply.
-- Added a new "p" keyboard shortcut to just to next unread PM thread.
-- Added support for overriding the topic is all incoming webhook integrations.
-- Added a new nagios check for the Zulip analytics state.
-- Added a menu item to mark all messages as read.
-- Added support for logging into the mobile apps with RemoteUserBackend.
-- Added an organization setting to disable welcome emails to new users.
-- Added traffic statistics (messages/week) to the "Manage streams" UI.
-- Added a display setting to translate emoticons/smileys to emoji.
-- Added an organization setting to ban disposable email addresses
-  (I.e.. those from sites like mailinator.com).
-- Added a server setting to control whether digest emails are sent.
-- Links to logged-in content in Zulip now take the user to the
-  appropriate upload or view after a user logs in.
-- Incoming webhooks now send a private message to the bot owner for
-  more convenient testing if a stream is not specified.
-- Rewrote documentation for many integrations to use a cleaner
-  numbered-list format.
-- Renamed "Home" to "All messages", to avoid users clicking on it too
-  early in using Zulip.
 - Messages containing just a link to an image (or an uploaded image)
   now don't clutter the feed with the URL: we just display the image.
-- Refactored the authentication backends codebase to be much easier to
-  verify.
-- Expanded setting for displaying emoji as text to cover all display
-  settings (previously only affected reactions).
 - Redesigned the API for emoji reactions to support the full range of
   how emoji reactions are used.
-- Migrated the codebase to use the nice Python 3 typing syntax.
-- Changed the hotkey for compose-private-message from "C" to "x".
-- Optimized how user avatar URLs are transmitted over the wire.
-- Optimized message sending performance a bit more.
-- Split the Notifications Stream setting in two settings, one for new
-  users, the other for new streams.
-- Fixed numerous issues in the "stream settings" UI.
 - Fixed most of the known (mostly obscure) bugs in how messages are
   formatted in Zulip.
 - Fixed "more topics" to correctly display all historical topics for
   public streams, even though from before a user subscribed.
-- Fixed several bugs around interacting with deactivated users.
+- Added a menu item to mark all messages as read.
 - Fixed image upload file pickers offering non-image files.
 - Fixed some subtle bugs with full-text search and unicode.
 - Fixed bugs in the "edit history" HTML rendering process.
-- Fixed several hotkeys scope bugs.
 - Fixed popovers being closed when new messages come in.
 - Fixed unexpected code blocks when using the email mirror.
 - Fixed clicking on links to a narrow opening a new window.
@@ -122,49 +83,115 @@ discoverable.
 - Fixed layering issues with mobile Safari.
 - Fixed several obscure real-time synchronization bugs.
 - Fixed handling of messages with a very large HTML rendering.
-- Fixed buggy APNs logic that could cause extra exception emails.
+- Fixed several bugs around interacting with deactivated users.
 - Fixed interaction bugs with unread counts and deleting messages.
 - Fixed support for replacing deactivated custom emoji.
-- Fixed a missing dependency for the localhost_sso auth backend.
-- Fixed uploading user avatars encoded using the CMYK mode.
 - Fixed scrolling downwards in narrows.
-- Fixed numerous subtle bugs with the stream creation UI.
+- Optimized how user avatar URLs are transmitted over the wire.
+- Optimized message sending performance a bit more.
 - Fixed a subtle and hard-to-reproduce bug that resulted in every
   message being condensed ([More] appearing on every message).
-- Fixed subtle bugs in garbage-collection of old node_modules versions.
-- Dramatically improved organization of developer docs.
 - Improved typeahead's handling of editing an already-completed mention.
 - Improved syntax for inline LaTeX to be more convenient.
-- Improve keyboard navigation of left and right sidebars with arrow keys.
-- Changes the URL scheme for stream narrows to encode the stream ID,
-  so that they can be robust to streams being renamed.  The change is
-  backwards-compatible; existing narrow URLs still work.
-- APIs for fetching messages now provide more metadata to help clients.
-- Clarified instructions for server settings (especially LDAP auth).
-- Redesigned the "uploaded files" UI.
-- Redesigned the "account settings" UI.
-- Redesigned error pages for the various email confirmation flows.
-- Added missing information on requesting user in many exception emails.
-- Our emoji now display at full resolution on retina displays.
-- Improved placement of text when inserting emoji via picker.
-- Improved the password reset flow to be less confusing if you don't
-  have an account.
 - Improved behavior of copy-pasting a large number of messages.
-- Improved Tornado retry logic for connecting to RabbitMQ.
-- Improved the descriptions and UI for many settings.
 - Improved handling of browser undo in compose.
-- Improved mobile notifications to support narrowing when one click a
-  mobile push notification.
-- Improved visual design of the help center (/help/).
 - Improved saved drafts system to garbage-collect old drafts and sort
   by last modification, not creation.
 - Removed the legacy "Zulip labs" autoscroll_forever setting.  It was
   enabled mostly by accident.
 - Removed some long-deprecated markdown syntax for mentions.
+- Added support for clicking on a mention to see a user's profile.
+- Links to logged-in content in Zulip now take the user to the
+  appropriate upload or view after a user logs in.
+- Renamed "Home" to "All messages", to avoid users clicking on it too
+  early in using Zulip.
+- Added a user setting to control whether the organization's name is
+  included in email subject lines.
+- Fixed uploading user avatars encoded using the CMYK mode.
+
+
+**User accounts and invites:**
+- Added support for users in multiple realms having the same email.
+- Added a display for whether the user is logged-in in logged-out
+  pages.
+- Added support for inviting a new user as an administrator.
+- Added a new organization settings page for managing invites.
+- Added rate-limiting on inviting users to join a realm (prevents spam).
+- Added an organization setting to disable welcome emails to new users.
+- Added an organization setting to ban disposable email addresses
+  (I.e.. those from sites like mailinator.com).
+- Improved the password reset flow to be less confusing if you don't
+  have an account.
+- Split the Notifications Stream setting in two settings, one for new
+  users, the other for new streams.
+
+
+**Stream subscriptions and settings:**
+- Added traffic statistics (messages/week) to the "Manage streams" UI.
+- Fixed numerous issues in the "stream settings" UI.
+- Fixed numerous subtle bugs with the stream creation UI.
+- Changes the URL scheme for stream narrows to encode the stream ID,
+  so that they can be robust to streams being renamed.  The change is
+  backwards-compatible; existing narrow URLs still work.
+
+
+**API, bots, and integrations:**
+- Rewrote our API documentation to be much more friendly and
+  expansive; it now covers most important endpoints, with nice examples.
+- New integrations: ErrBot, GoCD, Google Code-In, Opbeat, Groove,
+  Raygun, Insping, Dialogflow, Dropbox, Front, Intercom,
+  Statuspage.io, Flock and Beeminder.
+- Added support for embedded interactive bots.
+- Added inline preview + player for Vimeo videos.
+- Added new event types and fixed bugs in several webhook integrations.
+- Added support for default bots to receive messages when they're
+  mentioned, even if they are not subscribed.
+- Added support for overriding the topic is all incoming webhook integrations.
+- Incoming webhooks now send a private message to the bot owner for
+  more convenient testing if a stream is not specified.
+- Rewrote documentation for many integrations to use a cleaner
+  numbered-list format.
+- APIs for fetching messages now provide more metadata to help clients.
+
+
+**Keyboard shortcuts:**
+- Added new "basics" section to keyboard shortcuts documentation.
+- Added a new ">" keyboard shortcut for quote-and-reply.
+- Added a new "p" keyboard shortcut to just to next unread PM thread.
+- Fixed several hotkeys scope bugs.
+- Changed the hotkey for compose-private-message from "C" to "x".
+- Improve keyboard navigation of left and right sidebars with arrow keys.
+
+
+**Mobile apps backend:**
+- Added support for logging into the mobile apps with RemoteUserBackend.
+- Improved mobile notifications to support narrowing when one click a
+  mobile push notification.
 - Statistics on the fraction of strings that are translated now
   include strings in the mobile apps as well.
+
+
+**For server admins:**
+- Added certbot support to the installer for getting certificates.
+- Added support for hosting multiple domains, not all as subdomains of
+  the same base domain.
+- Added a new nagios check for the Zulip analytics state.
+- Fixed buggy APNs logic that could cause extra exception emails.
+- Fixed a missing dependency for the localhost_sso auth backend.
+- Fixed subtle bugs in garbage-collection of old node_modules versions.
+- Clarified instructions for server settings (especially LDAP auth).
+- Added missing information on requesting user in many exception emails.
+- Improved Tornado retry logic for connecting to RabbitMQ.
+- Added a server setting to control whether digest emails are sent.
+
+
+**For Zulip developers:**
+- Migrated the codebase to use the nice Python 3 typing syntax.
+- Added a new /team/ page explaining the team, with a nice
+  visualization of our contributors.
+- Dramatically improved organization of developer docs.
 - Backend test coverage is now 95%.
-- Countless other little bug fixes both in the backend and the UI.
+
 
 ### 1.7.2 -- 2018-04-12
 
