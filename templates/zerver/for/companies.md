@@ -28,9 +28,9 @@ your budget or security needs change.
 
 ### No vendor lock-in
 
-Zulip's license (Apache 2) and [published code base](github.com/zulip/zulip)
-means you will always be able to run Zulip on your own servers, for free,
-forever.
+Zulip's license (Apache 2) and
+[published code base](https://github.com/zulip/zulip) means you will
+always be able to run Zulip on your own servers, for free, forever.
 
 ### Highly customizable
 
