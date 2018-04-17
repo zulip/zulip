@@ -5,7 +5,7 @@ var exports = {};
 exports.set_up = function () {
     $("#ui-settings-status").hide();
 
-    $("#ui-settings .change-setting").change(function (e) {
+    $("#ui-settings .ui-settings-form").change(function (e) {
         e.preventDefault();
         var labs_updates = {};
         _.each(["default_desktop_notifications"],
