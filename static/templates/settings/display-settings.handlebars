@@ -1,122 +1,130 @@
 <div id="display-settings" class="settings-section" data-name="display-settings">
     <form class="display-settings-form">
-        <!-- this is inline block so that the alert notification can sit beside
-        it. If there's not an alert, don't make it inline-block. -->
-        <h3 class="inline-block">{{t "Language settings" }}</h3>
-        <div class="alert-notification" id="language-settings-status"></div>
+        <div id="user-lang-settings">
+            <!-- this is inline block so that the alert notification can sit beside
+            it. If there's not an alert, don't make it inline-block. -->
+            <h3 class="inline-block">{{t "Language settings" }}</h3>
+            <div class="alert-notification" id="language-settings-status"></div>
 
-        <div class="input-group user-name-section">
-            <label class="inline-block title">{{t "Default language" }}</label>
-            <a id="default_language" href="#default_language">
-                <button type="button" class="button rounded small inline-block">
-                    <span id="default_language_name">{{page_params.default_language_name}}</span>
-                    <i class="fa fa-pencil"></i>
-                </button>
-            </a>
+            <div class="input-group user-name-section">
+                <label class="inline-block title">{{t "Default language" }}</label>
+                <a id="default_language" href="#default_language">
+                    <button type="button" class="button rounded small inline-block">
+                        <span id="default_language_name">{{page_params.default_language_name}}</span>
+                        <i class="fa fa-pencil"></i>
+                    </button>
+                </a>
+            </div>
+
+            {{ partial "default_language_modal"}}
         </div>
 
-        {{ partial "default_language_modal"}}
+        <div id="user-display-settings">
+            <h3 class="inline-block">{{t "Display settings" }}</h3>
+            <div class="alert-notification" id="display-settings-status"></div>
 
-        <h3 class="inline-block">{{t "Display settings" }}</h3>
-        <div class="alert-notification" id="display-settings-status"></div>
-
-        <div class="input-group">
-            <label class="checkbox">
-                <input type="checkbox" name="night_mode" id="night_mode"
-                  {{#if page_params.night_mode}}
-                  checked="checked"
-                  {{/if}} />
-                <span></span>
-            </label>
-            <label for="night_mode" class="inline-block">{{t "Night mode" }}</label>
-        </div>
-
-        <div class="input-group">
-            <label class="checkbox">
-                <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
-                  {{#if page_params.high_contrast_mode}}
-                  checked="checked"
-                  {{/if}} />
-                <span></span>
-            </label>
-            <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
-        </div>
-
-        <div class="input-group">
-            <label class="checkbox">
-                <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
-                  {{#if page_params.left_side_userlist}}
-                  checked="checked"
-                  {{/if}} />
-                <span></span>
-            </label>
-            <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
-        </div>
-
-        <h3 class="inline-block">{{t "Time settings" }}</h3>
-        <div class="alert-notification" id="time-settings-status"></div>
-
-        <div class="input-group">
-            <label class="checkbox">
-                <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
-                  {{#if page_params.twenty_four_hour_time}}
-                  checked="checked"
-                  {{/if}} />
-                <span></span>
-            </label>
-            <label for="twenty_four_hour_time" class="inline-block">
-                {{t "24-hour time (17:00 instead of 5:00 PM)" }}
-            </label>
-        </div>
-
-        <div class="input-group">
-            <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
-            <select name="timezone" id="user_timezone">
-                {{#unless page_params.timezone}}
-                <option></option>
-                {{/unless}}
-
-                {{#each timezones}}
-                <option value="{{ this }}">{{ this }}</option>
-                {{/each}}
-            </select>
-        </div>
-
-        <h3 class="inline-block light">Emoji style</h3>
-        <div class="alert-notification" id="emoji-settings-status"></div>
-
-        <div class="input-group side-padded-container">
-            <div class="emojiset_choices grey-box">
-                {{#each page_params.emojiset_choices }}
-                <label>
-                    <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
-                    <span>{{t this }}</span>
-                    <span class="right">
-                        {{#if @last}}
-                        <div class="emoji_alt_code">&nbsp;:relaxed:</div>
-                        {{else}}
-                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
-                        <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f389.png" />
-                        {{/if}}
-                    </span>
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="night_mode" id="night_mode"
+                    {{#if page_params.night_mode}}
+                    checked="checked"
+                    {{/if}} />
+                    <span></span>
                 </label>
-                {{/each}}
+                <label for="night_mode" class="inline-block">{{t "Night mode" }}</label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
+                    {{#if page_params.high_contrast_mode}}
+                    checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
+                    {{#if page_params.left_side_userlist}}
+                    checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
             </div>
         </div>
 
-        <div class="input-group">
-            <label class="checkbox">
-                <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
-                  {{#if page_params.translate_emoticons}}
-                  checked="checked"
-                  {{/if}} />
-                <span></span>
-            </label>
-            <label for="translate_emoticons" class="inline-block">
-                {{t "Translate emoticons (convert <code>:)</code> to 😃 in messages)" }}
-            </label>
+        <div id="user-time-settings">
+            <h3 class="inline-block">{{t "Time settings" }}</h3>
+            <div class="alert-notification" id="time-settings-status"></div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
+                    {{#if page_params.twenty_four_hour_time}}
+                    checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="twenty_four_hour_time" class="inline-block">
+                    {{t "24-hour time (17:00 instead of 5:00 PM)" }}
+                </label>
+            </div>
+
+            <div class="input-group">
+                <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
+                <select name="timezone" id="user_timezone">
+                    {{#unless page_params.timezone}}
+                    <option></option>
+                    {{/unless}}
+
+                    {{#each timezones}}
+                    <option value="{{ this }}">{{ this }}</option>
+                    {{/each}}
+                </select>
+            </div>
+        </div>
+
+        <div id="user-emoji-settings">
+            <h3 class="inline-block light">Emoji style</h3>
+            <div class="alert-notification" id="emoji-settings-status"></div>
+
+            <div class="input-group side-padded-container">
+                <div class="emojiset_choices grey-box">
+                    {{#each page_params.emojiset_choices }}
+                    <label>
+                        <input type="radio" class="emojiset_choice" name="emojiset_group" value="{{@key}}" />
+                        <span>{{t this }}</span>
+                        <span class="right">
+                            {{#if @last}}
+                            <div class="emoji_alt_code">&nbsp;:relaxed:</div>
+                            {{else}}
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f642.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f44d.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f680.png" />
+                            <img class="emoji" src="/static/generated/emoji/images-{{@key}}-64/1f389.png" />
+                            {{/if}}
+                        </span>
+                    </label>
+                    {{/each}}
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="checkbox">
+                    <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
+                    {{#if page_params.translate_emoticons}}
+                    checked="checked"
+                    {{/if}} />
+                    <span></span>
+                </label>
+                <label for="translate_emoticons" class="inline-block">
+                    {{t "Translate emoticons (convert <code>:)</code> to 😃 in messages)" }}
+                </label>
+            </div>
         </div>
     </form>
 </div>
