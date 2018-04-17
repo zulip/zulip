@@ -1,32 +1,16 @@
-Zulip supports integration with Sentry and can notify you of
-issues that occurred in your project.
+Get Zulip notifications for the issues in your Sentry projects!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-Next, from the Sentry dashboard choose your project.
+1. In your Sentry project, click on the **Settings** tab. On the
+   left sidebar, click on **Alerts**. Scroll down, and under
+   **Inactive Integrations**, click on **Webhooks**.
 
-![](/static/images/integrations/sentry/001.png)
-
-From the menu on the right, choose **Settings**
-
-![](/static/images/integrations/sentry/002.png)
-
-On the **Settings** page, from the menu on the left, choose
-**Notifications**.
-
-In the **Inactive Integrations** section, choose **WEBHOOKS**.
-
-![](/static/images/integrations/sentry/003.png)
-
-In the **WebHooks** box, input the webhook URL we created above
-into the **Callback URLs** field.
-
-![](/static/images/integrations/sentry/004.png)
-
-And click **Save Changes**.
+1. Set **Callback URLs** to the URL constructed above, and click
+   **Save Changes**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/sentry/005.png)
+![](/static/images/integrations/sentry/001.png)
