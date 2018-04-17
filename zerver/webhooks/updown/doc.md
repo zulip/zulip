@@ -1,12 +1,13 @@
-See Updown reports in Zulip! This is a great way to be up to
-date with downtime in the services you monitor with Updown!
+See Updown reports in Zulip!
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-{!create-bot-construct-url.md!}
+1. {!create-bot-construct-url-indented.md!}
 
-Go to [your Updown settings page](https://updown.io/settings/edit)
-and in the **WEBHOOKS** section, enter the URL created above:
+1. Go to [your Updown settings page](https://updown.io/settings/edit).
+
+1. Under **Webhooks**, set **Webhook endpoint URLs** to the URL
+   constructed above, and click on **+**.
 
 {!congrats.md!}
 
