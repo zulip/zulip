@@ -23,56 +23,30 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="night_mode" id="night_mode"
-                    {{#if page_params.night_mode}}
-                    checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="night_mode" class="inline-block">{{t "Night mode" }}</label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "night_mode"
+              "is_checked" page_params.night_mode
+              "label" settings_label.night_mode}}
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="high_contrast_mode" id="high_contrast_mode"
-                    {{#if page_params.high_contrast_mode}}
-                    checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="high_contrast_mode" class="inline-block">{{t "High contrast mode" }}</label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "high_contrast_mode"
+              "is_checked" page_params.high_contrast_mode
+              "label" settings_label.high_contrast_mode}}
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="left_side_userlist" id="left_side_userlist"
-                    {{#if page_params.left_side_userlist}}
-                    checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="left_side_userlist" class="inline-block">{{t "User list on left sidebar in narrow windows" }}</label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "left_side_userlist"
+              "is_checked" page_params.left_side_userlist
+              "label" settings_label.left_side_userlist}}
         </div>
 
         <div id="user-time-settings">
             <h3 class="inline-block">{{t "Time settings" }}</h3>
             <div class="alert-notification" id="time-settings-status"></div>
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="twenty_four_hour_time" id="twenty_four_hour_time"
-                    {{#if page_params.twenty_four_hour_time}}
-                    checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="twenty_four_hour_time" class="inline-block">
-                    {{t "24-hour time (17:00 instead of 5:00 PM)" }}
-                </label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "twenty_four_hour_time"
+              "is_checked" page_params.twenty_four_hour_time
+              "label" settings_label.twenty_four_hour_time}}
 
             <div class="input-group">
                 <label for="timezone" class="dropdown-title">{{t "Time zone" }}:</label>
@@ -113,18 +87,10 @@
                 </div>
             </div>
 
-            <div class="input-group">
-                <label class="checkbox">
-                    <input type="checkbox" name="translate_emoticons" id="translate_emoticons"
-                    {{#if page_params.translate_emoticons}}
-                    checked="checked"
-                    {{/if}} />
-                    <span></span>
-                </label>
-                <label for="translate_emoticons" class="inline-block">
-                    {{t "Translate emoticons (convert <code>:)</code> to 😃 in messages)" }}
-                </label>
-            </div>
+            {{partial "settings_checkbox"
+              "setting_name" "translate_emoticons"
+              "is_checked" page_params.translate_emoticons
+              "label" settings_label.translate_emoticons}}
         </div>
     </form>
 </div>
