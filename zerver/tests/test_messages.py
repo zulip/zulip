@@ -4,10 +4,13 @@ from django.conf import settings
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
+from django.utils.timezone import utc as timezone_utc
+
 from zerver.lib import bugdown
 from zerver.decorator import JsonableError
 from zerver.lib.test_runner import slow
 from zerver.lib.cache import get_stream_cache_key, cache_delete
+from zerver.lib.message import estimate_recent_messages
 
 from zerver.lib.addressee import Addressee
 
@@ -71,6 +74,9 @@ from zerver.lib.timestamp import convert_to_UTC
 from zerver.lib.timezone import get_timezone
 
 from zerver.views.messages import create_mirrored_message_users
+
+from analytics.lib.counts import CountStat, LoggingCountStat, COUNT_STATS
+from analytics.models import RealmCount
 
 import datetime
 import DNS
@@ -3121,27 +3127,32 @@ class MessageVisibilityTest(ZulipTestCase):
 
         realm.message_visibility_limit = None
         realm.save()
-        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=1), \
-                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+
+        end_time = timezone_now() - datetime.timedelta(hours=lookback_hours - 5)
+        stat = COUNT_STATS['messages_sent:is_bot:hour']
+
+        RealmCount.objects.create(realm=realm, property=stat.property,
+                                  end_time=end_time, value=5)
+        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_not_called()
 
         realm.message_visibility_limit = 10
         realm.save()
-        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=0), \
-                mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
+        RealmCount.objects.all().delete()
+        with mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         # Cache got cleared when the value of message_visibility_limit was updated
         m.assert_called_once_with(realm)
 
-        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=0), \
-                mock.patch('zerver.lib.message.cache_get', return_value=True), \
+        with mock.patch('zerver.lib.message.cache_get', return_value=True), \
                 mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_not_called()
 
-        with mock.patch('zerver.lib.message.estimate_recent_messages', return_value=1), \
-                mock.patch('zerver.lib.message.cache_get', return_value=True), \
+        RealmCount.objects.create(realm=realm, property=stat.property,
+                                  end_time=end_time, value=5)
+        with mock.patch('zerver.lib.message.cache_get', return_value=True), \
                 mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_called_once_with(realm)
