@@ -59,7 +59,6 @@ not_yet_fully_covered = {
     'zerver/lib/exceptions.py',
     'zerver/lib/i18n.py',
     'zerver/lib/management.py',
-    'zerver/lib/message.py',
     'zerver/lib/notifications.py',
     'zerver/lib/send_email.py',
     'zerver/lib/upload.py',
