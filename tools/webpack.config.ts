@@ -101,10 +101,10 @@ export default (env?: string) : webpack.Configuration => {
             clientLogLevel: "warning",
             hot: true,
             inline: false,
-            stats: "errors-only",
+            stats: "minimal",
             watchOptions: {
-                aggregateTimeout: 300,
-                poll: 1000,
+                aggregateTimeout: 100,
+                poll: 100,
             },
         };
     }
