@@ -105,7 +105,7 @@ not_yet_fully_covered = {
     'zerver/webhooks/beanstalk/view.py',
     'zerver/webhooks/bitbucket2/view.py',
     'zerver/webhooks/freshdesk/view.py',
-    'zerver/webhooks/github/view.py',
+    'zerver/webhooks/github_legacy/view.py',
     'zerver/webhooks/github_webhook/view.py',
     'zerver/webhooks/gitlab/view.py',
     'zerver/webhooks/gogs/view.py',

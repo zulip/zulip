@@ -9,7 +9,7 @@ from zerver.models import Message
 class GithubV1HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[Text]
     URL_TEMPLATE = u"/api/v1/external/github"
-    FIXTURE_DIR_NAME = 'github'
+    FIXTURE_DIR_NAME = 'github_legacy'
     SEND_STREAM = False
     BRANCHES = None  # type: Optional[Text]
 
@@ -134,7 +134,7 @@ class GithubV1HookTests(WebhookTestCase):
 class GithubV2HookTests(WebhookTestCase):
     STREAM_NAME = None  # type: Optional[Text]
     URL_TEMPLATE = u"/api/v1/external/github"
-    FIXTURE_DIR_NAME = 'github'
+    FIXTURE_DIR_NAME = 'github_legacy'
     SEND_STREAM = False
     BRANCHES = None  # type: Optional[Text]
 
