@@ -163,7 +163,7 @@ in bursts.
 **Keyboard shortcuts:**
 - Added new "basics" section to keyboard shortcuts documentation.
 - Added a new ">" keyboard shortcut for quote-and-reply.
-- Added a new "p" keyboard shortcut to just to next unread PM thread.
+- Added a new "p" keyboard shortcut to jump to next unread PM thread.
 - Fixed several hotkeys scope bugs.
 - Changed the hotkey for compose-private-message from "C" to "x".
 - Improve keyboard navigation of left and right sidebars with arrow keys.
