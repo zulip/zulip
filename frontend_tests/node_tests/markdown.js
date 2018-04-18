@@ -1,7 +1,4 @@
 /*global Dict */
-var path = zrequire('path', 'path');
-var fs = zrequire('fs', 'fs');
-
 zrequire('hash_util');
 zrequire('katex', 'node_modules/katex/dist/katex.min.js');
 zrequire('marked', 'third/marked/lib/marked');
@@ -147,7 +144,7 @@ stream_data.add_sub('Bobby <h1>Tables</h1>', edgecase_stream);
 
 markdown.initialize();
 
-var bugdown_data = JSON.parse(fs.readFileSync(path.join(__dirname, '../../zerver/fixtures/markdown_test_cases.json'), 'utf8', 'r'));
+var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
 (function test_bugdown_detection() {
 

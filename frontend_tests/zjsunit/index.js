@@ -1,3 +1,6 @@
+var path = require('path');
+var fs = require('fs');
+
 global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
@@ -33,12 +36,6 @@ global.compile_template = render.compile_template;
 global.render_template = render.render_template;
 global.walk = render.walk;
 
-// Set up helpers to output HTML
-var output = require('./output.js');
-global.write_handlebars_output = output.write_handlebars_output;
-global.write_test_output = output.write_test_output;
-global.append_test_output = output.append_test_output;
-
 // Set up fake jQuery
 global.make_zjquery = require('./zjquery.js').make_zjquery;
 
@@ -54,10 +51,15 @@ module.prototype.hot = {
     accept: noop,
 };
 
+// Set up fixtures.
+global.read_fixture_data = (fn) => {
+    var full_fn = path.join(__dirname, '../../zerver/fixtures/', fn);
+    var data = JSON.parse(fs.readFileSync(full_fn, 'utf8', 'r'));
+    return data;
+};
+
 // Set up bugdown comparison helper
 global.bugdown_assert = require('./bugdown_assert.js');
-
-output.start_writing();
 
 files.forEach(function (file) {
     global.patch_builtin('setTimeout', noop);
@@ -68,5 +70,3 @@ files.forEach(function (file) {
     require(file.full_name);
     namespace.restore();
 });
-
-console.info("To see more output, open " + output.index_fn);

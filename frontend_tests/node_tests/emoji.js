@@ -99,15 +99,16 @@ zrequire('util');
         {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
-    Object.keys(emoji.EMOTICON_CONVERSIONS).forEach(key => {
-        testcases.forEach(t => {
-            var converted_value = `:${emoji.EMOTICON_CONVERSIONS[key]}:`;
-            t = Object.assign({}, t); // circumvent copy by reference.
-            t.original = t.original.replace(/(<original>)/g, key);
-            t.expected = t.expected.replace(/(<original>)/g, key);
-            t.expected = t.expected.replace(/(<converted>)/g, converted_value);
-            var result = emoji.translate_emoticons_to_names(t.original);
-            assert.equal(result, t.expected);
+    _.each(emoji.EMOTICON_CONVERSIONS, (full_name, shortcut) => {
+        _.each(testcases, (t) => {
+            var converted_value = ':' + full_name + ':';
+            var original = t.original;
+            var expected = t.expected;
+            original = original.replace(/(<original>)/g, shortcut);
+            expected = expected.replace(/(<original>)/g, shortcut)
+                               .replace(/(<converted>)/g, converted_value);
+            var result = emoji.translate_emoticons_to_names(original);
+            assert.equal(result, expected);
         });
     });
 }());

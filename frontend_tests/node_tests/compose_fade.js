@@ -1,5 +1,3 @@
-set_global('$', function () {
-});
 set_global('blueslip', {});
 global.blueslip.warn = function () {};
 

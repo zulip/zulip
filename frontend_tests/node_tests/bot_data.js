@@ -5,10 +5,7 @@ global.patch_builtin('_', patched_underscore);
 zrequire('people');
 zrequire('bot_data');
 
-set_global('$', function (f) {
-    if (f) {
-        return f();
-    }
+set_global('$', function () {
     return {trigger: function () {}};
 });
 set_global('document', null);

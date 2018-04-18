@@ -20,17 +20,13 @@ set_global('page_params', {
 set_global('overlays', {
 });
 
-set_global('$', function () {
-    return {
-        // Hack: Used for reactions hotkeys; may want to restructure.
-        find: function () {return ['target'];},
-        keydown: function () {},
-        keypress: function () {},
-    };
-});
+var noop = () => {};
 
-set_global('document', {
-});
+// jQuery stuff should go away if we make an initialize() method.
+set_global('document', 'document-stub');
+set_global('$', global.make_zjquery());
+$.fn.keydown = noop;
+$.fn.keypress = noop;
 
 var hotkey = zrequire('hotkey');
 
