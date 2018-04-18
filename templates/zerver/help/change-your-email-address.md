@@ -3,8 +3,7 @@
 If enabled by Zulip organization administrator, you can change your email address
 using the following steps.
 
-1. Go to the [Your account](/#settings/your-account)
-{!settings.md!}
+{settings_tab|your-account}
 
 2. Click on the **[Change]** link beside your email address.
 

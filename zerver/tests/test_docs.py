@@ -130,6 +130,18 @@ class HelpTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assertIn('<a target="_blank" href="/#streams">streams page</a>', str(result.content))
 
+    def test_html_settings_links_help_docs(self) -> None:
+        result = self.client_get('/help/change-the-date-and-time-format')
+        self.assertIn('click <a href="/#settings/display-settings">Display settings</a>', str(result.content))
+        self.assertEqual(result.status_code, 200)
+
+        with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            result = self.client_get('/help/change-the-date-and-time-format',
+                                     subdomain="")
+        self.assertEqual(result.status_code, 200)
+        self.assertIn('<strong>Display settings</strong>', str(result.content))
+        self.assertNotIn('click <a href="/#settings/display-settings">Display settings</a>', str(result.content))
+
 class IntegrationTest(TestCase):
     def test_check_if_every_integration_has_logo_that_exists(self) -> None:
         for integration in INTEGRATIONS.values():

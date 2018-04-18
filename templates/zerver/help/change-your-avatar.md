@@ -6,8 +6,7 @@ simply use your existing gravatar.
 
 You can also upload a custom avatar to Zulip.
 
-1. Go to the [Your account](/#settings/your-account)
-{!settings.md!}
+{settings_tab|your-account}
 
 2. Click the **Upload new avatar** button and choose an image to upload
     as your avatar.
