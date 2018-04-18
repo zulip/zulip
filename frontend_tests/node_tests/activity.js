@@ -138,7 +138,7 @@ presence.presence_info = presence_info;
 }());
 
 (function test_reload_defaults() {
-    var warned;
+    let warned;
 
     blueslip.warn = function (msg) {
         assert.equal(msg, 'get_filter_text() is called before initialization');
@@ -204,7 +204,7 @@ presence.presence_info = presence_info;
 
 (function test_full_huddle_name() {
     function full_name(emails_string) {
-        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
         return activity.full_huddle_name(user_ids_string);
     }
 
@@ -219,7 +219,7 @@ presence.presence_info = presence_info;
 
 (function test_short_huddle_name() {
     function short_name(emails_string) {
-        var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+        const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
         return activity.short_huddle_name(user_ids_string);
     }
 
@@ -246,7 +246,7 @@ presence.presence_info = presence_info;
 }());
 
 (function test_huddle_fraction_present() {
-    var huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
     const presence_info = {};
@@ -399,7 +399,7 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
 }());
 
 (function test_key_input() {
-    var sel_index = 0;
+    let sel_index = 0;
     // Returns which element is selected
     $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
         .expectOne().attr = function () {
@@ -481,7 +481,7 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
     const e = {
         stopPropagation: () => {},
     };
-    var click_handler = $('.user-list-filter').get_on_handler('click');
+    const click_handler = $('.user-list-filter').get_on_handler('click');
     click_handler(e);
 }());
 
@@ -505,7 +505,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
     activity.set_user_list_filter();
 
-    var user_ids = activity.get_filtered_and_sorted_user_ids();
+    let user_ids = activity.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [
         alice.user_id,
         fred.user_id,
@@ -548,7 +548,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
     // These selectors are here to avoid some short-circuit logic.
     $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
 
-    var appended_html;
+    let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
     };
@@ -567,7 +567,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
     // These selectors are here to avoid some short-circuit logic.
     $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
 
-    var appended_html;
+    let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
     };
@@ -609,7 +609,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
         },
     });
 
-    var before_html;
+    let before_html;
     $('<fake-dom-for-jill').before = function (html) {
         before_html = html;
     };
