@@ -82,7 +82,7 @@ export default (env?: string) : Config => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
-            filename: production ? '[name]-[hash].js' : '[name].js',
+            filename: '[name].js',
         },
         resolve: {
             extensions: [".tsx", ".ts", ".js", ".json"],
