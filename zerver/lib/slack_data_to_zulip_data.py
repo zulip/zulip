@@ -852,7 +852,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     #     zip_ref.extractall(slack_data_dir)
 
     script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
-    fixtures_path = script_path + '../fixtures/'
+    fixtures_path = script_path + '../management/data/'
 
     realm_id = 0
 
