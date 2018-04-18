@@ -298,11 +298,11 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('freshdesk', ['customer-support']),
     WebhookIntegration('front', ['customer-support'], display_name='Front'),
     GithubIntegration(
-        'github_webhook',
+        'github',
         ['version-control'],
         display_name='GitHub',
         logo='static/images/integrations/logos/github.svg',
-        function='zerver.webhooks.github_webhook.view.api_github_webhook',
+        function='zerver.webhooks.github.view.api_github_webhook',
         stream_name='github'
     ),
     WebhookIntegration('gitlab', ['version-control'], display_name='GitLab'),

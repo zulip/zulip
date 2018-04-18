@@ -16,4 +16,4 @@ Get GitHub notifications in Zulip!
 
 {!congrats.md!}
 
-![](/static/images/integrations/github_webhook/001.png)
+![](/static/images/integrations/github/001.png)
