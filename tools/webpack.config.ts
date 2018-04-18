@@ -71,7 +71,12 @@ export default (env?: string) : webpack.Configuration => {
         resolve: {
             extensions: [".tsx", ".ts", ".js", ".json"],
         },
-        devtool: production ? 'source-map' : 'eval',
+        // We prefer cheap-module-eval-source-map over eval because
+        // currently eval has trouble setting breakpoints per line
+        // in Google Chrome. There's almost no difference
+        // between the compilation time for the two and could be
+        // re-evaluated as the size of files grows
+        devtool: production ? 'source-map' : 'cheap-module-eval-source-map',
     };
     if (production) {
         config.plugins = [
