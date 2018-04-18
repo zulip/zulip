@@ -262,8 +262,11 @@ exports.make_new_elem = function (selector, opts) {
             attrs.del(name);
             return self;
         },
-        removeClass: function (class_name) {
-            classes.del(class_name);
+        removeClass: function (class_names) {
+            class_names = class_names.split(' ');
+            class_names.forEach(function (class_name) {
+                classes.del(class_name);
+            });
             return self;
         },
         remove: function () {
