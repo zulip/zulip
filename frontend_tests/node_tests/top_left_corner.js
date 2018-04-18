@@ -5,13 +5,14 @@ zrequire('unread_ui');
 
 zrequire('top_left_corner');
 
-var noop = function () {};
-
 (function test_narrowing() {
+    // activating narrow
+
     var pm_expanded;
+    var pm_closed;
 
     set_global('pm_list', {
-        close: noop,
+        close: function () { pm_closed = true; },
         expand: function () { pm_expanded = true; },
     });
 
@@ -33,6 +34,17 @@ var noop = function () {};
     ]);
     top_left_corner.handle_narrow_activated(filter);
     assert(top_left_corner.get_global_filter_li('home').hasClass('active-filter'));
+
+    // deactivating narrow
+
+    pm_closed = false;
+    top_left_corner.handle_narrow_deactivated();
+
+    assert(top_left_corner.get_global_filter_li('home').hasClass('active-filter'));
+    assert(!top_left_corner.get_global_filter_li('mentioned').hasClass('active-filter'));
+    assert(!top_left_corner.get_global_filter_li('private').hasClass('active-filter'));
+    assert(!top_left_corner.get_global_filter_li('starred').hasClass('active-filter'));
+    assert(pm_closed);
 }());
 
 (function test_update_count_in_dom() {
@@ -69,4 +81,9 @@ var noop = function () {};
     assert.equal($('<mentioned-value>').text(), '222');
     assert.equal($('<home-value>').text(), '333');
 
+    counts.mentioned_message_count = 0;
+    top_left_corner.update_dom_with_unread_counts(counts);
+
+    assert(!$('<mentioned-count>').visible());
+    assert.equal($('<mentioned-value>').text(), '');
 }());

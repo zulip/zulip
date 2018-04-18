@@ -60,6 +60,7 @@ enforce_fully_covered = {
     'static/js/stream_data.js',
     'static/js/stream_events.js',
     'static/js/stream_sort.js',
+    'static/js/top_left_corner.js',
     'static/js/topic_data.js',
     'static/js/topic_generator.js',
     'static/js/transmit.js',
