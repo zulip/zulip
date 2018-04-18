@@ -1,7 +1,7 @@
 from functools import wraps
 import logging
 import os
-from typing import Any, Callable, TypeVar
+from typing import Any, Callable, Optional, Text, TypeVar
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
@@ -10,7 +10,7 @@ import stripe
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.models import Realm, UserProfile
-from zilencer.models import Customer
+from zilencer.models import Customer, Plan
 from zproject.settings import get_secret
 
 STRIPE_SECRET_KEY = get_secret('stripe_secret_key')
@@ -34,9 +34,12 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
         if STRIPE_PUBLISHABLE_KEY is None:
+            # Go to https://dashboard.stripe.com/account/apikeys, and add
+            # the publishable key and secret key as stripe_publishable_key
+            # and stripe_secret_key to zproject/dev-secrets.conf.
             # Dev-only message; no translation needed.
             raise StripeError(
-                "Missing Stripe config. In dev, add to zproject/dev-secrets.conf .")
+                "Missing Stripe config. In dev, add stripe credentials to zproject/dev-secrets.conf.")
         try:
             return func(*args, **kwargs)
         except stripe.error.StripeError as e:
@@ -53,42 +56,38 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
             raise
     return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
 
-@catch_stripe_errors
-def count_stripe_cards(realm: Realm) -> int:
-    try:
-        customer_obj = Customer.objects.get(realm=realm)
-        cards = stripe.Customer.retrieve(customer_obj.stripe_customer_id).sources.all(object="card")
-        return len(cards["data"])
-    except Customer.DoesNotExist:
-        return 0
+def payment_source(stripe_customer: Any) -> Any:
+    if stripe_customer.default_source is None:
+        return None
+    for source in stripe_customer.sources.data:
+        if source.id == stripe_customer.default_source:
+            return source
 
-@catch_stripe_errors
-def save_stripe_token(user: UserProfile, token: str) -> int:
-    """Returns total number of cards."""
-    # The card metadata doesn't show up in Dashboard but can be accessed
-    # using the API.
-    card_metadata = {"added_user_id": user.id, "added_user_email": user.email}
-    try:
-        customer_obj = Customer.objects.get(realm=user.realm)
-        customer = stripe.Customer.retrieve(customer_obj.stripe_customer_id)
-        billing_logger.info("Adding card on customer %s: source=%r, metadata=%r",
-                            customer_obj.stripe_customer_id, token, card_metadata)
-        card = customer.sources.create(source=token, metadata=card_metadata)
-        customer.default_source = card.id
-        customer.save()
-        return len(customer.sources.list(object="card")["data"])
-    except Customer.DoesNotExist:
-        customer_metadata = {"string_id": user.realm.string_id}
-        # Description makes it easier to identify customers in Stripe dashboard
-        description = "{} ({})".format(user.realm.name, user.realm.string_id)
-        billing_logger.info("Creating customer: source=%r, description=%r, metadata=%r",
-                            token, description, customer_metadata)
-        customer = stripe.Customer.create(source=token,
-                                          description=description,
-                                          metadata=customer_metadata)
+# TODO: Replace Any with appropriate type, like stripe.api_resources.customer.Customer
+def get_stripe_customer(stripe_customer_id: int) -> Any:
+    return stripe.Customer.retrieve(stripe_customer_id)
 
-        card = customer.sources.list(object="card")["data"][0]
-        card.metadata = card_metadata
-        card.save()
-        Customer.objects.create(realm=user.realm, stripe_customer_id=customer.id)
-        return 1
+def get_upcoming_invoice(stripe_customer_id: int) -> Any:
+    return stripe.Invoice.upcoming(customer=stripe_customer_id)
+
+def do_create_customer_with_payment_source(user: UserProfile, stripe_token: Text) -> int:
+    realm = user.realm
+    stripe_customer = stripe.Customer.create(
+        description="%s (%s)" % (realm.string_id, realm.name),
+        metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
+        source=stripe_token)
+    Customer.objects.create(realm=realm, stripe_customer_id=stripe_customer.id, billing_user=user)
+    return stripe_customer.id
+
+def do_subscribe_customer_to_plan(stripe_customer_id: int, stripe_plan_id: int,
+                                  num_users: int, tax_percent: float) -> None:
+    stripe.Subscription.create(
+        customer=stripe_customer_id,
+        billing='charge_automatically',
+        items=[{
+            'plan': stripe_plan_id,
+            'quantity': num_users,
+        }],
+        prorate=True,
+        tax_percent=tax_percent,
+    )
