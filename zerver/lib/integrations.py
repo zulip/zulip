@@ -298,15 +298,6 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('freshdesk', ['customer-support']),
     WebhookIntegration('front', ['customer-support'], display_name='Front'),
     GithubIntegration(
-        'github',
-        ['version-control'],
-        function='zerver.webhooks.github.view.api_github_landing',
-        display_name='GitHub',
-        secondary_line_text='(deprecated)',
-        stream_name='commits',
-        legacy=True
-    ),
-    GithubIntegration(
         'github_webhook',
         ['version-control'],
         display_name='GitHub',

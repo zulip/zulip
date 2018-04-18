@@ -1,7 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .github.view import api_github_landing
+from .github_legacy.view import api_github_landing
 from .github_webhook.view import api_github_webhook
 
 # Since this dispatcher is an API-style endpoint, it needs to be

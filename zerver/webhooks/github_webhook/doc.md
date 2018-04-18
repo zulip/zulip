@@ -1,6 +1,4 @@
-For the integration based on the deprecated
-[GitHub Services](https://github.com/github/github-services),
-see [here](./github).
+Get GitHub notifications in Zulip!
 
 1. {!create-stream.md!}
 
