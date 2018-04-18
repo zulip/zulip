@@ -667,6 +667,10 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # These are Sometimes produced by slack
             continue
         if message.get('subtype') in [
+                # Zulip doesn't have a pinned_item concept
+                "pinned_item",
+                "unpinned_item",
+                # Slack's channel join/leave notices are spammy
                 "channel_join",
                 "channel_leave",
                 "channel_name"
