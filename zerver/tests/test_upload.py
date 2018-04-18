@@ -732,6 +732,9 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
 
+        response = self.client_get("/avatar/")
+        self.assertEqual(response.status_code, 404)
+
     def test_get_user_avatar_medium(self) -> None:
         self.login(self.example_email("hamlet"))
         cordelia = self.example_user('cordelia')

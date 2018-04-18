@@ -404,9 +404,9 @@ i18n_urls = [
         name='zerver.views.auth.show_deactivation_notice'),
 
     # Avatar
-    url(r'^avatar/(?P<email_or_id>[\S]+)?/(?P<medium>[\S]+)?', zerver.views.users.avatar,
+    url(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?', zerver.views.users.avatar,
         name='zerver.views.users.avatar'),
-    url(r'^avatar/(?P<email_or_id>[\S]+)?', zerver.views.users.avatar,
+    url(r'^avatar/(?P<email_or_id>[\S]+)', zerver.views.users.avatar,
         name='zerver.views.users.avatar'),
 
     # Registration views, require a confirmation ID.
