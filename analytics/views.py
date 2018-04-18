@@ -15,7 +15,8 @@ from django.urls import reverse
 from django.db import connection
 from django.db.models import Sum
 from django.db.models.query import QuerySet
-from django.http import HttpRequest, HttpResponse, HttpResponseNotFound
+from django.http import HttpRequest, HttpResponse, \
+    HttpResponseNotFound, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import RequestContext, loader
 from django.utils.timezone import now as timezone_now, utc as timezone_utc
@@ -38,15 +39,50 @@ from zerver.models import Client, get_realm, Realm, \
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
+    realm = request.user.realm
     return render(request,
                   'analytics/stats.html',
-                  context=dict(realm_name = request.user.realm.name))
+                  context=dict(realm_name=realm.name,
+                               realm=realm.string_id))
+
+@require_server_admin
+@has_request_variables
+def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
+    realm = get_realm(realm_str)
+    if realm is None:
+        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+    return render(request,
+                  'analytics/stats.html',
+                  context=dict(realm_name=realm.name,
+                               realm=realm.string_id))
+
+# TODO: Write a variant of require_server_admin for JSON views (should
+# throw a JsonableError not redirect to `/` on error), with tests.
+@has_request_variables
+def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
+                             realm_str: str) -> HttpResponse:
+    realm = get_realm(realm_str)
+    if realm is None:
+        # TODO: Fix error handling
+        return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
+
+    # TODO clean this up
+    if realm != request.user.realm and not request.user.is_staff:
+        logging.error('wrong realm')
+        return HttpResponseRedirect(settings.HOME_NOT_LOGGED_IN)
+
+    return get_chart_data(request, user_profile, realm=realm)
 
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: Text=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                    start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
-                   end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None)) -> HttpResponse:
+                   end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
+                   realm: Optional[Realm]=None) -> HttpResponse:
+
+    if realm is None:
+        realm = user_profile.realm
+
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
         tables = [RealmCount]
@@ -88,7 +124,6 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         raise JsonableError(_("Start time is later than end time. Start: %(start)s, End: %(end)s") %
                             {'start': start, 'end': end})
 
-    realm = user_profile.realm
     if start is None:
         start = realm.date_created
     if end is None:
@@ -471,6 +506,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
              now=now.strftime('%Y-%m-%dT%H:%M:%SZ'))
     )
     return content
+
+# TODO next: finish /stats/realm/* , then link to those.  Then CSS for legend.
 
 
 def user_activity_intervals() -> Tuple[mark_safe, Dict[str, float]]:
