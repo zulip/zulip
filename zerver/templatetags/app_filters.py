@@ -14,6 +14,7 @@ from django.utils.safestring import mark_safe
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
+import zerver.lib.bugdown.help_settings_links
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()
@@ -74,6 +75,11 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
     Note that this assumes that any HTML in the markdown file is
     trusted; it is intended to be used for documentation, not user
     data."""
+
+    if context is None:
+        context = {}
+    relative_settings_links = bool(context.get('html_settings_links'))
+
     global md_extensions
     global md_macro_extension
     if md_extensions is None:
@@ -89,6 +95,7 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
                 base_path='templates/zerver/api/'),
             zerver.lib.bugdown.api_code_examples.makeExtension(),
+            zerver.lib.bugdown.help_settings_links.makeExtension(relative_links=relative_settings_links),
         ]
     if md_macro_extension is None:
         md_macro_extension = markdown_include.include.makeExtension(
@@ -99,9 +106,6 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
     else:
         md_engine = markdown.Markdown(extensions=md_extensions + [md_macro_extension])
     md_engine.reset()
-
-    if context is None:
-        context = {}
 
     jinja = engines['Jinja2']
     markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
