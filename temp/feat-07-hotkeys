@@ -1,0 +1,45 @@
+We have made some changes to our keyboard shortcuts. Most noticiable to
+regular users will be the deprecation of `C` in favor of `x` for composing
+a new Private Message. We have improved navigation using arrow keys in the left
+and right sidebars. You can now use '>' to quote and reply to a message. As
+always, press '?' to see all the keyboard shortcuts available for use!
+
+Full changelog:
+
+59a9b69 Simplify search code for keyword searches.
+0e7073e Fix keyboard handling for info overlays.
+bd59142 Add keydown_util.js module.
+6f15e63 hotkeys: Add shortcuts for pan and zoom in lightbox view
+1227857 hotkeys: Replace C with x for composing PM.
+1e7dc70 reactions: Fix the hotkey for adding an emoji reaction.
+3b92f61 hotkey: Add 'delete' to delete focused draft.
+3fb8625 upload: Fix upload under message edit mode when edited using hotkeys.
+a75f0aa hotkeys: Add "p" to narrow to next unread PM thread.
+b17d4e1 popovers: Show hotkey reminder for sender info popovers only.
+80ff3d8 frontend: Reduce opacity of hotkey hints.
+0e17d77 frontend: Replace collapse hotkey (-) with em-dash (–) for readability.
+118dfb9 hotkey: Document message_view_only with a comment.
+ec3e0ca right-sidebar: Enable up and down arrow keys.
+b489ccc left-sidebar: Enable up and down arrow keys.
+f766ac6 create_realm: Reject invalid key even if no key required.
+c932c84 confirmation: Add a field `presume_email_valid` to RealmCreationKey.
+f49d9d0 hotkeys: Add '>' as a hotkey for quote and reply to message.
+8106a25 django-2.0: Add on_delete on ForeignKeys.
+1d3c6ee informational-overlays: Add "The basics" section to keyboard shortcuts.
+7d8cd37 modals: Dynamically replace keyboard shortcuts for Mac OS.
+445ece4 Fix 'v' hotkey image searching behavior. Fixes #7621
+1093d88 hotkey.js: Navigate using page up / page down
+6e353a0 hotkeys: Clear compose box warnings with escape key.
+7c96940 confirmation: Move check_prereg_key_and_redirect to registration.py.
+0f5c0ea confirmation: Add comment explaining RealmCreationKey.
+dc244bd confirmation: Fix time enforcement in check_key_is_valid.
+940ca17 hotkeys: Expand collapsed sidebars when sidebar searches are initiated.
+25bf15a bots: Use non-generic exception for state key removal.
+1bb45dd hotkey: Prevent hotkey interactions with pills.
+5d0aae2 input-pill: Add key/value caching.
+f63585b hotkeys: Ensure navigation hotkeys do not work while overlay is open.
+e7de4f5 hotkeys: Modify draft toggle behavior.
+5d04e29 confirmation: Add comment for registration.confirmation_key.
+6e02ce8 unsubscribe: Use get_object_from_key for confirmation.
+fdbe366 confirmation: Add confirmation_type to get_object_from_key.
+fe2adee hotkeys: Fix ESC removing message feed focus in Firefox.

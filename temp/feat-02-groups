@@ -1,0 +1,63 @@
+Starting with Zulip 1.8, we have added support for User Groups. This nifty feature
+allows you to easily mention teams anywhere in Zulip. For example, if you create
+a group called 'mobile', and add 5 members to it, then mentioning @mobile in your
+messages will be equivalent to mentioning all the 5 members individually. Cool, eh?
+
+Note: I believe stream-groups are still WIP so didn't mention here.
+
+Full changelog:
+
+c53458c user-groups: Add template for non-editable groups.
+d403b7a user-groups: Prevent user not in user group from editing/deleting it.
+5ac7671 user-groups: Update UI to mention only members can edit a user group.
+86eaa55 user-groups: Add backend enforcing for new modification settings.
+f3501b7 user-groups: Update css for a user who is not in a user group.
+59b1f59 user-groups: Add function wrappers to reduce variable scope.
+dafaf28 user-groups: Update user_group_name_dict, when name/description is edited.
+81a1612 user-groups: Fix reordering when name/description is edited.
+bea9b6a user_groups: Fix real-time sync of user groups.
+f0d101e pills: Streamline input pills (for user groups).
+530e098 node: Remove 100% coverage requirement for user groups.
+aed8cc9 user_groups: Handle add/remove members events.
+0147826 user_groups: Convert members to a dict in frontend.
+3a14317 user_groups: Move meta.loaded check to actual exported interface.
+6b31752 user_groups: Change placeholder group to "Marketing team".
+659b533 settings: Remove indent from checkboxes groups.
+40f161c settings_user_groups.js: Remove unnecessary call to get a person.
+c82e73e org settings: Improve design of User groups page.
+58d3770 org settings: Add functionality for updating data of user groups.
+48f7e8c org settings: Add functionality for saving state of edited user groups.
+d6a937a org settings: Add functionality for adding/removing users from groups.
+a8c2087 org settings: Add user group save functionality for editing groups.
+83706e1 org settings: Add User groups content and design.
+7790e2b org settings: Add framework for User groups page.
+be83238 user_groups: Fix reporting of empty user groups.
+8f190e0 user-groups: Update marked.js to do proper local echo for mentions.
+90994bc user-groups: Recognize single asterisk for group mentions.
+9d0eea8 user-groups: Add is_member_of.
+98be0cc user-groups: Send delete user group event.
+cc76f7d user-groups: Create check_delete_user_group.
+79f4a76 user-groups: Send remove members event.
+cec3f19 user-groups: Send add members event.
+eb48fab user-groups: Send description update event.
+5571122 user-groups: Send name update event.
+9125053 user-groups: Send create group event.
+31efe95 user-groups: Fix function argument bug; pass group.
+5ef3974 user_groups_in_realm_serialized: Sort groups.
+f99fd20 management: Add option to set description of default stream groups.
+d2555e8 api: Add support to change name of default stream groups.
+597a6e6 user-groups: Add user groups in typeahead code.
+0e21cbc user-groups: Create static/js/user_groups.js.
+f44b60a Implement API for default stream groups.
+4c6a376 user-groups: Add groups to page_params.
+ef545b9 user-groups: Add css for user-group-mention class.
+b1603d2 user-groups: Add update members API endpoint.
+a1b894a user-groups: Add delete API endpoint.
+eeaf0f1 user-groups: Add edit API endpoint.
+1bbe84a user-groups: Add create API endpoint.
+39ca388 user-groups: Add description to groups.
+18aecb8 user-groups: Get members from membership.
+636046a user-groups: Add basic backend for UserGroup model.
+25cb6af mangement: Create command for creating default stream groups.
+b8658c6 default stream groups: Use cleaner system for error handling.
+eecdc5b registration: Add option to choose default stream groups.

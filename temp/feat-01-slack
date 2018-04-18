@@ -1,0 +1,83 @@
+We have added support for easily importing all your data from Slack workspace to a
+Zulip realm easily, including users, channels, messages, attachments, avatars,
+custom emoji, and emoji reactions.. Read the instructions for how to use the Slack
+importer [here](https://zulipchat.com/help/import-data-from-slack).
+
+Full changelog:
+
+f7398cb slack import: Implement custom profile fields.
+852e851 slack import: Add custom profile fields.
+a183186 slack importer: User session.get to recycle previous connections.
+c41d7ee slack import: Write reasonable multi-line JSON.
+c3df378 slack import: Document that this is a new feature in 1.8.
+5740af2 help: Update import-data-from-slack.
+1bba6cc slack importer: Support custom emoji reactions.
+2c116e4 slack importer: Get custom emojis.
+c650b8f slack importer: Add zerver_realmemoji.
+b133d17 slack importer: Change 'get_user_data' function implementation.
+220ad6a slack importer: Map standard reactions.
+8a02814 slack importer: Remove id allocation function and its implementation.
+d0355f5 slack importer: Show when files are being downloaded.
+e729114 slack importer: Add '/me' in content for specific subtypes.
+99bae7f slack import: Improve algorithm and formatting for attachments.
+0607116 slack importer: Handle case where attachment download link is not from slack.
+6f3c870 slack importer: Move output folder being extracted from /tmp to var/.
+b7d6608 slack importer: Clean 'create_converted_data_files' function.
+4b66a2d slack importer: Add function to fetch and save uploads.
+e62945e slack importer: Implement changes in script due to zerver_attachment.
+8e2d930 slack importer: Implement changes in script due to user upload object.
+b0851eb slack importer: Add helper functions to build attachment object.
+68af6e4 slack importer: Add helper functions to build user uploads object.
+6d85f8c slack importer: Randomize stream colors.
+90a3ffc slack importer: Include only slack's purpose field in description.
+8a4f307 slack importer: Change topic for imported content.
+ec21997 slack import: Fix importing of bot users from Slack.
+a5b0957 slack importer: Set domain name in 'do_convert_data'.
+0d78882 slack importer: realm_id cleanup.
+7878cc5 slack importer: Cleanup build_subscription.
+f947194 slack importer: Cleanup build_avatar.
+5efe05d slack importer: Cleanup build_zerver_usermessage.
+6c4eef1 slack importer: Sort messages in the order of their dates.
+c2d4b49 slack importer: Use precomputed value in 'channel_message_to_zerver_message'.
+3e4086d slack importer: Use precomputed value in 'get_total_messages_and_usermessages'.
+10c73ae slack importer: Add function to precompute all the messages.
+6a07897 slack importer: Fetch and save the avatars.
+7076a49 slack importer: Pass avatar data through the import script.
+30b9d35 slack importer: Add helper functions to get user avatars.
+95df845 slack importer: Remove function 'get_user_avatar_source'.
+3bb14a8 slack importer: Change 'invite_only' mapping in streams.
+a2f6f4b slack importer: Handle case where messages have no users.
+15a6f62 slack importer: Refactor defaultstream handling.
+aff9099 slack importer: Get domain name from settings.EXTERNAL_HOST.
+f6d267e slack importer: Change 'total_users' to 'total_channels'.
+b702bbe slack importer: Allocate ids in a single db query.
+5dfacfc slack importer: Change 'allocate_ids' to return a list of ids.
+721a241 slack importer: Update doc about slack user's skype and phone data.
+fbc11b1 slack importer: Add 'realm_name_in_notifications' field in zerver_userprofile.
+6addf79 slack importer: Test import in existing database with fixtures.
+be05bcc slack importer: optimize allocation of id range before import.
+a0b7976 slack importer: Fix output_dir path and remove sys.exit(0).
+699021e slack importer: Update Documentation with slack's legacy token method.
+c0e3007 slack importer: Get user data from a get request to slack users api.
+83a7fd8 slack importer: Import primary owner user first.
+052e3e1 slack importer: Change organization admin mappings.
+b3b6023 slack importer: Always map 'is_staff' to false in user data.
+3006f1e slack importer: Change 'restricted_to_domain' to False.
+11b549e slack importer: Add regex for mail links.
+5b1e9f8 slack importer: correct the implementation of unzipping slack data file.
+845a8d6 slack importer: Prevent id clashes for import in an active db.
+7153d20 slack importer: append Message id from the db.
+58f1f0e slack importer: append Recipient id from the db.
+c86411d slack importer: Move message conversions to a new module.
+c1d336f slack importer: Refactor checking for availability of realm subdomain.
+b583f1f slack importer: Add regex for markdown mapping.
+24a86a5 slack importer: Quiet the unzip command.
+4019a45 slack importer: Rename messages file.
+400c968 slack importer: Remove unnecessary comment.
+c875428 slack importer: Extract get_user_full_name() helper.
+5cadc63 slack importer: Extract data into directory of zip file.
+62aec06 Slack importer: Add slack to zulip data conversion script as a manage.py command.
+5b37c55 Slack importer: Add the slack to zulip data conversion files.
+f6feac1 Slack importer: Map Slack command for mentions to Zulip's all.
+e037c2f import script: Fix upload links.
+b3f951d import script: User profile ids should be allocated before allocating bot ids.

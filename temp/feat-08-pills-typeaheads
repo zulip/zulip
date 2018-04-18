@@ -1,0 +1,41 @@
+In this release, we have made minor but welcome UI improvements for showing
+users throughout the app. We now show better pills in group messages, as well as
+show the user avatars in the @-mention typeahead helper. These minor changes
+help provide a smoother user experience while using Zulip.
+
+Full changelog:
+
+7c66d11 compose: Show avatars for people in typeahead autocompletes.
+dfac030 people: Extract small_avatar_url_for_person.
+5bcfecd people: Extract gravatar_url_for_email.
+13664f1 uploads: Convert CMYK to RGB when saving avatar/realm icon as png.
+b84f222 avatars: Always include a working URL for the user's own avatar.
+cc872ad zerver/lib/upload.py: Sweep force_bytes from ensure_medium_avatar_image.
+ca46a21 popovers: Restyle border-bottom below avatar in user popovers.
+c2860ce Set client_gravatar=True in the webapp.
+a076581 Use client_gravatar=True for avatar URLs in page_params.
+2bbfda0 Support client_gravatar field for event registration.
+f105c48 Calculate gravatar hashes on the webapp client.
+88e1e28 Restructure send-message code for gravatars.
+5c11ab8 pills: Add exportable function for creating non-editable pills.
+d48fb1d pills: Use insertText for copy/paste.
+fd486f7 input-pill: Fix vertically-misaligned PM compose pills.
+9969762 input_pill: Change user group pills to be same as PM pills.
+a598bef pills: Show data-some-recipients placeholder text only on focus.
+c035acc pills: Show data-no-recipients text only if no recipients selected.
+3a1bf04 compose: Add pills for typing in PM recipients.
+4d54515 input-pill: Add copy override functionality for input pills.
+bee0fa4 input-pill: Disable input of commas with invalid pills.
+5a0bba2 input-pill: Add validation callback for pills.
+65b9d9e CVE-2018-9990: Fix XSS issue with stream names in topic typeahead.
+7c66d11 compose: Show avatars for people in typeahead autocompletes.
+8f4523e compose typeahead: Add all public streams including unsubscribed streams.
+5edbcb8 typeahead: Rewrite query_matches_source_attrs to be obviously correct.
+245d65e compose typeahead: Don't autocomplete for suffixes followed by a space.
+152da74 typeahead: Fix typeahead ordering for user group mentions.
+31a1c3e Efficiently clear typeahead when renaming a bot.
+349dad7 typeaheads: Change active <li> to have white text again.
+f6071e0 compose typeahead: Add newline and other terminal_symbols.
+621d5dc typeahead: Show typeahead only if cursor is before space or punctiation.
+5e23bfa typeahead: show typeahead for syntax of the from @**... or #**...
+48b18e4 Only show active realm users in compose typeahead.

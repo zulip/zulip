@@ -1,0 +1,88 @@
+We've made several improvements to our message rendering code, and fixed some XSS issues.
+The new markdown implementation is safer, faster and more reliable. Here are the major changes:
+
+1. Images are now rendered inline, instead of at the end of the message.
+2. Fix XSS issues with the frontend markdown processor.
+3. Add vimeo previews and linkify Bitcoin URIs.
+4. Improve linking to in-app messages (open #narrow links in app).
+5. Add @stream alias for mentioning everyone in the stream.
+6. Allow uploading files when editting a message.
+7. Add subscribe button to the 'not subscribed' warning when @-mentioning someone.
+
+Full changelog:
+
+3bdc8bb CVE-2018-9986: Fix XSS issues with frontend markdown processor.
+b650b6b markdown: Add @stream as an alias for @all.
+9888960 help: Fix structure of markdown context logic.
+a3ed83f markdown: Update bugdown emoticon translation logic to match frontend.
+d8cfb49 css: Remove obsolete .markdown .footer block.
+b976447 markdown: Test the translate_emoticons flag.
+78a4924 markdown: Apply both bold and italic for words like ***text***.
+3b4ff4f markdown: Clean render_markdown.
+7b455f5 compose: Add spaces around markdown for attachments.
+e94efe5 markdown macros: Add create-a-bot-indented macro.
+9dba134 markdown: Do not use CMD+CTRL on macOS.
+a32e1eb markdown: Require double-asterisk around all mentions.
+59f61c2 render_markdown_path: Use limited caching.
+ab700fb markdown: Add a macro with instructions for creating a bot.
+ca1129d Revert "Streams: Disallow certain markdown characters in stream names."
+44a0cd7 Revert "UserProfile: Disallow markdown character in the user profile name."
+19acc17 markdown_help: Fix katex markdown rendering.
+ff8be1a markdown shortcuts: Set cursor position for link insertion shortcut.
+dbefdad markdown shortcuts: Stop triggering italic shortcut with Ctrl+Shift+i.
+b519f1c markdown shortcuts: Replace Ctrl+L with Ctrl+L+Shift for link insertion.
+d46753c markdown: Remove macro for successful API JSON response.
+25b32a5 markdown: Fix backend rendering regex.
+5ff84e9 markdown: Add markdown shortcuts.
+229cdfc markdown: Add a macro for invalid API key JSON response.
+3a90a6b markdown: Add macro for successful send message JSON response.
+ef51a39 markdown: Update regex for strikethrough.
+9ea7b05 bugdown: Rewrite markdown link to relative link conditionally.
+b54f789 markdown: Add automatic numbering of ordered lists.
+d30fb5a UserProfile: Disallow markdown character in the user profile name.
+dd1b143 Streams: Disallow certain markdown characters in stream names.
+6734b00 markdown: Hide URL if message is only an image.
+c78846a markdown.js: Add error function to blueslip.
+880fd54 markdown: Add indented versions of multi-line Markdown macros.
+43484ad markdown processor: Exclude some files from macro substitution.
+3b95a6d bugdown: Fix a bug in the updation logic of markdown engines.
+417f92c markdown: Remove now-obsolete bugdown_matches_marked.
+4cb3cdb markdown: Add the "extra" Markdown extension to app_filters.
+da27461 bugdown: Rename rewrite_if_relative_link to more clear name.
+7d4234b bugdown: Only open #narrow hash links inside the app.
+6744938 bugdown: Simplify implementation for target_blank.
+6055a7b bugdown: Clean up rewrite_if_relative_link.
+a3ed83f markdown: Update bugdown emoticon translation logic to match frontend.
+e41067a emoji: Refactor bugdown to use only active realm emojis.
+8d188f5 bugdown: Clarify walk_tree_with_family via ElementPair NamedTuple.
+59b8f85 bugdown: Do only image preview if relative URL.
+9eeb1c5 bugdown: Remove email from rendered content of messages with mentions.
+120ac21 bugdown: Create a constant for inline preview limit.
+6206647 bugdown/api_code_examples: Add support for multiple languages.
+77addc5 bugdown: Fix handling of ultra-long renderings.
+09721e9 bugdown/api_code_examples: Support multiple fixtures per doc.
+ffe930d bugdown/api_generate_examples: Replace 'method' with 'example'.
+fe98a59 bugdown/api_code_examples: Add macro for admin zuliprc lines.
+ee06da9 bugdown: Linkify Bitcoin URI.
+b0fb7aa bugdown: Add preview for vimeo videos.
+c209069 bugdown: Improve image inlining logic.
+9ea7b05 bugdown: Rewrite markdown link to relative link conditionally.
+efe2d49 bugdown: Avoid matching uri with regex.
+9ce797d bugdown: Extract rewrite_if_relative_link function.
+f019033 bugdown: Remove whitespace strip from inline code.
+e7f1825 bugdown: Update KaTeX to version 0.8.3 from 0.7.1.
+0449dc8 bugdown: Fix handling of nested fenced math blocks.
+83f563a bugdown: Properly parse empty blockquotes.
+3b95a6d bugdown: Fix a bug in the updation logic of markdown engines.
+b849c5e bugdown: Remove an unnecessary check in `do_convert()`.
+5e5bb02 bugdown: Remove `make_realm_filters()`.
+f9f9e92 bugdown: Correct the descriptions of `Bugdown` config.
+e615a2a bugdown: Simplify the "opts" parameter of `make_md_engine()`.
+e3f2f67 bugdown: Rename `maybe_update_realm_filters()`.
+4d51a6c bugdown: Fix $$ whitespace handling.
+8e87eb4 zerver/lib/bugdown: Text-wrap long lines exceeding 110.
+bcd575d bugdown: Rewrite links to local server to be relative links.
+417f92c markdown: Remove now-obsolete bugdown_matches_marked.
+0709033 bugdown: Fetch complete data for tweet.
+6c24237 bugdown: Remove unused caching imports.
+605916f compose: Add subscribe button to the not subscribed stream error message.
