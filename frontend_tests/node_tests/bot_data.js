@@ -1,16 +1,16 @@
-var patched_underscore = _.clone(_);
+const patched_underscore = _.clone(_);
 patched_underscore.debounce = function (f) { return f; };
 global.patch_builtin('_', patched_underscore);
 
 zrequire('people');
 zrequire('bot_data');
 
-set_global('$', function () {
-    return {trigger: function () {}};
+set_global('$', () => {
+    return {trigger: () => {}};
 });
 set_global('document', null);
 
-var page_params = {
+const page_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0'},
                  {email: 'outgoingwebhook@zulip.com', user_id: 314, full_name: "Outgoing webhook",
                   services: [{base_url: "http://foo.com", interface: 1}]}],
@@ -32,7 +32,7 @@ assert.equal(bot_data.get(42).full_name, 'Bot 0');
 assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
 
 (function () {
-    var test_bot = {
+    const test_bot = {
         email: 'bot1@zulip.com',
         user_id: 43,
         avatar_url: '',
@@ -41,7 +41,7 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         extra: 'Not in data',
     };
 
-    var test_embedded_bot = {
+    const test_embedded_bot = {
         email: 'embedded-bot@zulip.com',
         user_id: 143,
         avatar_url: '',
@@ -53,8 +53,8 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     (function test_add() {
         bot_data.add(test_bot);
 
-        var bot = bot_data.get(43);
-        var services = bot_data.get_services(43);
+        const bot = bot_data.get(43);
+        const services = bot_data.get_services(43);
         assert.equal('Bot 1', bot.full_name);
         assert.equal('http://bar.com', services[0].base_url);
         assert.equal(1, services[0].interface);
@@ -62,18 +62,15 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     }());
 
     (function test_update() {
-        var bot;
-        var services;
-
         bot_data.add(test_bot);
 
-        bot = bot_data.get(43);
+        let bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
         bot_data.update(43, {full_name: 'New Bot 1',
                              services: [{interface: 2,
                                          base_url: 'http://baz.com'}]});
         bot = bot_data.get(43);
-        services = bot_data.get_services(43);
+        const services = bot_data.get_services(43);
         assert.equal('New Bot 1', bot.full_name);
         assert.equal(2, services[0].interface);
         assert.equal('http://baz.com', services[0].base_url);
@@ -81,17 +78,17 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
 
     (function test_embedded_bot_update() {
         bot_data.add(test_embedded_bot);
-        var bot_id = 143;
-        var services = bot_data.get_services(bot_id);
+        const bot_id = 143;
+        const services = bot_data.get_services(bot_id);
         assert.equal('12345678', services[0].config_data.key);
         bot_data.update(bot_id, {services: [{config_data: {key: '87654321'}}]});
         assert.equal('87654321', services[0].config_data.key);
     }());
 
     (function test_remove() {
-        var bot;
+        let bot;
 
-        bot_data.add(_.extend({}, test_bot, {is_active: true}));
+        bot_data.add({ ...test_bot, is_active: true });
 
         bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
@@ -102,9 +99,9 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     }());
 
     (function test_delete() {
-        var bot;
+        let bot;
 
-        bot_data.add(_.extend({}, test_bot, {is_active: true}));
+        bot_data.add({ ...test_bot, is_active: true });
 
         bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
@@ -115,37 +112,36 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     }());
 
     (function test_owner_can_admin() {
-        var bot;
+        let bot;
 
-        bot_data.add(_.extend({owner: 'owner@zulip.com'}, test_bot));
+        bot_data.add({owner: 'owner@zulip.com', ...test_bot});
 
         bot = bot_data.get(43);
         assert(bot.can_admin);
 
-        bot_data.add(_.extend({owner: 'notowner@zulip.com'}, test_bot));
+        bot_data.add({owner: 'notowner@zulip.com', ...test_bot});
 
         bot = bot_data.get(43);
         assert.equal(false, bot.can_admin);
     }());
 
     (function test_admin_can_admin() {
-        var bot;
         page_params.is_admin = true;
 
         bot_data.add(test_bot);
 
-        bot = bot_data.get(43);
+        const bot = bot_data.get(43);
         assert(bot.can_admin);
 
         page_params.is_admin = false;
     }());
 
     (function test_get_editable() {
-        var can_admin;
+        let can_admin;
 
-        bot_data.add(_.extend({}, test_bot, {user_id: 44, owner: 'owner@zulip.com', is_active: true}));
-        bot_data.add(_.extend({}, test_bot, {user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true}));
-        bot_data.add(_.extend({}, test_bot, {user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true}));
+        bot_data.add({...test_bot ,user_id: 44, owner: 'owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
+        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
 
         can_admin = _.pluck(bot_data.get_editable(), 'email');
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
@@ -157,7 +153,7 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     }());
 
     (function test_get_all_bots_for_current_user() {
-        var bots = bot_data.get_all_bots_for_current_user();
+        const bots = bot_data.get_all_bots_for_current_user();
 
         assert.equal(bots.length, 2);
         assert.equal(bots[0].email, 'bot1@zulip.com');
