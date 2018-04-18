@@ -9,6 +9,8 @@ emoji, and emoji reactions.
     to import a Slack organization into the hosted zulipchat.com service,
     contact support@zulipchat.com.
 
+First, you need to do some things in Slack to setup the export:
+
 1. [Export your Slack data](https://my.slack.com/services/export). You will
    receive a zip file `slack_data.zip`.
 
@@ -20,7 +22,13 @@ emoji, and emoji reactions.
 
 2. [Generate a Slack API token](https://api.slack.com/custom-integrations/legacy-tokens).
 
-### Import into a new Zulip instance
+### Import into a new Zulip server
+
+!!! warn ""
+    Because the Slack import tool is very new, we recommend first
+    upgrading your new Zulip server to the latest `master` branch,
+    using [upgrade-zulip-from-git][upgrade-zulip-from-git] to avoid
+    bugs in the earliest versions of the Slack import tool.
 
 Log in to your Zulip server as the `zulip` user. Run the following
 commands, replacing `<token>` with the value generated above:
@@ -34,7 +42,7 @@ cd ~/zulip
 !!! warn ""
     **Warning:** This will destroy all existing data in your Zulip instance.
 
-### Import into an existing Zulip instance
+### Import into an existing Zulip server
 
 Log in to your Zulip server as the `zulip` user. Run the following
 commands, replacing `<token>` with the value generated above, and
@@ -74,3 +82,5 @@ cd ~/zulip
 
 - The import tool does not support simultaneous bold and italic
   formatting of a word; we expect to address this in a future revision.
+
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
