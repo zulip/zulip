@@ -666,6 +666,12 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # Ignore messages without user names
             # These are Sometimes produced by slack
             continue
+        if message.get('subtype') in [
+                "channel_join",
+                "channel_leave",
+                "channel_name"
+        ]:
+            continue
 
         has_attachment = has_image = False
         try:
@@ -689,14 +695,11 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         # Process different subtypes of slack messages
         if 'subtype' in message.keys():
             subtype = message['subtype']
-            if subtype in ["channel_join", "channel_leave", "channel_name"]:
-                continue
-
             # Subtypes which have only the action in the message should
             # be rendered with '/me' in the content initially
             # For example "sh_room_created" has the message 'started a call'
             # which should be displayed as '/me started a call'
-            elif subtype in ["bot_add", "sh_room_created", "me_message"]:
+            if subtype in ["bot_add", "sh_room_created", "me_message"]:
                 content = ('/me %s' % (content))
 
             # For attachments with slack download link
