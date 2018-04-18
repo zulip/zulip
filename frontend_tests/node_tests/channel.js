@@ -4,17 +4,21 @@ set_global('$', {});
 set_global('reload', {});
 set_global('blueslip', {});
 
-var default_stub_xhr = 'default-stub-xhr';
+const default_stub_xhr = 'default-stub-xhr';
 
 function test_with_mock_ajax(test_params) {
-    var ajax_called;
-    var ajax_options;
+    const {
+        xhr = default_stub_xhr,
+        run_code,
+        check_ajax_options,
+    } = test_params;
 
+    let ajax_called;
+    let ajax_options;
     $.ajax = function (options) {
         $.ajax = undefined;
         ajax_called = true;
         ajax_options = options;
-        var xhr = test_params.xhr || default_stub_xhr;
 
         options.simulate_success = function (data, text_status) {
             options.success(data, text_status, xhr);
@@ -27,9 +31,9 @@ function test_with_mock_ajax(test_params) {
         return xhr;
     };
 
-    test_params.run_code();
+    run_code();
     assert(ajax_called);
-    test_params.check_ajax_options(ajax_options);
+    check_ajax_options(ajax_options);
 }
 
 
@@ -113,15 +117,15 @@ function test_with_mock_ajax(test_params) {
 }());
 
 (function test_normal_post() {
-    var data = {
+    const data = {
         s: 'some_string',
         num: 7,
         lst: [1, 2, 4, 8],
     };
 
-    var orig_success_called;
-    var orig_error_called;
-    var stub_xhr = 'stub-xhr-normal-post';
+    let orig_success_called;
+    let orig_error_called;
+    const stub_xhr = 'stub-xhr-normal-post';
 
     test_with_mock_ajax({
         xhr: stub_xhr,
@@ -158,9 +162,9 @@ function test_with_mock_ajax(test_params) {
 }());
 
 (function test_patch_with_form_data() {
-    var appended;
+    let appended;
 
-    var data = {
+    const data = {
         append: function (k, v) {
             assert.equal(k, 'method');
             assert.equal(v, 'PATCH');
@@ -200,7 +204,7 @@ function test_with_mock_ajax(test_params) {
         },
 
         check_ajax_options: function (options) {
-            var reload_initiated;
+            let reload_initiated;
             reload.initiate = function (options) {
                 reload_initiated = true;
                 assert.deepEqual(options, {
@@ -229,7 +233,7 @@ function test_with_mock_ajax(test_params) {
         },
 
         check_ajax_options: function (options) {
-            var has_error;
+            let has_error;
             blueslip.error = function (msg) {
                 assert.equal(msg, 'Unexpected 403 response from server');
                 has_error = true;
@@ -252,7 +256,7 @@ function test_with_mock_ajax(test_params) {
         },
 
         check_ajax_options: function (options) {
-            var logged;
+            let logged;
             blueslip.log = function (msg) {
                 // Our log formatting is a bit broken.
                 assert.equal(msg, 'Retrying idempotent[object Object]');
@@ -280,11 +284,11 @@ function test_with_mock_ajax(test_params) {
 
 (function test_too_many_pending() {
     $.ajax = function () {
-        var xhr = 'stub';
+        const xhr = 'stub';
         return xhr;
     };
 
-    var warned;
+    let warned;
     blueslip.warn = function (msg) {
         assert.equal(
             msg,
@@ -301,11 +305,11 @@ function test_with_mock_ajax(test_params) {
 }());
 
 (function test_xhr_error_message() {
-    var xhr = {
+    let xhr = {
         status: '200',
         responseText: 'does not matter',
     };
-    var msg = 'data added';
+    let msg = 'data added';
     assert.equal(channel.xhr_error_message(msg, xhr), 'data added');
 
     xhr = {
