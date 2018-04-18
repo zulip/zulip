@@ -37,7 +37,7 @@ def rm_tree(path: str) -> None:
         shutil.rmtree(path)
 
 def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[ZerverFieldsT],
-                             realm_subdomain: str, fixtures_path: str, slack_data_dir: str,
+                             realm_subdomain: str, slack_data_dir: str,
                              custom_emoji_list: ZerverFieldsT)-> Tuple[ZerverFieldsT, AddedUsersT,
                                                                        AddedRecipientsT,
                                                                        AddedChannelsT,
@@ -54,7 +54,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     """
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(fixtures_path, realm_id, realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW)
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -99,17 +99,44 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
 
     return realm, added_users, added_recipient, added_channels, avatars, emoji_url_map
 
-def build_zerver_realm(fixtures_path: str, realm_id: int, realm_subdomain: str,
+def build_zerver_realm(realm_id: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
-
-    zerver_realm_skeleton = get_data_file(fixtures_path + 'zerver_realm_skeleton.json')
-
-    zerver_realm_skeleton[0]['id'] = realm_id
-    zerver_realm_skeleton[0]['string_id'] = realm_subdomain  # subdomain / short_name of realm
-    zerver_realm_skeleton[0]['name'] = realm_subdomain
-    zerver_realm_skeleton[0]['date_created'] = time
-
-    return zerver_realm_skeleton
+    return [{
+        "message_retention_days": None,
+        "inline_image_preview": True,
+        "name_changes_disabled": False,
+        "icon_version": 1,
+        "waiting_period_threshold": 0,
+        "email_changes_disabled": False,
+        "deactivated": False,
+        "notifications_stream": None,
+        "restricted_to_domain": False,
+        "show_digest_email": True,
+        "allow_message_editing": True,
+        "description": "Organization imported from Slack!",
+        "default_language": "en",
+        "icon_source": "G",
+        "invite_required": True,
+        "invite_by_admins_only": False,
+        "create_stream_by_admins_only": False,
+        "mandatory_topics": False,
+        "inline_url_embed_preview": True,
+        "message_content_edit_limit_seconds": 600,
+        "authentication_methods": [
+            ["Google", True],
+            ["Email", True],
+            ["GitHub", True],
+            ["LDAP", True],
+            ["Dev", True],
+            ["RemoteUser", True]
+        ],
+        "name": realm_subdomain,
+        "string_id": realm_subdomain,
+        "org_type": 1,
+        "add_emoji_by_admins_only": False,
+        "id": realm_id,
+        "date_created": time,
+    }]
 
 def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                      realm_id: int) -> Tuple[List[ZerverFieldsT],
@@ -836,6 +863,7 @@ def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessag
 def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command
     realm_subdomain = ""
+    realm_id = 0
     domain_name = settings.EXTERNAL_HOST
 
     slack_data_dir = slack_zip_file.replace('.zip', '')
@@ -851,11 +879,6 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     # with zipfile.ZipFile(slack_zip_file, 'r') as zip_ref:
     #     zip_ref.extractall(slack_data_dir)
 
-    script_path = os.path.dirname(os.path.abspath(__file__)) + '/'
-    fixtures_path = script_path + '../fixtures/'
-
-    realm_id = 0
-
     # We get the user data from the legacy token method of slack api, which is depreciated
     # but we use it as the user email data is provided only in this method
     user_list = get_slack_api_data(token, "https://slack.com/api/users.list", "members")
@@ -864,7 +887,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     realm, added_users, added_recipient, added_channels, avatar_list, \
         emoji_url_map = slack_workspace_to_realm(domain_name, realm_id, user_list,
-                                                 realm_subdomain, fixtures_path,
+                                                 realm_subdomain,
                                                  slack_data_dir, custom_emoji_list)
 
     message_json, uploads_list, zerver_attachment = convert_slack_workspace_messages(

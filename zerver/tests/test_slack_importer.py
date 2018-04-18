@@ -92,11 +92,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(invalid.exception.args, ('Something went wrong. Please try again!',),)
 
     def test_build_zerver_realm(self) -> None:
-        fixtures_path = os.path.dirname(os.path.abspath(__file__)) + '/../fixtures/'
         realm_id = 2
         realm_subdomain = "test-realm"
         time = float(timezone_now().timestamp())
-        test_realm = build_zerver_realm(fixtures_path, realm_id, realm_subdomain, time)
+        test_realm = build_zerver_realm(realm_id, realm_subdomain, time)
         test_zerver_realm_dict = test_realm[0]
 
         self.assertEqual(test_zerver_realm_dict['id'], realm_id)
@@ -323,7 +322,7 @@ class SlackImporter(ZulipTestCase):
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
         realm, added_users, added_recipient, added_channels, avatar_list, em = slack_workspace_to_realm(
-            'testdomain', realm_id, user_list, 'test-realm', './fixtures', './random_path', {})
+            'testdomain', realm_id, user_list, 'test-realm', './random_path', {})
         test_zerver_realmdomain = [{'realm': realm_id, 'allow_subdomains': False,
                                     'domain': 'testdomain', 'id': realm_id}]
         # Functioning already tests in helper functions
