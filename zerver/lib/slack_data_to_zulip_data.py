@@ -668,10 +668,13 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             continue
 
         has_attachment = has_image = False
-        content, mentioned_users_id, has_link = convert_to_zulip_markdown(message['text'],
-                                                                          users,
-                                                                          added_channels,
-                                                                          added_users)
+        try:
+            content, mentioned_users_id, has_link = convert_to_zulip_markdown(
+                message['text'], users, added_channels, added_users)
+        except Exception:
+            print("Slack message unexpectedly missing text representation:")
+            print(json.dumps(message, indent=4))
+            continue
         rendered_content = None
 
         recipient_id = added_recipient[message['channel_name']]
