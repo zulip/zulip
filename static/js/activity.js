@@ -84,7 +84,9 @@ function update_group_count_in_dom(count_span, value_span, count) {
 }
 
 function get_pm_list_item(user_id) {
-    return $("li.user_sidebar_entry[data-user-id='" + user_id + "']");
+    return buddy_list.find_li({
+        key: user_id,
+    });
 }
 
 function get_group_list_item(user_ids_string) {
@@ -305,27 +307,12 @@ exports.insert_user_into_list = function (user_id) {
     }
 
     var info = info_for(user_id);
-    $('#user_presences').find('[data-user-id="' + user_id + '"]').remove();
-    var html = templates.render('user_presence_row', info);
+    buddy_list.insert_or_move({
+        key: user_id,
+        item: info,
+        compare_function: compare_function,
+    });
 
-    var items = $('#user_presences li').toArray();
-
-    function insert() {
-        var i = 0;
-
-        for (i = 0; i < items.length; i += 1) {
-            var li = $(items[i]);
-            var list_user_id = li.attr('data-user-id');
-            if (compare_function(user_id, list_user_id) < 0) {
-                li.before(html);
-                return;
-            }
-        }
-
-        $('#user_presences').append(html);
-    }
-
-    insert();
     exports.update_scrollbar.users();
 
     var elt = get_pm_list_item(user_id);
@@ -344,8 +331,10 @@ exports.build_user_sidebar = function () {
         // function.
         return typeof person !== "undefined";
     });
-    var html = templates.render('user_presence_rows', {users: user_info});
-    $('#user_presences').html(html);
+
+    buddy_list.populate({
+        items: user_info,
+    });
 
     // Update user fading, if necessary.
     compose_fade.update_faded_users();

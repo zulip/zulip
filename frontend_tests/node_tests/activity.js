@@ -36,6 +36,7 @@ zrequire('narrow');
 zrequire('util');
 zrequire('presence');
 zrequire('people');
+zrequire('buddy_list');
 zrequire('activity');
 zrequire('stream_list');
 
