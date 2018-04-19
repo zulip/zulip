@@ -583,7 +583,11 @@ input[type=checkbox].inline-block {
     width: 13px;
     height: 20px;
     margin: 0;
-    margin-right: 3px;
+}
+
+/* make the spinner green like the text and box. */
+#settings_page .alert-notification .loading_indicator_spinner svg path {
+    fill: hsl(178, 100%, 40%);
 }
 
 #settings_page .alert-notification .loading_indicator_text {
