@@ -10,11 +10,6 @@ var DEFAULT_IDLE_TIMEOUT_MS = 5 * 60 * 1000;
 /* Time between keep-alive pings */
 var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 
-var presence_descriptions = {
-    active: 'is active',
-    idle:   'is not active',
-};
-
 /* Keep in sync with views.py:update_active_status_backend() */
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
@@ -199,45 +194,6 @@ exports.huddle_fraction_present = function (huddle) {
     return ratio.toFixed(2);
 };
 
-function compare_function(a, b) {
-
-    function level(status) {
-        switch (status) {
-            case 'active':
-                return 1;
-            case 'idle':
-                return 2;
-            default:
-                return 3;
-        }
-    }
-
-    var level_a = level(presence.get_status(a));
-    var level_b = level(presence.get_status(b));
-    var diff = level_a - level_b;
-    if (diff !== 0) {
-        return diff;
-    }
-
-    // Sort equivalent PM names alphabetically
-    var person_a = people.get_person_from_user_id(a);
-    var person_b = people.get_person_from_user_id(b);
-
-    var full_name_a = person_a ? person_a.full_name : '';
-    var full_name_b = person_b ? person_b.full_name : '';
-
-    return util.strcmp(full_name_a, full_name_b);
-}
-
-function sort_users(user_ids) {
-    // TODO sort by unread count first, once we support that
-    user_ids.sort(compare_function);
-    return user_ids;
-}
-
-// for testing:
-exports._sort_users = sort_users;
-
 function focus_lost() {
     // When we become idle, we don't immediately send anything to the
     // server; instead, we wait for our next periodic update, since
@@ -245,72 +201,23 @@ function focus_lost() {
     exports.has_focus = false;
 }
 
-function filter_user_ids(user_ids) {
-    var filter_text = exports.get_filter_text();
-
-    if (filter_text === '') {
-        return user_ids;
-    }
-
-    var search_terms = filter_text.toLowerCase().split(",");
-    search_terms = _.map(search_terms, function (s) {
-        return s.trim();
-    });
-
-    var persons = _.map(user_ids, function (user_id) {
-        return people.get_person_from_user_id(user_id);
-    });
-
-    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
-    return user_id_dict.keys();
-}
-
-function matches_filter(user_id) {
-    // This is a roundabout way of checking a user if you look
-    // too hard at it, but it should be fine for now.
-    return (filter_user_ids([user_id]).length === 1);
-}
-
-function get_num_unread(user_id) {
-    if (unread.suppress_unread_counts) {
-        return 0;
-    }
-    return unread.num_unread_for_person(user_id);
-}
-
-function info_for(user_id) {
-    var status = presence.get_status(user_id);
-    var person = people.get_person_from_user_id(user_id);
-
-    // if the user is you or a bot, do not show in presence data.
-    if (person.is_bot || person.user_id === page_params.user_id) {
-        return;
-    }
-
-    return {
-        href: narrow.pm_with_uri(person.email),
-        name: person.full_name,
-        user_id: user_id,
-        num_unread: get_num_unread(user_id),
-        type: status,
-        type_desc: presence_descriptions[status],
-    };
-}
-
 exports.insert_user_into_list = function (user_id) {
     if (page_params.realm_presence_disabled) {
         return;
     }
 
-    if (!matches_filter(user_id)) {
+    var filter_text = exports.get_filter_text();
+
+    if (!buddy_data.matches_filter(filter_text, user_id)) {
         return;
     }
 
-    var info = info_for(user_id);
+    var info = buddy_data.info_for(user_id);
+
     buddy_list.insert_or_move({
         key: user_id,
         item: info,
-        compare_function: compare_function,
+        compare_function: buddy_data.compare_function,
     });
 
     exports.update_scrollbar.users();
@@ -324,13 +231,9 @@ exports.build_user_sidebar = function () {
         return;
     }
 
-    var user_ids = exports.get_filtered_and_sorted_user_ids();
+    var filter_text = exports.get_filter_text();
 
-    var user_info = _.map(user_ids, info_for).filter(function (person) {
-        // filtered bots and yourself are set to "undefined" in the `info_for`
-        // function.
-        return typeof person !== "undefined";
-    });
+    var user_info = buddy_data.get_items(filter_text);
 
     buddy_list.populate({
         items: user_info,
@@ -605,23 +508,6 @@ function focusout_user_filter() {
     // Undo highlighting
     $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
 }
-
-exports.get_filtered_and_sorted_user_ids = function () {
-    var user_ids;
-
-    if (exports.get_filter_text()) {
-        // If there's a filter, select from all users, not just those
-        // recently active.
-        user_ids = filter_user_ids(people.get_active_user_ids());
-    } else {
-        // From large realms, the user_ids in presence may exclude
-        // users who have been idle more than three weeks.  When the
-        // filter text is blank, we show only those recently active users.
-        user_ids = presence.get_user_ids();
-    }
-
-    return sort_users(user_ids);
-};
 
 exports.set_user_list_filter = function () {
     meta.$user_list_filter = $(".user-list-filter");

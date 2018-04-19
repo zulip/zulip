@@ -36,6 +36,7 @@ zrequire('narrow');
 zrequire('util');
 zrequire('presence');
 zrequire('people');
+zrequire('buddy_data');
 zrequire('buddy_list');
 zrequire('activity');
 zrequire('stream_list');
@@ -152,7 +153,7 @@ presence.presence_info = presence_info;
 (function test_sort_users() {
     const user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
-    activity._sort_users(user_ids);
+    buddy_data.sort_users(user_ids);
 
     assert.deepEqual(user_ids, [
         fred.user_id,
@@ -506,7 +507,13 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
     activity.set_user_list_filter();
 
-    let user_ids = activity.get_filtered_and_sorted_user_ids();
+    function get_user_ids() {
+        var filter_text = activity.get_filter_text();
+        var user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
+        return user_ids;
+    }
+
+    var user_ids = buddy_data.get_filtered_and_sorted_user_ids();
     assert.deepEqual(user_ids, [
         alice.user_id,
         fred.user_id,
@@ -517,29 +524,29 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
     ]);
 
     user_filter.val('abc'); // no match
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, []);
 
     user_filter.val('fred'); // match fred
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, [fred.user_id]);
 
     user_filter.val('fred,alice'); // match fred and alice
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     user_filter.val('fr,al'); // match fred and alice partials
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 
     presence.presence_info[alice.user_id] = { status: activity.IDLE };
     user_filter.val('fr,al'); // match fred and alice partials and idle user
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, [fred.user_id, alice.user_id]);
 
     $.stub_selector('.user-list-filter', []);
     presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
-    user_ids = activity.get_filtered_and_sorted_user_ids();
+    user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
 }());
 

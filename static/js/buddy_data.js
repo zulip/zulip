@@ -1,0 +1,139 @@
+var buddy_data = (function () {
+
+var exports = {};
+
+/*
+
+   This is the main model code for building the buddy list.
+   We also rely on presence.js to compute the actual presence
+   for users.  We glue in other "people" data and do
+   filtering/sorting of the data that we'll send into the view.
+
+*/
+
+var presence_descriptions = {
+    active: 'is active',
+    idle:   'is not active',
+};
+
+exports.compare_function = function (a, b) {
+
+    function level(status) {
+        switch (status) {
+            case 'active':
+                return 1;
+            case 'idle':
+                return 2;
+            default:
+                return 3;
+        }
+    }
+
+    var level_a = level(presence.get_status(a));
+    var level_b = level(presence.get_status(b));
+    var diff = level_a - level_b;
+    if (diff !== 0) {
+        return diff;
+    }
+
+    // Sort equivalent PM names alphabetically
+    var person_a = people.get_person_from_user_id(a);
+    var person_b = people.get_person_from_user_id(b);
+
+    var full_name_a = person_a ? person_a.full_name : '';
+    var full_name_b = person_b ? person_b.full_name : '';
+
+    return util.strcmp(full_name_a, full_name_b);
+};
+
+exports.sort_users = function (user_ids) {
+    // TODO sort by unread count first, once we support that
+    user_ids.sort(exports.compare_function);
+    return user_ids;
+};
+
+function filter_user_ids(filter_text, user_ids) {
+    if (filter_text === '') {
+        return user_ids;
+    }
+
+    var search_terms = filter_text.toLowerCase().split(",");
+    search_terms = _.map(search_terms, function (s) {
+        return s.trim();
+    });
+
+    var persons = _.map(user_ids, function (user_id) {
+        return people.get_person_from_user_id(user_id);
+    });
+
+    var user_id_dict = people.filter_people_by_search_terms(persons, search_terms);
+    return user_id_dict.keys();
+}
+
+exports.matches_filter = function (filter_text, user_id) {
+    // This is a roundabout way of checking a user if you look
+    // too hard at it, but it should be fine for now.
+    return (filter_user_ids(filter_text, [user_id]).length === 1);
+};
+
+function get_num_unread(user_id) {
+    if (unread.suppress_unread_counts) {
+        return 0;
+    }
+    return unread.num_unread_for_person(user_id);
+}
+
+exports.info_for = function (user_id) {
+    var status = presence.get_status(user_id);
+    var person = people.get_person_from_user_id(user_id);
+
+    // if the user is you or a bot, do not show in presence data.
+    if (person.is_bot || person.user_id === page_params.user_id) {
+        return;
+    }
+
+    return {
+        href: narrow.pm_with_uri(person.email),
+        name: person.full_name,
+        user_id: user_id,
+        num_unread: get_num_unread(user_id),
+        type: status,
+        type_desc: presence_descriptions[status],
+    };
+};
+
+exports.get_filtered_and_sorted_user_ids = function (filter_text) {
+    var user_ids;
+
+    if (filter_text) {
+        // If there's a filter, select from all users, not just those
+        // recently active.
+        user_ids = filter_user_ids(filter_text, people.get_active_user_ids());
+    } else {
+        // From large realms, the user_ids in presence may exclude
+        // users who have been idle more than three weeks.  When the
+        // filter text is blank, we show only those recently active users.
+        user_ids = presence.get_user_ids();
+    }
+
+    return exports.sort_users(user_ids);
+};
+
+exports.get_items = function (filter_text) {
+    var user_ids = exports.get_filtered_and_sorted_user_ids(filter_text);
+
+    var user_info = _.map(user_ids, exports.info_for).filter(function (person) {
+        // filtered bots and yourself are set to "undefined" in the `info_for`
+        // function.
+        return typeof person !== "undefined";
+    });
+
+    return user_info;
+};
+
+return exports;
+
+}());
+if (typeof module !== 'undefined') {
+    module.exports = buddy_data;
+}
