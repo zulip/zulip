@@ -13,7 +13,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.lib.validator import check_dict
 from zerver.models import UserProfile, get_client
-from zerver.webhooks.github.view import build_message_from_gitlog
+from zerver.webhooks.github_legacy.view import build_message_from_gitlog
 
 # Beanstalk's web hook UI rejects url with a @ in the username section of a url
 # So we ask the user to replace them with %40
