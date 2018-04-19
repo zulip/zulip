@@ -79,3 +79,63 @@ backend. The `locmem` backend stores messages in a special attribute
 of the django.core.mail module, "outbox". The outbox attribute is
 created when the first message is sent. It’s a list with an
 EmailMessage instance for each message that would be sent.
+
+## Email templates
+
+Zulip's email templates live under `templates/zerver/emails`.  Email
+templates are a messy problem, because on the one hand, you want nice,
+readable markup and styling, but on the other, email clients have very
+limited CSS support and generaly require us to inject any CSS we're
+using in the emails into the email as inline styles.  And then you
+also need both plain-text and HTML emails.  We solve these problems
+using a combination of the
+[premailer](https://github.com/peterbe/premailer) library and having
+two copies of each email (plain-text and HTML).
+
+So for each email, there are two source templates: the `.txt` version
+(for plain-text format) as well as a `.source.html` template.  The
+`.txt` version is used directly; while the `.source.html` template is
+processed by `tools/inline-email-css` (generating a `.html` template
+under `templates/zerver/emails/compiled`); that tool (powered by
+`premailer`) injects the CSS we use for styling our emails
+(`templates/zerver/emails/email.css`) into the templates inline.
+
+What this means is that when you're editing emails, **you need to run
+`tools/inline-email-css`** after making changes to see the changes
+take effect.  Our tooling automatically runs this as part of
+`tools/provision` and production deployments; but you should bump
+`PROVISION_VERSION` when making changes to emails that change test
+behavior, or other developers will get test failures until they
+provision.
+
+While this model is great for the markup side, it isn't ideal for
+[translations](../translating/translating.html).  The Django
+translation system works with exact strings, and having different new
+markup can require translators to re-translate strings, which can
+result in problems like needing 2 copies of each string (one for
+plain-text, one for HTML) and/or needing to re-translate a bunch of
+strings after making a CSS tweak.  Re-translating these strings is
+relatively easy in Transifex, but annoying.
+
+So when writing email templates, we try to translate individual
+sentences that are shared between the plain-text and HTML content
+rather than larger blocks that might contain markup; this allows
+translators to not have to deal with multiple versions of each string
+in our emails.
+
+One can test whether you did the translating part right by running
+`tools/inline-email-css && manage.py makemessages` and then searching
+for the strings in `static/locale/en/LC_MESSAGES/django.po`; if there
+are multiple copies or they contain CSS colors, you did it wrong.
+
+A final note for translating emails is that strings that are sent to
+user accounts (where we know the user's language) are higher-priority
+to translate than things sent to an email address (where we don't).
+E.g. for password reset emails, it makes sense for the code path for
+people with an actual account can be tagged for translation, while the
+code path for the "you don't have an account email" might not be,
+since we might not know what language to use in the second case.
+
+Future work in this space could be to actually generate the plain-text
+versions of emails from the `.source.html` markup, so that we don't
+need to maintain two copies of each email's text.
