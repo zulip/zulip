@@ -1321,7 +1321,7 @@ class TestUserAgentParsing(ZulipTestCase):
     def test_user_agent_parsing(self) -> None:
         """Test for our user agent parsing logic, using a large data set."""
         user_agents_parsed = defaultdict(int)  # type: Dict[str, int]
-        user_agents_path = os.path.join(settings.DEPLOY_ROOT, "zerver/fixtures/user_agents_unique")
+        user_agents_path = os.path.join(settings.DEPLOY_ROOT, "zerver/tests/fixtures/user_agents_unique")
         for line in open(user_agents_path).readlines():
             line = line.strip()
             match = re.match('^(?P<count>[0-9]+) "(?P<user_agent>.*)"$', line)

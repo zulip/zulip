@@ -197,7 +197,7 @@ class AboutPageTest(ZulipTestCase):
         # This block has unreliable test coverage due to the implicit
         # caching here, so we exclude it from coverage.
         if not os.path.exists(settings.CONTRIBUTORS_DATA):
-            # Copy the fixture file in `zerver/fixtures` to `static/generated`
+            # Copy the fixture file in `zerver/tests/fixtures` to `static/generated`
             update_script = os.path.join(os.path.dirname(__file__),
                                          '../../tools/update-authors-json')  # nocoverage
             subprocess.check_call([update_script, '--use-fixture'])  # nocoverage

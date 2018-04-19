@@ -26,8 +26,9 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.settings'
 from django.conf import settings
 from zerver.lib.utils import split_by
 
-FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/authors.json')
-duplicate_commits_file = os.path.join(os.path.dirname(__file__), '../zerver/fixtures/duplicate_commits.json')
+FIXTURE_FILE = os.path.join(os.path.dirname(__file__), '../zerver/tests/fixtures/authors.json')
+duplicate_commits_file = os.path.join(os.path.dirname(__file__),
+                                      '../zerver/tests/fixtures/duplicate_commits.json')
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--max-retries', type=int, default=3,
@@ -143,7 +144,7 @@ def run_production() -> None:
 
 def copy_fixture() -> None:
     """
-    Copy test fixture file from zerver/fixtures. This is used to avoid
+    Copy test fixture file from zerver/tests/fixtures. This is used to avoid
     constantly fetching data from Github during testing.
     """
     subprocess.check_call(['cp', FIXTURE_FILE, settings.CONTRIBUTORS_DATA])

@@ -17,7 +17,7 @@ To trigger a notification using this webhook, use
 ```
 (zulip-venv)vagrant@vagrant-ubuntu-trusty-64:/srv/zulip$
 ./manage.py send_webhook_fixture_message \
-> --fixture=zerver/fixtures/helloworld/hello.json \
+> --fixture=zerver/tests/fixtures/helloworld/hello.json \
 > '--url=http://localhost:9991/api/v1/external/helloworld?api_key=&lt;api_key&gt;'
 
 ```
