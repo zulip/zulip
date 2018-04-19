@@ -294,11 +294,7 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
 };
 
 (function test_presence_list_full_update() {
-    // No element is selected
-    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user').length = 0;
     $('.user-list-filter').focus();
-
-    $('#user_presences li.user_sidebar_entry.narrow-filter');
     const users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
@@ -480,17 +476,28 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
 }());
 
 (function test_focus_user_filter() {
+    $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user').length = 0;
+
+    var first_highlighted;
+
+    stream_list.highlight_first = () => {
+        first_highlighted = true;
+    };
+
     const e = {
         stopPropagation: () => {},
     };
-    const click_handler = $('.user-list-filter').get_on_handler('click');
-    click_handler(e);
+
+    const handler = $('.user-list-filter').get_on_handler('click');
+    handler(e);
+
+    assert(first_highlighted);
 }());
 
 (function test_focusout_user_filter() {
     const e = { };
-    const click_handler = $('.user-list-filter').get_on_handler('blur');
-    click_handler(e);
+    const handler = $('.user-list-filter').get_on_handler('blur');
+   handler(e);
 }());
 
 presence.presence_info = {};
