@@ -112,15 +112,20 @@ fi
 # Check early for missing SSL certificates
 if [ "$PUPPET_CLASSES" = "zulip::voyager" ] && [ -z "$USE_CERTBOT""$SELF_SIGNED_CERT" ] && { ! [ -e "/etc/ssl/private/zulip.key" ] || ! [ -e "/etc/ssl/certs/zulip.combined-chain.crt" ]; }; then
     set +x
-    echo
-    echo "Could not find SSL certificates!"
-    for f in "/etc/ssl/private/zulip.key" "/etc/ssl/certs/zulip.combined-chain.crt"; do
-        [ -e "$f" ] || echo " - $f is missing!"
-    done
     cat <<EOF
 
-See https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html for help.
-For non-production testing, try the --self-signed-cert option.
+No SSL certificate found.  One or both required files is missing:
+    /etc/ssl/private/zulip.key
+    /etc/ssl/certs/zulip.combined-chain.crt
+
+Suggested solutions:
+ * For most sites, the --certbot option is recommended.
+ * If you have your own key and cert, see docs linked below
+   for how to install them.
+ * For non-production testing, try the --self-signed-cert option.
+
+For help and more details, see our SSL documentation:
+  https://zulip.readthedocs.io/en/latest/production/ssl-certificates.html
 
 Once fixed, just rerun scripts/setup/install; it'll pick up from here!
 
