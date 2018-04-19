@@ -209,7 +209,7 @@ function render(template_name, args) {
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long Text');
-    assert.equal(td.length, 3);
+    assert.equal(td.length, 4);
 
     // When the logged in user is not admin
     args = {
@@ -231,7 +231,7 @@ function render(template_name, args) {
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long Text');
-    assert.equal(td.length, 2);
+    assert.equal(td.length, 3);
 }());
 
 (function admin_filter_list() {

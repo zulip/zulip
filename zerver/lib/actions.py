@@ -4527,8 +4527,10 @@ def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
                  fields=[f.as_dict() for f in fields])
     send_event(event, active_user_ids(realm.id))
 
-def try_add_realm_custom_profile_field(realm: Realm, name: Text, field_type: int) -> CustomProfileField:
+def try_add_realm_custom_profile_field(realm: Realm, name: Text, field_type: int,
+                                       hint: Text='') -> CustomProfileField:
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
+    field.hint = hint
     field.save()
     notify_realm_custom_profile_fields(realm, 'add')
     return field
@@ -4542,9 +4544,10 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     notify_realm_custom_profile_fields(realm, 'delete')
 
 def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileField,
-                                          name: Text) -> None:
+                                          name: Text, hint: Text='') -> None:
     field.name = name
-    field.save(update_fields=['name'])
+    field.hint = hint
+    field.save(update_fields=['name', 'hint'])
     notify_realm_custom_profile_fields(realm, 'update')
 
 def do_update_user_custom_profile_data(user_profile: UserProfile,

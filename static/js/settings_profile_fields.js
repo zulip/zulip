@@ -60,6 +60,7 @@ function open_edit_form(e) {
         // channel.patch even though it is supported by $.ajax.
         var data = {};
         data.name = profile_field.form.find('input[name=name]').val();
+        data.hint = profile_field.form.find('input[name=hint]').val();
 
         settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields/" + field_id,
                                        data, profile_field_status);
@@ -85,6 +86,7 @@ exports.populate_profile_fields = function (profile_fields_data) {
                     profile_field: {
                         id: profile_field.id,
                         name: profile_field.name,
+                        hint: profile_field.hint,
                         type: field_type_id_to_string(profile_field.type),
                     },
                     can_modify: page_params.is_admin,

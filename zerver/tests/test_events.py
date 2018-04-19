@@ -18,6 +18,7 @@ from zerver.models import (
 )
 
 from zerver.lib.actions import (
+    try_update_realm_custom_profile_field,
     bulk_add_subscriptions,
     bulk_remove_subscriptions,
     check_add_realm_emoji,
@@ -915,8 +916,23 @@ class EventsRegisterTest(ZulipTestCase):
                 ('id', check_int),
                 ('type', check_int),
                 ('name', check_string),
+                ('hint', check_string),
             ]))),
         ])
+
+        events = self.do_test(
+            lambda: notify_realm_custom_profile_fields(
+                self.user_profile.realm, 'add'),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        realm = self.user_profile.realm
+        field = realm.customprofilefield_set.get(realm=realm, name='Biography')
+        name = field.name
+        hint = 'Biography of the user'
+        try_update_realm_custom_profile_field(realm, field, name, hint=hint)
 
         events = self.do_test(
             lambda: notify_realm_custom_profile_fields(
