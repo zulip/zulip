@@ -321,13 +321,6 @@ exports.process_enter_key = function (e) {
         return false;
     }
 
-    // This handles when pressing enter while looking at drafts.
-    // It restores draft that is focused.
-    if (overlays.drafts_open()) {
-        drafts.drafts_handle_events(e, "enter");
-        return true;
-    }
-
     // If we're on a button or a link and have pressed enter, let the
     // browser handle the keypress
     //
