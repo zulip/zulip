@@ -1,11 +1,16 @@
-{!create-stream.md!}
+Get Transifex notifications in Zulip!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Next, in Transifex, go to your project settings page:
-**Project Details → Manage → Edit Project** and scroll down to
-**WEB HOOK URL**. Paste the URL you constructed into the box and
-save your changes.
+1. {!create-bot-construct-url-indented.md!}
+
+1. On your Transifex Dashboard, select your project, and click on
+   **Settings**. Click on the **Webhooks** tab, and click
+   **Add webhook**.
+
+1. Set **URL** to the URL constructed above. Select the events
+   you'd like to be notified about, and set **Status** to **Active**.
+   Click **Save Changes**.
 
 {!congrats.md!}
 
