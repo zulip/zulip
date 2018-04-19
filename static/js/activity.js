@@ -477,20 +477,27 @@ exports.toggle_filter_displayed = function () {
     }
 };
 
+exports.narrow_for_user = function (opts) {
+    var user_id = buddy_list.get_key_from_li({li: opts.li});
+    var email = people.get_person_from_user_id(user_id).email;
+
+    var narrow_opts = {
+        select_first_unread: true,
+        trigger: 'sidebar',
+    };
+
+    narrow.by('pm-with', email, narrow_opts);
+
+    exports.clear_and_hide_search();
+};
+
 function keydown_enter_key() {
     // Is there at least one user?
     if ($('#user_presences li.user_sidebar_entry.narrow-filter').length > 0) {
         // There must be a 'highlighted_user' user
-        var select_user = $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user')
-                            .expectOne().attr('data-user-id');
-
-        var email = people.get_person_from_user_id(select_user).email;
-        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar'});
-        compose_actions.start('private', {  trigger: 'sidebar enter key',
-                                            private_message_recipient: email});
-
-        // Clear the user filter
-        exports.clear_and_hide_search();
+        var li = $('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user');
+        exports.narrow_for_user({li: li});
+        popovers.hide_all();
     }
 }
 

@@ -13,6 +13,11 @@ var buddy_list = (function () {
         return $("li.user_sidebar_entry[data-user-id='" + user_id + "']");
     };
 
+    self.get_key_from_li = function (opts) {
+        var user_id = opts.li.expectOne().attr('data-user-id');
+        return user_id;
+    };
+
     self.insert_or_move = function (opts) {
         var user_id = opts.key;
         var info = opts.item;

@@ -335,22 +335,12 @@ $(function () {
     });
 
     $('#user_presences').expectOne().on('click', '.selectable_sidebar_block', function (e) {
-        var user_id = $(e.target).parents('li').attr('data-user-id');
-        var email = people.get_person_from_user_id(user_id).email;
-        activity.clear_and_hide_search();
-        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'sidebar'});
-        // The preventDefault is necessary so that clicking the
-        // link doesn't jump us to the top of the page.
+        var li = $(e.target).parents('li');
+
+        activity.narrow_for_user({li: li});
+
         e.preventDefault();
-        // The stopPropagation is necessary so that we don't
-        // see the following sequence of events:
-        // 1. This click "opens" the composebox
-        // 2. This event propagates to the body, which says "oh, hey, the
-        //    composebox is open and you clicked out of it, you must want to
-        //    stop composing!"
         e.stopPropagation();
-        // Since we're stopping propagation we have to manually close any
-        // open popovers.
         popovers.hide_all();
     });
 
