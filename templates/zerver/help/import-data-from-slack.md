@@ -34,7 +34,7 @@ Log in to your Zulip server as the `zulip` user. Run the following
 commands, replacing `<token>` with the value generated above:
 
 ```
-cd ~/zulip
+cd /home/zulip/deployments/current
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
 ./manage.py import --destroy-rebuild-database '' converted_slack_data
 ```
@@ -50,7 +50,7 @@ commands, replacing `<token>` with the value generated above, and
 Zulip organization.
 
 ```
-cd ~/zulip
+cd /home/zulip/deployments/current
 ./manage.py convert_slack_data slack_data.zip --token <token> --output converted_slack_data
 ./manage.py import --import-into-nonempty <subdomain> converted_slack_data
 ```
