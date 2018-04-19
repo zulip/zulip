@@ -312,7 +312,6 @@ ul.filters li.out_of_home_view li.muted_topic {
     display: inline-block;
     overflow: hidden;
     text-overflow: ellipsis;
-    line-height: 1.1;
     position: relative;
     width: 100%;
     padding-right: 2px;
