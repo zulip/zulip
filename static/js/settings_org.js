@@ -115,7 +115,7 @@ function get_property_value(property_name) {
         }
         return "by_anyone";
     }
-    return;
+    return page_params[property_name];
 }
 
 exports.extract_property_name = function (elem) {
@@ -286,12 +286,7 @@ function update_dependent_subsettings(property_name) {
 function discard_property_element_changes(elem) {
     elem = $(elem);
     var property_name = exports.extract_property_name(elem);
-    // Check whether the id refers to a property whose name we can't
-    // extract from element's id.
     var property_value = get_property_value(property_name);
-    if (property_value === undefined) {
-        property_value = page_params[property_name];
-    }
 
     if (typeof property_value === 'boolean') {
         elem.prop('checked', property_value);
@@ -420,12 +415,7 @@ function _set_up() {
         elem = $(elem);
         var property_name = exports.extract_property_name(elem);
         var changed_val;
-        // Check whether the id refers to a property whose name we can't
-        // extract from element's id.
         var current_val = get_property_value(property_name);
-        if (current_val === undefined) {
-            current_val = page_params[property_name];
-        }
 
         if (typeof current_val === 'boolean') {
             changed_val = elem.prop('checked');
