@@ -473,7 +473,7 @@ class SlackImporter(ZulipTestCase):
                                                mock_build_avatar: mock.Mock,
                                                mock_process_uploads: mock.Mock,
                                                mock_attachment: mock.Mock) -> None:
-        test_slack_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+        test_slack_dir = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures",
                                       "slack_fixtures")
         test_slack_zip_file = os.path.join(test_slack_dir, "test_slack_importer.zip")
         test_slack_unzipped_file = os.path.join(test_slack_dir, "test_slack_importer")
@@ -489,7 +489,7 @@ class SlackImporter(ZulipTestCase):
         # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
         rm_tree(test_slack_unzipped_file)
 
-        user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "fixtures",
+        user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures",
                                          "slack_fixtures", "user_data.json")
         mock_get_slack_api_data.side_effect = [ujson.load(open(user_data_fixture))['members'], {}]
 

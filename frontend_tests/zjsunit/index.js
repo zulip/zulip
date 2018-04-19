@@ -53,7 +53,7 @@ module.prototype.hot = {
 
 // Set up fixtures.
 global.read_fixture_data = (fn) => {
-    var full_fn = path.join(__dirname, '../../zerver/fixtures/', fn);
+    var full_fn = path.join(__dirname, '../../zerver/tests/fixtures/', fn);
     var data = JSON.parse(fs.readFileSync(full_fn, 'utf8', 'r'));
     return data;
 };

@@ -154,7 +154,7 @@ class TestReport(ZulipTestCase):
 
     def test_report_csp_violations(self) -> None:
         fixture_data_file = open(os.path.join(os.path.dirname(__file__),
-                                 '../fixtures/csp_report.json'), 'r')
+                                 'fixtures/csp_report.json'), 'r')
         fixture_data = ujson.load(fixture_data_file)
         params = ujson.dumps(fixture_data)
         result = self.client_post("/report/csp_violations", params, content_type="application/json")

@@ -8,7 +8,7 @@ import zulip
 
 zulip_client = zulip.Client(site="http://localhost:9991", client="ZulipGithubPayloadSender/0.1")
 
-payload_dir = "zerver/fixtures/github"
+payload_dir = "zerver/tests/fixtures/github"
 for filename in os.listdir(payload_dir):
     with open(os.path.join(payload_dir, filename)) as f:
         req = json.loads(f.read())

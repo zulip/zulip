@@ -347,7 +347,7 @@ class NarrowBuilderTest(ZulipTestCase):
 class BuildNarrowFilterTest(TestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
-                                     '../fixtures/narrow.json')
+                                     'fixtures/narrow.json')
         scenarios = ujson.loads(open(fixtures_path, 'r').read())
         self.assertTrue(len(scenarios) == 9)
         for scenario in scenarios:

@@ -26,7 +26,7 @@ class SlackMessageConversion(ZulipTestCase):
 
     def load_slack_message_conversion_tests(self) -> Dict[Any, Any]:
         test_fixtures = {}
-        data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/slack_message_conversion.json'), 'r')
+        data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/slack_message_conversion.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
         for test in data['regular_tests']:
             test_fixtures[test['name']] = test
