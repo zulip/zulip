@@ -14,8 +14,6 @@ var ACTIVE_PING_INTERVAL_MS = 50 * 1000;
 exports.ACTIVE = "active";
 exports.IDLE = "idle";
 
-var meta = {};
-
 // When you start Zulip, has_focus should be true, but it might not be the
 // case after a server-initiated reload.
 exports.has_focus = document.hasFocus && document.hasFocus();
@@ -226,6 +224,16 @@ exports.insert_user_into_list = function (user_id) {
     compose_fade.update_one_user_row(elt);
 };
 
+exports.clear_highlight = function () {
+    // Undo highlighting
+    var item = $('#user_presences li.user_sidebar_entry.highlighted_user');
+    item.removeClass('highlighted_user');
+};
+
+exports.searching = function () {
+    return exports.user_filter && exports.user_filter.searching();
+};
+
 exports.build_user_sidebar = function () {
     if (page_params.realm_presence_disabled) {
         return;
@@ -368,11 +376,6 @@ exports.initialize = function () {
     exports.build_user_sidebar();
     exports.update_huddles();
 
-    exports.set_user_list_filter_handlers();
-
-    $('#clear_search_people_button').on('click', exports.clear_search);
-    $('#userlist-header').click(exports.toggle_filter_displayed);
-
     // Let the server know we're here, but pass "false" for
     // want_redraw, since we just got all this info in page_params.
     focus_ping(false);
@@ -408,72 +411,11 @@ exports.redraw = function () {
     exports.update_huddles();
 };
 
-exports.searching = function () {
-    return $('.user-list-filter').expectOne().is(':focus');
-};
-
-exports.clear_search = function () {
-    var filter = $('.user-list-filter').expectOne();
-    if (filter.val() === '') {
-        exports.clear_and_hide_search();
-        return;
-    }
-    filter.val('');
-    filter.blur();
-    update_users_for_search();
-};
-
-exports.escape_search = function () {
-    var filter = $('.user-list-filter').expectOne();
-    if (filter.val() === '') {
-        exports.clear_and_hide_search();
-        return;
-    }
-    filter.val('');
-    update_users_for_search();
-};
-
-exports.clear_and_hide_search = function () {
-    var filter = $('.user-list-filter').expectOne();
-    if (filter.val() !== '') {
-        filter.val('');
-        update_users_for_search();
-    }
-    filter.blur();
-    $('#user-list .input-append').addClass('notdisplayed');
-    // Undo highlighting
-    $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
-};
-
-function highlight_first_user() {
+exports.highlight_first_user = function () {
     if ($('#user_presences li.user_sidebar_entry.narrow-filter.highlighted_user').length === 0) {
         // Highlight
         var all_streams = $('#user_presences li.user_sidebar_entry.narrow-filter');
         stream_list.highlight_first(all_streams, 'highlighted_user');
-    }
-}
-
-exports.initiate_search = function () {
-    var filter = $('.user-list-filter').expectOne();
-    var column = $('.user-list-filter').closest(".app-main [class^='column-']");
-    $('#user-list .input-append').removeClass('notdisplayed');
-    if (!column.hasClass("expanded")) {
-        popovers.hide_all();
-        if (column.hasClass('column-left')) {
-            stream_popover.show_streamlist_sidebar();
-        } else if (column.hasClass('column-right')) {
-            popovers.show_userlist_sidebar();
-        }
-    }
-    filter.focus();
-    highlight_first_user();
-};
-
-exports.toggle_filter_displayed = function () {
-    if ($('#user-list .input-append').hasClass('notdisplayed')) {
-        exports.initiate_search();
-    } else {
-        exports.clear_and_hide_search();
     }
 };
 
@@ -482,7 +424,7 @@ exports.narrow_for_user = function (opts) {
     var email = people.get_person_from_user_id(user_id).email;
 
     narrow.by('pm-with', email, {trigger: 'sidebar'});
-    exports.clear_and_hide_search();
+    exports.user_filter.clear_and_hide_search();
 };
 
 function keydown_enter_key() {
@@ -500,30 +442,41 @@ function keydown_user_filter(e) {
                                $('#user_presences'), 'highlighted_user', keydown_enter_key);
 }
 
-function focus_user_filter(e) {
-    highlight_first_user();
-    e.stopPropagation();
-}
-
 function focusout_user_filter() {
     // Undo highlighting
     $('#user_presences li.user_sidebar_entry.highlighted_user').removeClass('highlighted_user');
 }
 
 exports.set_user_list_filter = function () {
-    meta.$user_list_filter = $(".user-list-filter");
+    exports.user_filter = user_search({
+        update_list: update_users_for_search,
+        reset_items: exports.clear_highlight,
+        initialize_list_for_search: exports.highlight_first_user,
+    });
+
+    exports.set_user_list_filter_handlers();
 };
 
 exports.set_user_list_filter_handlers = function () {
-    meta.$user_list_filter.expectOne()
-        .on('click', focus_user_filter)
-        .on('input', update_users_for_search)
+    exports.user_filter.input_field()
         .on('keydown', keydown_user_filter)
         .on('blur', focusout_user_filter);
 };
 
+exports.initiate_search = function () {
+    if (exports.user_filter) {
+        exports.user_filter.initiate_search();
+    }
+};
+
+exports.escape_search = function () {
+    if (exports.user_filter) {
+        exports.user_filter.escape_search();
+    }
+};
+
 exports.get_filter_text = function () {
-    if (!meta.$user_list_filter) {
+    if (!exports.user_filter) {
         // This may be overly defensive, but there may be
         // situations where get called before everything is
         // fully initialized.  The empty string is a fine
@@ -532,9 +485,7 @@ exports.get_filter_text = function () {
         return '';
     }
 
-    var user_filter = meta.$user_list_filter.expectOne().val().trim();
-
-    return user_filter;
+    return exports.user_filter.text();
 };
 
 return exports;
