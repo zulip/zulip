@@ -143,6 +143,7 @@
         "tab_bar": false,
         "emoji": false,
         "presence": false,
+        "user_search": false,
         "buddy_data": false,
         "buddy_list": false,
         "activity": false,

@@ -38,6 +38,7 @@ zrequire('presence');
 zrequire('people');
 zrequire('buddy_data');
 zrequire('buddy_list');
+zrequire('user_search');
 zrequire('activity');
 zrequire('stream_list');
 
@@ -272,26 +273,31 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 presence.presence_info[me.user_id] = { status: activity.ACTIVE };
 
-activity.set_user_list_filter();
-
 const user_order = [fred.user_id, jill.user_id, norbert.user_id,
                      zoe.user_id, alice.user_id, mark.user_id];
 const user_count = 6;
 
-// Mock the jquery is func
-$('.user-list-filter').is = function (sel) {
-    if (sel === ':focus') {
-        return $('.user-list-filter').is_focused();
-    }
-};
+function reset_jquery() {
+    set_global('$', global.make_zjquery());
+    activity.set_user_list_filter();
 
-// Mock the jquery first func
-$('#user_presences li.user_sidebar_entry.narrow-filter').first = function () {
-    return $('li.user_sidebar_entry[data-user-id="' + user_order[0] + '"]');
-};
-$('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
-    return $('li.user_sidebar_entry[data-user-id="' + user_order[user_count - 1] + '"]');
-};
+    // Mock the jquery is func
+    $('.user-list-filter').is = function (sel) {
+        if (sel === ':focus') {
+            return $('.user-list-filter').is_focused();
+        }
+    };
+
+    // Mock the jquery first func
+    $('#user_presences li.user_sidebar_entry.narrow-filter').first = function () {
+        return $('li.user_sidebar_entry[data-user-id="' + user_order[0] + '"]');
+    };
+    $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
+        return $('li.user_sidebar_entry[data-user-id="' + user_order[user_count - 1] + '"]');
+    };
+}
+
+reset_jquery();
 
 (function test_presence_list_full_update() {
     $('.user-list-filter').focus();
@@ -396,6 +402,8 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
     assert.equal(value.text(), '');
 }());
 
+reset_jquery();
+
 (function test_key_input() {
     let sel_index = 0;
     // Returns which element is selected
@@ -438,8 +446,6 @@ $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
     };
 
     $('#user_presences li.user_sidebar_entry.narrow-filter').length = user_count;
-
-    activity.set_user_list_filter_handlers();
 
     // Disable scrolling into place
     stream_list.scroll_element_into_container = function () {};
@@ -635,8 +641,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 }());
 
 // Reset jquery here.
-set_global('$', global.make_zjquery());
-activity.set_user_list_filter();
+reset_jquery();
 
 (function test_insert_unfiltered_user_with_filter() {
     // This test only tests that we do not explode when
@@ -670,9 +675,9 @@ $('.user-list-filter').parent = function () {
 
 (function test_clear_search() {
     $('.user-list-filter').val('somevalue');
-    activity.clear_search();
+    activity.user_filter.clear_search();
     assert.equal($('.user-list-filter').val(), '');
-    activity.clear_search();
+    activity.user_filter.clear_search();
     assert($('#user-list .input-append').hasClass('notdisplayed'));
 }());
 
@@ -703,13 +708,13 @@ $('.user-list-filter').parent = function () {
 }());
 
 (function test_toggle_filter_display() {
-    activity.toggle_filter_displayed();
+    activity.user_filter.toggle_filter_displayed();
     assert($('#user-list .input-append').hasClass('notdisplayed'));
     $('.user-list-filter').closest = function (selector) {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create('sidebar').addClass('column-right');
     };
-    activity.toggle_filter_displayed();
+    activity.user_filter.toggle_filter_displayed();
     assert.equal($('#user-list .input-append').hasClass('notdisplayed'), false);
 }());
 

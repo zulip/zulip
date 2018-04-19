@@ -1129,6 +1129,7 @@ JS_SPECS = {
             'js/server_events_dispatch.js',
             'js/zulip.js',
             'js/presence.js',
+            'js/user_search.js',
             'js/buddy_data.js',
             'js/buddy_list.js',
             'js/activity.js',

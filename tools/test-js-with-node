@@ -73,6 +73,7 @@ enforce_fully_covered = {
     'static/js/user_events.js',
     'static/js/user_groups.js',
     'static/js/user_pill.js',
+    'static/js/user_search.js',
     'static/js/util.js',
 }
 
