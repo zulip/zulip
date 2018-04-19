@@ -11,7 +11,7 @@ from zerver.models import Realm, UserProfile
 from zilencer.lib.stripe import StripeError, save_stripe_token, catch_stripe_errors
 from zilencer.models import Customer
 
-fixture_data_file = open(os.path.join(os.path.dirname(__file__), '../fixtures/stripe.json'), 'r')
+fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/stripe.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
 
 def mock_list_sources(*args: Any, **kwargs: Any) -> ListObject:

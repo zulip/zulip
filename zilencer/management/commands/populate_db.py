@@ -317,7 +317,7 @@ class Command(BaseCommand):
         # in the config.generate_data.json data set.  This makes it
         # possible for populate_db to run happily without Internet
         # access.
-        with open("zerver/fixtures/docs_url_preview_data.json", "r") as f:
+        with open("zerver/tests/fixtures/docs_url_preview_data.json", "r") as f:
             urls_with_preview_data = ujson.load(f)
             for url in urls_with_preview_data:
                 cache_set(url, urls_with_preview_data[url], PREVIEW_CACHE_NAME)

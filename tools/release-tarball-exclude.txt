@@ -10,6 +10,5 @@ templates/zilencer
 puppet/zulip_ops
 zproject/dev_settings.py
 zproject/test_settings.py
-zerver/fixtures
 zerver/tests
 frontend_tests

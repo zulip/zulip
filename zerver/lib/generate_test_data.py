@@ -4,7 +4,7 @@ import random
 from typing import List, Dict, Any, Text, Optional
 
 def load_config() -> Dict[str, Any]:
-    with open("zerver/fixtures/config.generate_data.json", "r") as infile:
+    with open("zerver/tests/fixtures/config.generate_data.json", "r") as infile:
         config = ujson.load(infile)
 
     return config

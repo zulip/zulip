@@ -319,7 +319,7 @@ reads a bunch of sample inputs from a JSON fixture file, feeds them
 to our GitHub integration code, and then verifies the output against
 expected values from the same JSON fixture file.
 
-Our fixtures live in `zerver/fixtures`.
+Our fixtures live in `zerver/tests/fixtures`.
 
 ### Mocks and stubs
 
