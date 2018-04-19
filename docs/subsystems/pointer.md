@@ -36,7 +36,7 @@ what you clicked on, and in fact the message you clicked on stays at
 exactly the same scroll position in the window after the narrowing as
 it was at before.
 
-### Search or sidebar click: unread/recent matching narrow
+### Search, sidebar click, or new narrowed tab: unread/recent matching narrow
 
 If you instead narrow by clicking on something in the left sidebar or
 typing some terms into the search box, Zulip will instead select
@@ -70,16 +70,6 @@ streams in your All messages view, this can lag.
 
 We plan to change this to automatically advance the pointer in a way
 similar to the unnarrow logic.
-
-### Narrow in a new tab: closest to pointer
-
-When you load a new browser tab or window to a narrowed view, Zulip
-will select the message closest to your pointer, which is what you
-would have got had you loaded the browser window to your All messages view and
-then clicked on the nearest message matching your narrow (which might
-have been offscreen).
-
-We plan to change this to match the Search/sidebar behavior.
 
 ### Forced reload: state preservation
 
