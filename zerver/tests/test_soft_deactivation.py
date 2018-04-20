@@ -52,6 +52,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
             self.example_user('othello'),
             self.example_user('prospero'),
             self.example_user('aaron'),
+            self.example_user('polonius'),
         ]
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
@@ -68,7 +69,7 @@ class UserSoftDeactivationTests(ZulipTestCase):
         filter_kwargs = dict(user_profile__realm=get_realm('zulip'))
         users_to_deactivate = get_users_for_soft_deactivation(-1, filter_kwargs)
 
-        self.assert_length(users_to_deactivate, 7)
+        self.assert_length(users_to_deactivate, 8)
         for user in users_to_deactivate:
             self.assertTrue(user in users)
 

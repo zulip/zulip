@@ -157,6 +157,7 @@ class Command(BaseCommand):
                 ("Cordelia Lear", "cordelia@zulip.com"),
                 ("King Hamlet", "hamlet@zulip.com"),
                 ("aaron", "AARON@zulip.com"),
+                ("Polonius", "polonius@zulip.com"),
             ]
             for i in range(options["extra_users"]):
                 names.append(('Extra User %d' % (i,), 'extrauser%d@zulip.com' % (i,)))
@@ -166,6 +167,10 @@ class Command(BaseCommand):
             do_change_is_admin(iago, True)
             iago.is_staff = True
             iago.save(update_fields=['is_staff'])
+
+            guest_user = get_user("polonius@zulip.com", zulip_realm)
+            guest_user.is_guest = True
+            guest_user.save(update_fields=['is_guest'])
 
             # These bots are directly referenced from code and thus
             # are needed for the test suite.
