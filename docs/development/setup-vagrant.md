@@ -604,7 +604,7 @@ If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
 * Ask in [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
-  in the [Zulip development community server](../contributing/chat-zulip-org.html),
+  in the [Zulip development community server](https://chat.zulip.org),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or
 * [File an issue](https://github.com/zulip/zulip/issues).
