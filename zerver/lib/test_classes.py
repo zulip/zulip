@@ -509,10 +509,17 @@ class ZulipTestCase(TestCase):
         for substring in substrings:
             self.assertNotIn(substring, decoded)
 
-    def fixture_data(self, type: Text, action: Text, file_type: Text='json') -> Text:
+    def webhook_fixture_data(self, type: Text, action: Text, file_type: Text='json') -> Text:
         fn = os.path.join(
             os.path.dirname(__file__),
             "../webhooks/%s/fixtures/%s.%s" % (type, action, file_type)
+        )
+        return open(fn).read()
+
+    def fixture_data(self, file_name: Text, type: Text='') -> Text:
+        fn = os.path.join(
+            os.path.dirname(__file__),
+            "../tests/fixtures/%s/%s" % (type, file_name)
         )
         return open(fn).read()
 
@@ -685,7 +692,7 @@ class WebhookTestCase(ZulipTestCase):
     def get_body(self, fixture_name: Text) -> Union[Text, Dict[str, Text]]:
         """Can be implemented either as returning a dictionary containing the
         post parameters or as string containing the body of the request."""
-        return ujson.dumps(ujson.loads(self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
+        return ujson.dumps(ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)))
 
     def do_test_subject(self, msg: Message, expected_subject: Optional[Text]) -> None:
         if expected_subject is not None:

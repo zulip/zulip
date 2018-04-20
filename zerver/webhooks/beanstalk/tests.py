@@ -140,4 +140,4 @@ class BeanstalkHookTests(WebhookTestCase):
                                 content_type=None)
 
     def get_body(self, fixture_name: Text) -> Dict[str, Text]:
-        return {'payload': self.fixture_data('beanstalk', fixture_name)}
+        return {'payload': self.webhook_fixture_data('beanstalk', fixture_name)}

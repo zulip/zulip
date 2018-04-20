@@ -489,9 +489,8 @@ class SlackImporter(ZulipTestCase):
         # Also the unzipped data file should be removed if the test fails at 'do_convert_data'
         rm_tree(test_slack_unzipped_file)
 
-        user_data_fixture = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests", "fixtures",
-                                         "slack_fixtures", "user_data.json")
-        mock_get_slack_api_data.side_effect = [ujson.load(open(user_data_fixture))['members'], {}]
+        user_data_fixture = ujson.loads(self.fixture_data('user_data.json', type='slack_fixtures'))
+        mock_get_slack_api_data.side_effect = [user_data_fixture['members'], {}]
 
         do_convert_data(test_slack_zip_file, output_dir, token)
         self.assertTrue(os.path.exists(output_dir))

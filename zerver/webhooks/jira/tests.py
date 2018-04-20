@@ -120,4 +120,4 @@ Adding a comment. Oh, what a comment it is!"""
             self.send_and_test_stream_message('change_status_v2', expected_subject, expected_message)
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data('jira', fixture_name)
+        return self.webhook_fixture_data('jira', fixture_name)

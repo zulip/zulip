@@ -713,7 +713,7 @@ class DeactivatedRealmTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
             user_profile.api_key,)
-        data = self.fixture_data('jira', "created_v2")
+        data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "has been deactivated", status_code=400)
@@ -886,7 +886,7 @@ class InactiveUserTest(ZulipTestCase):
 
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
             user_profile.api_key,)
-        data = self.fixture_data('jira', "created_v2")
+        data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
         self.assert_json_error_contains(result, "Account not active", status_code=400)

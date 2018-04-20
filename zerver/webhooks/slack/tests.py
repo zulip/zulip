@@ -52,4 +52,4 @@ class SlackWebhookTests(WebhookTestCase):
 
     def get_body(self, fixture_name: str) -> str:
 
-        return self.fixture_data("slack", fixture_name, file_type="txt")
+        return self.webhook_fixture_data("slack", fixture_name, file_type="txt")

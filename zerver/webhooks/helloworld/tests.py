@@ -57,4 +57,4 @@ class HelloWorldHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("helloworld", fixture_name, file_type="json")
+        return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
