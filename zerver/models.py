@@ -808,6 +808,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return True
         return False
 
+    def can_access_public_streams(self) -> bool:
+        # This function is intended to be the core function for how
+        # guest accounts interact with public streams.
+        return not self.realm.is_zephyr_mirror_realm
+
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
             return int(self.tos_version.split('.')[0])

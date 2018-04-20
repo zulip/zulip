@@ -2103,7 +2103,7 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not in given realm")
 
-    if user_profile.realm.is_zephyr_mirror_realm and not stream_dict["invite_only"]:
+    if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
 
     # Organization administrators can view subscribers for all streams.
@@ -3950,11 +3950,10 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             unsubscribed.append(stream_dict)
 
     all_streams_id_set = set(all_streams_id)
-    # Listing public streams are disabled for Zephyr mirroring realms.
-    if user_profile.realm.is_zephyr_mirror_realm:
-        never_subscribed_stream_ids = set()  # type: Set[int]
-    else:
+    if user_profile.can_access_public_streams():
         never_subscribed_stream_ids = all_streams_id_set - sub_unsub_stream_ids
+    else:
+        never_subscribed_stream_ids = set()
     never_subscribed_streams = [ns_stream_dict for ns_stream_dict in all_streams
                                 if ns_stream_dict['id'] in never_subscribed_stream_ids]
 
@@ -4434,8 +4433,7 @@ def do_get_streams(user_profile: UserProfile, include_public: bool=True,
     if include_all_active and not user_profile.is_api_super_user:
         raise JsonableError(_("User not authorized for this query"))
 
-    # Listing public streams are disabled for Zephyr mirroring realms.
-    include_public = include_public and not user_profile.realm.is_zephyr_mirror_realm
+    include_public = include_public and user_profile.can_access_public_streams()
     # Start out with all streams in the realm with subscribers
     query = get_occupied_streams(user_profile.realm)
 

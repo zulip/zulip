@@ -158,11 +158,11 @@ def gather_new_users(user_profile: UserProfile, threshold: datetime.datetime) ->
 
 def gather_new_streams(user_profile: UserProfile,
                        threshold: datetime.datetime) -> Tuple[int, Dict[str, List[Text]]]:
-    if user_profile.realm.is_zephyr_mirror_realm:
-        new_streams = []  # type: List[Stream]
-    else:
+    if user_profile.can_access_public_streams():
         new_streams = list(get_active_streams(user_profile.realm).filter(
             invite_only=False, date_created__gt=threshold))
+    else:
+        new_streams = []
 
     base_url = "%s/#narrow/stream/" % (user_profile.realm.uri,)
 
