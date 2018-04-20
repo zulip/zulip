@@ -541,7 +541,8 @@ def add_dev_login_context(realm: Realm, context: Dict[str, Any]) -> None:
     context['all_realms'] = Realm.objects.all()
 
     context['direct_admins'] = [u for u in users if u.is_realm_admin]
-    context['direct_users'] = [u for u in users if not u.is_realm_admin]
+    context['guest_users'] = [u for u in users if u.is_guest]
+    context['direct_users'] = [u for u in users if not (u.is_realm_admin or u.is_guest)]
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if request.user.is_authenticated:

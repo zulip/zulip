@@ -1862,7 +1862,7 @@ class SubscriptionAPITest(ZulipTestCase):
             set([user1.id, user2.id, self.test_user.id])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 17)
+        self.assertEqual(len(add_peer_event['users']), 18)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
@@ -1893,7 +1893,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 17)
+        self.assertEqual(len(add_peer_event['users']), 18)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)

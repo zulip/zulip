@@ -23,6 +23,15 @@
                         {% else %}
                             <p>No administrators found in this realm</p>
                         {% endif %}
+                        <h2>{{ _('Guest users') }}</h2>
+                        {% if guest_users %}
+                            {% for guest_user in guest_users %}
+                            <p><input type="submit" formaction="{{ guest_user.realm.uri }}{{ url('zerver.views.auth.dev_direct_login') }}?next={{ next }}"
+                                      name="direct_email" class="btn-direct btn-admin" value="{{ guest_user.email }}" /></p>
+                            {% endfor %}
+                        {% else %}
+                            <p>No guest users found in this realm</p>
+                        {% endif %}
                     </div>
 
                     <div class="group">
