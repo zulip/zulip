@@ -65,7 +65,6 @@ import a database dump from one or more JSON files."""
         if subdomain is None:
             print("Enter subdomain!")
             exit(1)
-        check_subdomain_available(subdomain)
 
         if options["destroy_rebuild_database"]:
             print("Rebuilding the database!")
@@ -74,6 +73,8 @@ import a database dump from one or more JSON files."""
         elif not options["import_into_nonempty"]:
             for model in models_to_import:
                 self.new_instance_check(model)
+
+        check_subdomain_available(subdomain)
 
         for path in options['export_files']:
             if not os.path.exists(path):
