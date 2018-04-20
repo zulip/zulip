@@ -11,24 +11,25 @@ var exports = {};
 
 */
 
+var max_size_before_shrinking = 600;
+
 var presence_descriptions = {
     active: 'is active',
     idle:   'is not active',
 };
 
-exports.compare_function = function (a, b) {
-
-    function level(status) {
-        switch (status) {
-            case 'active':
-                return 1;
-            case 'idle':
-                return 2;
-            default:
-                return 3;
-        }
+function level(status) {
+    switch (status) {
+        case 'active':
+            return 1;
+        case 'idle':
+            return 2;
+        default:
+            return 3;
     }
+}
 
+exports.compare_function = function (a, b) {
     var level_a = level(presence.get_status(a));
     var level_b = level(presence.get_status(b));
     var diff = level_a - level_b;
@@ -102,6 +103,21 @@ exports.info_for = function (user_id) {
     };
 };
 
+function user_is_recently_active(user_id) {
+    // return true if the user has a green/orange cirle
+    return level(presence.get_status(user_id)) <= 2;
+}
+
+function maybe_shrink_list(user_ids) {
+    if (user_ids.length <= max_size_before_shrinking) {
+        return user_ids;
+    }
+
+    user_ids = _.filter(user_ids, user_is_recently_active);
+
+    return user_ids;
+}
+
 exports.get_filtered_and_sorted_user_ids = function (filter_text) {
     var user_ids;
 
@@ -115,6 +131,8 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         // filter text is blank, we show only those recently active users.
         user_ids = presence.get_user_ids();
     }
+
+    user_ids = maybe_shrink_list(user_ids);
 
     return exports.sort_users(user_ids);
 };
