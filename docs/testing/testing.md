@@ -9,11 +9,12 @@ important components are documented in depth in their own sections:
 - [Casper](../testing/testing-with-casper.html): end-to-end UI tests
 - [Node](../testing/testing-with-node.html): unit tests for JS front end code
 - [Linters](../testing/linters.html): Our parallel linter suite
-- [Travis CI details](travis.html): How all of these run in Travis CI
+- [CI details](travis.html): How all of these run in CI
+- [Other test suites](#other-test-suites): Our various smaller test suites.
 
 This document covers more general testing issues, such as how to run the
 entire test suite, how to troubleshoot database issues, how to manually
-test the front end, and how to plan for the future upgrade to Python3.
+test the front end, etc.
 
 We also document [how to manually test the app](manual-testing.html).
 
@@ -52,6 +53,50 @@ if you're working on new database migrations.  To do this, run:
 ```
 ./tools/do-destroy-rebuild-test-database
 ```
+
+## Other test suites
+
+Zulip also has about a dozen smaller tests suites:
+
+- `tools/test-migrations`: Checks whether the `zerver/migrations`
+  migration content the models defined in `zerver/models.py`.  See our
+  [schema migration documentation](../subsystems/schema-migrations.html)
+  for details on how to do database migrations correctly.
+- `tools/test-documentation`: Checks for broken links in this
+  ReadTheDocs documentation site.
+- `tools/test-help-documentation`: Checks for broken links in the
+  `/help` user documentation site, and related pages.
+- `tools/test-api`: Tests that the API documentation at `/api`
+  actually works; the actual code for this is defined in
+  `zerver/lib/api_test_helpers.py`.
+- `test-locked-requirements`: Verifies that developers didn't forget
+  to run `tools/update-locked-requirements` after modifying
+  `requirements/*.in`.  See
+  [our dependency documentation](../subsystems/dependencies.html) for
+  details on the system this is verifying.
+- `tools/check-capitalization`: Checks whether translated strings (aka
+  user-facing strings) correctly follow Zulip's capitalization
+  conventions.  This requires some maintainance of an exclude list of
+  proper nouns mentioned in the Zulip project, but helps a lot in
+  avoiding new strings being added that don't match our style.
+- `tools/check-frontend-i18n`: Checks for a common bug in Handlebars
+  templates, of using the wrong syntax for translating blocks
+  containing variables.
+- `./tools/test-run-dev`: Checks that `run-dev.py` starts properly;
+  this helps prevent bugs that break the development environment.
+- `./tools/test-queue-worker-reload`: Verifies that Zulip's queue
+  processors properly reload themselves after code changes.
+- `./tools/optimize-svg`: Checks whether all SVG files for integration
+  logos are properly optimized for size (since we're not going to edit
+  third-party logos, this helps keep the Zulip codebase from getting huge).
+- `./tools/test-tools`: Automated tests for various parts of our
+  development tooling (mostly various linters) that are not used in
+  production.
+
+Each of these has a reason (usually, performance or a need to do messy
+things to the environment) why they are not part of the handful of
+major test suites like `test-backend`, but they all contribute
+something valuable to helping keep Zulip bug-free.
 
 ### Possible testing issues
 
