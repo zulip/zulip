@@ -107,21 +107,26 @@ for index, arg in enumerate(options.args):
 individual_files = options.args
 
 # The index.js test runner is the real "driver" here, and we launch
-# with either istanbul or node, depending on whether we want coverage
-# reports.  Running under istanbul is slower and creates funny
+# with either nyc or node, depending on whether we want coverage
+# reports.  Running under nyc is slower and creates funny
 # tracebacks, so you generally want to get coverage reports only
 # after making sure tests will pass.
+node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
+node_tests_cmd += individual_files
 if options.coverage:
     coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
-    shutil.rmtree(coverage_dir, True)
-    istanbul = os.path.join(ROOT_DIR, 'node_modules/.bin/istanbul')
-    command = [istanbul, 'cover', '--dir', coverage_dir, INDEX_JS]
+    coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
+
+    nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
+    command = [nyc, '--report-dir', coverage_dir]
+    command += ['--temp-directory', coverage_dir, '-r=text-summary']
+    command += node_tests_cmd
+    command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
+    command += ['>', coverage_lcov_file]
 else:
     # Normal testing, no coverage analysis.
     # Run the index.js test runner, which runs all the other tests.
-    command = ['node', '--stack-trace-limit=100', INDEX_JS]
-
-command += individual_files
+    command = node_tests_cmd
 
 print('Starting node tests...')
 
@@ -147,7 +152,7 @@ def check_line_coverage(fn, line_coverage, line_mapping, log=True):
         return False
     return True
 
-NODE_COVERAGE_PATH = 'var/node-coverage/coverage.json'
+NODE_COVERAGE_PATH = 'var/node-coverage/coverage-final.json'
 
 def read_coverage() -> Any:
     coverage_json = None
