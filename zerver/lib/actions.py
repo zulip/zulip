@@ -177,7 +177,7 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
     if stream.is_public():
         return set(active_user_ids(stream.realm_id))
     else:
-        return private_stream_user_ids(stream.id)
+        return private_stream_user_ids(stream.id) | {user.id for user in stream.realm.get_admin_users()}
 
 def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
