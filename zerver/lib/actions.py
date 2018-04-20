@@ -3315,7 +3315,7 @@ def do_update_user_presence(user_profile: UserProfile,
             update_fields.append("status")
         presence.save(update_fields=update_fields)
 
-    if not user_profile.realm.is_zephyr_mirror_realm and (created or became_online):
+    if not user_profile.realm.presence_disabled and (created or became_online):
         # Push event to all users in the realm so they see the new user
         # appear in the presence list immediately, or the newly online
         # user without delay.  Note that we won't send an update here for a
