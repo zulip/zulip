@@ -118,7 +118,7 @@ exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
 
     if ($active_tab.hasClass("admin")) {
-        components.toggle.lookup("settings-toggle").goto("organization", { dont_switch_tab: true });
+        settings_toggle.highlight_toggle('organization');
     }
 
     overlays.open_settings();
