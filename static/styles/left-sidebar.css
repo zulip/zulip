@@ -204,12 +204,16 @@ li.active-sub-filter {
 .conversation-partners,
 .topic-name {
     display: block;
-    line-height: 1.1;
     width: calc(100% - 5px);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     padding-right: 2px;
+}
+
+.topic-name {
+    /* TODO: We should figure out how to remove this without changing the spacing */
+    line-height: 1.1;
 }
 
 .left-sidebar li a.topic-name:hover {
@@ -368,7 +372,7 @@ li.expanded_private_message {
 }
 
 li.expanded_private_message a {
-    margin: 2px 0px;
+    margin: 1px 0px;
 }
 
 .show-all-streams a {
