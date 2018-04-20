@@ -295,6 +295,8 @@ function reset_jquery() {
     $('#user_presences li.user_sidebar_entry.narrow-filter').last = function () {
         return $('li.user_sidebar_entry[data-user-id="' + user_order[user_count - 1] + '"]');
     };
+
+    buddy_list.container = $('#user_presences');
 }
 
 reset_jquery();
@@ -353,11 +355,25 @@ reset_jquery();
     ]);
 }());
 
+function simulate_list_items(items) {
+    const list = {
+        length: items.length,
+        eq: (i) => items[i],
+    };
+    $('#user_presences').set_find_results('li.user_sidebar_entry', list);
+}
+
+function buddy_list_add(user_id, stub) {
+    const sel = `li.user_sidebar_entry[data-user-id='${user_id}']`;
+    $('#user_presences').set_find_results(sel, stub);
+}
+
 (function test_PM_update_dom_counts() {
     const value = $.create('alice-value');
     const count = $.create('alice-count');
     const pm_key = alice.user_id.toString();
-    const li = $("li.user_sidebar_entry[data-user-id='" + pm_key + "']");
+    const li = $.create('alice stub');
+    buddy_list_add(pm_key, li);
     count.set_find_results('.value', value);
     li.set_find_results('.count', count);
     count.set_parent(li);
@@ -566,78 +582,87 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 (function test_insert_one_user_into_empty_list() {
     const alice_li = $.create('alice list item');
 
-    // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
-
     let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
+        buddy_list_add(alice.user_id, alice_li);
     };
 
-    $.stub_selector('#user_presences li', {
-        toArray: () => [],
-    });
+    var removed;
+    const remove_stub = {
+        remove: () => {
+            removed = true;
+        },
+    };
+    buddy_list_add(alice.user_id, remove_stub);
+
+    simulate_list_items([]);
     activity.insert_user_into_list(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
+    assert(removed);
 }());
 
+reset_jquery();
+
 (function test_insert_fred_after_alice() {
+    const alice_li = $.create('alice list item');
     const fred_li = $.create('fred list item');
 
-    // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
+    alice_li.attr('data-user-id', alice.user_id);
 
     let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
+        buddy_list_add(fred.user_id, fred_li);
     };
 
-    $('<fake html for alice>').attr = function (attr_name) {
-        assert.equal(attr_name, 'data-user-id');
-        return alice.user_id;
-    };
-
-    $.stub_selector('#user_presences li', {
-        toArray: function () {
-            return [
-                '<fake html for alice>',
-            ];
+    var removed;
+    const remove_stub = {
+        remove: () => {
+            removed = true;
         },
-    });
+    };
+    buddy_list_add(fred.user_id, remove_stub);
+
+    simulate_list_items([alice_li]);
+
     activity.insert_user_into_list(fred.user_id);
 
     assert(appended_html.indexOf('data-user-id="2"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
+    assert(removed);
 }());
+
+reset_jquery();
 
 (function test_insert_fred_before_jill() {
     const fred_li = $.create('fred-li');
+    const jill_li = $.create('jill-li');
 
-    // These selectors are here to avoid some short-circuit logic.
-    $('#user_presences').set_find_results('[data-user-id="2"]', fred_li);
+    jill_li.attr('data-user-id', jill.user_id);
 
-    $('<fake-dom-for-jill').attr = function (attr_name) {
-        assert.equal(attr_name, 'data-user-id');
-        return jill.user_id;
-    };
-
-    $.stub_selector('#user_presences li', {
-        toArray: function () {
-            return [
-                '<fake-dom-for-jill',
-            ];
-        },
-    });
-
-    let before_html;
-    $('<fake-dom-for-jill').before = function (html) {
+    var before_html;
+    jill_li.before = function (html) {
         before_html = html;
+        buddy_list_add(fred.user_id, fred_li);
     };
+
+    var removed;
+    const remove_stub = {
+        remove: () => {
+            removed = true;
+        },
+    };
+    buddy_list_add(fred.user_id, remove_stub);
+
+    simulate_list_items([jill_li]);
+
     activity.insert_user_into_list(fred.user_id);
 
     assert(before_html.indexOf('data-user-id="2"') > 0);
     assert(before_html.indexOf('user_active') > 0);
+    assert(removed);
 }());
 
 // Reset jquery here.
@@ -750,6 +775,8 @@ $('.user-list-filter').parent = function () {
     activity.update_huddles = function () {};
 }());
 
+reset_jquery();
+
 (function test_set_user_status() {
     const server_time = 500;
     const info = {
@@ -758,19 +785,25 @@ $('.user-list-filter').parent = function () {
             timestamp: server_time,
         },
     };
-    const alice_li = $.create('alice-li');
 
-    $('#user_presences').set_find_results('[data-user-id="1"]', alice_li);
+    buddy_data.matches_filter = () => true;
 
-    $('#user_presences').append = function () {};
+    const alice_li = $.create('alice stub');
+    buddy_list_add(alice.user_id, alice_li);
 
-    $.stub_selector('#user_presences li', {
-        toArray: () => [],
-    });
+    var inserted;
+    buddy_list.insert_or_move = () => {
+        inserted = true;
+    };
+
     presence.presence_info[alice.user_id] = undefined;
     activity.set_user_status(me.email, info, server_time);
+    assert(!inserted);
+
     assert.equal(presence.presence_info[alice.user_id], undefined);
     activity.set_user_status(alice.email, info, server_time);
+    assert(inserted);
+
     const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
     activity.set_user_status(alice.email, info, server_time);

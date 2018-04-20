@@ -1,16 +1,24 @@
 var buddy_list = (function () {
     var self = {};
 
-    self.populate = function (opts) {
-        var user_info = opts.items;
+    self.container_sel = '#user_presences';
+    self.item_sel = 'li.user_sidebar_entry';
 
+    self.items_to_html = function (opts) {
+        var user_info = opts.items;
         var html = templates.render('user_presence_rows', {users: user_info});
-        $('#user_presences').html(html);
+        return html;
+    };
+
+    self.item_to_html = function (opts) {
+        var html = templates.render('user_presence_row', opts.item);
+        return html;
     };
 
     self.find_li = function (opts) {
         var user_id = opts.key;
-        return $("li.user_sidebar_entry[data-user-id='" + user_id + "']");
+        var sel = self.item_sel + "[data-user-id='" + user_id + "']";
+        return self.container.find(sel);
     };
 
     self.get_key_from_li = function (opts) {
@@ -18,33 +26,53 @@ var buddy_list = (function () {
         return user_id;
     };
 
+    // Try to keep code below this line generic, so that we can
+    // extract a widget.
+
+    self.populate = function (opts) {
+        var html = self.items_to_html({items: opts.items});
+        self.container = $(self.container_sel);
+        self.container.html(html);
+    };
+
+    self.maybe_remove_key = function (opts) {
+        var li = self.find_li({key: opts.key});
+        li.remove();
+    };
+
     self.insert_or_move = function (opts) {
-        var user_id = opts.key;
-        var info = opts.item;
+        var key = opts.key;
+        var item = opts.item;
         var compare_function = opts.compare_function;
 
-        $('#user_presences').find('[data-user-id="' + user_id + '"]').remove();
-        var html = templates.render('user_presence_row', info);
+        self.maybe_remove_key({key: key});
+        var html = self.item_to_html({item: item});
 
-        var items = $('#user_presences li').toArray();
+        var list_items = self.container.find(self.item_sel);
 
         function insert() {
             var i = 0;
 
-            for (i = 0; i < items.length; i += 1) {
-                var li = $(items[i]);
-                var list_user_id = li.attr('data-user-id');
-                if (compare_function(user_id, list_user_id) < 0) {
+            for (i = 0; i < list_items.length; i += 1) {
+                var li = list_items.eq(i);
+
+                var list_key = self.get_key_from_li({li: li});
+
+                if (compare_function(key, list_key) < 0) {
                     li.before(html);
                     return;
                 }
             }
 
-            $('#user_presences').append(html);
+            self.container.append(html);
         }
 
         insert();
     };
+
+    // This is a bit of a hack to make sure we at least have
+    // an empty list to start, before we get the initial payload.
+    self.container = $(self.container_sel);
 
     return self;
 }());
