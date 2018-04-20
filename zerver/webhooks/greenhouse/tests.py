@@ -63,4 +63,4 @@ class GreenhouseHookTests(WebhookTestCase):
                                           content_type=self.CONTENT_TYPE)
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("greenhouse", fixture_name, file_type="json")
+        return self.webhook_fixture_data("greenhouse", fixture_name, file_type="json")

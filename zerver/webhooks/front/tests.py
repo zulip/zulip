@@ -180,4 +180,4 @@ class FrontHookTests(WebhookTestCase):
         self.assert_json_error(result, "Unknown webhook request")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data('front', fixture_name, file_type="json")
+        return self.webhook_fixture_data('front', fixture_name, file_type="json")

@@ -56,4 +56,4 @@ class TravisHookTests(WebhookTestCase):
         )
 
     def get_body(self, fixture_name: Text) -> Text:
-        return urllib.parse.urlencode({'payload': self.fixture_data("travis", fixture_name, file_type="json")})
+        return urllib.parse.urlencode({'payload': self.webhook_fixture_data("travis", fixture_name, file_type="json")})

@@ -484,9 +484,7 @@ class TestMissedMessages(ZulipTestCase):
         # Run `relative_to_full_url()` function over test fixtures present in
         # 'markdown_test_cases.json' and check that it converts all the relative
         # URLs to absolute URLs.
-        fixtures_file = os.path.join(settings.DEPLOY_ROOT, "zerver", "tests",
-                                     "fixtures", "markdown_test_cases.json")
-        fixtures = ujson.load(open(fixtures_file))
+        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
         test_fixtures = {}
         for test in fixtures['regular_tests']:
             test_fixtures[test['name']] = test

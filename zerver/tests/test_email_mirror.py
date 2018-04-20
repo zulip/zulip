@@ -325,8 +325,6 @@ class TestReplyExtraction(ZulipTestCase):
 
         self.assertEqual(message.content, 'Reply')
 
-MAILS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "tests", "fixtures", "email")
-
 
 class TestScriptMTA(ZulipTestCase):
 
@@ -338,9 +336,7 @@ class TestScriptMTA(ZulipTestCase):
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
 
-        template_path = os.path.join(MAILS_DIR, "simple.txt")
-        with open(template_path) as template_file:
-            mail_template = template_file.read()
+        mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
         read_pipe, write_pipe = os.pipe()
         os.write(write_pipe, mail.encode())
@@ -356,9 +352,7 @@ class TestScriptMTA(ZulipTestCase):
         sender = self.example_email('hamlet')
         stream = get_stream("Denmark", get_realm("zulip"))
         stream_to_address = encode_email_address(stream)
-        template_path = os.path.join(MAILS_DIR, "simple.txt")
-        with open(template_path) as template_file:
-            mail_template = template_file.read()
+        mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=stream_to_address, sender=sender)
         read_pipe, write_pipe = os.pipe()
         os.write(write_pipe, mail.encode())
@@ -399,9 +393,7 @@ class TestEmailMirrorTornadoView(ZulipTestCase):
     @mock.patch('zerver.lib.email_mirror.queue_json_publish')
     def send_offline_message(self, to_address: str, sender: str,
                              mock_queue_json_publish: mock.Mock) -> HttpResponse:
-        template_path = os.path.join(MAILS_DIR, "simple.txt")
-        with open(template_path) as template_file:
-            mail_template = template_file.read()
+        mail_template = self.fixture_data('simple.txt', type='email')
         mail = mail_template.format(stream_to_address=to_address, sender=sender)
 
         def check_queue_json_publish(queue_name: str,

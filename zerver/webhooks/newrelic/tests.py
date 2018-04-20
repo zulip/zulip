@@ -23,4 +23,4 @@ Description sent via curl\n\nChangelog string'
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("newrelic", fixture_name, file_type="txt")
+        return self.webhook_fixture_data("newrelic", fixture_name, file_type="txt")

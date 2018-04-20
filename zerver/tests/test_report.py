@@ -153,9 +153,6 @@ class TestReport(ZulipTestCase):
         annotate.assert_called_once_with('"trace"')
 
     def test_report_csp_violations(self) -> None:
-        fixture_data_file = open(os.path.join(os.path.dirname(__file__),
-                                 'fixtures/csp_report.json'), 'r')
-        fixture_data = ujson.load(fixture_data_file)
-        params = ujson.dumps(fixture_data)
-        result = self.client_post("/report/csp_violations", params, content_type="application/json")
+        fixture_data = self.fixture_data('csp_report.json')
+        result = self.client_post("/report/csp_violations", fixture_data, content_type="application/json")
         self.assert_json_success(result)

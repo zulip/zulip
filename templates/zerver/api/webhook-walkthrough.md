@@ -241,7 +241,7 @@ class HelloWorldHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("helloworld", fixture_name, file_type="json")
+        return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
 
 ```
 
@@ -260,7 +260,7 @@ value from the fixture. If these don't match, the test will fail.
  you would provide a webhook URL to the 3rd party service. `api_key={api_key}` says
 that an API key is expected.
 
-In `get_body`, the first argument in the call to `self.fixture_data` specifies the
+In `get_body`, the first argument in the call to `self.webhook_fixture_data` specifies the
 prefix of your fixture file names, and `file_type` their type. Common types are
 `json` and `txt`.
 
@@ -504,7 +504,7 @@ class QuerytestHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("querytest", fixture_name, file_type="json")
+        return self.webhook_fixture_data("querytest", fixture_name, file_type="json")
 ```
 
 You can also override `get_body` if your test data needs to be constructed in

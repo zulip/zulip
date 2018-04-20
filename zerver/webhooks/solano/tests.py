@@ -58,4 +58,4 @@ class SolanoHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name, file_type="json")
+        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name, file_type="json")

@@ -16,4 +16,4 @@ class HerokuHookTests(WebhookTestCase):
                                           content_type="application/x-www-form-urlencoded")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("heroku", fixture_name, file_type="txt")
+        return self.webhook_fixture_data("heroku", fixture_name, file_type="txt")

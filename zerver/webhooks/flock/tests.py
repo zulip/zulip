@@ -87,4 +87,4 @@ class FlockHookTests(WebhookTestCase):
                                           content_type="application/json")
 
     def get_body(self, fixture_name: Text) -> Text:
-        return self.fixture_data("flock", fixture_name, file_type="json")
+        return self.webhook_fixture_data("flock", fixture_name, file_type="json")

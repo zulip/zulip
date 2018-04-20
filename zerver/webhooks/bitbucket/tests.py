@@ -75,4 +75,4 @@ class BitbucketHookTests(WebhookTestCase):
         self.assert_json_success(result)
 
     def get_body(self, fixture_name: Text) -> Union[Text, Dict[str, Text]]:
-        return self.fixture_data(self.FIXTURE_DIR_NAME, fixture_name)
+        return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)

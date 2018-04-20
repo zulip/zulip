@@ -89,4 +89,4 @@ class WordPressHookTests(WebhookTestCase):
         self.assert_json_error(result, "Unknown WordPress webhook action: WordPress Action")
 
     def get_body(self, fixture_name: str) -> str:
-        return self.fixture_data("wordpress", fixture_name, file_type="txt")
+        return self.webhook_fixture_data("wordpress", fixture_name, file_type="txt")

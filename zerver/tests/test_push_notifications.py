@@ -43,7 +43,6 @@ from zilencer.models import RemoteZulipServer, RemotePushDeviceToken
 from django.utils.timezone import now
 
 ZERVER_DIR = os.path.dirname(os.path.dirname(__file__))
-FIXTURES_FILE_PATH = os.path.join(ZERVER_DIR, "tests", "fixtures", "markdown_test_cases.json")
 
 class BouncerTestCase(ZulipTestCase):
     def setUp(self) -> None:
@@ -1245,8 +1244,7 @@ class TestReceivesNotificationsFunctions(ZulipTestCase):
 
 class TestPushNotificationsContent(ZulipTestCase):
     def test_fixtures(self) -> None:
-        with open(FIXTURES_FILE_PATH) as fp:
-            fixtures = ujson.load(fp)
+        fixtures = ujson.loads(self.fixture_data("markdown_test_cases.json"))
         tests = fixtures["regular_tests"]
         for test in tests:
             if "text_content" in test:
