@@ -88,7 +88,7 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     (function test_remove() {
         let bot;
 
-        bot_data.add({ ...test_bot, is_active: true });
+        bot_data.add(_.extend(test_bot, { is_active: true }));
 
         bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
@@ -101,7 +101,7 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     (function test_delete() {
         let bot;
 
-        bot_data.add({ ...test_bot, is_active: true });
+        bot_data.add(_.extend(test_bot, { test_bot, is_active: true }));
 
         bot = bot_data.get(43);
         assert.equal('Bot 1', bot.full_name);
@@ -114,12 +114,12 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     (function test_owner_can_admin() {
         let bot;
 
-        bot_data.add({owner: 'owner@zulip.com', ...test_bot});
+        bot_data.add(_.extend({owner: 'owner@zulip.com'}, test_bot));
 
         bot = bot_data.get(43);
         assert(bot.can_admin);
 
-        bot_data.add({owner: 'notowner@zulip.com', ...test_bot});
+        bot_data.add(_.extend({owner: 'notowner@zulip.com'}, test_bot));
 
         bot = bot_data.get(43);
         assert.equal(false, bot.can_admin);
@@ -139,9 +139,9 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
     (function test_get_editable() {
         let can_admin;
 
-        bot_data.add({...test_bot ,user_id: 44, owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true});
-        bot_data.add({...test_bot, user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true});
+        bot_data.add(_.extend(test_bot, {user_id: 44, owner: 'owner@zulip.com', is_active: true}));
+        bot_data.add(_.extend(test_bot, {user_id: 45, email: 'bot2@zulip.com', owner: 'owner@zulip.com', is_active: true}));
+        bot_data.add(_.extend(test_bot, {user_id: 46, email: 'bot3@zulip.com', owner: 'not_owner@zulip.com', is_active: true}));
 
         can_admin = _.pluck(bot_data.get_editable(), 'email');
         assert.deepEqual(['bot1@zulip.com', 'bot2@zulip.com'], can_admin);
