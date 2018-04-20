@@ -16,3 +16,11 @@ Receive GitLab notifications in Zulip!
 {!congrats.md!}
 
 ![](/static/images/integrations/gitlab/001.png)
+
+!!! tip ""
+    If your GitLab server and your Zulip server are on a local network
+    together, and you're running GitLab 10.5 or newer, you may need to enable
+    GitLab's "Allow requests to the local network from hooks and
+    services" setting (by default, recent GitLab versions refuse to post
+    webhook events to servers on the local network).  You can find this
+    setting near the bottom of the GitLab "Settings" page in the "Admin area".
