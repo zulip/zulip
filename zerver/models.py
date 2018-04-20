@@ -587,6 +587,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, db_index=True)  # type: bool
     is_realm_admin = models.BooleanField(default=False, db_index=True)  # type: bool
     is_bot = models.BooleanField(default=False, db_index=True)  # type: bool
+    is_guest = models.BooleanField(default=False, db_index=True)  # type: bool
     bot_type = models.PositiveSmallIntegerField(null=True, db_index=True)  # type: Optional[int]
     is_api_super_user = models.BooleanField(default=False, db_index=True)  # type: bool
     date_joined = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
