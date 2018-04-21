@@ -307,7 +307,7 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
 
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
-    var results = util.prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    var results = util.emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
 

@@ -8,6 +8,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');
+zrequire('emoji_picker');
 zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');

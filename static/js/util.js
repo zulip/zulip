@@ -254,6 +254,19 @@ exports.prefix_sort = function (query, objs, get_item) {
              rest:    noMatch };
 };
 
+// manipulate prefix_sort to select popular emojis first
+exports.emoji_prefix_sort = function (query, objs, get_item) {
+    var prefix_sort = exports.prefix_sort(query, objs, get_item);
+    var popular_emojis = [];
+    var sorted_emojis = [];
+    prefix_sort.matches.forEach(function (obj) {
+        var list_select = emoji_picker.frequently_used_emojis_list.includes(obj.codepoint) ?
+                          popular_emojis : sorted_emojis;
+        list_select.push(obj);
+    });
+    return { matches: popular_emojis.concat(sorted_emojis), rest: prefix_sort.rest };
+};
+
 return exports;
 
 }());
