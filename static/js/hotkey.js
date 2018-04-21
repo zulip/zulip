@@ -305,11 +305,6 @@ exports.process_enter_key = function (e) {
     }
 
     if (exports.processing_text()) {
-        if (activity.searching()) {
-            activity.blur_search();
-            return true;
-        }
-
         if (stream_list.searching()) {
             // This is sort of funny behavior, but I think
             // the intention is that we want it super easy
