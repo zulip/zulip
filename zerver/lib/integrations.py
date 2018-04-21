@@ -383,7 +383,8 @@ INTEGRATIONS = {
                               doc='zerver/integrations/email.md'),
     'errbot': Integration('errbot', 'errbot', ['meta-integration', 'bots'],
                           doc='zerver/integrations/errbot.md'),
-    'git': Integration('git', 'git', ['version-control'], doc='zerver/integrations/git.md'),
+    'git': Integration('git', 'git', ['version-control'],
+                       stream_name='commits', doc='zerver/integrations/git.md'),
     'google-calendar': Integration(
         'google-calendar',
         'google-calendar',
