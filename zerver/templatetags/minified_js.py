@@ -27,19 +27,3 @@ class MinifiedJSNode(Node):
         script_tags = ['<script type="text/javascript" src="%s" charset="utf-8"></script>'
                        % url for url in script_urls]
         return '\n'.join(script_tags)
-
-
-@register.tag
-def minified_js(parser: Parser, token: Token) -> MinifiedJSNode:
-    try:
-        tag_name, sourcefile = token.split_contents()
-    except ValueError:
-        raise TemplateSyntaxError("%s token requires an argument" % (token,))
-    if not (sourcefile[0] == sourcefile[-1] and sourcefile[0] in ('"', "'")):
-        raise TemplateSyntaxError("%s tag should be quoted" % (tag_name,))
-
-    sourcefile = sourcefile[1:-1]
-    if sourcefile not in settings.JS_SPECS:
-        raise TemplateSyntaxError("%s tag invalid argument: no JS file %s"
-                                  % (tag_name, sourcefile))
-    return MinifiedJSNode(sourcefile)
