@@ -47,6 +47,7 @@ function _setup_page() {
         can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
         realm_allow_message_deleting: page_params.realm_allow_message_deleting,
         realm_allow_message_editing: page_params.realm_allow_message_editing,
+        realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
         realm_message_content_edit_limit_minutes:
             Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         realm_message_content_delete_limit_minutes:
@@ -71,6 +72,7 @@ function _setup_page() {
     options.admin_settings_label = {
         // Organization settings
         realm_allow_message_editing: i18n.t("Users can edit their messages"),
+        realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
         realm_allow_edit_history: i18n.t("Enable message edit history"),
         realm_mandatory_topics: i18n.t("Require topics in stream messages"),
         realm_inline_image_preview: i18n.t("Show previews of uploaded and linked images"),

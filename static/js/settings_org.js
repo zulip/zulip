@@ -24,6 +24,9 @@ var org_settings = {
         allow_edit_history: {
             type: 'bool',
         },
+        allow_community_topic_editing: {
+            type: 'bool',
+        },
     },
     msg_feed: {
         inline_image_preview: {
