@@ -470,22 +470,23 @@ casper.waitForSelector('#user_presences .highlighted_user', function () {
 
 // Use arrow keys to navigate through suggestions
 casper.then(function () {
-    // Down: Cordelia -> Hamlet
-    casper.sendKeys('.user-list-filter', casper.page.event.key.Down, {keepFocus: true});
-    // Up: Hamlet -> Cordelia
-    casper.sendKeys('.user-list-filter', casper.page.event.key.Up, {keepFocus: true});
-    // Up: Cordelia -> aaron
-    casper.sendKeys('.user-list-filter', casper.page.event.key.Up, {keepFocus: true});
+    function arrow(key) {
+        casper.sendKeys('.user-list-filter',
+                        casper.page.event.key[key],
+                        {keepFocus: true});
+    }
+    arrow('Down'); // Cordelia -> Hamlet
+    arrow('Up'); // Hamlet -> Cordelia
+    arrow('Up'); // already at top
+    arrow('Down'); // Cordelia -> Hamlet
 });
 
-casper.waitForSelector('#user_presences li.highlighted_user [data-name="aaron"]', function () {
+casper.waitForSelector('#user_presences li.highlighted_user [data-name="King Hamlet"]', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
     casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
         'User Cordelia Lear not is selected');
-    casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
-        'User King Hamlet is not selected');
-    casper.test.assertExist('#user_presences li.highlighted_user [data-name="aaron"]',
-        'User aaron is selected');
+    casper.test.assertExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
+        'User King Hamlet is selected');
 });
 
 common.then_log_out();

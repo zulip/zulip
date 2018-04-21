@@ -32,7 +32,7 @@ var user_search = function (opts) {
 
         $input.val('');
         $input.blur();
-        opts.update_list();
+        opts.reset_items();
     };
 
     self.escape_search = function () {
@@ -87,7 +87,6 @@ var user_search = function (opts) {
         self.expand_column();
         self.show_widget();
         $input.focus();
-        opts.initialize_list_for_search();
     };
 
     self.toggle_filter_displayed = function () {
@@ -99,7 +98,7 @@ var user_search = function (opts) {
     };
 
     function on_focus(e) {
-        opts.initialize_list_for_search();
+        opts.on_focus();
         e.stopPropagation();
     }
 
@@ -107,7 +106,7 @@ var user_search = function (opts) {
     $('#userlist-header').on('click', self.toggle_filter_displayed);
 
     $input.on('input', opts.update_list);
-    $input.on('click', on_focus);
+    $input.on('focus', on_focus);
 
     return self;
 };

@@ -224,6 +224,9 @@ exports.make_new_elem = function (selector, opts) {
             if (arg === ':visible') {
                 return shown;
             }
+            if (arg === ':focus') {
+                return focused;
+            }
             return self;
         },
         is_focused: function () {

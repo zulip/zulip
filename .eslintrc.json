@@ -146,6 +146,7 @@
         "user_search": false,
         "buddy_data": false,
         "buddy_list": false,
+        "list_cursor": false,
         "activity": false,
         "invite": false,
         "colorspace": false,

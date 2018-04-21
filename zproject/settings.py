@@ -1138,6 +1138,7 @@ JS_SPECS = {
             'js/user_search.js',
             'js/buddy_data.js',
             'js/buddy_list.js',
+            'js/list_cursor.js',
             'js/activity.js',
             'js/user_events.js',
             'js/colorspace.js',
