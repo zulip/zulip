@@ -31,8 +31,10 @@ with test_server_running(options.force, external_host, log_file=LOG_FILE,
                                    cwd='tools/documentation_crawler')
     ret_api_doc = subprocess.call(('scrapy', 'crawl_with_status', 'api_documentation_crawler'),
                                   cwd='tools/documentation_crawler')
+    ret_portico_doc = subprocess.call(('scrapy', 'crawl_with_status', 'portico_documentation_crawler'),
+                                      cwd='tools/documentation_crawler')
 
-if ret_help_doc != 0 or ret_api_doc != 0:
+if ret_help_doc != 0 or ret_api_doc != 0 or ret_portico_doc != 0:
     print("\033[0;91m")
     print("Failed")
     print("\033[0m")
@@ -42,4 +44,4 @@ else:
     print("\033[0m")
 
 
-sys.exit(ret_help_doc or ret_api_doc)
+sys.exit(ret_help_doc or ret_api_doc or ret_portico_doc)
