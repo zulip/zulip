@@ -306,7 +306,7 @@ exports.update_streams_sidebar = function () {
     $('#stream_filters li.highlighted_stream').removeClass('highlighted_stream');
     if (exports.searching()) {
         var all_streams = $('#stream_filters li.narrow-filter');
-        exports.highlight_first(all_streams, 'highlighted_stream');
+        exports.highlight_first(all_streams);
     }
 
     if (! narrow_state.active()) {
@@ -452,7 +452,7 @@ function focus_stream_filter(e) {
     if ($('#stream_filters li.narrow-filter.highlighted_stream').length === 0) {
         // Highlight
         var all_streams = $('#stream_filters li.narrow-filter');
-        exports.highlight_first(all_streams, 'highlighted_stream');
+        exports.highlight_first(all_streams);
     }
     e.stopPropagation();
 }
@@ -480,7 +480,7 @@ function keydown_enter_key() {
 
 function keydown_stream_filter(e) {
     exports.keydown_filter(e, '#stream_filters li.narrow-filter',
-     $('#stream-filters-container'), 'highlighted_stream', keydown_enter_key);
+     $('#stream-filters-container'), keydown_enter_key);
 }
 
 function actually_update_streams_for_search() {
@@ -575,7 +575,7 @@ exports.initiate_search = function () {
 
     // Highlight first result
     var all_streams = $('#stream_filters li.narrow-filter');
-    exports.highlight_first(all_streams, 'highlighted_stream');
+    exports.highlight_first(all_streams);
 };
 
 exports.clear_and_hide_search = function () {
@@ -595,16 +595,13 @@ function next_sibing_in_dir(elm, dir_up) {
     return elm.next();
 }
 
-function keydown_arrow_key(dir_up, all_streams_selector,
-                           scroll_container, highlighting_class) {
+function keydown_arrow_key(dir_up, all_streams_selector, scroll_container) {
     // Are there streams to cyle through?
     if ($(all_streams_selector).length > 0) {
-        var current_sel = $(all_streams_selector + '.' + highlighting_class).expectOne();
+        var current_sel = $(all_streams_selector + '.highlighted_stream').expectOne();
         var next_sibling = next_sibing_in_dir(current_sel, dir_up);
 
-        if (highlighting_class === 'highlighted_stream'
-            && next_sibling.is('hr.stream-split')) {
-            // Only for the left sidebar
+        if (next_sibling.is('hr.stream-split')) {
             // Skip separator
             next_sibling = next_sibing_in_dir(next_sibling, dir_up);
         }
@@ -622,20 +619,15 @@ function keydown_arrow_key(dir_up, all_streams_selector,
         }
 
         // Classes must be explicitly named
-        if (highlighting_class === 'highlighted_stream') {
-            current_sel.removeClass('highlighted_stream');
-            next_sibling.addClass('highlighted_stream');
-        } else if (highlighting_class === 'highlighted_user') {
-            current_sel.removeClass('highlighted_user');
-            next_sibling.addClass('highlighted_user');
-        }
+        current_sel.removeClass('highlighted_stream');
+        next_sibling.addClass('highlighted_stream');
 
         exports.scroll_element_into_container(next_sibling, scroll_container);
     }
 }
 
 exports.keydown_filter = function (e, all_streams_selector, scroll_container,
-                                   highlighting_class, enter_press_function) {
+                                   enter_press_function) {
     // Function for left and right sidebar
     // Could be placed somewhere else but ui.js is already very full
 
@@ -651,15 +643,13 @@ exports.keydown_filter = function (e, all_streams_selector, scroll_container,
         }
         case 38: {
             // Up-arrow key was pressed
-            keydown_arrow_key(true, all_streams_selector,
-                              scroll_container, highlighting_class);
+            keydown_arrow_key(true, all_streams_selector, scroll_container);
             handled = true;
             break;
         }
         case 40: {
             // Down-arrow key was pressed
-            keydown_arrow_key(false, all_streams_selector,
-                              scroll_container, highlighting_class);
+            keydown_arrow_key(false, all_streams_selector, scroll_container);
             handled = true;
             break;
         }
@@ -675,14 +665,10 @@ exports.keydown_filter = function (e, all_streams_selector, scroll_container,
     }
 };
 
-exports.highlight_first = function (all_streams, highlighting_class) {
+exports.highlight_first = function (all_streams) {
     if (all_streams.length > 0) {
         // Classes must be explicitly named
-        if (highlighting_class === 'highlighted_stream') {
-            all_streams.first().addClass('highlighted_stream');
-        } else if (highlighting_class === 'highlighted_user') {
-            all_streams.first().addClass('highlighted_user');
-        }
+        all_streams.first().addClass('highlighted_stream');
     }
 };
 
