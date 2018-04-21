@@ -1,30 +1,31 @@
-{!download-python-bindings.md!}
+Get Zulip notifications for your Git repositories!
 
-{!create-stream.md!}
+1. {!create-a-bot-indented.md!}
 
-{!change-zulip-config-file.md!}
+1. {!download-python-bindings.md!}
 
-You can also specify which pushes will result in notifications and to
-what stream the notifications will be sent by modifying the
-`commit_notice_destination` function in `zulip_git_config.py`. By
-default, pushes to the `master` and `test-post-receive` branches will
-result in a notification to the stream `commits`.
+1. {!create-stream.md!}
 
-Save `integrations/git/zulip_git_config.py` to the `.git/hooks`
-directory of your git repository.
+1. {!change-zulip-config-file-indented.md!}
 
-Symlink `/usr/local/share/zulip/integrations/git/post-receive` to
-the `.git/hooks` directory of your git repository.
+    You may also need to change the value of `STREAM_NAME`.
 
-Whenever you make a push to the `master` branch of your git repository
-(or whatever you configured above), the Zulip git plugin will send an
-automated notification.
+    You can specify the branches that will be used for notifications by modifying
+    the `commit_notice_destination` function. By default,
+    pushes to the `master` and `test-post-receive` branches will result in a
+    notification.
+
+1. Symlink `/usr/local/share/zulip/integrations/git/zulip_git_config.py`
+   to the `.git/hooks` directory of your git repository.
+
+1. Symlink `/usr/local/share/zulip/integrations/git/post-receive`
+   to the `.git/hooks` directory of your git repository.
+
+!!! tip ""
+
+    You can test the plugin without changing your `master` branch by
+    pushing to the `test-post-receive` branch.
 
 {!congrats.md!}
 
 ![](/static/images/integrations/git/001.png)
-
-**Testing**
-
-You can test the plugin without changing your `master` branch by
-pushing to the `test-post-receive` branch.
