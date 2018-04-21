@@ -93,6 +93,8 @@ def find(fns):
                         continue
                     elif 'stream_dark' in line:
                         continue
+                    elif 'opts.' in line:
+                        continue
                     elif fn == 'signup.js' and 'class_to_add' in line:
                         html_classes = ['error', 'success']
                     elif fn == 'ui_report.js' and 'status_classes' in line:
