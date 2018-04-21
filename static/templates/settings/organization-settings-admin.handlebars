@@ -29,6 +29,12 @@
                       value="{{ realm_message_content_edit_limit_minutes }}"/>
                 </div>
 
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_allow_community_topic_editing"
+                  "prefix" "id_"
+                  "is_checked" realm_allow_community_topic_editing
+                  "label" admin_settings_label.realm_allow_community_topic_editing}}
+
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="inline-block dropdown-title">{{t "Allow message deleting" }}</label>
                     <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
