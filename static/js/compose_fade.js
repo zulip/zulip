@@ -37,7 +37,7 @@ exports.set_focused_recipient = function (msg_type) {
     }
 };
 
-function _display_messages_normally() {
+function display_messages_normally() {
     var table = rows.get_table(current_msg_list.table_name);
     table.find('.recipient_row').removeClass("message-fade");
 
@@ -53,7 +53,7 @@ function change_fade_state(elt, should_fade_group) {
     }
 }
 
-function _fade_messages() {
+function fade_messages() {
     var i;
     var first_message;
     var first_row;
@@ -170,7 +170,7 @@ function fade_users(items, conf) {
     });
 }
 
-function _want_normal_display() {
+function want_normal_display() {
     // If we're not composing show a normal display.
     if (focused_recipient === undefined) {
         return true;
@@ -199,7 +199,7 @@ function _want_normal_display() {
 exports.update_one_user_row = function (item) {
     var conf = user_fade_config;
 
-    if (_want_normal_display()) {
+    if (want_normal_display()) {
         conf.unfade(item);
     } else {
         update_user_row_when_fading(item, conf);
@@ -209,13 +209,13 @@ exports.update_one_user_row = function (item) {
 function do_update_all() {
     var user_items = buddy_list.get_items();
 
-    if (_want_normal_display()) {
+    if (want_normal_display()) {
         if (!normal_display) {
-            _display_messages_normally();
+            display_messages_normally();
             display_users_normally(user_items, user_fade_config);
         }
     } else {
-        _fade_messages();
+        fade_messages();
         fade_users(user_items, user_fade_config);
     }
 }
@@ -226,7 +226,7 @@ function do_update_all() {
 exports.update_faded_users = function () {
     var user_items = buddy_list.get_items();
 
-    if (_want_normal_display()) {
+    if (want_normal_display()) {
         display_users_normally(user_items, user_fade_config);
     } else {
         fade_users(user_items, user_fade_config);
@@ -243,24 +243,24 @@ exports.start_compose = function (msg_type) {
 
 exports.clear_compose = function () {
     focused_recipient = undefined;
-    _display_messages_normally();
+    display_messages_normally();
     exports.update_faded_users();
 };
 
 exports.update_message_list = function () {
-    if (_want_normal_display()) {
-       _display_messages_normally();
+    if (want_normal_display()) {
+       display_messages_normally();
     } else {
-        _fade_messages();
+        fade_messages();
     }
 };
 
 exports.update_rendered_message_groups = function (message_groups, get_element) {
-    if (_want_normal_display()) {
+    if (want_normal_display()) {
         return;
     }
 
-    // This loop is superficially similar to some code in _fade_messages, but an
+    // This loop is superficially similar to some code in fade_messages, but an
     // important difference here is that we look at each message individually, whereas
     // the other code takes advantage of blocks beneath recipient bars.
     _.each(message_groups, function (message_group) {
