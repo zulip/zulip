@@ -53,6 +53,8 @@ set_global('keydown_util', {
     },
 });
 
+set_global('compose_state', {});
+
 set_global('stream_list', {
     scroll_element_into_container: () => {},
 });
@@ -127,8 +129,6 @@ people.add_in_realm(norbert);
 people.add_in_realm(zoe);
 people.add_in_realm(me);
 people.initialize_current_user(me.user_id);
-
-compose_fade.update_faded_users = () => {};
 
 const real_update_huddles = activity.update_huddles;
 activity.update_huddles = () => {};
@@ -298,6 +298,9 @@ reset_setup();
 
 (function test_presence_list_full_update() {
     $('.user-list-filter').focus();
+    compose_state.recipient = () => fred.email;
+    compose_fade.set_focused_recipient("private");
+
     const users = activity.build_user_sidebar();
     assert.deepEqual(users, [{
             name: 'Fred Flintstone',
@@ -306,6 +309,7 @@ reset_setup();
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
+            faded: false,
         },
         {
             name: 'Jill Hill',
@@ -314,6 +318,7 @@ reset_setup();
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
+            faded: true,
         },
         {
             name: 'Norbert Oswald',
@@ -322,6 +327,7 @@ reset_setup();
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
+            faded: true,
         },
         {
             name: 'Zoe Yang',
@@ -330,6 +336,7 @@ reset_setup();
             num_unread: 0,
             type: 'active',
             type_desc: 'is active',
+            faded: true,
         },
         {
             name: 'Alice Smith',
@@ -338,6 +345,7 @@ reset_setup();
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
+            faded: true,
         },
         {
             name: 'Marky Mark',
@@ -346,6 +354,7 @@ reset_setup();
             num_unread: 0,
             type: 'idle',
             type_desc: 'is not active',
+            faded: true,
         },
     ]);
 }());
