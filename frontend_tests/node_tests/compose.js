@@ -868,27 +868,27 @@ function test_raw_file_drop(raw_drop_func) {
     var keyup_handler_func = $(selector).get_on_handler('keyup');
 
     var set_focused_recipient_checked = false;
-    var update_faded_messages_checked = false;
+    var update_all_called = false;
 
     global.compose_fade = {
         set_focused_recipient: function (msg_type) {
             assert.equal(msg_type, 'private');
             set_focused_recipient_checked = true;
         },
-        update_faded_messages: function () {
-            update_faded_messages_checked = true;
+        update_all: function () {
+            update_all_called = true;
         },
     };
 
     compose_state.set_message_type(false);
     keyup_handler_func();
     assert(!set_focused_recipient_checked);
-    assert(!update_faded_messages_checked);
+    assert(!update_all_called);
 
     compose_state.set_message_type('private');
     keyup_handler_func();
     assert(set_focused_recipient_checked);
-    assert(update_faded_messages_checked);
+    assert(update_all_called);
 }());
 
 (function test_trigger_submit_compose_form() {

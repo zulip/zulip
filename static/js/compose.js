@@ -107,7 +107,7 @@ function update_fade() {
 
     var msg_type = compose_state.get_message_type();
     compose_fade.set_focused_recipient(msg_type);
-    compose_fade.update_faded_messages();
+    compose_fade.update_all();
 }
 
 exports.abort_xhr = function () {
