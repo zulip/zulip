@@ -120,12 +120,13 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
             if streams_to_subscribe is not None:
                 prereg_user.streams.set(streams_to_subscribe)
 
-        return redirect("".join((
+        confirmation_link = "".join((
             create_confirmation_link(prereg_user, request.get_host(), Confirmation.USER_REGISTRATION),
             '?full_name=',
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
-            urllib.parse.quote_plus(full_name.encode('utf8')))))
+            urllib.parse.quote_plus(full_name.encode('utf8'))))
+        return redirect(confirmation_link)
     else:
         url = reverse('register')
         return render(request,
