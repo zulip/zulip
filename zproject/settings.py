@@ -40,7 +40,9 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key: str) -> Optional[str]:
+def get_secret(key: str, development_only=False) -> Optional[str]:
+    if development_only and PRODUCTION:
+        return None
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
     return None
@@ -134,8 +136,9 @@ DEFAULT_SETTINGS = {
     'AUTH_LDAP_SERVER_URI': "",
     'LDAP_EMAIL_ATTR': None,
 
-    # Social auth
-    'SOCIAL_AUTH_GITHUB_KEY': None,
+    # Social auth; we support providing values for some of these
+    # settings in zulip-secrets.conf instead of settings.py in development.
+    'SOCIAL_AUTH_GITHUB_KEY': get_secret('social_auth_github_key', development_only=True),
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
 
