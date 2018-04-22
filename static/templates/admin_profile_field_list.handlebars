@@ -11,10 +11,10 @@
     </td>
     {{#if ../can_modify}}
     <td>
-        <button class="button rounded small delete btn-danger" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
+        <button class="button rounded small delete" title="{{t 'Delete' }}" data-profile-field-id="{{id}}">
             <i class="icon-vector-trash"></i>
         </button>
-        <button class="button rounded small btn-warning open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
+        <button class="button rounded small open-edit-form" title="{{t 'Edit' }}" data-profile-field-id="{{id}}">
             <i class="icon-vector-pencil"></i>
         </button>
     </td>
@@ -35,7 +35,7 @@
                 <button type="button" class="button rounded sea-green submit">
                     {{t 'Save changes' }}
                 </button>
-                <button type="button" class="button rounded btn-danger reset">
+                <button type="button" class="button rounded reset">
                     {{t 'Cancel' }}
                 </button>
             </div>
