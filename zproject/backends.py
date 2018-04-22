@@ -362,8 +362,8 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 class ZulipRemoteUserBackend(RemoteUserBackend):
     create_unknown_user = False
 
-    def authenticate(self, remote_user: Optional[str],
-                     realm: Optional[Realm]=None) -> Optional[UserProfile]:
+    def authenticate(self, remote_user: Optional[str], realm: Optional[Realm]=None,
+                     return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
         assert remote_user is not None
         if realm is None:
             return None
@@ -371,7 +371,7 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
             return None
 
         email = remote_user_to_email(remote_user)
-        return common_get_active_user(email, realm)
+        return common_get_active_user(email, realm, return_data=return_data)
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass

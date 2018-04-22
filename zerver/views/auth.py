@@ -214,11 +214,14 @@ def remote_user_sso(request: HttpRequest,
     realm = get_realm(subdomain)
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
-    user_profile = authenticate(remote_user=remote_user, realm=realm)
+    return_data = {}
+    user_profile = authenticate(remote_user=remote_user, realm=realm,
+                                return_data=return_data)
 
     redirect_to = request.GET.get('next', '')
 
     return login_or_register_remote_user(request, remote_user, user_profile,
+                                         invalid_subdomain = bool(return_data.get("invalid_subdomain")),
                                          mobile_flow_otp=mobile_flow_otp,
                                          redirect_to=redirect_to)
 
