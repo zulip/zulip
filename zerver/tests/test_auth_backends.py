@@ -519,7 +519,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
+        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args: Any, **kwargs: Any) -> None:
@@ -532,6 +532,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
             email = 'nonexisting@phantom.com'
             response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+            result = self.client_get(result.url)
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('Your email address, {}, is not '
                                     'in one of the domains that are allowed to register '
@@ -543,7 +547,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
+        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args: Any, **kwargs: Any) -> None:
@@ -557,6 +561,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
             name = "Ghost"
             response = dict(email=email, name=name)
             result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+            result = self.client_get(result.url)
             confirmation = Confirmation.objects.all().first()
             confirmation_key = confirmation.confirmation_key
             self.assertIn('do_confirm/' + confirmation_key, result.url)
@@ -587,7 +595,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '1'}
+        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args: Any, **kwargs: Any) -> None:
@@ -600,6 +608,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
             email = self.example_email("hamlet")
             response = dict(email=email, name='Hamlet')
             result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+            result = self.client_get(result.url)
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('hamlet@zulip.com already has an account',
                                     result)
@@ -610,7 +622,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         request.session = {}
         request.user = self.user_profile
         self.backend.strategy.request = request
-        session_data = {'subdomain': Realm.SUBDOMAIN_FOR_ROOT_DOMAIN, 'is_signup': '0'}
+        session_data = {'subdomain': 'zulip', 'is_signup': '0'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args: Any, **kwargs: Any) -> None:
@@ -623,6 +635,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
             email = 'nonexisting@phantom.com'
             response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+            result = self.client_get(result.url)
             self.assert_in_response(
                 'action="/register/"', result)
             self.assert_in_response('No account found for',

@@ -67,8 +67,7 @@ def create_preregistration_user(email: Text, request: HttpRequest, realm_creatio
 
 def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Text='',
                                password_required: bool=True) -> HttpResponse:
-
-    realm = get_realm_from_request(request)
+    realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
     multiuse_obj = None
     streams_to_subscribe = None
