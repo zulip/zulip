@@ -24,7 +24,7 @@
         var page_params = {debug_mode: false};
         </script>
         {% endblock %}
-        {{ render_bundle('common') }}
+        {{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce)) }}
         {% block customhead %}
         {% endblock %}
 
