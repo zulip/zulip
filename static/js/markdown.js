@@ -387,7 +387,7 @@ exports.initialize = function () {
 
     // Disable _emphasis_ (keeping *emphasis*)
     // Text inside ** must start and end with a word character
-    // it need for things like "const char *x = (char *)y"
+    // to prevent mis-parsing things like "char **x = (char **)y"
     marked.InlineLexer.rules.zulip.em = /^\*(?!\s+)((?:\*\*|[\s\S])+?)((?:[\S]))\*(?!\*)/;
 
     // Disable autolink as (a) it is not used in our backend and (b) it interferes with @mentions
