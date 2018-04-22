@@ -32,8 +32,8 @@ renders the template. For example, if you want to find the context
 passed to `index.html`, you can do:
 
 ```
-$ git grep zerver/index.html '*.py'
-zerver/views/home.py:    response = render(request, 'zerver/index.html',
+$ git grep zerver/app/index.html '*.py'
+zerver/views/home.py:    response = render(request, 'zerver/app/index.html',
 ```
 
 The next line in the code being the context definition.

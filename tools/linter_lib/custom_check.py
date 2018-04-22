@@ -614,7 +614,7 @@ def build_custom_checkers(by_lang):
          'bad_lines': ["<p title='foo'></p>"]},
         {'pattern': 'title="[^{\:]',
          'exclude_line': set([
-             ('templates/zerver/markdown_help.html',
+             ('templates/zerver/app/markdown_help.html',
               '<td><img alt=":heart:" class="emoji" src="/static/generated/emoji/images/emoji/heart.png" title=":heart:" /></td>')
          ]),
          'exclude': set(["templates/zerver/emails"]),
@@ -622,8 +622,8 @@ def build_custom_checkers(by_lang):
         {'pattern': '\Walt=["\'][^{"\']',
          'description': "alt argument should be enclosed by _() or it should be an empty string.",
          'exclude': set(['static/templates/settings/display-settings.handlebars',
-                         'templates/zerver/keyboard_shortcuts.html',
-                         'templates/zerver/markdown_help.html']),
+                         'templates/zerver/app/keyboard_shortcuts.html',
+                         'templates/zerver/app/markdown_help.html']),
          'good_lines': ['<img src="{{source_url}}" alt="{{ _(name) }}" />', '<img alg="" />'],
          'bad_lines': ['<img alt="Foo Image" />']},
         {'pattern': '\Walt=["\']{{ ?["\']',
@@ -642,7 +642,7 @@ def build_custom_checkers(by_lang):
          'exclude_pattern': r'.*style ?=["' + "'" + '](display: ?none|background: {{|color: {{|background-color: {{).*',
          'exclude': set([
              # KaTeX output uses style attribute
-             'templates/zerver/markdown_help.html',
+             'templates/zerver/app/markdown_help.html',
              # 5xx page doesn't have external CSS
              'static/html/5xx.html',
              # Group PMs color is dynamically calculated
@@ -665,14 +665,14 @@ def build_custom_checkers(by_lang):
              'templates/zerver/email_log.html',
 
              # Probably just needs to be changed to display: none so the exclude works
-             'templates/zerver/navbar.html',
+             'templates/zerver/app/navbar.html',
 
              # Needs the width cleaned up; display: none is fine
              'static/templates/settings/account-settings.handlebars',
 
              # Inline styling for an svg; could be moved to CSS files?
              'templates/zerver/landing_nav.html',
-             'templates/zerver/home.html',
+             'templates/zerver/app/home.html',
              'templates/zerver/features.html',
              'templates/zerver/portico-header.html',
 

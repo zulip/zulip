@@ -101,7 +101,7 @@ def home(request):
 ### Writing a template
 
 Templates for the main website are found in
-[templates/zerver](https://github.com/zulip/zulip/blob/master/templates/zerver).
+[templates/zerver/app](https://github.com/zulip/zulip/blob/master/templates/zerver/app).
 
 
 ## Writing API REST endpoints

@@ -100,7 +100,7 @@ def check_html_templates(templates, all_dups):
             # prevent cleaning them.
             'templates/corporate/zephyr-mirror.html',
             # Can't clean this because of `preserve_spaces`
-            'templates/zerver/markdown_help.html',
+            'templates/zerver/app/markdown_help.html',
         ]
         validate(fn=fn, check_indent=(fn not in bad_files))
 
@@ -111,7 +111,7 @@ def check_html_templates(templates, all_dups):
         # to convert it to a /help/ markdown article.
         'templates/corporate/zephyr-mirror.html',
         # Can't clean this because of `preserve_spaces`
-        'templates/zerver/markdown_help.html',
+        'templates/zerver/app/markdown_help.html',
     ]
     # TODO: Clean these files
     for fn in templates:
