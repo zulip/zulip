@@ -32,7 +32,9 @@
                     {# SSO users don't have a password. #}
 
                     <div class="login-sso">
-                        <a id="sso-login" href="/accounts/login/sso/?next={{ next }}" class="btn btn-large btn-primary">{{ _('Log in with SSO') }}</a>
+                        <a id="sso-login" href="/accounts/login/sso/?next={{ next }}" class="btn btn-large btn-primary">
+                            {{ _('Log in with %(identity_provider)s', identity_provider="SSO") }}
+                        </a>
                     </div>
 
                 {% else %}
@@ -127,7 +129,9 @@
                             <div class="login-google">
                                 <form id='google_login_form' class="form-inline" action="{{ url('zerver.views.auth.start_google_oauth2') }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
-                                    <button class="login-social-button login-google-button full-width">{{ _('Log in with Google') }}</button>
+                                    <button class="login-social-button login-google-button full-width">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="Google") }}
+                                    </button>
                                 </form>
                             </div>
                             {% endif %}
@@ -136,7 +140,9 @@
                             <div class="login-github">
                                 <form id='social_login_form' class="form-inline github-wrapper" action="{{ url('login-social', args=('github',)) }}" method="get">
                                     <input type="hidden" name="next" value="{{ next }}">
-                                    <button class="login-social-button login-github-button github">{{ _('Log in with GitHub') }}</button>
+                                    <button class="login-social-button login-github-button github">
+                                        {{ _('Log in with %(identity_provider)s', identity_provider="GitHub") }}
+                                    </button>
                                 </form>
                             </div>
                             {% endif %}
