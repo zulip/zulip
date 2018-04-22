@@ -41,7 +41,7 @@
 
     {{ render_bundle('katex') }}
 
-    {% include "zerver/topic_is_muted.html" %}
+    {% include "zerver/app/topic_is_muted.html" %}
 
 {% endblock %}
 {% block content %}
@@ -59,14 +59,14 @@
     </script>
 </div>
 
-{% include "zerver/lightbox_overlay.html" %}
-{% include "zerver/subscriptions.html" %}
-{% include "zerver/drafts.html" %}
+{% include "zerver/app/lightbox_overlay.html" %}
+{% include "zerver/app/subscriptions.html" %}
+{% include "zerver/app/drafts.html" %}
 <div id="settings_overlay_container" class="overlay" data-overlay="settings" aria-hidden="true">
-    {% include "zerver/settings_overlay.html" %}
+    {% include "zerver/app/settings_overlay.html" %}
 </div>
 
-{% include "zerver/navbar.html" %}
+{% include "zerver/app/navbar.html" %}
 
 <div class="fixed-app">
     <div class="app-main">
@@ -105,7 +105,7 @@
     </div>
     <div class="app-main">
         <div class="column-left">
-            {% include "zerver/left_sidebar.html" %}
+            {% include "zerver/app/left_sidebar.html" %}
         </div>
         <div class="column-middle">
             <div class="column-middle-inner tab-content">
@@ -132,18 +132,18 @@
                             </div>
                         </div>
                     </div>
-                    {% include "zerver/home.html" %}
+                    {% include "zerver/app/home.html" %}
                 </div>
 
                 {% if show_debug %}
                 <div class="tab-pane" id="debug">
-                    {% include "zerver/debug.html" %}
+                    {% include "zerver/app/debug.html" %}
                 </div>
                 {% endif %}
             </div><!--/tab-content-->
         </div>
         <div class="column-right">
-            {% include "zerver/right_sidebar.html" %}
+            {% include "zerver/app/right_sidebar.html" %}
         </div><!--/right sidebar-->
     </div><!--/row-->
     <div class="informational-overlays overlay new-style" data-overlay="informationalOverlays" aria-hidden="true">
@@ -152,16 +152,16 @@
                 <button class="button no-style exit">&times;</button>
             </div>
             <div class="overlay-body">
-                {% include "zerver/keyboard_shortcuts.html" %}
-                {% include "zerver/search_operators.html" %}
-                {% include "zerver/markdown_help.html" %}
+                {% include "zerver/app/keyboard_shortcuts.html" %}
+                {% include "zerver/app/search_operators.html" %}
+                {% include "zerver/app/markdown_help.html" %}
             </div>
         </div>
     </div>
-    {% include "zerver/invite_user.html" %}
-    {% include "zerver/bankruptcy.html" %}
-    {% include "zerver/logout.html" %}
-    {% include "zerver/deprecation_notice.html" %}
+    {% include "zerver/app/invite_user.html" %}
+    {% include "zerver/app/bankruptcy.html" %}
+    {% include "zerver/app/logout.html" %}
+    {% include "zerver/app/deprecation_notice.html" %}
     <div class='notifications top-right'></div>
 </div>
 {% endblock %}

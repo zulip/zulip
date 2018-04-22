@@ -46,7 +46,7 @@ See [our docs](../subsystems/html-templates.html) for details on Zulip's
 templating systems.
 
 * `templates/zerver/` For [Jinja2](http://jinja.pocoo.org/) templates
-  for the backend (for zerver app).
+  for the backend (for zerver app; logged-in content is in `templates/zerver/app`).
 
 * `static/templates/` [Handlebars](http://handlebarsjs.com/) templates for the frontend.
 

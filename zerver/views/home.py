@@ -236,7 +236,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         show_invites = False
 
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
-    response = render(request, 'zerver/index.html',
+    response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
                                'page_params': JSONEncoderForHTML().encode(page_params),
                                'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),

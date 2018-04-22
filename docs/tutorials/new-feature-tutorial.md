@@ -121,7 +121,7 @@ feature requires UI changes, you may need to add additional CSS to this
 file.
 
 **Templates:** The initial page structure is rendered via Jinja2
-templates located in `templates/zerver`. For JavaScript, Zulip uses
+templates located in `templates/zerver/app`. For JavaScript, Zulip uses
 Handlebars templates located in `static/templates`. Templates are
 precompiled as part of the build/deploy process.
 
