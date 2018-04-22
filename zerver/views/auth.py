@@ -67,26 +67,6 @@ def create_preregistration_user(email: Text, request: HttpRequest, realm_creatio
 
 def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Text='',
                                is_signup: bool=False, password_required: bool=True) -> HttpResponse:
-
-    if not is_signup:
-        # If the user isn't trying to sign up, we take them to a
-        # special page asking them whether that's their intent; this
-        # helps prevent accidental account creation when users pick
-        # the wrong Google account.
-        try:
-            validate_email(email)
-            invalid_email = False
-        except ValidationError:
-            # If email address is invalid, we can't send the user
-            # PreregistrationUser flow.
-            invalid_email = True
-        context = {'full_name': full_name,
-                   'email': email,
-                   'invalid_email': invalid_email}
-        return render(request,
-                      'zerver/confirm_continue_registration.html',
-                      context=context)
-
     realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
     multiuse_obj = None
@@ -126,7 +106,14 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
             # urllib does not handle Unicode, so coerece to encoded byte string
             # Explanation: http://stackoverflow.com/a/5605354/90777
             urllib.parse.quote_plus(full_name.encode('utf8'))))
-        return redirect(confirmation_link)
+        if is_signup:
+            return redirect(confirmation_link)
+
+        context = {'email': email,
+                   'continue_link': confirmation_link}
+        return render(request,
+                      'zerver/confirm_continue_registration.html',
+                      context=context)
     else:
         url = reverse('register')
         return render(request,

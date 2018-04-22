@@ -10,21 +10,9 @@
                         <h1 class="get-started">{{ _("Zulip account not found.") }}</h1>
                     </div>
                     <div class="white-box">
-                        {% if invalid_email %}
-                        {# If the email address is invalid, we can't send the user #}
-                        {# to the preregistered user code path. #}
                         <p>
                             {% trans %}
-                            Please click the following button if you wish to register.
-                            {% endtrans %}
-                        </p>
-                        <a href='/register/' class="button-new sea-green">Sign up</a>
-                        {% else %}
-                        <p>
-                            {% trans %}
-
                             No account found for {{ email }}. Would you like to register instead?
-
                             {% endtrans %}
                         </p>
                         <div style="text-align: left;">
@@ -38,16 +26,13 @@
                                     {{ _("Go back to login") }}
                                 </button>
                             </form>
-                            {# TODO: Ideally, this should allow users to register #}
-                            {# without going over to /register and re-authenticating. #}
                             <form class="form-inline" id="send_confirm" name="send_confirm"
-                              action="/register/" method="get">
+                              action="{{ continue_link }}" method="get">
                                 <button class="outline">
                                     {{ _("Sign up instead") }}
                                 </button>
                             </form>
                         </div>
-                        {% endif %}
                     </div>
                 </div>
             </div>

@@ -624,6 +624,49 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.backend.strategy.request = request
         session_data = {'subdomain': 'zulip', 'is_signup': '0'}
         self.backend.strategy.session_get = lambda k: session_data.get(k)
+        name = 'New User Name'
+
+        def do_auth(*args: Any, **kwargs: Any) -> None:
+            return_data = kwargs['return_data']
+            return_data['valid_attestation'] = True
+            return None
+
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth):
+            email = 'new-user@zulip.com'
+            response = dict(email=email, name=name)
+            result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+
+            result = self.client_get(result.url)
+            self.assert_in_response('No account found for', result)
+            self.assert_in_response('new-user@zulip.com. Would you like to register instead?', result)
+            self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
+
+            url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]
+
+            confirmation = Confirmation.objects.all().first()
+            confirmation_key = confirmation.confirmation_key
+            self.assertIn('do_confirm/' + confirmation_key, url)
+            result = self.client_get(url)
+            self.assert_in_response('action="/accounts/register/"', result)
+            data = {"from_confirmation": "1",
+                    "full_name": name,
+                    "key": confirmation_key}
+            result = self.client_post('/accounts/register/', data)
+            self.assert_in_response("You're almost there", result)
+            # Verify that the user is asked for name but not password
+            self.assert_not_in_success_response(['id_password'], result)
+            self.assert_in_success_response(['id_full_name'], result)
+
+    def test_github_backend_realm_invalid_user_when_is_signup_is_false(self) -> None:
+        rf = RequestFactory()
+        request = rf.get('/complete')
+        request.session = {}
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+        session_data = {'subdomain': 'zulip', 'is_signup': '0'}
+        self.backend.strategy.session_get = lambda k: session_data.get(k)
 
         def do_auth(*args: Any, **kwargs: Any) -> None:
             return_data = kwargs['return_data']
@@ -636,14 +679,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
             response = dict(email=email, name='Ghost')
             result = self.backend.do_auth(response=response)
             self.assertEqual(result.status_code, 302)
+
             self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
             result = self.client_get(result.url)
-            self.assert_in_response(
-                'action="/register/"', result)
-            self.assert_in_response('No account found for',
-                                    result)
-            self.assert_in_response('nonexisting@phantom.com. Would you like to register instead?',
+            self.assertEqual(result.status_code, 200)
+            self.assert_in_response('Your email address, nonexisting@phantom.com, is not in one of the domains '
+                                    'that are allowed to register for accounts in this organization.',
                                     result)
 
     def test_login_url(self) -> None:
@@ -856,24 +898,6 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(res.status_code, 302)
         self.assertEqual(res.url, 'http://zulip.testserver/#narrow/stream/7-test-here')
 
-    def test_log_into_subdomain(self) -> None:
-        data = {'name': 'Full Name',
-                'email': self.example_email("hamlet"),
-                'subdomain': 'zulip',
-                'is_signup': False,
-                'next': ''}
-        result = self.get_log_into_subdomain(data)
-        self.assertEqual(result.status_code, 302)
-        user_profile = self.example_user('hamlet')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
-        with mock.patch(
-                'zerver.views.auth.authenticate_remote_user',
-                return_value=(None, {'invalid_subdomain': True})):
-            result = self.get_log_into_subdomain(data)
-            self.assert_in_success_response(['Would you like to register instead?'],
-                                            result)
-
     def test_log_into_subdomain_when_signature_is_bad(self) -> None:
         data = {'name': 'Full Name',
                 'email': self.example_email("hamlet"),
@@ -909,8 +933,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('hamlet@zulip.com already has an account', result)
 
-    def test_log_into_subdomain_when_is_signup_is_true_and_new_user(
-            self) -> None:
+    def test_log_into_subdomain_when_is_signup_is_true_and_new_user(self) -> None:
         data = {'name': 'New User Name',
                 'email': 'new@zulip.com',
                 'subdomain': 'zulip',
@@ -922,6 +945,34 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         confirmation_key = confirmation.confirmation_key
         self.assertIn('do_confirm/' + confirmation_key, result.url)
         result = self.client_get(result.url)
+        self.assert_in_response('action="/accounts/register/"', result)
+        data = {"from_confirmation": "1",
+                "full_name": data['name'],
+                "key": confirmation_key}
+        result = self.client_post('/accounts/register/', data, subdomain="zulip")
+        self.assert_in_response("You're almost there", result)
+
+        # Verify that the user is asked for name but not password
+        self.assert_not_in_success_response(['id_password'], result)
+        self.assert_in_success_response(['id_full_name'], result)
+
+    def test_log_into_subdomain_when_is_signup_is_false_and_new_user(self) -> None:
+        data = {'name': 'New User Name',
+                'email': 'new@zulip.com',
+                'subdomain': 'zulip',
+                'is_signup': False,
+                'next': ''}
+        result = self.get_log_into_subdomain(data)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response('No account found for', result)
+        self.assert_in_response('new@zulip.com. Would you like to register instead?', result)
+        self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
+
+        url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]
+        confirmation = Confirmation.objects.all().first()
+        confirmation_key = confirmation.confirmation_key
+        self.assertIn('do_confirm/' + confirmation_key, url)
+        result = self.client_get(url)
         self.assert_in_response('action="/accounts/register/"', result)
         data = {"from_confirmation": "1",
                 "full_name": data['name'],
@@ -1001,9 +1052,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
 
         with mock.patch('logging.warning'):
             result = self.get_log_into_subdomain(data)
-            self.assertEqual(result.status_code, 200)
-            self.assert_in_response("Please click the following button if you "
-                                    "wish to register", result)
+            self.assert_in_success_response(["You need an invitation to join this organization."], result)
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         token_response = ResponseMock(200, {'access_token': "unique_token"})
@@ -1028,7 +1077,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertTrue(result.url.startswith("http://zephyr.testserver/accounts/login/subdomain/"))
         result = self.client_get(result.url.replace('http://zephyr.testserver', ''),
                                  subdomain="zephyr")
-        self.assert_in_success_response(['Would you like to register instead?'], result)
+        self.assert_in_success_response(['Your email address, hamlet@zulip.com, is not in one of the domains ',
+                                         'that are allowed to register for accounts in this organization.'], result)
 
     def test_user_cannot_log_into_wrong_subdomain_with_cookie(self) -> None:
         data = {'name': 'Full Name',
@@ -1652,7 +1702,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assert_in_response("No account found for", result)
+                self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_failure_due_to_empty_subdomain(self) -> None:
         email = self.example_email("hamlet")
@@ -1662,7 +1712,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
                                           REMOTE_USER=email)
                 self.assertEqual(result.status_code, 200)
                 self.assertIs(get_session_dict_user(self.client.session), None)
-                self.assert_in_response("No account found for", result)
+                self.assert_in_response("You need an invitation to join this organization.", result)
 
     def test_login_success_under_subdomains(self) -> None:
         user_profile = self.example_user('hamlet')
