@@ -206,11 +206,7 @@ exports.update_one_user_row = function (item) {
     }
 };
 
-function _update_faded_messages() {
-    // See also update_faded_messages(), which just wraps this with a debounce.
-    // FIXME: This fades users too now, as well as messages, so should have
-    // a better name.
-
+function do_update_all() {
     var user_items = buddy_list.get_items();
 
     if (_want_normal_display()) {
@@ -237,13 +233,12 @@ exports.update_faded_users = function () {
     }
 };
 
-// See trac #1633.  For fast typists, calls to _update_faded_messages can
-// cause typing sluggishness.
-exports.update_faded_messages = _.debounce(_update_faded_messages, 50);
+// This gets called on keyup events, hence the throttling.
+exports.update_all = _.debounce(do_update_all, 50);
 
 exports.start_compose = function (msg_type) {
     exports.set_focused_recipient(msg_type);
-    _update_faded_messages();
+    do_update_all();
 };
 
 exports.clear_compose = function () {
