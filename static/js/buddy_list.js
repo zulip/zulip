@@ -35,6 +35,13 @@ var buddy_list = (function () {
         self.container.html(html);
     };
 
+    self.get_items = function () {
+        var obj = self.container.find(self.item_sel);
+        return obj.map(function (i, elem) {
+            return $(elem);
+        });
+    };
+
     self.first_key = function () {
         var list_items = self.container.find(self.item_sel);
         var li = list_items.first();

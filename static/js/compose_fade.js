@@ -45,10 +45,6 @@ function _display_messages_normally() {
     floating_recipient_bar.update();
 }
 
-function _display_users_normally() {
-    $('.user_sidebar_entry').removeClass('user-fade');
-}
-
 function change_fade_state(elt, should_fade_group) {
     if (should_fade_group) {
         elt.addClass("message-fade");
@@ -136,23 +132,41 @@ exports.would_receive_message = function (email) {
     return util.is_pm_recipient(email, focused_recipient);
 };
 
-function update_user_row_when_fading(elt) {
-    var user_id = elt.attr('data-user-id');
+var user_fade_config = {
+    get_user_id: function (li) {
+        return buddy_list.get_key_from_li({li: li});
+    },
+    fade: function (li) {
+        return li.addClass('user-fade');
+    },
+    unfade: function (li) {
+        return li.removeClass('user-fade');
+    },
+};
+
+function update_user_row_when_fading(li, conf) {
+    var user_id = conf.get_user_id(li);
     var email = people.get_person_from_user_id(user_id).email;
     var would_receive = exports.would_receive_message(email);
+
     if (would_receive === false) {
-        elt.addClass('user-fade');
+        conf.fade(li);
     } else {
         // would_receive is either true (so definitely don't fade) or
         // undefined (in which case we don't presume to fade)
-        elt.removeClass('user-fade');
+        conf.unfade(li);
     }
 }
 
-function _fade_users() {
-    _.forEach($('.user_sidebar_entry'), function (elt) {
-        elt = $(elt);
-        update_user_row_when_fading(elt);
+function display_users_normally(items, conf) {
+    _.each(items, function (li) {
+        conf.unfade(li);
+    });
+}
+
+function fade_users(items, conf) {
+    _.each(items, function (li) {
+        update_user_row_when_fading(li, conf);
     });
 }
 
@@ -182,11 +196,13 @@ function _want_normal_display() {
     return focused_recipient.type === "private" && focused_recipient.reply_to === "";
 }
 
-exports.update_one_user_row = function (elt) {
+exports.update_one_user_row = function (item) {
+    var conf = user_fade_config;
+
     if (_want_normal_display()) {
-        elt.removeClass('user-fade');
+        conf.unfade(item);
     } else {
-        update_user_row_when_fading(elt);
+        update_user_row_when_fading(item, conf);
     }
 };
 
@@ -194,14 +210,17 @@ function _update_faded_messages() {
     // See also update_faded_messages(), which just wraps this with a debounce.
     // FIXME: This fades users too now, as well as messages, so should have
     // a better name.
+
+    var user_items = buddy_list.get_items();
+
     if (_want_normal_display()) {
         if (!normal_display) {
             _display_messages_normally();
-            _display_users_normally();
+            display_users_normally(user_items, user_fade_config);
         }
     } else {
         _fade_messages();
-        _fade_users();
+        fade_users(user_items, user_fade_config);
     }
 }
 
@@ -209,10 +228,12 @@ function _update_faded_messages() {
 // This is for when new presence information comes in, redrawing the presence
 // list.
 exports.update_faded_users = function () {
+    var user_items = buddy_list.get_items();
+
     if (_want_normal_display()) {
-        _display_users_normally();
+        display_users_normally(user_items, user_fade_config);
     } else {
-        _fade_users();
+        fade_users(user_items, user_fade_config);
     }
 };
 
@@ -228,7 +249,7 @@ exports.start_compose = function (msg_type) {
 exports.clear_compose = function () {
     focused_recipient = undefined;
     _display_messages_normally();
-    _display_users_normally();
+    exports.update_faded_users();
 };
 
 exports.update_message_list = function () {
