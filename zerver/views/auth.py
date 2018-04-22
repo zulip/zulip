@@ -210,7 +210,7 @@ def remote_user_sso(request: HttpRequest,
     realm = get_realm(subdomain)
     # Since RemoteUserBackend will return None if Realm is None, we
     # don't need to check whether `get_realm` returned None.
-    return_data = {}
+    return_data = {}  # type: Dict[str, Any]
     user_profile = authenticate(remote_user=remote_user, realm=realm,
                                 return_data=return_data)
 
