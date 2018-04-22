@@ -12,6 +12,14 @@ var APPROX_WIDTH = 255;
 // implemented as the emoji_popover.
 exports.emoji_collection = {};
 exports.complete_emoji_catalog = [];
+exports.frequently_used_emojis_list = [
+    '1f44d',    // thumbs_up
+    '1f389',    // party_popper
+    '1f642',    // simple_smile
+    '2764',     // heart
+    '1f6e0',    // hammer_and_wrench
+    '1f419',    // octopus
+];
 var current_message_emoji_popover_elem;
 var emoji_catalog_last_coordinates = {
     section: 0,
@@ -34,17 +42,6 @@ function get_all_emoji_categories() {
         { name: "Objects", icon: "fa-lightbulb-o" },
         { name: "Symbols", icon: "fa-hashtag" },
         { name: "Custom", icon: "fa-cog" },
-    ];
-}
-
-function get_frequently_used_emojis() {
-    return [
-        '1f44d',    // thumbs_up
-        '1f389',    // party_popper
-        '1f642',    // simple_smile
-        '2764',     // heart
-        '1f6e0',    // hammer_and_wrench
-        '1f419',    // octopus
     ];
 }
 
@@ -142,8 +139,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     });
 
     exports.complete_emoji_catalog.Popular = [];
-    var frequently_used_emojis = get_frequently_used_emojis();
-    _.each(frequently_used_emojis, function (codepoint) {
+    _.each(exports.frequently_used_emojis_list, function (codepoint) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             var emoji_name = emoji_codes.codepoint_to_name[codepoint];
             if (exports.emoji_collection.hasOwnProperty(emoji_name)) {

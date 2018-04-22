@@ -2,6 +2,7 @@ set_global('i18n', global.stub_i18n);
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
+zrequire('emoji_picker');
 zrequire('util');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
@@ -22,34 +23,57 @@ var noop = function () {};
 var emoji_stadium = {
     emoji_name: 'stadium',
     emoji_url: 'TBD',
+    codepoint: '1f3df',
 };
 var emoji_tada = {
     emoji_name: 'tada',
     emoji_url: 'TBD',
+    codepoint: '1f389',
 };
 var emoji_moneybag = {
     emoji_name: 'moneybag',
     emoji_url: 'TBD',
+    codepoint: '1f4b0',
 };
 var emoji_japanese_post_office = {
     emoji_name: 'japanese_post_office',
     emoji_url: 'TBD',
+    codepoint: '1f3e3',
 };
 var emoji_panda_face = {
     emoji_name: 'panda_face',
     emoji_url: 'TBD',
+    codepoint: '1f43c',
 };
 var emoji_see_no_evil = {
     emoji_name: 'see_no_evil',
     emoji_url: 'TBD',
+    codepoint: '1f648',
 };
 var emoji_thumbs_up = {
-    emoji_name: '+1',
+    emoji_name: 'thumbs_up',
     emoji_url: 'TBD',
+    codepoint: '1f44d',
+};
+var emoji_thermometer = {
+    emoji_name: 'thermometer',
+    emoji_url: 'TBD',
+    codepoint: '1f321',
+};
+var emoji_heart = {
+    emoji_name: 'heart',
+    emoji_url: 'TBD',
+    codepoint: '2764',
+};
+var emoji_headphones = {
+    emoji_name: 'headphones',
+    emoji_url: 'TBD',
+    codepoint: '1f3a7',
 };
 
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
-                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up];
+                  emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
+                  emoji_heart, emoji_headphones];
 var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
@@ -221,6 +245,8 @@ user_pill.get_user_ids = function () {
     actual_value = ct.content_typeahead_selected.call(fake_this, item);
     expected_value = '{ :octopus: ';
     assert.equal(actual_value, expected_value);
+
+
 
     // mention
     fake_this.completing = 'mention';
@@ -601,6 +627,16 @@ user_pill.get_user_ids = function () {
         fake_this = { completing: 'emoji', token: 'ta' };
         actual_value = options.sorter.call(fake_this, [emoji_stadium, emoji_tada]);
         expected_value = [emoji_tada, emoji_stadium];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'emoji', token: 'th' };
+        actual_value = options.sorter.call(fake_this, [emoji_thermometer, emoji_thumbs_up]);
+        expected_value = [emoji_thumbs_up, emoji_thermometer];
+        assert.deepEqual(actual_value, expected_value);
+
+        fake_this = { completing: 'emoji', token: 'he' };
+        actual_value = options.sorter.call(fake_this, [emoji_headphones, emoji_heart]);
+        expected_value = [emoji_heart, emoji_headphones];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'co' };
@@ -1127,14 +1163,14 @@ user_pill.get_user_ids = function () {
         assert.deepEqual(returned, expected);
     }
 
-    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD"},
-        {emoji_name: "panda_face", emoji_url: "TBD"}]);
+    assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
+        {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
-    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
-    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD"}]);
-    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
-    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD"}]);
+    assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('panda_', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+    assert_emoji_matches('japanese_post_', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
+    assert_emoji_matches('japanese post ', [{emoji_name: "japanese_post_office", emoji_url: "TBD", codepoint: "1f3e3"}]);
     assert_emoji_matches('notaemoji', []);
     // Autocomplete user mentions by user name.
     assert_mentions_matches('cordelia', [cordelia]);
