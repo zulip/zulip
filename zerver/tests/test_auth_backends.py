@@ -1698,6 +1698,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
     def test_redirect_to(self) -> None:
+        """This test verifies the behavior of the redirect_to logic in
+        login_or_register_remote_user."""
         def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
             user_profile = self.example_user('hamlet')
             email = user_profile.email
@@ -1709,6 +1711,10 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertEqual('http://zulip.testserver', res.url)
         res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
         self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
+
+        # Third-party domains are rejected and just send you to root domain
+        res = test_with_redirect_to_param_set_as_next('https://rogue.zulip-like.server/login')
+        self.assertEqual('http://zulip.testserver', res.url)
 
         # In SSO based auth we never make browser send the hash to the backend.
         # Rather we depend upon the browser's behaviour of persisting hash anchors
@@ -2267,29 +2273,6 @@ class LoginOrRegisterRemoteUserTestCase(ZulipTestCase):
             full_name=full_name,
             invalid_subdomain=invalid_subdomain)
         self.assertIn('/accounts/login/?subdomain=1', response.url)
-
-    def test_redirect_to(self) -> None:
-        def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
-            full_name = 'Hamlet'
-            user_profile = self.example_user('hamlet')
-            request = HostRequestMock(user_profile)
-            with mock.patch('zerver.views.auth.do_login'):
-                response = login_or_register_remote_user(
-                    request,
-                    self.example_email('hamlet'),
-                    user_profile,
-                    full_name=full_name,
-                    invalid_subdomain=False,
-                    redirect_to=next)
-            return response
-
-        res = test_with_redirect_to_param_set_as_next()
-        self.assertEqual('http://zulip.testserver', res.url)
-        res = test_with_redirect_to_param_set_as_next('/user_uploads/image_path')
-        self.assertEqual('http://zulip.testserver/user_uploads/image_path', res.url)
-        # We test with a rogue next URL and redirect URL must be towards root zulip uri.
-        res = test_with_redirect_to_param_set_as_next('https://rogue.zulip-like.server/login')
-        self.assertEqual('http://zulip.testserver', res.url)
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
