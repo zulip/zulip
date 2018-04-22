@@ -196,16 +196,6 @@ function want_normal_display() {
     return focused_recipient.type === "private" && focused_recipient.reply_to === "";
 }
 
-exports.update_one_user_row = function (item) {
-    var conf = user_fade_config;
-
-    if (want_normal_display()) {
-        conf.unfade(item);
-    } else {
-        update_user_row_when_fading(item, conf);
-    }
-};
-
 function do_update_all() {
     var user_items = buddy_list.get_items();
 
@@ -226,10 +216,14 @@ function do_update_all() {
 exports.update_faded_users = function () {
     var user_items = buddy_list.get_items();
 
+    exports.update_user_info(user_items, user_fade_config);
+};
+
+exports.update_user_info = function (items, conf) {
     if (want_normal_display()) {
-        display_users_normally(user_items, user_fade_config);
+        display_users_normally(items, conf);
     } else {
-        fade_users(user_items, user_fade_config);
+        fade_users(items, conf);
     }
 };
 

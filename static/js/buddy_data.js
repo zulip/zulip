@@ -18,6 +18,18 @@ var presence_descriptions = {
     idle:   'is not active',
 };
 
+var fade_config = {
+    get_user_id: function (item) {
+        return item.user_id;
+    },
+    fade: function (item) {
+        item.faded = true;
+    },
+    unfade: function (item) {
+        item.faded = false;
+    },
+};
+
 function level(status) {
     switch (status) {
         case 'active':
@@ -103,6 +115,12 @@ exports.info_for = function (user_id) {
     };
 };
 
+exports.get_item = function (user_id) {
+    var info = exports.info_for(user_id);
+    compose_fade.update_user_info([info], fade_config);
+    return info;
+};
+
 function user_is_recently_active(user_id) {
     // return true if the user has a green/orange cirle
     return level(presence.get_status(user_id)) <= 2;
@@ -155,6 +173,8 @@ exports.get_items = function (filter_text) {
         // function.
         return typeof person !== "undefined";
     });
+
+    compose_fade.update_user_info(user_info, fade_config);
 
     return user_info;
 };

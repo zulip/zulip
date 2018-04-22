@@ -210,7 +210,7 @@ exports.insert_user_into_list = function (user_id) {
         return;
     }
 
-    var info = buddy_data.info_for(user_id);
+    var info = buddy_data.get_item(user_id);
 
     buddy_list.insert_or_move({
         key: user_id,
@@ -219,9 +219,6 @@ exports.insert_user_into_list = function (user_id) {
     });
 
     exports.update_scrollbar.users();
-
-    var elt = get_pm_list_item(user_id);
-    compose_fade.update_one_user_row(elt);
 };
 
 exports.searching = function () {
@@ -240,9 +237,6 @@ exports.build_user_sidebar = function () {
     buddy_list.populate({
         items: user_info,
     });
-
-    // Update user fading, if necessary.
-    compose_fade.update_faded_users();
 
     resize.resize_page_components();
 
