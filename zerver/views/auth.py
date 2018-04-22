@@ -153,10 +153,6 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
                       'zerver/confirm_continue_registration.html',
                       context=context)
 
-    if invalid_subdomain:
-        # Show login page with an error message
-        return redirect_to_subdomain_login_url()
-
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
