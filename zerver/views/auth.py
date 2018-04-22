@@ -66,7 +66,27 @@ def create_preregistration_user(email: Text, request: HttpRequest, realm_creatio
                                               realm=realm)
 
 def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Text='',
-                               password_required: bool=True) -> HttpResponse:
+                               is_signup: bool=False, password_required: bool=True) -> HttpResponse:
+
+    if not is_signup:
+        # If the user isn't trying to sign up, we take them to a
+        # special page asking them whether that's their intent; this
+        # helps prevent accidental account creation when users pick
+        # the wrong Google account.
+        try:
+            validate_email(email)
+            invalid_email = False
+        except ValidationError:
+            # If email address is invalid, we can't send the user
+            # PreregistrationUser flow.
+            invalid_email = True
+        context = {'full_name': full_name,
+                   'email': email,
+                   'invalid_email': invalid_email}
+        return render(request,
+                      'zerver/confirm_continue_registration.html',
+                      context=context)
+
     realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
     multiuse_obj = None
@@ -128,30 +148,15 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
                                   is_signup: bool=False,
                                   redirect_to: Text='') -> HttpResponse:
     if user_profile is None or user_profile.is_mirror_dummy:
-        # Since execution has reached here, we have verified the user
-        # controls an email address (remote_username) but there's no
-        # associated Zulip user account.
-        if is_signup:
-            # If they're trying to sign up, send them over to the PreregistrationUser flow.
-            return maybe_send_to_registration(request, remote_user_to_email(remote_username),
-                                              full_name, password_required=False)
+        # We have verified the user controls an email address
+        # (remote_username) but there's no associated Zulip user
+        # account.  Consider sending the request to registration.
+        return maybe_send_to_registration(request, remote_user_to_email(remote_username),
+                                          full_name, password_required=False, is_signup=is_signup)
 
-        # Otherwise, we send them to a special page that asks if they
-        # want to register or provided the wrong email and want to go back.
-        try:
-            validate_email(remote_username)
-            invalid_email = False
-        except ValidationError:
-            # If email address is invalid, we can't send the user
-            # PreregistrationUser flow.
-            invalid_email = True
-        context = {'full_name': full_name,
-                   'email': remote_username,
-                   'invalid_email': invalid_email}
-        return render(request,
-                      'zerver/confirm_continue_registration.html',
-                      context=context)
-
+    # Otherwise, the user has successfully authenticated to an
+    # account, and we need to do the right thing depending whether
+    # or not they're using the mobile OTP flow or want a browser session.
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.

@@ -2194,7 +2194,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         with self.settings(ONLY_SSO=True):
             with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 0)
-                result = maybe_send_to_registration(request, self.example_email("hamlet"))
+                result = maybe_send_to_registration(request, self.example_email("hamlet"), is_signup=True)
                 self.assertEqual(result.status_code, 302)
                 confirmation = Confirmation.objects.all().first()
                 confirmation_key = confirmation.confirmation_key
@@ -2226,7 +2226,7 @@ class TestMaybeSendToRegistration(ZulipTestCase):
         with self.settings(ONLY_SSO=True):
             with mock.patch('zerver.views.auth.HomepageForm', return_value=Form()):
                 self.assertEqual(PreregistrationUser.objects.all().count(), 1)
-                result = maybe_send_to_registration(request, email)
+                result = maybe_send_to_registration(request, email, is_signup=True)
                 self.assertEqual(result.status_code, 302)
                 confirmation = Confirmation.objects.all().first()
                 confirmation_key = confirmation.confirmation_key
