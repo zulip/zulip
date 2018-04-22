@@ -80,7 +80,6 @@ def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Tex
         streams_to_subscribe = multiuse_obj.streams.all()
 
     form = HomepageForm({'email': email}, realm=realm, from_multiuse_invite=from_multiuse_invite)
-    request.verified_email = None
     if form.is_valid():
         # Construct a PreregistrationUser object and send the user over to
         # the confirmation view.
