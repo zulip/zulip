@@ -109,3 +109,42 @@ and privacy in mind:
 
 If you have any questions about the security model, contact
 support@zulipchat.com.
+
+## Sending push notifications directly from your server
+
+As we discussed above, it is impossible for a single app in their
+stores to receive push notifications from multiple, mutually
+untrusted, servers.  The Mobile Push Notification Service is one of
+the possible solutions to this problem.  The other possible solution
+is for an individual Zulip server's administrators to build and
+distribute their own copy of the Zulip mobile apps, hardcoding a key
+that they possess.
+
+This solution is possible with Zulip, but it requires the server
+administrators to do all the work of publishing their own copies of
+the Zulip mobile apps (and there's nothing the Zulip team can do to
+eliminate this onorous requirement).
+
+The main work is distributing your own copies of the Zulip mobile apps
+configured to use APNS/GCM keys that you generate.  This is not for
+the faint of heart!  If you haven't done this before, be warned that
+one can easily spend hundreds of dollars (on things like a DUNS number
+registration) and a week struggling through the hoops Apple requires
+to build and distribute an app through the Apple app store, even if
+you're making no code modifications to an app already present in the
+store (as would be the case here), and have your app in the store yet.
+
+If you've done that work, the Zulip server configuration for sending
+push notifications directly is quite straightforward:
+* Create a
+  [GCM push notifications](https://developers.google.com/cloud-messaging/android/client)
+  key in the Google Developer console and set `android_gcm_api_key` in
+  `/etc/zulip/zulip-secrets.conf` to that key.
+* Register for a
+  [mobile push notification certificate][apple-docs]
+  from Apple's developer console.  Set `APNS_SANDBOX=False` and
+  `APNS_CERT_FILE` to be the path of your APNS certificate file in
+  `/etc/zulip/settings.py`.
+* Restart the Zulip server.
+
+[apple-docs]: https://developer.apple.com/library/content/documentation/NetworkingInternet/Conceptual/RemoteNotificationsPG/APNSOverview.html
