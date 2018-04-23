@@ -17,7 +17,7 @@ class zulip::apache_sso {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 640,
+    mode => '0640',
     source => "puppet:///modules/zulip/apache/ports.conf",
   }
 
@@ -26,7 +26,7 @@ class zulip::apache_sso {
     require => Package[apache2],
     owner  => "root",
     group  => "root",
-    mode => 640,
+    mode => '0640',
     source => "puppet:///modules/zulip/apache/sites/",
   }
 

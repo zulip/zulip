@@ -76,14 +76,14 @@ class zulip::base {
 
   file { '/etc/zulip':
     ensure     => 'directory',
-    mode       => 644,
+    mode       => '0644',
     owner      => 'zulip',
     group      => 'zulip',
   }
 
   file { '/etc/security/limits.conf':
     ensure     => file,
-    mode       => 640,
+    mode       => '0640',
     owner      => "root",
     group      => "root",
     source     => 'puppet:///modules/zulip/limits.conf',
@@ -93,21 +93,21 @@ class zulip::base {
   file { '/var/lib/nagios_state/':
     ensure     => directory,
     group      => 'zulip',
-    mode       => 774,
+    mode       => '0774',
   }
 
   file { '/var/log/zulip':
     ensure => 'directory',
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => 640,
+    mode   => '0640',
   }
 
   file { '/var/log/zulip/queue_error':
     ensure => 'directory',
     owner  => 'zulip',
     group  => 'zulip',
-    mode   => 640,
+    mode   => '0640',
   }
 
   file { "/usr/lib/nagios/plugins/zulip_base":
@@ -116,7 +116,7 @@ class zulip::base {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/nagios_plugins/zulip_base",
   }
 }

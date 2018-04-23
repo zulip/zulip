@@ -7,7 +7,7 @@ class zulip_ops::postgres_appdb {
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
-    mode => 640,
+    mode => '0640',
     source => "puppet:///modules/zulip_ops/postgresql/pg_hba.conf",
   }
 
@@ -16,7 +16,7 @@ class zulip_ops::postgres_appdb {
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
-    mode => 640,
+    mode => '0640',
     source => "puppet:///modules/zulip_ops/postgresql/zulip_nagios_setup.sql",
   }
 

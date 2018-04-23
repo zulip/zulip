@@ -9,7 +9,7 @@ class zulip::memcached {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip/memcached.conf.template.erb"),
   }
   service { 'memcached':

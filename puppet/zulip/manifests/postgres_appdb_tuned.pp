@@ -13,7 +13,7 @@ if $zulip::base::release_name == "trusty" {
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
-    mode   => 644,
+    mode   => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
@@ -26,7 +26,7 @@ if $zulip::base::release_name == "trusty" {
     ensure => file,
     owner  => 'root',
     group  => 'root',
-    mode   => 644,
+    mode   => '0644',
     content =>
 "kernel.shmall = $half_memory_pages
 kernel.shmmax = $half_memory
@@ -82,7 +82,7 @@ vm.dirty_background_ratio = 5
     ensure => file,
     owner  => "postgres",
     group  => "postgres",
-    mode   => 644,
+    mode   => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 

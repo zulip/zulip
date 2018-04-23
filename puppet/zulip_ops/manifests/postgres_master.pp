@@ -12,7 +12,7 @@ class zulip_ops::postgres_master {
     ensure => file,
     owner  => 'root',
     group  => 'root',
-    mode   => 644,
+    mode   => '0644',
     source   => 'puppet:///modules/zulip_ops/postgresql/40-postgresql.conf.master',
   }
 
@@ -20,7 +20,7 @@ class zulip_ops::postgres_master {
     ensure => file,
     owner  => 'root',
     group  => 'root',
-    mode   => 744,
+    mode   => '0744',
     source => 'puppet:///modules/zulip_ops/postgresql/setup_disks.sh',
   }
 

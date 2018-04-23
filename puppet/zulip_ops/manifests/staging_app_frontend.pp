@@ -7,7 +7,7 @@ class zulip_ops::staging_app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip_ops/nginx/sites-available/zulip-staging",
     notify => Service["nginx"],
   }

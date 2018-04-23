@@ -47,13 +47,13 @@ class zulip_ops::base {
 
   file { '/etc/apt/apt.conf.d/02periodic':
     ensure     => file,
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/02periodic',
   }
 
   file { '/etc/apt/apt.conf.d/50unattended-upgrades':
     ensure     => file,
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/apt/apt.conf.d/50unattended-upgrades',
   }
 
@@ -62,7 +62,7 @@ class zulip_ops::base {
     require    => User['zulip'],
     owner      => "zulip",
     group      => "zulip",
-    mode       => 600,
+    mode       => '0600',
   }
 
   file { '/etc/pam.d/common-session':
@@ -71,7 +71,7 @@ class zulip_ops::base {
     source     => 'puppet:///modules/zulip_ops/common-session',
     owner      => 'root',
     group      => 'root',
-    mode       => 644,
+    mode       => '0644',
   }
 
   service { 'ssh':
@@ -86,14 +86,14 @@ class zulip_ops::base {
       source     => 'puppet:///modules/zulip_ops/sshd_config',
       owner      => 'root',
       group      => 'root',
-      mode       => 644,
+      mode       => '0644',
       notify     => Service['ssh'],
     }
   }
 
   file { '/root/.emacs':
     ensure     => file,
-    mode       => 600,
+    mode       => '0600',
     owner      => "root",
     group      => "root",
     source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
@@ -101,7 +101,7 @@ class zulip_ops::base {
 
   file { '/home/zulip/.emacs':
     ensure     => file,
-    mode       => 600,
+    mode       => '0600',
     owner      => "zulip",
     group      => "zulip",
     source     => 'puppet:///modules/zulip_ops/dot_emacs.el',
@@ -112,7 +112,7 @@ class zulip_ops::base {
     # TODO: Change this condition to something more coherent.
     file { '/root/.ssh/authorized_keys':
       ensure     => file,
-      mode       => 600,
+      mode       => '0600',
       owner      => "root",
       group      => "root",
       source     => 'puppet:///modules/zulip_ops/root_authorized_keys',
@@ -120,7 +120,7 @@ class zulip_ops::base {
     file { '/home/zulip/.ssh/authorized_keys':
       ensure     => file,
       require    => File['/home/zulip/.ssh'],
-      mode       => 600,
+      mode       => '0600',
       owner      => "zulip",
       group      => "zulip",
       source     => 'puppet:///modules/zulip_ops/authorized_keys',
@@ -128,7 +128,7 @@ class zulip_ops::base {
     file { '/var/lib/nagios/.ssh/authorized_keys':
       ensure     => file,
       require    => File['/var/lib/nagios/.ssh'],
-      mode       => 600,
+      mode       => '0600',
       owner      => "nagios",
       group      => "nagios",
       source     => 'puppet:///modules/zulip_ops/nagios_authorized_keys',
@@ -140,13 +140,13 @@ class zulip_ops::base {
     # ones in EC2.
     file { '/usr/local/sbin/zulip-ec2-configure-interfaces':
       ensure     => file,
-      mode       => 755,
+      mode       => '0755',
       source     => 'puppet:///modules/zulip_ops/zulip-ec2-configure-interfaces',
     }
 
     file { '/etc/network/if-up.d/zulip-ec2-configure-interfaces_if-up.d.sh':
       ensure     => file,
-      mode       => 755,
+      mode       => '0755',
       source     => 'puppet:///modules/zulip_ops/zulip-ec2-configure-interfaces_if-up.d.sh',
     }
   }
@@ -168,14 +168,14 @@ class zulip_ops::base {
     require    => User['nagios'],
     owner      => "nagios",
     group      => "nagios",
-    mode       => 600,
+    mode       => '0600',
   }
   file { '/var/lib/nagios/.ssh':
     ensure     => directory,
     require    => File['/var/lib/nagios/'],
     owner      => "nagios",
     group      => "nagios",
-    mode       => 600,
+    mode       => '0600',
   }
   file { '/home/nagios':
     ensure => absent,
@@ -186,7 +186,7 @@ class zulip_ops::base {
     # Trusty's puppet doesn't support the include? rule used in rules.v4.
     file { '/etc/iptables/rules.v4':
       ensure     => file,
-      mode       => 600,
+      mode       => '0600',
       content    => template('zulip_ops/iptables/rules.v4.erb'),
       require    => Package['iptables-persistent'],
     }

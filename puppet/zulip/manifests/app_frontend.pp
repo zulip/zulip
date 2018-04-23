@@ -8,7 +8,7 @@ class zulip::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
     notify => Service["nginx"],
   }
@@ -16,7 +16,7 @@ class zulip::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/logrotate/zulip",
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
@@ -31,7 +31,7 @@ class zulip::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode   => 644,
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/certbot-renew",
   }
 
@@ -40,7 +40,7 @@ class zulip::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
   }
 }

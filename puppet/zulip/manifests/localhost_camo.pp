@@ -7,7 +7,7 @@ class zulip::localhost_camo {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     notify => Service["nginx"],
     source => "puppet:///modules/zulip/nginx/zulip-include-app.d/camo.conf",
   }

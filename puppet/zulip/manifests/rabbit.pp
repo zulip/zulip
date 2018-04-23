@@ -10,7 +10,7 @@ class zulip::rabbit {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/cron.d/rabbitmq-queuesize",
   }
   file { "/etc/cron.d/rabbitmq-numconsumers":
@@ -18,7 +18,7 @@ class zulip::rabbit {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/cron.d/rabbitmq-numconsumers",
   }
 
@@ -27,7 +27,7 @@ class zulip::rabbit {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
   }
 
@@ -36,7 +36,7 @@ class zulip::rabbit {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
   }
 
@@ -46,7 +46,7 @@ class zulip::rabbit {
       ensure => 'directory',
       owner => "root",
       group => "root",
-      mode => 755,
+      mode => '0755',
     }
 
     file { "/etc/rabbitmq/rabbitmq-env.conf":
@@ -55,7 +55,7 @@ class zulip::rabbit {
       ensure => file,
       owner  => "root",
       group  => "root",
-      mode => 644,
+      mode => '0644',
       content => template("zulip/rabbitmq-env.conf.template.erb"),
     }
   }

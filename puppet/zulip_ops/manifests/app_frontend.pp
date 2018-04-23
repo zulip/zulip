@@ -14,7 +14,7 @@ class zulip_ops::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/logrotate/zulip",
   }
 
@@ -22,7 +22,7 @@ class zulip_ops::app_frontend {
     ensure     => file,
     owner      => "zulip",
     group      => "zulip",
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/log2zulip.conf',
   }
 
@@ -30,7 +30,7 @@ class zulip_ops::app_frontend {
     ensure     => file,
     owner      => "root",
     group      => "root",
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/cron.d/log2zulip',
   }
 
@@ -38,7 +38,7 @@ class zulip_ops::app_frontend {
     ensure     => file,
     owner      => "root",
     group      => "root",
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/cron.d/check_send_receive_time',
   }
 
@@ -46,7 +46,7 @@ class zulip_ops::app_frontend {
     ensure     => file,
     owner      => "zulip",
     group      => "zulip",
-    mode       => 600,
+    mode       => '0600',
     source     => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
   file { "/etc/cron.d/check-apns-tokens":
@@ -58,14 +58,14 @@ class zulip_ops::app_frontend {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip_ops/supervisor/conf.d/redis_tunnel.conf.template.erb"),
     notify => Service["supervisor"],
   }
   # Need redis_password in its own file for Nagios
   file { '/var/lib/nagios/redis_password':
     ensure     => file,
-    mode       => 600,
+    mode       => '0600',
     owner      => "nagios",
     group      => "nagios",
     content    => zulipsecret('secrets', 'redis_password', ''),

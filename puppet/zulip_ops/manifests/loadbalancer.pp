@@ -8,7 +8,7 @@ class zulip_ops::loadbalancer {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip_ops/nginx/sites-available/loadbalancer",
     notify => Service["nginx"],
   }
@@ -17,7 +17,7 @@ class zulip_ops::loadbalancer {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip_ops/motd.lb0",
   }
 
@@ -32,7 +32,7 @@ class zulip_ops::loadbalancer {
     ensure     => file,
     owner      => "zulip",
     group      => "zulip",
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/log2zulip.conf',
   }
 
@@ -40,7 +40,7 @@ class zulip_ops::loadbalancer {
     ensure     => file,
     owner      => "root",
     group      => "root",
-    mode       => 644,
+    mode       => '0644',
     source     => 'puppet:///modules/zulip_ops/cron.d/log2zulip',
   }
 
@@ -48,7 +48,7 @@ class zulip_ops::loadbalancer {
     ensure     => file,
     owner      => "zulip",
     group      => "zulip",
-    mode       => 600,
+    mode       => '0600',
     source     => 'puppet:///modules/zulip_ops/log2zulip.zuliprc',
   }
 }

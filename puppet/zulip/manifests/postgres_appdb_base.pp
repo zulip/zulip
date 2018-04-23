@@ -25,7 +25,7 @@ class zulip::postgres_appdb_base {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/postgresql/process_fts_updates",
   }
 
@@ -34,7 +34,7 @@ class zulip::postgres_appdb_base {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf",
     notify => Service[supervisor],
   }
@@ -54,7 +54,7 @@ class zulip::postgres_appdb_base {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/postgresql/zulip_english.stop",
   }
   file { "/usr/lib/nagios/plugins/zulip_postgres_appdb":
@@ -63,7 +63,7 @@ class zulip::postgres_appdb_base {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_appdb",
   }
 
@@ -85,7 +85,7 @@ class zulip::postgres_appdb_base {
       ensure => file,
       owner  => "postgres",
       group  => "postgres",
-      mode => 640,
+      mode => '0640',
       source => "puppet:///modules/zulip/postgresql/pgroonga_setup.sql",
     }
 

@@ -15,7 +15,7 @@ class zulip::postfix_localmail {
 
   file {'/etc/mailname':
     ensure  => file,
-    mode    => 0644,
+    mode    => '0644',
     owner   => root,
     group   => root,
     content => "${fqdn}",
@@ -23,7 +23,7 @@ class zulip::postfix_localmail {
 
   file {'/etc/postfix/main.cf':
     ensure  => file,
-    mode    => 0644,
+    mode    => '0644',
     owner   => root,
     group   => root,
     content => template('zulip/postfix/main.cf.erb'),
@@ -32,7 +32,7 @@ class zulip::postfix_localmail {
   }
   file {'/etc/postfix/master.cf':
     ensure  => file,
-    mode    => 0644,
+    mode    => '0644',
     owner   => root,
     group   => root,
     source  => "puppet:///modules/zulip/postfix/master.cf",
@@ -42,7 +42,7 @@ class zulip::postfix_localmail {
 
   file {'/etc/postfix/virtual':
     ensure  => file,
-    mode    => 0644,
+    mode    => '0644',
     owner   => root,
     group   => root,
     source  => "puppet:///modules/zulip/postfix/virtual",
@@ -59,7 +59,7 @@ class zulip::postfix_localmail {
 
   file {'/etc/postfix/transport':
     ensure  => file,
-    mode    => 0644,
+    mode    => '0644',
     owner   => root,
     group   => root,
     source  => "puppet:///modules/zulip/postfix/transport",

@@ -7,7 +7,7 @@ class zulip::zulip_org {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/sites-available/zulip-org",
     notify => Service["nginx"],
   }

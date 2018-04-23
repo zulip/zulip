@@ -4,7 +4,7 @@ class zulip::localhost_sso {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     notify => Service["nginx"],
     source => "puppet:///modules/zulip/nginx/zulip-include-app.d/external-sso.conf",
   }

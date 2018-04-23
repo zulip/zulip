@@ -44,7 +44,7 @@ class zulip_ops::nagios {
     require => Package[nagios3],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip_ops/nagios3/",
     notify => Service["nagios3"],
   }
@@ -53,7 +53,7 @@ class zulip_ops::nagios {
     require => Package[nagios3],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip_ops/nagios3/contacts.cfg.template.erb"),
     notify => Service["nagios3"],
   }
@@ -61,7 +61,7 @@ class zulip_ops::nagios {
     require => Package[nagios3],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip_ops/nagios3/hosts.cfg.template.erb"),
     notify => Service["nagios3"],
   }
@@ -69,7 +69,7 @@ class zulip_ops::nagios {
     require => Package[nagios3],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip_ops/nagios3/localhost.cfg.template.erb"),
     notify => Service["nagios3"],
   }
@@ -78,7 +78,7 @@ class zulip_ops::nagios {
     require => Package[nagios3],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip_ops/nagios3/cgi.cfg.template.erb"),
     notify => Service["nagios3"],
   }
@@ -98,7 +98,7 @@ class zulip_ops::nagios {
 
   file { '/etc/nagios3/conf.d/zulip_nagios.cfg':
     ensure     => file,
-    mode       => 644,
+    mode       => '0644',
     owner      => "root",
     group      => "root",
     source => '/usr/local/share/zulip/integrations/nagios/zulip_nagios.cfg',
@@ -108,7 +108,7 @@ class zulip_ops::nagios {
   $hosts = $zulip_ops::base::hosts
   file { '/etc/nagios3/conf.d/zulip_autossh.cfg':
     ensure     => file,
-    mode       => 644,
+    mode       => '0644',
     owner      => "root",
     group      => "root",
     content => template('zulip_ops/nagios_autossh.template.erb'),
@@ -117,7 +117,7 @@ class zulip_ops::nagios {
 
   file { '/var/lib/nagios/msmtprc':
     ensure     => file,
-    mode       => 600,
+    mode       => '0600',
     owner      => "nagios",
     group      => "nagios",
     content    => template("zulip_ops/msmtprc_nagios.template.erb"),
@@ -141,7 +141,7 @@ class zulip_ops::nagios {
     require => Package[apache2],
     owner  => "root",
     group  => "root",
-    mode => 640,
+    mode => '0640',
     content => template("zulip_ops/nagios_apache_site.conf.template.erb"),
   }
   # TODO: Install our API

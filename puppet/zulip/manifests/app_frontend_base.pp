@@ -19,7 +19,7 @@ class zulip::app_frontend_base {
     require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/zulip-include-frontend/app",
     notify => Service["nginx"],
   }
@@ -27,7 +27,7 @@ class zulip::app_frontend_base {
     require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams",
     notify => Service["nginx"],
   }
@@ -35,7 +35,7 @@ class zulip::app_frontend_base {
     require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types",
     notify => Service["nginx"],
   }
@@ -43,7 +43,7 @@ class zulip::app_frontend_base {
     ensure => directory,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
   }
 
   $loadbalancers = split(zulipconf("loadbalancer", "ips", ""), ",")
@@ -52,7 +52,7 @@ class zulip::app_frontend_base {
       require => File["/etc/nginx/zulip-include/app.d"],
       owner  => "root",
       group  => "root",
-      mode => 644,
+      mode => '0644',
       content => template("zulip/accept-loadbalancer.conf.template.erb"),
       notify => Service["nginx"],
     }
@@ -77,7 +77,7 @@ class zulip::app_frontend_base {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip/supervisor/zulip.conf.template.erb"),
     notify => Service["supervisor"],
   }
@@ -89,7 +89,7 @@ class zulip::app_frontend_base {
     ensure => file,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
     content => template("zulip/uwsgi.ini.template.erb"),
     notify => Service["supervisor"],
   }
@@ -98,7 +98,7 @@ class zulip::app_frontend_base {
     ensure => directory,
     owner => "zulip",
     group => "zulip",
-    mode => 755,
+    mode => '0755',
   }
   file { '/home/zulip/logs':
     ensure => 'directory',
@@ -119,13 +119,13 @@ class zulip::app_frontend_base {
     ensure => directory,
     owner => "zulip",
     group => "zulip",
-    mode => 755,
+    mode => '0755',
   }
   file { "/srv/zulip-emoji-cache":
     ensure => directory,
     owner => "zulip",
     group => "zulip",
-    mode => 755,
+    mode => '0755',
   }
   file { "/etc/cron.d/email-mirror":
     ensure => absent,
@@ -136,7 +136,7 @@ class zulip::app_frontend_base {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/nagios_plugins/zulip_app_frontend",
   }
 }

@@ -15,7 +15,7 @@ class zulip_ops::apache {
     ensure   => directory,
     owner    => "www-data",
     group    => "www-data",
-    mode     => 600,
+    mode     => '0600',
   }
 
   file { "/etc/apache2/users/wiki":
@@ -23,7 +23,7 @@ class zulip_ops::apache {
     ensure => file,
     owner  => "www-data",
     group  => "www-data",
-    mode => 600,
+    mode => '0600',
     source => "puppet:///modules/zulip_ops/apache/users",
   }
 
@@ -32,7 +32,7 @@ class zulip_ops::apache {
     ensure => directory,
     owner => "root",
     group => "root",
-    mode => 644,
+    mode => '0644',
   }
 
   file { "/etc/apache2/ports.conf":
@@ -40,7 +40,7 @@ class zulip_ops::apache {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 640,
+    mode => '0640',
     source => "puppet:///modules/zulip_ops/apache/ports.conf",
   }
 
@@ -49,6 +49,6 @@ class zulip_ops::apache {
     require => Package[apache2],
     owner  => "root",
     group  => "root",
-    mode => 640,
+    mode => '0640',
   }
 }

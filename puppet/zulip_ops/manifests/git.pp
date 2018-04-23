@@ -8,7 +8,7 @@ class zulip_ops::git {
     ensure => 'directory',
     owner  => 'git',
     group  => 'git',
-    mode   => 755,
+    mode   => '0755',
   }
 
   file { '/home/git/repositories/eng/zulip.git/hooks/post-receive':

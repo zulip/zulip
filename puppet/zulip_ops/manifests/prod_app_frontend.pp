@@ -8,7 +8,7 @@ class zulip_ops::prod_app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip_ops/nginx/sites-available/zulip",
     notify => Service["nginx"],
   }
@@ -26,7 +26,7 @@ class zulip_ops::prod_app_frontend {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
   }
 

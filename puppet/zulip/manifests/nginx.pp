@@ -9,7 +9,7 @@ class zulip::nginx {
     recurse => true,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     source => "puppet:///modules/zulip/nginx/zulip-include-common/",
     notify => Service["nginx"],
   }
@@ -32,7 +32,7 @@ class zulip::nginx {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     notify => Service["nginx"],
     source => $uploads_route,
   }
@@ -42,7 +42,7 @@ class zulip::nginx {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     notify => Service["nginx"],
     source => "puppet:///modules/zulip/nginx/nginx.conf",
   }
@@ -52,7 +52,7 @@ class zulip::nginx {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => 644,
+    mode => '0644',
     notify => Service["nginx"],
     source => "puppet:///modules/zulip/nginx/uwsgi_params",
   }
@@ -66,14 +66,14 @@ class zulip::nginx {
     ensure     => "directory",
     owner      => "zulip",
     group      => "adm",
-    mode       => 650
+    mode       => '0650'
   }
 
   file { ["/var/lib/zulip", "/var/lib/zulip/certbot-webroot"]:
     ensure     => "directory",
     owner      => "zulip",
     group      => "adm",
-    mode       => 660,
+    mode       => '0660',
   }
 
   service { 'nginx':

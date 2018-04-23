@@ -32,7 +32,7 @@ class zulip::postgres_common {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_common",
   }
 
@@ -40,7 +40,7 @@ class zulip::postgres_common {
     ensure => file,
     owner => "root",
     group => "postgres",
-    mode => 750,
+    mode => '0750',
     source => "puppet:///modules/zulip/postgresql/env-wal-e",
     require => Package["postgresql-${zulip::base::postgres_version}"],
   }
@@ -49,7 +49,7 @@ class zulip::postgres_common {
     ensure => file,
     owner => "root",
     group => "postgres",
-    mode => 754,
+    mode => '0754',
     source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge",
     require => File["/usr/local/bin/env-wal-e"],
   }

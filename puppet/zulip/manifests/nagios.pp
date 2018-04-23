@@ -9,7 +9,7 @@ class zulip::nagios {
     purge => true,
     owner => "root",
     group => "root",
-    mode => 755,
+    mode => '0755',
     source => "puppet:///modules/zulip/nagios_plugins/zulip_nagios_server",
   }
 }

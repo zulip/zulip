@@ -27,7 +27,7 @@ class zulip::redis {
     ensure => file,
     owner  => "redis",
     group  => "redis",
-    mode => 640,
+    mode => '0640',
     content => template("zulip/zulip-redis.template.erb"),
   }
 
