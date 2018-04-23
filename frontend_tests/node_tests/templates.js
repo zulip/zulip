@@ -1629,6 +1629,21 @@ function render(template_name, args) {
     assert.equal(a.text(), 'King Lear');
 }());
 
+(function user_profile_modal() {
+    var args = {
+        full_name: "Iago",
+        email: "iago@zulip.com",
+        profile_data: {
+            author: "Shakespeare",
+            book: "Othello",
+        },
+    };
+
+    var html = render('user_profile_modal', args);
+    var div = $(html).find(".user-profile-modal-email-section");
+    assert.equal(div.text().trim(), 'iago@zulip.com');
+}());
+
 (function muted_topic_ui_row() {
     var args = {
         stream: 'Verona',

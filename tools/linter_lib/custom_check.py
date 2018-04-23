@@ -664,6 +664,9 @@ def build_custom_checkers(by_lang):
              # Needs the width cleaned up; display: none is fine
              'static/templates/settings/account-settings.handlebars',
 
+             # background image property is dynamically generated
+             'static/templates/user_profile_modal.handlebars',
+
              # Inline styling for an svg; could be moved to CSS files?
              'templates/zerver/landing_nav.html',
              'templates/zerver/home.html',
