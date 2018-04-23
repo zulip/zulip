@@ -133,7 +133,6 @@ exports.activate = function (raw_operators, opts) {
     if (opts.use_initial_narrow_pointer) {
         then_select_id = page_params.initial_narrow_pointer;
         then_select_offset = page_params.initial_narrow_offset;
-        opts.use_initial_narrow_pointer = false;
         select_first_unread = false;
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
