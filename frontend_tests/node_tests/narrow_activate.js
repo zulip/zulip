@@ -165,7 +165,7 @@ function stub_message_list() {
         assert.deepEqual(opts, {
             cont: opts.cont,
             then_select_id: selected_id,
-            use_initial_narrow_pointer: false,
+            use_first_unread_anchor: false,
         });
     };
 

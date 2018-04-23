@@ -137,7 +137,7 @@ exports.load_messages_for_narrow = function (opts) {
         num_before: consts.narrow_before,
         num_after: consts.narrow_after,
         msg_list: msg_list,
-        use_first_unread_anchor: opts.use_initial_narrow_pointer,
+        use_first_unread_anchor: opts.use_first_unread_anchor,
         cont: function (data) {
             msg_list.fetch_status.finish_initial_narrow({
                 found_oldest: data.found_oldest,

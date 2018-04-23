@@ -215,7 +215,7 @@ exports.activate = function (raw_operators, opts) {
     var defer_selecting_closest = message_list.narrowed.empty();
     message_fetch.load_messages_for_narrow({
         then_select_id: then_select_id,
-        use_initial_narrow_pointer: opts.use_initial_narrow_pointer,
+        use_first_unread_anchor: opts.select_first_unread && then_select_id === -1,
         cont: function () {
             if (defer_selecting_closest) {
                 maybe_select_closest();
