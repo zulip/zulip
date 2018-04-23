@@ -97,8 +97,8 @@ exports.activate = function (raw_operators, opts) {
     if (filter.has_operator("id")) {
         opts.then_select_id = parseInt(filter.operands("id")[0], 10);
     }
-    opts.select_first_unread = (opts.then_select_id === -1);
 
+    var select_first_unread = (opts.then_select_id === -1);
     var then_select_id = opts.then_select_id;
     var then_select_offset;
 
@@ -106,7 +106,7 @@ exports.activate = function (raw_operators, opts) {
         unread.messages_read_in_narrow = false;
     }
 
-    if (!opts.select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
+    if (!select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
         then_select_offset = current_msg_list.get_row(then_select_id).offset().top;
     }
 
@@ -134,7 +134,7 @@ exports.activate = function (raw_operators, opts) {
         then_select_id = page_params.initial_narrow_pointer;
         then_select_offset = page_params.initial_narrow_offset;
         opts.use_initial_narrow_pointer = false;
-        opts.select_first_unread = false;
+        select_first_unread = false;
         home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
@@ -164,12 +164,12 @@ exports.activate = function (raw_operators, opts) {
 
     function maybe_select_closest() {
         if (! message_list.narrowed.empty()) {
-            if (opts.select_first_unread) {
+            if (select_first_unread) {
                 then_select_id = message_list.narrowed.first_unread_message_id();
             }
 
             var preserve_pre_narrowing_screen_position =
-                !opts.select_first_unread &&
+                !select_first_unread &&
                 (message_list.narrowed.get(then_select_id) !== undefined) &&
                 (then_select_offset !== undefined);
 
@@ -203,7 +203,7 @@ exports.activate = function (raw_operators, opts) {
     var defer_selecting_closest = message_list.narrowed.empty();
     message_fetch.load_messages_for_narrow({
         then_select_id: then_select_id,
-        use_first_unread_anchor: opts.select_first_unread,
+        use_first_unread_anchor: select_first_unread,
         cont: function () {
             if (defer_selecting_closest) {
                 maybe_select_closest();
