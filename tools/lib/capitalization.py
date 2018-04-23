@@ -19,6 +19,7 @@ IGNORED_PHRASES = [
     r"Cookie Bot",
     r"Dropbox",
     r"GitHub",
+    r"G Suite",
     r"Google",
     r"Gravatar",
     r"Hamlet",
