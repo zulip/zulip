@@ -244,6 +244,7 @@ $(function () {
 
     if (page_params.realm_presence_disabled) {
         $("#user-list").hide();
+        $("#bot-list").hide();
         $("#group-pm-list").hide();
     }
 
