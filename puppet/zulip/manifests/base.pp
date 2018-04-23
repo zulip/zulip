@@ -1,3 +1,10 @@
+# TODO: Move this to a proper types file
+define safepackage ( $ensure = present ) {
+  if !defined(Package[$title]) {
+    package { $title: ensure => $ensure }
+  }
+}
+
 class zulip::base {
   include apt
   $base_packages = [ # Accurate time is essential

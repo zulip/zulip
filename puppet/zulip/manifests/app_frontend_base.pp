@@ -8,11 +8,6 @@ class zulip::app_frontend_base {
                     # Needed to access our database
                     "postgresql-client-${zulip::base::postgres_version}",
                     ]
-  define safepackage ( $ensure = present ) {
-    if !defined(Package[$title]) {
-      package { $title: ensure => $ensure }
-    }
-  }
   safepackage { $web_packages: ensure => "installed" }
 
   file { "/etc/nginx/zulip-include/app":

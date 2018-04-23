@@ -9,11 +9,6 @@ class zulip::postgres_appdb_base {
                      # Needed for our full text search system
                      "postgresql-${zulip::base::postgres_version}-tsearch-extras",
                      ]
-  define safepackage ( $ensure = present ) {
-    if !defined(Package[$title]) {
-      package { $title: ensure => $ensure }
-    }
-  }
   safepackage { $appdb_packages: ensure => "installed" }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf

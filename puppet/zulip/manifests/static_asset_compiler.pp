@@ -16,10 +16,5 @@ class zulip::static_asset_compiler {
                                      "gettext",
                                      ]
 
-  define safepackage ( $ensure = present ) {
-    if !defined(Package[$title]) {
-      package { $title: ensure => $ensure }
-    }
-  }
   safepackage { $static_asset_compiler_packages: ensure => "installed" }
 }
