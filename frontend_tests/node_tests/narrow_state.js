@@ -3,9 +3,8 @@ zrequire('Filter', 'js/filter');
 zrequire('stream_data');
 zrequire('narrow_state');
 
-set_global('blueslip', {});
-set_global('page_params', {
-});
+set_global('blueslip', global.make_zblueslip());
+set_global('page_params', {});
 
 function set_filter(operators) {
     operators = _.map(operators, function (op) {
@@ -25,13 +24,10 @@ function set_filter(operators) {
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
     var bad_stream_id = 1000000;
-    var called = false;
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Bad stream id ' + bad_stream_id);
-        called = true;
-    };
+    blueslip.set_test_data('error', 'Bad stream id ' + bad_stream_id);
     assert(!narrow_state.is_for_stream_id(bad_stream_id));
-    assert(called);
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     set_filter([
         ['stream', 'Test'],
@@ -225,15 +221,11 @@ function set_filter(operators) {
     set_filter([['pm-with', '']]);
     assert.equal(narrow_state.pm_string(), undefined);
 
-    var called = false;
-    blueslip.warn = function (error) {
-        assert.equal(error, 'Unknown emails: bogus@foo.com');
-        called = true;
-    };
-
+    blueslip.set_test_data('warn', 'Unknown emails: bogus@foo.com');
     set_filter([['pm-with', 'bogus@foo.com']]);
     assert.equal(narrow_state.pm_string(), undefined);
-    assert(called);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 
     var alice = {
         email: 'alice@foo.com',
