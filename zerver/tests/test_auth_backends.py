@@ -397,6 +397,31 @@ class GitHubAuthBackendTest(ZulipTestCase):
             assert(result is not None)
             self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    def test_github_backend_do_auth_mobile_otp_flow(self) -> None:
+        self.backend.strategy.request.META['HTTP_USER_AGENT'] = "ZulipAndroid"
+        mobile_flow_otp = '1234abcd' * 8
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                        side_effect=self.do_auth):
+            self.backend.strategy.session_set('subdomain', 'zulip')
+            self.backend.strategy.session_set('mobile_flow_otp', mobile_flow_otp)
+            response = dict(email=self.email, name=self.name)
+            result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+
+            redirect_url = result['Location']
+            parsed_url = urllib.parse.urlparse(redirect_url)
+            query_params = urllib.parse.parse_qs(parsed_url.query)
+            self.assertEqual(parsed_url.scheme, 'zulip')
+            self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
+            self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+            encrypted_api_key = query_params["otp_encrypted_api_key"][0]
+            self.assertEqual(self.example_user('hamlet').api_key,
+                             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertIn('Zulip on Android', mail.outbox[0].body)
+
     def test_github_backend_do_auth_for_default(self) -> None:
         with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
                         side_effect=self.do_auth), \

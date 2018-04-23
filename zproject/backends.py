@@ -242,7 +242,7 @@ class SocialAuthMixin(ZulipAuthMixin):
                                                  invalid_subdomain=bool(invalid_subdomain),
                                                  mobile_flow_otp=mobile_flow_otp,
                                                  is_signup=is_signup,
-                                                 redirect_to=redirect_to)  # nocoverage ; TODO add test
+                                                 redirect_to=redirect_to)
         realm = get_realm(subdomain)
         if realm is None:
             return redirect_to_subdomain_login_url()
