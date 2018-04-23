@@ -342,6 +342,10 @@ exports.build_user_sidebar = function () {
     var user_info = _.map(user_ids, info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
         // function.
+        if (exports.get_filter_text().length === 0 && person.type === "offline") {
+            return;
+        }
+
         return typeof person !== "undefined";
     });
     var html = templates.render('user_presence_rows', {users: user_info});
