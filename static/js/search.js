@@ -6,7 +6,7 @@ function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
     ui_util.change_tab_to('#home');
     var operators = Filter.parse(search_string);
-    narrow.activate(operators, {trigger: 'search'});
+    narrow.activate(operators, {trigger: 'search', select_first_unread: true});
 
     // It's sort of annoying that this is not in a position to
     // blur the search box, because it means that Esc won't
@@ -90,7 +90,8 @@ exports.initialize = function () {
             // operators.  (The reason the other actions don't call
             // this codepath is that they first all blur the box to
             // indicate that they've done what they need to do)
-            narrow.activate(Filter.parse(search_query_box.val()), {trigger: 'search'});
+            narrow.activate(Filter.parse(search_query_box.val()), {trigger: 'search',
+                                                                   select_first_unread: true});
             search_query_box.blur();
             update_buttons_with_focus(false);
         }
