@@ -74,7 +74,7 @@ import a database dump from one or more JSON files."""
             for model in models_to_import:
                 self.new_instance_check(model)
 
-        check_subdomain_available(subdomain)
+        check_subdomain_available(subdomain, from_management_command=True)
 
         for path in options['export_files']:
             if not os.path.exists(path):
