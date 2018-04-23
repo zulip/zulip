@@ -9,7 +9,7 @@ import ujson
 from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    generate_name_to_codepoint_map, emoji_names_for_picker, EMOJISETS
+    generate_name_to_codepoint_map, get_remapped_emojis_map, emoji_names_for_picker, EMOJISETS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -138,25 +138,6 @@ def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
 
 def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
     # Code for setting up old emoji farm.
-    # Some image files in the old emoji farm had a different name than in the new emoji
-    # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
-    # emoji farm to their name in the new emoji farm.
-    remapped_emojis = {
-        "0023": "0023-20e3",    # Hash
-        "0030": "0030-20e3",    # Zero
-        "0031": "0031-20e3",    # One
-        "0032": "0032-20e3",    # Two
-        "0033": "0033-20e3",    # Three
-        "0034": "0034-20e3",    # Four
-        "0035": "0035-20e3",    # Five
-        "0036": "0036-20e3",    # Six
-        "0037": "0037-20e3",    # Seven
-        "0038": "0038-20e3",    # Eight
-        "0039": "0039-20e3",    # Nine
-        "1f48f": "1f469-200d-2764-200d-1f48b-200d-1f468",    # Couple kiss
-        "1f491": "1f469-200d-2764-200d-1f468",  # Couple with heart
-    }
-
     os.chdir(cache_path)
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
     unicode_emoji_cache_path = os.path.join(cache_path, 'images', 'emoji', 'unicode')
@@ -171,6 +152,10 @@ def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
 
     unicode_symlink_path = os.path.join(unicode_emoji_cache_path, 'zulip.png')
     os.symlink(image_file_path, unicode_symlink_path)
+
+    # `remapped_emojis` is a mapping which helps in mapping `emoji_map`
+    # codepoints to corresponding images in new emoji farm.
+    remapped_emojis = get_remapped_emojis_map()
 
     for name, codepoint in emoji_map.items():
         mapped_codepoint = remapped_emojis.get(codepoint, codepoint)
