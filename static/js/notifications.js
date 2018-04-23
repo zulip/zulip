@@ -267,7 +267,7 @@ function process_notification(notification) {
     var msg_count = 1;
     var notification_source;
     var raw_operators = [];
-    var opts = {select_first_unread: true, trigger: "notification click"};
+    var opts = {trigger: "notification click"};
     // Convert the content to plain text, replacing emoji with their alt text
     content = $('<div/>').html(message.content);
     ui.replace_emoji_with_text(content);

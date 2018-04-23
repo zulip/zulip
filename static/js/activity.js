@@ -481,13 +481,7 @@ exports.narrow_for_user = function (opts) {
     var user_id = buddy_list.get_key_from_li({li: opts.li});
     var email = people.get_person_from_user_id(user_id).email;
 
-    var narrow_opts = {
-        select_first_unread: true,
-        trigger: 'sidebar',
-    };
-
-    narrow.by('pm-with', email, narrow_opts);
-
+    narrow.by('pm-with', email, {trigger: 'sidebar'});
     exports.clear_and_hide_search();
 };
 

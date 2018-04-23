@@ -139,12 +139,12 @@ exports.restore_draft = function (draft_id) {
         if (draft.stream !== "") {
             narrow.activate([{operator: "stream", operand: draft.stream},
                              {operator: "topic", operand: draft.subject}],
-                             {select_first_unread: true, trigger: "restore draft"});
+                             {trigger: "restore draft"});
         }
     } else {
         if (draft.private_message_recipient !== "") {
             narrow.activate([{operator: "pm-with", operand: draft.private_message_recipient}],
-                             {select_first_unread: true, trigger: "restore draft"});
+                             {trigger: "restore draft"});
         }
     }
 

@@ -585,7 +585,7 @@ exports.register_click_handlers = function () {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_message_info_popover();
-        narrow.by('pm-with', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        narrow.by('pm-with', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
         e.preventDefault();
     });
@@ -594,7 +594,7 @@ exports.register_click_handlers = function () {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var email = people.get_person_from_user_id(user_id).email;
         popovers.hide_message_info_popover();
-        narrow.by('sender', email, {select_first_unread: true, trigger: 'user sidebar popover'});
+        narrow.by('sender', email, {trigger: 'user sidebar popover'});
         e.stopPropagation();
         e.preventDefault();
     });

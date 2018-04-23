@@ -130,9 +130,7 @@ function stub_message_list() {
     var terms = [
         { operator: 'stream', operand: 'Denmark' },
     ];
-    var opts = {
-        select_first_unread: true,
-    };
+    var opts = {};
 
     var selected_id = 1000;
 
@@ -144,7 +142,6 @@ function stub_message_list() {
 
     var messages = [selected_message];
 
-    home_msg_list.selected_id = () => { return selected_id; };
     current_msg_list.selected_id = () => { return -1; };
 
     message_list.all = {
@@ -152,7 +149,7 @@ function stub_message_list() {
             return messages;
         },
         get: (msg_id) => {
-            assert.equal(msg_id, selected_id);
+            assert.equal(msg_id, -1);
             return selected_message;
         },
     };
@@ -164,8 +161,8 @@ function stub_message_list() {
 
         assert.deepEqual(opts, {
             cont: opts.cont,
-            then_select_id: selected_id,
-            use_first_unread_anchor: false,
+            then_select_id: -1,
+            use_first_unread_anchor: true,
         });
     };
 

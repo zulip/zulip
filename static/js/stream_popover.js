@@ -226,8 +226,7 @@ exports.register_stream_handlers = function () {
     $('body').on('click', '.narrow_to_stream', function (e) {
         var sub = stream_popover_sub(e);
         exports.hide_stream_popover();
-        narrow.by('stream', sub.name,
-            {select_first_unread: true, trigger: 'sidebar popover'}
+        narrow.by('stream', sub.name, {trigger: 'sidebar popover'}
         );
         e.stopPropagation();
     });
@@ -335,8 +334,7 @@ exports.register_topic_handlers = function () {
             {operator: 'stream', operand: sub.name},
             {operator: 'topic', operand: topic},
         ];
-        var opts = {select_first_unread: true, trigger: 'sidebar'};
-        narrow.activate(operators, opts);
+        narrow.activate(operators, {trigger: 'sidebar'});
 
         e.stopPropagation();
     });

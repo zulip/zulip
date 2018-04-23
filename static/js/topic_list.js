@@ -303,7 +303,7 @@ exports.set_click_handlers = function (callbacks) {
 
         narrow.activate([{operator: 'stream', operand: sub.name},
                          {operator: 'topic', operand: topic}],
-                        {select_first_unread: true, trigger: 'sidebar'});
+                        {trigger: 'sidebar'});
 
         e.preventDefault();
     });

@@ -83,8 +83,7 @@ exports.activate = function (raw_operators, opts) {
                                 previous_id: current_msg_list.selected_id()});
 
     opts = _.defaults({}, opts, {
-        then_select_id: home_msg_list.selected_id(),
-        select_first_unread: false,
+        then_select_id: -1,
         use_initial_narrow_pointer: false,
         change_hash: true,
         trigger: 'unknown',
@@ -94,12 +93,11 @@ exports.activate = function (raw_operators, opts) {
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
         opts.then_select_id = parseInt(filter.operands("near")[0], 10);
-        opts.select_first_unread = false;
     }
     if (filter.has_operator("id")) {
         opts.then_select_id = parseInt(filter.operands("id")[0], 10);
-        opts.select_first_unread = false;
     }
+    opts.select_first_unread = (opts.then_select_id === -1);
 
     var then_select_id = opts.then_select_id;
     var then_select_offset;
@@ -205,7 +203,7 @@ exports.activate = function (raw_operators, opts) {
     var defer_selecting_closest = message_list.narrowed.empty();
     message_fetch.load_messages_for_narrow({
         then_select_id: then_select_id,
-        use_first_unread_anchor: opts.select_first_unread && then_select_id === -1,
+        use_first_unread_anchor: opts.select_first_unread,
         cont: function () {
             if (defer_selecting_closest) {
                 maybe_select_closest();
@@ -273,16 +271,10 @@ exports.stream_topic = function () {
 
 exports.activate_stream_for_cycle_hotkey = function (stream_name) {
     // This is the common code for A/D hotkeys.
-
     var filter_expr = [
         {operator: 'stream', operand: stream_name},
     ];
-
-    var opts = {
-        select_first_unread: true,
-    };
-
-    exports.activate(filter_expr, opts);
+    exports.activate(filter_expr, {});
 };
 
 
@@ -339,11 +331,7 @@ exports.narrow_to_next_topic = function () {
         {operator: 'topic', operand: next_narrow.topic},
     ];
 
-    var opts = {
-        select_first_unread: true,
-    };
-
-    exports.activate(filter_expr, opts);
+    exports.activate(filter_expr, {});
 };
 
 exports.narrow_to_next_pm_string = function () {
@@ -366,7 +354,6 @@ exports.narrow_to_next_pm_string = function () {
 
     // force_close parameter is true to not auto open compose_box
     var opts = {
-        select_first_unread: true,
         force_close: true,
     };
 

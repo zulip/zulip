@@ -607,7 +607,6 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         case 'narrow_private':
             return do_narrow_action(function (target, opts) {
-                opts = _.defaults({}, opts, {select_first_unread: true});
                 narrow.by('is', 'private', opts);
             });
         case 'query_streams':

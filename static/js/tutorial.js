@@ -13,7 +13,7 @@ function set_tutorial_status(status, callback) {
 exports.initialize = function () {
     if (page_params.needs_tutorial) {
         set_tutorial_status("started");
-        narrow.by('is', 'private', {select_first_unread: true, trigger: 'sidebar'});
+        narrow.by('is', 'private', {trigger: 'sidebar'});
     }
 };
 
