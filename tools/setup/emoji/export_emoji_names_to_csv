@@ -30,11 +30,11 @@ column_names = [
     'explanation',
 ]
 category_index = {
-    'People': '1',
-    'Nature': '2',
-    'Foods': '3',
-    'Activity': '4',
-    'Places': '5',
+    'Smileys & People': '1',
+    'Animals & Nature': '2',
+    'Food & Drink': '3',
+    'Activities': '4',
+    'Travel & Places': '5',
     'Objects': '6',
     'Symbols': '7',
     'Flags': '8',

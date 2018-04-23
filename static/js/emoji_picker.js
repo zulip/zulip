@@ -34,11 +34,11 @@ var section_head_offsets = [];
 function get_all_emoji_categories() {
     return [
         { name: "Popular", icon: "fa-thumbs-o-up" },
-        { name: "People", icon: "fa-smile-o" },
-        { name: "Nature", icon: "fa-leaf" },
-        { name: "Foods", icon: "fa-cutlery" },
-        { name: "Activity", icon: "fa-soccer-ball-o" },
-        { name: "Places", icon: "fa-car" },
+        { name: "Smileys & People", icon: "fa-smile-o" },
+        { name: "Animals & Nature", icon: "fa-leaf" },
+        { name: "Food & Drink", icon: "fa-cutlery" },
+        { name: "Activities", icon: "fa-soccer-ball-o" },
+        { name: "Travel & Places", icon: "fa-car" },
         { name: "Objects", icon: "fa-lightbulb-o" },
         { name: "Symbols", icon: "fa-hashtag" },
         { name: "Custom", icon: "fa-cog" },
