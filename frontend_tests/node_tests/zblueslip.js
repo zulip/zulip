@@ -15,6 +15,8 @@ The code we are testing lives here:
 
     https://github.com/zulip/zulip/blob/master/frontend_tests/zjsunit/zblueslip.js
 
+Read the following contents for an overview of how zblueslip works. Also take a
+look at `node_tests/people_errors.js` for actual usage of this module.
 */
 
 
@@ -22,6 +24,11 @@ The code we are testing lives here:
 // with zblueslip as follows.  This call gives us our own instance of a
 // zblueslip stub variable.
 set_global('blueslip', global.make_zblueslip());
+
+// Aditionally, you can specify which functions you want to test for/ignore.
+// By default, we ignore debug, log and info. To test for debug, for example, do:
+// set_global('blueslip', global.make_zblueslip({debug: true}));
+// Similarly, you can ignore tests for errors by passing {debug: true, error: false}.
 
 (function test_basics() {
     // Let's create a sample piece of code to test:
@@ -34,12 +41,9 @@ set_global('blueslip', global.make_zblueslip());
     // of messages expected for that log type; here, 'error'.
     blueslip.set_test_data('error', 'hello');
     // Since the error 'world' is not being expected, blueslip will
-    // throw an error. This can be verified automatically with the
-    // blueslip.check_error() call.
-    // blueslip.check_error() takes the argument `isblueslip` which asserts that the
-    // error was thrown by blueslip, or in other words, was not in the expected list
-    // of errors.
+    // throw an error.
     assert.throws(throw_an_error);
+    // zblueslip logs all the calls made to it, and they can be used in asserts like:
     assert.equal(blueslip.get_test_logs('error').length, 1);
 
     // Now, let's add our error to the list of expected errors.
