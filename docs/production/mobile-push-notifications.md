@@ -20,7 +20,7 @@ follows:
 
 1. First, contact support@zulipchat.com with the `zulip_org_id` and
    `zulip_org_key` values from your `/etc/zulip/zulip-secrets.conf` file, as
-   well as a hostname and contact email address you'd like us to use in case
+   well as a `hostname` and `contact email` address you'd like us to use in case
    of any issues (we hope to have a nice web flow available for this soon).
 
 2. We'll enable push notifications for your server on our end. Look for a
@@ -121,7 +121,7 @@ distribute their own copy of the Zulip mobile apps, hardcoding a key
 that they possess.
 
 This solution is possible with Zulip, but it requires the server
-administrators to do all the work of publishing their own copies of
+administrators to publish their own copies of
 the Zulip mobile apps (and there's nothing the Zulip team can do to
 eliminate this onorous requirement).
 
@@ -132,10 +132,12 @@ one can easily spend hundreds of dollars (on things like a DUNS number
 registration) and a week struggling through the hoops Apple requires
 to build and distribute an app through the Apple app store, even if
 you're making no code modifications to an app already present in the
-store (as would be the case here), and have your app in the store yet.
+store (as would be the case here). The Zulip mobile app also gets
+frequent updates that you will have to either forgo or republish to
+the app stores yourself.
 
 If you've done that work, the Zulip server configuration for sending
-push notifications directly is quite straightforward:
+push notifications through the new app is quite straightforward:
 * Create a
   [GCM push notifications](https://developers.google.com/cloud-messaging/android/client)
   key in the Google Developer console and set `android_gcm_api_key` in
