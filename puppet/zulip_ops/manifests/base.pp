@@ -17,7 +17,7 @@ class zulip_ops::base {
                         # For managing our current Debian packages
                         "debian-goodies",
                         # Needed for zulip-ec2-configure-network-interfaces
-                        'dhcpcd',
+                        'dhcpcd5',
                         "python3-six",
                         "python-six",
                         # "python3-boto", # missing on trusty
