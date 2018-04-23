@@ -101,16 +101,6 @@ exports.activate = function (raw_operators, opts) {
         opts.select_first_unread = false;
     }
 
-    // This block is for a case of loading a browser window for the
-    // first time in a narrow.
-    // According to old comments, this shouldn't happen anymore;
-    // more investigation is needed.
-    if (opts.then_select_id === -1 && !opts.use_initial_narrow_pointer) {
-        blueslip.warn("Setting then_select_id to page_params.pointer.");
-        opts.then_select_id = page_params.pointer;
-        opts.select_first_unread = false;
-    }
-
     var then_select_id = opts.then_select_id;
     var then_select_offset;
 
