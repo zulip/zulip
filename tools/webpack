@@ -21,7 +21,7 @@ STATIC_PATH = 'static/'
 def run():
     # type: () -> None
     """Builds for production, writing the output to disk"""
-    subprocess.check_call(['node', 'node_modules/.bin/webpack'] +
+    subprocess.check_call(['node', 'node_modules/.bin/webpack-cli'] +
                           ['--config', 'tools/webpack.config.ts', '-p'] +
                           ['--env', 'production'])
 
@@ -29,7 +29,7 @@ def run_watch(host, port, minify):
     # type: (str, str, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
-    webpack_args += ['--config', 'tools/webpack.config.ts', '--watch-poll', '--port', port, "--host", host]
+    webpack_args += ['--config', 'tools/webpack.config.ts', '--progress', '--port', port, "--host", host]
     if minify:
         webpack_args.append('--optimize-minimize')
     subprocess.Popen(webpack_args)

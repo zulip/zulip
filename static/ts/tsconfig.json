@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "outDir": "../webpack-bundles/",
     "sourceMap": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -13,6 +12,5 @@
     "target": "es5",
     "jsx": "react",
     "allowJs": false
-  },
-  "rootDir": "../.."
+  }
 }
