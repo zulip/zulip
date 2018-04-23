@@ -9,11 +9,11 @@ if $zulip::base::release_name == "trusty" {
   package { $postgres_appdb_tuned_packages: ensure => "installed" }
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
-    ensure => file,
+    ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
-    owner  => "postgres",
-    group  => "postgres",
-    mode   => '0644',
+    owner   => "postgres",
+    group   => "postgres",
+    mode    => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
@@ -23,10 +23,10 @@ if $zulip::base::release_name == "trusty" {
   $half_memory_pages = $half_memory / 4096
 
   file {'/etc/sysctl.d/40-postgresql.conf':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0644',
+    ensure  => file,
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
     content =>
 "kernel.shmall = ${half_memory_pages}
 kernel.shmmax = ${half_memory}
@@ -38,23 +38,23 @@ vm.dirty_background_ratio = 5
     }
 
   exec { "sysctl_p":
-    command   => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
-    subscribe => File['/etc/sysctl.d/40-postgresql.conf'],
+    command     => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
+    subscribe   => File['/etc/sysctl.d/40-postgresql.conf'],
     refreshonly => true,
   }
 
   exec { 'pgtune':
-    require => Package["pgtune"],
+    require     => Package["pgtune"],
     # Let Postgres use half the memory on the machine
-    command => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
+    command     => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
     refreshonly => true,
-    subscribe => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
+    subscribe   => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
-    require => Exec["sysctl_p"],
+    require     => Exec["sysctl_p"],
     refreshonly => true,
-    subscribe => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
+    subscribe   => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
 } else {
   # We can't use the built-in $memorysize fact because it's a string with human-readable units
@@ -78,18 +78,18 @@ vm.dirty_background_ratio = 5
   $ssl_ca_file = zulipconf("postgresql", "ssl_ca_file", undef)
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
-    ensure => file,
+    ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
-    owner  => "postgres",
-    group  => "postgres",
-    mode   => '0644',
+    owner   => "postgres",
+    group   => "postgres",
+    mode    => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
+    require     => Package["postgresql-${zulip::base::postgres_version}"],
     refreshonly => true,
-    subscribe => [ File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"] ]
+    subscribe   => [ File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf"] ]
   }
 }
 

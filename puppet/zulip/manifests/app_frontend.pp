@@ -4,26 +4,26 @@ class zulip::app_frontend {
   include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
-    ensure => file,
+    ensure  => file,
     require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
-    notify => Service["nginx"],
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/nginx/sites-available/zulip-enterprise",
+    notify  => Service["nginx"],
   }
   file { "/etc/logrotate.d/zulip":
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/logrotate/zulip",
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
-    ensure => 'link',
+    ensure  => 'link',
     require => Package["nginx-full"],
-    target => '/etc/nginx/sites-available/zulip-enterprise',
-    notify => Service["nginx"],
+    target  => '/etc/nginx/sites-available/zulip-enterprise',
+    notify  => Service["nginx"],
   }
 
   # Trigger 2x a day certbot renew
@@ -40,7 +40,7 @@ class zulip::app_frontend {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/restart-zulip",
   }
 }

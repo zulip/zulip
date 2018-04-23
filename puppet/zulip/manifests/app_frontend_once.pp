@@ -6,7 +6,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/send-digest-emails",
   }
 
@@ -14,7 +14,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/update-analytics-counts",
   }
 
@@ -22,7 +22,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/check-analytics-state",
   }
 
@@ -30,7 +30,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/soft-deactivate-users",
   }
 
@@ -38,7 +38,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/calculate-first-visible-message-id",
   }
 
@@ -46,7 +46,7 @@ class zulip::app_frontend_once {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip/cron.d/clearsessions",
   }
 }

@@ -7,11 +7,11 @@ class zulip::nginx {
   file { "/etc/nginx/zulip-include/":
     require => Package["nginx-full"],
     recurse => true,
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/nginx/zulip-include-common/",
-    notify => Service["nginx"],
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/nginx/zulip-include-common/",
+    notify  => Service["nginx"],
   }
 
   # Nginx versions 1.4.6 and older do not support quoted URLs with the
@@ -28,33 +28,33 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/zulip-include/uploads.route":
-    ensure => file,
+    ensure  => file,
     require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    notify => Service["nginx"],
-    source => $uploads_route,
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    notify  => Service["nginx"],
+    source  => $uploads_route,
   }
 
   file { "/etc/nginx/nginx.conf":
-    ensure => file,
+    ensure  => file,
     require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    notify => Service["nginx"],
-    source => "puppet:///modules/zulip/nginx/nginx.conf",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    notify  => Service["nginx"],
+    source  => "puppet:///modules/zulip/nginx/nginx.conf",
   }
 
   file { "/etc/nginx/uwsgi_params":
-    ensure => file,
+    ensure  => file,
     require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    notify => Service["nginx"],
-    source => "puppet:///modules/zulip/nginx/uwsgi_params",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    notify  => Service["nginx"],
+    source  => "puppet:///modules/zulip/nginx/uwsgi_params",
   }
 
   file { "/etc/nginx/sites-enabled/default":
@@ -63,17 +63,17 @@ class zulip::nginx {
   }
 
   file { '/var/log/nginx':
-    ensure     => "directory",
-    owner      => "zulip",
-    group      => "adm",
-    mode       => '0650'
+    ensure => "directory",
+    owner  => "zulip",
+    group  => "adm",
+    mode   => '0650'
   }
 
   file { ["/var/lib/zulip", "/var/lib/zulip/certbot-webroot"]:
-    ensure     => "directory",
-    owner      => "zulip",
-    group      => "adm",
-    mode       => '0660',
+    ensure => "directory",
+    owner  => "zulip",
+    group  => "adm",
+    mode   => '0660',
   }
 
   service { 'nginx':

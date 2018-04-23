@@ -17,17 +17,17 @@ class zulip::supervisor {
       hasstatus  => true,
       status     => "/bin/true",
       hasrestart => true,
-      restart => "/bin/true"
+      restart    => "/bin/true"
     }
   } else {
     service { "supervisor":
-      ensure => running,
-      require => [
+      ensure     => running,
+      require    => [
         File["/var/log/zulip"],
         Package["supervisor"],
       ],
-      hasstatus => true,
-      status => "supervisorctl status",
+      hasstatus  => true,
+      status     => "supervisorctl status",
       # The "restart" option in the init script does not work.  We could
       # tell Puppet to fall back to stop/start, which does work, but the
       # better option is to tell supervisord to reread its config via
@@ -42,23 +42,23 @@ class zulip::supervisor {
       #
       # We use supervisor[d] as the pattern so the bash/grep commands don't match.
       hasrestart => true,
-      restart => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
+      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
     }
   }
 
   file { "/etc/supervisor/supervisord.conf":
-    ensure => file,
+    ensure  => file,
     require => Package[supervisor],
-    owner => "root",
-    group => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/supervisor/supervisord.conf",
-    notify => Service["supervisor"],
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/supervisor/supervisord.conf",
+    notify  => Service["supervisor"],
   }
 
   if $zulip::base::release_name == "xenial" {
     exec {"enable supervisor":
-      unless => "systemctl is-enabled supervisor",
+      unless  => "systemctl is-enabled supervisor",
       command => "systemctl enable supervisor",
       require => Package["supervisor"],
     }

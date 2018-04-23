@@ -13,21 +13,21 @@ class zulip::apache_sso {
   }
 
   file { "/etc/apache2/ports.conf":
-    ensure => file,
+    ensure  => file,
     require => Package[apache2],
-    owner  => "root",
-    group  => "root",
-    mode => '0640',
-    source => "puppet:///modules/zulip/apache/ports.conf",
+    owner   => "root",
+    group   => "root",
+    mode    => '0640',
+    source  => "puppet:///modules/zulip/apache/ports.conf",
   }
 
   file { "/etc/apache2/sites-available/":
     recurse => true,
     require => Package[apache2],
-    owner  => "root",
-    group  => "root",
-    mode => '0640',
-    source => "puppet:///modules/zulip/apache/sites/",
+    owner   => "root",
+    group   => "root",
+    mode    => '0640',
+    source  => "puppet:///modules/zulip/apache/sites/",
   }
 
 }

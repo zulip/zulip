@@ -6,56 +6,56 @@ class zulip::rabbit {
   package { $rabbit_packages: ensure => "installed" }
 
   file { "/etc/cron.d/rabbitmq-queuesize":
-    ensure => file,
+    ensure  => file,
     require => Package[rabbitmq-server],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/cron.d/rabbitmq-queuesize",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/cron.d/rabbitmq-queuesize",
   }
   file { "/etc/cron.d/rabbitmq-numconsumers":
-    ensure => file,
+    ensure  => file,
     require => Package[rabbitmq-server],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/cron.d/rabbitmq-numconsumers",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/cron.d/rabbitmq-numconsumers",
   }
 
   file { "/etc/default/rabbitmq-server":
-    ensure => file,
+    ensure  => file,
     require => Package[rabbitmq-server],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/rabbitmq/rabbitmq-server",
   }
 
   file { "/etc/rabbitmq/rabbitmq.config":
-    ensure => file,
+    ensure  => file,
     require => Package[rabbitmq-server],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/rabbitmq/rabbitmq.config",
   }
 
   $rabbitmq_nodename = zulipconf("rabbitmq", "nodename", "")
   if $rabbitmq_nodename != "" {
     file { "/etc/rabbitmq":
       ensure => 'directory',
-      owner => "root",
-      group => "root",
-      mode => '0755',
+      owner  => "root",
+      group  => "root",
+      mode   => '0755',
     }
 
     file { "/etc/rabbitmq/rabbitmq-env.conf":
-      ensure => file,
+      ensure  => file,
       require => File["/etc/rabbitmq"],
-      before => [Package[rabbitmq-server], Service[rabbitmq-server]],
-      owner  => "root",
-      group  => "root",
-      mode => '0644',
+      before  => [Package[rabbitmq-server], Service[rabbitmq-server]],
+      owner   => "root",
+      group   => "root",
+      mode    => '0644',
       content => template("zulip/rabbitmq-env.conf.template.erb"),
     }
   }
@@ -65,13 +65,13 @@ class zulip::rabbit {
   # running and exits if so.
   exec { "epmd":
     command => "epmd -daemon",
-    unless => "pgrep -f epmd >/dev/null",
+    unless  => "pgrep -f epmd >/dev/null",
     require => Package[erlang-base],
     path    => "/usr/bin/:/bin/",
   }
 
   service { "rabbitmq-server":
-    ensure => running,
+    ensure  => running,
     require => [Exec["epmd"],
                 File["/etc/rabbitmq/rabbitmq.config"],
                 File["/etc/default/rabbitmq-server"]],

@@ -3,20 +3,20 @@ class zulip::zulip_org {
   include zulip::nginx
 
   file { "/etc/nginx/sites-available/zulip-org":
-    ensure => file,
+    ensure  => file,
     require => Package["nginx-full"],
-    owner  => "root",
-    group  => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip/nginx/sites-available/zulip-org",
-    notify => Service["nginx"],
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip/nginx/sites-available/zulip-org",
+    notify  => Service["nginx"],
   }
 
   file { '/etc/nginx/sites-enabled/zulip-org':
-    ensure => 'link',
+    ensure  => 'link',
     require => Package["nginx-full"],
-    target => '/etc/nginx/sites-available/zulip-org',
-    notify => Service["nginx"],
+    target  => '/etc/nginx/sites-available/zulip-org',
+    notify  => Service["nginx"],
   }
 
   file { '/home/zulip/dist':

@@ -24,28 +24,28 @@ class zulip::postgres_common {
   file { "/usr/lib/nagios/plugins/zulip_postgres_common":
     require => Package[nagios-plugins-basic],
     recurse => true,
-    purge => true,
-    owner => "root",
-    group => "root",
-    mode => '0755',
-    source => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_common",
+    purge   => true,
+    owner   => "root",
+    group   => "root",
+    mode    => '0755',
+    source  => "puppet:///modules/zulip/nagios_plugins/zulip_postgres_common",
   }
 
   file { "/usr/local/bin/env-wal-e":
-    ensure => file,
-    owner => "root",
-    group => "postgres",
-    mode => '0750',
-    source => "puppet:///modules/zulip/postgresql/env-wal-e",
+    ensure  => file,
+    owner   => "root",
+    group   => "postgres",
+    mode    => '0750',
+    source  => "puppet:///modules/zulip/postgresql/env-wal-e",
     require => Package["postgresql-${zulip::base::postgres_version}"],
   }
 
   file { "/usr/local/bin/pg_backup_and_purge":
-    ensure => file,
-    owner => "root",
-    group => "postgres",
-    mode => '0754',
-    source => "puppet:///modules/zulip/postgresql/pg_backup_and_purge",
+    ensure  => file,
+    owner   => "root",
+    group   => "postgres",
+    mode    => '0754',
+    source  => "puppet:///modules/zulip/postgresql/pg_backup_and_purge",
     require => File["/usr/local/bin/env-wal-e"],
   }
 
