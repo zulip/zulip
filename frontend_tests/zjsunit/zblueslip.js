@@ -1,5 +1,3 @@
-var noop = function () {};
-
 var exports = {};
 
 exports.make_zblueslip = function (opts) {
@@ -61,7 +59,10 @@ exports.make_zblueslip = function (opts) {
     // Create logging functions
     Object.keys(opts).forEach(name => {
         if (!opts[name]) {
-            lib[name] = noop;
+            // should just log the message.
+            lib[name] = function (message) {
+                lib.test_logs[name].push(message);
+            };
             return;
         }
         lib[name] = function (message) {
