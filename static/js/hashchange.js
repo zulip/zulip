@@ -137,7 +137,9 @@ function do_hashchange(from_reload) {
         if (from_reload) {
             blueslip.debug('We are narrowing as part of a reload.');
             if (page_params.initial_narrow_pointer !== undefined) {
-                narrow_opts.use_initial_narrow_pointer = true;
+                home_msg_list.pre_narrow_offset = page_params.initial_offset;
+                narrow_opts.then_select_id = page_params.initial_narrow_pointer;
+                narrow_opts.then_select_offset = page_params.initial_narrow_offset;
             }
         }
         narrow.activate(operators, narrow_opts);
