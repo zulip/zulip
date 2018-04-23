@@ -63,6 +63,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             description: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
+            google_hangouts_domain: noop,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
             invite_by_admins_only: noop,
@@ -76,6 +77,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             send_welcome_emails: noop,
             signup_notifications_stream_id: noop,
             restricted_to_domain: noop,
+            video_chat_provider: noop,
             waiting_period_threshold: noop,
         };
         if (event.op === 'update' && _.has(realm_settings, event.property)) {

@@ -138,6 +138,9 @@ def get_active_realm_emoji_cache_key(realm: 'Realm') -> str:
 class Realm(models.Model):
     MAX_REALM_NAME_LENGTH = 40
     MAX_REALM_SUBDOMAIN_LENGTH = 40
+    MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
+    MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 80
+    VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
 
@@ -191,6 +194,8 @@ class Realm(models.Model):
     message_visibility_limit = models.IntegerField(null=True)  # type: Optional[int]
     # See upload_quota_bytes; don't interpret upload_quota_gb directly.
     upload_quota_gb = models.IntegerField(null=True)  # type: Optional[int]
+    video_chat_provider = models.CharField(default=u"Jitsi", max_length=MAX_VIDEO_CHAT_PROVIDER_LENGTH)
+    google_hangouts_domain = models.CharField(max_length=MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH, default="")
 
     # Define the types of the various automatically managed properties
     property_types = dict(
@@ -204,6 +209,7 @@ class Realm(models.Model):
         description=Text,
         disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,
+        google_hangouts_domain=Text,
         invite_required=bool,
         invite_by_admins_only=bool,
         inline_image_preview=bool,
@@ -214,6 +220,7 @@ class Realm(models.Model):
         name_changes_disabled=bool,
         restricted_to_domain=bool,
         send_welcome_emails=bool,
+        video_chat_provider=Text,
         waiting_period_threshold=int,
     )  # type: Dict[str, Union[type, Tuple[type, ...]]]
 

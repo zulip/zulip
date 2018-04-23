@@ -91,6 +91,29 @@
             </div>
         </div>
 
+        <div id="org-video-chat" class="org-subsection-parent">
+            <div class="subsection-header">
+                <h3>{{t "Video chat provider" }}</h3>
+                {{ partial "settings-save-discard-widget" "section_name" "video-chat" }}
+            </div>
+            <div class="inline-block organization-settings-parent">
+                <div class="input-group">
+                    <select name="realm_video_chat_provider" id="id_realm_video_chat_provider">
+                        {{#each realm_available_video_chat_providers}}
+                        <option value='{{this}}'>{{this}}</option>
+                        {{/each}}
+                    </select>
+                    <div id="google_hangouts_domain">
+                        <a href="https://gsuite.google.com" target="_blank">Requires a G Suite team</a>
+                        <label>{{t "G Suite Domain" }}:</label>
+                        <input type="text" id="id_realm_google_hangouts_domain"
+                          name="realm_google_hangouts_domain"
+                          class="admin-realm-google-hangouts-domain"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div id="org-user-defaults" class="org-subsection-parent">
             <div class="subsection-header">
                 <h3>{{t "Default user settings" }}</h3>
