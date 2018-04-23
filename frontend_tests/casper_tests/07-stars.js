@@ -37,10 +37,15 @@ casper.then(function () {
 
     // Clicking on a message star stars it.
     toggle_last_star();
-    casper.test.assertEquals(star_count(), 1,
-                             "Got expected single star count.");
+});
 
-    casper.click('a[href^="#narrow/is/starred"]');
+casper.then(function () {
+    casper.waitUntilVisible('#zhome .icon-vector-star', function () {
+        casper.test.assertEquals(star_count(), 1,
+                                 "Got expected single star count.");
+
+        casper.click('a[href^="#narrow/is/starred"]');
+    });
 });
 
 casper.waitUntilVisible('#zfilt', function () {
