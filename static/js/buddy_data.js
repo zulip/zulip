@@ -11,7 +11,7 @@ var exports = {};
 
 */
 
-var max_size_before_shrinking = 600;
+exports.max_size_before_shrinking = 600;
 
 var presence_descriptions = {
     active: 'is active',
@@ -108,8 +108,18 @@ function user_is_recently_active(user_id) {
     return level(presence.get_status(user_id)) <= 2;
 }
 
-function maybe_shrink_list(user_ids) {
-    if (user_ids.length <= max_size_before_shrinking) {
+function maybe_shrink_list(user_ids, filter_text) {
+    if (user_ids.length <= exports.max_size_before_shrinking) {
+        return user_ids;
+    }
+
+    if (filter_text) {
+        // If the user types something, we want to show all
+        // users matching the text, even if they have not been
+        // online recently.
+        // For super common letters like "s", we may
+        // eventually want to filter down to only users that
+        // are in presence.get_user_ids().
         return user_ids;
     }
 
@@ -132,7 +142,7 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         user_ids = presence.get_user_ids();
     }
 
-    user_ids = maybe_shrink_list(user_ids);
+    user_ids = maybe_shrink_list(user_ids, filter_text);
 
     return exports.sort_users(user_ids);
 };
