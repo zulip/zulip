@@ -6,6 +6,7 @@ from django.contrib.sites.models import Site
 from django.http import HttpResponse
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
+from django.core.exceptions import ValidationError
 
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
@@ -14,7 +15,7 @@ from confirmation.models import Confirmation, create_confirmation_link, Multiuse
     generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
 from confirmation import settings as confirmation_settings
 
-from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR
+from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
 from zerver.lib.actions import do_change_password
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain
@@ -1520,6 +1521,15 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_get("/json/realm/subdomain/hufflepuff")
         self.assert_in_success_response(["available"], result)
         self.assert_not_in_success_response(["unavailable"], result)
+
+    def test_subdomain_check_management_command(self) -> None:
+        # Short names should work
+        check_subdomain_available('aa', from_management_command=True)
+        # So should reserved ones
+        check_subdomain_available('zulip', from_management_command=True)
+        # malformed names should still not
+        with self.assertRaises(ValidationError):
+            check_subdomain_available('-ba_d-', from_management_command=True)
 
 class UserSignUpTest(ZulipTestCase):
 
