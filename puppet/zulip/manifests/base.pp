@@ -23,7 +23,7 @@ class zulip::base {
                      ]
   package { $base_packages: ensure => "installed" }
 
-  $release_name = $operatingsystemrelease ? {
+  $release_name = $::operatingsystemrelease ? {
     # Debian releases
     /7.[0-9]*/ => 'wheezy',
     /8.[0-9]*/ => 'jessie',

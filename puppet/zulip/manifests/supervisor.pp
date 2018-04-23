@@ -7,7 +7,7 @@ class zulip::supervisor {
   # don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
-  if $ignoreSupervisorService != undef and $ignoreSupervisorService {
+  if $::ignoreSupervisorService != undef and $::ignoreSupervisorService {
     service { "supervisor":
       ensure     => running,
       require    => [
