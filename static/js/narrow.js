@@ -98,6 +98,12 @@ exports.activate = function (raw_operators, opts) {
         opts.then_select_id = parseInt(filter.operands("id")[0], 10);
     }
 
+    if (opts.use_initial_narrow_pointer) {
+        opts.then_select_id = page_params.initial_narrow_pointer;
+        opts.then_select_offset = page_params.initial_narrow_offset;
+        home_msg_list.pre_narrow_offset = page_params.initial_offset;
+    }
+
     var select_first_unread = (opts.then_select_id === -1);
     var then_select_id = opts.then_select_id;
     var then_select_offset;
@@ -106,7 +112,9 @@ exports.activate = function (raw_operators, opts) {
         unread.messages_read_in_narrow = false;
     }
 
-    if (!select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
+    if (opts.then_select_offset) {
+        then_select_offset = opts.then_select_offset;
+    } else if (!select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
         then_select_offset = current_msg_list.get_row(then_select_id).offset().top;
     }
 
@@ -128,13 +136,6 @@ exports.activate = function (raw_operators, opts) {
             });
         }
         current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
-    }
-
-    if (opts.use_initial_narrow_pointer) {
-        then_select_id = page_params.initial_narrow_pointer;
-        then_select_offset = page_params.initial_narrow_offset;
-        select_first_unread = false;
-        home_msg_list.pre_narrow_offset = page_params.initial_offset;
     }
 
     var msg_list_opts = {
