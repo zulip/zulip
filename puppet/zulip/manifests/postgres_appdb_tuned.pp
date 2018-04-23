@@ -28,8 +28,8 @@ if $zulip::base::release_name == "trusty" {
     group  => 'root',
     mode   => '0644',
     content =>
-"kernel.shmall = $half_memory_pages
-kernel.shmmax = $half_memory
+"kernel.shmall = ${half_memory_pages}
+kernel.shmmax = ${half_memory}
 
 # These are the defaults on newer kernels
 vm.dirty_ratio = 10
@@ -46,7 +46,7 @@ vm.dirty_background_ratio = 5
   exec { 'pgtune':
     require => Package["pgtune"],
     # Let Postgres use half the memory on the machine
-    command => "pgtune -T Web -M $half_memory -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
+    command => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
     refreshonly => true,
     subscribe => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
   }

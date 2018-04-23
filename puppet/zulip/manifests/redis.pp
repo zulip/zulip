@@ -8,9 +8,9 @@ class zulip::redis {
   $file = "/etc/redis/redis.conf"
   $line = "include /etc/redis/zulip-redis.conf"
   exec { 'redis':
-    unless => "/bin/grep -Fxqe '$line' '$file'",
+    unless => "/bin/grep -Fxqe '${line}' '${file}'",
     path => "/bin",
-    command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '$line') >> '$file'\"",
+    command => "bash -c \"(/bin/echo; /bin/echo '# Include Zulip-specific configuration'; /bin/echo '${line}') >> '${file}'\"",
     require => [Package['redis-server'],
                 File["/etc/redis/zulip-redis.conf"],
                 Exec['rediscleanup']],
