@@ -9,7 +9,8 @@ import ujson
 from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    generate_name_to_codepoint_map, get_remapped_emojis_map, emoji_names_for_picker, EMOJISETS
+    get_emoji_code, generate_name_to_codepoint_map, get_remapped_emojis_map, \
+    emoji_names_for_picker, EMOJISETS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -102,7 +103,7 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
             # ensure the spritesheet is setup to correctly display
             # those google emoji (in case anyone used them).
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                'codepoint': emoji['unified'].lower(),
+                'codepoint': get_emoji_code(emoji),
                 'pos_x': (emoji["sheet_x"] * 100) / 48,
                 'pos_y': (emoji["sheet_y"] * 100) / 48,
             }

@@ -12,6 +12,8 @@ import os
 import re
 import ujson
 
+from emoji_setup_utils import get_emoji_code
+
 from typing import Any, Dict, List
 
 TOOLS_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -50,7 +52,7 @@ def prepare_sorting_info() -> None:
         emoji_data = ujson.load(fp)
 
     for emoji_dict in emoji_data:
-        emoji_code = emoji_dict['unified'].lower()
+        emoji_code = get_emoji_code(emoji_dict)
         sort_order = str(emoji_dict['sort_order']).strip()
         sorting_info[emoji_code] = {
             'category': emoji_dict['category'],

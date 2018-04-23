@@ -10,7 +10,7 @@ import ujson
 
 from typing import Any, Dict, List
 
-from emoji_setup_utils import emoji_is_universal, EMOJISETS
+from emoji_setup_utils import emoji_is_universal, get_emoji_code, EMOJISETS
 from emoji_names import EMOJI_NAME_MAPS
 
 TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -147,7 +147,7 @@ def generate_emoji_code_to_emoji_names_maps() -> None:
 
     # Prepare iamcal names map.
     for emoji_dict in EMOJI_DATA:
-        emoji_code = emoji_dict["unified"].lower()
+        emoji_code = get_emoji_code(emoji_dict)
         emoji_code_to_iamcal_names[emoji_code] = ", ".join(emoji_dict["short_names"])
 
     # Prepare zulip names map.
@@ -178,7 +178,7 @@ def generate_emoji_collection() -> None:
         if not emoji_is_universal(emoji_dict):
             continue
         category = emoji_dict["category"]
-        emoji_code = emoji_dict["unified"].lower()
+        emoji_code = get_emoji_code(emoji_dict)
         sort_order = emoji_dict["sort_order"]
         emoji_collection[category].append({
             "category": category,
