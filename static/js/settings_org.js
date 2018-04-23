@@ -39,6 +39,14 @@ var org_settings = {
             type: 'bool',
         },
     },
+    video_chat: {
+        video_chat_provider: {
+            type: 'text',
+        },
+        google_hangouts_domain: {
+            type: 'text',
+        },
+    },
     user_defaults: {
         default_language: {
             type: 'text',
@@ -134,6 +142,17 @@ function set_create_stream_permission_dropdown() {
 
 function set_add_emoji_permission_dropdown() {
     $("#id_realm_add_emoji_by_admins_only").val(get_property_value("realm_add_emoji_by_admins_only"));
+}
+
+function set_video_chat_provider_dropdown() {
+    var chat_provider = page_params.realm_video_chat_provider;
+    $("#id_realm_video_chat_provider").val(chat_provider);
+    if (chat_provider === "Google Hangouts") {
+        $("#google_hangouts_domain").show();
+        $("#id_realm_google_hangouts_domain").val(page_params.realm_google_hangouts_domain);
+    } else {
+        $("#google_hangouts_domain").hide();
+    }
 }
 
 exports.populate_realm_domains = function (realm_domains) {
@@ -280,6 +299,8 @@ function update_dependent_subsettings(property_name) {
     } else if (property_name === 'realm_restricted_to_domain') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_restricted_to_domain,
             "id_realm_disallow_disposable_email_addresses", false);
+    } else if (property_name === 'realm_video_chat_provider' || property_name === 'realm_google_hangouts_domain') {
+        set_video_chat_provider_dropdown();
     }
 }
 
@@ -397,6 +418,7 @@ function _set_up() {
 
     set_create_stream_permission_dropdown();
     set_add_emoji_permission_dropdown();
+    set_video_chat_provider_dropdown();
 
     $("#id_realm_restricted_to_domain").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_disallow_disposable_email_addresses", false);
@@ -587,6 +609,16 @@ function _set_up() {
         var create_stream_permission = this.value;
         var node = $("#id_realm_waiting_period_threshold").parent();
         if (create_stream_permission === 'by_admin_user_with_custom_time') {
+            node.show();
+        } else {
+            node.hide();
+        }
+    });
+
+    $("#id_realm_video_chat_provider").change(function (e) {
+        var video_chat_provider = e.target.value;
+        var node = $("#google_hangouts_domain");
+        if (video_chat_provider === "Google Hangouts") {
             node.show();
         } else {
             node.hide();

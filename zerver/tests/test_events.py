@@ -1250,6 +1250,8 @@ class EventsRegisterTest(ZulipTestCase):
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
             bot_creation_policy=[Realm.BOT_CREATION_EVERYONE],
+            video_chat_provider=[u'Google Hangouts', u'Jitsi'],
+            google_hangouts_domain=[u"zulip.com", u"zulip.org"],
         )  # type: Dict[str, Any]
 
         vals = test_values.get(name)

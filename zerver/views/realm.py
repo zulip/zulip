@@ -20,6 +20,7 @@ from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.validator import check_string, check_dict, check_bool, check_int
 from zerver.lib.streams import access_stream_by_id
+from zerver.lib.domains import validate_domain
 from zerver.models import Realm, UserProfile
 from zerver.forms import check_subdomain_available as check_subdomain
 
@@ -54,6 +55,8 @@ def update_realm(
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
+        video_chat_provider: Optional[Text]=REQ(validator=check_string, default=None),
+        google_hangouts_domain: Optional[Text]=REQ(validator=check_string, default=None)
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -67,6 +70,11 @@ def update_realm(
         return json_error(_("Organization name is too long."))
     if authentication_methods is not None and True not in list(authentication_methods.values()):
         return json_error(_("At least one authentication method must be enabled."))
+    if video_chat_provider == "Google Hangouts":
+        try:
+            validate_domain(google_hangouts_domain)
+        except ValidationError as e:
+            return json_error(_('Invalid domain: {}').format(e.messages[0]))
 
     # Additional validation of permissions values to add new bot
     if bot_creation_policy is not None and bot_creation_policy not in Realm.BOT_CREATION_POLICY_TYPES:

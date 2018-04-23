@@ -493,6 +493,7 @@ function test_sync_realm_settings() {
     simulate_auth_methods();
 
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
+    $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $('#id_realm_restricted_to_domain').change = set_callback('id_realm_restricted_to_domain');
     $('#id_realm_allow_message_editing').change = set_callback('change_message_editing');
