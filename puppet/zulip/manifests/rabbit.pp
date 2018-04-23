@@ -6,16 +6,16 @@ class zulip::rabbit {
   package { $rabbit_packages: ensure => "installed" }
 
   file { "/etc/cron.d/rabbitmq-queuesize":
-    require => Package[rabbitmq-server],
     ensure => file,
+    require => Package[rabbitmq-server],
     owner  => "root",
     group  => "root",
     mode => '0644',
     source => "puppet:///modules/zulip/cron.d/rabbitmq-queuesize",
   }
   file { "/etc/cron.d/rabbitmq-numconsumers":
-    require => Package[rabbitmq-server],
     ensure => file,
+    require => Package[rabbitmq-server],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -23,8 +23,8 @@ class zulip::rabbit {
   }
 
   file { "/etc/default/rabbitmq-server":
-    require => Package[rabbitmq-server],
     ensure => file,
+    require => Package[rabbitmq-server],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -32,8 +32,8 @@ class zulip::rabbit {
   }
 
   file { "/etc/rabbitmq/rabbitmq.config":
-    require => Package[rabbitmq-server],
     ensure => file,
+    require => Package[rabbitmq-server],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -50,9 +50,9 @@ class zulip::rabbit {
     }
 
     file { "/etc/rabbitmq/rabbitmq-env.conf":
+      ensure => file,
       require => File["/etc/rabbitmq"],
       before => [Package[rabbitmq-server], Service[rabbitmq-server]],
-      ensure => file,
       owner  => "root",
       group  => "root",
       mode => '0644',

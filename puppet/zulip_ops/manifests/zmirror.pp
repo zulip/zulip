@@ -29,8 +29,8 @@ class zulip_ops::zmirror {
   }
 
   file { "/etc/supervisor/conf.d/zmirror.conf":
-    require => Package[supervisor],
     ensure => file,
+    require => Package[supervisor],
     owner => "root",
     group => "root",
     mode => '0644',

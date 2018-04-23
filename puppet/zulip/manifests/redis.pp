@@ -23,8 +23,8 @@ class zulip::redis {
 
   $redis_password = zulipsecret("secrets", "redis_password", "")
   file { "/etc/redis/zulip-redis.conf":
-    require => Package[redis-server],
     ensure => file,
+    require => Package[redis-server],
     owner  => "redis",
     group  => "redis",
     mode => '0640',

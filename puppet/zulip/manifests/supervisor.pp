@@ -47,8 +47,8 @@ class zulip::supervisor {
   }
 
   file { "/etc/supervisor/supervisord.conf":
-    require => Package[supervisor],
     ensure => file,
+    require => Package[supervisor],
     owner => "root",
     group => "root",
     mode => '0644',

@@ -4,8 +4,8 @@ class zulip_ops::loadbalancer {
   include zulip::camo
 
   file { "/etc/nginx/sites-available/loadbalancer":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -22,8 +22,8 @@ class zulip_ops::loadbalancer {
   }
 
   file { '/etc/nginx/sites-enabled/loadbalancer':
-    require => Package["nginx-full"],
     ensure => 'link',
+    require => Package["nginx-full"],
     target => '/etc/nginx/sites-available/loadbalancer',
     notify => Service["nginx"],
   }

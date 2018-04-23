@@ -3,8 +3,8 @@ class zulip_ops::postgres_slave {
   include zulip_ops::postgres_appdb
 
   file { "/var/lib/postgresql/${zulip::base::postgres_version}/main/recovery.conf":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     owner  => "postgres",
     group  => "postgres",
     mode   => '0644',

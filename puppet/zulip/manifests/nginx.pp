@@ -28,8 +28,8 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/zulip-include/uploads.route":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -38,8 +38,8 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/nginx.conf":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -48,8 +48,8 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/uwsgi_params":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -58,8 +58,8 @@ class zulip::nginx {
   }
 
   file { "/etc/nginx/sites-enabled/default":
-    notify => Service["nginx"],
     ensure => absent,
+    notify => Service["nginx"],
   }
 
   file { '/var/log/nginx':

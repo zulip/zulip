@@ -73,8 +73,8 @@ class zulip::app_frontend_base {
   $message_sender_processes = zulipconf("application_server", "message_sender_processes",
                                         $message_sender_default_processes)
   file { "/etc/supervisor/conf.d/zulip.conf":
-    require => Package[supervisor],
     ensure => file,
+    require => Package[supervisor],
     owner => "root",
     group => "root",
     mode => '0644',
@@ -85,8 +85,8 @@ class zulip::app_frontend_base {
   $uwsgi_processes = zulipconf("application_server", "uwsgi_processes",
                                $uwsgi_default_processes)
   file { "/etc/zulip/uwsgi.ini":
-    require => Package[supervisor],
     ensure => file,
+    require => Package[supervisor],
     owner => "root",
     group => "root",
     mode => '0644',

@@ -22,8 +22,8 @@ class zulip_ops::munin {
   }
 
   file { "/etc/munin/munin.conf":
-    require => [ Package["munin"], File["/etc/munin"] ],
     ensure => file,
+    require => [ Package["munin"], File["/etc/munin"] ],
     owner => "root",
     group => "root",
     mode => '0644',
@@ -31,8 +31,8 @@ class zulip_ops::munin {
   }
 
   file { "/etc/supervisor/conf.d/munin_tunnels.conf":
-    require => Package["supervisor", "autossh"],
     ensure => file,
+    require => Package["supervisor", "autossh"],
     mode   => '0644',
     owner  => "root",
     group  => "root",

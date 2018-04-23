@@ -8,8 +8,8 @@ class zulip::camo {
   $camo_key = zulipsecret("secrets", "camo_key", '')
 
   file { "/etc/default/camo":
-    require => Package[camo],
     ensure => file,
+    require => Package[camo],
     owner  => "root",
     group  => "root",
     mode => '0644',

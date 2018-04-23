@@ -13,8 +13,8 @@ class zulip::apache_sso {
   }
 
   file { "/etc/apache2/ports.conf":
-    require => Package[apache2],
     ensure => file,
+    require => Package[apache2],
     owner  => "root",
     group  => "root",
     mode => '0640',

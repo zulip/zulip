@@ -32,10 +32,10 @@ class zulip_ops::nagios {
   $hosts_fullstack = split(zulipconf("nagios", "hosts_fullstack", undef), ",")
 
   apache2site { 'nagios':
+    ensure => present,
     require => [File['/etc/apache2/sites-available/'],
                 Apache2mod['headers'], Apache2mod['ssl'],
                 ],
-    ensure => present,
   }
 
   file { "/etc/nagios3/":

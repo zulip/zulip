@@ -21,8 +21,8 @@ class zulip_ops::postgres_common {
   }
 
   cron { "pg_backup_and_purge":
-    command => "/usr/local/bin/pg_backup_and_purge",
     ensure => present,
+    command => "/usr/local/bin/pg_backup_and_purge",
     environment => "PATH=/bin:/usr/bin:/usr/local/bin",
     hour => 5,
     minute => 0,

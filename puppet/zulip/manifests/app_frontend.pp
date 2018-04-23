@@ -4,8 +4,8 @@ class zulip::app_frontend {
   include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip-enterprise":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -20,8 +20,8 @@ class zulip::app_frontend {
     source => "puppet:///modules/zulip/logrotate/zulip",
   }
   file { '/etc/nginx/sites-enabled/zulip-enterprise':
-    require => Package["nginx-full"],
     ensure => 'link',
+    require => Package["nginx-full"],
     target => '/etc/nginx/sites-available/zulip-enterprise',
     notify => Service["nginx"],
   }

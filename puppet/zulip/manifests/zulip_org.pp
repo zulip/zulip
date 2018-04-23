@@ -3,8 +3,8 @@ class zulip::zulip_org {
   include zulip::nginx
 
   file { "/etc/nginx/sites-available/zulip-org":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -13,8 +13,8 @@ class zulip::zulip_org {
   }
 
   file { '/etc/nginx/sites-enabled/zulip-org':
-    require => Package["nginx-full"],
     ensure => 'link',
+    require => Package["nginx-full"],
     target => '/etc/nginx/sites-available/zulip-org',
     notify => Service["nginx"],
   }

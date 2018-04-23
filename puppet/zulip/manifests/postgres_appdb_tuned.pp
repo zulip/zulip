@@ -9,8 +9,8 @@ if $zulip::base::release_name == "trusty" {
   package { $postgres_appdb_tuned_packages: ensure => "installed" }
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     owner  => "postgres",
     group  => "postgres",
     mode   => '0644',
@@ -78,8 +78,8 @@ vm.dirty_background_ratio = 5
   $ssl_ca_file = zulipconf("postgresql", "ssl_ca_file", undef)
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     owner  => "postgres",
     group  => "postgres",
     mode   => '0644',

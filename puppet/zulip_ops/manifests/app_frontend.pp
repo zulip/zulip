@@ -54,8 +54,8 @@ class zulip_ops::app_frontend {
   }
 
   file { "/etc/supervisor/conf.d/redis_tunnel.conf":
-    require => Package["supervisor", "autossh"],
     ensure => file,
+    require => Package["supervisor", "autossh"],
     owner => "root",
     group => "root",
     mode => '0644',

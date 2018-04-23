@@ -4,8 +4,8 @@ class zulip_ops::prod_app_frontend {
   include zulip::app_frontend_once
 
   file { "/etc/nginx/sites-available/zulip":
-    require => Package["nginx-full"],
     ensure => file,
+    require => Package["nginx-full"],
     owner  => "root",
     group  => "root",
     mode => '0644',
@@ -14,8 +14,8 @@ class zulip_ops::prod_app_frontend {
   }
 
   file { '/etc/nginx/sites-enabled/zulip':
-    require => Package["nginx-full"],
     ensure => 'link',
+    require => Package["nginx-full"],
     target => '/etc/nginx/sites-available/zulip',
     notify => Service["nginx"],
   }

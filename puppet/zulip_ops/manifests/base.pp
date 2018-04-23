@@ -66,8 +66,8 @@ class zulip_ops::base {
   }
 
   file { '/etc/pam.d/common-session':
-    require    => Package['openssh-server'],
     ensure     => file,
+    require    => Package['openssh-server'],
     source     => 'puppet:///modules/zulip_ops/common-session',
     owner      => 'root',
     group      => 'root',
@@ -81,8 +81,8 @@ class zulip_ops::base {
   if $zulip::base::release_name == "xenial" {
     # Our custom sshd_config uses options that don't exist on trusty.
     file { '/etc/ssh/sshd_config':
-      require    => Package['openssh-server'],
       ensure     => file,
+      require    => Package['openssh-server'],
       source     => 'puppet:///modules/zulip_ops/sshd_config',
       owner      => 'root',
       group      => 'root',

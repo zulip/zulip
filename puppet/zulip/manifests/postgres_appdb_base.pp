@@ -30,8 +30,8 @@ class zulip::postgres_appdb_base {
   }
 
   file { "/etc/supervisor/conf.d/zulip_db.conf":
-    require => Package[supervisor],
     ensure => file,
+    require => Package[supervisor],
     owner => "root",
     group => "root",
     mode => '0644',
@@ -40,18 +40,18 @@ class zulip::postgres_appdb_base {
   }
 
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.dict":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => 'link',
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     target => '/var/cache/postgresql/dicts/en_us.dict',
   }
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.affix":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => 'link',
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     target => '/var/cache/postgresql/dicts/en_us.affix',
   }
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/zulip_english.stop":
-    require => Package["postgresql-${zulip::base::postgres_version}"],
     ensure => file,
+    require => Package["postgresql-${zulip::base::postgres_version}"],
     owner => "root",
     group => "root",
     mode => '0644',
@@ -75,14 +75,14 @@ class zulip::postgres_appdb_base {
 
     # Needed for optional our full text search system
     package{"postgresql-${zulip::base::postgres_version}-pgroonga":
-      require => Package["postgresql-${zulip::base::postgres_version}"],
       ensure => "installed",
+      require => Package["postgresql-${zulip::base::postgres_version}"],
     }
 
     $pgroonga_setup_sql_path = "/usr/share/postgresql/${zulip::base::postgres_version}/pgroonga_setup.sql"
     file { $pgroonga_setup_sql_path:
-      require => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
       ensure => file,
+      require => Package["postgresql-${zulip::base::postgres_version}-pgroonga"],
       owner  => "postgres",
       group  => "postgres",
       mode => '0640',
