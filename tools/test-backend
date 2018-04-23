@@ -78,6 +78,7 @@ not_yet_fully_covered = {
     'zerver/lib/feedback.py',
     'zerver/lib/fix_unreads.py',
     'zerver/lib/html_diff.py',
+    'zerver/lib/import_realm.py',
     'zerver/lib/logging_util.py',
     'zerver/lib/migrate.py',
     'zerver/lib/outgoing_webhook.py',
