@@ -8,6 +8,25 @@ from typing import Any, Dict, List
 # Emojisets that we currently support.
 EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
 
+# Some image files in the old emoji farm had a different name than in the new emoji
+# farm. `remapped_emojis` is a map that contains a mapping of their name in the old
+# emoji farm to their name in the new emoji farm.
+remapped_emojis = {
+    "0023": "0023-20e3",    # Hash
+    "0030": "0030-20e3",    # Zero
+    "0031": "0031-20e3",    # One
+    "0032": "0032-20e3",    # Two
+    "0033": "0033-20e3",    # Three
+    "0034": "0034-20e3",    # Four
+    "0035": "0035-20e3",    # Five
+    "0036": "0036-20e3",    # Six
+    "0037": "0037-20e3",    # Seven
+    "0038": "0038-20e3",    # Eight
+    "0039": "0039-20e3",    # Nine
+    "1f48f": "1f469-200d-2764-200d-1f48b-200d-1f468",    # Couple kiss
+    "1f491": "1f469-200d-2764-200d-1f468",  # Couple with heart
+}
+
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names = []  # type: List[str]
     for emoji_code, name_info in emoji_name_maps.items():
@@ -62,3 +81,6 @@ def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
         for alias in aliases:
             name_to_codepoint[alias] = emoji_code
     return name_to_codepoint
+
+def get_remapped_emojis_map() -> Dict[str, str]:
+    return remapped_emojis
