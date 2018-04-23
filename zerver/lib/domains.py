@@ -9,6 +9,8 @@ def validate_domain(domain: Text) -> None:
         raise ValidationError(_("Domain can't be empty."))
     if '.' not in domain:
         raise ValidationError(_("Domain must have at least one dot (.)"))
+    if len(domain) > 255:
+        raise ValidationError(_("Domain is too long"))
     if domain[0] == '.' or domain[-1] == '.':
         raise ValidationError(_("Domain cannot start or end with a dot (.)"))
     for subdomain in domain.split('.'):

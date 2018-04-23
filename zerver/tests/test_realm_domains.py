@@ -137,7 +137,7 @@ class RealmDomainTest(ZulipTestCase):
 
     def test_validate_domain(self) -> None:
         invalid_domains = ['', 'test', 't.', 'test.', '.com', '-test', 'test...com',
-                           'test-', 'test_domain.com', 'test.-domain.com']
+                           'test-', 'test_domain.com', 'test.-domain.com', 'a' * 255 + ".com"]
         for domain in invalid_domains:
             with self.assertRaises(ValidationError):
                 validate_domain(domain)
