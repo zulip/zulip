@@ -1,4 +1,4 @@
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 
 (function test_basic() {
     var d = new Dict();
@@ -57,9 +57,7 @@ set_global('blueslip', {});
 }());
 
 (function test_undefined_keys() {
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, "Tried to call a Dict method with an undefined key.");
-    };
+    blueslip.set_test_data('error', 'Tried to call a Dict method with an undefined key.');
 
     var d = new Dict();
 
@@ -70,6 +68,9 @@ set_global('blueslip', {});
 
     assert.equal(d.has(undefined), false);
     assert.strictEqual(d.get(undefined), undefined);
+    assert.equal(blueslip.get_test_logs('error').length, 4);
+
+    blueslip.clear_test_data();
 }());
 
 (function test_restricted_keys() {
