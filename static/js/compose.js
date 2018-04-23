@@ -924,8 +924,13 @@ exports.initialize = function () {
             return;
         }
 
+        var video_call_link;
         var video_call_id = util.random_int(100000000000000, 999999999999999);
-        var video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
+        if (page_params.realm_video_chat_provider === "Google Hangouts") {
+            video_call_link = "https://hangouts.google.com/hangouts/_/" + page_params.realm_google_hangouts_domain + "/" + video_call_id;
+        } else {
+            video_call_link = page_params.jitsi_server_url + "/" +  video_call_id;
+        }
         var video_call_link_text = '[' + _('Click to join video call') + '](' + video_call_link + ')';
         compose_ui.insert_syntax_and_focus(video_call_link_text);
     });

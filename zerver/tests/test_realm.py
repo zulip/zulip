@@ -305,6 +305,34 @@ class RealmTest(ZulipTestCase):
         result = self.client_patch('/json/realm', req)
         self.assert_json_error(result, 'Invalid bot creation policy')
 
+    def test_change_video_chat_provider(self) -> None:
+        self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
+        email = self.example_email("iago")
+        self.login(email)
+
+        req = {"video_chat_provider": ujson.dumps("Google Hangouts")}
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid domain: Domain can't be empty.")
+
+        req = {
+            "video_chat_provider": ujson.dumps("Google Hangouts"),
+            "google_hangouts_domain": ujson.dumps("invaliddomain"),
+        }
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_error(result, "Invalid domain: Domain must have at least one dot (.)")
+
+        req = {
+            "video_chat_provider": ujson.dumps("Google Hangouts"),
+            "google_hangouts_domain": ujson.dumps("zulip.com"),
+        }
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        self.assertEqual(get_realm('zulip').video_chat_provider, "Google Hangouts")
+
+        req = {"video_chat_provider": ujson.dumps("Jitsi")}
+        result = self.client_patch('/json/realm', req)
+        self.assert_json_success(result)
+        self.assertEqual(get_realm('zulip').video_chat_provider, "Jitsi")
 
 class RealmAPITest(ZulipTestCase):
 
@@ -340,6 +368,8 @@ class RealmAPITest(ZulipTestCase):
             name=[u'Zulip', u'New Name'],
             waiting_period_threshold=[10, 20],
             bot_creation_policy=[1, 2],
+            video_chat_provider=[u'Jitsi', u'Hangouts'],
+            google_hangouts_domain=[u'zulip.com', u'zulip.org'],
         )  # type: Dict[str, Any]
         vals = test_values.get(name)
         if Realm.property_types[name] is bool:

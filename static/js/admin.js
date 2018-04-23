@@ -30,6 +30,7 @@ function _setup_page() {
     var options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
+        realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         realm_description: page_params.realm_description,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_invite_required: page_params.realm_invite_required,
