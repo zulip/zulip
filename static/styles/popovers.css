@@ -145,6 +145,60 @@ ul.remind_me_popover .remind_icon {
     position: relative;
 }
 
+.user-profile-modal-avatar {
+    height: 90px;
+    width: 90px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 5px;
+}
+
+.user-profile-modal-name-section {
+    font-size: 26px;
+    font-weight: 700;
+    position: relative;
+    top: -75px;
+    left: 100px;
+    max-width: 70%;
+}
+
+.user-profile-modal-email-section {
+    font-size: 15px;
+    font-weight: 500;
+    position: relative;
+    top: -70px;
+    left: 100px;
+    max-width: 80%;
+}
+
+.user-profile-modal-field-name {
+    margin-bottom: -2px;
+    font-weight: bold;
+    max-width: 95%;
+}
+
+.user-profile-modal-field-value {
+    font-size: 15px;
+    margin-bottom: 5px;
+    max-width: 95%;
+}
+
+#user-profile-modal-hr {
+    margin-top: -15px;
+}
+
+#user-profile-modal-body {
+    padding-bottom: 10px;
+    padding-top: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.user-profile-modal-edit-button {
+    color: black;
+    font-size: 18px;
+}
+
 .message-info-popover {
     padding: 0;
 }

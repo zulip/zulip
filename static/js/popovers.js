@@ -150,8 +150,9 @@ function show_user_info_popover(element, user, message) {
             private_message_class: "respond_personal_button",
             is_me: people.is_current_user(user.email),
             is_active: people.is_active_user_for_popover(user.user_id),
-            is_bot: people.get_person_from_user_id(user.user_id).is_bot,
+            is_bot: user.is_bot,
             is_sender_popover: message.sender_id === user.user_id,
+            show_user_profile: (!user.is_bot && page_params.custom_profile_fields),
         };
 
 
@@ -170,6 +171,34 @@ function show_user_info_popover(element, user, message) {
 
         current_message_info_popover_elem = elt;
     }
+}
+
+function show_user_profile(element, user) {
+    popovers.hide_all();
+
+    var profile_data = {};
+
+    page_params.custom_profile_fields.forEach(function (field) {
+        profile_data[field.name] = people.get_custom_profile_data(user.user_id, field.id);
+    });
+
+    var time_preferance = people.get_user_time_preferences(user.user_id);
+
+    if (time_preferance) {
+        profile_data.Timezone = time_preferance.timezone;
+    }
+
+    var args = {
+        full_name: user.full_name,
+        email: user.email,
+        profile_data: profile_data,
+        user_avatar: "avatar/" + user.email + "/medium",
+        is_me: people.is_current_user(user.email),
+    };
+
+    $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
+    ui.set_up_scrollbar($("#user-profile-modal-body"));
+    $("#user-profile-modal").modal("show");
 }
 
 function fetch_group_members(member_ids) {
@@ -623,6 +652,14 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
+        var user_id = $(e.target).parents('ul').attr('data-user-id');
+        var user = people.get_person_from_user_id(user_id);
+        show_user_profile(e.target, user);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -658,6 +695,7 @@ exports.register_click_handlers = function () {
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
             is_sender_popover: false,
+            show_user_profile: (!user.is_bot && page_params.custom_profile_fields),
         };
 
         target.popover({

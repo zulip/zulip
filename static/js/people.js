@@ -866,7 +866,11 @@ exports.my_custom_profile_data = function (field_id) {
         blueslip.error("Undefined field id");
         return;
     }
-    return people_by_user_id_dict.get(my_user_id).profile_data[field_id];
+    return exports.get_custom_profile_data(my_user_id, field_id);
+};
+
+exports.get_custom_profile_data = function (user_id, field_id) {
+    return people_by_user_id_dict.get(user_id).profile_data[field_id];
 };
 
 exports.is_my_user_id = function (user_id) {
