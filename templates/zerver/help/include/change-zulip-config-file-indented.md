@@ -1,4 +1,4 @@
-    Open `integrations/{{ integration_name }}/zulip_{{ integration_name }}_config.py`
+    Open `/usr/local/share/zulip/integrations/{{ integration_name }}/zulip_{{ integration_name }}_config.py`
     with your favorite editor, and change the following lines to specify the
     email address and API key for your {{ integration_display_name }} bot:
 
