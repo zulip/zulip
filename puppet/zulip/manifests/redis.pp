@@ -34,6 +34,6 @@ class zulip::redis {
   service { 'redis-server':
     ensure    => running,
     subscribe => [File['/etc/redis/zulip-redis.conf'],
-                   Exec['redis']],
+                  Exec['redis']],
   }
 }

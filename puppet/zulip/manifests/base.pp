@@ -7,20 +7,21 @@ define safepackage ( $ensure = present ) {
 
 class zulip::base {
   include apt
-  $base_packages = [ # Accurate time is essential
-                     'ntp',
-                     # Used in scripts including install-yarn.sh
-                     'curl',
-                     'wget',
-                     # Used in scripts
-                     'netcat',
-                     # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
-                     'nagios-plugins-basic',
-                     # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
-                     'crudini',
-                     # Used for tools like sponge
-                     'moreutils',
-                     ]
+  $base_packages = [
+    # Accurate time is essential
+    'ntp',
+    # Used in scripts including install-yarn.sh
+    'curl',
+    'wget',
+    # Used in scripts
+    'netcat',
+    # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
+    'nagios-plugins-basic',
+    # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
+    'crudini',
+    # Used for tools like sponge
+    'moreutils',
+  ]
   package { $base_packages: ensure => 'installed' }
 
   $release_name = $::operatingsystemrelease ? {
@@ -48,24 +49,24 @@ class zulip::base {
   }
 
   $normal_queues = [
-             'deferred_work',
-             'digest_emails',
-             'email_mirror',
-             'embed_links',
-             'embedded_bots',
-             'error_reports',
-             'feedback_messages',
-             'invites',
-             'missedmessage_email_senders',
-             'email_senders',
-             'missedmessage_emails',
-             'missedmessage_mobile_notifications',
-             'outgoing_webhooks',
-             'signups',
-             'slow_queries',
-             'user_activity',
-             'user_activity_interval',
-             'user_presence',
+    'deferred_work',
+    'digest_emails',
+    'email_mirror',
+    'embed_links',
+    'embedded_bots',
+    'error_reports',
+    'feedback_messages',
+    'invites',
+    'missedmessage_email_senders',
+    'email_senders',
+    'missedmessage_emails',
+    'missedmessage_mobile_notifications',
+    'outgoing_webhooks',
+    'signups',
+    'slow_queries',
+    'user_activity',
+    'user_activity_interval',
+    'user_presence',
   ]
 
   group { 'zulip':

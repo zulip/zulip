@@ -1,7 +1,8 @@
 class zulip::nginx {
-  $web_packages = [# Needed to run nginx with the modules we use
-                   'nginx-full',
-                   ]
+  $web_packages = [
+    # Needed to run nginx with the modules we use
+    'nginx-full',
+  ]
   package { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/':
