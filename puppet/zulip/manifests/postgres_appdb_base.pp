@@ -90,7 +90,7 @@ class zulip::postgres_appdb_base {
     }
 
     exec{"create_pgroonga_extension":
-      require => File["${pgroonga_setup_sql_path}"],
+      require => File[$pgroonga_setup_sql_path],
       command  => "bash -c 'cat ${pgroonga_setup_sql_path} | su postgres -c \"psql -v ON_ERROR_STOP=1 zulip\" && touch ${pgroonga_setup_sql_path}.applied'",
       creates  => "${pgroonga_setup_sql_path}.applied",
     }
