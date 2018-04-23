@@ -31,10 +31,18 @@ function update_subscription_checkboxes() {
 
 function reset_error_messages() {
     var invite_status = $('#invite_status');
+    var invite_status_message = $('#invite_status_message');
+    var invite_error_list = $('#invite_error_list');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
+    var reactivation_message_admin = $('#reactivation_message_admin');
+    var reactivation_message_non_admin = $('#reactivation_message_non_admin');
 
-    invite_status.hide().text('').removeClass('alert-error alert-warning alert-success');
+    invite_status.hide().removeClass('alert-error alert-warning alert-success');
+    invite_status_message.text('');
+    invite_error_list.text('');
+    reactivation_message_non_admin.hide();
+    reactivation_message_admin.hide();
     invitee_emails_group.removeClass('warning error');
     if (page_params.development_environment) {
         $('#dev_env_msg').hide().text('').removeClass('alert-error alert-warning alert-success');
@@ -49,8 +57,11 @@ function prepare_form_to_be_shown() {
 exports.initialize = function () {
     ui.set_up_scrollbar($("#invite_user_form .modal-body"));
     var invite_status = $('#invite_status');
+    var invite_status_message = $('#invite_status_message');
     var invitee_emails = $("#invitee_emails");
     var invitee_emails_group = invitee_emails.closest('.control-group');
+    var reactivation_message_admin = $('#reactivation_message_admin');
+    var reactivation_message_non_admin = $('#reactivation_message_non_admin');
 
     $('#submit-invitation').button();
     prepare_form_to_be_shown();
@@ -70,9 +81,9 @@ exports.initialize = function () {
         },
         success: function () {
             $('#submit-invitation').button('reset');
-            invite_status.text(i18n.t('User(s) invited successfully.'))
-                          .addClass('alert-success')
-                          .show();
+            invite_status.addClass('alert-success')
+                         .show();
+            invite_status_message.text(i18n.t('User(s) invited successfully.'));
             invitee_emails.val('');
 
             if (page_params.development_environment) {
@@ -86,24 +97,28 @@ exports.initialize = function () {
             var arr = JSON.parse(xhr.responseText);
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
-                invite_status.text(arr.msg)
-                              .addClass('alert-error')
-                              .show();
+                invite_status_message.text(arr.msg);
+                invite_status.addClass('alert-error')
+                             .show();
             } else {
                 // Some users were not invited.
                 var invitee_emails_errored = [];
-                var error_list = $('<ul>');
+                var error_list = $('#invite_error_list');
                 _.each(arr.errors, function (value) {
                     error_list.append($('<li>').text(value.join(': ')));
                     invitee_emails_errored.push(value[0]);
                 });
 
+                invite_status_message.text(arr.msg);
                 invite_status.addClass('alert-warning')
-                              .empty()
-                              .append($('<p>').text(arr.msg))
-                              .append(error_list)
-                              .show();
+                             .show();
                 invitee_emails_group.addClass('warning');
+
+                if (arr.activation_msg_type === 'admin') {
+                    reactivation_message_admin.show();
+                } else {
+                    reactivation_message_non_admin.show();
+                }
 
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join('\n'));

@@ -26,7 +26,12 @@
                     </div>
                     {% endif %}
                 </div>
-                <div class="alert" id="invite_status"></div>
+                <div class="alert" id="invite_status">
+                    <p id="invite_status_message"></p>
+                    <ul id="invite_error_list"></ul>
+                    <p id="reactivation_message_non_admin">{{ _('Organization administrators can reactivate deactivated users from organization settings.') }}</p>
+                    <p id="reactivation_message_admin">You can reactivate deactivated users from <a href="#organization/deactivated-users-admin">organization settings</a>.</p>
+                </div>
                 {% if development_environment %}
                 <div class="alert" id="dev_env_msg"></div>
                 {% endif %}
