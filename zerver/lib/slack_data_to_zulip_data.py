@@ -15,9 +15,10 @@ import random
 from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
+from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji
+from zerver.models import Reaction, RealmEmoji, Realm
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.parallel import run_parallel
@@ -101,42 +102,13 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
 
 def build_zerver_realm(realm_id: int, realm_subdomain: str,
                        time: float) -> List[ZerverFieldsT]:
-    return [{
-        "message_retention_days": None,
-        "inline_image_preview": True,
-        "name_changes_disabled": False,
-        "icon_version": 1,
-        "waiting_period_threshold": 0,
-        "email_changes_disabled": False,
-        "deactivated": False,
-        "notifications_stream": None,
-        "restricted_to_domain": False,
-        "show_digest_email": True,
-        "allow_message_editing": True,
-        "description": "Organization imported from Slack!",
-        "default_language": "en",
-        "icon_source": "G",
-        "invite_required": True,
-        "invite_by_admins_only": False,
-        "create_stream_by_admins_only": False,
-        "mandatory_topics": False,
-        "inline_url_embed_preview": True,
-        "message_content_edit_limit_seconds": 600,
-        "authentication_methods": [
-            ["Google", True],
-            ["Email", True],
-            ["GitHub", True],
-            ["LDAP", True],
-            ["Dev", True],
-            ["RemoteUser", True]
-        ],
-        "name": realm_subdomain,
-        "string_id": realm_subdomain,
-        "org_type": 1,
-        "add_emoji_by_admins_only": False,
-        "id": realm_id,
-        "date_created": time,
-    }]
+    realm = Realm(id=realm_id, date_created=time,
+                  name=realm_subdomain, string_id=realm_subdomain,
+                  description="Organization imported from Slack!")
+    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
+    realm_dict = model_to_dict(realm, exclude='authentication_methods')
+    realm_dict['authentication_methods'] = auth_methods
+    return[realm_dict]
 
 def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                      realm_id: int) -> Tuple[List[ZerverFieldsT],
