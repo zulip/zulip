@@ -1895,9 +1895,9 @@ cli-width@^2.0.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/cli-width/-/cli-width-2.2.0.tgz#ff19ede8a9a5e579324147b0c11f0fbcbabed639"
 
-clipboard@2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/clipboard/-/clipboard-2.0.1.tgz#a12481e1c13d8a50f5f036b0560fe5d16d74e46a"
+clipboard@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/clipboard/-/clipboard-2.0.0.tgz#4661dc972fb72a4c4770b8db78aa9b1caef52b50"
   dependencies:
     good-listener "^1.2.2"
     select "^1.1.2"
@@ -2948,21 +2948,21 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
-emoji-datasource-apple@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-apple/-/emoji-datasource-apple-3.0.0.tgz#1e5eb0443d0a9e20ec3ed01e77114ce601b19cec"
+emoji-datasource-apple@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-apple/-/emoji-datasource-apple-4.0.4.tgz#586048cf338623c1d64f41c0642cfb3f19552503"
 
-emoji-datasource-emojione@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-emojione/-/emoji-datasource-emojione-3.0.0.tgz#5d5ef31d1406e4f324baef3f5932a30c7733a651"
+emoji-datasource-emojione@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-emojione/-/emoji-datasource-emojione-4.0.4.tgz#60fc4be24a70289cc4225752e38f1d700c95a160"
 
-emoji-datasource-google@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-3.0.0.tgz#d6f77b56385338e10667d2b150dbe9f9b5a4e921"
+emoji-datasource-google@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-4.0.4.tgz#87392c07255e172e578107a9f1a3b6755907eb01"
 
-emoji-datasource-twitter@3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/emoji-datasource-twitter/-/emoji-datasource-twitter-3.0.0.tgz#4bbe192368740c72c83c4924c2ef497adec1a431"
+emoji-datasource-twitter@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-twitter/-/emoji-datasource-twitter-4.0.4.tgz#83bd4bd719205d41d2da1d7f346a093db429f036"
 
 emojis-list@^2.0.0:
   version "2.1.0"

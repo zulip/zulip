@@ -48,9 +48,9 @@ span.emoji
 {
     display: inline-block;
     background-image: url('sheet_%(emojiset)s_64.png');
-    -webkit-background-size: 4900%%;
-    -moz-background-size: 4900%%;
-    background-size: 4900%%;
+    -webkit-background-size: 5200%%;
+    -moz-background-size: 5200%%;
+    background-size: 5200%%;
     background-repeat: no-repeat;
 
     /* Hide the text. */
@@ -111,8 +111,8 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
             # those google emoji (in case anyone used them).
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': get_emoji_code(emoji),
-                'pos_x': (emoji["sheet_x"] * 100) / 48,
-                'pos_y': (emoji["sheet_y"] * 100) / 48,
+                'pos_x': (emoji["sheet_x"] * 100) / 51,
+                'pos_y': (emoji["sheet_y"] * 100) / 51,
             }
 
     for emojiset in EMOJISETS:
@@ -144,7 +144,9 @@ def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
 
     generate_sprite_css_files(cache_path, emoji_data)
 
-def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
+def setup_old_emoji_farm(cache_path: str,
+                         emoji_map: Dict[str, str],
+                         emoji_data: List[Dict[str, Any]]) -> None:
     # Code for setting up old emoji farm.
     os.chdir(cache_path)
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
@@ -163,7 +165,7 @@ def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
 
     # `remapped_emojis` is a mapping which helps in mapping `emoji_map`
     # codepoints to corresponding images in new emoji farm.
-    remapped_emojis = get_remapped_emojis_map()
+    remapped_emojis = get_remapped_emojis_map(emoji_data)
 
     for name, codepoint in emoji_map.items():
         mapped_codepoint = remapped_emojis.get(codepoint, codepoint)
@@ -222,7 +224,7 @@ def dump_emojis(cache_path: str) -> None:
     # Setup emoji farms.
     run(['rm', '-rf', cache_path])
     setup_emoji_farm(cache_path, emoji_data)
-    setup_old_emoji_farm(cache_path, emoji_map)
+    setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
 
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)
