@@ -24,7 +24,7 @@ from zerver.lib.slack_data_to_zulip_data import (
     do_convert_data,
     process_avatars,
 )
-from zerver.lib.export import (
+from zerver.lib.import_realm import (
     do_import_realm,
 )
 from zerver.lib.avatar_hash import (

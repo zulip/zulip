@@ -8,7 +8,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 
-from zerver.lib.export import do_import_realm, do_import_system_bots
+from zerver.lib.import_realm import do_import_realm, do_import_system_bots
 from zerver.forms import check_subdomain_available
 from zerver.models import Client, DefaultStream, Huddle, \
     Message, Realm, RealmDomain, RealmFilter, Recipient, \
