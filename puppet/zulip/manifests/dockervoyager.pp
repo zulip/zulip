@@ -12,20 +12,20 @@ class zulip::dockervoyager {
 
   include zulip::supervisor
 
-  file { "/etc/supervisor/conf.d/cron.conf":
+  file { '/etc/supervisor/conf.d/cron.conf':
     ensure  => file,
     require => Package[supervisor],
-    owner   => "root",
-    group   => "root",
-    mode    => "0644",
-    source  => "puppet:///modules/zulip/supervisor/conf.d/cron.conf",
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/supervisor/conf.d/cron.conf',
   }
-  file { "/etc/supervisor/conf.d/nginx.conf":
+  file { '/etc/supervisor/conf.d/nginx.conf':
     ensure  => file,
     require => Package[supervisor],
-    owner   => "root",
-    group   => "root",
-    mode    => "0644",
-    source  => "puppet:///modules/zulip/supervisor/conf.d/nginx.conf",
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
+    source  => 'puppet:///modules/zulip/supervisor/conf.d/nginx.conf',
   }
 }

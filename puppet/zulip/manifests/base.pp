@@ -8,20 +8,20 @@ define safepackage ( $ensure = present ) {
 class zulip::base {
   include apt
   $base_packages = [ # Accurate time is essential
-                     "ntp",
+                     'ntp',
                      # Used in scripts including install-yarn.sh
-                     "curl",
-                     "wget",
+                     'curl',
+                     'wget',
                      # Used in scripts
-                     "netcat",
+                     'netcat',
                      # Nagios plugins; needed to ensure /var/lib/nagios_plugins exists
-                     "nagios-plugins-basic",
+                     'nagios-plugins-basic',
                      # Used to read /etc/zulip/zulip.conf for `zulipconf` puppet function
-                     "crudini",
+                     'crudini',
                      # Used for tools like sponge
-                     "moreutils",
+                     'moreutils',
                      ]
-  package { $base_packages: ensure => "installed" }
+  package { $base_packages: ensure => 'installed' }
 
   $release_name = $::operatingsystemrelease ? {
     # Debian releases
@@ -91,8 +91,8 @@ class zulip::base {
   file { '/etc/security/limits.conf':
     ensure => file,
     mode   => '0640',
-    owner  => "root",
-    group  => "root",
+    owner  => 'root',
+    group  => 'root',
     source => 'puppet:///modules/zulip/limits.conf',
   }
 
@@ -117,13 +117,13 @@ class zulip::base {
     mode   => '0640',
   }
 
-  file { "/usr/lib/nagios/plugins/zulip_base":
+  file { '/usr/lib/nagios/plugins/zulip_base':
     require => Package[nagios-plugins-basic],
     recurse => true,
     purge   => true,
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0755',
-    source  => "puppet:///modules/zulip/nagios_plugins/zulip_base",
+    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_base',
   }
 }

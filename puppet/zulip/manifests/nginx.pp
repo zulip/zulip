@@ -1,17 +1,17 @@
 class zulip::nginx {
   $web_packages = [# Needed to run nginx with the modules we use
-                   "nginx-full",
+                   'nginx-full',
                    ]
-  package { $web_packages: ensure => "installed" }
+  package { $web_packages: ensure => 'installed' }
 
-  file { "/etc/nginx/zulip-include/":
-    require => Package["nginx-full"],
+  file { '/etc/nginx/zulip-include/':
+    require => Package['nginx-full'],
     recurse => true,
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    source  => "puppet:///modules/zulip/nginx/zulip-include-common/",
-    notify  => Service["nginx"],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-common/',
+    notify  => Service['nginx'],
   }
 
   # Nginx versions 1.4.6 and older do not support quoted URLs with the
@@ -27,52 +27,52 @@ class zulip::nginx {
     default  => 'puppet:///modules/zulip/nginx/zulip-include-maybe/uploads-route.internal',
   }
 
-  file { "/etc/nginx/zulip-include/uploads.route":
+  file { '/etc/nginx/zulip-include/uploads.route':
     ensure  => file,
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    notify  => Service["nginx"],
+    notify  => Service['nginx'],
     source  => $uploads_route,
   }
 
-  file { "/etc/nginx/nginx.conf":
+  file { '/etc/nginx/nginx.conf':
     ensure  => file,
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    notify  => Service["nginx"],
-    source  => "puppet:///modules/zulip/nginx/nginx.conf",
+    notify  => Service['nginx'],
+    source  => 'puppet:///modules/zulip/nginx/nginx.conf',
   }
 
-  file { "/etc/nginx/uwsgi_params":
+  file { '/etc/nginx/uwsgi_params':
     ensure  => file,
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    notify  => Service["nginx"],
-    source  => "puppet:///modules/zulip/nginx/uwsgi_params",
+    notify  => Service['nginx'],
+    source  => 'puppet:///modules/zulip/nginx/uwsgi_params',
   }
 
-  file { "/etc/nginx/sites-enabled/default":
+  file { '/etc/nginx/sites-enabled/default':
     ensure => absent,
-    notify => Service["nginx"],
+    notify => Service['nginx'],
   }
 
   file { '/var/log/nginx':
-    ensure => "directory",
-    owner  => "zulip",
-    group  => "adm",
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'adm',
     mode   => '0650'
   }
 
-  file { ["/var/lib/zulip", "/var/lib/zulip/certbot-webroot"]:
-    ensure => "directory",
-    owner  => "zulip",
-    group  => "adm",
+  file { ['/var/lib/zulip', '/var/lib/zulip/certbot-webroot']:
+    ensure => 'directory',
+    owner  => 'zulip',
+    group  => 'adm',
     mode   => '0660',
   }
 

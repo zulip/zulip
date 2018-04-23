@@ -1,20 +1,20 @@
 class zulip::static_asset_compiler {
-  if $zulip::base::release_name == "trusty" {
-    $closure_compiler_package = "libclosure-compiler-java"
-  } elsif $zulip::base::release_name == "xenial" {
-    $closure_compiler_package = "closure-compiler"
-  } elsif $zulip::base::release_name == "stretch" {
-    $closure_compiler_package = "closure-compiler"
+  if $zulip::base::release_name == 'trusty' {
+    $closure_compiler_package = 'libclosure-compiler-java'
+  } elsif $zulip::base::release_name == 'xenial' {
+    $closure_compiler_package = 'closure-compiler'
+  } elsif $zulip::base::release_name == 'stretch' {
+    $closure_compiler_package = 'closure-compiler'
   }
   $static_asset_compiler_packages = [
                                      # Needed for minify-js
                                      $closure_compiler_package,
-                                     "nodejs",
-                                     "nodejs-legacy",
-                                     "yui-compressor",
+                                     'nodejs',
+                                     'nodejs-legacy',
+                                     'yui-compressor',
                                      # Used by makemessages i18n
-                                     "gettext",
+                                     'gettext',
                                      ]
 
-  safepackage { $static_asset_compiler_packages: ensure => "installed" }
+  safepackage { $static_asset_compiler_packages: ensure => 'installed' }
 }

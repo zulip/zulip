@@ -1,12 +1,12 @@
 class zulip::postfix_localmail {
-  $postfix_packages = [ "postfix", ]
+  $postfix_packages = [ 'postfix', ]
 
   if $::fqdn == '' {
-    fail("Your system does not have a fully-qualified domain name defined. See hostname(1).")
+    fail('Your system does not have a fully-qualified domain name defined. See hostname(1).')
   }
-  $postfix_mailname = zulipconf("postfix", "mailname", $::fqdn)
+  $postfix_mailname = zulipconf('postfix', 'mailname', $::fqdn)
   package { $postfix_packages:
-    ensure  => "installed",
+    ensure  => 'installed',
     require => File['/etc/mailname'],
   }
 
@@ -35,7 +35,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    source  => "puppet:///modules/zulip/postfix/master.cf",
+    source  => 'puppet:///modules/zulip/postfix/master.cf',
     require => Package[postfix],
     notify  => Service['postfix'],
   }
@@ -45,7 +45,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    source  => "puppet:///modules/zulip/postfix/virtual",
+    source  => 'puppet:///modules/zulip/postfix/virtual',
     require => Package[postfix],
   }
   exec {'postmap /etc/postfix/virtual':
@@ -62,7 +62,7 @@ class zulip::postfix_localmail {
     mode    => '0644',
     owner   => root,
     group   => root,
-    source  => "puppet:///modules/zulip/postfix/transport",
+    source  => 'puppet:///modules/zulip/postfix/transport',
     require => Package[postfix],
   }
   exec {'postmap /etc/postfix/transport':

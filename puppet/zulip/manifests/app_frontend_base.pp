@@ -8,48 +8,48 @@ class zulip::app_frontend_base {
                     # Needed to access our database
                     "postgresql-client-${zulip::base::postgres_version}",
                     ]
-  safepackage { $web_packages: ensure => "installed" }
+  safepackage { $web_packages: ensure => 'installed' }
 
-  file { "/etc/nginx/zulip-include/app":
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+  file { '/etc/nginx/zulip-include/app':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    source  => "puppet:///modules/zulip/nginx/zulip-include-frontend/app",
-    notify  => Service["nginx"],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/app',
+    notify  => Service['nginx'],
   }
-  file { "/etc/nginx/zulip-include/upstreams":
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+  file { '/etc/nginx/zulip-include/upstreams':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    source  => "puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams",
-    notify  => Service["nginx"],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/upstreams',
+    notify  => Service['nginx'],
   }
-  file { "/etc/nginx/zulip-include/uploads.types":
-    require => Package["nginx-full"],
-    owner   => "root",
-    group   => "root",
+  file { '/etc/nginx/zulip-include/uploads.types':
+    require => Package['nginx-full'],
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    source  => "puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types",
-    notify  => Service["nginx"],
+    source  => 'puppet:///modules/zulip/nginx/zulip-include-frontend/uploads.types',
+    notify  => Service['nginx'],
   }
-  file { "/etc/nginx/zulip-include/app.d/":
+  file { '/etc/nginx/zulip-include/app.d/':
     ensure => directory,
-    owner  => "root",
-    group  => "root",
+    owner  => 'root',
+    group  => 'root',
     mode   => '0755',
   }
 
-  $loadbalancers = split(zulipconf("loadbalancer", "ips", ""), ",")
+  $loadbalancers = split(zulipconf('loadbalancer', 'ips', ''), ',')
   if $loadbalancers != [] {
-    file { "/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf":
-      require => File["/etc/nginx/zulip-include/app.d"],
-      owner   => "root",
-      group   => "root",
+    file { '/etc/nginx/zulip-include/app.d/accept-loadbalancer.conf':
+      require => File['/etc/nginx/zulip-include/app.d'],
+      owner   => 'root',
+      group   => 'root',
       mode    => '0644',
-      content => template("zulip/accept-loadbalancer.conf.template.erb"),
-      notify  => Service["nginx"],
+      content => template('zulip/accept-loadbalancer.conf.template.erb'),
+      notify  => Service['nginx'],
     }
   }
 
@@ -65,34 +65,34 @@ class zulip::app_frontend_base {
     $message_sender_default_processes = 2
     $uwsgi_default_processes = 4
   }
-  $message_sender_processes = zulipconf("application_server", "message_sender_processes",
+  $message_sender_processes = zulipconf('application_server', 'message_sender_processes',
                                         $message_sender_default_processes)
-  file { "/etc/supervisor/conf.d/zulip.conf":
+  file { '/etc/supervisor/conf.d/zulip.conf':
     ensure  => file,
     require => Package[supervisor],
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    content => template("zulip/supervisor/zulip.conf.template.erb"),
-    notify  => Service["supervisor"],
+    content => template('zulip/supervisor/zulip.conf.template.erb'),
+    notify  => Service['supervisor'],
   }
 
-  $uwsgi_processes = zulipconf("application_server", "uwsgi_processes",
+  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes',
                                $uwsgi_default_processes)
-  file { "/etc/zulip/uwsgi.ini":
+  file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    content => template("zulip/uwsgi.ini.template.erb"),
-    notify  => Service["supervisor"],
+    content => template('zulip/uwsgi.ini.template.erb'),
+    notify  => Service['supervisor'],
   }
 
-  file { "/home/zulip/tornado":
+  file { '/home/zulip/tornado':
     ensure => directory,
-    owner  => "zulip",
-    group  => "zulip",
+    owner  => 'zulip',
+    group  => 'zulip',
     mode   => '0755',
   }
   file { '/home/zulip/logs':
@@ -110,28 +110,28 @@ class zulip::app_frontend_base {
     owner  => 'zulip',
     group  => 'zulip',
   }
-  file { "/srv/zulip-npm-cache":
+  file { '/srv/zulip-npm-cache':
     ensure => directory,
-    owner  => "zulip",
-    group  => "zulip",
+    owner  => 'zulip',
+    group  => 'zulip',
     mode   => '0755',
   }
-  file { "/srv/zulip-emoji-cache":
+  file { '/srv/zulip-emoji-cache':
     ensure => directory,
-    owner  => "zulip",
-    group  => "zulip",
+    owner  => 'zulip',
+    group  => 'zulip',
     mode   => '0755',
   }
-  file { "/etc/cron.d/email-mirror":
+  file { '/etc/cron.d/email-mirror':
     ensure => absent,
   }
-  file { "/usr/lib/nagios/plugins/zulip_app_frontend":
+  file { '/usr/lib/nagios/plugins/zulip_app_frontend':
     require => Package[nagios-plugins-basic],
     recurse => true,
     purge   => true,
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0755',
-    source  => "puppet:///modules/zulip/nagios_plugins/zulip_app_frontend",
+    source  => 'puppet:///modules/zulip/nagios_plugins/zulip_app_frontend',
   }
 }

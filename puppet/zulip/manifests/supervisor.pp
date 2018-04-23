@@ -1,33 +1,33 @@
 class zulip::supervisor {
   $supervisor_packages = [# Needed to run supervisor
-                          "supervisor",
+                          'supervisor',
                           ]
-  package { $supervisor_packages: ensure => "installed" }
+  package { $supervisor_packages: ensure => 'installed' }
   # Depending on the environment, ignoreSupervisorService is set, meaning we
   # don't want/need supervisor to be started/stopped
   # /bin/true is used as a decoy command, to maintain compatibility with other
   # code using the supervisor service.
   if $::ignoreSupervisorService != undef and $::ignoreSupervisorService {
-    service { "supervisor":
+    service { 'supervisor':
       ensure     => running,
       require    => [
-        File["/var/log/zulip"],
-        Package["supervisor"],
+        File['/var/log/zulip'],
+        Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => "/bin/true",
+      status     => '/bin/true',
       hasrestart => true,
-      restart    => "/bin/true"
+      restart    => '/bin/true'
     }
   } else {
-    service { "supervisor":
+    service { 'supervisor':
       ensure     => running,
       require    => [
-        File["/var/log/zulip"],
-        Package["supervisor"],
+        File['/var/log/zulip'],
+        Package['supervisor'],
       ],
       hasstatus  => true,
-      status     => "supervisorctl status",
+      status     => 'supervisorctl status',
       # The "restart" option in the init script does not work.  We could
       # tell Puppet to fall back to stop/start, which does work, but the
       # better option is to tell supervisord to reread its config via
@@ -46,21 +46,21 @@ class zulip::supervisor {
     }
   }
 
-  file { "/etc/supervisor/supervisord.conf":
+  file { '/etc/supervisor/supervisord.conf':
     ensure  => file,
     require => Package[supervisor],
-    owner   => "root",
-    group   => "root",
+    owner   => 'root',
+    group   => 'root',
     mode    => '0644',
-    source  => "puppet:///modules/zulip/supervisor/supervisord.conf",
-    notify  => Service["supervisor"],
+    source  => 'puppet:///modules/zulip/supervisor/supervisord.conf',
+    notify  => Service['supervisor'],
   }
 
-  if $zulip::base::release_name == "xenial" {
-    exec {"enable supervisor":
-      unless  => "systemctl is-enabled supervisor",
-      command => "systemctl enable supervisor",
-      require => Package["supervisor"],
+  if $zulip::base::release_name == 'xenial' {
+    exec {'enable supervisor':
+      unless  => 'systemctl is-enabled supervisor',
+      command => 'systemctl enable supervisor',
+      require => Package['supervisor'],
     }
   }
 }

@@ -3,16 +3,16 @@
 class zulip::postgres_appdb_tuned {
   include zulip::postgres_appdb_base
 
-if $zulip::base::release_name == "trusty" {
+if $zulip::base::release_name == 'trusty' {
   # tools for database setup
-  $postgres_appdb_tuned_packages = ["pgtune"]
-  package { $postgres_appdb_tuned_packages: ensure => "installed" }
+  $postgres_appdb_tuned_packages = ['pgtune']
+  package { $postgres_appdb_tuned_packages: ensure => 'installed' }
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template":
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
-    owner   => "postgres",
-    group   => "postgres",
+    owner   => 'postgres',
+    group   => 'postgres',
     mode    => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
@@ -37,14 +37,14 @@ vm.dirty_background_ratio = 5
 "
     }
 
-  exec { "sysctl_p":
-    command     => "/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf",
+  exec { 'sysctl_p':
+    command     => '/sbin/sysctl -p /etc/sysctl.d/40-postgresql.conf',
     subscribe   => File['/etc/sysctl.d/40-postgresql.conf'],
     refreshonly => true,
   }
 
   exec { 'pgtune':
-    require     => Package["pgtune"],
+    require     => Package['pgtune'],
     # Let Postgres use half the memory on the machine
     command     => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
     refreshonly => true,
@@ -52,7 +52,7 @@ vm.dirty_background_ratio = 5
   }
 
   exec { "pg_ctlcluster ${zulip::base::postgres_version} main restart":
-    require     => Exec["sysctl_p"],
+    require     => Exec['sysctl_p'],
     refreshonly => true,
     subscribe   => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
@@ -68,20 +68,20 @@ vm.dirty_background_ratio = 5
   $effective_cache_size = $total_memory_mb * 10 / 32
   $maintenance_work_mem = $total_memory_mb / 32
 
-  $random_page_cost = zulipconf("postgresql", "random_page_cost", undef)
-  $effective_io_concurrency = zulipconf("postgresql", "effective_io_concurrency", undef)
-  $replication = zulipconf("postgresql", "replication", undef)
-  $listen_addresses = zulipconf("postgresql", "listen_addresses", undef)
+  $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
+  $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
+  $replication = zulipconf('postgresql', 'replication', undef)
+  $listen_addresses = zulipconf('postgresql', 'listen_addresses', undef)
 
-  $ssl_cert_file = zulipconf("postgresql", "ssl_cert_file", undef)
-  $ssl_key_file = zulipconf("postgresql", "ssl_key_file", undef)
-  $ssl_ca_file = zulipconf("postgresql", "ssl_ca_file", undef)
+  $ssl_cert_file = zulipconf('postgresql', 'ssl_cert_file', undef)
+  $ssl_key_file = zulipconf('postgresql', 'ssl_key_file', undef)
+  $ssl_ca_file = zulipconf('postgresql', 'ssl_ca_file', undef)
 
   file { "/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
-    owner   => "postgres",
-    group   => "postgres",
+    owner   => 'postgres',
+    group   => 'postgres',
     mode    => '0644',
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
