@@ -52,9 +52,9 @@ class zulip::postfix_localmail {
     subscribe   => File['/etc/postfix/virtual'],
     refreshonly => true,
     require     => [
-		     File['/etc/postfix/main.cf'],
-		     Package[postfix],
-		   ],
+      File['/etc/postfix/main.cf'],
+      Package[postfix],
+    ],
   }
 
   file {'/etc/postfix/transport':
@@ -69,9 +69,9 @@ class zulip::postfix_localmail {
     subscribe   => File['/etc/postfix/transport'],
     refreshonly => true,
     require     => [
-		     File['/etc/postfix/main.cf'],
-		     Package[postfix],
-		   ],
+      File['/etc/postfix/main.cf'],
+      Package[postfix],
+    ],
   }
 
 }
