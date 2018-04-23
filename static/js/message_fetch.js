@@ -30,11 +30,17 @@ function process_result(data, opts) {
     _.each(messages, message_store.set_message_booleans);
     messages = _.map(messages, message_store.add_message_metadata);
 
+    // In case any of the newly fetched messages are new, add them to
+    // our unread data structures.  It's important that this run even
+    // when fetching in a narrow, since we might return unread
+    // messages that aren't in the home view data set (e.g. on a muted
+    // stream).
+    message_util.do_unread_count_updates(messages);
+
     // If we're loading more messages into the home view, save them to
     // the message_list.all as well, as the home_msg_list is reconstructed
     // from message_list.all.
     if (opts.msg_list === home_msg_list) {
-        message_util.do_unread_count_updates(messages);
         message_util.add_messages(messages, message_list.all, {messages_are_new: false});
     }
 
