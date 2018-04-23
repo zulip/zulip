@@ -1,4 +1,7 @@
 zrequire('people');
+set_global('reload', {
+    is_in_progress: false,
+});
 
 set_global('blueslip', global.make_zblueslip({
     debug: true, // testing for debug is disabled by default.
@@ -19,6 +22,12 @@ people.initialize_current_user(me.user_id);
     blueslip.set_test_data('error', 'Added user late: user_id=55 email=foo@example.com');
     people.report_late_add(55, 'foo@example.com');
     assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
+
+    reload.is_in_progress = true;
+    people.report_late_add(55, 'foo@example.com');
+    // TODO: Make zblueslip support logging things written to .log and assert result
+    assert.equal(blueslip.get_test_logs('error').length, 0);
     blueslip.clear_test_data();
 }());
 
