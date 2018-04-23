@@ -35,6 +35,10 @@ def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[s
 
     return sorted(emoji_names)
 
+def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
+    emoji_code = emoji_dict["unified"]
+    return emoji_code.lower()
+
 # Returns a dict from categories to list of codepoints. The list of
 # codepoints are sorted according to the `sort_order` as defined in
 # `emoji_data`.
@@ -44,7 +48,7 @@ def generate_emoji_catalog(emoji_data: List[Dict[str, Any]],
     emoji_catalog = defaultdict(list)  # type: Dict[str, List[str]]
 
     for emoji_dict in emoji_data:
-        emoji_code = emoji_dict["unified"].lower()
+        emoji_code = get_emoji_code(emoji_dict)
         if not emoji_is_universal(emoji_dict) or emoji_code not in emoji_name_maps:
             continue
         category = emoji_dict["category"]
