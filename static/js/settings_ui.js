@@ -18,6 +18,7 @@ function _initialize() {
     };
 
     settings_bots.setup_bot_creation_policy_values();
+    settings_org.setup_msg_edit_limit_dropdown_values();
 }
 
 exports.initialize = function () {
