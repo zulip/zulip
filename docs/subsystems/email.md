@@ -13,7 +13,7 @@ with only a few things you need to know to get started.
 
 * All email templates are in `templates/zerver/emails/`. Each email has three
   template files: `<template_prefix>.subject`, `<template_prefix>.txt`, and
-  `<template_prefix>.html`. Email templates, along with all other templates
+  `<template_prefix>.source.html`. Email templates, along with all other templates
   in the `templates/` directory, are Jinja2 templates.
 * Most of the CSS and HTML layout for emails is in `email_base.html`. Note
   that email has to ship with all of its CSS and HTML, so nothing in
@@ -79,3 +79,9 @@ backend. The `locmem` backend stores messages in a special attribute
 of the django.core.mail module, "outbox". The outbox attribute is
 created when the first message is sent. It’s a list with an
 EmailMessage instance for each message that would be sent.
+
+Other notes:
+* After changing any HTML email or `email_base.html`, you need to run
+  `tools/inline-email-css` for the changes to be reflected in the dev
+  environment. The script generates files like
+  `templates/zerver/emails/compiled/<template_prefix>.html`.
