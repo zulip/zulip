@@ -263,9 +263,9 @@ presence.presence_info = presence_info;
     let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
-    const presence_info = {};
-    presence_info[alice.user_id] = { status: 'active' };
-    presence_info[fred.user_id] = { status: 'idle' }; // counts as present
+    var presence_info = {};
+    presence_info[alice.user_id] = { status: 'active' }; // counts as present
+    presence_info[fred.user_id] = { status: 'idle' }; // doest not count as present
     // jill not in list
     presence_info[mark.user_id] = { status: 'offline' }; // does not count
     presence.presence_info = presence_info;
@@ -273,6 +273,19 @@ presence.presence_info = presence_info;
     assert.equal(
         activity.huddle_fraction_present(huddle),
         '0.50');
+
+        huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+        huddle = people.emails_strings_to_user_ids_string(huddle);
+        presence_info = {};
+        presence_info[alice.user_id] = { status: 'idle' };
+        presence_info[fred.user_id] = { status: 'idle' }; // does not count as present
+        // jill not in list
+        presence_info[mark.user_id] = { status: 'offline' }; // does not count
+        presence.presence_info = presence_info;
+
+        assert.equal(
+            activity.huddle_fraction_present(huddle),
+            false);
 }());
 
 presence.presence_info = {};
