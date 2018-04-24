@@ -8,36 +8,42 @@ var with_overrides = global.with_overrides;
     assert.equal(stream_sort.sort_groups(''), undefined);
 }());
 
-stream_data.add_sub('scalene', {
+const scalene = {
     subscribed: true,
     name: 'scalene',
     stream_id: 1,
     pin_to_top: true,
-});
-stream_data.add_sub('fast tortoise', {
+};
+const fast_tortoise = {
     subscribed: true,
     name: 'fast tortoise',
     stream_id: 2,
     pin_to_top: false,
-});
-stream_data.add_sub('pneumonia', {
+};
+const pneumonia = {
     subscribed: true,
     name: 'pneumonia',
     stream_id: 3,
     pin_to_top: false,
-});
-stream_data.add_sub('clarinet', {
+};
+const clarinet = {
     subscribed: true,
     name: 'clarinet',
     stream_id: 4,
     pin_to_top: false,
-});
-stream_data.add_sub('weaving', {
+};
+const weaving = {
     subscribed: false,
     name: 'weaving',
     stream_id: 5,
     pin_to_top: false,
-});
+};
+
+stream_data.add_sub(scalene.name, scalene);
+stream_data.add_sub(fast_tortoise.name, fast_tortoise);
+stream_data.add_sub(pneumonia.name, pneumonia);
+stream_data.add_sub(clarinet.name, clarinet);
+stream_data.add_sub(weaving.name, weaving);
 
 with_overrides(function (override) {
     override('stream_data.is_active', function (sub) {
