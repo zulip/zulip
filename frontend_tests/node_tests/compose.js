@@ -944,10 +944,10 @@ function test_raw_file_drop(raw_drop_func) {
         var checks = [
             (function () {
                 var called;
-                compose_fade.would_receive_message = function (email) {
+                compose.needs_subscribe_warning = function (email) {
                     called = true;
                     assert.equal(email, 'foo@bar.com');
-                    return false;
+                    return true;
                 };
                 return function () { assert(called); };
             }()),
