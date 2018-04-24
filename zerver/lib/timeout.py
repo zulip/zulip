@@ -52,6 +52,7 @@ def timeout(timeout: float, func: Callable[..., ResultT], *args: Any, **kwargs: 
         def raise_async_timeout(self) -> None:
             # Called from another thread.
             # Attempt to raise a TimeoutExpired in the thread represented by 'self'.
+            assert self.ident is not None  # Thread should be running; c_long expects int
             tid = ctypes.c_long(self.ident)
             result = ctypes.pythonapi.PyThreadState_SetAsyncExc(
                 tid, ctypes.py_object(TimeoutExpired))
