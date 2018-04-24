@@ -66,6 +66,9 @@ parser.add_argument('--force',
 parser.add_argument('--enable-tornado-logging',
                     action="store_true",
                     default=False, help='Enable access logs from tornado proxy server.')
+parser.add_argument('--disable-host-check',
+                    action="store_true",
+                    default=False, help='Disable host check for webpack-dev-server')
 options = parser.parse_args()
 
 if not options.force:
@@ -90,6 +93,7 @@ if options.interface is None:
         options.interface = "127.0.0.1"
 elif options.interface == "":
     options.interface = None
+    options.disable_host_check = True
 
 runserver_args = []  # type: List[str]
 base_port = 9991
@@ -166,6 +170,8 @@ else:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
+    if options.disable_host_check:
+        webpack_cmd.append('--disable-host-check')
     if options.interface:
         webpack_cmd += ["--host", options.interface]
     else:
