@@ -55,7 +55,7 @@ set_global('keydown_util', {
 
 set_global('compose_state', {});
 
-set_global('stream_list', {
+set_global('scroll_util', {
     scroll_element_into_container: () => {},
 });
 

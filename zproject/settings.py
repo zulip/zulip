@@ -1032,6 +1032,7 @@ JS_SPECS = {
             'js/lightbox_canvas.js',
             'js/rtl.js',
             'js/dict.js',
+            'js/scroll_util.js',
             'js/components.js',
             'js/localstorage.js',
             'js/drafts.js',

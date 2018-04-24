@@ -108,6 +108,7 @@
         "Socket": false,
         "channel": false,
         "components": false,
+        "scroll_util": false,
         "message_viewport": false,
         "upload_widget": false,
         "avatar": false,

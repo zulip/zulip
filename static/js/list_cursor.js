@@ -61,9 +61,7 @@ var list_cursor = function (opts) {
     };
 
     self.adjust_scroll = function (li) {
-        // TODO: move scroll_element_into_container out of
-        //       stream_list.js
-        stream_list.scroll_element_into_container(li, opts.list.container);
+        scroll_util.scroll_element_into_container(li, opts.list.container);
     };
 
     self.redraw = function () {

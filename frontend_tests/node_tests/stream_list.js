@@ -13,6 +13,7 @@ zrequire('hash_util');
 zrequire('narrow');
 zrequire('unread');
 zrequire('stream_data');
+zrequire('scroll_util');
 zrequire('stream_list');
 
 var noop = function () {};
@@ -237,7 +238,7 @@ function initialize_stream_data() {
     topic_list.rebuild = noop;
     topic_list.active_stream_id = noop;
     stream_list.show_all_streams = noop;
-    stream_list.scroll_element_into_container = noop;
+    scroll_util.scroll_element_into_container = noop;
 
     var scrollbar_updated = false;
 
@@ -670,58 +671,4 @@ var keydown_handler = $('.stream-list-filter').get_on_handler('keydown');
 
     assert.equal(html_dict.get(1000), '<div>stub-html-devel');
     assert.equal(html_dict.get(5000), '<div>stub-html-Denmark');
-}());
-
-(function test_scroll_delta() {
-    // If we are entirely on-screen, don't scroll
-    assert.equal(0, stream_list.scroll_delta({
-        elem_top: 1,
-        elem_bottom: 9,
-        container_height: 10,
-    }));
-
-    assert.equal(0, stream_list.scroll_delta({
-        elem_top: -5,
-        elem_bottom: 15,
-        container_height: 10,
-    }));
-
-    // The top is offscreen.
-    assert.equal(-3, stream_list.scroll_delta({
-        elem_top: -3,
-        elem_bottom: 5,
-        container_height: 10,
-    }));
-
-    assert.equal(-3, stream_list.scroll_delta({
-        elem_top: -3,
-        elem_bottom: -1,
-        container_height: 10,
-    }));
-
-    assert.equal(-11, stream_list.scroll_delta({
-        elem_top: -150,
-        elem_bottom: -1,
-        container_height: 10,
-    }));
-
-    // The bottom is offscreen.
-    assert.equal(3, stream_list.scroll_delta({
-        elem_top: 7,
-        elem_bottom: 13,
-        container_height: 10,
-    }));
-
-    assert.equal(3, stream_list.scroll_delta({
-        elem_top: 11,
-        elem_bottom: 13,
-        container_height: 10,
-    }));
-
-    assert.equal(11, stream_list.scroll_delta({
-        elem_top: 11,
-        elem_bottom: 99,
-        container_height: 10,
-    }));
-
 }());
