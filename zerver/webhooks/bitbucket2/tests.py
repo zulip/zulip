@@ -162,6 +162,13 @@ class Bitbucket2HookTests(WebhookTestCase):
         }
         self.send_and_test_stream_message('pull_request_comment_action', self.EXPECTED_SUBJECT_PR_EVENTS, expected_message, **kwargs)
 
+    def test_bitbucket2_on_repo_updated_event(self) -> None:
+        expected_message = u"eeshangarg changed the website of the **new-name** repo to **http://zulipchat.com**\neeshangarg changed the name of the **new-name** repo from **test-repo** to **new-name**\neeshangarg changed the language of the **new-name** repo to **python**\neeshangarg changed the full name of the **new-name** repo from **webhooktest/test-repo** to **webhooktest/new-name**\neeshangarg changed the description of the **new-name** repo to **Random description.**"
+        expected_subject = u"new-name"
+        kwargs = {"HTTP_X_EVENT_KEY": 'repo:updated'}
+        self.send_and_test_stream_message('repo_updated', expected_subject,
+                                          expected_message, **kwargs)
+
     def test_bitbucket2_on_push_one_tag_event(self) -> None:
         expected_message = u"kolaszek pushed tag [a](https://bitbucket.org/kolaszek/repository-name/commits/tag/a)"
         kwargs = {

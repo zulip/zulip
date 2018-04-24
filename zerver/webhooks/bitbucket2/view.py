@@ -25,7 +25,9 @@ USER_PART = 'User {display_name}(login: {username})'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
                                         ' {commit_info} to {status}.')
-
+BITBUCKET_REPO_UPDATED_CHANGED = ('{actor} changed the {change} of the **{repo_name}**'
+                                  ' repo from **{old}** to **{new}**\n')
+BITBUCKET_REPO_UPDATED_ADDED = '{actor} changed the {change} of the **{repo_name}** repo to **{new}**\n'
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
     'approved',
@@ -315,6 +317,31 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> Text:
         action=action
     )
 
+def get_repo_updated_body(payload: Dict[str, Any]) -> Text:
+    changes = ['website', 'name', 'links', 'language', 'full_name', 'description']
+    body = ""
+    repo_name = payload['repository']['name']
+    actor = payload['actor']['username']
+
+    for change in changes:
+        new = payload['changes'][change]['new']
+        old = payload['changes'][change]['old']
+        if change == 'full_name':
+            change = 'full name'
+        if new and old:
+            message = BITBUCKET_REPO_UPDATED_CHANGED.format(
+                actor=actor, change=change, repo_name=repo_name,
+                old=old, new=new
+            )
+            body += message
+        elif new and not old:
+            message = BITBUCKET_REPO_UPDATED_ADDED.format(
+                actor=actor, change=change, repo_name=repo_name, new=new
+            )
+            body += message
+
+    return body
+
 def get_pull_request_title(pullrequest_payload: Dict[str, Any]) -> str:
     return pullrequest_payload['title']
 
@@ -361,5 +388,6 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'pull_request_comment_updated': partial(get_pull_request_deleted_or_updated_comment_action_body,
                                             action='updated'),
     'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body,
-                                            action='deleted')
+                                            action='deleted'),
+    'repo:updated': get_repo_updated_body,
 }
