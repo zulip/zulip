@@ -89,23 +89,36 @@ exports.initialize = function () {
                 invite_status.text(arr.msg)
                               .addClass('alert-error')
                               .show();
-            } else {
+            } else{
                 // Some users were not invited.
+                var found = false;
                 var invitee_emails_errored = [];
                 var error_list = $('<ul>');
                 _.each(arr.errors, function (value) {
+		    if(value[1].indexOf('deactivated') != -1){
+		        found = true;
+                    }
                     error_list.append($('<li>').text(value.join(': ')));
                     invitee_emails_errored.push(value[0]);
                 });
 
-                invite_status.addClass('alert-warning')
-                              .empty()
-                              .append($('<p>').text(arr.msg))
-                              .append(error_list)
-                              .append('If admin: You can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>. \nIf not admin: Organization administrators can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>.')
-			      .show();
-                invitee_emails_group.addClass('warning');
-
+                if(found){
+                    invite_status.addClass('alert-warning')
+                                  .empty()
+                                  .append($('<p>').text(arr.msg))
+                                  .append(error_list)
+                                  .append('If admin: You can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>. \nIf not admin: Organization administrators can reactivate a deactivated user in <a href="#organization/deactivated-users-admin">organization settings</a>.')
+	                         .show();
+                    invitee_emails_group.addClass('warning');
+                }
+                else{
+                    invite_status.addClass('alert-warning')
+                                  .empty()
+                                  .append($('<p>').text(arr.msg))
+                                  .append(error_list)
+	                         .show();
+                    invitee_emails_group.addClass('warning'); 
+                }
                 if (arr.sent_invitations) {
                     invitee_emails.val(invitee_emails_errored.join('\n'));
                 }
