@@ -1,9 +1,7 @@
-
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Text
 
 from zerver.models import RealmEmoji, UserProfile
 from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name, check_valid_emoji
@@ -21,7 +19,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
 @has_request_variables
 def upload_emoji(request: HttpRequest, user_profile: UserProfile,
-                 emoji_name: Text=REQ()) -> HttpResponse:
+                 emoji_name: str=REQ()) -> HttpResponse:
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
     if RealmEmoji.objects.filter(realm=user_profile.realm,

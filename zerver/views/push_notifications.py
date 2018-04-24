@@ -2,7 +2,7 @@
 import requests
 import json
 
-from typing import Optional, Text
+from typing import Optional
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse

@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence, Text
+from typing import Any, List, Dict, Optional, Callable, Tuple, Iterable, Sequence
 
 from django.conf import settings
 from django.http import HttpResponse, HttpRequest
@@ -25,7 +25,7 @@ kerberos_alter_egos = {
 @authenticated_json_view
 @has_request_variables
 def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
-                             cred: Text=REQ(default=None)) -> HttpResponse:
+                             cred: str=REQ(default=None)) -> HttpResponse:
     global kerberos_alter_egos
     if cred is None:
         return json_error(_("Could not find Kerberos credential"))

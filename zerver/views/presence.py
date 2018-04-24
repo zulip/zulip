@@ -3,7 +3,7 @@ import datetime
 import time
 
 from django.conf import settings
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
@@ -22,7 +22,7 @@ def get_status_list(requesting_user_profile: UserProfile) -> Dict[str, Any]:
             'server_timestamp': time.time()}
 
 def get_presence_backend(request: HttpRequest, user_profile: UserProfile,
-                         email: Text) -> HttpResponse:
+                         email: str) -> HttpResponse:
     try:
         target = get_user(email, user_profile.realm)
     except UserProfile.DoesNotExist:

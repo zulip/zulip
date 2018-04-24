@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Any, List, Dict, Mapping, Optional, Text
+from typing import Any, List, Dict, Mapping, Optional
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -335,7 +335,7 @@ def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
     redirect_url = login_url + '?already_registered=' + email
     return HttpResponseRedirect(redirect_url)
 
-def create_realm(request: HttpRequest, creation_key: Optional[Text]=None) -> HttpResponse:
+def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> HttpResponse:
     try:
         key_record = validate_key(creation_key)
     except RealmCreationKey.Invalid:
@@ -442,7 +442,7 @@ def generate_204(request: HttpRequest) -> HttpResponse:
 def find_account(request: HttpRequest) -> HttpResponse:
     url = reverse('zerver.views.registration.find_account')
 
-    emails = []  # type: List[Text]
+    emails = []  # type: List[str]
     if request.method == 'POST':
         form = FindMyTeamForm(request.POST)
         if form.is_valid():

@@ -1,6 +1,6 @@
 
 from django.http import HttpResponse, HttpRequest
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Optional
 
 from zerver.lib.response import json_error, json_success
 from zerver.lib.user_agent import parse_user_agent

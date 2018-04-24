@@ -1,6 +1,6 @@
 
 from django.http import HttpRequest, HttpResponse
-from typing import Iterable, Optional, Sequence, Text
+from typing import Iterable, Optional, Sequence
 
 from zerver.lib.events import do_events_register
 from zerver.lib.request import REQ, has_request_variables
@@ -16,13 +16,13 @@ def _default_all_public_streams(user_profile: UserProfile,
         return user_profile.default_all_public_streams
 
 def _default_narrow(user_profile: UserProfile,
-                    narrow: Iterable[Sequence[Text]]) -> Iterable[Sequence[Text]]:
+                    narrow: Iterable[Sequence[str]]) -> Iterable[Sequence[str]]:
     default_stream = user_profile.default_events_register_stream  # type: Optional[Stream]
     if not narrow and default_stream is not None:
         narrow = [['stream', default_stream.name]]
     return narrow
 
-NarrowT = Iterable[Sequence[Text]]
+NarrowT = Iterable[Sequence[str]]
 @has_request_variables
 def events_register_backend(
         request: HttpRequest, user_profile: UserProfile,

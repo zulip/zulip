@@ -1,4 +1,3 @@
-
 from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -12,7 +11,6 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.validator import check_bool, check_string
 from zerver.models import RealmDomain, UserProfile, get_realm_domains
 
-from typing import Text
 
 def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     domains = get_realm_domains(user_profile.realm)
@@ -21,7 +19,7 @@ def list_realm_domains(request: HttpRequest, user_profile: UserProfile) -> HttpR
 @require_realm_admin
 @has_request_variables
 def create_realm_domain(request: HttpRequest, user_profile: UserProfile,
-                        domain: Text=REQ(validator=check_string),
+                        domain: str=REQ(validator=check_string),
                         allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
     domain = domain.strip().lower()
     try:
@@ -36,7 +34,7 @@ def create_realm_domain(request: HttpRequest, user_profile: UserProfile,
 
 @require_realm_admin
 @has_request_variables
-def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: Text,
+def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: str,
                        allow_subdomains: bool=REQ(validator=check_bool)) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
@@ -48,7 +46,7 @@ def patch_realm_domain(request: HttpRequest, user_profile: UserProfile, domain: 
 @require_realm_admin
 @has_request_variables
 def delete_realm_domain(request: HttpRequest, user_profile: UserProfile,
-                        domain: Text) -> HttpResponse:
+                        domain: str) -> HttpResponse:
     try:
         realm_domain = RealmDomain.objects.get(realm=user_profile.realm, domain=domain)
         do_remove_realm_domain(realm_domain)

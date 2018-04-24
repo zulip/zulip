@@ -1,6 +1,6 @@
 # System documented in https://zulip.readthedocs.io/en/latest/subsystems/logging.html
 
-from typing import Any, Dict, Optional, Text, Union
+from typing import Any, Dict, Optional, Union
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
@@ -92,9 +92,9 @@ def report_unnarrow_times(request: HttpRequest, user_profile: UserProfile,
 
 @human_users_only
 @has_request_variables
-def report_error(request: HttpRequest, user_profile: UserProfile, message: Text=REQ(),
-                 stacktrace: Text=REQ(), ui_message: bool=REQ(validator=check_bool),
-                 user_agent: Text=REQ(), href: Text=REQ(), log: Text=REQ(),
+def report_error(request: HttpRequest, user_profile: UserProfile, message: str=REQ(),
+                 stacktrace: str=REQ(), ui_message: bool=REQ(validator=check_bool),
+                 user_agent: str=REQ(), href: str=REQ(), log: str=REQ(),
                  more_info: Optional[Dict[str, Any]]=REQ(validator=check_dict([]), default=None)
                  ) -> HttpResponse:
     """Accepts an error report and stores in a queue for processing.  The
@@ -110,7 +110,7 @@ def report_error(request: HttpRequest, user_profile: UserProfile, message: Text=
 
     try:
         version = subprocess.check_output(["git", "log", "HEAD^..HEAD", "--oneline"],
-                                          universal_newlines=True)  # type: Optional[Text]
+                                          universal_newlines=True)  # type: Optional[str]
     except Exception:
         version = None
 

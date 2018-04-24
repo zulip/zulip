@@ -19,7 +19,7 @@ from django.utils.translation import ugettext as _
 from django.utils.http import is_safe_url
 from django.core import signing
 import urllib
-from typing import Any, Dict, List, Optional, Tuple, Text
+from typing import Any, Dict, List, Optional, Tuple
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request
@@ -48,14 +48,14 @@ import requests
 import time
 import ujson
 
-def get_safe_redirect_to(url: Text, redirect_host: Text) -> Text:
+def get_safe_redirect_to(url: str, redirect_host: str) -> str:
     is_url_safe = is_safe_url(url=url, host=redirect_host)
     if is_url_safe:
         return urllib.parse.urljoin(redirect_host, url)
     else:
         return redirect_host
 
-def create_preregistration_user(email: Text, request: HttpRequest, realm_creation: bool=False,
+def create_preregistration_user(email: str, request: HttpRequest, realm_creation: bool=False,
                                 password_required: bool=True) -> HttpResponse:
     realm = None
     if not realm_creation:
@@ -65,7 +65,7 @@ def create_preregistration_user(email: Text, request: HttpRequest, realm_creatio
                                               password_required=password_required,
                                               realm=realm)
 
-def maybe_send_to_registration(request: HttpRequest, email: Text, full_name: Text='',
+def maybe_send_to_registration(request: HttpRequest, email: str, full_name: str='',
                                is_signup: bool=False, password_required: bool=True) -> HttpResponse:
     realm = get_realm(get_subdomain(request))
     from_multiuse_invite = False
@@ -130,11 +130,11 @@ def redirect_to_subdomain_login_url() -> HttpResponseRedirect:
 def redirect_to_config_error(error_type: str) -> HttpResponseRedirect:
     return HttpResponseRedirect("/config-error/%s" % (error_type,))
 
-def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[Text],
-                                  user_profile: Optional[UserProfile], full_name: Text='',
+def login_or_register_remote_user(request: HttpRequest, remote_username: Optional[str],
+                                  user_profile: Optional[UserProfile], full_name: str='',
                                   invalid_subdomain: bool=False, mobile_flow_otp: Optional[str]=None,
                                   is_signup: bool=False,
-                                  redirect_to: Text='') -> HttpResponse:
+                                  redirect_to: str='') -> HttpResponse:
     if user_profile is None or user_profile.is_mirror_dummy:
         # We have verified the user controls an email address
         # (remote_username) but there's no associated Zulip user
@@ -268,7 +268,7 @@ def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
 def reverse_on_root(viewname: str, args: List[str]=None, kwargs: Dict[str, str]=None) -> str:
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
-def oauth_redirect_to_root(request: HttpRequest, url: Text, is_signup: bool=False) -> HttpResponse:
+def oauth_redirect_to_root(request: HttpRequest, url: str, is_signup: bool=False) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     params = {
         'subdomain': get_subdomain(request),
@@ -298,7 +298,7 @@ def start_google_oauth2(request: HttpRequest) -> HttpResponse:
     is_signup = bool(request.GET.get('is_signup'))
     return oauth_redirect_to_root(request, url, is_signup=is_signup)
 
-def start_social_login(request: HttpRequest, backend: Text) -> HttpResponse:
+def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
@@ -306,7 +306,7 @@ def start_social_login(request: HttpRequest, backend: Text) -> HttpResponse:
 
     return oauth_redirect_to_root(request, backend_url)
 
-def start_social_signup(request: HttpRequest, backend: Text) -> HttpResponse:
+def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     return oauth_redirect_to_root(request, backend_url, is_signup=True)
 
@@ -444,7 +444,7 @@ def authenticate_remote_user(realm: Realm, email_address: str) -> Tuple[UserProf
 _subdomain_token_salt = 'zerver.views.auth.log_into_subdomain'
 
 @log_view_func
-def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
+def log_into_subdomain(request: HttpRequest, token: str) -> HttpResponse:
     try:
         data = signing.loads(token, salt=_subdomain_token_salt, max_age=15)
     except signing.SignatureExpired as e:
@@ -481,8 +481,8 @@ def log_into_subdomain(request: HttpRequest, token: Text) -> HttpResponse:
                                          full_name, invalid_subdomain=invalid_subdomain,
                                          is_signup=is_signup, redirect_to=redirect_to)
 
-def redirect_and_log_into_subdomain(realm: Realm, full_name: Text, email_address: Text,
-                                    is_signup: bool=False, redirect_to: Text='') -> HttpResponse:
+def redirect_and_log_into_subdomain(realm: Realm, full_name: str, email_address: str,
+                                    is_signup: bool=False, redirect_to: str='') -> HttpResponse:
     data = {'name': full_name, 'email': email_address, 'subdomain': realm.subdomain,
             'is_signup': is_signup, 'next': redirect_to}
     token = signing.dumps(data, salt=_subdomain_token_salt)

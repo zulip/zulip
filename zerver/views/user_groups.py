@@ -1,7 +1,7 @@
 from django.http import HttpResponse, HttpRequest
 from django.utils.translation import ugettext as _
 
-from typing import List, Text
+from typing import List
 
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.actions import check_add_user_group, do_update_user_group_name, \
@@ -19,9 +19,9 @@ from zerver.views.streams import compose_views, FuncKwargPair
 
 @has_request_variables
 def add_user_group(request: HttpRequest, user_profile: UserProfile,
-                   name: Text=REQ(),
+                   name: str=REQ(),
                    members: List[int]=REQ(validator=check_list(check_int), default=[]),
-                   description: Text=REQ()) -> HttpResponse:
+                   description: str=REQ()) -> HttpResponse:
     user_profiles = user_ids_to_users(members, user_profile.realm)
     check_add_user_group(user_profile.realm, name, user_profiles, description)
     return json_success()
@@ -29,7 +29,7 @@ def add_user_group(request: HttpRequest, user_profile: UserProfile,
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
                     user_group_id: int=REQ(validator=check_int),
-                    name: Text=REQ(default=""), description: Text=REQ(default="")
+                    name: str=REQ(default=""), description: str=REQ(default="")
                     ) -> HttpResponse:
     if not (name or description):
         return json_error(_("No new data supplied"))

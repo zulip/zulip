@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Text, Iterator
+from typing import Any, List, Dict, Optional, Iterator
 
 from django.conf import settings
 from django.urls import reverse
@@ -64,7 +64,7 @@ def sent_time_in_epoch_seconds(user_message: Optional[UserMessage]) -> Optional[
     # Return the epoch seconds in UTC.
     return calendar.timegm(user_message.message.pub_date.utctimetuple())
 
-def get_bot_types(user_profile: UserProfile) -> List[Dict[Text, object]]:
+def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
     bot_types = []
     for type_id, name in UserProfile.BOT_TYPES.items():
         bot_types.append({
@@ -105,7 +105,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
        int(settings.TOS_VERSION.split('.')[0]) > user_profile.major_tos_version():
         return accounts_accept_terms(request)
 
-    narrow = []  # type: List[List[Text]]
+    narrow = []  # type: List[List[str]]
     narrow_stream = None
     narrow_topic = request.GET.get("topic")
     if request.GET.get("stream"):
@@ -260,7 +260,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
 def desktop_home(request: HttpRequest) -> HttpResponse:
     return HttpResponseRedirect(reverse('zerver.views.home.home'))
 
-def apps_view(request: HttpRequest, _: Text) -> HttpResponse:
+def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)

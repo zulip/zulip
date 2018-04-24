@@ -1,6 +1,6 @@
 
 from django.http import HttpResponse, HttpRequest
-from typing import List, Text
+from typing import List
 
 import ujson
 

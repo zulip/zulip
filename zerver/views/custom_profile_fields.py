@@ -1,5 +1,5 @@
 
-from typing import Text, Union, List, Dict, Optional
+from typing import Union, List, Dict, Optional
 import logging
 
 from django.core.exceptions import ValidationError
@@ -28,8 +28,8 @@ hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
-                                      user_profile: UserProfile, name: Text=REQ(),
-                                      hint: Text=REQ(default=''),
+                                      user_profile: UserProfile, name: str=REQ(),
+                                      hint: str=REQ(default=''),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
@@ -67,8 +67,8 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 @require_realm_admin
 @has_request_variables
 def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
-                                      field_id: int, name: Text=REQ(),
-                                      hint: Text=REQ(default='')
+                                      field_id: int, name: str=REQ(),
+                                      hint: str=REQ(default='')
                                       ) -> HttpResponse:
     if not name.strip():
         return json_error(_("Name cannot be blank."))
@@ -94,7 +94,7 @@ def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 def update_user_custom_profile_data(
         request: HttpRequest,
         user_profile: UserProfile,
-        data: List[Dict[str, Union[int, Text]]]=REQ(validator=check_list(
+        data: List[Dict[str, Union[int, str]]]=REQ(validator=check_list(
             check_dict([('id', check_int)])))) -> HttpResponse:
     for item in data:
         field_id = item['id']

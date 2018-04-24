@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional, List, Text
+from typing import Any, Dict, Optional, List
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -55,8 +55,8 @@ def update_realm(
         send_welcome_emails: Optional[bool]=REQ(validator=check_bool, default=None),
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
-        video_chat_provider: Optional[Text]=REQ(validator=check_string, default=None),
-        google_hangouts_domain: Optional[Text]=REQ(validator=check_string, default=None)
+        video_chat_provider: Optional[str]=REQ(validator=check_string, default=None),
+        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None)
 ) -> HttpResponse:
     realm = user_profile.realm
 
@@ -91,7 +91,7 @@ def update_realm(
     for k, v in list(req_vars.items()):
         if v is not None and getattr(realm, k) != v:
             do_set_realm_property(realm, k, v)
-            if isinstance(v, Text):
+            if isinstance(v, str):
                 data[k] = 'updated'
             else:
                 data[k] = v
@@ -123,7 +123,7 @@ def update_realm(
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
         data['allow_community_topic_editing'] = allow_community_topic_editing
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
-    # Text or integer field, and thus doesn't fit into the do_set_realm_property framework.
+    # str or integer field, and thus doesn't fit into the do_set_realm_property framework.
     if notifications_stream_id is not None:
         if realm.notifications_stream is None or (realm.notifications_stream.id !=
                                                   notifications_stream_id):
@@ -156,7 +156,7 @@ def deactivate_realm(request: HttpRequest, user_profile: UserProfile) -> HttpRes
     return json_success()
 
 @require_GET
-def check_subdomain_available(request: HttpRequest, subdomain: Text) -> HttpResponse:
+def check_subdomain_available(request: HttpRequest, subdomain: str) -> HttpResponse:
     try:
         check_subdomain(subdomain)
         return json_success({"msg": "available"})

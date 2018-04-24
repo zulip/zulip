@@ -1,7 +1,6 @@
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Text
 
 from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
@@ -98,7 +97,7 @@ def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id:
 
 @has_request_variables
 def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
-                        message_id: int, emoji_name: Text) -> HttpResponse:
+                        message_id: int, emoji_name: str) -> HttpResponse:
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).
@@ -122,7 +121,7 @@ def add_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
-                           message_id: int, emoji_name: Text) -> HttpResponse:
+                           message_id: int, emoji_name: str) -> HttpResponse:
 
     # access_message will throw a JsonableError exception if the user
     # cannot see the message (e.g. for messages to private streams).

@@ -1,4 +1,4 @@
-from typing import Optional, Any, Dict, Text
+from typing import Optional, Any, Dict
 
 from django.utils.translation import ugettext as _
 from django.conf import settings
@@ -70,10 +70,10 @@ def json_change_ui_settings(
 @human_users_only
 @has_request_variables
 def json_change_settings(request: HttpRequest, user_profile: UserProfile,
-                         full_name: Text=REQ(default=""),
-                         email: Text=REQ(default=""),
-                         old_password: Text=REQ(default=""),
-                         new_password: Text=REQ(default="")) -> HttpResponse:
+                         full_name: str=REQ(default=""),
+                         email: str=REQ(default=""),
+                         old_password: str=REQ(default=""),
+                         new_password: str=REQ(default="")) -> HttpResponse:
     if not (full_name or new_password or email):
         return json_error(_("Please fill out all fields."))
 
