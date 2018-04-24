@@ -691,6 +691,49 @@ exports.handle_keydown = function (event) {
     }
 };
 
+exports.needs_subscribe_warning = function (email) {
+    // This returns true if all of these conditions are met:
+    //  * the user is valid
+    //  * the stream in the compose box is valid
+    //  * the user is not already subscribed to the stream
+    //  * the user has no back-door way to see stream messages
+    //    (i.e. bots on public streams)
+    //
+    //  You can think of this as roughly answering "is there an
+    //  actionable way to subscribe the user and do they actually
+    //  need it?".
+    //
+    //  We expect the caller to already have verified that we're
+    //  sending to a stream and trying to mention the user.
+
+    var user = people.get_active_user_for_email(email);
+    var stream_name = compose_state.stream_name();
+
+    if (!stream_name) {
+        return false;
+    }
+
+    var sub = stream_data.get_sub(stream_name);
+
+    if (!sub || !user) {
+        return false;
+    }
+
+    if (user.is_bot && !sub.invite_only) {
+        // Bots may receive messages on public streams even if they are
+        // not subscribed.
+        return false;
+    }
+
+    if (stream_data.is_user_subscribed(stream_name, user.user_id)) {
+        // If our user is already subscribed
+        return false;
+    }
+
+    return true;
+};
+
+
 exports.initialize = function () {
     $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
     $('#stream,#subject,#private_message_recipient').on('change', update_fade);
@@ -724,7 +767,7 @@ exports.initialize = function () {
                 return; // don't check if @all or @everyone is subscribed to a stream
             }
 
-            if (compose_fade.would_receive_message(email) === false) {
+            if (exports.needs_subscribe_warning(email)) {
                 var error_area = $("#compose_invite_users");
                 var existing_invites_area = $('#compose_invite_users .compose_invite_user');
 
