@@ -13,6 +13,7 @@ link_mapping = {
     # be used to get to that setting
     'your-account': ['Settings', 'Your account', '/#settings/your-account'],
     'display-settings': ['Settings', 'Display settings', '/#settings/display-settings'],
+    'notifications': ['Settings', 'Notifications', '/#settings/notifications'],
     'emoji-settings': ['Manage organization', 'Custom emoji', '/#organization/emoji-settings'],
 }
 
