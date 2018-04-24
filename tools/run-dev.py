@@ -166,6 +166,10 @@ else:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
+    if options.interface is None:
+        # If interface is None and we're listening on all ports, we also need
+        # to disable the webpack host check so that webpack will serve assets.
+        webpack_cmd.append('--disable-host-check')
     if options.interface:
         webpack_cmd += ["--host", options.interface]
     else:
