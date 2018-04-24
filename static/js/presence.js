@@ -20,12 +20,12 @@ function is_mobile(device) {
     return MOBILE_DEVICES.indexOf(device) !== -1;
 }
 
-exports.is_not_offline = function (user_id) {
+exports.is_active = function (user_id) {
     var presence_info = exports.presence_info;
 
     if (presence_info[user_id]) {
         var status = presence_info[user_id].status;
-        if (status && (status !== 'offline')) {
+        if (status && (status === "active")) {
             return true;
         }
     }
