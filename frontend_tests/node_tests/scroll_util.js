@@ -53,3 +53,41 @@ zrequire('scroll_util');
     }));
 
 }());
+
+(function test_scroll_element_into_container() {
+    const container = (function () {
+        var top = 3;
+        return {
+            height: () => 100,
+            scrollTop: (arg) => {
+                if (arg === undefined) {
+                    return top;
+                }
+                top = arg;
+            },
+        };
+    }());
+
+    const elem1 = {
+        height: () => 25,
+        position: () => {
+            return {
+                top: 0,
+            };
+        },
+    };
+    scroll_util.scroll_element_into_container(elem1, container);
+    assert.equal(container.scrollTop(), 3);
+
+    const elem2 = {
+        height: () => 15,
+        position: () => {
+            return {
+                top: 250,
+            };
+        },
+    };
+    scroll_util.scroll_element_into_container(elem2, container);
+    assert.equal(container.scrollTop(), 250 - 100 + 3 + 15);
+}());
+
