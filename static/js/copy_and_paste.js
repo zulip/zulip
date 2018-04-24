@@ -208,7 +208,11 @@ exports.paste_handler_converter = function (paste_html) {
     var div = document.createElement("div");
     div.innerHTML = markdown_html;
     // Using textContent for modern browsers, innerText works for Internet Explorer
-    return div.textContent || div.innerText || "";
+    var markdown_text = div.textContent || div.innerText || "";
+    markdown_text = markdown_text.trim();
+    // Removes newlines before the start of a list and between list elements.
+    markdown_text = markdown_text.replace(/\n+([*+-])/g, '\n$1');
+    return markdown_text;
 };
 
 exports.paste_handler = function (event) {
