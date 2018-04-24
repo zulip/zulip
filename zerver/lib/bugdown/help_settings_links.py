@@ -14,6 +14,11 @@ link_mapping = {
     'your-account': ['Settings', 'Your account', '/#settings/your-account'],
     'display-settings': ['Settings', 'Display settings', '/#settings/display-settings'],
     'notifications': ['Settings', 'Notifications', '/#settings/notifications'],
+    'your-bots': ['Settings', 'Your bots', '/#settings/your-bots'],
+    'alert-words': ['Settings', 'Alert words', '/#settings/alert-words'],
+    'uploaded-files': ['Settings', 'Uploaded files', '/#settings/uploaded-files'],
+    'muted-topics': ['Settings', 'Muted topics', '/#settings/muted-topics'],
+
     'emoji-settings': ['Manage organization', 'Custom emoji', '/#organization/emoji-settings'],
 }
 

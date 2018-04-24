@@ -75,8 +75,7 @@ topic.
 
 ## Unmute a topic through the Settings page
 
-1. Go to the [Muted topics](/#settings/muted-topics)
-{!settings.md!}
+{settings_tab|muted-topics}
 
 2. Locate the topic you want to unmute in the **Muted topics** section; the
 topics are sorted according to when you first muted a topic in the selected
