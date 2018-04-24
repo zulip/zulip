@@ -269,26 +269,6 @@ def add_embed(root: Element, link: Text, extracted_data: Dict[Text, Any]) -> Non
         description_elm.set("class", "message_embed_description")
         description_elm.text = description
 
-def add_vimeo_preview(root: Element, link: Text, extracted_data: Dict[Text, Any], vm_id: Text) -> None:
-    container = markdown.util.etree.SubElement(root, "div")
-    container.set("class", "vimeo-video message_inline_image")
-
-    img_link = extracted_data.get('image')
-    if img_link:
-        parsed_img_link = urllib.parse.urlparse(img_link)
-        # Append domain where relative img_link url is given
-        if not parsed_img_link.netloc:
-            parsed_url = urllib.parse.urlparse(link)
-            domain = '{url.scheme}://{url.netloc}/'.format(url=parsed_url)
-            img_link = urllib.parse.urljoin(domain, img_link)
-        anchor = markdown.util.etree.SubElement(container, "a")
-        anchor.set("href", link)
-        anchor.set("target", "_blank")
-        anchor.set("data-id", vm_id)
-        anchor.set("title", link)
-        img = markdown.util.etree.SubElement(anchor, "img")
-        img.set("src", img_link)
-
 @cache_with_key(lambda tweet_id: tweet_id, cache_name="database", with_statsd_key="tweet_data")
 def fetch_tweet_data(tweet_id: Text) -> Optional[Dict[Text, Any]]:
     if settings.TEST_SUITE:
@@ -568,11 +548,10 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(5)
 
-    def vimeo_image(self, url: Text) -> Optional[Text]:
-        vm_id = self.vimeo_id(url)
-
-        if vm_id is not None:
-            return "http://i.vimeocdn.com/video/%s.jpg" % (vm_id,)
+    def vimeo_title(self, extracted_data: Dict[Text, Any]) -> Optional[Text]:
+        title = extracted_data.get("title")
+        if title is not None:
+            return "Vimeo - {}".format(title)
         return None
 
     def twitter_text(self, text: Text,
@@ -893,15 +872,18 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             except NotFoundInCache:
                 current_message.links_for_preview.add(url)
                 continue
-            vimeo = self.vimeo_image(url)
             if extracted_data:
-                if vimeo is not None:
-                    vm_id = self.vimeo_id(url)
-                    add_vimeo_preview(root, url, extracted_data, vm_id)
-                    continue
+                vm_id = self.vimeo_id(url)
+                if vm_id is not None:
+                    vimeo_image = extracted_data.get('image')
+                    vimeo_title = self.vimeo_title(extracted_data)
+                    if vimeo_image is not None:
+                        add_a(root, vimeo_image, url, vimeo_title,
+                              None, "vimeo-video message_inline_image", vm_id)
+                    if vimeo_title is not None:
+                        found_url.family.child.text = vimeo_title
                 else:
                     add_embed(root, url, extracted_data)
-
 
 class Avatar(markdown.inlinepatterns.Pattern):
     def handleMatch(self, match: Match[Text]) -> Optional[Element]:
