@@ -9,7 +9,8 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
@@ -110,7 +111,6 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Text:
     return get_subject(payload)
 
 def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
-    event_key = request.META.get("HTTP_X_EVENT_KEY")
     if payload.get('push'):
         return 'push'
     elif payload.get('fork'):
@@ -127,11 +127,19 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         return "issue_created"
     elif payload.get('pullrequest'):
         pull_request_template = 'pull_request_{}'
+        # Note that we only need the HTTP header to determine pullrequest events.
+        # We rely on the payload itself to determine the other ones.
+        event_key = validate_extract_webhook_http_header(request, "X_EVENT_KEY", "BitBucket")
         action = re.match('pullrequest:(?P<action>.*)$', event_key)
         if action:
-            action = action.group('action')
-            if action in PULL_REQUEST_SUPPORTED_ACTIONS:
-                return pull_request_template.format(action)
+            action_group = action.group('action')
+            if action_group in PULL_REQUEST_SUPPORTED_ACTIONS:
+                return pull_request_template.format(action_group)
+    else:
+        event_key = validate_extract_webhook_http_header(request, "X_EVENT_KEY", "BitBucket")
+        if event_key == 'repo:updated':
+            return event_key
+
     raise UnknownTriggerType("We don't support {} event type".format(event_key))
 
 def get_body_based_on_type(type: str) -> Callable[[Dict[str, Any]], Text]:

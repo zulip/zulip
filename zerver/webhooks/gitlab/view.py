@@ -7,7 +7,8 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import EMPTY_SHA, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
@@ -332,13 +333,7 @@ def get_subject_based_on_event(event: str, payload: Dict[str, Any]) -> Text:
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[Text]) -> Optional[str]:
     # if there is no 'action' attribute, then this is a test payload
     # and we should ignore it
-    event = request.META.get('HTTP_X_GITLAB_EVENT')
-    if event is None:
-        # Suppress events from old versions of GitLab that don't set
-        # this header.  TODO: We probably want a more generic solution
-        # to this category of issue that throws a 40x error to the
-        # user, e.g. some sort of InvalidWebhookRequest exception.
-        return None
+    event = validate_extract_webhook_http_header(request, 'X_GITLAB_EVENT', 'GitLab')
     if event in ['Issue Hook', 'Merge Request Hook', 'Wiki Page Hook']:
         action = payload['object_attributes'].get('action')
         if action is None:

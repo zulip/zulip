@@ -8,7 +8,8 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
     get_pull_request_event_message, get_push_commits_event_message
@@ -66,7 +67,7 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
                      branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
 
     repo = payload['repository']['name']
-    event = request.META['HTTP_X_GOGS_EVENT']
+    event = validate_extract_webhook_http_header(request, 'X_GOGS_EVENT', 'Gogs')
     if event == 'push':
         branch = payload['ref'].replace('refs/heads/', '')
         if branches is not None and branches.find(branch) == -1:

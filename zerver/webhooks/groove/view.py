@@ -9,7 +9,8 @@ import logging
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.models import UserProfile
 
 def ticket_started_body(payload: Dict[str, Any]) -> Text:
@@ -79,12 +80,8 @@ def note_added_body(payload: Dict[str, Any]) -> Text:
 @has_request_variables
 def api_groove_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body')) -> HttpResponse:
-    try:
-        # The event identifier is stored in the X_GROOVE_EVENT header.
-        event = request.META['X_GROOVE_EVENT']
-    except KeyError:
-        logging.error('No header with the Groove payload')
-        return json_error(_('Missing event header'))
+    event = validate_extract_webhook_http_header(request, 'X_GROOVE_EVENT', 'Groove')
+
     # We listen to several events that are used for notifications.
     # Other events are ignored.
     if event in EVENTS_FUNCTION_MAPPER:
