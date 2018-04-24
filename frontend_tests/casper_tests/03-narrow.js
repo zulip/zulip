@@ -337,30 +337,36 @@ casper.waitForSelector('#stream_filters .highlighted_stream', function () {
 
 // Use arrow keys to navigate through suggestions
 casper.then(function () {
-    // Down: Denmark -> Scotland
-    casper.sendKeys('.stream-list-filter', casper.page.event.key.Down, {keepFocus: true});
-    // Up: Scotland -> Denmark
-    casper.sendKeys('.stream-list-filter', casper.page.event.key.Up, {keepFocus: true});
-    // Up: Denmark -> Verona
-    casper.sendKeys('.stream-list-filter', casper.page.event.key.Up, {keepFocus: true});
+    function arrow(key) {
+        casper.sendKeys('.stream-list-filter',
+                        casper.page.event.key[key],
+                        {keepFocus: true});
+    }
+    arrow('Down'); // Denmark -> Scotland
+    arrow('Up'); // Scotland -> Denmark
+    arrow('Up'); // Denmark -> Denmark
+    arrow('Down'); // Denmark -> Scotland
 });
 
-casper.waitForSelector('#stream_filters [data-stream-name="Verona"].highlighted_stream', function () {
+casper.waitForSelector('#stream_filters [data-stream-name="Scotland"].highlighted_stream', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"].highlighted_stream',
-                                  'Stream Denmark is not highlighted');
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"].highlighted_stream',
-                                  'Stream Scotland is not highlighted');
-    casper.test.assertExist('#stream_filters [data-stream-name="Verona"].highlighted_stream',
-                            'Stream Verona is highlighted');
+    casper.test.assertDoesntExist(
+            '#stream_filters [data-stream-name="Denmark"].highlighted_stream',
+            'Stream Denmark is not highlighted');
+    casper.test.assertExist(
+            '#stream_filters [data-stream-name="Scotland"].highlighted_stream',
+            'Stream Scotland is  highlighted');
+    casper.test.assertDoesntExist(
+            '#stream_filters [data-stream-name="Verona"].highlighted_stream',
+            'Stream Verona is not highlighted');
 });
 
-// We search for the beginning of "Verona", not case sensitive
+// We search for the beginning of "Scotland", not case sensitive
 casper.then(function () {
     casper.evaluate(function () {
         $('.stream-list-filter').expectOne()
             .focus()
-            .val('ver')
+            .val('sCoT')
             .trigger($.Event('input'))
             .trigger($.Event('click'));
     });
@@ -373,16 +379,16 @@ casper.waitWhileVisible('#stream_filters [data-stream-name="Denmark"]', function
     casper.test.assertDoesntExist('#stream_filters [data-stream-name="Denmark"]',
                                   'Filtered stream list does not contain Denmark');
 });
-casper.waitWhileVisible('#stream_filters [data-stream-name="Scotland"]', function () {
-    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Scotland"]',
-                                  'Filtered stream list does not contain Scotland');
+casper.waitWhileVisible('#stream_filters [data-stream-name="Verona"]', function () {
+    casper.test.assertDoesntExist('#stream_filters [data-stream-name="Verona"]',
+                                  'Filtered stream list does not contain Verona');
 });
 
 casper.then(function () {
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"]',
-                             'Filtered stream list does contain Verona');
-    casper.test.assertExists('#stream_filters [data-stream-name="Verona"].highlighted_stream',
-                             'Stream Verona is highlighted');
+    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"]',
+                             'Filtered stream list does contain Scotland');
+    casper.test.assertExists('#stream_filters [data-stream-name="Scotland"].highlighted_stream',
+                             'Stream Scotland is highlighted');
 });
 
 // Clearing the list should give us back all the streams in the list
