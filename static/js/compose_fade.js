@@ -96,22 +96,14 @@ function fade_messages() {
 }
 
 exports.would_receive_message = function (email) {
-    // Given the current focused_recipient, this function returns true if
-    // the user in question would definitely receive this message, false if
-    // they would definitely not receive this message, and undefined if we
-    // don't know (e.g. the recipient is a stream we're not subscribed to).
-    //
-    // The distinction between undefined and true is historical.  We really
-    // only ever fade stuff if would_receive_message() returns false; i.e.
-    // we are **sure** that you would **not** receive the message.
-
     if (focused_recipient.type === 'stream') {
         var user = people.get_active_user_for_email(email);
         var sub = stream_data.get_sub(focused_recipient.stream);
         if (!sub || !user) {
             // If the stream or user isn't valid, there is no risk of a mix
-            // yet, so don't fade.
-            return;
+            // yet, so we sort of "lie" and say they would receive a
+            // message.
+            return true;
         }
 
         return stream_data.is_user_subscribed(focused_recipient.stream, user.user_id);
@@ -138,12 +130,10 @@ function update_user_row_when_fading(li, conf) {
     var email = people.get_person_from_user_id(user_id).email;
     var would_receive = exports.would_receive_message(email);
 
-    if (would_receive === false) {
-        conf.fade(li);
-    } else {
-        // would_receive is either true (so definitely don't fade) or
-        // undefined (in which case we don't presume to fade)
+    if (would_receive) {
         conf.unfade(li);
+    } else {
+        conf.fade(li);
     }
 }
 

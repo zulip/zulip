@@ -60,10 +60,10 @@ people.add_in_realm(bob);
 
     compose_fade.set_focused_recipient('stream');
 
-    assert(compose_fade.would_receive_message('me@example.com'));
-    assert(compose_fade.would_receive_message('alice@example.com'));
-    assert(!compose_fade.would_receive_message('bob@example.com'));
-    assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), undefined);
+    assert.equal(compose_fade.would_receive_message('me@example.com'), true);
+    assert.equal(compose_fade.would_receive_message('alice@example.com'), true);
+    assert.equal(compose_fade.would_receive_message('bob@example.com'), false);
+    assert.equal(compose_fade.would_receive_message('nonrealmuser@example.com'), true);
 
     var good_msg = {
         type: 'stream',
