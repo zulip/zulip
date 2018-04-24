@@ -14,7 +14,9 @@ $.fn.popover = noop; // this will get wrapped by our code
 zrequire('popovers');
 
 set_global('current_msg_list', {});
-set_global('page_params', {});
+set_global('page_params', {
+    custom_profile_fields: [],
+});
 set_global('rows', {});
 set_global('templates', {});
 
@@ -149,6 +151,7 @@ function make_image_stubber() {
                     sent_by_uri: '#narrow/sender/42-alice',
                     narrowed: false,
                     private_message_class: 'respond_personal_button',
+                    show_user_profile: false,
                     is_me: false,
                     is_active: true,
                     is_bot: undefined,
