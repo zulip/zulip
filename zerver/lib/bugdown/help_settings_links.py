@@ -19,7 +19,14 @@ link_mapping = {
     'uploaded-files': ['Settings', 'Uploaded files', '/#settings/uploaded-files'],
     'muted-topics': ['Settings', 'Muted topics', '/#settings/muted-topics'],
 
-    'emoji-settings': ['Manage organization', 'Custom emoji', '/#organization/emoji-settings'],
+    'organization-profile': ['Manage organization', 'Organization profile',
+                             '/#organization/organization-profile'],
+    'organization-settings': ['Manage organization', 'Organization settings',
+                              '/#organization/organization-settings'],
+    'organization-permissions': ['Manage organization', 'Organization permissions',
+                                 '/#organization/organization-permissions'],
+    'emoji-settings': ['Manage organization', 'Custom emoji',
+                       '/#organization/emoji-settings'],
 }
 
 settings_markdown = """

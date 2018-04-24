@@ -2,9 +2,7 @@
 
 {!admin-only.md!}
 
-
-1. Go to the [Organization permissions](/#organization/organization-permissions)
-{!admin.md!}
+{settings_tab|organization-permissions}
 
 # Prevent users from changing their email address
 
