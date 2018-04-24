@@ -12,6 +12,7 @@ link_mapping = {
     # name as it appears in the user interface, and a relative link that can
     # be used to get to that setting
     'your-account': ['Settings', 'Your account', '/#settings/your-account'],
+    'display-settings': ['Settings', 'Display settings', '/#settings/display-settings'],
     'emoji-settings': ['Manage organization', 'Custom emoji', '/#organization/emoji-settings'],
 }
 
