@@ -3,9 +3,9 @@ zrequire('stream_data');
 zrequire('stream_sort');
 var with_overrides = global.with_overrides;
 
-// Test no subscribed streams
 (function test_no_subscribed_streams() {
     assert.equal(stream_sort.sort_groups(''), undefined);
+    assert.equal(stream_sort.first_stream_id(), undefined);
 }());
 
 const scalene = {
@@ -56,11 +56,24 @@ with_overrides(function (override) {
     assert.deepEqual(sorted.normal_streams, ['clarinet', 'fast tortoise']);
     assert.deepEqual(sorted.dormant_streams, ['pneumonia']);
 
+    // Test cursor helpers.
+    assert.equal(stream_sort.first_stream_id(), scalene.stream_id);
+
+    assert.equal(stream_sort.prev_stream_id(scalene.stream_id), undefined);
+    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), scalene.stream_id);
+
+    assert.equal(stream_sort.next_stream_id(fast_tortoise.stream_id), pneumonia.stream_id);
+    assert.equal(stream_sort.next_stream_id(pneumonia.stream_id), undefined);
+
     // Test filtering
     sorted = stream_sort.sort_groups("s");
     assert.deepEqual(sorted.pinned_streams, ['scalene']);
     assert.deepEqual(sorted.normal_streams, []);
     assert.deepEqual(sorted.dormant_streams, []);
+
+    assert.equal(stream_sort.prev_stream_id(clarinet.stream_id), undefined);
+
+    assert.equal(stream_sort.next_stream_id(clarinet.stream_id), undefined);
 
     // Test searching entire word, case-insensitive
     sorted = stream_sort.sort_groups("PnEuMoNiA");

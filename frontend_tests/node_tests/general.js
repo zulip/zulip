@@ -694,6 +694,9 @@ function make_sidebar_helper() {
     }
 
     stream_list.stream_sidebar.set_row(social_stream.stream_id, row_widget());
+    stream_list.stream_cursor = {
+        redraw: noop,
+    };
 
     return {
         verify_actions: () => {
