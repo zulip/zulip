@@ -1,13 +1,9 @@
 {% extends "zerver/portico.html" %}
 
 {% block customhead %}
-{{ super() }}
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
 {{ render_bundle('integrations') }}
-
 {% endblock %}
 
 {% block hello_page_container %} hello-main{% endblock %}

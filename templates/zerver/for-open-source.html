@@ -5,13 +5,9 @@
 {% endblock %}
 
 {% block customhead %}
-{{ super() }}
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-{% stylesheet 'portico' %}
 {% stylesheet 'landing-page' %}
 {{ render_bundle('landing-page') }}
-
 {% endblock %}
 
 {% block portico_content %}
