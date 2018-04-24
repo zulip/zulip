@@ -105,12 +105,6 @@ exports.would_receive_message = function (email) {
     // only ever fade stuff if would_receive_message() returns false; i.e.
     // we are **sure** that you would **not** receive the message.
 
-    if (people.is_current_user(email)) {
-        // We never want to fade you yourself, so pretend it's true even if
-        // it's not.
-        return true;
-    }
-
     if (focused_recipient.type === 'stream') {
         var user = people.get_active_user_for_email(email);
         var sub = stream_data.get_sub(focused_recipient.stream);
@@ -120,11 +114,6 @@ exports.would_receive_message = function (email) {
             return;
         }
 
-        if (user && user.is_bot && !sub.invite_only) {
-            // Bots may receive messages on public streams even if they are
-            // not subscribed.
-            return;
-        }
         return stream_data.is_user_subscribed(focused_recipient.stream, user.user_id);
     }
 
