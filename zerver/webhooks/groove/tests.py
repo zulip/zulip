@@ -17,7 +17,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('ticket_started', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="ticket_started")
+                                          HTTP_X_GROOVE_EVENT="ticket_started")
 
     # This simulates the condition when a ticket
     # is assigned to an agent.
@@ -29,7 +29,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('ticket_assigned_agent_only', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="ticket_assigned")
+                                          HTTP_X_GROOVE_EVENT="ticket_assigned")
 
     # This simulates the condition when a ticket
     # is assigned to an agent in a group.
@@ -41,7 +41,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('ticket_assigned_agent_and_group', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="ticket_assigned")
+                                          HTTP_X_GROOVE_EVENT="ticket_assigned")
 
     # This simulates the condition when a ticket
     # is assigned to a group.
@@ -53,7 +53,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('ticket_assigned_group_only', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="ticket_assigned")
+                                          HTTP_X_GROOVE_EVENT="ticket_assigned")
 
     # This simulates the condition when a ticket
     # is assigned to no one.
@@ -61,7 +61,7 @@ class GrooveHookTests(WebhookTestCase):
         self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(self.url, self.get_body('ticket_assigned_no_one'),
                                   content_type="application/x-www-form-urlencoded",
-                                  X_GROOVE_EVENT='ticket_assigned')
+                                  HTTP_X_GROOVE_EVENT='ticket_assigned')
         self.assert_json_success(result)
 
     # This simulates the notification when an agent replied to a ticket.
@@ -74,7 +74,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('agent_replied', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="agent_replied")
+                                          HTTP_X_GROOVE_EVENT="agent_replied")
 
     # This simulates the condition when a customer replied to a ticket.
     def test_groove_customer_replied(self) -> None:
@@ -86,7 +86,7 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('customer_replied', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded",
-                                          X_GROOVE_EVENT="customer_replied")
+                                          HTTP_X_GROOVE_EVENT="customer_replied")
 
     # This simulates the condition when an agent left a note.
     def test_groove_note_added(self) -> None:
@@ -98,27 +98,21 @@ class GrooveHookTests(WebhookTestCase):
                             u"```")
         self.send_and_test_stream_message('note_added', expected_subject, expected_message,
                                           content_type="application/x-ww-form-urlencoded",
-                                          X_GROOVE_EVENT="note_added")
+                                          HTTP_X_GROOVE_EVENT="note_added")
 
     # This is for other events than specified.
     def test_groove_ticket_state_changed(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(self.url, self.get_body('ticket_state_changed'),
                                   content_type="application/x-www-form-urlencoded",
-                                  X_GROOVE_EVENT='ticket_state_changed')
+                                  HTTP_X_GROOVE_EVENT='ticket_state_changed')
         self.assert_json_success(result)
-
-    def test_groove_header_missing(self) -> None:
-        self.subscribe(self.test_user, self.STREAM_NAME)
-        result = self.client_post(self.url, self.get_body('ticket_state_changed'),
-                                  content_type="application/x-www-form-urlencoded")
-        self.assert_json_error(result, 'Missing event header')
 
     def test_groove_malformed_payload(self) -> None:
         self.subscribe(self.test_user, self.STREAM_NAME)
         result = self.client_post(self.url, self.get_body('malformed_payload'),
                                   content_type="application/x-www-form-urlencoded",
-                                  X_GROOVE_EVENT='ticket_started')
+                                  HTTP_X_GROOVE_EVENT='ticket_started')
         self.assert_json_error(result, 'Missing required data')
 
     def get_body(self, fixture_name: Text) -> Text:
