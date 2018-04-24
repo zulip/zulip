@@ -30,6 +30,7 @@ class ErrorCode(AbstractEnum):
     BAD_IMAGE = ()
     REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
+    MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
     BAD_EVENT_QUEUE_ID = ()
