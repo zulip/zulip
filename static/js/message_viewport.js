@@ -250,9 +250,9 @@ exports.stop_auto_scrolling = function () {
 exports.is_narrow = function () {
     // This basically returns true when we hide the right sidebar for
     // the left_side_userlist skinny mode.  It would be nice to have a less brittle
-    // test for this.  See the "@media (max-width: 975px)" section in
+    // test for this.  See the "@media (max-width: 1025px)" section in
     // zulip.css.
-    return window.innerWidth <= 975;
+    return window.innerWidth <= 1025;
 };
 
 exports.system_initiated_animate_scroll = function (scroll_amount) {
