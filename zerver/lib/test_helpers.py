@@ -14,6 +14,7 @@ from django.test.client import (
 from django.template import loader
 from django.http import HttpResponse, HttpResponseRedirect
 from django.db.utils import IntegrityError
+from django.db.migrations.state import StateApps
 
 import zerver.lib.upload
 from zerver.lib.upload import S3UploadBackend, LocalUploadBackend
@@ -48,7 +49,7 @@ from zerver.models import (
 from zerver.lib.request import JsonableError
 
 if False:
-    from zerver.lib.test_classes import ZulipTestCase
+    from zerver.lib.test_classes import ZulipTestCase, MigrationsTestCase
 
 import collections
 import base64
@@ -460,3 +461,115 @@ def use_s3_backend(method: FuncT) -> FuncT:
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
+
+def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
+    def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:
+        ArchivedAttachment = apps.get_model('zerver', 'ArchivedAttachment')
+        ArchivedMessage = apps.get_model('zerver', 'ArchivedMessage')
+        ArchivedUserMessage = apps.get_model('zerver', 'ArchivedUserMessage')
+        Attachment = apps.get_model('zerver', 'Attachment')
+        BotConfigData = apps.get_model('zerver', 'BotConfigData')
+        BotStorageData = apps.get_model('zerver', 'BotStorageData')
+        Client = apps.get_model('zerver', 'Client')
+        CustomProfileField = apps.get_model('zerver', 'CustomProfileField')
+        CustomProfileFieldValue = apps.get_model('zerver', 'CustomProfileFieldValue')
+        DefaultStream = apps.get_model('zerver', 'DefaultStream')
+        DefaultStreamGroup = apps.get_model('zerver', 'DefaultStreamGroup')
+        EmailChangeStatus = apps.get_model('zerver', 'EmailChangeStatus')
+        Huddle = apps.get_model('zerver', 'Huddle')
+        Message = apps.get_model('zerver', 'Message')
+        MultiuseInvite = apps.get_model('zerver', 'MultiuseInvite')
+        MutedTopic = apps.get_model('zerver', 'MutedTopic')
+        PreregistrationUser = apps.get_model('zerver', 'PreregistrationUser')
+        PushDeviceToken = apps.get_model('zerver', 'PushDeviceToken')
+        Reaction = apps.get_model('zerver', 'Reaction')
+        Realm = apps.get_model('zerver', 'Realm')
+        RealmAuditLog = apps.get_model('zerver', 'RealmAuditLog')
+        RealmDomain = apps.get_model('zerver', 'RealmDomain')
+        RealmEmoji = apps.get_model('zerver', 'RealmEmoji')
+        RealmFilter = apps.get_model('zerver', 'RealmFilter')
+        Recipient = apps.get_model('zerver', 'Recipient')
+        ScheduledEmail = apps.get_model('zerver', 'ScheduledEmail')
+        ScheduledMessage = apps.get_model('zerver', 'ScheduledMessage')
+        Service = apps.get_model('zerver', 'Service')
+        Stream = apps.get_model('zerver', 'Stream')
+        Subscription = apps.get_model('zerver', 'Subscription')
+        UserActivity = apps.get_model('zerver', 'UserActivity')
+        UserActivityInterval = apps.get_model('zerver', 'UserActivityInterval')
+        UserGroup = apps.get_model('zerver', 'UserGroup')
+        UserGroupMembership = apps.get_model('zerver', 'UserGroupMembership')
+        UserHotspot = apps.get_model('zerver', 'UserHotspot')
+        UserMessage = apps.get_model('zerver', 'UserMessage')
+        UserPresence = apps.get_model('zerver', 'UserPresence')
+        UserProfile = apps.get_model('zerver', 'UserProfile')
+
+        zerver_models_patch = mock.patch.multiple(
+            'zerver.models',
+            ArchivedAttachment=ArchivedAttachment,
+            ArchivedMessage=ArchivedMessage,
+            ArchivedUserMessage=ArchivedUserMessage,
+            Attachment=Attachment,
+            BotConfigData=BotConfigData,
+            BotStorageData=BotStorageData,
+            Client=Client,
+            CustomProfileField=CustomProfileField,
+            CustomProfileFieldValue=CustomProfileFieldValue,
+            DefaultStream=DefaultStream,
+            DefaultStreamGroup=DefaultStreamGroup,
+            EmailChangeStatus=EmailChangeStatus,
+            Huddle=Huddle,
+            Message=Message,
+            MultiuseInvite=MultiuseInvite,
+            MutedTopic=MutedTopic,
+            PreregistrationUser=PreregistrationUser,
+            PushDeviceToken=PushDeviceToken,
+            Reaction=Reaction,
+            Realm=Realm,
+            RealmAuditLog=RealmAuditLog,
+            RealmDomain=RealmDomain,
+            RealmEmoji=RealmEmoji,
+            RealmFilter=RealmFilter,
+            Recipient=Recipient,
+            ScheduledEmail=ScheduledEmail,
+            ScheduledMessage=ScheduledMessage,
+            Service=Service,
+            Stream=Stream,
+            Subscription=Subscription,
+            UserActivity=UserActivity,
+            UserActivityInterval=UserActivityInterval,
+            UserGroup=UserGroup,
+            UserGroupMembership=UserGroupMembership,
+            UserHotspot=UserHotspot,
+            UserMessage=UserMessage,
+            UserPresence=UserPresence,
+            UserProfile=UserProfile
+        )
+        zerver_test_helpers_patch = mock.patch.multiple(
+            'zerver.lib.test_helpers',
+            Client=Client,
+            Message=Message,
+            Realm=Realm,
+            Recipient=Recipient,
+            Stream=Stream,
+            Subscription=Subscription,
+            UserMessage=UserMessage,
+            UserProfile=UserProfile,
+        )
+
+        zerver_test_classes_patch = mock.patch.multiple(
+            'zerver.lib.test_classes',
+            Client=Client,
+            Message=Message,
+            Realm=Realm,
+            Recipient=Recipient,
+            Service=Service,
+            Stream=Stream,
+            Subscription=Subscription,
+            UserProfile=UserProfile,
+        )
+
+        with zerver_models_patch,\
+                zerver_test_helpers_patch,\
+                zerver_test_classes_patch:
+            method(self, apps)
+    return method_patched_with_mock
