@@ -106,10 +106,6 @@ def is_template_database_current(
             'zerver/lib/generate_test_data.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
-            'zproject/dev_settings.py',
-            'zproject/prod_settings_template.py',
-            'zproject/settings.py',
-            'zproject/test_settings.py',
         ]
     if status_dir is None:
         status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')
