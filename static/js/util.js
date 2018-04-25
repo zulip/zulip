@@ -270,6 +270,22 @@ exports.emoji_prefix_sort = function (query, objs, get_item) {
     return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
 };
 
+function to_int(s) {
+    return parseInt(s, 10);
+}
+
+exports.sorted_ids = function (ids) {
+    // This mapping makes sure we are using ints, and
+    // it also makes sure we don't mutate the list.
+    var id_list = _.map(ids, to_int);
+    id_list.sort(function (a, b) {
+        return a - b;
+    });
+    id_list = _.uniq(id_list, true);
+
+    return id_list;
+};
+
 return exports;
 
 }());
