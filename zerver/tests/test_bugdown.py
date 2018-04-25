@@ -1218,6 +1218,14 @@ class BugdownTest(ZulipTestCase):
             '<p><a href="#narrow/stream/999-hello" title="#narrow/stream/999-hello">hello</a></p>'
         )
 
+    def test_nbsp_filtering(self) -> None:
+        msg = "[ \xa0 \xa0 \xa0 \xa0text \xa0 \xa0 \xa0 \xa0]"
+        converted = bugdown_convert(msg)
+        self.assertEqual(
+            converted,
+            '<p>[        text        ]</p>',
+        )
+
 class BugdownApiTests(ZulipTestCase):
     def test_render_message_api(self) -> None:
         content = 'That is a **bold** statement'

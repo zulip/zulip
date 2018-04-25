@@ -1201,6 +1201,17 @@ class ListIndentProcessor(markdown.blockprocessors.ListIndentProcessor):
         super().__init__(parser)
         parser.markdown.tab_length = 4
 
+class NormalizeCustomWhitespace(markdown.preprocessors.Preprocessor):
+    """ Normalize whitespace for consistent parsing.
+
+        Replaces &nbsp; characters with normal spaces.
+    """
+
+    def run(self, lines: List[Text]) -> List[Text]:
+        source = '\n'.join(lines)
+        source = source.replace("\u00a0", " ")
+        return source.split('\n')
+
 class BugdownUListPreprocessor(markdown.preprocessors.Preprocessor):
     """ Allows unordered list blocks that come directly after a
         paragraph to be rendered as an unordered list
@@ -1616,6 +1627,9 @@ class Bugdown(markdown.Extension):
                    r"| (?:file://(/[^/ ]*)+/?)" if settings.ENABLE_FILE_LINKS else r"")
         md.inlinePatterns.add('autolink', AutoLink(link_regex), '>link')
 
+        md.preprocessors.add('normalize_custom_whitespace',
+                             NormalizeCustomWhitespace(md),
+                             "_begin")
         md.preprocessors.add('hanging_ulists',
                              BugdownUListPreprocessor(md),
                              "_begin")
