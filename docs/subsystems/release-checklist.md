@@ -53,6 +53,4 @@ preparing a new release.
   to master.
 * Update `ZULIP_VERSION` in `version.py`, and `release` and `version` in
  `docs/conf.py`, to e.g. `1.6.0+git`.
-* Update the handful of places where we link to docs for the latest
-  release, rather than for master.  See `git grep 'zulip.readthedocs.io/en/[0-9]'`.
 * Consider removing a few old releases from ReadTheDocs.
