@@ -665,7 +665,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
             result = self.client_get(result.url)
             self.assert_in_response('No account found for', result)
-            self.assert_in_response('new-user@zulip.com. Would you like to register instead?', result)
+            self.assert_in_response('new-user@zulip.com.', result)
             self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
 
             url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]
@@ -990,7 +990,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         result = self.get_log_into_subdomain(data)
         self.assertEqual(result.status_code, 200)
         self.assert_in_response('No account found for', result)
-        self.assert_in_response('new@zulip.com. Would you like to register instead?', result)
+        self.assert_in_response('new@zulip.com.', result)
         self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
 
         url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]

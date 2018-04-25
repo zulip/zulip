@@ -12,10 +12,10 @@
                     <div class="white-box">
                         <p>
                             {% trans %}
-                            No account found for {{ email }}. Would you like to register instead?
+                            No account found for {{ email }}.
                             {% endtrans %}
                         </p>
-                        <div style="text-align: left;">
+                        <div style="text-align: center;">
                             <form class="form-inline" id="send_confirm" name="send_confirm"
                               action="/login/" method="get">
                                 <input type="hidden"
@@ -23,13 +23,14 @@
                                   name="email"
                                   value="{{ email }}" />
                                 <button>
-                                    {{ _("Go back to login") }}
+                                    {{ _("Log in with another account") }}
                                 </button>
                             </form>
+                            <br/>
                             <form class="form-inline" id="send_confirm" name="send_confirm"
                               action="{{ continue_link }}" method="get">
                                 <button class="outline">
-                                    {{ _("Sign up instead") }}
+                                    {{ _("Continue to registration") }}
                                 </button>
                             </form>
                         </div>

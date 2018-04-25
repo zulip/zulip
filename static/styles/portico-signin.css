@@ -138,7 +138,6 @@ html {
 
 .app-main.confirm-continue-page-container .form-inline {
     display: inline-block;
-    width: 180px;
 }
 
 .app-main.confirm-continue-page-container .form-inline .outline {
@@ -290,7 +289,7 @@ html {
 }
 
 .register-form button {
-    margin-top: 25px;
+    margin-top: 22px;
 }
 
 .new-style .alert:not(.alert-info) {
