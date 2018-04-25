@@ -403,6 +403,20 @@ set_global('$', global.make_zjquery());
     stream_list.handle_narrow_activated(filter);
     assert(!$("ul.filters li").hasClass('active-filter'));
     assert($('<cars sidebar row html>').hasClass('active-filter'));
+
+    var removed_classes;
+    $("ul#stream_filters li").removeClass = (classes) => {
+        removed_classes = classes;
+    };
+
+    var topics_closed;
+    topic_list.close = () => {
+        topics_closed = true;
+    };
+
+    stream_list.handle_narrow_deactivated();
+    assert.equal(removed_classes, 'active-filter active-sub-filter');
+    assert(topics_closed);
 }());
 
 (function test_focusout_user_filter() {
