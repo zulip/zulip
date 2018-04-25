@@ -200,6 +200,8 @@ casper.then(function () {
 casper.then(function () {
     casper.waitUntilVisible('#admin-profile-field-status img', function () {
         casper.test.assertSelectorHasText('div#admin-profile-field-status', 'Saved');
+    });
+    casper.waitUntilVisible('.profile-field-row span.profile_field_name', function () {
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
         casper.click('.profile-field-row button.open-edit-form');
