@@ -1,9 +1,27 @@
 import { resolve } from 'path';
 import * as BundleTracker from 'webpack-bundle-tracker';
 import * as webpack from 'webpack';
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const assets = require('./webpack.assets.json');
 
+// Currently we're using style-loader for local dev
+// because MiniCssExtractPlugin doesn't support
+// HMR as yet. When this changes we can switch
+// over to MiniCssExtractPlugin which will Also
+// solve the flash of unstsyled elements on page load.
+// https://github.com/webpack-contrib/mini-css-extract-plugin/issues/34
+function getCSSLoader(isProd: boolean) {
+    if(isProd) {
+        return MiniCssExtractPlugin.loader
+    }
+    return {
+        loader: 'style-loader',
+        options: {
+            sourceMap: true
+        }
+    }
+}
 export default (env?: string) : webpack.Configuration => {
     const production: boolean = env === "production";
     let config: webpack.Configuration = {
@@ -62,6 +80,49 @@ export default (env?: string) : webpack.Configuration => {
                         {loader: 'expose-loader', options: 'common'},
                     ],
                 },
+                // regular css files
+                {
+                    test: /\.css$/,
+                    use: [
+                        getCSSLoader(production),
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                sourceMap: true
+                            }
+                        },
+                    ],
+                },
+                // sass / scss loader
+                {
+                    test: /\.(sass|scss)$/,
+                    use: [
+                        getCSSLoader(production),
+                        {
+                            loader: 'css-loader',
+                            options: {
+                                sourceMap: true
+                            }
+                        },
+                        {
+                            loader: 'sass-loader',
+                            options: {
+                                sourceMap: true
+                            }
+                        }
+                    ],
+                },
+                // load fonts and files
+                {
+                    test: /\.(woff(2)?|ttf|eot|svg|otf)(\?v=\d+\.\d+\.\d+)?$/,
+                    use: [{
+                        loader: 'file-loader',
+                        options: {
+                            name: '[name].[ext]',
+                            outputPath: 'fonts/'
+                        }
+                    }]
+                }
             ],
         },
         output: {
@@ -69,7 +130,7 @@ export default (env?: string) : webpack.Configuration => {
             filename: production ? '[name]-[hash].js' : '[name].js',
         },
         resolve: {
-            extensions: [".tsx", ".ts", ".js", ".json"],
+            extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
         },
         // We prefer cheap-module-eval-source-map over eval because
         // currently eval has trouble setting breakpoints per line
@@ -81,6 +142,11 @@ export default (env?: string) : webpack.Configuration => {
     if (production) {
         config.plugins = [
             new BundleTracker({filename: 'webpack-stats-production.json'}),
+            // Extract CSS from files
+            new MiniCssExtractPlugin({
+                filename: "[name].[contenthash].css",
+                chunkFilename: "[id].css"
+            })
         ];
     } else {
         // Out JS debugging tools
@@ -93,6 +159,11 @@ export default (env?: string) : webpack.Configuration => {
             new webpack.NamedModulesPlugin(),
             // script-loader should load sourceURL in dev
             new webpack.LoaderOptionsPlugin({debug: true}),
+            // Extract CSS from files
+            new MiniCssExtractPlugin({
+                filename: "[name].css",
+                chunkFilename: "[id].css"
+            })
         ];
 
         config.devServer = {

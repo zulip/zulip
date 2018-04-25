@@ -871,6 +871,12 @@ PIPELINE = {
             'source_filenames': ('styles/stats.css',),
             'output_filename': 'min/stats.css'
         },
+        # Although this is being handled by webpack already it seems
+        # portico.css would still need to be generated for 5xx.html
+        # (the error page for when Django is down) which can't be
+        # rendered as a template.  This block could be removed after
+        # we add another way for that template. to find `portico.css`.
+        # (Or maybe use premailer to generate it?)
         'portico': {
             'source_filenames': (
                 'third/zocial/zocial.css',
