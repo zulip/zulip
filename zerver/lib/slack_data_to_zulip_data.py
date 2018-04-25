@@ -16,7 +16,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
@@ -817,12 +817,12 @@ def build_zerver_attachment(realm_id: int, message_id: int, attachment_id: int,
         file_name=fileinfo['name'])
     zerver_attachment.append(attachment)
 
-def get_message_sending_user(message: ZerverFieldsT) -> str:
-    try:
-        user = message.get('user', message['file']['user'])
-    except KeyError:
-        user = message.get('user')
-    return user
+def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
+    if 'user' in message:
+        return message['user']
+    if message.get('file'):
+        return message['file'].get('user')
+    return None
 
 def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
                              zerver_subscription: List[ZerverFieldsT], recipient_id: int,
