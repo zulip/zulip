@@ -63,9 +63,9 @@ class SettingHelpExtension(markdown.Extension):
         md.registerExtension(self)
         md.preprocessors.add('setting', Setting(), '_begin')
 
-relative_settings_links = None
+relative_settings_links = None  # type: Optional[bool]
 
-def set_relative_settings_links(value):
+def set_relative_settings_links(value: bool) -> None:
     global relative_settings_links
     relative_settings_links = value
 
