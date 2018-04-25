@@ -3,23 +3,23 @@
 from typing import Union, List, Dict, Text, Any
 from mock import patch
 
-from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
+from zerver.lib.actions import try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, get_user
+    custom_profile_fields_for_realm, get_realm
 import ujson
 
+FIELDS_ALREADY_EXISTS = len(custom_profile_fields_for_realm(get_realm("zulip").id))
 
 class CustomProfileFieldTest(ZulipTestCase):
-
     def test_list(self) -> None:
         self.login(self.example_email("iago"))
         result = self.client_get("/json/realm/profile_fields")
         self.assert_json_success(result)
         self.assertEqual(200, result.status_code)
         content = result.json()
-        self.assertEqual(len(content["custom_fields"]), 4)
+        self.assertEqual(len(content["custom_fields"]), FIELDS_ALREADY_EXISTS)
 
     def test_create(self) -> None:
         self.login(self.example_email("iago"))
@@ -120,11 +120,11 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_delete("/json/realm/profile_fields/100")
         self.assert_json_error(result, 'Field id 100 not found.')
 
-        self.assertEqual(CustomProfileField.objects.count(), 4)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS)
         result = self.client_delete(
             "/json/realm/profile_fields/{}".format(field.id))
         self.assert_json_success(result)
-        self.assertEqual(CustomProfileField.objects.count(), 3)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS - 1)
 
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
@@ -145,14 +145,14 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
 
-        self.assertEqual(CustomProfileField.objects.count(), 4)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS)
         result = self.client_patch(
             "/json/realm/profile_fields/{}".format(field.id),
             info={'name': 'New phone number',
                   'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_success(result)
         field = CustomProfileField.objects.get(id=field.id, realm=realm)
-        self.assertEqual(CustomProfileField.objects.count(), 4)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS)
         self.assertEqual(field.name, 'New phone number')
         self.assertIs(field.hint, '')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
@@ -173,7 +173,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_json_success(result)
 
         field = CustomProfileField.objects.get(id=field.id, realm=realm)
-        self.assertEqual(CustomProfileField.objects.count(), 4)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS)
         self.assertEqual(field.name, 'New phone number')
         self.assertEqual(field.hint, 'New contact number')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
@@ -218,7 +218,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             CustomProfileField.SHORT_TEXT
         )
 
-        self.assertEqual(CustomProfileField.objects.count(), 6)
+        self.assertEqual(CustomProfileField.objects.count(), FIELDS_ALREADY_EXISTS + 2)
         result = self.client_patch(
             "/json/realm/profile_fields/{}".format(field.id),
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
@@ -285,7 +285,7 @@ class CustomProfileDataTest(ZulipTestCase):
             for k in ['id', 'type', 'name', 'field_data']:
                 self.assertIn(k, field_dict)
 
-            self.assertEqual(len(iago.profile_data), 4)
+            self.assertEqual(len(iago.profile_data), FIELDS_ALREADY_EXISTS)
 
         # Update value of one field.
         field = CustomProfileField.objects.get(name='Biography', realm=realm)
@@ -332,10 +332,10 @@ class CustomProfileDataTest(ZulipTestCase):
         data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, Text]]]
         do_update_user_custom_profile_data(user_profile, data)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), 4)
-        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), 4)
+        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), FIELDS_ALREADY_EXISTS)
+        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), FIELDS_ALREADY_EXISTS)
 
         do_remove_realm_custom_profile_field(realm, field)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), 3)
-        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), 3)
+        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), FIELDS_ALREADY_EXISTS - 1)
+        self.assertEqual(user_profile.customprofilefieldvalue_set.count(), FIELDS_ALREADY_EXISTS - 1)
