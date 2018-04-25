@@ -27,6 +27,14 @@ link_mapping = {
                                  '/#organization/organization-permissions'],
     'emoji-settings': ['Manage organization', 'Custom emoji',
                        '/#organization/emoji-settings'],
+    'auth-methods': ['Manage organization', 'Authentication methods',
+                     '/#organization/auth-methods'],
+    'user-groups-admin': ['Manage organization', 'User groups',
+                          '/#organization/user-groups-admin'],
+    'user-list-admin': ['Manage organization', 'Users', '/#organization/user-list-admin'],
+    'deactivated-users-admin': ['Manage organization', 'Deactivated users',
+                                '/#organization/deactivated-users-admin'],
+    'bot-list-admin': ['Manage organization', 'Bots', '/#organization/bot-list-admin'],
 }
 
 settings_markdown = """

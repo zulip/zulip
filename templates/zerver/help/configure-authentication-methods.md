@@ -10,8 +10,7 @@ only), and/or various other SSO methods (also currently on premise only).
     If you are unsure about what these mean, don't worry! Zulip
     allows logging in via email and password by default.
 
-1. Go to the [Authentication methods](/#organization/auth-methods)
-{!admin.md!}
+{settings_tab|auth-methods}
 
 2. Toggle the checkboxes next to the following options to configure your organization's authentication methods:
 
