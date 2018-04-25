@@ -1,3 +1,4 @@
+set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
 set_global('templates', {});
@@ -23,6 +24,7 @@ var return_true = function () { return true; };
 
 set_global('topic_list', {});
 set_global('overlays', {});
+set_global('popovers', {});
 
 set_global('keydown_util', {
     handle: noop,
@@ -151,6 +153,9 @@ set_global('keydown_util', {
     row.remove();
     assert(removed);
 }());
+
+set_global('$', global.make_zjquery());
+
 function add_row(sub) {
     global.stream_data.add_sub(sub.name, sub);
     var row = {
@@ -166,6 +171,7 @@ function add_row(sub) {
     };
     stream_list.stream_sidebar.set_row(sub.stream_id, row);
 }
+
 function initialize_stream_data() {
     stream_data.clear_subscriptions();
 
@@ -226,12 +232,126 @@ function initialize_stream_data() {
     add_row(carSub);
 }
 
+function test_helper() {
+    var events = [];
+
+    return {
+        redirect: (module_name, func_name) => {
+            const full_name = module_name + '.' + func_name;
+            global[module_name][func_name] = () => {
+                events.push(full_name);
+            };
+        },
+        events: events,
+    };
+}
+
+function elem($obj) {
+    return {to_$: () => $obj};
+}
+
+(function test_zoom_in_and_zoom_out() {
+    var helper;
+
+    var callbacks;
+    topic_list.set_click_handlers = (opts) => {
+        callbacks = opts;
+    };
+
+    helper = test_helper();
+
+    helper.redirect('popovers', 'hide_all');
+    helper.redirect('topic_list', 'zoom_in');
+
+    var label1 = $.create('label1 stub');
+    var label2 = $.create('label2 stub');
+
+    label1.show();
+    label2.show();
+
+    assert(label1.visible());
+    assert(label2.visible());
+
+    $('.stream-filters-label').each = (f) => {
+        f.call(elem(label1));
+        f.call(elem(label2));
+    };
+
+    const splitter = $.create('hr stub');
+
+    splitter.show();
+    assert(splitter.visible());
+
+    $('.stream-split').each = (f) => {
+        f.call(elem(splitter));
+    };
+
+    const stream_li1 = $.create('stream1 stub');
+    const stream_li2 = $.create('stream2 stub');
+
+    function make_attr(arg) {
+        return (sel) => {
+            assert.equal(sel, 'data-stream-id');
+            return arg;
+        };
+    }
+
+    stream_li1.attr = make_attr('42');
+    stream_li1.hide();
+    stream_li2.attr = make_attr('99');
+
+    $('#stream_filters li.narrow-filter').each = (f) => {
+        f.call(elem(stream_li1));
+        f.call(elem(stream_li2));
+    };
+    stream_list.initialize();
+
+    callbacks.zoom_in({stream_id: 42});
+
+    assert.deepEqual(helper.events, [
+        'popovers.hide_all',
+        'topic_list.zoom_in',
+    ]);
+
+    assert(!label1.visible());
+    assert(!label2.visible());
+    assert(!splitter.visible());
+    assert(stream_li1.visible());
+    assert(!stream_li2.visible());
+    assert($('#streams_list').hasClass('zoom-in'));
+
+    helper = test_helper();
+    helper.redirect('popovers', 'hide_all');
+    helper.redirect('topic_list', 'zoom_out');
+    helper.redirect('scroll_util', 'scroll_element_into_container');
+
+    $('#stream_filters li.narrow-filter').show = () => {
+        stream_li1.show();
+        stream_li2.show();
+    };
+
+    stream_li1.length = 1;
+    callbacks.zoom_out({stream_li: stream_li1});
+
+    assert.deepEqual(helper.events, [
+        'popovers.hide_all',
+        'topic_list.zoom_out',
+        'scroll_util.scroll_element_into_container',
+    ]);
+
+    assert(label1.visible());
+    assert(label2.visible());
+    assert(splitter.visible());
+    assert(stream_li1.visible());
+    assert(stream_li2.visible());
+    assert($('#streams_list').hasClass('zoom-out'));
+}());
+
+set_global('$', global.make_zjquery());
+
 (function test_narrowing() {
     initialize_stream_data();
 
-    var document = 'document-stub';
-
-    set_global('document', document);
     set_global('narrow_state', {
         stream: function () { return 'devel'; },
         topic: noop,
