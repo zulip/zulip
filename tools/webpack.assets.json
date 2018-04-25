@@ -31,5 +31,6 @@
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
-    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js"
+    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
+    "portico-styles": "./static/styles/scss/portico.scss"
 }

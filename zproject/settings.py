@@ -871,6 +871,10 @@ PIPELINE = {
             'source_filenames': ('styles/stats.css',),
             'output_filename': 'min/stats.css'
         },
+        # Although this is being handled by webpack already
+        # it seems portico.css would still need to be generated
+        # for 5xx.html which is not rendered as a template
+        # This block could be removed when that is moved over
         'portico': {
             'source_filenames': (
                 'third/zocial/zocial.css',
