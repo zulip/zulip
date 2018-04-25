@@ -1,3 +1,4 @@
+zrequire("util");
 zrequire("typing_data");
 
 (function test_basics() {
