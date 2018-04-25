@@ -611,9 +611,6 @@ exports.clear_and_hide_search = function () {
 };
 
 exports.toggle_filter_displayed = function (e) {
-    if (e.target.id === 'streams_inline_cog') {
-        return;
-    }
     if ($('#stream-filters-container .input-append.notdisplayed').length === 0) {
         exports.clear_and_hide_search();
     } else {
