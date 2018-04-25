@@ -121,6 +121,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.network "forwarded_port", guest: 9991, host: host_port, host_ip: host_ip_addr
+  config.vm.network "forwarded_port", guest: 9994, host: host_port + 3, host_ip: host_ip_addr
   # Specify LXC provider before VirtualBox provider so it's preferred.
   config.vm.provider "lxc" do |lxc|
     if command? "lxc-ls"

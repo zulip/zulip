@@ -91,21 +91,16 @@ export default (env?: string) : webpack.Configuration => {
             new BundleTracker({filename: 'var/webpack-stats-dev.json'}),
             // Better logging from console for hot reload
             new webpack.NamedModulesPlugin(),
-            // Hot Reload of code in development
-            new webpack.HotModuleReplacementPlugin(),
             // script-loader should load sourceURL in dev
             new webpack.LoaderOptionsPlugin({debug: true}),
         ];
 
         config.devServer = {
-            clientLogLevel: "warning",
-            hot: true,
-            inline: false,
-            stats: "minimal",
+            clientLogLevel: "error",
+            stats: "errors-only",
             watchOptions: {
-                aggregateTimeout: 100,
-                poll: 100,
-            },
+                poll: 100
+            }
         };
     }
     return config;
