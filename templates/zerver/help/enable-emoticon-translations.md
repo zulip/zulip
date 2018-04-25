@@ -15,14 +15,10 @@ or
 />
 automatically by Zulip.
 
-1. Go to the [Display settings](/#settings/display-settings)
-{!settings.md!}
+{settings_tab|display-settings}
 
 2. Select the option labeled
    **Translate emoticons (convert `:)` to 😃 in messages)**.
-
-Then whenever you send a message with a supported emoticon, it will be
-translated into an emoji.
 
 ## Current emoticon conversions
 

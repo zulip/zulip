@@ -5,7 +5,6 @@ for most environments.  However, Zulip also provides a "night mode"
 theme, which is great for working in a dark space.  You can switch to
 night mode as follows:
 
-1. Go to the [Display settings](/#settings/display-settings)
-{!settings.md!}
+{settings_tab|display-settings}
 
 2. Select the option labeled **Night mode**.
