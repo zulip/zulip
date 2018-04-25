@@ -66,4 +66,27 @@ var editability_types = message_edit.editability_types;
     assert.equal(get_editability(message, 45), editability_types.NO_LONGER);
     // If we don't pass a second argument, treat it as 0
     assert.equal(get_editability(message), editability_types.NO_LONGER);
+
+    message = {
+        sent_by_me: false,
+        type: 'stream',
+    };
+    global.page_params = {
+        realm_allow_community_topic_editing: true,
+        realm_allow_message_editing: true,
+        realm_message_content_edit_limit_seconds: 0,
+    };
+    message.timestamp = current_timestamp - 60;
+    assert.equal(get_editability(message), editability_types.TOPIC_ONLY);
+
+    // Test `message_edit.is_topic_editable()`
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    message.sent_by_me = true;
+    global.page_params.realm_allow_community_topic_editing = false;
+    assert.equal(message_edit.is_topic_editable(message), true);
+
+    message.sent_by_me = false;
+    global.page_params.realm_allow_community_topic_editing = false;
+    assert.equal(message_edit.is_topic_editable(message), false);
 }());
