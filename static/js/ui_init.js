@@ -34,7 +34,7 @@ function message_hover(message_row) {
     message_row.addClass('message_hovered');
     current_message_hover = message_row;
 
-    if (!message.sent_by_me && !page_params.realm_allow_community_topic_editing) {
+    if (!message_edit.is_topic_editable(message)) {
         // The actions and reactions icon hover logic is handled entirely by CSS
         return;
     }
