@@ -35,6 +35,16 @@ link_mapping = {
     'deactivated-users-admin': ['Manage organization', 'Deactivated users',
                                 '/#organization/deactivated-users-admin'],
     'bot-list-admin': ['Manage organization', 'Bots', '/#organization/bot-list-admin'],
+    'streams-list-admin': ['Manage organization', 'Delete streams',
+                           '/#organization/streams-list-admin'],
+    'default-streams-list': ['Manage organization', 'Default streams',
+                             '/#organization/default-streams-list'],
+    'filter-settings': ['Manage organization', 'Filter settings',
+                        '/#organization/filter-settings'],
+    'profile-field-settings': ['Manage organization', 'Custom profile fields',
+                               '/#organization/profile-field-settings'],
+    'invites-list-admin': ['Manage organization', 'Invitations',
+                           '/#organization/invites-list-admin'],
 }
 
 settings_markdown = """

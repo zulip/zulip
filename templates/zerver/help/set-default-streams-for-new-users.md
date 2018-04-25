@@ -5,8 +5,7 @@
 Follow the following steps to set the default streams that new users are automatically
 subscribed to.
 
-1. Go to the [Default streams](/#organization/default-streams-list)
-{!admin.md!}
+{settings_tab|default-streams-list}
 
 2. To add a new stream to **Default streams**, enter the name of the stream in the
 box next to **Stream name**.  Autocompletion suggestions will appear in a
