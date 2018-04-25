@@ -495,16 +495,6 @@ zrequire('message_events');
 
 */
 
-// We have a little bit of housekeeping to make the tests run
-// faster.  Server requests get throttled, but we don't care
-// about the timing issues for now in the tests, so we re-implement
-// throttle to just call a function immediately.
-_.throttle = (f) => {
-    return () => {
-        return f();
-    };
-};
-
 set_global('channel', {});
 set_global('feature_flags', {});
 set_global('home_msg_list', {});

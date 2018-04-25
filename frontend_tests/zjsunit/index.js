@@ -8,6 +8,13 @@ global.Dict = require('js/dict');
 global._ = require('node_modules/underscore/underscore.js');
 var _ = global._;
 
+// Create a helper function to avoid sneaky delays in tests.
+function immediate(f) {
+    return () => {
+        return f();
+    };
+}
+
 // Find the files we need to run.
 var finder = require('./finder.js');
 var files = finder.find_files_to_run(); // may write to console
@@ -67,6 +74,8 @@ global.bugdown_assert = require('./bugdown_assert.js');
 files.forEach(function (file) {
     global.patch_builtin('setTimeout', noop);
     global.patch_builtin('setInterval', noop);
+    _.throttle = immediate;
+    _.debounce = immediate;
 
     console.info('running tests for ' + file.name);
     render.init();
