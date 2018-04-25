@@ -651,6 +651,44 @@ set_global('$', global.make_zjquery());
     });
 }());
 
+narrow_state.active = () => false;
+
+(function test_rename_stream() {
+    const old_stream_id = stream_data.get_stream_id('devel');
+    const renamed_devel = {
+        name: 'Development',
+        stream_id: old_stream_id,
+        color: 'blue',
+        subscribed: true,
+        pin_to_top: true,
+    };
+
+    const li_stub = $.create('li stub');
+    templates.render = (name, payload) => {
+        assert.equal(name, 'stream_sidebar_row');
+        assert.deepEqual(payload, {
+            name: 'Development',
+            id: 1000,
+            uri: '#narrow/stream/Development',
+            not_in_home_view: false,
+            invite_only: undefined,
+            color: payload.color,
+            pin_to_top: true,
+            dark_background: payload.dark_background,
+        });
+        return {to_$: () => li_stub};
+    };
+
+    var count_updated;
+    stream_list.update_count_in_dom = (li) => {
+        assert.equal(li, li_stub);
+        count_updated = true;
+    };
+
+    stream_list.rename_stream(renamed_devel);
+    assert(count_updated);
+}());
+
 (function test_create_initial_sidebar_rows() {
     initialize_stream_data();
 
