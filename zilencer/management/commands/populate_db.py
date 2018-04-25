@@ -281,6 +281,9 @@ class Command(BaseCommand):
                                                                  field_data=field_data)
             birthday = try_add_realm_custom_profile_field(zulip_realm, "Birthday",
                                                           CustomProfileField.DATE)
+            github_profile = try_add_realm_custom_profile_field(zulip_realm, "GitHub profile",
+                                                                CustomProfileField.URL,
+                                                                hint="Or your personal blog's URL")
 
             # Fill in values for Iago and Hamlet
             hamlet = get_user("hamlet@zulip.com", zulip_realm)
@@ -290,6 +293,7 @@ class Command(BaseCommand):
                 {"id": favorite_food.id, "value": "Apples"},
                 {"id": favorite_editor.id, "value": "emacs"},
                 {"id": birthday.id, "value": "2000-1-1"},
+                {"id": github_profile.id, "value": "https://github.com/TheIago"},
             ])
             do_update_user_custom_profile_data(hamlet, [
                 {"id": phone_number.id, "value": "+0-11-23-456-7890"},
@@ -297,6 +301,7 @@ class Command(BaseCommand):
                 {"id": favorite_food.id, "value": "Dark chocolate"},
                 {"id": favorite_editor.id, "value": "vim"},
                 {"id": birthday.id, "value": "1900-1-1"},
+                {"id": github_profile.id, "value": "https://github.com/PrinceHamlet"},
             ])
         else:
             zulip_realm = get_realm("zulip")
