@@ -266,6 +266,18 @@ class CustomProfileDataTest(ZulipTestCase):
                                    {'data': ujson.dumps([{"id": field.id, "value": 123}])})
         self.assert_json_error(result, u"value[{}] is not a string".format(field.id))
 
+    def test_update_invalid_url(self) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        field = CustomProfileField.objects.get(name="GitHub profile", realm=realm)
+
+        # Update value of field
+        result = self.client_patch("/json/users/me/profile_data",
+                                   {'data': ujson.dumps([{"id": field.id, "value": u"abc"}])})
+        self.assert_json_error(
+            result,
+            u"value[{}] is not a URL".format(field.id))
+
     def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -275,6 +287,7 @@ class CustomProfileDataTest(ZulipTestCase):
             ('Favorite food', 'short text data'),
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
+            ('GitHub profile', 'https://github.com/ABC'),
         ]
 
         data = []
