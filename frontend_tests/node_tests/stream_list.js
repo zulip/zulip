@@ -689,6 +689,42 @@ narrow_state.active = () => false;
     assert(count_updated);
 }());
 
+set_global('$', global.make_zjquery());
+
+(function test_refresh_pin() {
+    initialize_stream_data();
+
+    const sub = {
+        name: 'maybe_pin',
+        stream_id: 100,
+        color: 'blue',
+        pin_to_top: false,
+    };
+
+    stream_data.add_sub(sub.name, sub);
+
+    const pinned_sub = _.extend(sub, {
+        pin_to_top: true,
+    });
+
+    const li_stub = $.create('li stub');
+    templates.render = () => {
+        return {to_$: () => li_stub};
+    };
+
+    stream_list.update_count_in_dom = noop;
+    $('#stream_filters').append = noop;
+
+    var scrolled;
+    stream_list.scroll_stream_into_view = (li) => {
+        assert.equal(li, li_stub);
+        scrolled = true;
+    };
+
+    stream_list.refresh_pinned_or_unpinned_stream(pinned_sub);
+    assert(scrolled);
+}());
+
 (function test_create_initial_sidebar_rows() {
     initialize_stream_data();
 
