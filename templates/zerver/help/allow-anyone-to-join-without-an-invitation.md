@@ -11,8 +11,9 @@ members to those with email invitations.
 
 ## Limiting new membership to users invited by organization members
 
-1. Go to the [Organization permissions](/#organization/organization-permissions)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization permissions**.
 
 4. Locate the **Users need an invitation to join** checkbox under the
 **Joining the organization** section.

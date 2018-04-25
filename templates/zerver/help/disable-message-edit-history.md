@@ -14,8 +14,9 @@ If in your organization, you'd prefer that users not have access to
 message edit history, you can disable message edit history for your
 organization using the following steps:
 
-1. Go to the [Organization settings](/#organization/settings)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization settings**.
 
 2. Disable the the **Enable message edit history** checkbox under the
 **Message editing** section.

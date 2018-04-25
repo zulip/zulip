@@ -247,25 +247,33 @@ The source for macros is the Markdown files under
 multiple instances of particular content in the documentation, you can
 always create a new macro by adding a new file to that folder.
 
-### **Organization settings** `{!admin.md!}` macro
+### **Organization settings** `{!go-to-organization-settings.md!}` macro
 
-* **About:** Links to the **Organization settings** documentation. Usually
-preceded by a link to a particular section on the **Organization settings**
+* **About:** Describes steps to get to **Organization settings**. Usually
+followed by a reference to a particular section on the **Organization settings**
 page.
 
 * **Contents:**
     ```md
-    tab of the [Organization settings](/help/edit-administrator-settings) page.
+    1. From your desktop, click on the **gear**
+       (<i class="icon-vector-cog"></i>) in the upper right corner.
+
+    1. Select **Manage organization**.
     ```
 
 * **Example usage and rendering:**
     ```md
-    1. Go to the [Organization settings](/#organization/organization-settings)
-    {!admin.md!}
+    {!go-to-organization-settings.md!}
+
+    1. On the left, click on **Organization settings**.
     ```
     ```md
-    1. Go to the [Organization settings](/#organization/organization-settings) tab of the
-    [Organization](/help/edit-administrator-settings) page.
+    1. From your desktop, click on the **gear**
+       (<i class="icon-vector-cog"></i>) in the upper right corner.
+
+    1. Select **Manage organization**.
+
+    1. On the left, click on **Organization settings**.
     ```
 
 ### **Administrator only feature** `{!admin-only.md!}` macro

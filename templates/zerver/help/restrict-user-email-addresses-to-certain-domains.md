@@ -7,8 +7,9 @@ who are not in their organization. The administrator can accomplish this by
 restricting users to have email addresses only from the organization's
 domains.
 
-1. Go to the [Organization permissions](/#organization/organization-permissions)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Organization permissions**.
 
 2. Restricting user email addresses to certain domains can be enabled or disabled
  with the **Users restricted to (allowed domains)** checkbox in the

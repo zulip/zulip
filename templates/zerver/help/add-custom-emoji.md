@@ -3,8 +3,9 @@
 If enabled by your Zulip organization administrator, you can add custom
 emojis to your organization for other members to use.
 
-1. Go to the [Emoji Settings](/#organization/emoji-settings)
-{!admin.md!}
+{!go-to-organization-settings.md!}
+
+1. On the left, click **Emoji Settings**.
 
 5. In the green section labeled **Add a new emoji**, find the **Emoji name** and
 **Emoji URL** fields.
