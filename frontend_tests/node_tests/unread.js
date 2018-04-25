@@ -1,6 +1,7 @@
 zrequire('muting');
 zrequire('people');
 zrequire('stream_data');
+zrequire('util');
 zrequire('unread');
 
 set_global('blueslip', {});
@@ -82,6 +83,9 @@ var zero_counts = {
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), []);
     assert.deepEqual(unread.get_unread_messages([message, other_message]), []);
 
+    var msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, []);
+
     unread.process_loaded_messages([message, other_message]);
 
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
@@ -98,6 +102,9 @@ var zero_counts = {
 
     count = unread.num_unread_for_topic(stream_id, 'NOT lunch');
     assert.equal(count, 0);
+
+    msg_ids = unread.get_msg_ids_for_topic(stream_id, 'NOT lunch');
+    assert.deepEqual(msg_ids, []);
 
     var event = {
         subject: 'dinner',
@@ -242,15 +249,20 @@ stream_data.get_stream_id = function () {
         unread: true,
     };
 
+    // Put messages into list in reverse order to try to confuse
+    // our sort.
     var num_msgs = 500;
     var i;
-    for (i = 0; i < num_msgs; i += 1) {
-        message.id = i+1;
+    for (i = num_msgs; i > 0; i -= 1) {
+        message.id = i;
         unread.process_loaded_messages([message]);
     }
 
     count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, num_msgs);
+
+    var msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, _.range(1, 501));
 
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
@@ -259,6 +271,9 @@ stream_data.get_stream_id = function () {
 
     count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
+
+    msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, []);
 }());
 
 
@@ -513,6 +528,14 @@ stream_data.get_stream_id = function () {
 
     unread.mark_as_read(34);
     assert.equal(unread.num_unread_for_person('4,6,101'), 1);
+}());
+
+(function test_empty_cases() {
+    unread.declare_bankruptcy();
+
+    const stream_id = 999;
+    const msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, []);
 }());
 
 (function test_errors() {
