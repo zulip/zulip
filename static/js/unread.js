@@ -42,6 +42,10 @@ function make_id_set() {
         return ids.num_items();
     };
 
+    self.members = function () {
+        return ids.keys();
+    };
+
     self.is_empty = function () {
         return ids.is_empty();
     };
@@ -305,6 +309,22 @@ exports.unread_topic_counter = (function () {
         return topic_bucket.count();
     };
 
+    self.get_msg_ids_for_topic = function (stream_id, topic) {
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+        if (!per_stream_bucketer) {
+            return [];
+        }
+
+        var topic_bucket = per_stream_bucketer.get_bucket(topic);
+        if (!topic_bucket) {
+            return [];
+        }
+
+        var ids = topic_bucket.members();
+        return util.sorted_ids(ids);
+    };
+
+
     self.topic_has_any_unread = function (stream_id, topic) {
         var per_stream_bucketer = bucketer.get_bucket(stream_id);
 
@@ -447,6 +467,10 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
+};
+
+exports.get_msg_ids_for_topic = function (stream_id, subject) {
+    return exports.unread_topic_counter.get_msg_ids_for_topic(stream_id, subject);
 };
 
 exports.load_server_counts = function () {
