@@ -397,6 +397,11 @@ class SlackImporter(ZulipTestCase):
                          "ts": "1463868370.000008", "channel_name": "general"},
                         {"text": "test message 2", "user": "U061A5N1G",
                          "ts": "1433868549.000010", "channel_name": "general"},
+                        # This message will be ignored since it has no user and file is None.
+                        # See #9217 for the situation; likely file uploads on archived channels
+                        {'upload': False, 'file': None, 'text': 'A file was shared',
+                         'channel_name': 'general', 'type': 'message', 'ts': '1433868549.000011',
+                         'subtype': 'file_share'},
                         {"text": "random test", "user": "U061A1R2R",
                          "ts": "1433868669.000012", "channel_name": "general"}]  # type: List[Dict[str, Any]]
 
