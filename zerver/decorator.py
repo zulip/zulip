@@ -38,7 +38,7 @@ from zerver.lib.logging_util import log_to_file
 # if Zilencer isn't enabled.
 if settings.ZILENCER_ENABLED:
     from zilencer.models import get_remote_server_by_uuid, RemoteZulipServer
-else:
+else:  # nocoverage # Hack here basically to make impossible code paths compile
     from mock import Mock
     get_remote_server_by_uuid = Mock()
     RemoteZulipServer = Mock()  # type: ignore # https://github.com/JukkaL/mypy/issues/1188
@@ -437,7 +437,7 @@ def zulip_login_required(
     if function:
         # Add necessary logging data via add_logging_data
         return actual_decorator(add_logging_data(function))
-    return actual_decorator
+    return actual_decorator  # nocoverage # We don't use this without a function
 
 def require_server_admin(view_func: ViewFuncT) -> ViewFuncT:
     @zulip_login_required
@@ -475,7 +475,7 @@ def authenticated_api_view(is_webhook: bool=False) -> Callable[[ViewFuncT], View
                                     *args: Any, **kwargs: Any) -> HttpResponse:
             if api_key is None:
                 api_key = api_key_legacy
-            if api_key is None:
+            if api_key is None:  # nocoverage # We're removing this whole decorator soon.
                 raise RequestVariableMissingError("api_key")
             user_profile = validate_api_key(request, email, api_key, is_webhook)
             # Apply rate limiting
