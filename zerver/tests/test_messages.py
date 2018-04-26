@@ -2420,17 +2420,26 @@ class StarTests(ZulipTestCase):
         result = self.change_star(message_ids)
         self.assert_json_error(result, 'Invalid message(s)')
 
-        with self.settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True):
-            # With PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS, you still
-            # can't see it if you didn't receive the message and are
-            # not subscribed.
-            result = self.change_star(message_ids)
-            self.assert_json_error(result, 'Invalid message(s)')
+        stream_name = "private_stream_2"
+        self.make_stream(stream_name, invite_only=True,
+                         history_public_to_subscribers=True)
+        self.subscribe(self.example_user("hamlet"), stream_name)
+        self.login(self.example_email("hamlet"))
+        message_ids = [
+            self.send_stream_message(self.example_email("hamlet"), stream_name, "test"),
+        ]
 
-            # But if you subscribe, then you can star the message
-            self.subscribe(self.example_user("cordelia"), stream_name)
-            result = self.change_star(message_ids)
-            self.assert_json_success(result)
+        # With stream.history_public_to_subscribers = True, you still
+        # can't see it if you didn't receive the message and are
+        # not subscribed.
+        self.login(self.example_email("cordelia"))
+        result = self.change_star(message_ids)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # But if you subscribe, then you can star the message
+        self.subscribe(self.example_user("cordelia"), stream_name)
+        result = self.change_star(message_ids)
+        self.assert_json_success(result)
 
     def test_new_message(self) -> None:
         """

@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Mapping, Optional, Sequence, Set, Text
 
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
+from django.test import override_settings
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib import cache
@@ -141,6 +142,83 @@ class TestCreateStreams(ZulipTestCase):
         for stream in existing_streams:
             self.assertTrue(stream.invite_only)
 
+    def test_history_public_to_subscribers_on_stream_creation(self) -> None:
+        realm = get_realm('zulip')
+        stream_dicts = [
+            {
+                "name": "publicstream",
+                "description": "Public stream with public history"
+            },
+            {
+                "name": "privatestream",
+                "description": "Private stream with non-public history",
+                "invite_only": True
+            },
+            {
+                "name": "privatewithhistory",
+                "description": "Private stream with public history",
+                "invite_only": True,
+                "history_public_to_subscribers": True
+            },
+            {
+                "name": "publictrywithouthistory",
+                "description": "Public stream without public history (disallowed)",
+                "invite_only": False,
+                "history_public_to_subscribers": False
+            },
+        ]  # type: List[Mapping[str, Any]]
+
+        created, existing = create_streams_if_needed(realm, stream_dicts)
+
+        self.assertEqual(len(created), 4)
+        self.assertEqual(len(existing), 0)
+        for stream in created:
+            if stream.name == 'publicstream':
+                self.assertTrue(stream.history_public_to_subscribers)
+            if stream.name == 'privatestream':
+                self.assertFalse(stream.history_public_to_subscribers)
+            if stream.name == 'privatewithhistory':
+                self.assertTrue(stream.history_public_to_subscribers)
+            if stream.name == 'publictrywithouthistory':
+                self.assertTrue(stream.history_public_to_subscribers)
+
+    @override_settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True)
+    def test_history_public_to_subscribers_on_stream_creation_with_setting(self) -> None:
+        realm = get_realm('zulip')
+
+        stream, created = create_stream_if_needed(realm, "private_stream", invite_only=True)
+        self.assertTrue(created)
+        self.assertTrue(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+        stream, created = create_stream_if_needed(realm, "history_stream",
+                                                  invite_only=True,
+                                                  history_public_to_subscribers=False)
+        self.assertTrue(created)
+        self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+        # You can't make a public stream limited in this way
+        stream, created = create_stream_if_needed(realm, "public_history_stream",
+                                                  invite_only=False,
+                                                  history_public_to_subscribers=False)
+        self.assertTrue(created)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+    def test_history_public_to_subscribers_zephyr_realm(self) -> None:
+        realm = get_realm('zephyr')
+
+        stream, created = create_stream_if_needed(realm, "private_stream", invite_only=True)
+        self.assertTrue(created)
+        self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+        stream, created = create_stream_if_needed(realm, "public_stream", invite_only=False)
+        self.assertTrue(created)
+        self.assertFalse(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
     def test_welcome_message(self) -> None:
         realm = get_realm('zulip')
         name = u'New Stream'
@@ -208,6 +286,7 @@ class StreamAdminTest(ZulipTestCase):
         realm = user_profile.realm
         stream = get_stream('private_stream', realm)
         self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
 
     def test_make_stream_private(self) -> None:
         user_profile = self.example_user('hamlet')
@@ -226,6 +305,68 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_success(result)
         stream = get_stream('public_stream', realm)
         self.assertTrue(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+    def test_make_stream_public_zephyr_mirror(self) -> None:
+        user_profile = self.mit_user('starnine')
+        email = user_profile.email
+        self.login(email, realm=get_realm("zephyr"))
+        realm = user_profile.realm
+        self.make_stream('target_stream', realm=realm, invite_only=True)
+        self.subscribe(user_profile, 'target_stream')
+
+        do_change_is_admin(user_profile, True)
+        params = {
+            'stream_name': ujson.dumps('target_stream'),
+            'is_private': ujson.dumps(False)
+        }
+        stream_id = get_stream('target_stream', realm).id
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params,
+                                   subdomain="zephyr")
+        self.assert_json_success(result)
+        stream = get_stream('target_stream', realm)
+        self.assertFalse(stream.invite_only)
+        self.assertFalse(stream.history_public_to_subscribers)
+
+    def test_make_stream_private_with_public_history(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        realm = user_profile.realm
+        self.make_stream('public_history_stream', realm=realm)
+
+        do_change_is_admin(user_profile, True)
+        params = {
+            'stream_name': ujson.dumps('public_history_stream'),
+            'is_private': ujson.dumps(True),
+            'history_public_to_subscribers': ujson.dumps(True),
+        }
+        stream_id = get_stream('public_history_stream', realm).id
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_success(result)
+        stream = get_stream('public_history_stream', realm)
+        self.assertTrue(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
+
+    def test_try_make_stream_public_with_private_history(self) -> None:
+        user_profile = self.example_user('hamlet')
+        email = user_profile.email
+        self.login(email)
+        realm = user_profile.realm
+        self.make_stream('public_stream', realm=realm)
+
+        do_change_is_admin(user_profile, True)
+        params = {
+            'stream_name': ujson.dumps('public_stream'),
+            'is_private': ujson.dumps(False),
+            'history_public_to_subscribers': ujson.dumps(False),
+        }
+        stream_id = get_stream('public_stream', realm).id
+        result = self.client_patch("/json/streams/%d" % (stream_id,), params)
+        self.assert_json_success(result)
+        stream = get_stream('public_stream', realm)
+        self.assertFalse(stream.invite_only)
+        self.assertTrue(stream.history_public_to_subscribers)
 
     def test_deactivate_stream_backend(self) -> None:
         user_profile = self.example_user('hamlet')

@@ -146,6 +146,7 @@ def update_stream_backend(
         stream_id: int,
         description: Optional[str]=REQ(validator=check_string, default=None),
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
+        history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
@@ -167,7 +168,7 @@ def update_stream_backend(
     # subscribed to make a private stream public.
     if is_private is not None:
         (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
-        do_change_stream_invite_only(stream, is_private)
+        do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 
 def list_subscriptions_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -288,6 +289,7 @@ def add_subscriptions_backend(
         streams_raw: Iterable[Mapping[str, str]]=REQ(
             "subscriptions", validator=check_list(check_dict([('name', check_string)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
+        history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[str]=REQ(validator=check_list(check_string), default=[]),
         authorization_errors_fatal: bool=REQ(validator=check_bool, default=True),
@@ -300,6 +302,7 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
+        stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 
     # Validation of the streams arguments, including enforcement of

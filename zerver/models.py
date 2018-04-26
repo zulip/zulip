@@ -938,6 +938,7 @@ class Stream(models.Model):
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
+    history_public_to_subscribers = models.BooleanField(default=False)  # type: bool
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
@@ -970,9 +971,7 @@ class Stream(models.Model):
         return self.is_public()
 
     def is_history_public_to_subscribers(self) -> bool:
-        if settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS:
-            return True
-        return self.is_public()
+        return self.history_public_to_subscribers
 
     class Meta:
         unique_together = ("name", "realm")
