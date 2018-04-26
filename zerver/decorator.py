@@ -68,7 +68,7 @@ def asynchronous(method: Callable[..., Union[HttpResponse, _RespondAsynchronousl
     def wrapper(request: HttpRequest, *args: Any,
                 **kwargs: Any) -> Union[HttpResponse, _RespondAsynchronously]:
         return method(request, handler=request._tornado_handler, *args, **kwargs)
-    if getattr(method, 'csrf_exempt', False):
+    if getattr(method, 'csrf_exempt', False):  # nocoverage # Our one @asynchronous route requires CSRF
         wrapper.csrf_exempt = True  # type: ignore # https://github.com/JukkaL/mypy/issues/1170
     return wrapper
 
