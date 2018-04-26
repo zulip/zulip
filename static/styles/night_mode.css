@@ -485,3 +485,10 @@ body.night-mode .ps__rail-y {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 }
+
+body.night-mode #bots_lists_navbar .active a {
+    color: #ddd;
+    background-color: hsl(212, 28%, 18%);
+    border-color: #ddd;
+    border-bottom-color: transparent;
+}
