@@ -40,9 +40,13 @@ cd /home/zulip/deployments/current
 ```
 
 !!! warn ""
-    **Warning:** This will destroy all existing data in your Zulip instance.
+    **Warning:** This will destroy all existing data in your Zulip server
 
 ### Import into an existing Zulip server
+
+If you already have some organizations hosted on your Zulip server,
+and want to add import your Slack data as a new Zulip organization,
+you can use the following procedure.
 
 Log in to your Zulip server as the `zulip` user. Run the following
 commands, replacing `<token>` with the value generated above, and
