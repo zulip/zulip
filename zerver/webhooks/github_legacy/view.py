@@ -8,7 +8,7 @@ from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_api_view, \
     to_non_negative_int
-from zerver.lib.request import REQ, has_request_variables
+from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
@@ -301,7 +301,13 @@ def build_message_from_gitlog(user_profile: UserProfile, name: Text, ref: Text,
         content = get_force_push_commits_event_message(pusher, url, short_ref, after[:7])
     else:
         commits = _transform_commits_list_to_common_format(commits)
-        content = get_push_commits_event_message(pusher, url, short_ref, commits, deleted=deleted)
+        try:
+            content = get_push_commits_event_message(pusher, url, short_ref, commits, deleted=deleted)
+        except TypeError:  # nocoverage This error condition seems to
+            # be caused by a change in GitHub's APIs.  Since we've
+            # deprecated this webhook, just suppress them with a 40x error.
+            raise JsonableError(
+                "Malformed commit data")
 
     return subject, content
 
