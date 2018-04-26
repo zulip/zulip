@@ -525,7 +525,8 @@ class ZulipTestCase(TestCase):
         return open(fn).read()
 
     def make_stream(self, stream_name: Text, realm: Optional[Realm]=None,
-                    invite_only: Optional[bool]=False) -> Stream:
+                    invite_only: Optional[bool]=False,
+                    history_public_to_subscribers: Optional[bool]=False) -> Stream:
         if realm is None:
             realm = self.DEFAULT_REALM
 
@@ -534,6 +535,7 @@ class ZulipTestCase(TestCase):
                 realm=realm,
                 name=stream_name,
                 invite_only=invite_only,
+                history_public_to_subscribers=history_public_to_subscribers,
             )
         except IntegrityError:  # nocoverage -- this is for bugs in the tests
             raise Exception('''
