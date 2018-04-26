@@ -206,7 +206,6 @@ class Realm(models.Model):
         allow_edit_history=bool,
         allow_message_deleting=bool,
         bot_creation_policy=int,
-        create_generic_bot_by_admins_only=bool,
         create_stream_by_admins_only=bool,
         default_language=Text,
         default_twenty_four_hour_time = bool,

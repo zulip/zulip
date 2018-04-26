@@ -30,16 +30,24 @@
                 </div>
 
                 <div class="input-group">
-                    <label class="checkbox">
-                        <input type="checkbox" id="id_realm_allow_message_deleting" name="realm_allow_message_deleting"
-                          {{#if realm_allow_message_deleting}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_allow_message_deleting" id="id_realm_allow_message_deleting_label" class="inline-block">
-                        {{t "Users can delete their messages" }}
-                    </label>
+                    <label for="realm_msg_delete_limit_setting" class="inline-block dropdown-title">{{t "Allow message deleting" }}</label>
                     <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
                       title="{{t 'Administrators can always delete any message.' }}"/>
+                    <select name="realm_msg_delete_limit_setting" class="block" id="id_realm_msg_delete_limit_setting">
+                        {{#each msg_delete_limit_dropdown_values}}
+                        <option value="{{@key}}">{{this.text}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="id_realm_message_content_delete_limit_minutes" class="inline-block">
+                        {{t 'Time limit in minutes after posting' }}:
+                    </label>
+                    <input type="text" id="id_realm_message_content_delete_limit_minutes"
+                      name="realm_message_content_delete_limit_minutes"
+                      class="admin-realm-message-content-edit-limit-minutes"
+                      value="{{ realm_message_content_delete_limit_minutes }}"/>
                 </div>
 
                 {{partial "settings_checkbox"

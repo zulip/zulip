@@ -85,6 +85,7 @@ function _setup_page() {
     };
 
     options.msg_edit_limit_dropdown_values = settings_org.msg_edit_limit_dropdown_values;
+    options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
     var rendered_admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
