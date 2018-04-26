@@ -439,6 +439,24 @@ body:
 
             self.assertFalse(mock_exception.called)
 
+    def test_authenticated_rest_api_view_errors(self) -> None:
+        user_profile = self.example_user("hamlet")
+        credentials = "%s:%s" % (user_profile.email, user_profile.api_key)
+        api_auth = 'Digest ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+        result = self.client_post('/api/v1/external/zendesk', {},
+                                  HTTP_AUTHORIZATION=api_auth)
+        self.assert_json_error(result, "This endpoint requires HTTP basic authentication.")
+
+        api_auth = 'Basic ' + base64.b64encode("foo".encode('utf-8')).decode('utf-8')
+        result = self.client_post('/api/v1/external/zendesk', {},
+                                  HTTP_AUTHORIZATION=api_auth)
+        self.assert_json_error(result, "Invalid authorization header for basic auth",
+                               status_code=401)
+
+        result = self.client_post('/api/v1/external/zendesk', {})
+        self.assert_json_error(result, "Missing authorization header for basic auth",
+                               status_code=401)
+
 class RateLimitTestCase(TestCase):
     def errors_disallowed(self) -> mock:
         # Due to what is probably a hack in rate_limit(),
