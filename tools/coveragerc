@@ -21,6 +21,8 @@ omit =
     tools/test-backend
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
+    # Part of provisioning/populate_db
+    zerver/lib/generate_test_data.py
     # Excluded because its coverage state is flaky.
     zerver/tornado/ioloop_logging.py
     # Zulip's library for use in scripts
