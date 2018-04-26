@@ -7,6 +7,7 @@ from mock import call
 import time
 from typing import Any, Dict, List, Optional, Union, SupportsInt, Text
 
+import base64
 import gcm
 import os
 import ujson
@@ -150,6 +151,15 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                status_code=401)
 
         del API_KEYS[self.server_uuid]
+
+        credentials = "%s:%s" % ("5678-efgh", 'invalid')
+        api_auth = 'Basic ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
+        result = self.client_post(endpoint, {'user_id': user_id,
+                                             'token_kind': token_kind,
+                                             'token': token},
+                                  HTTP_AUTHORIZATION = api_auth)
+        self.assert_json_error(result, "Zulip server auth failure: 5678-efgh is not registered",
+                               status_code=401)
 
     def test_remote_push_user_endpoints(self) -> None:
         endpoints = [
