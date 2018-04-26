@@ -35,7 +35,7 @@ from zerver.decorator import (
     authenticate_notify, cachify,
     get_client_name, internal_notify_view, is_local_addr,
     rate_limit, validate_api_key, logged_in_and_active,
-    return_success_on_head_request
+    return_success_on_head_request, to_not_negative_int_or_none
 )
 from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
@@ -572,6 +572,12 @@ class ValidatorTestCase(TestCase):
 
         x = [{}]
         self.assertEqual(check_int('x', x), 'x is not an integer')
+
+    def test_check_to_not_negative_int_or_none(self) -> None:
+        self.assertEqual(to_not_negative_int_or_none('5'), 5)
+        self.assertEqual(to_not_negative_int_or_none(None), None)
+        with self.assertRaises(ValueError):
+            to_not_negative_int_or_none('-5')
 
     def test_check_float(self) -> None:
         x = 5.5  # type: Any
