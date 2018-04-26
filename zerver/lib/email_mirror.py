@@ -314,7 +314,9 @@ def process_missed_message(to: Text, message: message.Message, pre_checked: bool
     send_to_missed_message_address(to, message)
 
 def process_message(message: message.Message, rcpt_to: Optional[Text]=None, pre_checked: bool=False) -> None:
-    subject_header = message.get("Subject", "(no subject)")
+    subject_header = str(message.get("Subject", "")).strip()
+    if subject_header == "":
+        subject_header = "(no topic)"
     encoded_subject, encoding = decode_header(subject_header)[0]
     if encoding is None:
         subject = force_text(encoded_subject)  # encoded_subject has type str when encoding is None
