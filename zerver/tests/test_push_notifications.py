@@ -140,6 +140,13 @@ class PushBouncerNotificationTest(BouncerTestCase):
                                                                         'token': token})
         self.assert_json_error(result, "Must validate with valid Zulip server API key")
 
+        result = self.api_post(self.server_uuid, endpoint, {'user_id': user_id,
+                                                            'token_kind': token_kind,
+                                                            'token': token},
+                               subdomain="zulip")
+        self.assert_json_error(result, "Invalid subdomain for push notifications bouncer",
+                               status_code=401)
+
         # We do a bit of hackery here to the API_KEYS cache just to
         # make the code simple for sending an incorrect API key.
         from zerver.lib.test_classes import API_KEYS
