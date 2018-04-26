@@ -135,7 +135,7 @@ label {
 
 .wrapped-table {
     table-layout: fixed;
-    word-break: break-all;
+    word-break: break-word;
     word-wrap: break-word;
     white-space: -moz-pre-wrap !important;
     white-space: -webkit-pre-wrap;
