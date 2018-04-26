@@ -1,1 +1,1 @@
-Verify your new email address
+{{ _("Verify your new email address") }}

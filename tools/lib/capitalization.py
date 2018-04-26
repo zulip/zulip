@@ -50,6 +50,7 @@ IGNORED_PHRASES = [
     r"XML",
     r"Zephyr",
     r"Zulip",
+    r"Zulip Team",
     r"iPhone",
     r"iOS",
     r"Emoji One",
