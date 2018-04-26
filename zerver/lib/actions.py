@@ -124,6 +124,7 @@ from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
 from zerver.tornado.event_queue import request_event_queue, send_event
+from zerver.lib.types import ProfileFieldData
 
 from analytics.models import StreamCount
 
@@ -4528,9 +4529,13 @@ def notify_realm_custom_profile_fields(realm: Realm, operation: str) -> None:
     send_event(event, active_user_ids(realm.id))
 
 def try_add_realm_custom_profile_field(realm: Realm, name: Text, field_type: int,
-                                       hint: Text='') -> CustomProfileField:
+                                       hint: Text='',
+                                       field_data: ProfileFieldData=None) -> CustomProfileField:
     field = CustomProfileField(realm=realm, name=name, field_type=field_type)
     field.hint = hint
+    if field.field_type == CustomProfileField.CHOICE:
+        field.field_data = ujson.dumps(field_data or {})
+
     field.save()
     notify_realm_custom_profile_fields(realm, 'add')
     return field
@@ -4544,10 +4549,13 @@ def do_remove_realm_custom_profile_field(realm: Realm, field: CustomProfileField
     notify_realm_custom_profile_fields(realm, 'delete')
 
 def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileField,
-                                          name: Text, hint: Text='') -> None:
+                                          name: Text, hint: Text='',
+                                          field_data: ProfileFieldData=None) -> None:
     field.name = name
     field.hint = hint
-    field.save(update_fields=['name', 'hint'])
+    if field.field_type == CustomProfileField.CHOICE:
+        field.field_data = ujson.dumps(field_data or {})
+    field.save()
     notify_realm_custom_profile_fields(realm, 'update')
 
 def do_update_user_custom_profile_data(user_profile: UserProfile,

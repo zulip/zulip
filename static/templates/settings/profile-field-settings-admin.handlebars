@@ -15,6 +15,7 @@
     </div>
     {{#if is_admin}}
     <form class="form-horizontal admin-profile-field-form">
+        <input id="profile_field_data" type="hidden" name="field_data" />
         <div class="add-new-profile-field-box grey-box">
             <div class="new-profile-field-form wrapper">
                 <div class="settings-section-title new-profile-field-section-title">{{t "Add a new profile field" }}</div>
@@ -34,6 +35,10 @@
                         <option value='{{this.[0]}}'>{{this.[1]}}</option>
                         {{/each}}
                     </select>
+                </div>
+                <div class="control-group" id="profile_field_choices_row">
+                    <label for="profile_field_choices" class="control-label">{{t "Field choices" }}</label>
+                    <div id="profile_field_choices" class="profile-field-choices"></div>
                 </div>
                 <button type="submit" class="button rounded sea-green">
                     {{t 'Add profile field' }}

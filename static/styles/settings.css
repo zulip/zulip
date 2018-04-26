@@ -1653,3 +1653,35 @@ thead .actions {
         padding-right: 20px;
     }
 }
+
+.profile-field-choices {
+    display: inline-block;
+}
+
+.profile-field-choices .choices-header .choice-field {
+    width: 65px;
+    margin-top: 5px;
+    display: inline-block;
+    font-weight: bold;
+}
+
+.profile-field-choices hr {
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.profile-field-choices .choice-row {
+    margin-top: 5px;
+}
+
+.profile-field-choices > .choice-row:first-of-type {
+    margin-top: 0;
+}
+
+.profile-field-choices .choice-row button {
+    margin-left: 0 !important;
+}
+
+.profile-field-choices .choice-row input {
+    width: 50px;
+}
