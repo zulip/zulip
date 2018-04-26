@@ -111,7 +111,7 @@ def require_post(func: ViewFuncT) -> ViewFuncT:
         if (request.method != "POST" and
             not (request.method == "SOCKET" and
                  request.META['zulip.emulated_method'] == "POST")):
-            if request.method == "SOCKET":
+            if request.method == "SOCKET":  # nocoverage # zulip.emulated_method is always POST
                 err_method = "SOCKET/%s" % (request.META['zulip.emulated_method'],)
             else:
                 err_method = request.method

@@ -1173,6 +1173,17 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         response = self._do_test(user_email)
         self.assertEqual(response.status_code, 200)
 
+    def test_authenticated_json_post_view_with_get_request(self) -> None:
+        user_email = self.example_email('hamlet')
+        user_realm = get_realm('zulip')
+        self._login(user_email, user_realm)
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.client_get(r'/json/subscriptions/exists', {'stream': 'Verona'})
+            self.assertEqual(result.status_code, 405)
+            mock_warning.assert_called_once()  # Check we logged the Mock Not Allowed
+            self.assertEqual(mock_warning.call_args_list[0][0],
+                             ('Method Not Allowed (%s): %s', 'GET', '/json/subscriptions/exists'))
+
     def test_authenticated_json_post_view_if_subdomain_is_invalid(self) -> None:
         user_email = self.example_email('hamlet')
         user_realm = get_realm('zulip')
