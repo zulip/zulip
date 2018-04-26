@@ -125,16 +125,9 @@ def update_realm(
         data['message_content_edit_limit_seconds'] = message_content_edit_limit_seconds
         data['allow_community_topic_editing'] = allow_community_topic_editing
 
-    if (allow_message_deleting is not None and realm.allow_message_deleting != allow_message_deleting) or \
-       (message_content_delete_limit_seconds is not None and
+    if (message_content_delete_limit_seconds is not None and
             realm.message_content_delete_limit_seconds != message_content_delete_limit_seconds):
-        if allow_message_deleting is None:
-            allow_message_deleting = realm.allow_message_deleting
-        if message_content_delete_limit_seconds is None:
-            message_content_delete_limit_seconds = realm.message_content_delete_limit_seconds
-        do_set_realm_message_deleting(realm, allow_message_deleting,
-                                      message_content_delete_limit_seconds)
-        data['allow_message_deleting'] = allow_message_deleting
+        do_set_realm_message_deleting(realm, message_content_delete_limit_seconds)
         data['message_content_delete_limit_seconds'] = message_content_delete_limit_seconds
     # Realm.notifications_stream and Realm.signup_notifications_stream are not boolean,
     # str or integer field, and thus doesn't fit into the do_set_realm_property framework.

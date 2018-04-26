@@ -21,9 +21,6 @@ var org_profile = {
 
 var org_settings = {
     msg_editing: {
-        allow_message_deleting: {
-            type: 'bool',
-        },
         allow_edit_history: {
             type: 'bool',
         },
