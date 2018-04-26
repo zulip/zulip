@@ -279,7 +279,7 @@ def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: T
         target_stream, subject, content = api_github_v1(user_profile, event, payload, branches,
                                                         stream, **kwargs)
 
-    request.client = get_client('ZulipGitHubWebhook')
+    request.client = get_client('ZulipGitHubLegacyWebhook')
     return send_message_backend(request, user_profile,
                                 message_type_name='stream',
                                 message_to=[target_stream],
