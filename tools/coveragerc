@@ -27,3 +27,5 @@ omit =
     zerver/tornado/ioloop_logging.py
     # Zulip's library for use in scripts
     scripts/lib/zulip_tools.py
+    # Used only for the legacy Zephyr integration, and unlikely to ever be unit-tested
+    zerver/lib/ccache.py
