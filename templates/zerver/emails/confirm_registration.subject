@@ -1,1 +1,1 @@
-Activate your Zulip account
+{{ _("Activate your Zulip account") }}
