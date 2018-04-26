@@ -185,7 +185,7 @@ class InvalidZulipServerError(JsonableError):
     def msg_format() -> Text:
         return "Zulip server auth failure: {role} is not registered"
 
-class InvalidZulipServerKeyError(JsonableError):
+class InvalidZulipServerKeyError(InvalidZulipServerError):
     @staticmethod
     def msg_format() -> Text:
         return "Zulip server auth failure: key does not match role {role}"
