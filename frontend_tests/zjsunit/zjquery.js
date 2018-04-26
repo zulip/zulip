@@ -35,7 +35,12 @@ exports.make_event_store = (selector) => {
 
         get_on_handler: function (name, child_selector) {
             var funcs = self.get_on_handlers(name, child_selector);
-            assert.equal(funcs.length, 1, 'We expected to have exactly one handler here.');
+            if (funcs.length === 0) {
+                throw Error('Could not find handler for ' + name);
+            }
+            if (funcs.length > 1) {
+                throw Error('Found too many handlers for ' + name);
+            }
             return funcs[0];
         },
 
