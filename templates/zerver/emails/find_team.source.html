@@ -5,23 +5,24 @@
 {% endblock %}
 
 {% block content %}
-<p>Hi {{ user_profile.full_name }},</p>
+<p>{% trans %}Hi {{ full_name }},{% endtrans %}</p>
 
-<p>You can log in to your Zulip organization, {{ user_profile.realm.name }},
-at the following link:</p>
+
+<p>{% trans %}You can log in to your Zulip organization, {{ realm_name }},
+at the following link:{% endtrans %}</p>
 
 <table width="100%" border="0" cellspacing="0" cellpadding="0">
     <tr>
         <td align="center">
-            <a href="{{ user_profile.realm.uri }}">{{ user_profile.realm.uri }}</a>
+            <a href="{{ realm_uri }}">{{ realm_uri }}</a>
         </td>
     </tr>
 </table>
 
-<p>The email address associated with your account is <b>{{ user_profile.email }}</b>.</p>
+<p>{% trans %}The email address associated with your account is {{ email }}.{% endtrans %}</p>
 
-<p>If you have trouble logging in, please contact Zulip support by replying to
-  this email.</p>
+<p>{% trans %}If you have trouble logging in, please contact Zulip support by replying to
+this email.{% endtrans %}</p>
 
-<p>Thanks for using Zulip!</p>
+<p>{{ _("Thanks for using Zulip!") }}</p>
 {% endblock %}

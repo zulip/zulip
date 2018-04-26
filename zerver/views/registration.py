@@ -449,8 +449,13 @@ def find_account(request: HttpRequest) -> HttpResponse:
             emails = form.cleaned_data['emails']
             for user_profile in UserProfile.objects.filter(
                     email__in=emails, is_active=True, is_bot=False, realm__deactivated=False):
-                send_email('zerver/emails/find_team', to_user_id=user_profile.id,
-                           context={'user_profile': user_profile})
+                ctx = {
+                    'full_name': user_profile.full_name,
+                    'email': user_profile.email,
+                    'realm_uri': user_profile.realm.uri,
+                    'realm_name': user_profile.realm.name,
+                }
+                send_email('zerver/emails/find_team', to_user_id=user_profile.id, context=ctx)
 
             # Note: Show all the emails in the result otherwise this
             # feature can be used to ascertain which email addresses
