@@ -1,1 +1,1 @@
-{{referrer.full_name}} invited you to join {{ referrer_realm_name }}
+{% trans %}{{referrer_full_name}} invited you to join {{ referrer_realm_name }}{% endtrans %}

@@ -1,12 +1,12 @@
-Hi there,
+{{ _("Hi there,") }}
 
-{{ referrer.full_name }} ({{ referrer.email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.
+{% trans %}{{ referrer_full_name }} ({{ referrer_email }}) wants you to join them on Zulip -- the team communication tool designed for productivity.{% endtrans %}
 
-To get started, visit the link below:
+{{ _("To get started, visit the link below:") }}
     <{{ activate_url }}>
 
-Feel free to give us a shout at <{{ support_email }}> if you have any questions.
+{% trans %}Feel free to give us a shout at <{{ support_email }}> if you have any questions.{% endtrans %}
 
-Cheers,
 
-The Zulip Team
+{% trans %}Cheers,
+Team Zulip{% endtrans %}

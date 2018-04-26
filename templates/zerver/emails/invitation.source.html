@@ -5,22 +5,26 @@
 {% endblock %}
 
 {% block content %}
-<p>Hi there,
+<p>{{ _("Hi there,") }}
 </p>
 <p>
-    {{ referrer.full_name }} ({{ referrer.email }}) wants you to join
+    {% trans %}
+    {{ referrer_full_name }} ({{ referrer_email }}) wants you to join
     them on Zulip &mdash; the team communication tool designed for
     productivity.
+    {% endtrans %}
 </p>
 <p>
-    To get started, please click here:
-    <a class="button" href="{{ activate_url }}">Complete registration</a>
+    {{ _("To get started, please click here:") }}
+    <a class="button" href="{{ activate_url }}">{{ _("Complete registration") }}</a>
 </p>
 <p>
-    Feel free to give us a shout at <a href="mailto:{{ support_email }}">{{ support_email }}</a>, if you have any questions.
+    {% trans %}Feel free to give us a shout at <a href="mailto:{{ support_email }}">{{ support_email }}</a>, if you have any questions.{% endtrans %}
 </p>
 <p>
+    {% trans %}
     Cheers,<br />
     Team Zulip
+    {% endtrans %}
 </p>
 {% endblock %}
