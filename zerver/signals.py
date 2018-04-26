@@ -10,7 +10,7 @@ from django.utils.timezone import \
 from django.utils.timezone import now as timezone_now
 
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.send_email import FromAddress, send_email
+from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
 
 def get_device_browser(user_agent: str) -> Optional[str]:
