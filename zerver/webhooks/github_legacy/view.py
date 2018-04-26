@@ -7,7 +7,7 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 
 from zerver.decorator import authenticated_api_view, \
-    flexible_boolean, to_non_negative_int
+    to_non_negative_int
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.validator import check_dict
@@ -21,6 +21,13 @@ from zerver.views.messages import send_message_backend
 
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
+
+def flexible_boolean(boolean: Text) -> bool:
+    """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
+    if boolean in ("1", "true", "True"):
+        return True
+    else:
+        return False
 
 def is_test_repository(repository: Mapping[Text, Any]) -> bool:
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID

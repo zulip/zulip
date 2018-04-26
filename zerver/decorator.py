@@ -680,13 +680,6 @@ def to_not_negative_int_or_none(s: Text) -> Optional[int]:
     return None
 
 
-def flexible_boolean(boolean: Text) -> bool:
-    """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
-    if boolean in ("1", "true", "True"):
-        return True
-    else:
-        return False
-
 def to_utc_datetime(timestamp: Text) -> datetime.datetime:
     return timestamp_to_datetime(float(timestamp))
 
