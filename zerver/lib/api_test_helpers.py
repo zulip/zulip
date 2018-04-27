@@ -2,7 +2,10 @@ from typing import Dict, Any, Optional, Iterable
 from io import StringIO
 
 import os
+import json
 import ujson
+
+from zerver.lib import mdiff
 
 if False:
     from zulip import Client
@@ -507,19 +510,48 @@ TEST_FUNCTIONS = {
 
 def test_against_fixture(result, fixture, check_if_equal=[], check_if_exists=[]):
     # type: (Dict[str, Any], Dict[str, Any], Optional[Iterable[str]], Optional[Iterable[str]]) -> None
-    assert len(result) == len(fixture)
+    assertLength(result, fixture)
 
     if not check_if_equal and not check_if_exists:
         for key, value in fixture.items():
-            assert result[key] == fixture[key]
+            assertEqual(key, result, fixture)
 
     if check_if_equal:
         for key in check_if_equal:
-            assert result[key] == fixture[key]
+            assertEqual(key, result, fixture)
 
     if check_if_exists:
         for key in check_if_exists:
-            assert key in result
+            assertIn(key, result)
+
+def assertEqual(key, result, fixture):
+    # type: (str, Dict[str, Any], Dict[str, Any]) -> None
+    if result[key] != fixture[key]:
+        first = "{key} = {value}".format(key=key, value=result[key])
+        second = "{key} = {value}".format(key=key, value=fixture[key])
+        raise AssertionError("Actual and expected outputs do not match; showing diff:\n" +
+                             mdiff.diff_strings(first, second))
+    else:
+        assert result[key] == fixture[key]
+
+def assertLength(result, fixture):
+    # type: (Dict[str, Any], Dict[str, Any]) -> None
+    if len(result) != len(fixture):
+        result_string = json.dumps(result, indent=4, sort_keys=True)
+        fixture_string = json.dumps(fixture, indent=4, sort_keys=True)
+        raise AssertionError("The lengths of the actual and expected outputs do not match; showing diff:\n" +
+                             mdiff.diff_strings(result_string, fixture_string))
+    else:
+        assert len(result) == len(fixture)
+
+def assertIn(key, result):
+    # type: (str, Dict[str, Any]) -> None
+    if key not in result.keys():
+        raise AssertionError(
+            "The actual output does not contain the the key `{key}`.".format(key=key)
+        )
+    else:
+        assert key in result
 
 def test_messages(client):
     # type: (Client) -> None
