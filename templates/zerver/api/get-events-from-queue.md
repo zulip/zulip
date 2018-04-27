@@ -1,4 +1,4 @@
-# Get new events from an events queue
+# Get events from a queue
 
 `GET {{ api_url }}/v1/events`
 
@@ -44,15 +44,6 @@ print(client.get_events(
     queue_id="1515010080:4",
     last_event_id=-1
 ))
-
-# Print each message the user receives
-# This is a blocking call that will run forever
-client.call_on_each_message(lambda msg: sys.stdout.write(str(msg) + "\n"))
-
-# Print every event relevant to the user
-# This is a blocking call that will run forever
-# This will never be reached unless you comment out the previous line
-client.call_on_each_event(lambda msg: sys.stdout.write(str(msg) + "\n"))
 ```
 
 `call_on_each_message` and `call_on_each_event` will automatically register
@@ -102,10 +93,6 @@ even if you haven't registered a queue by explicitly requesting the
 `{{ api_url}}/v1/register` endpoint, you could pass the arguments for
 [the `{{ api_url}}/v1/register` endpoint](/api/register-queue) to this
 endpoint and a queue would be registered in the absence of a `queue_id`.
-
-You may also pass in the following keyword arguments to `call_on_each_event`:
-
-{generate_api_arguments_table|arguments.json|call_on_each_event}
 
 ## Response
 

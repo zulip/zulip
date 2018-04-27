@@ -20,8 +20,9 @@
 * [Create a user](/api/create-user)
 * [Upload a file](/api/upload-file)
 
-#### Events
+#### Real-time events
+* [Real time events API](/api/real-time-events)
 * [Register a queue](/api/register-queue)
-* [Get events from queue](/api/get-events-from-queue)
+* [Get events from a queue](/api/get-events-from-queue)
 * [Delete a queue](/api/delete-queue)
 
