@@ -77,16 +77,21 @@ def access_stream_by_id(user_profile: UserProfile,
                         stream_id: int,
                         require_active: bool=True,
                         allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
+    stream = get_stream_by_id(stream_id)
+
+    error = _("Invalid stream id")
+    (recipient, sub) = access_stream_common(user_profile, stream, error,
+                                            require_active=require_active,
+                                            allow_realm_admin=allow_realm_admin)
+    return (stream, recipient, sub)
+
+def get_stream_by_id(stream_id: int) -> Stream:
     error = _("Invalid stream id")
     try:
         stream = Stream.objects.get(id=stream_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
-
-    (recipient, sub) = access_stream_common(user_profile, stream, error,
-                                            require_active=require_active,
-                                            allow_realm_admin=allow_realm_admin)
-    return (stream, recipient, sub)
+    return stream
 
 def check_stream_name_available(realm: Realm, name: Text) -> None:
     check_stream_name(name)
