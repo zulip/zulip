@@ -49,43 +49,56 @@ def check_html_templates(templates, all_dups):
     if 'templates/zerver/team.html' in templates:
         templates.remove('templates/zerver/team.html')
 
-    template_id_dict = build_id_dict(templates)
-    # TODO: Clean up these cases of duplicate ids in the code
-    IGNORE_IDS = [
-        'api-example-tabs',
-        'errors',
-        'email',
-        'messages',
-        'registration',
-        'pw_strength',
-        'id_password',
-        'top_navbar',
-        'id_email',
-        'id_terms',
-        'send_confirm',
-        'register',
-        'footer',
-    ]
-    bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                    if (ids not in IGNORE_IDS) and len(fns) > 1}
+    def check_for_duplicate_ids(templates: List[str]) -> Dict[str, List[str]]:
+        template_id_dict = build_id_dict(templates)
+        # TODO: Clean up these cases of duplicate ids in the code
+        IGNORE_IDS = [
+            'api-example-tabs',
+            'errors',
+            'email',
+            'messages',
+            'registration',
+            'pw_strength',
+            'id_password',
+            'top_navbar',
+            'id_email',
+            'id_terms',
+            'send_confirm',
+            'register',
+            'footer',
+        ]
+        bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                        if (ids not in IGNORE_IDS) and len(fns) > 1}
 
-    if all_dups:
-        ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
-                              if ids in IGNORE_IDS and len(fns) > 1}
+        if all_dups:
+            ignorable_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
+                                  if ids in IGNORE_IDS and len(fns) > 1}
 
-        for ids, fns in ignorable_ids_dict.items():
-            logging.warning("Duplicate ID(s) detected :Id '" + ids +
-                            "' present at following files:")
+            for ids, fns in ignorable_ids_dict.items():
+                logging.warning("Duplicate ID(s) detected :Id '" + ids +
+                                "' present at following files:")
+                for fn in fns:
+                    print(fn)
+
+        for ids, fns in bad_ids_dict.items():
+            logging.error("Duplicate ID(s) detected :Id '" + ids +
+                          "' present at following files:")
             for fn in fns:
                 print(fn)
+        return bad_ids_dict
 
-    for ids, fns in bad_ids_dict.items():
-        logging.error("Duplicate ID(s) detected :Id '" + ids +
-                      "' present at following files:")
-        for fn in fns:
-            print(fn)
+    bad_ids_list = []  # type: List[str]
+    archive_templates = list(filter(
+        lambda fn: ('templates/zerver/archive' in fn),
+        templates))
+    templates = list(filter(
+        lambda fn: ('templates/zerver/archive' not in fn),
+        templates))
 
-    if list(bad_ids_dict.keys()):
+    bad_ids_list += list(check_for_duplicate_ids(archive_templates).keys())
+    bad_ids_list += list(check_for_duplicate_ids(templates).keys())
+
+    if bad_ids_list:
         print('Exiting--please clean up all duplicates before running this again.')
         sys.exit(1)
 
