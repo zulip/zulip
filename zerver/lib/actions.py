@@ -2958,6 +2958,10 @@ def do_change_stream_invite_only(stream: Stream, invite_only: bool,
     stream.history_public_to_subscribers = history_public_to_subscribers
     stream.save(update_fields=['invite_only', 'history_public_to_subscribers'])
 
+def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
+    stream.is_web_public = is_web_public
+    stream.save(update_fields=['is_web_public'])
+
 def do_rename_stream(stream: Stream, new_name: Text, log: bool=True) -> Dict[str, Text]:
     old_name = stream.name
     stream.name = new_name
