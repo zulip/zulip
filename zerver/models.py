@@ -941,6 +941,7 @@ class Stream(models.Model):
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
     history_public_to_subscribers = models.BooleanField(default=False)  # type: bool
+    is_web_public = models.BooleanField(default=False)  # type: bool
 
     # The unique thing about Zephyr public streams is that we never list their
     # users.  We may try to generalize this concept later, but for now
