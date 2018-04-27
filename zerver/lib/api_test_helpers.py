@@ -1,9 +1,8 @@
 from typing import Dict, Any, Optional, Iterable
 from io import StringIO
 
-import os
 import json
-import ujson
+import os
 
 from zerver.lib import mdiff
 
@@ -16,7 +15,7 @@ FIXTURE_PATH = os.path.join(ZULIP_DIR, 'templates', 'zerver', 'api', 'fixtures.j
 def load_api_fixtures():
     # type: () -> Dict[str, Any]
     with open(FIXTURE_PATH, 'r') as fp:
-        json_dict = ujson.loads(fp.read())
+        json_dict = json.loads(fp.read())
         return json_dict
 
 FIXTURES = load_api_fixtures()
