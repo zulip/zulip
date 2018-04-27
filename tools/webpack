@@ -29,7 +29,16 @@ def run_watch(host, port, minify, disable_host_check):
     # type: (str, str, bool, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
     webpack_args = ['node', 'node_modules/.bin/webpack-dev-server']
-    webpack_args += ['--config', 'tools/webpack.config.ts', '--port', port, "--host", host]
+    webpack_args += [
+        '--config',
+        'tools/webpack.config.ts',
+        '--host', host,
+        '--port', port,
+        # We add the hot flag using the cli because it takes care
+        # of addition to entry points and adding the plugin
+        # automatically
+        '--hot'
+    ]
     if minify:
         webpack_args.append('--optimize-minimize')
     if disable_host_check:
