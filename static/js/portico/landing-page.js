@@ -127,6 +127,7 @@ var apps_events = function () {
 
     var update_page = function () {
         var $download_instructions = $(".download-instructions");
+        var $third_party_apps = $("#third-party-apps");
         var version_info = info[version];
 
         $(".info .platform").text(version_info.alt);
@@ -140,6 +141,13 @@ var apps_events = function () {
         } else {
             $download_instructions.hide();
         }
+
+        if (version === "mac" || version === "windows" || version === "linux") {
+            $third_party_apps.show();
+        } else {
+            $third_party_apps.hide();
+        }
+
     };
 
     $(window).on('popstate', function () {
