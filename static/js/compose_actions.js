@@ -148,12 +148,20 @@ exports.maybe_scroll_up_selected_message = function () {
         return;
     }
     var selected_row = current_msg_list.selected_row();
+
+    if (selected_row.height() > message_viewport.height() - 100) {
+        // For very tall messages whose height is close to the entire
+        // height of the viewport, don't auto-scroll the viewport to
+        // the end of the message (since that makes it feel annoying
+        // to work with very tall messages).  See #8941 for details.
+        return;
+    }
+
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
         message_viewport.user_initiated_animate_scroll(cover+5);
     }
-
 };
 
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
