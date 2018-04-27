@@ -74,6 +74,10 @@ zulip(config).then((client) => {
 
 #### Example response
 
+**Note:** If you omit the `event_types` argument to `client.register()`,
+the JSON response will include the necessary initial data about
+all supported event types.
+
 A typical successful JSON response may look like:
 
 {generate_code_example|register-queue|fixture}

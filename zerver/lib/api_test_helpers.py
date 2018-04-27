@@ -419,22 +419,12 @@ def register_queue(client):
 
     # {code_example|start}
     # Register the queue
-    result = client.register()
-    # {code_example|end}
-
-    client.deregister(result['queue_id'])
-    fixture = FIXTURES['register-queue']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['last_event_id', 'queue_id'])
-
-    # {code_example|start}
-    # You may pass in one or more of the arguments documented below
-    # as keyword arguments, like so:
     result = client.register(
-        event_types=['messages']
+        event_types=['messages', 'realm_emoji']
     )
     # {code_example|end}
 
+    fixture = FIXTURES['register-queue']
     test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
                          check_if_exists=['last_event_id', 'queue_id'])
 
