@@ -110,7 +110,7 @@
         },
         {
             "argument": "event_types",
-            "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **messages** (messages), <br/> * **subscriptions** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm), and <br/> * **pointer** (changes in your pointer). <br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
+            "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **message** (messages), <br/> * **subscription** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm) <br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
             "required": "Optional",
             "example": "event_types=['message']"
         },
@@ -168,7 +168,7 @@
         },
         {
             "argument": "event_types",
-            "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **messages** (messages), <br/> * **subscriptions** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm), and <br/> * **pointer** (changes in your pointer). <br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
+            "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **message** (messages), <br/> * **subscription** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm)<br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
             "required": "Optional",
             "example": "event_types=['message']"
         }
