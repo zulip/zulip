@@ -253,11 +253,11 @@ exports.update_messages = function update_messages(events) {
     // propagated edits to be updated (since the topic edits can have
     // changed the correct grouping of messages).
     if (topic_edited) {
-        home_msg_list.rerender();
+        home_msg_list.update_muting_and_rerender();
         // However, we don't need to rerender message_list.narrowed if
         // we just changed the narrow earlier in this function.
         if (!changed_narrow && current_msg_list === message_list.narrowed) {
-            message_list.narrowed.rerender();
+            message_list.narrowed.update_muting_and_rerender();
         }
     } else {
         // If the content of the message was edited, we do a special animation.
