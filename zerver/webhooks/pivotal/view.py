@@ -68,6 +68,17 @@ def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> T
             more_info)
     return subject, content
 
+UNSUPPORTED_EVENT_TYPES = [
+    "task_create_activity",
+    "comment_delete_activity",
+    "task_delete_activity",
+    "task_update_activity",
+    "story_move_from_project_activity",
+    "story_delete_activity",
+    "story_move_into_project_activity",
+    "epic_update_activity",
+]
+
 def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[Text, Text]:
     payload = ujson.loads(request.body)
 
@@ -78,7 +89,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
 
     primary_resources = payload["primary_resources"][0]
     story_url = primary_resources["url"]
-    story_type = primary_resources["story_type"]
+    story_type = primary_resources.get("story_type")
     story_id = primary_resources["id"]
     story_name = primary_resources["name"]
 
@@ -145,10 +156,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
             if "current_state" in old_values and "current_state" in new_values:
                 content += " from **%s** to **%s**" % (old_values["current_state"],
                                                        new_values["current_state"])
-    elif event_type in ["task_create_activity", "comment_delete_activity",
-                        "task_delete_activity", "task_update_activity",
-                        "story_move_from_project_activity", "story_delete_activity",
-                        "story_move_into_project_activity"]:
+    elif event_type in UNSUPPORTED_EVENT_TYPES:
         # Known but unsupported Pivotal event types
         pass
     else:
