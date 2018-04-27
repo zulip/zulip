@@ -139,23 +139,6 @@ exports.decorate_stream_bar = function (stream_name) {
         .addClass(stream_color.get_color_class(color));
 };
 
-exports.maybe_scroll_up_selected_message = function () {
-    // If the compose box is obscuring the currently selected message,
-    // scroll up until the message is no longer occluded.
-    if (current_msg_list.selected_id() === -1) {
-        // If there's no selected message, there's no need to
-        // scroll the compose box to avoid it.
-        return;
-    }
-    var selected_row = current_msg_list.selected_row();
-    var cover = selected_row.offset().top + selected_row.height()
-        - $("#compose").offset().top;
-    if (cover > 0) {
-        message_viewport.user_initiated_animate_scroll(cover+5);
-    }
-
-};
-
 function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
     var default_opts = {
         message_type:     msg_type,
