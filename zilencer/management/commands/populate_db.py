@@ -188,6 +188,11 @@ class Command(BaseCommand):
             zulip_realm_bots.extend(all_realm_bots)
             create_users(zulip_realm, zulip_realm_bots, bot_type=UserProfile.DEFAULT_BOT)
 
+            # Initialize the email gateway bot as an API Super User
+            email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
+            email_gateway_bot.is_api_super_user = True
+            email_gateway_bot.save()
+
             zoe = get_user("zoe@zulip.com", zulip_realm)
             zulip_webhook_bots = [
                 ("Zulip Webhook Bot", "webhook-bot@zulip.com"),
@@ -372,11 +377,6 @@ class Command(BaseCommand):
                 create_users(lear_realm, testsuite_lear_users)
 
             if not options["test_suite"]:
-                # Initialize the email gateway bot as an API Super User
-                email_gateway_bot = get_system_bot(settings.EMAIL_GATEWAY_BOT)
-                email_gateway_bot.is_api_super_user = True
-                email_gateway_bot.save()
-
                 # To keep the messages.json fixtures file for the test
                 # suite fast, don't add these users and subscriptions
                 # when running populate_db for the test suite
