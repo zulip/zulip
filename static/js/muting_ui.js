@@ -15,9 +15,11 @@ exports.rerender = function () {
     // re-doing a mute or unmute is a pretty recoverable thing.
 
     stream_list.update_streams_sidebar();
-    current_msg_list.rerender_after_muting_changes();
+    if (current_msg_list.muting_enabled) {
+        current_msg_list.update_muting_and_rerender();
+    }
     if (current_msg_list !== home_msg_list) {
-        home_msg_list.rerender_after_muting_changes();
+        home_msg_list.update_muting_and_rerender();
     }
 };
 

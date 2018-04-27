@@ -564,11 +564,7 @@ exports.MessageList.prototype = {
         }
     },
 
-    rerender_after_muting_changes: function MessageList_rerender_after_muting_changes() {
-        if (!this.muting_enabled) {
-            return;
-        }
-
+    update_muting_and_rerender: function MessageList_update_muting_and_rerender() {
         this._items = this.unmuted_messages(this._all_items);
         this.rerender();
     },
