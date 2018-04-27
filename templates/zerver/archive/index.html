@@ -1,0 +1,27 @@
+{% extends "zerver/base.html" %}
+{% stylesheet 'portico' %}
+{% include 'zerver/portico-header.html' %}
+
+{% block customhead %}
+<style type="text/css">
+    .portico-header {
+    padding-bottom: 0px;
+    padding-top: 10px;
+    padding-left: 5px;
+    width: auto;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="app">
+    <div class="app-main">
+        <div class="column-left">
+            {% include "zerver/archive/left_sidebar.html" %}
+        </div>
+        <div class="column-middle">
+            {% include "zerver/archive/home.html" %}
+        </div>
+    </div>
+</div>
+{% endblock %}
