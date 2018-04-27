@@ -148,10 +148,14 @@ exports.maybe_scroll_up_selected_message = function () {
         return;
     }
     var selected_row = current_msg_list.selected_row();
-    var cover = selected_row.offset().top + selected_row.height()
-        - $("#compose").offset().top;
-    if (cover > 0) {
-        message_viewport.user_initiated_animate_scroll(cover+5);
+
+    if (selected_row.height() < message_viewport.height()) {
+        // If the height of the selected message is less than the height of the viewport
+        // Then we initiate a scroll to the bottom of the screen
+        // we calculate the amount of scroll in var cover
+         var cover = selected_row.offset().top + selected_row.height()
+             - $("#compose").offset().top;
+        message_viewport.user_initiated_animate_scroll(cover);
     }
 
 };
