@@ -1,0 +1,100 @@
+#!/usr/bin/env node
+"use strict";
+
+const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');
+const { promisify } = require('util');
+
+const statFile = promisify(fs.stat);
+const mtimes = new Map();
+const additonalWebpackArgs = process.argv.slice(2);
+const webpackArgs = [
+    './node_modules/.bin/webpack-dev-server', '--config',
+    'tools/webpack.config.ts',
+    ...additonalWebpackArgs,
+  ];
+
+const ROOT_DIR = path.join(__dirname, '..');
+const webpackFiles = ['webpack.config.ts', 'webpack.assets.json']
+    .map(file => path.join(__dirname, file));
+
+// set initial mtimes
+webpackFiles.forEach(file => {
+    const stats = fs.statSync(file);
+    mtimes.set(file, stats.mtime);
+});
+
+// get the stats of both config files and
+// if they were changed return true
+async function getConfigStatus() {
+    const statPromises = [];
+    webpackFiles.forEach(file => {
+        statPromises.push(statFile(file));
+    });
+
+    const stats = await Promise.all(statPromises);
+    let configChanged = false;
+    stats.forEach((stat, index) => {
+        const currentFile = webpackFiles[index];
+        const changed = stat.mtime > mtimes.get(currentFile);
+        if (changed) {
+            configChanged = true;
+            mtimes.set(currentFile, stat.mtime);
+        }
+    });
+
+    return configChanged;
+}
+
+// creates a new webpack-dev-server process
+// when needed
+let webpackProcess = null;
+function createWebpackDevProcess() {
+    const proc = spawn('node', webpackArgs, {
+       cwd: ROOT_DIR,
+       stdio: 'inherit',
+       detached: true,
+    });
+
+    return proc;
+}
+
+function killWebpackProcess() {
+    if (webpackProcess !== null) {
+        // kill the whole process range including
+        // the process webpack-dev-server may have spawned.
+        process.kill(-webpackProcess.pid);
+    }
+}
+
+// restarts the webpack dev server if either of two
+// config files are changed
+async function webpackProcessManager() {
+    const configChanged = await getConfigStatus();
+    if (configChanged) {
+        console.log('Restarting webpack process, due to changes in webpack config...');
+        killWebpackProcess();
+        webpackProcess = createWebpackDevProcess();
+    }
+}
+
+// mimick python's time.sleep
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+// create initial webpack process and then
+// keep polling to check if config files are
+// changed, and restart webpack-dev-server if needed
+webpackProcess = createWebpackDevProcess();
+(async function () {
+    while (true) {
+        await webpackProcessManager();
+        await sleep(3000);
+    }
+}());
+
+// kill the running webpack process before exiting
+process.on('SIGINT', killWebpackProcess);
+process.on('SIGTERM', killWebpackProcess);
