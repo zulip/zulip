@@ -19,6 +19,7 @@ from django.contrib.auth.views import (login, password_reset_done,
 import zerver.tornado.views
 import zerver.views
 import zerver.views.auth
+import zerver.views.archive
 import zerver.views.compatibility
 import zerver.views.home
 import zerver.views.email_mirror
@@ -446,6 +447,11 @@ i18n_urls = [
         name='zerver.views.create_realm'),
     url(r'^new/(?P<creation_key>[\w]+)$',
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
+
+    # Global public streams (Zulip's way of doing archives)
+    url(r'^archive/streams/(?P<stream_id>\d+)/topic/(?P<topic_name>[^/]+)$',
+        zerver.views.archive.archive,
+        name='zerver.views.archive.archive'),
 
     # Login/registration
     url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
