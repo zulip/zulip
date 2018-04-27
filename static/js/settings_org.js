@@ -375,9 +375,6 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
 function update_dependent_subsettings(property_name) {
     if (property_name === 'realm_create_stream_permission' || property_name === 'realm_waiting_period_threshold') {
         set_create_stream_permission_dropdown();
-    } else if (property_name === 'realm_allow_message_editing') {
-        settings_ui.disable_sub_setting_onchange(page_params.realm_allow_message_editing,
-            "id_realm_message_content_edit_limit_minutes", true);
     } else if (property_name === 'realm_invite_required') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
             "id_realm_invite_by_admins_only", true);
@@ -702,9 +699,9 @@ function _set_up() {
     });
 
     $("#id_realm_msg_edit_limit_setting").change(function (e) {
-        var create_stream_permission = e.target.value;
+        var msg_edit_limit_dropdown_value = e.target.value;
         var node = $("#id_realm_message_content_edit_limit_minutes").parent();
-        if (create_stream_permission === 'custom_limit') {
+        if (msg_edit_limit_dropdown_value === 'custom_limit') {
             node.show();
         } else {
             node.hide();
