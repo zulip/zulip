@@ -612,7 +612,7 @@ class HomeTest(ZulipTestCase):
 
     def test_handlebars_compile_error(self) -> None:
         request = HostRequestMock()
-        with self.settings(DEVELOPMENT=True):
+        with self.settings(DEVELOPMENT=True, TEST_SUITE=False):
             with patch('os.path.exists', return_value=True):
                 result = home(request)
         self.assertEqual(result.status_code, 500)

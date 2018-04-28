@@ -75,7 +75,8 @@ def get_bot_types(user_profile: UserProfile) -> List[Dict[str, object]]:
     return bot_types
 
 def home(request: HttpRequest) -> HttpResponse:
-    if settings.DEVELOPMENT and os.path.exists('var/handlebars-templates/compile.error'):
+    if (settings.DEVELOPMENT and not settings.TEST_SUITE and
+            os.path.exists('var/handlebars-templates/compile.error')):
         response = render(request, 'zerver/handlebars_compilation_failed.html')
         response.status_code = 500
         return response
