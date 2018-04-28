@@ -22,7 +22,7 @@
 
 #### Real-time events
 * [Real time events API](/api/real-time-events)
-* [Register a queue](/api/register-queue)
-* [Get events from a queue](/api/get-events-from-queue)
-* [Delete a queue](/api/delete-queue)
+* [Register an event queue](/api/register-queue)
+* [Get events from an event queue](/api/get-events-from-queue)
+* [Delete an event queue](/api/delete-queue)
 

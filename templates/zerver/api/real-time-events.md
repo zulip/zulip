@@ -61,11 +61,3 @@ client.call_on_each_event(lambda event: sys.stdout.write(str(event) + "\n"))
 You may also pass in the following keyword arguments to `call_on_each_event`:
 
 {generate_api_arguments_table|arguments.json|call_on_each_event}
-
-## Deeper implementation details
-
-If you're developing a Zulip client or otherwise want deeper details,
-you can consult the
-[developer documentation](https://zulip.readthedocs.io/en/latest/subsystems/events-system.html)
-for how Zulip's event system works.
-
