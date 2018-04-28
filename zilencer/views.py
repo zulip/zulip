@@ -34,7 +34,7 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
     validate_token(token, kind)
 
 @has_request_variables
-def remote_server_register_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(), token: bytes=REQ(),
                                 token_kind: int=REQ(validator=check_int),
                                 ios_app_id: Optional[Text]=None) -> HttpResponse:

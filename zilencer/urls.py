@@ -12,7 +12,7 @@ i18n_urlpatterns = [
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
     url('^remotes/push/register$', rest_dispatch,
-        {'POST': 'zilencer.views.remote_server_register_push'}),
+        {'POST': 'zilencer.views.register_remote_push_device'}),
     url('^remotes/push/unregister$', rest_dispatch,
         {'POST': 'zilencer.views.remote_server_unregister_push'}),
     url('^remotes/push/notify$', rest_dispatch,

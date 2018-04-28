@@ -350,7 +350,7 @@ def add_push_device_token(user_profile: UserProfile,
             post_data['ios_app_id'] = ios_app_id
 
         logging.info("Sending new push device to bouncer: %r", post_data)
-        # Calls zilencer.views.remote_server_register_push.
+        # Calls zilencer.views.register_remote_push_device
         send_to_push_bouncer('POST', 'register', post_data)
         return
 
