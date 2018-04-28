@@ -820,6 +820,12 @@ function _set_up() {
         });
     });
 
+    function fade_status_element(elem) {
+        setTimeout(function () {
+            elem.fadeOut(500);
+        }, 1000);
+    }
+
     $("#realm_domains_table").on("click", ".delete_realm_domain", function () {
         var domain = $(this).parents("tr").find(".domain").text();
         var url = "/json/realm/domains/" + domain;
@@ -829,9 +835,11 @@ function _set_up() {
             url: url,
             success: function () {
                 ui_report.success(i18n.t("Deleted successfully!"), realm_domains_info);
+                fade_status_element(realm_domains_info);
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                fade_status_element(realm_domains_info);
             },
         });
     });
@@ -853,9 +861,11 @@ function _set_up() {
                 $("#add-realm-domain-widget .new-realm-domain").val("");
                 $("#add-realm-domain-widget .new-realm-domain-allow-subdomains").prop("checked", false);
                 ui_report.success(i18n.t("Added successfully!"), realm_domains_info);
+                fade_status_element(realm_domains_info);
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                fade_status_element(realm_domains_info);
             },
         });
     });
@@ -881,9 +891,11 @@ function _set_up() {
                     ui_report.success(i18n.t("Update successful: Subdomains no longer allowed for __domain__",
                                              {domain: domain}), realm_domains_info);
                 }
+                fade_status_element(realm_domains_info);
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Failed"), xhr, realm_domains_info);
+                fade_status_element(realm_domains_info);
             },
         });
     });

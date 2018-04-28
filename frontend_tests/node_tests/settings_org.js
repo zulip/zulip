@@ -386,6 +386,7 @@ function test_change_allow_subdomains(change_allow_subdomains) {
     };
 
     var info = $('.realm_domains_info');
+    info.fadeOut = noop;
     var domain = 'example.com';
     var allow = true;
 
