@@ -31,8 +31,14 @@ function maybe_add_narrowed_messages(messages, msg_list, messages_are_new) {
                 }
             });
 
-            _.each(new_messages, message_store.set_message_booleans);
+            // This second call to add_message_metadata in the
+            // insert_new_messages code path helps in very rare race
+            // conditions, where e.g. the current user's name was
+            // edited in between when they sent the message and when
+            // we hear back from the server and can echo the new
+            // message.  Arguably, it's counterproductive complexity.
             new_messages = _.map(new_messages, message_store.add_message_metadata);
+
             message_util.add_messages(
                 new_messages,
                 msg_list,
