@@ -536,7 +536,7 @@ exports.delete_message = function (msg_id) {
                 $('#delete_message_modal').modal("hide");
             },
             error: function (xhr) {
-                ui_report.error(i18n.t("Error deleting message."), xhr,
+                ui_report.error(i18n.t("Error deleting message"), xhr,
                     $("#delete-message-error"));
             },
         });
