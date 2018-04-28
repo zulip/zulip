@@ -161,7 +161,7 @@ if options.test:
     # in order to support running the Casper tests while a Zulip
     # development server is running, we use webpack in production mode
     # for the Casper tests.
-    subprocess.check_call('./tools/webpack')
+    subprocess.check_call(['./tools/webpack', '--quiet'])
 else:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:

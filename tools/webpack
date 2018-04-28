@@ -18,12 +18,16 @@ os.chdir(settings.DEPLOY_ROOT)
 STATIC_PATH = 'static/'
 
 
-def run():
-    # type: () -> None
+def run(quiet):
+    # type: (bool) -> None
     """Builds for production, writing the output to disk"""
-    subprocess.check_call(['node', 'node_modules/.bin/webpack-cli'] +
-                          ['--config', 'tools/webpack.config.ts', '-p'] +
-                          ['--env', 'production'])
+    webpack_args = ['node', 'node_modules/.bin/webpack-cli']
+    webpack_args += ['--config', 'tools/webpack.config.ts', '-p']
+    webpack_args += ['--env', 'production']
+    if quiet:
+        webpack_args += ['--display', 'errors-only']
+        print('starting webpack compilation')
+    subprocess.check_call(webpack_args)
 
 def run_watch(host, port, minify, disable_host_check):
     # type: (str, str, bool, bool) -> None
@@ -71,6 +75,9 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--test',
                     action='store_true', dest='test', default=False,
                     help='generate a stub webpack-stats.json file (for backend testing)')
+parser.add_argument('--quiet',
+                    action='store_true', dest='quiet', default=False,
+                    help='Minimizes webpack output while running')
 parser.add_argument('--watch',
                     action='store_true', dest='watch', default=False,
                     help='watch for changes to source files (for development)')
@@ -93,4 +100,4 @@ if args.test:
 elif args.watch:
     run_watch(args.host, args.port, args.minify, args.disable_host_check)
 else:
-    run()
+    run(args.quiet)
