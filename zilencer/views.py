@@ -60,7 +60,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
     return json_success()
 
 @has_request_variables
-def remote_server_unregister_push(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
+def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                   token: bytes=REQ(),
                                   token_kind: int=REQ(validator=check_int),
                                   ios_app_id: Optional[Text]=None) -> HttpResponse:

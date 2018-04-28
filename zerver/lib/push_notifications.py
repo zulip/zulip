@@ -383,7 +383,7 @@ def remove_push_device_token(user_profile: UserProfile, token_str: bytes, kind: 
             'token': token_str,
             'token_kind': kind,
         }
-        # Calls zilencer.views.remote_server_unregister_push.
+        # Calls zilencer.views.unregister_remote_push_device
         send_to_push_bouncer("POST", "unregister", post_data)
         return
 
