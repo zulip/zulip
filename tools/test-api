@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
 
@@ -13,6 +14,7 @@ os.chdir(ZULIP_PATH)
 
 from zulip import Client
 
+from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
 from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
     test_update_message_edit_permission_error, \
@@ -22,8 +24,21 @@ os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
 from zerver.models import get_user, get_realm
 
+usage = """test-js-with-casper [options]"""
+parser = argparse.ArgumentParser(usage)
+parser.add_argument('--force', dest='force',
+                    action="store_true",
+                    default=False, help='Run tests despite possible provisioning problems.')
+options = parser.parse_args()
 
-with test_server_running(external_host='zulipdev.com:9981'):
+if not options.force:
+    ok, msg = get_provisioning_status()
+    if not ok:
+        print(msg)
+        print('If you really know what you are doing, use --force to run anyway.')
+        sys.exit(1)
+
+with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm("zulip")
     api_key = get_user(email, realm).api_key
