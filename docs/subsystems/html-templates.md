@@ -75,6 +75,14 @@ static/js/invite.js:    $('#streams_to_add').html(templates.render('invite_subsc
 
 The second argument to `templates.render` is the context.
 
+### Toolchain
+
+Handlebars is in our `package.json` and thus ends up in
+`node_modules`; and then we have a script,
+`tools/compile-handlebars-templates`, which is responsible for
+compiling the templates, both in production and as they change in a
+development environment.
+
 ### Translation
 
 All user-facing strings (excluding pages only visible to sysadmins or
