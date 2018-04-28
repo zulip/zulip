@@ -266,7 +266,11 @@ class TestCrossRealmPMs(ZulipTestCase):
         user2 = self.create_user(user2_email)
         self.create_user(user3_email)
         feedback_bot = get_system_bot(feedback_email)
-        support_bot = self.create_user(support_email)
+        with self.settings(CROSS_REALM_BOT_EMAILS=['feedback@zulip.com', 'welcome-bot@zulip.com']):
+            # HACK: We should probably be creating this "bot" user another
+            # way, but since you can't register a user with a
+            # cross-realm email, we need to hide this for now.
+            support_bot = self.create_user(support_email)
 
         # Users can PM themselves
         self.send_personal_message(user1_email, user1_email, sender_realm="1.example.com")
