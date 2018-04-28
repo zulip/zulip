@@ -1972,7 +1972,7 @@ class EditMessageTest(ZulipTestCase):
         # out of time, only topic editing allowed
         set_message_editing_params(True, 120, False)
         do_edit_message_assert_success(id_, 'B', True)
-        do_edit_message_assert_error(id_, 'C', "The time limit for editing this message has past")
+        do_edit_message_assert_error(id_, 'C', "The time limit for editing this message has passed")
 
         # infinite time, all edits allowed
         set_message_editing_params(True, 0, False)
@@ -2052,7 +2052,7 @@ class EditMessageTest(ZulipTestCase):
         set_message_editing_params(True, 0, True)
         do_edit_message_assert_success(id_, 'E')
         self.login(self.example_email("cordelia"))
-        do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has past")
+        do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has passed")
 
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))
