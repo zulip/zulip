@@ -3059,11 +3059,6 @@ def do_change_enter_sends(user_profile: UserProfile, enter_sends: bool) -> None:
     user_profile.enter_sends = enter_sends
     user_profile.save(update_fields=["enter_sends"])
 
-def do_change_default_desktop_notifications(user_profile: UserProfile,
-                                            default_desktop_notifications: bool) -> None:
-    user_profile.default_desktop_notifications = default_desktop_notifications
-    user_profile.save(update_fields=["default_desktop_notifications"])
-
 def do_set_user_display_setting(user_profile: UserProfile,
                                 setting_name: str,
                                 setting_value: Union[bool, Text]) -> None:

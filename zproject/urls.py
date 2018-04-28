@@ -274,8 +274,6 @@ v1_api_and_json_patterns = [
         {'PATCH': 'zerver.views.user_settings.update_display_settings_backend'}),
     url(r'^settings/notifications$', rest_dispatch,
         {'PATCH': 'zerver.views.user_settings.json_change_notify_settings'}),
-    url(r'^settings/ui$', rest_dispatch,
-        {'PATCH': 'zerver.views.user_settings.json_change_ui_settings'}),
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', rest_dispatch,

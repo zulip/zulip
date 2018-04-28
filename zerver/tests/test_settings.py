@@ -119,9 +119,6 @@ class ChangeSettingsTest(ZulipTestCase):
             self.check_for_toggle_param_patch("/json/settings/notifications",
                                               notification_setting)
 
-    def test_ui_settings(self) -> None:
-        self.check_for_toggle_param_patch("/json/settings/ui", "default_desktop_notifications")
-
     def test_toggling_boolean_user_display_settings(self) -> None:
         """Test updating each boolean setting in UserProfile property_types"""
         boolean_settings = (s for s in UserProfile.property_types if UserProfile.property_types[s] is bool)

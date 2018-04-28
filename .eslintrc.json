@@ -52,7 +52,6 @@
         "settings_display": false,
         "settings_notifications": false,
         "settings_muting": false,
-        "settings_lab": false,
         "settings_bots": false,
         "settings_sections": false,
         "settings_emoji": false,

@@ -84,9 +84,6 @@ function setup_settings_label() {
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
         twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
         translate_emoticons: i18n.t("Translate emoticons (convert <code>:)</code> to 😃 in messages)"),
-
-        // Zulip Labs
-        default_desktop_notifications: i18n.t("Enable desktop notifications for new streams"),
     };
 }
 
@@ -104,7 +101,6 @@ function _setup_page() {
             "alert-words": i18n.t("Alert words"),
             "uploaded-files": i18n.t("Uploaded files"),
             "muted-topics": i18n.t("Muted topics"),
-            "zulip-labs": i18n.t("Zulip labs"),
             "organization-profile": i18n.t("Organization profile"),
             "organization-settings": i18n.t("Organization settings"),
             "organization-permissions": i18n.t("Organization permissions"),

@@ -1150,7 +1150,6 @@ class TestHumanUsersOnlyDecorator(ZulipTestCase):
             "/api/v1/settings",
             "/api/v1/settings/display",
             "/api/v1/settings/notifications",
-            "/api/v1/settings/ui",
             "/api/v1/users/me/profile_data"
         ]
         for endpoint in patch_endpoints:

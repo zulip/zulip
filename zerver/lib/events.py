@@ -273,7 +273,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('update_global_notifications'):
         for notification in UserProfile.notification_setting_types:
             state[notification] = getattr(user_profile, notification)
-        state['default_desktop_notifications'] = user_profile.default_desktop_notifications
 
     if want('zulip_version'):
         state['zulip_version'] = ZULIP_VERSION

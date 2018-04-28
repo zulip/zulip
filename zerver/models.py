@@ -642,10 +642,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_digest_emails = models.BooleanField(default=True)  # type: bool
     realm_name_in_notifications = models.BooleanField(default=False)  # type: bool
 
-    # Old notification field superseded by existence of stream notification
-    # settings.
-    default_desktop_notifications = models.BooleanField(default=True)  # type: bool
-
     ###
 
     last_reminder = models.DateTimeField(default=None, null=True)  # type: Optional[datetime.datetime]

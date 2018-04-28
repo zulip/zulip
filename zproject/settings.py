@@ -1155,7 +1155,6 @@ JS_SPECS = {
             'js/settings_notifications.js',
             'js/settings_bots.js',
             'js/settings_muting.js',
-            'js/settings_lab.js',
             'js/settings_sections.js',
             'js/settings_emoji.js',
             'js/settings_org.js',

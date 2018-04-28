@@ -54,7 +54,6 @@ class HomeTest(ZulipTestCase):
             "custom_profile_field_types",
             "custom_profile_fields",
             "debug_mode",
-            "default_desktop_notifications",
             "default_language",
             "default_language_name",
             "development_environment",

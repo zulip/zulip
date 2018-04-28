@@ -93,8 +93,6 @@ def find_edges_to_remove(graph, methods):
         ('compose', 'echo'),
         ('compose', 'resize'),
         ('settings', 'resize'),
-        ('settings', 'settings_lab'),
-        ('settings_lab', 'resize'),
         ('compose', 'unread_ops'),
         ('compose', 'drafts'),
         ('echo', 'message_edit'),
