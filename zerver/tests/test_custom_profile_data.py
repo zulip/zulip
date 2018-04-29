@@ -251,7 +251,7 @@ class CustomProfileDataTest(ZulipTestCase):
         })
         self.assert_json_error(
             result,
-            u"value[{}] is too long (limit: 50 characters).".format(field.id))
+            u"{} is too long (limit: 50 characters).".format(field.name))
 
     def test_update_invalid_date(self) -> None:
         self.login(self.example_email("iago"))
@@ -261,10 +261,10 @@ class CustomProfileDataTest(ZulipTestCase):
         # Update value of field
         result = self.client_patch("/json/users/me/profile_data",
                                    {'data': ujson.dumps([{"id": field.id, "value": u"a-b-c"}])})
-        self.assert_json_error(result, u"value[{}] is not a date".format(field.id))
+        self.assert_json_error(result, u"{} is not a date".format(field.name))
         result = self.client_patch("/json/users/me/profile_data",
                                    {'data': ujson.dumps([{"id": field.id, "value": 123}])})
-        self.assert_json_error(result, u"value[{}] is not a string".format(field.id))
+        self.assert_json_error(result, u"{} is not a string".format(field.name))
 
     def test_update_invalid_url(self) -> None:
         self.login(self.example_email("iago"))
@@ -276,7 +276,7 @@ class CustomProfileDataTest(ZulipTestCase):
                                    {'data': ujson.dumps([{"id": field.id, "value": u"abc"}])})
         self.assert_json_error(
             result,
-            u"value[{}] is not a URL".format(field.id))
+            u"{} is not a URL".format(field.name))
 
     def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))
@@ -341,7 +341,7 @@ class CustomProfileDataTest(ZulipTestCase):
         result = self.client_patch("/json/users/me/profile_data",
                                    {'data': ujson.dumps(data)})
         self.assert_json_error(result,
-                               "'foobar' is not a valid choice for 'value[4]'.")
+                               "'foobar' is not a valid choice for '{}'.".format(field.name))
 
         data = [{
             'id': field.id,

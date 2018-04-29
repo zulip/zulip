@@ -125,15 +125,14 @@ def update_user_custom_profile_data(
         extended_validators = CustomProfileField.EXTENDED_FIELD_VALIDATORS
         field_type = field.field_type
         value = item['value']
+        var_name = '{}'.format(field.name)
         if field_type in validators:
             validator = validators[field_type]
-            var_name = 'value[{}]'.format(field_id)
             result = validator(var_name, value)
         else:
             # Check extended validators.
             extended_validator = extended_validators[field_type]
             field_data = field.field_data
-            var_name = 'value[{}]'.format(field_id)
             result = extended_validator(var_name, field_data, value)
 
         if result is not None:
