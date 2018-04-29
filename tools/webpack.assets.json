@@ -1,7 +1,8 @@
 {
     "activity": "./static/third/sorttable/sorttable.js",
     "portico": [
-        "./static/js/portico/header.js"
+        "./static/js/portico/header.js",
+        "./static/styles/scss/portico.scss"
     ],
     "common": [
                "string.prototype.endswith",
@@ -31,6 +32,5 @@
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
-    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
-    "portico-styles": "./static/styles/scss/portico.scss"
+    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js"
 }
