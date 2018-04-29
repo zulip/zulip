@@ -226,8 +226,17 @@ class CustomProfileFieldTest(ZulipTestCase):
             result, u'A field with that name already exists.')
 
 class CustomProfileDataTest(ZulipTestCase):
+    def assert_error_update_invalid_value(self, field_name: str, new_value: object, error_msg: str) -> None:
+        self.login(self.example_email("iago"))
+        realm = get_realm('zulip')
+        field = CustomProfileField.objects.get(name=field_name, realm=realm)
 
-    def test_update_invalid(self) -> None:
+        # Update value of field
+        result = self.client_patch("/json/users/me/profile_data",
+                                   {'data': ujson.dumps([{"id": field.id, "value": new_value}])})
+        self.assert_json_error(result, error_msg)
+
+    def test_update_invalid_field(self) -> None:
         self.login(self.example_email("iago"))
         data = [{'id': 1234, 'value': '12'}]
         result = self.client_patch("/json/users/me/profile_data", {
@@ -237,48 +246,23 @@ class CustomProfileDataTest(ZulipTestCase):
                                u"Field id 1234 not found.")
 
     def test_update_invalid_short_text(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        field = try_add_realm_custom_profile_field(
-            realm,
-            u"description",
-            CustomProfileField.SHORT_TEXT
-        )
-
-        data = [{'id': field.id, 'value': 't' * 201}]
-        result = self.client_patch("/json/users/me/profile_data", {
-            'data': ujson.dumps(data)
-        })
-        self.assert_json_error(
-            result,
-            u"{} is too long (limit: 50 characters).".format(field.name))
+        field_name = "Phone number"
+        self.assert_error_update_invalid_value(field_name, 't' * 201,
+                                               u"{} is too long (limit: 50 characters).".format(field_name))
 
     def test_update_invalid_date(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        field = CustomProfileField.objects.get(name="Birthday", realm=realm)
-
-        # Update value of field
-        result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps([{"id": field.id, "value": u"a-b-c"}])})
-        self.assert_json_error(result, u"{} is not a date".format(field.name))
-        result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps([{"id": field.id, "value": 123}])})
-        self.assert_json_error(result, u"{} is not a string".format(field.name))
+        field_name = "Birthday"
+        self.assert_error_update_invalid_value(field_name, u"a-b-c",
+                                               u"{} is not a date".format(field_name))
+        self.assert_error_update_invalid_value(field_name, 123,
+                                               u"{} is not a string".format(field_name))
 
     def test_update_invalid_url(self) -> None:
-        self.login(self.example_email("iago"))
-        realm = get_realm('zulip')
-        field = CustomProfileField.objects.get(name="GitHub profile", realm=realm)
+        field_name = "GitHub profile"
+        self.assert_error_update_invalid_value(field_name, u"not URL",
+                                               u"{} is not a URL".format(field_name))
 
-        # Update value of field
-        result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps([{"id": field.id, "value": u"abc"}])})
-        self.assert_json_error(
-            result,
-            u"{} is not a URL".format(field.name))
-
-    def test_update_profile_data(self) -> None:
+    def test_update_profile_data_successfully(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
         fields = [
@@ -328,21 +312,15 @@ class CustomProfileDataTest(ZulipTestCase):
             if f['id'] == field.id:
                 self.assertEqual(f['value'], 'foobar')
 
-    def test_update_choice_field(self) -> None:
+    def test_update_invalid_choice_field(self) -> None:
+        field_name = "Favorite editor"
+        self.assert_error_update_invalid_value(field_name, "foobar",
+                                               "'foobar' is not a valid choice for '{}'.".format(field_name))
+
+    def test_update_choice_field_successfully(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        field = CustomProfileField.objects.get(name='Favorite editor',
-                                               realm=realm)
-        data = [{
-            'id': field.id,
-            'value': 'foobar',
-        }]
-
-        result = self.client_patch("/json/users/me/profile_data",
-                                   {'data': ujson.dumps(data)})
-        self.assert_json_error(result,
-                               "'foobar' is not a valid choice for '{}'.".format(field.name))
-
+        field = CustomProfileField.objects.get(name='Favorite editor', realm=realm)
         data = [{
             'id': field.id,
             'value': 'emacs',
