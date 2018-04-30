@@ -44,7 +44,7 @@ set_global('page_params', {
     translate_emoticons: false,
 });
 
-set_global('blueslip', {error: function () {}});
+set_global('blueslip', global.make_zblueslip());
 
 set_global('Image', function () {
   return {};
@@ -492,12 +492,9 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
 (function test_katex_throws_unexpected_exceptions() {
     katex.renderToString = function () { throw new Error('some-exception'); };
-    var blueslip_error_called = false;
-    blueslip.error = function (ex) {
-        assert.equal(ex.message, 'some-exception');
-        blueslip_error_called = true;
-    };
+    blueslip.set_test_data('error', 'Error: some-exception');
     var message = { raw_content: '$$a$$' };
     markdown.apply_markdown(message);
-    assert(blueslip_error_called);
+    assert(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 }());
