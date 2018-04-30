@@ -17,7 +17,7 @@ set_global('document', {
     },
 });
 
-set_global('blueslip', function () {});
+set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 set_global('compose_actions', {});
 
@@ -41,10 +41,6 @@ zrequire('buddy_list');
 zrequire('user_search');
 zrequire('list_cursor');
 zrequire('activity');
-
-set_global('blueslip', {
-    log: () => {},
-});
 
 var filter_key_handlers;
 set_global('keydown_util', {
@@ -152,14 +148,10 @@ presence.presence_info = presence_info;
 }());
 
 (function test_reload_defaults() {
-    let warned;
-
-    blueslip.warn = function (msg) {
-        assert.equal(msg, 'get_filter_text() is called before initialization');
-        warned = true;
-    };
+    blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
-    assert(warned);
+    assert(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 }());
 
 (function test_sort_users() {
@@ -823,12 +815,14 @@ reset_setup();
 
     const expected = { status: 'active', mobile: false, last_active: 500 };
     assert.deepEqual(presence.presence_info[alice.user_id], expected);
+
     activity.set_user_status(alice.email, info, server_time);
-    blueslip.warn = function (msg) {
-        assert.equal(msg, 'unknown email: foo@bar.com');
-    };
-    blueslip.error = () => {};
+    blueslip.set_test_data('warn', 'unknown email: foo@bar.com');
+    blueslip.set_test_data('error', 'Unknown email for get_user_id: foo@bar.com');
     activity.set_user_status('foo@bar.com', info, server_time);
+    assert(blueslip.get_test_logs('warn').length, 1);
+    assert(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 }());
 
 (function test_initialize() {
