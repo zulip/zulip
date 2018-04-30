@@ -141,18 +141,6 @@ exports.set_up = function () {
     });
 };
 
-exports.delete_stream = function (stream_id, alert_element, stream_row) {
-    channel.del({
-        url: '/json/streams/' + stream_id,
-        error: function (xhr) {
-            ui_report.error(i18n.t("Failed"), xhr, alert_element);
-        },
-        success: function () {
-            stream_row.remove();
-        },
-    });
-};
-
 return exports;
 }());
 
