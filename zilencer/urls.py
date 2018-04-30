@@ -7,10 +7,13 @@ from zerver.lib.rest import rest_dispatch
 
 i18n_urlpatterns = [
     url(r'^billing/$', zilencer.views.add_payment_method),
+    url(r'^remotes/register/$', zilencer.views.register_remote_server_via_web),
 ]  # type: Any
 
 # Zilencer views following the REST API style
 v1_api_and_json_patterns = [
+    url('^remotes/server/register$', rest_dispatch,
+        {'POST': 'zilencer.views.register_remote_server_via_api'}),
     url('^remotes/push/register$', rest_dispatch,
         {'POST': 'zilencer.views.register_remote_push_device'}),
     url('^remotes/push/unregister$', rest_dispatch,

@@ -1,6 +1,8 @@
 
 from typing import Any, Dict, Optional, Text, Union, cast
 
+from django.core.validators import validate_email, URLValidator
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext as err_
@@ -15,9 +17,11 @@ from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_int
+from zerver.lib.validator import check_int, check_string, check_url, \
+    validate_login_email, check_capped_string
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
+from zilencer.forms import RemoteServerRegistrationForm
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, count_stripe_cards, \
     save_stripe_token, StripeError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer
@@ -32,6 +36,72 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
         raise JsonableError(err_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
+
+def update_or_create_remote_server(zulip_org_id: Text, zulip_org_key: Text, hostname: Text, contact_email: Text) -> bool:
+    if len(zulip_org_id) != RemoteZulipServer.UUID_LENGTH:
+        raise JsonableError(err_("zulip_org_id must be %s characters. It is currently %s characters."
+                                 % (RemoteZulipServer.UUID_LENGTH, len(zulip_org_id))))
+    if len(zulip_org_key) != RemoteZulipServer.API_KEY_LENGTH:
+        raise JsonableError(err_("zulip_org_key must be %s characters. It is currently %s characters."
+                                 % (RemoteZulipServer.API_KEY_LENGTH, len(zulip_org_key))))
+    if len(hostname) > RemoteZulipServer.HOSTNAME_MAX_LENGTH:
+        raise JsonableError(err_("EXTERNAL_HOST can be at most %s characters. It is currently %s characters."
+                                 % (RemoteZulipServer.HOSTNAME_MAX_LENGTH, len(hostname))))
+    try:
+        url_validator = URLValidator()
+        if hostname.startswith('http'):
+            url_validator(hostname)
+        else:
+            url_validator('http://' + hostname)
+    except ValidationError:
+        raise JsonableError('%s is not a valid URL' % (hostname,))
+    try:
+        validate_email(email)
+    except ValidationError:
+        raise JsonableError('%s is not an email address' % (contact_email,))
+
+    try:
+        remote_server, created = RemoteZulipServer.objects.update_or_create(
+            uuid=zulip_org_id, api_key=zulip_org_key,
+            defaults={'hostname': hostname, 'contact_email': contact_email})
+    except IntegrityError:
+        raise JsonableError(err_("zulip_org_id and zulip_org_key do not match."))
+    return created
+
+@require_post
+def register_remote_server_via_api(request: HttpRequest) -> HttpResponse:
+    created = update_or_create_remote_server(
+        request.POST['zulip_org_id'], request.POST['zulip_org_key'],
+        request.POST['hostname'], request.POST['contact_email'])
+    return json_success({'created': created})
+
+def register_remote_server_via_web(request: HttpRequest) -> HttpResponse:
+    success = False
+    created = None
+    if request.method == 'POST':
+        form = RemoteServerRegistrationForm(request.POST)
+        if form.is_valid():
+            created = update_or_create_remote_server(
+                form.cleaned_data['zulip_org_id'], form.cleaned_data['zulip_org_key'],
+                form.cleaned_data['hostname'], form.cleaned_data['contact_email'])
+            success = True
+    else:
+        form = RemoteServerRegistrationForm()
+    return render(request, 'zilencer/register_remote_server.html',
+                  context={'form': form, 'success': success, 'created': created})
+
+@has_request_variables
+def register_remote_server_via_web(request: HttpRequest,
+                                   zulip_org_id: Text=REQ(validator=check_string),
+                                   zulip_org_key: Text=REQ(validator=check_string),
+                                   hostname: Text=REQ(validator=check_string),
+                                   contact_email: Text=REQ(validator=check_string)) -> HttpResponse:
+
+
+
+    created = update_or_create_remote_server(Zulip_org_id, zulip_org_key, hostname, contact_email)
+    return json_success({'created': created})
+
 
 @has_request_variables
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
