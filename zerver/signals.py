@@ -8,6 +8,7 @@ from django.template import loader
 from django.utils.timezone import \
     get_current_timezone_name as timezone_get_current_timezone_name
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext_lazy as _
 
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
@@ -73,7 +74,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         context['user_email'] = user.email
         context['login_time'] = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
             timezone_get_current_timezone_name()
-        context['device_ip'] = request.META.get('REMOTE_ADDR') or "Uknown IP address"
+        context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
         context['device_os'] = get_device_os(user_agent)
         context['device_browser'] = get_device_browser(user_agent)
 
