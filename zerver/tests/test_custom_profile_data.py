@@ -40,7 +40,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         data["hint"] = "*" * 81
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
-        msg = "hint is longer than 80."
+        msg = "hint is too long (limit: 80 characters)."
         self.assert_json_error(result, msg)
 
         data["name"] = "Phone"
@@ -162,7 +162,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             info={'name': 'New phone number',
                   'hint': '*' * 81,
                   'field_type': CustomProfileField.SHORT_TEXT})
-        msg = "hint is longer than 80."
+        msg = "hint is too long (limit: 80 characters)."
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
@@ -251,7 +251,7 @@ class CustomProfileDataTest(ZulipTestCase):
         })
         self.assert_json_error(
             result,
-            u"value[{}] is longer than 50.".format(field.id))
+            u"value[{}] is too long (limit: 50 characters).".format(field.id))
 
     def test_update_profile_data(self) -> None:
         self.login(self.example_email("iago"))

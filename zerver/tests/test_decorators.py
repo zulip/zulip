@@ -572,7 +572,7 @@ class ValidatorTestCase(TestCase):
         self.assertEqual(check_short_string('x', x), None)
 
         x = 'x' * 201
-        self.assertEqual(check_short_string('x', x), 'x is longer than 50.')
+        self.assertEqual(check_short_string('x', x), "x is too long (limit: 50 characters).")
 
         x = 4
         self.assertEqual(check_short_string('x', x), 'x is not a string')
