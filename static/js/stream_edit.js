@@ -575,6 +575,7 @@ $(function () {
             }
             stream_subscription_info_elem.addClass('text-success')
                                          .removeClass('text-error');
+            ui.update_scrollbar($("#subscription_overlay .settings"));
         }
 
         function removal_failure() {
