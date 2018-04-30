@@ -256,6 +256,7 @@ exports.update_settings_for_subscribed = function (sub) {
     var button = check_button_for_sub(sub);
     var settings_button = settings_button_for_sub(sub).removeClass("unsubscribed").show();
     $('.add_subscribers_container').show();
+    $(".subscription_settings[data-stream-id='" + sub.stream_id + "'] #preview-stream-button").show();
 
     if (button.length !== 0) {
         exports.rerender_subscribers_count(sub, true);
