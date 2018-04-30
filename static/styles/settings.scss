@@ -351,19 +351,14 @@ input[type=checkbox] + .inline-block {
 }
 
 #settings_page .icon-button {
-    min-width: auto;
-    border-width: 2px;
-    -moz-border-radius: 28px;
-    -webkit-border-radius: 28px;
     border-radius: 5px;
     border: 1px solid hsl(0,0%,80%);
-    display: inline-block;
-    cursor: pointer;
     font-size: 14px;
     padding: 3px 14px 4px 11px;
     text-decoration: none;
     color: hsl(0, 0%, 46%);
-    font-weight: 400;
+    min-width: 80px;
+    line-height: 16px;
 }
 
 #settings_page .icon-button:hover {
@@ -391,7 +386,6 @@ input[type=checkbox] + .inline-block {
     vertical-align: bottom;
     margin-right: 3px;
     font-size: 24px;
-    line-height: 19px;
     font-weight: 600;
 }
 
@@ -399,10 +393,6 @@ input[type=checkbox] + .inline-block {
     font-size: 15px;
     font-weight: lighter;
     color: white;
-}
-
-#settings_page .icon-button .icon-button-text {
-    vertical-align: baseline;
 }
 
 #settings_page .save-button-controls {
@@ -454,17 +444,6 @@ input[type=checkbox] + .inline-block {
 
 .admin-realm-form .subsection-header h3 {
     display: inline;
-}
-
-.admin-realm-form .subsection-header div[class*="subsection-changes"] {
-    display: inline;
-}
-
-.admin-realm-form .subsection-header div[class*="subsection-changes"] button.show {
-    display: inline-block;
-    margin-top: -4px;
-    min-width: 80px;
-    line-height: 10px;
 }
 
 #default_language {

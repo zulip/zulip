@@ -166,12 +166,11 @@ function createSaveButtons(subsection) {
     );
     var props  = {};
     props.hidden = false;
-    save_btn_controls.animate = function (obj) {
-        if (obj.opacity === 0) {
-            props.hidden = true;
-        } else {
+    save_btn_controls.fadeIn = () => {
             props.hidden = false;
-        }
+    };
+    save_btn_controls.fadeOut = () => {
+        props.hidden = true;
     };
     return {
         props: props,
