@@ -33,8 +33,6 @@ function _setup_page() {
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         realm_description: page_params.realm_description,
         realm_restricted_to_domain: page_params.realm_restricted_to_domain,
-        realm_invite_required: page_params.realm_invite_required,
-        realm_invite_by_admins_only: page_params.realm_invite_by_admins_only,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
@@ -81,7 +79,6 @@ function _setup_page() {
         realm_send_welcome_emails: i18n.t("Send emails introducing Zulip to new users"),
 
         // Organization permissions
-        realm_invite_required: i18n.t("Users need an invitation to join"),
         realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
         realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
     };
