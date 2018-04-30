@@ -79,6 +79,7 @@ function add_custom_profile_fields_to_settings() {
                                                                   field_type: type,
                                                                   field_value: value,
                                                                   is_long_text_field: is_long_text,
+                                                                  field_hint: field.hint,
                                                                   });
         $("#account-settings .custom-profile-fields-form").append(html);
     });
