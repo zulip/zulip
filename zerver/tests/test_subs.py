@@ -610,12 +610,11 @@ class StreamAdminTest(ZulipTestCase):
         self.assert_json_error(result, "Invalid stream id")
 
     def test_change_stream_description(self) -> None:
-        user_profile = self.example_user('hamlet')
+        user_profile = self.example_user('iago')
         email = user_profile.email
         self.login(email)
         realm = user_profile.realm
         self.subscribe(user_profile, 'stream_name1')
-        do_change_is_admin(user_profile, True)
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
@@ -643,6 +642,11 @@ class StreamAdminTest(ZulipTestCase):
                       notified_user_ids)
 
         self.assertEqual('Test description', stream.description)
+
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'description': ujson.dumps('a' * 1025)})
+        self.assert_json_error(result, "description is too long (limit: %s characters)."
+                               % (Stream.MAX_DESCRIPTION_LENGTH))
 
     def test_change_stream_description_requires_realm_admin(self) -> None:
         user_profile = self.example_user('hamlet')

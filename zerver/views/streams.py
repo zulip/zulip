@@ -27,7 +27,7 @@ from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
     list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
-    check_bool, check_variable_type
+    check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
     get_system_bot, get_user
@@ -144,7 +144,8 @@ def remove_default_stream(request: HttpRequest,
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
         stream_id: int,
-        description: Optional[str]=REQ(validator=check_string, default=None),
+        description: Optional[str]=REQ(validator=check_capped_string(
+            Stream.MAX_DESCRIPTION_LENGTH), default=None),
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
