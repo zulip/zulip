@@ -1,3 +1,7 @@
+![why zulip cartoon by Jessica Evans](/static/images/why-zulip/cartoon.png)
+
+<center id="cartoon-caption">Julia Evans' explanation of Zulip</center>
+
 Zulip is not just a “better Slack”, in the same way that iPods were not just
 “better CD players”. Zulip’s topic-based threading changes what is possible
 in chat. If you haven’t seen Zulip in action, log on to our developers’
