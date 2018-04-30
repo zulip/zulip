@@ -459,6 +459,11 @@ input[type=checkbox] + .inline-block {
     display: inline;
 }
 
+.admin-realm-form .subsection-header div.subsection-failed-status p {
+    background-color: white;
+    margin: 0 0 0 10px;
+}
+
 #default_language {
     margin-left: 20px;
 }

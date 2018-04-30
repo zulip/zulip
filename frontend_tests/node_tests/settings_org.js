@@ -146,9 +146,9 @@ function createSaveButtons(subsection) {
     var save_btn_controls = $('.save-btn-controls');
     var stub_save_button = $(`#org-submit-${subsection}`);
     var stub_save_button_text = $('.icon-button-text');
-    stub_save_button_header.prevAll = function () {
-        return $('<stub failed alert status element>');
-    };
+    stub_save_button_header.set_find_results(
+        '.subsection-failed-status p', $('<failed status element>')
+    );
     stub_save_button.closest = function () {
         return stub_save_button_header;
     };
