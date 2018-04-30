@@ -67,21 +67,15 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         if getattr(user, "just_registered", False):
             return
 
-        login_time = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
-            timezone_get_current_timezone_name()
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
-        device_browser = get_device_browser(user_agent)
-        device_os = get_device_os(user_agent)
-        device_ip = request.META.get('REMOTE_ADDR') or "Uknown IP address"
-        device_info = {"device_browser": device_browser,
-                       "device_os": device_os,
-                       "device_ip": device_ip,
-                       "login_time": login_time
-                       }
 
         context = common_context(user)
-        context['device_info'] = device_info
         context['user_email'] = user.email
+        context['login_time'] = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
+            timezone_get_current_timezone_name()
+        context['device_ip'] = request.META.get('REMOTE_ADDR') or "Uknown IP address"
+        context['device_os'] = get_device_os(user_agent)
+        context['device_browser'] = get_device_browser(user_agent)
 
         email_dict = {
             'template_prefix': 'zerver/emails/notify_new_login',
