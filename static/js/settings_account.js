@@ -53,7 +53,7 @@ function settings_change_success(message) {
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
-function add_custom_profile_fields_to_settings() {
+exports.add_custom_profile_fields_to_settings = function () {
     var all_custom_fields = page_params.custom_profile_fields;
 
     all_custom_fields.forEach(function (field) {
@@ -66,6 +66,10 @@ function add_custom_profile_fields_to_settings() {
             type = "text";
         } else if (field.type === 3) {
             type = "choice";
+        } else if (field.type === 4) {
+            type = "date";
+        } else if (field.type === 5) {
+            type = "url";
         } else {
             blueslip.error("Undefined field type.");
         }
@@ -83,11 +87,11 @@ function add_custom_profile_fields_to_settings() {
                                                                   });
         $("#account-settings .custom-profile-fields-form").append(html);
     });
-}
+};
 
 exports.set_up = function () {
     // Add custom profile fields elements to user account settings.
-    add_custom_profile_fields_to_settings();
+    exports.add_custom_profile_fields_to_settings();
     $("#account-settings-status").hide();
     $("#api_key_value").text("");
     $("#get_api_key_box").hide();
