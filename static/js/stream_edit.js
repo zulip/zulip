@@ -420,7 +420,8 @@ exports.change_stream_name = function (e) {
         },
         error: function (xhr) {
             new_name_box.text(stream_data.maybe_get_stream_name(stream_id));
-            ui_report.error(i18n.t("Error renaming stream"), xhr, $(".stream_change_property_info"));
+            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
+            ui.update_scrollbar($("#subscription_overlay .settings"));
         },
     });
 };
@@ -451,8 +452,9 @@ exports.change_stream_description = function (e) {
                              $(".stream_change_property_info"));
         },
         error: function (xhr) {
-            ui_report.error(i18n.t("Error updating the stream description"), xhr,
-                            $(".stream_change_property_info"));
+            sub_settings.find('.stream-description-editable').html(sub.rendered_description);
+            ui_report.error(i18n.t("Error"), xhr, $(".stream_change_property_info"));
+            ui.update_scrollbar($("#subscription_overlay .settings"));
         },
     });
 };
