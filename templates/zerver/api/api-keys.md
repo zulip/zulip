@@ -4,10 +4,10 @@ You can create bots on your [settings page](/#settings).
 Once you have a bot, you can use its email and API key to send messages.</p>
 
 Create a bot:
-<img class="screenshot" src="/static/images/api/create-bot.png" />
+<img class="screenshot" src="/static/images/api/create-bot1.png" />
 
 Look for the bot's email and API key:
-<img class="screenshot" src="/static/images/api/bot-key.png" />
+<img class="screenshot" src="/static/images/api/bot-key1.png" />
 
 If you prefer to send messages as your own user, you can also find your API key on your [settings page](/#settings).
 When using our python bindings, you may either specify the user
