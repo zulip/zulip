@@ -1358,6 +1358,10 @@ input[type=checkbox].inline-block {
     width: auto;
 }
 
+#account-settings .custom_user_field .field_hint {
+    color: hsl(0, 0%, 66%);
+}
+
 #settings_page .custom_user_field {
     padding-bottom: 20px;
 }
