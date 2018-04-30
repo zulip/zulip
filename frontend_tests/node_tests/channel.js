@@ -2,7 +2,7 @@ zrequire('channel');
 
 set_global('$', {});
 set_global('reload', {});
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 
 const default_stub_xhr = 'default-stub-xhr';
 
@@ -233,15 +233,10 @@ function test_with_mock_ajax(test_params) {
         },
 
         check_ajax_options: function (options) {
-            let has_error;
-            blueslip.error = function (msg) {
-                assert.equal(msg, 'Unexpected 403 response from server');
-                has_error = true;
-            };
-
+            blueslip.set_test_data('error', 'Unexpected 403 response from server');
             options.simulate_error();
-
-            assert(has_error);
+            assert.equal(blueslip.get_test_logs('error').length, 1);
+            blueslip.clear_test_data();
         },
     });
 }());
@@ -256,12 +251,6 @@ function test_with_mock_ajax(test_params) {
         },
 
         check_ajax_options: function (options) {
-            let logged;
-            blueslip.log = function (msg) {
-                // Our log formatting is a bit broken.
-                assert.equal(msg, 'Retrying idempotent[object Object]');
-                logged = true;
-            };
             global.patch_builtin('setTimeout', function (f, delay) {
                 assert.equal(delay, 0);
                 f();
@@ -277,7 +266,9 @@ function test_with_mock_ajax(test_params) {
                 },
             });
 
-            assert(logged);
+            assert.equal(blueslip.get_test_logs('log').length, 1);
+            assert.equal(blueslip.get_test_logs('log')[0], 'Retrying idempotent[object Object]');
+            blueslip.clear_test_data();
         },
     });
 }());
@@ -288,20 +279,13 @@ function test_with_mock_ajax(test_params) {
         return xhr;
     };
 
-    let warned;
-    blueslip.warn = function (msg) {
-        assert.equal(
-            msg,
-            'The length of pending_requests is over 50. Most likely they are not being correctly removed.'
-        );
-        warned = true;
-    };
-
+    blueslip.set_test_data('warn',
+        'The length of pending_requests is over 50. Most likely they are not being correctly removed.');
     _.times(50, function () {
         channel.post({});
     });
-
-    assert(warned);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 }());
 
 (function test_xhr_error_message() {

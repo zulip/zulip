@@ -5,8 +5,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 global.compile_template('input_pill');
 
-set_global('blueslip', {
-});
+set_global('blueslip', global.make_zblueslip());
 
 var noop = function () {};
 
@@ -37,32 +36,28 @@ function pill_html(value, data_id) {
 }
 
 (function test_basics() {
-    var error;
-
     var config = {};
 
-    blueslip.error = function (err) {
-        error = err;
-    };
-
+    blueslip.set_test_data('error', 'Pill needs container.');
     input_pill.create(config);
-    assert.equal(error, 'Pill needs container.');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     var pill_input = $.create('pill_input');
     var container = $.create('container');
     container.set_find_results('.input', pill_input);
 
+    blueslip.set_test_data('error', 'Pill needs create_item_from_text');
     config.container = container;
     input_pill.create(config);
-    assert.equal(error, 'Pill needs create_item_from_text');
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
+    blueslip.set_test_data('error', 'Pill needs get_text_from_item');
     config.create_item_from_text = noop;
     input_pill.create(config);
-    assert.equal(error, 'Pill needs get_text_from_item');
-
-    blueslip.error = function () {
-        throw "unexpected error";
-    };
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     config.get_text_from_item = noop;
     var widget = input_pill.create(config);
