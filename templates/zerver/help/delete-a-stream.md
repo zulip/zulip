@@ -2,17 +2,18 @@
 
 {!admin-only.md!}
 
-In Zulip, most stream administration is done on the subscription page.
-However, Zulip organization administrators must use the Zulip
-**[organization administration interface](/help/change-your-organization-settings)**
-to delete streams.
+{!subscriptions.md!}
+{!filter-streams.md!}
 
-{settings_tab|streams-list-admin}
+    !!! tip ""
+    {!all-streams.md!}
 
-2. Find the stream you want to delete, and click the **Delete stream** button to
-the right of it.
+2. Click on the stream that you want to delete; {!stream-settings.md!}
 
-3. Upon clicking on the **Delete stream** button, a confirmation window titled
+3. Click the **Delete** button to
+the right of the **Streams Settings** section.
+
+4. Upon clicking on the **Delete** button, a confirmation window titled
 **Delete stream (stream name)** will appear. Click the **Yes, delete this stream**
 button to delete the stream.
 

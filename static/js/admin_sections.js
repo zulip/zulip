@@ -22,7 +22,6 @@ exports.load_admin_section = function (name) {
         case 'deactivated-users-admin':
             section = 'users';
             break;
-        case 'streams-list-admin':
         case 'default-streams-list':
             section = 'streams';
             break;
