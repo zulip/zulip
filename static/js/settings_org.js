@@ -452,9 +452,9 @@ exports.sync_realm_settings = function (property) {
 exports.change_save_button_state = function ($element, state) {
     var show_hide_element = function (state) {
         if (state === 'show') {
-            $element.removeClass('hide').addClass('show').animate({opacity: 1}, 100);
+            $element.removeClass('hide').addClass('.show').fadeIn(300);
         } else {
-            $element.animate({opacity: 0});
+            $element.fadeOut(300);
         }
     };
     var $saveBtn = $element.find('.save-button');
