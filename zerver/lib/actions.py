@@ -1813,6 +1813,11 @@ def check_stream_name(stream_name: Text) -> None:
         if ord(i) == 0:
             raise JsonableError(_("Stream name '%s' contains NULL (0x00) characters." % (stream_name)))
 
+def check_stream_description(stream_description: Text) -> None:
+    if len(stream_description) > Stream.MAX_DESCRIPTION_LENGTH:
+        raise JsonableError(_("Stream description too long (limit: %s characters)."
+                            % (Stream.MAX_DESCRIPTION_LENGTH)))
+
 def check_default_stream_group_name(group_name: Text) -> None:
     if group_name.strip() == "":
         raise JsonableError(_("Invalid default stream group name '%s'" % (group_name)))
