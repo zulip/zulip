@@ -2043,8 +2043,7 @@ div.floating_recipient {
 
 .settings-section #admin_page_users_loading_indicator,
 .settings-section #admin_page_deactivated_users_loading_indicator,
-.settings-section #admin_page_bots_loading_indicator,
-.settings-section #admin_page_streams_loading_indicator {
+.settings-section #admin_page_bots_loading_indicator {
     margin: 0 auto;
 }
 

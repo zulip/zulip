@@ -109,7 +109,6 @@ function _setup_page() {
             "user-list-admin": i18n.t("Active users"),
             "deactivated-users-admin": i18n.t("Deactivated users"),
             "bot-list-admin": i18n.t("Bot list"),
-            "streams-list-admin": i18n.t("Streams"),
             "default-streams-list": i18n.t("Default streams"),
             "filter-settings": i18n.t("Filter settings"),
             "invites-list-admin": i18n.t("Invitations"),

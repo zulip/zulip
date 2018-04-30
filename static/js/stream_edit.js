@@ -457,6 +457,18 @@ exports.change_stream_description = function (e) {
     });
 };
 
+exports.delete_stream = function (stream_id, alert_element, stream_row) {
+    channel.del({
+        url: '/json/streams/' + stream_id,
+        error: function (xhr) {
+            ui_report.error(i18n.t("Failed"), xhr, alert_element);
+        },
+        success: function () {
+            stream_row.remove();
+        },
+    });
+};
+
 $(function () {
     $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {
         e.preventDefault();
@@ -617,7 +629,7 @@ $(function () {
             return;
         }
         var row = $(".stream-row.active");
-        settings_streams.delete_stream(stream_id, $(".stream_change_property_info"), row);
+        exports.delete_stream(stream_id, $(".stream_change_property_info"), row);
         $(".settings").hide();
         $(".nothing-selected").show();
     });
