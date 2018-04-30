@@ -10,7 +10,16 @@
             </div>
             <div class="m-10 inline-block organization-permissions-parent">
                 <div class="input-group">
-                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Restrict email domains of new users" }}</label>
+                    <label for="realm_user_invite_restriction" class="dropdown-title">{{t "Are invitations required for joining the organization?" }}</label>
+                    <select name="realm_user_invite_restriction" id="id_realm_user_invite_restriction">
+                        <option value="no_invite_required">{{t "No" }}</option>
+                        <option value="by_anyone">{{t "Yes, and normal users can send invitations" }}</option>
+                        <option value="by_admins_only">{{t "Yes, and only admins can send invitations" }}</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label for="realm_org_join_restrictions" class="dropdown-title">{{t "Email domains of new users" }}</label>
                     <select name="realm_org_join_restrictions" id="id_realm_org_join_restrictions">
                         <option value="no_restriction">{{t "No restrictions" }}</option>
                         <option value="no_disposable_email">{{t "Don’t allow disposable email addresses" }}</option>
@@ -22,24 +31,6 @@
                     {{#if is_admin }}
                     <a data-toggle="modal" href="#realm_domains_modal">{{t "[Configure]" }}</a>
                     {{/if}}
-                </div>
-
-                {{partial "settings_checkbox"
-                  "setting_name" "realm_invite_required"
-                  "prefix" "id_"
-                  "is_checked" realm_invite_required
-                  "label" admin_settings_label.realm_invite_required}}
-
-                <div class="input-group disableable {{#unless realm_invite_required}}control-label-disabled{{/unless}}">
-                    <label class="checkbox">
-                        <input type="checkbox" name="realm_invite_by_admins_only" id="id_realm_invite_by_admins_only"
-                          {{#unless realm_invite_required}}disabled="disabled"{{/unless}}
-                          {{#if realm_invite_by_admins_only}}checked="checked"{{/if}} />
-                        <span></span>
-                    </label>
-                    <label for="id_realm_invite_by_admins_only" id="id_realm_invite_by_admins_only_label" class="inline-block">
-                        {{t "Only admins can invite new users" }}
-                    </label>
                 </div>
             </div>
         </div>

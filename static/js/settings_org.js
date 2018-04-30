@@ -63,14 +63,6 @@ var org_settings = {
 };
 
 var org_permissions = {
-    org_join: {
-        invite_required: {
-            type: 'bool',
-        },
-        invite_by_admins_only: {
-            type: 'bool',
-        },
-    },
     user_identity: {
         name_changes_disabled: {
             type: 'bool',
@@ -157,6 +149,14 @@ function get_property_value(property_name) {
             return "no_disposable_email";
         }
         return "no_restriction";
+    } else if (property_name === 'realm_user_invite_restriction') {
+        if (!page_params.realm_invite_required) {
+            return "no_invite_required";
+        }
+        if (page_params.realm_invite_by_admins_only) {
+            return "by_admins_only";
+        }
+        return "by_anyone";
     }
     return page_params[property_name];
 }
@@ -245,6 +245,10 @@ function set_msg_delete_limit_dropdown() {
     } else {
         $("#id_realm_message_content_delete_limit_minutes").parent().hide();
     }
+}
+
+function set_user_invite_restriction_dropdown() {
+    $("#id_realm_user_invite_restriction").val(get_property_value("realm_user_invite_restriction"));
 }
 
 function set_org_join_restrictions_dropdown() {
@@ -398,6 +402,8 @@ function update_dependent_subsettings(property_name) {
         set_msg_delete_limit_dropdown();
     } else if (property_name === 'realm_org_join_restrictions') {
         set_org_join_restrictions_dropdown();
+    } else if (property_name === 'realm_user_invite_restriction') {
+        set_user_invite_restriction_dropdown();
     }
 }
 
@@ -434,6 +440,8 @@ exports.sync_realm_settings = function (property) {
         property = 'message_content_delete_limit_minutes';
     } else if (property === 'allow_message_deleting') {
         property = 'msg_delete_limit_setting';
+    } else if (property === 'invite_required' || property === 'invite_by_admins_only') {
+        property = 'user_invite_restriction';
     }
     var element =  $('#id_realm_'+property);
     if (element.length) {
@@ -527,6 +535,7 @@ function _set_up() {
     set_msg_edit_limit_dropdown();
     set_msg_delete_limit_dropdown();
     set_org_join_restrictions_dropdown();
+    set_user_invite_restriction_dropdown();
 
     $("#id_realm_invite_required").change(function () {
         settings_ui.disable_sub_setting_onchange(this.checked, "id_realm_invite_by_admins_only", true);
@@ -676,8 +685,8 @@ function _set_up() {
             opts.data = data;
         } else if (subsection === 'org_join') {
             opts.data = {};
-            var org_join_restrictions = $('#id_realm_org_join_restrictions').val();
 
+            var org_join_restrictions = $('#id_realm_org_join_restrictions').val();
             if (org_join_restrictions === "only_selected_domain") {
                 opts.data.restricted_to_domain = true;
                 opts.data.disallow_disposable_email_addresses = false;
@@ -687,6 +696,18 @@ function _set_up() {
             } else if (org_join_restrictions === "no_restriction") {
                 opts.data.disallow_disposable_email_addresses = false;
                 opts.data.restricted_to_domain = false;
+            }
+
+            var user_invite_restriction = $('#id_realm_user_invite_restriction').val();
+            if (user_invite_restriction === 'no_invite_required') {
+                opts.data.invite_required = false;
+                opts.data.invite_by_admins_only = false;
+            } else if (user_invite_restriction === 'by_admins_only') {
+                opts.data.invite_required = true;
+                opts.data.invite_by_admins_only = true;
+            } else {
+                opts.data.invite_required = true;
+                opts.data.invite_by_admins_only = false;
             }
         }
 
