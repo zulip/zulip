@@ -12,7 +12,7 @@ class RemoteZulipServer(models.Model):
     uuid = models.CharField(max_length=36, unique=True)  # type: Text
     api_key = models.CharField(max_length=64)  # type: Text
 
-    hostname = models.CharField(max_length=128, unique=True)  # type: Text
+    hostname = models.CharField(max_length=128)  # type: Text
     contact_email = models.EmailField(blank=True, null=False)  # type: Text
     last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 
