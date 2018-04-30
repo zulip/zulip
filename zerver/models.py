@@ -935,6 +935,7 @@ def generate_email_token_for_stream() -> str:
 
 class Stream(models.Model):
     MAX_NAME_LENGTH = 60
+    MAX_DESCRIPTION_LENGTH = 1024
     name = models.CharField(max_length=MAX_NAME_LENGTH, db_index=True)  # type: Text
     realm = models.ForeignKey(Realm, db_index=True, on_delete=CASCADE)  # type: Realm
     invite_only = models.NullBooleanField(default=False)  # type: Optional[bool]
@@ -955,7 +956,7 @@ class Stream(models.Model):
     # have plenty of room for the token.
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream)  # type: str
-    description = models.CharField(max_length=1024, default=u'')  # type: Text
+    description = models.CharField(max_length=MAX_DESCRIPTION_LENGTH, default=u'')  # type: Text
 
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
