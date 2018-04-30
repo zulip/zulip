@@ -32,7 +32,6 @@ function _setup_page() {
         realm_name: page_params.realm_name,
         realm_available_video_chat_providers: page_params.realm_available_video_chat_providers,
         realm_description: page_params.realm_description,
-        realm_restricted_to_domain: page_params.realm_restricted_to_domain,
         realm_inline_image_preview: page_params.realm_inline_image_preview,
         server_inline_image_preview: page_params.server_inline_image_preview,
         realm_inline_url_embed_preview: page_params.realm_inline_url_embed_preview,
@@ -43,8 +42,6 @@ function _setup_page() {
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
-        realm_allow_message_deleting: page_params.realm_allow_message_deleting,
-        realm_allow_message_editing: page_params.realm_allow_message_editing,
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
         realm_message_content_edit_limit_minutes:
             settings_org.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds'),
@@ -62,14 +59,11 @@ function _setup_page() {
         realm_icon_url: page_params.realm_icon_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
-        realm_disallow_disposable_email_addresses:
-            page_params.realm_disallow_disposable_email_addresses,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
     };
 
     options.admin_settings_label = {
         // Organization settings
-        realm_allow_message_editing: i18n.t("Users can edit their messages"),
         realm_allow_community_topic_editing: i18n.t("Users can edit the topic of any message"),
         realm_allow_edit_history: i18n.t("Enable message edit history"),
         realm_mandatory_topics: i18n.t("Require topics in stream messages"),
