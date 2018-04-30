@@ -27,7 +27,7 @@ set_global('page_params', {
     is_admin: true,
 });
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 
 var me = {
     email: 'me@example.com',
@@ -137,21 +137,20 @@ global.people.initialize_current_user(me.user_id);
         display_recipient: [{user_id: 92714}],
     };
 
-    var blueslip_errors = 0;
-    blueslip.error = function () {
-        blueslip_errors += 1;
-    };
+    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 92714');
+    blueslip.set_test_data('error', 'Unknown user id 92714'); // From person.js
 
     // Expect each to throw two blueslip errors
     // One from message_store.js, one from person.js
     var emails = message_store.get_pm_emails(message);
     assert.equal(emails, '?');
-    assert.equal(blueslip_errors, 2);
+    assert.equal(blueslip.get_test_logs('error').length, 2);
 
-    blueslip_errors = 0;
     var names = message_store.get_pm_full_names(message);
     assert.equal(names, '?');
-    assert.equal(blueslip_errors, 2);
+    assert.equal(blueslip.get_test_logs('error').length, 4);
+
+    blueslip.clear_test_data();
 
     message = {
         type: 'stream',
