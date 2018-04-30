@@ -44,7 +44,7 @@ from zerver.models import Client, Message, Realm, UserPresence, UserProfile, Cus
     get_user_profile_by_id, \
     get_realm_user_dicts, realm_filters_for_realm, get_user,\
     custom_profile_fields_for_realm, get_realm_domains, \
-    get_default_stream_groups, CustomProfileField
+    get_default_stream_groups, CustomProfileField, Stream
 from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
@@ -258,6 +258,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
+        state['stream_name_max_length'] = Stream.MAX_NAME_LENGTH
+        state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
         state['realm_default_streams'] = streams_to_dicts_sorted(
             get_default_streams_for_realm(user_profile.realm_id))

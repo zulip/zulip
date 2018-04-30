@@ -161,6 +161,8 @@ class HomeTest(ZulipTestCase):
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",
+            "stream_description_max_length",
+            "stream_name_max_length",
             "subscriptions",
             "test_suite",
             "timezone",
