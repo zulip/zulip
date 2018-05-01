@@ -264,7 +264,7 @@ class BugdownTest(ZulipTestCase):
 
             # Ignore tests if specified
             if test.get('ignore', False):
-                return  # nocoverage
+                continue  # nocoverage
 
             if test.get('translate_emoticons', False):
                 # Create a userprofile and send message with it.
