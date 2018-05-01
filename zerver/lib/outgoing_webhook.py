@@ -176,7 +176,8 @@ def notify_bot_owner(event: Dict[str, Any],
                      request_data: Dict[str, Any],
                      status_code: Optional[int]=None,
                      response_content: Optional[AnyStr]=None,
-                     exception: Optional[Exception]=None) -> None:
+                     exception: Optional[Exception]=None,
+                     failure_message: Optional[str]=None) -> None:
     message_url = get_message_url(event, request_data)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
@@ -192,6 +193,9 @@ def notify_bot_owner(event: Dict[str, Any],
         notification_message += "\nWhen trying to send a request to the webhook service, an exception " \
                                 "of type %s occurred:\n```\n%s\n```" % (
                                     type(exception).__name__, str(exception))
+    if failure_message:
+        notification_message += "\nThe error occurred during request to the webhook service:\n" \
+                                "```\n%s\n```" % (failure_message,)
     send_response_message(bot_id, message_info, notification_message)
 
 def request_retry(event: Dict[str, Any],
@@ -214,9 +218,13 @@ def request_retry(event: Dict[str, Any],
 
 def process_success_response(event: Dict[str, Any],
                              service_handler: Any,
+                             request_data: Optional[Dict[str, Any]],
                              response: Response) -> None:
-    success_message, _ = service_handler.process_success(response, event)
-    if success_message is not None:
+    success_message, failure_message = service_handler.process_success(response, event)
+    if failure_message is not None:
+        fail_with_message(event, failure_message)
+        notify_bot_owner(event, request_data, failure_message=failure_message)
+    elif success_message is not None:
         succeed_with_message(event, success_message)
 
 def do_rest_call(rest_operation: Dict[str, Any],
@@ -243,7 +251,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
     try:
         response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
         if str(response.status_code).startswith('2'):
-            process_success_response(event, service_handler, response)
+            process_success_response(event, service_handler, request_data, response)
         else:
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
