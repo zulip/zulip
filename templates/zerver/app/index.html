@@ -28,8 +28,8 @@
 
 </style>
 
-{% stylesheet 'app' %}
 {{ minified_js('app', csp_nonce)|safe }}
+{{ render_bundle('app-styles', attrs='nonce="%s"' % (csp_nonce)) }}
 {{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}
 {{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
 {% include "zerver/app/topic_is_muted.html" %}
