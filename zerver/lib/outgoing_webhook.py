@@ -173,7 +173,6 @@ def get_message_url(event: Dict[str, Any]) -> str:
     return message_url
 
 def notify_bot_owner(event: Dict[str, Any],
-                     request_data: Dict[str, Any],
                      status_code: Optional[int]=None,
                      response_content: Optional[AnyStr]=None,
                      exception: Optional[Exception]=None,
@@ -210,7 +209,7 @@ def request_retry(event: Dict[str, Any],
         """
         bot_user = get_user_profile_by_id(event['user_profile_id'])
         fail_with_message(event, "Maximum retries exceeded! " + failure_message)
-        notify_bot_owner(event, request_data, exception=exception)
+        notify_bot_owner(event, exception=exception)
         logging.warning("Maximum retries exceeded for trigger:%s event:%s" % (
             bot_user.email, event['command']))
 
@@ -223,7 +222,7 @@ def process_success_response(event: Dict[str, Any],
     success_message, failure_message = service_handler.process_success(response, event)
     if failure_message is not None:
         fail_with_message(event, failure_message)
-        notify_bot_owner(event, request_data, failure_message=failure_message)
+        notify_bot_owner(event, failure_message=failure_message)
     elif success_message is not None:
         succeed_with_message(event, success_message)
 
@@ -261,7 +260,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
                                'response': response.content})
             failure_message = "Third party responded with %d" % (response.status_code)
             fail_with_message(event, failure_message)
-            notify_bot_owner(event, request_data, response.status_code, response.content)
+            notify_bot_owner(event, response.status_code, response.content)
 
     except requests.exceptions.Timeout as e:
         logging.info("Trigger event %s on %s timed out. Retrying" % (
@@ -282,4 +281,4 @@ def do_rest_call(rest_operation: Dict[str, Any],
                                 type(e).__name__, event["command"],))
         logging.exception("Outhook trigger failed:\n %s" % (e,))
         fail_with_message(event, response_message)
-        notify_bot_owner(event, request_data, exception=e)
+        notify_bot_owner(event, exception=e)
