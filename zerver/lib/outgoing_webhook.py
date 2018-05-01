@@ -198,7 +198,6 @@ def notify_bot_owner(event: Dict[str, Any],
     send_response_message(bot_id, message_info, notification_message)
 
 def request_retry(event: Dict[str, Any],
-                  request_data: Dict[str, Any],
                   failure_message: str,
                   exception: Optional[Exception]=None) -> None:
     def failure_processor(event: Dict[str, Any]) -> None:
@@ -264,7 +263,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
     except requests.exceptions.Timeout as e:
         logging.info("Trigger event %s on %s timed out. Retrying" % (
             event["command"], event['service_name']))
-        request_retry(event, request_data, 'Unable to connect with the third party.', exception=e)
+        request_retry(event, 'Unable to connect with the third party.', exception=e)
 
     except requests.exceptions.ConnectionError as e:
         response_message = ("The message `%s` resulted in a connection error when "
@@ -272,7 +271,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
                             "webhook! See the Zulip server logs for more information." % (event["command"],))
         logging.info("Trigger event %s on %s resulted in a connection error. Retrying"
                      % (event["command"], event['service_name']))
-        request_retry(event, request_data, response_message, exception=e)
+        request_retry(event, response_message, exception=e)
 
     except requests.exceptions.RequestException as e:
         response_message = ("An exception of type *%s* occurred for message `%s`! "
