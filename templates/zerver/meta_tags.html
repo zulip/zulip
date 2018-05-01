@@ -1,6 +1,9 @@
 <!-- Google / Search Engine Tags -->
+{% if allow_search_engine_indexing %}
 <meta name="description" content="Zulip combines the immediacy of real-time chat with an email threading model. With Zulip, you can catch up on important conversations while ignoring irrelevant ones.">
-
+{% else %}
+<meta name="robots" content="noindex,nofollow">
+{% endif %}
 <!-- Facebook Meta Tags -->
 <meta property="og:url" content="{{ realm_uri }}">
 <meta property="og:type" content="website">

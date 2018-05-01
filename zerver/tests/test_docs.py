@@ -21,19 +21,25 @@ from zerver.views.integrations import (
 
 class DocPageTest(ZulipTestCase):
     def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
-              landing_missing_strings: List[str]=[], landing_page: bool=True) -> None:
+              landing_missing_strings: List[str]=[], landing_page: bool=True,
+              check_search_engine_meta_tags: bool=True) -> None:
 
-        # Test the URL on the "zulip" subdomain
-        result = self.client_get(url, subdomain="zulip")
+        # Test the URL on the "zephyr" subdomain
+        result = self.client_get(url, subdomain="zephyr")
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
         for s in extra_strings:
             self.assertIn(s, str(result.content))
+        if check_search_engine_meta_tags:
+            self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
         # Test the URL on the root subdomain
         result = self.client_get(url, subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
+        if check_search_engine_meta_tags:
+            self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
+
         for s in extra_strings:
             self.assertIn(s, str(result.content))
 
@@ -48,6 +54,9 @@ class DocPageTest(ZulipTestCase):
                 self.assertIn(s, str(result.content))
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
+            if check_search_engine_meta_tags:
+                self.assert_in_success_response(['<meta name="description" content="Zulip combines'], result)
+                self.assert_not_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
@@ -107,22 +116,23 @@ class DocPageTest(ZulipTestCase):
                        'Hubot',
                        'Zapier',
                        'IFTTT'
-                   ])
+                   ],
+                   check_search_engine_meta_tags=False)
 
         for integration in INTEGRATIONS.keys():
             url = '/integrations/doc-html/{}'.format(integration)
-            self._test(url, '')
+            self._test(url, '', check_search_engine_meta_tags=False)
 
     def test_email_integration(self) -> None:
         self._test('/integrations/doc-html/email',
-                   'support+abcdefg@testserver')
+                   'support+abcdefg@testserver', check_search_engine_meta_tags=False)
 
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
             result = self.client_get('integrations/doc-html/email', subdomain='zulip')
             self.assertNotIn('support+abcdefg@testserver', str(result.content))
             # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
             # be rendered instead
-            self._test('/integrations/', 'native integrations.')
+            self._test('/integrations/', 'native integrations.', check_search_engine_meta_tags=False)
 
 class HelpTest(ZulipTestCase):
     def test_html_settings_links(self) -> None:

@@ -10,11 +10,13 @@
             <title>{{user_profile.realm.name}} - Zulip</title>
             {% else %}
             <title>Zulip</title>
-            {% include 'zerver/meta_tags.html' %}
             {% endif %}
         {% endblock %}
         <link href="/static/favicon.ico?v=2" rel="shortcut icon">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        {% if not user_profile %}
+        {% include 'zerver/meta_tags.html' %}
+        {% endif %}
 
         {# We need to import jQuery before Bootstrap #}
         {% stylesheet 'common' %}

@@ -67,12 +67,14 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
     find_team_link_disabled = settings.FIND_TEAM_LINK_DISABLED
+    allow_search_engine_indexing = False
 
     if (settings.ROOT_DOMAIN_LANDING_PAGE
             and get_subdomain(request) == Realm.SUBDOMAIN_FOR_ROOT_DOMAIN):
         register_link_disabled = True
         login_link_disabled = True
         find_team_link_disabled = False
+        allow_search_engine_indexing = True
 
     apps_page_url = 'https://zulipchat.com/apps/'
     if settings.ZILENCER_ENABLED:
@@ -135,4 +137,5 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'secrets_path': secrets_path,
         'settings_comments_path': settings_comments_path,
         'platform': platform,
+        'allow_search_engine_indexing': allow_search_engine_indexing,
     }
