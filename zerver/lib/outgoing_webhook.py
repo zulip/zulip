@@ -210,6 +210,13 @@ def request_retry(event: Dict[str, Any],
 
     retry_event('outgoing_webhooks', event, failure_processor)
 
+def process_success_response(event: Dict[str, Any],
+                             service_handler: Any,
+                             response: Response) -> None:
+    success_message, _ = service_handler.process_success(response, event)
+    if success_message is not None:
+        succeed_with_message(event, success_message)
+
 def do_rest_call(rest_operation: Dict[str, Any],
                  request_data: Optional[Dict[str, Any]],
                  event: Dict[str, Any],
@@ -234,9 +241,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
     try:
         response = requests.request(http_method, final_url, data=request_data, **request_kwargs)
         if str(response.status_code).startswith('2'):
-            success_message, _ = service_handler.process_success(response, event)
-            if success_message is not None:
-                succeed_with_message(event, success_message)
+            process_success_response(event, service_handler, response)
         else:
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
