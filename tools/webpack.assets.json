@@ -33,5 +33,8 @@
              ],
     "translations": "./static/js/translations.js",
     "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
-    "transition-styles": "./static/styles/scss/lightbox.scss"
+    "transition-styles": [
+            "./static/styles/scss/lightbox.scss",
+            "./static/styles/scss/hotspots.scss"
+        ]
 }
