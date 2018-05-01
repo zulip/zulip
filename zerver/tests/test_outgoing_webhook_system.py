@@ -27,8 +27,8 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
     raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response: Response, event: Dict[Text, Any]) -> Optional[str]:
-        return "Success!"
+    def process_success(self, response: Response, event: Dict[Text, Any]) -> Tuple[Optional[str], Optional[str]]:
+        return "Success!", None
 
 service_handler = MockServiceHandler(None, None, None, None)
 
