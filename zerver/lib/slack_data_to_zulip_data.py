@@ -18,7 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji, Realm
+from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.parallel import run_parallel
@@ -211,69 +211,30 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                 custom_field_map, slack_user_custom_field_map[slack_user_id], user_id,
                 custom_field_id_count, zerver_customprofilefield_values)
 
-        userprofile = dict(
-            enable_desktop_notifications=DESKTOP_NOTIFICATION,
-            is_staff=False,  # 'staff' is for server administrators, which don't exist in Slack.
-            avatar_source='U',
-            is_bot=user.get('is_bot', False),
-            avatar_version=1,
-            timezone=timezone,
-            default_sending_stream=None,
-            enable_offline_email_notifications=True,
-            user_permissions=[],  # This is Zulip-specific
-            is_mirror_dummy=False,
-            pointer=-1,
-            default_events_register_stream=None,
-            is_realm_admin=realm_admin,
-            # invites_granted=0,  # TODO
-            enter_sends=True,
-            bot_type=1 if user.get('is_bot', False) else None,
-            enable_stream_sounds=False,
-            is_api_super_user=False,
-            rate_limits="",
-            last_login=timestamp,
-            tos_version=None,
-            default_all_public_streams=False,
-            full_name=get_user_full_name(user),
-            twenty_four_hour_time=False,
-            groups=[],  # This is Zulip-specific
-            enable_online_push_notifications=False,
-            alert_words="[]",
-            bot_owner=None,  # This is Zulip-specific
-            short_name=user['name'],
-            enable_offline_push_notifications=True,
-            left_side_userlist=False,
-            enable_stream_desktop_notifications=False,
-            enable_digest_emails=True,
-            last_pointer_updater="",
-            last_active_message_id=None,
-            email=email,
-            realm_name_in_notifications=False,
-            date_joined=timestamp,
-            last_reminder=timestamp,
-            is_superuser=False,
-            tutorial_status="T",
-            default_language="en",
-            enable_sounds=True,
-            pm_content_in_desktop_notifications=True,
-            is_active=not user['deleted'],
-            onboarding_steps="[]",
-            emojiset="google",
-            realm=realm_id,
-            # invites_used=0,  # TODO
-            id=user_id)
+        userprofile = UserProfile(full_name=get_user_full_name(user), short_name=user['name'],
+                                  is_active=not user['deleted'], id=user_id, email=email,
+                                  avatar_source='U', is_bot=user.get('is_bot', False),
+                                  pointer=-1, is_realm_admin=realm_admin,
+                                  bot_type=1 if user.get('is_bot', False) else None,
+                                  date_joined=timestamp, last_reminder=timestamp,
+                                  timezone=timezone, last_login=timestamp,
+                                  enable_desktop_notifications=DESKTOP_NOTIFICATION,
+                                  tutorial_status='T')
+        userprofile_dict = model_to_dict(userprofile)
+        # Set realm id separately as the corresponding realm is not yet a Realm model instance
+        userprofile_dict['realm'] = realm_id
 
         # TODO map the avatar
         # zerver auto-infer the url from Gravatar instead of from a specified
         # url; zerver.lib.avatar needs to be patched
         # profile['image_32'], Slack has 24, 32, 48, 72, 192, 512 size range
 
-        zerver_userprofile.append(userprofile)
+        zerver_userprofile.append(userprofile_dict)
         added_users[slack_user_id] = user_id
         if not user.get('is_primary_owner', False):
             user_id_count += 1
 
-        logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
+        logging.info(u"{} -> {}".format(user['name'], userprofile_dict['email']))
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
