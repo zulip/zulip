@@ -178,7 +178,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
 
     for user in users:
         slack_user_id = user['id']
-        DESKTOP_NOTIFICATION = True
 
         if user.get('is_primary_owner', False):
             user_id = primary_owner_id
@@ -216,10 +215,7 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                                   avatar_source='U', is_bot=user.get('is_bot', False),
                                   pointer=-1, is_realm_admin=realm_admin,
                                   bot_type=1 if user.get('is_bot', False) else None,
-                                  date_joined=timestamp, last_reminder=timestamp,
-                                  timezone=timezone, last_login=timestamp,
-                                  enable_desktop_notifications=DESKTOP_NOTIFICATION,
-                                  tutorial_status='T')
+                                  date_joined=timestamp, timezone=timezone, last_login=timestamp)
         userprofile_dict = model_to_dict(userprofile)
         # Set realm id separately as the corresponding realm is not yet a Realm model instance
         userprofile_dict['realm'] = realm_id
