@@ -607,10 +607,13 @@ function render(template_name, args) {
 }());
 
 (function custom_user_profile_field() {
-    var args = {field_name: "GitHub user name", field_id: 2, field_value: "@GitHub", field_type: "text"};
+    var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
+    var args = {field: field, field_value: "@GitHub", field_type: "text"};
     var html = render('custom-user-profile-field', args);
     assert.equal($(html).find('input').attr('id'), 2);
     assert.equal($(html).find('input').val(), "@GitHub");
+    assert.equal($(html).find('.field_hint').text(), "Or link to profile");
+    assert.equal($(html).find('label').text(), "GitHub user name");
 }());
 
 (function deactivate_stream_modal() {
