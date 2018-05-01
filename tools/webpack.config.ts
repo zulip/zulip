@@ -144,7 +144,15 @@ export default (env?: string) : webpack.Configuration => {
             new BundleTracker({filename: 'webpack-stats-production.json'}),
             // Extract CSS from files
             new MiniCssExtractPlugin({
-                filename: "[name].[contenthash].css",
+                filename: (data) => {
+                    // This is a special case in order to produce
+                    // a static CSS file to be consumed by
+                    // static/html/5xx.html
+                    if(data.chunk.name === 'error-styles') {
+                        return 'error-styles.css';
+                    }
+                    return '[name].[contenthash].css';
+                },
                 chunkFilename: "[id].css"
             })
         ];

@@ -4,6 +4,9 @@
         "./static/js/portico/header.js",
         "./static/styles/scss/portico.scss"
     ],
+    "error-styles": [
+        "./static/styles/scss/portico.scss"
+    ],
     "common": [
                "string.prototype.endswith",
                "string.prototype.startswith",
