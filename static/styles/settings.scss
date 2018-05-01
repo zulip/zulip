@@ -1263,10 +1263,15 @@ input[type=checkbox].inline-block {
     width: calc(100% - 10px - 4px);
 }
 
+#settings_page .propagate-notifications-controls button,
 #settings_page .form-sidebar input[type=submit],
 #settings_page .form-sidebar button {
     border-radius: 4px;
     outline: none;
+}
+
+#settings_page .propagate_stream_notifications_change {
+    margin-top: 8px;
 }
 
 #settings_page .form-sidebar select {
