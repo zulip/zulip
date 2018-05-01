@@ -86,6 +86,9 @@ var zero_counts = {
     var msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
     assert.deepEqual(msg_ids, []);
 
+    msg_ids = unread.get_msg_ids_for_stream(stream_id);
+    assert.deepEqual(msg_ids, []);
+
     unread.process_loaded_messages([message, other_message]);
 
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
@@ -223,12 +226,14 @@ stream_data.get_stream_id = function () {
     assert.equal(counts.stream_count.get(stream_id), 1);
     assert.equal(counts.home_unread_messages, 1);
     assert.equal(unread.num_unread_for_stream(stream_id), 1);
+    assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), [message.id]);
 
     muting.add_muted_topic('social', 'test_muting');
     counts = unread.get_counts();
     assert.equal(counts.stream_count.get(stream_id), 0);
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(unread.num_unread_for_stream(stream_id), 0);
+    assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), []);
 
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 }());
@@ -239,6 +244,13 @@ stream_data.get_stream_id = function () {
     unread.declare_bankruptcy();
 
     var stream_id = 301;
+
+    stream_data.get_sub_by_id = function (arg) {
+        if (arg === stream_id) {
+            return {name: 'Some Stream'};
+        }
+    };
+
     var count = unread.num_unread_for_topic(stream_id, 'lunch');
     assert.equal(count, 0);
 
@@ -264,6 +276,9 @@ stream_data.get_stream_id = function () {
     var msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
     assert.deepEqual(msg_ids, _.range(1, 501));
 
+    msg_ids = unread.get_msg_ids_for_stream(stream_id);
+    assert.deepEqual(msg_ids, _.range(1, 501));
+
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
         unread.mark_as_read(message.id);
@@ -273,6 +288,9 @@ stream_data.get_stream_id = function () {
     assert.equal(count, 0);
 
     msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, []);
+
+    msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
 }());
 
@@ -534,7 +552,10 @@ stream_data.get_stream_id = function () {
     unread.declare_bankruptcy();
 
     const stream_id = 999;
-    const msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    var msg_ids = unread.get_msg_ids_for_topic(stream_id, 'LuNcH');
+    assert.deepEqual(msg_ids, []);
+
+    msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
 }());
 
