@@ -15,7 +15,7 @@ var create_item_handler;
 
 set_global('channel', {});
 set_global('templates', {});
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('typeahead_helper', {});
 set_global('user_groups', {
     get_user_group_from_id: noop,
@@ -110,7 +110,6 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     };
 
     var get_person_from_user_id_called = false;
-    var blueslip_warn_called = false;
     people.get_person_from_user_id = function (user_id) {
         if (user_id === iago.user_id) {
             return iago;
@@ -119,10 +118,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.warn = function (err_msg) {
-            assert.equal(err_msg, 'Unknown user ID 4 in members of user group Mobile');
-            blueslip_warn_called = true;
-        };
+        blueslip.set_test_data('warn', 'Unknown user ID 4 in members of user group Mobile');
         get_person_from_user_id_called = true;
     };
 
@@ -296,8 +292,9 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     assert(templates_render_called);
     assert(user_groups_list_append_called);
     assert(get_person_from_user_id_called);
-    assert(blueslip_warn_called);
     assert(input_typeahead_called);
+    assert(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
