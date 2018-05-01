@@ -131,7 +131,7 @@ I'm a generic exception :(
             self.assertTrue(mock_fail_with_message.called)
             self.assertEqual(bot_owner_notification.content,
                              '''[A message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/) triggered an outgoing webhook.
-The error occurred during request to the webhook service:
+Your outgoing webhook bot outgoing-webhook@zulip.com sent an outgoing HTTP request for [this message](http://zulip.testserver/#narrow/stream/999-Verona/subject/Foo/near/), but received an error from the HTTP server:
 ```
 Fail!
 ```''')

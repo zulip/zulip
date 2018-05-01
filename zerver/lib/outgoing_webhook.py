@@ -42,9 +42,9 @@ class OutgoingWebhookServiceInterface:
 
     # Given a successful outgoing webhook REST operation, returns two-element tuple
     # whose left-hand value contains a success message
-    # to sent back to the user (or None if no success message should be sent)
+    # to be sent back to the requesting user (or None if no success message should be sent)
     # and right-hand value contains a failure message
-    # to sent back to the user (or None if no failure message should be sent)
+    # to be sent back to the bot owner (or None if no failure message should be sent)
     def process_success(self, response: Response,
                         event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
         raise NotImplementedError()
@@ -65,7 +65,22 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def process_success(self, response: Response,
                         event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-        response_json = json.loads(response.text)
+        try:
+            response_json = json.loads(response.text)
+        except ValueError:
+            message_url = get_message_url(event)
+            bot_email = get_user_profile_by_id(event['user_profile_id']).email
+            logging.warning("Message %(message_url)s triggered an outgoing webhook, "
+                            "returning response in wrong json format."
+                            % {'message_url': message_url})
+            failure_message = ("Your outgoing webhook bot %(bot_email)s sent an outgoing "
+                               "HTTP request for [this message](%(message_url)s), but "
+                               "the HTTP was not in JSON format. Here's the content of the response:\n"
+                               "```\n%(response)s\n```"
+                               % {'bot_email': bot_email,
+                                  'message_url': message_url,
+                                  'response': response.text})
+            return None, failure_message
 
         if "response_not_required" in response_json and response_json['response_not_required']:
             return None, None
@@ -103,7 +118,23 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
 
     def process_success(self, response: Response,
                         event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-        response_json = json.loads(response.text)
+        try:
+            response_json = json.loads(response.text)
+        except ValueError:
+            message_url = get_message_url(event)
+            bot_email = get_user_profile_by_id(event['user_profile_id']).email
+            logging.warning("Message %(message_url)s triggered an outgoing webhook, "
+                            "returning response in wrong json format."
+                            % {'message_url': message_url})
+            failure_message = ("Your Slack-format outgoing webhook bot %(bot_email)s sent an outgoing "
+                               "HTTP request for [this message](%(message_url)s), but "
+                               "the HTTP was not in JSON format. Here's the content of the response:\n"
+                               "```\n%(response)s\n```"
+                               % {'bot_email': bot_email,
+                                  'message_url': message_url,
+                                  'response': response.text})
+            return None, failure_message
+
         if "text" in response_json:
             return response_json["text"], None
         else:
@@ -179,7 +210,9 @@ def notify_bot_owner(event: Dict[str, Any],
                      failure_message: Optional[str]=None) -> None:
     message_url = get_message_url(event)
     bot_id = event['user_profile_id']
-    bot_owner = get_user_profile_by_id(bot_id).bot_owner
+    bot_profile = get_user_profile_by_id(bot_id)
+    bot_owner = bot_profile.bot_owner
+    bot_email = bot_profile.email
     message_info = {'display_recipient': [{'email': bot_owner.email}],
                     'type': 'private'}
     notification_message = "[A message](%s) triggered an outgoing webhook." % (message_url,)
@@ -193,8 +226,13 @@ def notify_bot_owner(event: Dict[str, Any],
                                 "of type %s occurred:\n```\n%s\n```" % (
                                     type(exception).__name__, str(exception))
     if failure_message:
-        notification_message += "\nThe error occurred during request to the webhook service:\n" \
-                                "```\n%s\n```" % (failure_message,)
+        notification_message += ("\nYour outgoing webhook bot %(bot_email)s sent an outgoing HTTP request "
+                                 "for [this message](%(message_url)s), but received an error from "
+                                 "the HTTP server:\n"
+                                 "```\n%(error)s\n```"
+                                 % {'bot_email': bot_email,
+                                    'message_url': message_url,
+                                    'error': failure_message})
     send_response_message(bot_id, message_info, notification_message)
 
 def request_retry(event: Dict[str, Any],
