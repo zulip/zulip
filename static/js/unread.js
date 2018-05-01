@@ -309,6 +309,26 @@ exports.unread_topic_counter = (function () {
         return topic_bucket.count();
     };
 
+    self.get_msg_ids_for_stream = function (stream_id) {
+        var per_stream_bucketer = bucketer.get_bucket(stream_id);
+
+        if (!per_stream_bucketer) {
+            return [];
+        }
+
+        var topic_lists = [];
+        per_stream_bucketer.each(function (msgs, topic) {
+            var sub = stream_data.get_sub_by_id(stream_id);
+            if (sub && !muting.is_topic_muted(sub.name, topic)) {
+                topic_lists.push(msgs.members());
+            }
+        });
+
+        var ids = [].concat.apply([], topic_lists);
+
+        return util.sorted_ids(ids);
+    };
+
     self.get_msg_ids_for_topic = function (stream_id, topic) {
         var per_stream_bucketer = bucketer.get_bucket(stream_id);
         if (!per_stream_bucketer) {
@@ -467,6 +487,10 @@ exports.topic_has_any_unread = function (stream_id, topic) {
 
 exports.num_unread_for_person = function (user_ids_string) {
     return exports.unread_pm_counter.num_unread(user_ids_string);
+};
+
+exports.get_msg_ids_for_stream = function (stream_id) {
+    return exports.unread_topic_counter.get_msg_ids_for_stream(stream_id);
 };
 
 exports.get_msg_ids_for_topic = function (stream_id, subject) {
