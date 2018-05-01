@@ -153,7 +153,7 @@ def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
     failure_message = "Failure! " + failure_message
     send_response_message(event['user_profile_id'], event['message'], failure_message)
 
-def get_message_url(event: Dict[str, Any], request_data: Dict[str, Any]) -> str:
+def get_message_url(event: Dict[str, Any]) -> str:
     bot_user = get_user_profile_by_id(event['user_profile_id'])
     message = event['message']
     if message['type'] == 'stream':
@@ -178,7 +178,7 @@ def notify_bot_owner(event: Dict[str, Any],
                      response_content: Optional[AnyStr]=None,
                      exception: Optional[Exception]=None,
                      failure_message: Optional[str]=None) -> None:
-    message_url = get_message_url(event, request_data)
+    message_url = get_message_url(event)
     bot_id = event['user_profile_id']
     bot_owner = get_user_profile_by_id(bot_id).bot_owner
     message_info = {'display_recipient': [{'email': bot_owner.email}],
@@ -256,7 +256,7 @@ def do_rest_call(rest_operation: Dict[str, Any],
             logging.warning("Message %(message_url)s triggered an outgoing webhook, returning status "
                             "code %(status_code)s.\n Content of response (in quotes): \""
                             "%(response)s\""
-                            % {'message_url': get_message_url(event, request_data),
+                            % {'message_url': get_message_url(event),
                                'status_code': response.status_code,
                                'response': response.content})
             failure_message = "Third party responded with %d" % (response.status_code)
