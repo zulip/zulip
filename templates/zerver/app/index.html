@@ -29,12 +29,8 @@
 
     </style>
 
-    {% if nofontface %}
-    {# We can't use @font-face on qtwebkit, so use differently minified CSS #}
-    {% stylesheet 'app-fontcompat' %}
-    {% else %}
     {% stylesheet 'app' %}
-    {% endif %}
+
     {{ minified_js('app', csp_nonce)|safe }}
 
     {{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}

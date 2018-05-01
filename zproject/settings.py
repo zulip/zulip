@@ -896,39 +896,6 @@ PIPELINE = {
             ),
             'output_filename': 'min/landing.css'
         },
-        # Two versions of the app CSS exist because of QTBUG-3467
-        'app-fontcompat': {
-            'source_filenames': (
-                'third/bootstrap-notify/css/bootstrap-notify.css',
-                'third/spectrum/spectrum.css',
-                'third/thirdparty-fonts.css',
-                'generated/icons/style.css',
-                'node_modules/flatpickr/dist/flatpickr.css',
-                'node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.css',
-                'styles/components.css',
-                'styles/app_components.css',
-                'styles/zulip.css',
-                'styles/alerts.css',
-                'styles/settings.css',
-                'styles/subscriptions.css',
-                'styles/drafts.css',
-                'styles/input_pill.css',
-                'styles/informational-overlays.css',
-                'styles/compose.css',
-                'styles/reactions.css',
-                'styles/left-sidebar.css',
-                'styles/right-sidebar.css',
-                'styles/lightbox.css',
-                'styles/popovers.css',
-                'styles/pygments.css',
-                'styles/media.css',
-                'styles/typing_notifications.css',
-                'styles/hotspots.css',
-                'styles/night_mode.css',
-                # We don't want fonts.css on QtWebKit, so its omitted here
-            ),
-            'output_filename': 'min/app-fontcompat.css'
-        },
         'app': {
             'source_filenames': (
                 'third/bootstrap-notify/css/bootstrap-notify.css',
