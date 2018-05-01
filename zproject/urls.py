@@ -605,7 +605,8 @@ urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
 
 # Two Factor urls
 if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
-    urls += [url(r'', include(tf_urls + tf_twilio_urls, namespace='two_factor'))]
+    urls += [url(r'', include(tf_urls)),
+             url(r'', include(tf_twilio_urls))]
 
 if settings.DEVELOPMENT:
     urls += dev_urls.urls
