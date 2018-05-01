@@ -224,11 +224,6 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         # Set realm id separately as the corresponding realm is not yet a Realm model instance
         userprofile_dict['realm'] = realm_id
 
-        # TODO map the avatar
-        # zerver auto-infer the url from Gravatar instead of from a specified
-        # url; zerver.lib.avatar needs to be patched
-        # profile['image_32'], Slack has 24, 32, 48, 72, 192, 512 size range
-
         zerver_userprofile.append(userprofile_dict)
         added_users[slack_user_id] = user_id
         if not user.get('is_primary_owner', False):
@@ -407,19 +402,16 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             type=2)
         zerver_recipient.append(recipient)
         added_recipient[stream['name']] = recipient_id
-        # TOODO add recipients for private message and huddles
+        # TODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
         subscription_id_count = build_subscription(channel['members'], zerver_subscription,
                                                    recipient_id, added_users,
                                                    subscription_id_count)
-        # TOODO add zerver_subscription which correspond to
+        # TODO add zerver_subscription which correspond to
         # huddles type recipient
         # For huddles:
         # sub['recipient']=recipient['id'] where recipient['type_id']=added_users[member]
-
-        # TOODO do private message subscriptions between each users have to
-        # be generated from scratch?
 
         stream_id_count += 1
         recipient_id_count += 1
@@ -499,9 +491,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
             active=True,
             user_profile=added_users[member],
             id=subscription_id)
-        # The recipient is a stream for stream-readable message.
-        # proof :  https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L240 &
-        # https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L324
+        # The recipient corresponds to a stream for stream-readable message.
         zerver_subscription.append(sub)
         subscription_id += 1
     return subscription_id
@@ -519,7 +509,6 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     2. uploads, which is a list of uploads to be mapped in uploads records.json
     3. attachment, which is a list of the attachments
     """
-    # now for message.json
     message_json = {}
     zerver_message = []  # type: List[ZerverFieldsT]
     zerver_usermessage = []  # type: List[ZerverFieldsT]
@@ -858,9 +847,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
     # IO avatar records
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
-    # IO uploads TODO
+    # IO uploads records
     create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
-    # IO attachments
+    # IO attachments records
     create_converted_data_files(attachment, output_dir, '/attachment.json')
 
     # remove slack dir
