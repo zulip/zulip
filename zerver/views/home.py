@@ -243,7 +243,6 @@ def home_real(request: HttpRequest) -> HttpResponse:
                       context={'user_profile': user_profile,
                                'page_params': JSONEncoderForHTML().encode(page_params),
                                'csp_nonce': csp_nonce,
-                               'nofontface': is_buggy_ua(request.META.get("HTTP_USER_AGENT", "Unspecified")),
                                'avatar_url': avatar_url(user_profile),
                                'show_debug':
                                settings.DEBUG and ('show_debug' in request.GET),
@@ -265,13 +264,3 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
-
-def is_buggy_ua(agent: str) -> bool:
-    """Discrimiate CSS served to clients based on User Agent
-
-    Due to QTBUG-3467, @font-face is not supported in QtWebKit.
-    This may get fixed in the future, but for right now we can
-    just serve the more conservative CSS to all our desktop apps.
-    """
-    return ("Zulip Desktop/" in agent or "ZulipDesktop/" in agent) and \
-        "Mac" not in agent
