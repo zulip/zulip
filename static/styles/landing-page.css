@@ -1321,10 +1321,43 @@ nav ul li.active::after {
 }
 
 .portico-landing.hello .testimonials .quote-container {
-    width: 60%;
+    width: 98%;
     margin: 30px auto 20px auto;
+    padding-left: 2%;
 
     font-size: 1.2rem;
+}
+
+.portico-landing.hello .testimonials .carousel-quotes {
+    width: 60%;
+    margin: auto;
+}
+
+.portico-landing.hello .testimonials .carousel-inner {
+    width: 100%;
+    left: -2%;
+}
+
+.portico-landing.hello .testimonials .fa-chevron-left,
+.portico-landing.hello .testimonials .fa-chevron-right {
+    color: #ffffff;
+    opacity: 0.5;
+    position: absolute;
+    font-size: 36px;
+    top: 40%;
+}
+
+.portico-landing.hello .testimonials .fa-chevron-right {
+    right: 10%;
+}
+
+.portico-landing.hello .testimonials .fa-chevron-left {
+    left: 10%;
+}
+
+.portico-landing.hello .testimonials .fa-chevron-left:hover,
+.portico-landing.hello .testimonials .fa-chevron-right:hover {
+    opacity: 1;
 }
 
 .portico-landing.hello .testimonials blockquote::before {
@@ -2839,10 +2872,6 @@ nav ul li.active::after {
         padding: 0 50px;
     }
 
-    .portico-landing.hello .testimonials .quote-container {
-        width: 100%;
-    }
-
     .portico-landing.hello .testimonials hr,
     .portico-landing.hello .testimonials .company-container {
         width: 100%;
@@ -2920,6 +2949,15 @@ nav ul li.active::after {
 
     .portico-landing.features-app section.notifications .image-block {
         display: none;
+    }
+
+    .portico-landing.hello .testimonials .quote-container {
+        width: 96%;
+        padding-left: 4%;
+    }
+
+    .portico-landing.hello .testimonials .carousel-inner {
+        left: -4%;
     }
 }
 
@@ -3292,6 +3330,14 @@ nav ul li.active::after {
         margin: 10px;
         width: calc(33% - 24px);
     }
+
+    .portico-landing.hello .testimonials .fa-chevron-right {
+        right: 0;
+    }
+
+    .portico-landing.hello .testimonials .fa-chevron-left {
+        left: 0;
+    }
 }
 
 @media (max-width: 640px) {
@@ -3326,6 +3372,15 @@ nav ul li.active::after {
         width: -webkit-calc(100% - 80px);
         width: -o-calc(100% - 80px);
         width: calc(100% - 80px);
+    }
+
+    .portico-landing.hello .testimonials .quote-container {
+        width: 93%;
+        padding-left: 7%;
+    }
+
+    .portico-landing.hello .testimonials .carousel-inner {
+        left: -7%;
     }
 }
 
