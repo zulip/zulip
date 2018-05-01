@@ -18,7 +18,7 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji, Realm
+from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
 from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.parallel import run_parallel
@@ -211,69 +211,25 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                 custom_field_map, slack_user_custom_field_map[slack_user_id], user_id,
                 custom_field_id_count, zerver_customprofilefield_values)
 
-        userprofile = dict(
-            enable_desktop_notifications=DESKTOP_NOTIFICATION,
-            is_staff=False,  # 'staff' is for server administrators, which don't exist in Slack.
-            avatar_source='U',
-            is_bot=user.get('is_bot', False),
-            avatar_version=1,
-            timezone=timezone,
-            default_sending_stream=None,
-            enable_offline_email_notifications=True,
-            user_permissions=[],  # This is Zulip-specific
-            is_mirror_dummy=False,
-            pointer=-1,
-            default_events_register_stream=None,
-            is_realm_admin=realm_admin,
-            # invites_granted=0,  # TODO
-            enter_sends=True,
-            bot_type=1 if user.get('is_bot', False) else None,
-            enable_stream_sounds=False,
-            is_api_super_user=False,
-            rate_limits="",
-            last_login=timestamp,
-            tos_version=None,
-            default_all_public_streams=False,
-            full_name=get_user_full_name(user),
-            twenty_four_hour_time=False,
-            groups=[],  # This is Zulip-specific
-            enable_online_push_notifications=False,
-            alert_words="[]",
-            bot_owner=None,  # This is Zulip-specific
-            short_name=user['name'],
-            enable_offline_push_notifications=True,
-            left_side_userlist=False,
-            enable_stream_desktop_notifications=False,
-            enable_digest_emails=True,
-            last_pointer_updater="",
-            last_active_message_id=None,
-            email=email,
-            realm_name_in_notifications=False,
-            date_joined=timestamp,
-            last_reminder=timestamp,
-            is_superuser=False,
-            tutorial_status="T",
-            default_language="en",
-            enable_sounds=True,
-            pm_content_in_desktop_notifications=True,
-            is_active=not user['deleted'],
-            onboarding_steps="[]",
-            emojiset="google",
-            realm=realm_id,
-            # invites_used=0,  # TODO
-            id=user_id)
+        userprofile = UserProfile(full_name=get_user_full_name(user), short_name=user['name'],
+                                  is_active=not user['deleted'], id=user_id, email=email,
+                                  avatar_source='U', is_bot=user.get('is_bot', False),
+                                  pointer=-1, is_realm_admin=realm_admin,
+                                  bot_type=1 if user.get('is_bot', False) else None,
+                                  date_joined=timestamp, last_reminder=timestamp,
+                                  timezone=timezone, last_login=timestamp,
+                                  enable_desktop_notifications=DESKTOP_NOTIFICATION,
+                                  tutorial_status='T')
+        userprofile_dict = model_to_dict(userprofile)
+        # Set realm id separately as the corresponding realm is not yet a Realm model instance
+        userprofile_dict['realm'] = realm_id
 
-        # TODO map the avatar
-        # zerver auto-infer the url from Gravatar instead of from a specified
-        # url; zerver.lib.avatar needs to be patched
-        # profile['image_32'], Slack has 24, 32, 48, 72, 192, 512 size range
-
-        zerver_userprofile.append(userprofile)
+        zerver_userprofile.append(userprofile_dict)
         added_users[slack_user_id] = user_id
         if not user.get('is_primary_owner', False):
             user_id_count += 1
 
-        logging.info(u"{} -> {}".format(user['name'], userprofile['email']))
+        logging.info(u"{} -> {}".format(user['name'], userprofile_dict['email']))
 
     process_customprofilefields(zerver_customprofilefield, zerver_customprofilefield_values)
     logging.info('######### IMPORTING USERS FINISHED #########\n')
@@ -446,19 +402,16 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             type=2)
         zerver_recipient.append(recipient)
         added_recipient[stream['name']] = recipient_id
-        # TOODO add recipients for private message and huddles
+        # TODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
         subscription_id_count = build_subscription(channel['members'], zerver_subscription,
                                                    recipient_id, added_users,
                                                    subscription_id_count)
-        # TOODO add zerver_subscription which correspond to
+        # TODO add zerver_subscription which correspond to
         # huddles type recipient
         # For huddles:
         # sub['recipient']=recipient['id'] where recipient['type_id']=added_users[member]
-
-        # TOODO do private message subscriptions between each users have to
-        # be generated from scratch?
 
         stream_id_count += 1
         recipient_id_count += 1
@@ -538,9 +491,7 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
             active=True,
             user_profile=added_users[member],
             id=subscription_id)
-        # The recipient is a stream for stream-readable message.
-        # proof :  https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L240 &
-        # https://github.com/zulip/zulip/blob/master/zerver/views/messages.py#L324
+        # The recipient corresponds to a stream for stream-readable message.
         zerver_subscription.append(sub)
         subscription_id += 1
     return subscription_id
@@ -558,7 +509,6 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
     2. uploads, which is a list of uploads to be mapped in uploads records.json
     3. attachment, which is a list of the attachments
     """
-    # now for message.json
     message_json = {}
     zerver_message = []  # type: List[ZerverFieldsT]
     zerver_usermessage = []  # type: List[ZerverFieldsT]
@@ -897,9 +847,9 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
     # IO avatar records
     create_converted_data_files(avatar_records, output_dir, '/avatars/records.json')
-    # IO uploads TODO
+    # IO uploads records
     create_converted_data_files(uploads_records, output_dir, '/uploads/records.json')
-    # IO attachments
+    # IO attachments records
     create_converted_data_files(attachment, output_dir, '/attachment.json')
 
     # remove slack dir
