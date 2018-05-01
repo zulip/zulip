@@ -9,7 +9,7 @@ set_global('stream_popover', {
 });
 set_global('unread', {});
 set_global('unread_ui', {});
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('popovers', {
     hide_all: function () {},
 });
@@ -45,12 +45,11 @@ global.people.initialize_current_user(me.user_id);
 
 (function test_get_conversation_li() {
     var test_conversation = 'foo@example.com,bar@example.com';
-    var error_msg;
-    global.blueslip.warn = function (error) {
-        error_msg = error;
-    };
+    blueslip.set_test_data('warn', 'Unknown conversation: ' + test_conversation);
+    blueslip.set_test_data('warn', 'Unknown emails: ' + test_conversation); // people.js
     pm_list.get_conversation_li(test_conversation);
-    assert.equal(error_msg, 'Unknown conversation: ' + test_conversation);
+    assert.equal(blueslip.get_test_logs('warn').length, 2);
+    blueslip.clear_test_data();
 }());
 
 (function test_close() {
