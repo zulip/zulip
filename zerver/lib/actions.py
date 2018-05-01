@@ -4577,6 +4577,8 @@ def try_add_realm_custom_profile_field(realm: Realm, name: Text, field_type: int
         field.field_data = ujson.dumps(field_data or {})
 
     field.save()
+    field.order = field.id
+    field.save(update_fields=['order'])
     notify_realm_custom_profile_fields(realm, 'add')
     return field
 
@@ -4596,6 +4598,17 @@ def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileFiel
     if field.field_type == CustomProfileField.CHOICE:
         field.field_data = ujson.dumps(field_data or {})
     field.save()
+    notify_realm_custom_profile_fields(realm, 'update')
+
+def try_move_realm_custom_profile_field(realm: Realm, order: List[int]) -> None:
+    order_mapping = dict((_[1], _[0]) for _ in enumerate(order))
+    fields = CustomProfileField.objects.filter(realm=realm)
+    for field in fields:
+        if field.id not in order_mapping:
+            raise JsonableError(_("Invalid order mapping."))
+    for field in fields:
+        field.order = order_mapping[field.id]
+        field.save(update_fields=['order'])
     notify_realm_custom_profile_fields(realm, 'update')
 
 def do_update_user_custom_profile_data(user_profile: UserProfile,
