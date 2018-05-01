@@ -210,12 +210,20 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
                 custom_field_map, slack_user_custom_field_map[slack_user_id], user_id,
                 custom_field_id_count, zerver_customprofilefield_values)
 
-        userprofile = UserProfile(full_name=get_user_full_name(user), short_name=user['name'],
-                                  is_active=not user['deleted'], id=user_id, email=email,
-                                  avatar_source='U', is_bot=user.get('is_bot', False),
-                                  pointer=-1, is_realm_admin=realm_admin,
-                                  bot_type=1 if user.get('is_bot', False) else None,
-                                  date_joined=timestamp, timezone=timezone, last_login=timestamp)
+        userprofile = UserProfile(
+            full_name=get_user_full_name(user),
+            short_name=user['name'],
+            is_active=not user['deleted'],
+            id=user_id,
+            email=email,
+            avatar_source='U',
+            is_bot=user.get('is_bot', False),
+            pointer=-1,
+            is_realm_admin=realm_admin,
+            bot_type=1 if user.get('is_bot', False) else None,
+            date_joined=timestamp,
+            timezone=timezone,
+            last_login=timestamp)
         userprofile_dict = model_to_dict(userprofile)
         # Set realm id separately as the corresponding realm is not yet a Realm model instance
         userprofile_dict['realm'] = realm_id
