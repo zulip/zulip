@@ -1,9 +1,9 @@
 zrequire('util');
 zrequire('people');
 
-set_global('blueslip', {
-    error: function () { return; },
-});
+set_global('blueslip', global.make_zblueslip({
+    error: false, // We check for errors in people_errors.js
+}));
 set_global('page_params', {});
 set_global('md5', function (s) {
     return 'md5-' + s;
@@ -86,13 +86,10 @@ initialize();
     assert.equal(people.is_active_user_for_popover(bot_botson.user_id), true);
 
     // Invalid user ID returns false and warns.
-    var message;
-    blueslip.warn = function (msg) {
-        message = msg;
-    };
-
+    blueslip.set_test_data('warn', 'Unexpectedly invalid user_id in user popover query: 123412');
     assert.equal(people.is_active_user_for_popover(123412), false);
-    assert.equal(message, 'Unexpectedly invalid user_id in user popover query: 123412');
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 
     // We can still get their info for non-realm needs.
     person = people.get_by_email(email);
@@ -618,14 +615,12 @@ initialize();
 
     // Test shim where we can still retrieve user info using the
     // old email.
-    var warning;
-    global.blueslip.warn = function (w) {
-        warning = w;
-    };
-
+    blueslip.set_test_data('warn',
+        'Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com');
     person = people.get_by_email(old_email);
-    assert(/Obsolete email.*FOO.*bar/.test(warning));
     assert.equal(person.user_id, user_id);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 }());
 
 initialize();
