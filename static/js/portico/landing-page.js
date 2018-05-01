@@ -246,6 +246,11 @@ var load = function () {
         $("x-grad").addClass("show");
     }, 1000);
 
+    // Initiate the bootstrap carousel logic
+    $('.carousel').carousel({
+        interval: false,
+    });
+
     // Set up events / categories / search
     events();
 };
