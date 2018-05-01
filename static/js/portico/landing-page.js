@@ -246,6 +246,11 @@ var load = function () {
         $("x-grad").addClass("show");
     }, 1000);
 
+    // specifies the interval for carousel to cycle through items
+    $('.carousel').carousel({
+        interval: 10000
+    })
+
     // Set up events / categories / search
     events();
 };
