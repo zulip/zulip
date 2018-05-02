@@ -23,12 +23,6 @@ function set_filter(operators) {
 
     assert(!narrow_state.is_for_stream_id(test_stream.stream_id));
 
-    var bad_stream_id = 1000000;
-    blueslip.set_test_data('error', 'Bad stream id ' + bad_stream_id);
-    assert(!narrow_state.is_for_stream_id(bad_stream_id));
-    assert.equal(blueslip.get_test_logs('error').length, 1);
-    blueslip.clear_test_data();
-
     set_filter([
         ['stream', 'Test'],
         ['topic', 'Bar'],
