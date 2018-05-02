@@ -37,7 +37,8 @@ class HomeTest(ZulipTestCase):
             'Next message',
             'Search streams',
             'Welcome to Zulip',
-            'pygments.css',
+            # Verify that the app styles get included
+            'app-styles-stubentry.js',
             'var page_params',
         ]
 
