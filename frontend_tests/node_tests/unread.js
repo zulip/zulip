@@ -458,6 +458,7 @@ stream_data.get_stream_id = function () {
 
     var counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
 
     var message = {
         id: 15,
@@ -472,6 +473,7 @@ stream_data.get_stream_id = function () {
 
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 1);
+    assert.deepEqual(unread.get_msg_ids_for_mentions(), [message.id]);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
