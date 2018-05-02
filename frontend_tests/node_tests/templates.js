@@ -1582,6 +1582,36 @@ function render(template_name, args) {
     assert.equal($(html).find('#embedded_bot_key_edit').val(), 'abcd1234');
 }());
 
+(function archive_message_group() {
+    // The messages list below doesn't represent the actual HTML which would be
+    // feed to these handlebar templates but since the actual one is a lot bigger
+    // to be included in a test case and really comes pre rendered from the backend
+    // we just kinda test out the template part which is rendered on frontend with
+    // some self made html for messages to insert into the handlebars.
+    var messages = [
+        '<p>This is message one.</p>',
+        '<p>This is message two.</p>',
+    ];
+
+    var groups = [
+        {
+            display_recipient: "support",
+            message_containers: messages,
+            show_date: '"<span class="timerender82">Jan&nbsp;07</span>"',
+            show_date_separator: true,
+            subject: 'two messages',
+        },
+    ];
+
+    var html = render('archive_message_group', {message_groups: groups});
+
+    var first_message_text = $(html).next('.recipient_row').find('p').first().text().trim();
+    assert.equal(first_message_text, "This is message one.");
+
+    var last_message_text = $(html).next('.recipient_row').find('p').last().text().trim();
+    assert.equal(last_message_text, 'This is message two.');
+
+}());
 // By the end of this test, we should have compiled all our templates.  Ideally,
 // we will also have exercised them to some degree, but that's a little trickier
 // to enforce.

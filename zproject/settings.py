@@ -943,6 +943,15 @@ PIPELINE = {
             ),
             'output_filename': 'min/twitter_sprite.css',
         },
+        'archive_css': {
+            'source_filenames': (
+                'node_modules/katex/dist/katex.css',
+                'styles/zulip.css',
+                'styles/media.css',
+                'styles/archive.css',
+            ),
+            'output_filename': 'min/archive_css.css',
+        },
     },
     'JAVASCRIPT': {},
 }
@@ -1156,6 +1165,24 @@ JS_SPECS = {
             'node_modules/zxcvbn/dist/zxcvbn.js',
         ],
         'output_filename': 'min/zxcvbn.js'
+    },
+    # This is used for displaying archives.
+    'archive': {
+        'source_filenames': [
+            'js/archive.js',
+            'js/colorspace.js',
+            'js/floating_recipient_bar.js',
+            'js/timerender.js',
+            'node_modules/handlebars/dist/handlebars.runtime.js',
+            'js/templates.js',
+            'js/stream_color.js',
+            'js/scroll_bar.js',
+            'node_modules/xdate/src/xdate.js',
+            'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
+            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
+            'templates/compiled.js',
+        ],
+        'output_filename': 'min/archive.js'
     },
 }
 
