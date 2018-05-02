@@ -22,6 +22,7 @@ attrs==17.3.0             # via automat, service-identity
 automat==0.6.0            # via twisted
 aws-xray-sdk==0.94        # via moto
 babel==2.5.3
+backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
@@ -75,7 +76,7 @@ ijson==2.3
 imagesize==1.0.0
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.2.1
+ipython==6.3.1
 isort==4.3.4
 jedi==0.11.0              # via ipython
 jinja2==2.10
