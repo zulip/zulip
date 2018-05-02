@@ -169,6 +169,21 @@ exports.pm_string = function () {
     return user_ids_string;
 };
 
+exports.get_first_unread_id = function () {
+    // This function may return undefined for two different
+    // reasons: we have no unread messages, or we don't have
+    // an easy, inexpensive way to calculate them.  See the
+    // comment in get_unread_ids() for more details.
+
+    var unread_ids = exports.get_unread_ids();
+
+    if (unread_ids === undefined) {
+        return;
+    }
+
+    return unread_ids[0];
+};
+
 exports.get_unread_ids = function () {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
