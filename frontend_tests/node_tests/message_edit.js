@@ -90,3 +90,42 @@ run_test('get_editability', () => {
     global.page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
 });
+
+run_test('get_deletability', () => {
+    global.page_params = {
+        is_admin: true,
+        realm_allow_message_deleting: false,
+        realm_message_content_delete_limit_seconds: 0,
+    };
+    const message = {
+        sent_by_me: false,
+        locally_echoed: true,
+    };
+
+    // Admin can always delete any message
+    assert.equal(message_edit.get_deletability(message), true);
+
+    // Non-admin can't delete message sent by others
+    global.page_params.is_admin = false;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    // Locally echoed messages are not deletable
+    message.sent_by_me = true;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    message.locally_echoed = false;
+    assert.equal(message_edit.get_deletability(message), false);
+
+    global.page_params.realm_allow_message_deleting = true;
+    assert.equal(message_edit.get_deletability(message), true);
+
+    const now = new Date();
+    const current_timestamp = now / 1000;
+    message.timestamp = current_timestamp - 5;
+
+    global.page_params.realm_message_content_delete_limit_seconds = 10;
+    assert.equal(message_edit.get_deletability(message), true);
+
+    message.timestamp = current_timestamp - 60;
+    assert.equal(message_edit.get_deletability(message), false);
+});
