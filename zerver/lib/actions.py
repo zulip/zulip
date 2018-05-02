@@ -1561,12 +1561,11 @@ def send_stream_creation_event(stream: Stream, user_ids: List[int]) -> None:
                  streams=[stream.to_dict()])
     send_event(event, user_ids)
 
-def create_stream_if_needed(realm: Realm,
-                            stream_name: Text,
-                            *,
-                            invite_only: bool=False,
-                            history_public_to_subscribers: Optional[bool]=None,
-                            stream_description: Text="") -> Tuple[Stream, bool]:
+def get_default_value_for_history_public_to_subscribers(
+        realm: Realm,
+        invite_only: bool,
+        history_public_to_subscribers: Optional[bool]
+) -> bool:
     if invite_only:
         if history_public_to_subscribers is None:
             # TODO: Once we have a UI for this feature, we'll remove
@@ -1582,6 +1581,18 @@ def create_stream_if_needed(realm: Realm,
         # In the Zephyr mirroring model, history is unconditionally
         # not public to subscribers, even for public streams.
         history_public_to_subscribers = False
+
+    return history_public_to_subscribers
+
+def create_stream_if_needed(realm: Realm,
+                            stream_name: Text,
+                            *,
+                            invite_only: bool=False,
+                            history_public_to_subscribers: Optional[bool]=None,
+                            stream_description: Text="") -> Tuple[Stream, bool]:
+
+    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+        realm, invite_only, history_public_to_subscribers)
 
     (stream, created) = Stream.objects.get_or_create(
         realm=realm,
@@ -2938,22 +2949,11 @@ def do_change_bot_type(user_profile: UserProfile, value: int) -> None:
 
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
-    if invite_only:
-        if history_public_to_subscribers is None:
-            # TODO: Once we have a UI for this feature, we'll remove
-            # settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS and set
-            # this to be False here
-            history_public_to_subscribers = settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS
-    else:
-        # If we later decide to support public streams without
-        # history, we can remove this code path.
-        history_public_to_subscribers = True
-
-    if stream.realm.is_zephyr_mirror_realm:
-        # In the Zephyr mirroring model, history is unconditionally
-        # not public to subscribers, even for public streams.
-        history_public_to_subscribers = False
-
+    history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+        stream.realm,
+        invite_only,
+        history_public_to_subscribers
+    )
     stream.invite_only = invite_only
     stream.history_public_to_subscribers = history_public_to_subscribers
     stream.save(update_fields=['invite_only', 'history_public_to_subscribers'])
