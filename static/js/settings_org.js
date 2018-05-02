@@ -220,7 +220,7 @@ exports.setup_time_limit_dropdown_values = function () {
             seconds: 7*24*60*60,
         },
         custom_limit: {
-            text: i18n.t("Custom time limit after posting"),
+            text: i18n.t("Up to N minutes after posting"),
         },
     };
     exports.msg_edit_limit_dropdown_values = time_limit_dropdown_values;

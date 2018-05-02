@@ -108,6 +108,8 @@ IGNORED_PHRASES = [
     r"^marketing$",
     r"^cookie$",
     r"^new_emoji$",
+    # Used to refer custom time limits
+    r"\bN\b",
 
     # TO CLEAN UP
     # Just want to avoid churning login.html right now
