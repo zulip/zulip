@@ -234,20 +234,13 @@ exports.is_for_stream_id = function (stream_id) {
     // This is not perfect, since we still track narrows by
     // name, not id, but at least the interface is good going
     // forward.
-    var sub = stream_data.get_sub_by_id(stream_id);
+    var narrow_stream_id = exports.stream_id();
 
-    if (sub === undefined) {
-        blueslip.error('Bad stream id ' + stream_id);
+    if (narrow_stream_id === undefined) {
         return false;
     }
 
-    var narrow_stream_name = exports.stream();
-
-    if (narrow_stream_name === undefined) {
-        return false;
-    }
-
-    return (sub.name === narrow_stream_name);
+    return (stream_id === narrow_stream_id);
 };
 
 return exports;
