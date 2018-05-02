@@ -533,6 +533,12 @@ exports.get_msg_ids_for_private = function () {
     return exports.unread_pm_counter.get_msg_ids();
 };
 
+exports.get_msg_ids_for_mentions = function () {
+    var ids = exports.unread_mentions_counter.members();
+
+    return util.sorted_ids(ids);
+};
+
 exports.load_server_counts = function () {
     var unread_msgs = page_params.unread_msgs;
 
