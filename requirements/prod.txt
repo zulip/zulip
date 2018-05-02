@@ -75,7 +75,7 @@ pickleshare==0.7.4        # via ipython
 pika==0.11.0
 pillow==5.1.0
 polib==1.1.0
-premailer==3.1.1
+premailer==3.2.0
 prompt-toolkit==1.0.15    # via ipython
 psycopg2==2.7.4
 ptyprocess==0.5.2         # via pexpect
