@@ -669,6 +669,31 @@ function make_sub(name, stream_id) {
     assert.equal(Filter.describe(narrow), string);
 }());
 
+(function test_is_functions() {
+    var terms = [
+        {operator: 'stream', operand: 'My Stream'},
+    ];
+    var filter = new Filter(terms);
+    assert.equal(filter.is_stream_only(), true);
+    assert.equal(filter.is_stream_topic_only(), false);
+
+    terms = [
+        {operator: 'stream', operand: 'My Stream'},
+        {operator: 'topic', operand: 'My Topic'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_stream_only(), false);
+    assert.equal(filter.is_stream_topic_only(), true);
+
+    terms = [
+        {operator: 'stream', operand: 'My Stream', negated: true},
+        {operator: 'topic', operand: 'My Topic'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_stream_only(), false);
+    assert.equal(filter.is_stream_topic_only(), false);
+}());
+
 (function test_update_email() {
     var terms = [
         {operator: 'pm-with', operand: 'steve@foo.com'},

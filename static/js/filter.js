@@ -411,6 +411,14 @@ Filter.prototype = {
         return (term.operator === 'stream');
     },
 
+    is_stream_topic_only: function () {
+        if (this._operators.length !== 2) {
+            return false;
+        }
+
+        return this.has_operator('stream') && this.has_operator('topic');
+    },
+
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
