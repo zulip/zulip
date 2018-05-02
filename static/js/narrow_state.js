@@ -109,6 +109,31 @@ exports.stream = function () {
     return;
 };
 
+exports.stream_sub = function () {
+    if (current_filter === undefined) {
+        return;
+    }
+    var stream_operands = current_filter.operands("stream");
+    if (stream_operands.length !== 1) {
+        return;
+    }
+
+    var name = stream_operands[0];
+    var sub = stream_data.get_sub_by_name(name);
+
+    return sub;
+};
+
+exports.stream_id = function () {
+    var sub = exports.stream_sub();
+
+    if (!sub) {
+        return;
+    }
+
+    return sub.stream_id;
+};
+
 exports.topic = function () {
     if (current_filter === undefined) {
         return;
