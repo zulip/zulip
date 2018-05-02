@@ -711,6 +711,37 @@ function make_sub(name, stream_id) {
     assert.equal(filter.is_stream_only(), false);
     assert.equal(filter.is_stream_topic_only(), false);
     assert.equal(filter.is_pm_with_only(), true);
+    assert.equal(filter.is_for_only('mentioned'), false);
+    assert.equal(filter.is_for_only('private'), false);
+
+    terms = [
+        {operator: 'is', operand: 'private'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_for_only('mentioned'), false);
+    assert.equal(filter.is_for_only('private'), true);
+
+    terms = [
+        {operator: 'is', operand: 'mentioned'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_for_only('mentioned'), true);
+    assert.equal(filter.is_for_only('private'), false);
+
+    terms = [
+        {operator: 'is', operand: 'mentioned'},
+        {operator: 'is', operand: 'starred'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_for_only('mentioned'), false);
+    assert.equal(filter.is_for_only('private'), false);
+
+    terms = [
+        {operator: 'is', operand: 'mentioned', negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_for_only('mentioned'), false);
+    assert.equal(filter.is_for_only('private'), false);
 }());
 
 (function test_update_email() {

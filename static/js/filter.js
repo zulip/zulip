@@ -433,6 +433,28 @@ Filter.prototype = {
         return (term.operator === 'pm-with');
     },
 
+    is_for_only: function (operand) {
+        // Call as:
+        //    filter.is_for_only('mentioned')
+        //    filter.is_for_only('private')
+        //    filter.is_for_only('starred')
+        if (this._operators.length !== 1) {
+            return false;
+        }
+
+        var term = this._operators[0];
+
+        if (term.negated) {
+            return false;
+        }
+
+        if (term.operator !== 'is') {
+            return false;
+        }
+
+        return (term.operand === operand);
+    },
+
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
