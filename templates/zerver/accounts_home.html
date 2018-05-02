@@ -99,7 +99,7 @@ $(function () {
                         {% if saml_auth_enabled %}
                         {% for idp in saml_get_idps %}
                         <div class="login-saml">
-                            <form class="form-inline saml-wrapper" action="{{ url('signup-social', args=('saml',)) }}" method="get">
+                            <form class="form-inline saml-wrapper" action="{{ url('signup-saml', kwargs={"backend":"saml", "idp":idp}) }}" method="get">
                                 <button class="login-social-button login-saml-button saml">{{ _('Sign up with %(identity_provider)s', identity_provider=idp) }}</button>
                             </form>
                         </div>
