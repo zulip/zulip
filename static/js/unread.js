@@ -179,7 +179,20 @@ exports.unread_pm_counter = (function () {
         return bucket.count();
     };
 
-    self.get_msg_ids = function (user_ids_string) {
+    self.get_msg_ids = function () {
+        var lists = [];
+
+        bucketer.each(function (id_set) {
+            var members = id_set.members();
+            lists.push(members);
+        });
+
+        var ids = [].concat.apply([], lists);
+
+        return util.sorted_ids(ids);
+    };
+
+    self.get_msg_ids_for_person = function (user_ids_string) {
         if (!user_ids_string) {
             return [];
         }
@@ -513,7 +526,11 @@ exports.get_msg_ids_for_topic = function (stream_id, subject) {
 };
 
 exports.get_msg_ids_for_person = function (user_ids_string) {
-    return exports.unread_pm_counter.get_msg_ids(user_ids_string);
+    return exports.unread_pm_counter.get_msg_ids_for_person(user_ids_string);
+};
+
+exports.get_msg_ids_for_private = function () {
+    return exports.unread_pm_counter.get_msg_ids();
 };
 
 exports.load_server_counts = function () {
