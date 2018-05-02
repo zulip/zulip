@@ -17,7 +17,7 @@ define service{
         use                             generic-service
         host_name                       nagios
         service_description             Total Processes
-        check_command                   check_procs_nokthreads!350!500
+        check_command                   check_procs_nokthreads!500!650
         }
 
 
