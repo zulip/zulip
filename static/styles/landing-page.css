@@ -3377,15 +3377,6 @@ nav ul li.active::after {
         width: -o-calc(100% - 80px);
         width: calc(100% - 80px);
     }
-
-    .portico-landing.hello .testimonials .quote-container {
-        width: 93%;
-        padding-left: 7%;
-    }
-
-    .portico-landing.hello .testimonials .carousel-inner {
-        left: -7%;
-    }
 }
 
 @media (max-width: 450px) {
@@ -3505,5 +3496,16 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-lozenge .integration-category {
         font-size: .77em;
+    }
+}
+
+@media (max-width: 313px) {
+    .portico-landing.hello .testimonials .quote-container {
+        width: 93%;
+        padding-left: 7%;
+    }
+
+    .portico-landing.hello .testimonials .carousel-inner {
+        left: -7%;
     }
 }
