@@ -37,6 +37,7 @@ function set_filter(operators) {
     assert(narrow_state.active());
 
     assert.equal(narrow_state.stream(), 'Test');
+    assert.equal(narrow_state.stream_id(), test_stream.stream_id);
     assert.equal(narrow_state.topic(), 'Bar');
     assert(narrow_state.is_for_stream_id(test_stream.stream_id));
 
@@ -61,6 +62,7 @@ function set_filter(operators) {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert.equal(narrow_state.stream_id(), undefined);
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -200,9 +202,17 @@ function set_filter(operators) {
 (function test_stream() {
     set_filter(undefined);
     assert.equal(narrow_state.stream(), undefined);
+    assert.equal(narrow_state.stream_id(), undefined);
 
     set_filter([['stream', 'Foo'], ['topic', 'Bar']]);
     assert.equal(narrow_state.stream(), 'Foo');
+    assert.equal(narrow_state.stream_sub(), undefined);
+    assert.equal(narrow_state.stream_id(), undefined);
+
+    const sub = {name: 'Foo', stream_id: 55};
+    stream_data.add_sub('Foo', sub);
+    assert.equal(narrow_state.stream_id(), 55);
+    assert.deepEqual(narrow_state.stream_sub(), sub);
 
     set_filter([['sender', 'someone'], ['topic', 'random']]);
     assert.equal(narrow_state.stream(), undefined);
