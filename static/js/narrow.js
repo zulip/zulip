@@ -184,11 +184,10 @@ exports.activate = function (raw_operators, opts) {
         }
     }
 
-    // Don't bother populating a message list when it won't contain
-    // the message we want anyway or if the filter can't be applied
-    // locally.
-    if (message_list.all.get(then_select_id) !== undefined) {
-        if (narrow_state.get_current_filter().can_apply_locally()) {
+    // Populate the message list if we can apply our filter locally (i.e.
+    // with no backend help) and we have the message we want to select.
+    if (narrow_state.get_current_filter().can_apply_locally()) {
+        if (message_list.all.get(then_select_id) !== undefined) {
             message_util.add_messages(message_list.all.all_messages(), message_list.narrowed,
                                        {delay_render: true});
         }
