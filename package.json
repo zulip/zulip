@@ -9,6 +9,7 @@
     "@types/webpack": "4.1.3",
     "blueimp-md5": "2.10.0",
     "clipboard": "2.0.0",
+    "css-hot-loader": "1.3.9",
     "css-loader": "0.28.11",
     "emoji-datasource-apple": "3.0.0",
     "emoji-datasource-emojione": "3.0.0",

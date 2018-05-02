@@ -5,22 +5,14 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const assets = require('./webpack.assets.json');
 
-// Currently we're using style-loader for local dev
-// because MiniCssExtractPlugin doesn't support
-// HMR as yet. When this changes we can switch
-// over to MiniCssExtractPlugin which will Also
-// solve the flash of unstsyled elements on page load.
-// https://github.com/webpack-contrib/mini-css-extract-plugin/issues/34
-function getCSSLoader(isProd: boolean) {
+// Adds on css-hot-loader in dev mode
+function getHotCSS(bundle:any[], isProd:boolean) {
     if(isProd) {
-        return MiniCssExtractPlugin.loader
+        return bundle;
     }
-    return {
-        loader: 'style-loader',
-        options: {
-            sourceMap: true
-        }
-    }
+    return [
+        'css-hot-loader',
+    ].concat(bundle);
 }
 export default (env?: string) : webpack.Configuration => {
     const production: boolean = env === "production";
@@ -83,21 +75,21 @@ export default (env?: string) : webpack.Configuration => {
                 // regular css files
                 {
                     test: /\.css$/,
-                    use: [
-                        getCSSLoader(production),
+                    use: getHotCSS([
+                        MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
                             options: {
                                 sourceMap: true
                             }
                         },
-                    ],
+                    ], production),
                 },
                 // sass / scss loader
                 {
                     test: /\.(sass|scss)$/,
-                    use: [
-                        getCSSLoader(production),
+                    use: getHotCSS([
+                        MiniCssExtractPlugin.loader,
                         {
                             loader: 'css-loader',
                             options: {
@@ -110,7 +102,7 @@ export default (env?: string) : webpack.Configuration => {
                                 sourceMap: true
                             }
                         }
-                    ],
+                    ], production),
                 },
                 // load fonts and files
                 {
@@ -171,6 +163,14 @@ export default (env?: string) : webpack.Configuration => {
             new MiniCssExtractPlugin({
                 filename: "[name].css",
                 chunkFilename: "[id].css"
+            }),
+            // We use SourceMapDevToolPlugin in order to enable SourceMaps
+            // in combination with mini-css-extract-plugin and
+            // the devtool setting of cheap-module-eval-source-map.
+            // Without this plugin source maps won't work with that combo.
+            // See https://github.com/webpack-contrib/mini-css-extract-plugin/issues/29
+            new webpack.SourceMapDevToolPlugin({
+                filename: "[file].map"
             })
         ];
 
