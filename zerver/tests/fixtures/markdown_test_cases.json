@@ -52,20 +52,20 @@
       "name": "fenced_quote",
       "input": "Hamlet said:\n~~~ quote\nTo be or **not** to be.\n\nThat is the question\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>To be or <strong>not</strong> to be.</p>\n<p>That is the question</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n\nTo be or not to be.\nThat is the question\n"
+      "text_content": "Hamlet said:\n> To be or not to be.\n> That is the question\n"
     },
     {
       "name": "fenced_nested_quote",
       "input": "Hamlet said:\n~~~ quote\nPolonius said:\n> This above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n~~~",
       "expected_output": "<p>Hamlet said:</p>\n<blockquote>\n<p>Polonius said:</p>\n<blockquote>\n<p>This above all: to thine ownself be true,<br>\nAnd it must follow, as the night the day,<br>\nThou canst not then be false to any man.</p>\n</blockquote>\n<p>What good advice!</p>\n</blockquote>",
-      "text_content": "Hamlet said:\n\nPolonius said:\n\nThis above all: to thine ownself be true,\nAnd it must follow, as the night the day,\nThou canst not then be false to any man.\n\nWhat good advice!\n"
+      "text_content": "Hamlet said:\n> Polonius said:\n> > This above all: to thine ownself be true,\n> > And it must follow, as the night the day,\n> > Thou canst not then be false to any man.\n> What good advice!\n"
     },
     {
       "name": "complexly_nested_quote",
       "input": "I heard about this second hand...\n~~~ quote\n\nHe said:\n~~~ quote\nThe customer is complaining.\n\nThey looked at this code:\n``` \ndef hello(): print 'hello\n```\nThey would prefer:\n~~~\ndef hello()\n  puts 'hello'\nend\n~~~\n\nPlease advise.\n~~~\n\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n~~~",
       "expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts 'hello'<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span>She said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
       "marked_expected_output": "<p>I heard about this second hand...</p>\n<blockquote>\n<p>He said:</p>\n<blockquote>\n<p>The customer is complaining.</p>\n<p>They looked at this code:</p>\n<div class=\"codehilite\"><pre><span></span>def hello(): print &#39;hello\n</pre></div>\n\n\n<p>They would prefer:</p>\n</blockquote>\n<p>def hello()<br>\n  puts &#39;hello&#39;<br>\nend</p>\n</blockquote>\n<p>Please advise.</p>\n<div class=\"codehilite\"><pre><span></span>\nShe said:\n~~~ quote\nJust send them this:\n```\necho &quot;hello\n&quot;\n```\n</pre></div>",
-      "text_content": "I heard about this second hand...\n\nHe said:\n\nThe customer is complaining.\nThey looked at this code:\ndef hello(): print 'hello\n\n\n\nThey would prefer:\n\ndef hello()\n  puts 'hello'\nend\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
+      "text_content": "I heard about this second hand...\n> He said:\n> > The customer is complaining.\n> > They looked at this code:\n> > def hello(): print 'hello\n> > They would prefer:\n> def hello()\n>   puts 'hello'\n> end\n\nPlease advise.\nShe said:\n~~~ quote\nJust send them this:\n```\necho \"hello\n\"\n```\n"
     },
     {
       "name": "fenced_quotes_inside_mathblock",
@@ -92,7 +92,7 @@
       "name": "fenced_quote_with_hashtag",
       "input": "```quote\n# line 1\n# line 2\n```",
       "expected_output": "<blockquote>\n<p># line 1<br>\n# line 2</p>\n</blockquote>",
-      "text_content": "\n# line 1\n# line 2\n"
+      "text_content": "> # line 1\n> # line 2\n"
     },
     {
       "name": "dangerous_block",
@@ -285,7 +285,7 @@
       "input": ">Google logo today:\n>https://www.google.com/images/srpr/logo4w.png\n>Kinda boring",
       "expected_output": "<blockquote>\n<p>Google logo today:<br>\n<a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\">https://www.google.com/images/srpr/logo4w.png</a><br>\nKinda boring</p>\n<div class=\"message_inline_image\"><a href=\"https://www.google.com/images/srpr/logo4w.png\" target=\"_blank\" title=\"https://www.google.com/images/srpr/logo4w.png\"><img src=\"https://www.google.com/images/srpr/logo4w.png\"></a></div></blockquote>",
       "backend_only_rendering": true,
-      "text_content": "\nGoogle logo today:\nhttps:\/\/www.google.com\/images\/srpr\/logo4w.png\nKinda boring\n"
+      "text_content": "> Google logo today:\n> https:\/\/www.google.com\/images\/srpr\/logo4w.png\n> Kinda boring\n"
     },
     {
       "name": "two_inline_images",
