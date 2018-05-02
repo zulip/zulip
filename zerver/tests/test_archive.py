@@ -9,7 +9,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         # Here we use a relatively big number as stream id assumming such an id
         # won't exist in the test DB.
         result = self.client_get("/archive/streams/100000000/topic/TopicGlobal")
-        self.assert_json_error(result, 'Invalid stream id')
+        self.assert_in_success_response(["This stream does not exist."], result)
 
     def test_non_web_public_stream(self) -> None:
         test_stream = self.make_stream('Test Public Archives')
