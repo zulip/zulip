@@ -169,6 +169,55 @@ exports.pm_string = function () {
     return user_ids_string;
 };
 
+exports.get_unread_ids = function () {
+    // This function currently only returns valid results for
+    // certain types of narrows, mostly left sidebar narrows.
+    // For more complicated narrows we may return undefined.
+    if (current_filter === undefined) {
+        return;
+    }
+
+    var stream_id;
+    var topic_name;
+    var pm_string;
+
+    if (current_filter.is_stream_only()) {
+        stream_id = exports.stream_id();
+        if (stream_id === undefined) {
+            return [];
+        }
+        return unread.get_msg_ids_for_stream(stream_id);
+    }
+
+    if (current_filter.is_stream_topic_only()) {
+        stream_id = exports.stream_id();
+        if (stream_id === undefined) {
+            return [];
+        }
+        topic_name = exports.topic();
+        return unread.get_msg_ids_for_topic(stream_id, topic_name);
+    }
+
+    if (current_filter.is_pm_with_only()) {
+        pm_string = exports.pm_string();
+        if (pm_string === undefined) {
+            return [];
+        }
+        return unread.get_msg_ids_for_person(pm_string);
+    }
+
+    if (current_filter.is_for_only('private')) {
+        return unread.get_msg_ids_for_private();
+    }
+
+    if (current_filter.is_for_only('mentioned')) {
+        return unread.get_msg_ids_for_mentions();
+    }
+
+    return;
+};
+
+
 // Are we narrowed to PMs: all PMs or PMs with particular people.
 exports.narrowed_to_pms = function () {
     if (current_filter === undefined) {
