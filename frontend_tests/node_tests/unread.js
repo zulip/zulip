@@ -422,6 +422,9 @@ stream_data.get_stream_id = function () {
 
     assert.equal(unread.num_unread_for_person(alice.user_id), 0);
     assert.equal(unread.num_unread_for_person(bob.user_id), 0);
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_person(), []);
 
     var message = {
         id: 15,
@@ -437,6 +440,9 @@ stream_data.get_stream_id = function () {
     assert.equal(unread.num_unread_for_person(alice.user_id), 1);
 
     assert.equal(unread.num_unread_for_person(''), 0);
+
+    assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), [message.id]);
+    assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
 }());
 
 
