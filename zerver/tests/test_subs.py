@@ -2102,6 +2102,17 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [self.example_user("iago").id])
 
+    def test_guest_user_subscribe_public(self) -> None:
+        """Guest users cannot subscribe themselves to anything"""
+        guest_user = self.example_user("polonius")
+        guest_email = guest_user.email
+        result = self.common_subscribe_to_streams(guest_email, ["Denmark"])
+        self.assert_json_error(result, "Unable to access stream (Denmark).")
+
+        self.make_stream('private_stream', invite_only=True)
+        result = self.common_subscribe_to_streams(guest_email, ["private_stream"])
+        self.assert_json_error(result, "Unable to access stream (private_stream).")
+
     def test_users_getting_add_peer_event(self) -> None:
         """
         Check users getting add_peer_event is correct
@@ -3125,3 +3136,33 @@ class AccessStreamTest(ZulipTestCase):
         self.common_subscribe_to_streams(sipbtest.email, [mit_stream.name], subdomain="zephyr")
         access_stream_by_id(sipbtest, mit_stream.id)
         access_stream_by_name(sipbtest, mit_stream.name)
+
+    def test_stream_access_by_guest(self) -> None:
+        guest_user_profile = self.example_user('polonius')
+        self.login(guest_user_profile.email)
+        stream_name = "public_stream_1"
+        stream = self.make_stream(stream_name, guest_user_profile.realm, invite_only=False)
+
+        # Guest user don't have access to unsubscribed public streams
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(guest_user_profile, stream.id)
+
+        # Guest user have access to subscribed public streams
+        self.subscribe(guest_user_profile, stream_name)
+        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        self.assertEqual(stream.id, stream_ret.id)
+        self.assertEqual(sub_ret.recipient, rec_ret)
+        self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
+        stream_name = "private_stream_1"
+        stream = self.make_stream(stream_name, guest_user_profile.realm, invite_only=True)
+        # Obviously, a guest user doesn't have access to unsubscribed private streams either
+        with self.assertRaisesRegex(JsonableError, "Invalid stream id"):
+            access_stream_by_id(guest_user_profile, stream.id)
+
+        # Guest user have access to subscribed private streams
+        self.subscribe(guest_user_profile, stream_name)
+        (stream_ret, rec_ret, sub_ret) = access_stream_by_id(guest_user_profile, stream.id)
+        self.assertEqual(stream.id, stream_ret.id)
+        self.assertEqual(sub_ret.recipient, rec_ret)
+        self.assertEqual(sub_ret.recipient.type_id, stream.id)

@@ -429,6 +429,36 @@ class IncludeHistoryTest(ZulipTestCase):
         ]
         self.assertTrue(ok_to_include_history(narrow, user_profile))
 
+        # Tests for guest user
+        guest_user_profile = self.example_user("polonius")
+        # Using 'Cordelia' to compare between a guest and a normal user
+        subscribed_user_profile = self.example_user("cordelia")
+
+        # Guest user can't access public stream
+        self.subscribe(subscribed_user_profile, 'public_stream_2')
+        narrow = [
+            dict(operator='stream', operand='public_stream_2'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+
+        # Definitely, a guest user can't access the unsubscribed private stream
+        self.subscribe(subscribed_user_profile, 'private_stream_3')
+        narrow = [
+            dict(operator='stream', operand='private_stream_3'),
+        ]
+        self.assertFalse(ok_to_include_history(narrow, guest_user_profile))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+
+        # Guest user can access (history of) subscribed private streams
+        self.subscribe(guest_user_profile, 'private_stream_4')
+        self.subscribe(subscribed_user_profile, 'private_stream_4')
+        narrow = [
+            dict(operator='stream', operand='private_stream_4'),
+        ]
+        self.assertTrue(ok_to_include_history(narrow, guest_user_profile))
+        self.assertTrue(ok_to_include_history(narrow, subscribed_user_profile))
+
 class PostProcessTest(ZulipTestCase):
     def test_basics(self) -> None:
         def verify(in_ids: List[int],

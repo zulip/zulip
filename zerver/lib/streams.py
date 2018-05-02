@@ -55,7 +55,7 @@ def access_stream_common(user_profile: UserProfile, stream: Stream,
         sub = None
 
     # If the stream is in your realm and public, you can access it.
-    if stream.is_public():
+    if stream.is_public() and not user_profile.is_guest:
         return (recipient, sub)
 
     # Or if you are subscribed to the stream, you can access it.
@@ -153,7 +153,7 @@ def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: Te
     except Stream.DoesNotExist:
         return False
 
-    if stream.is_history_realm_public():
+    if stream.is_history_realm_public() and not user_profile.is_guest:
         return True
 
     if stream.is_history_public_to_subscribers():
@@ -183,8 +183,9 @@ def filter_stream_authorization(user_profile: UserProfile,
         if stream.id in streams_subscribed:
             continue
 
-        # The user is not authorized for invite_only streams
-        if stream.invite_only:
+        # Users are not authorized for invite_only streams, and guest
+        # users are not authorized for any streams
+        if stream.invite_only or user_profile.is_guest:
             unauthorized_streams.append(stream)
 
     authorized_streams = [stream for stream in streams if
