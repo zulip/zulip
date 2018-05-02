@@ -47,6 +47,7 @@ function set_filter(terms) {
     set_filter(terms);
     unread_ids = narrow_state.get_unread_ids();
     assert.equal(unread_ids, undefined);
+    assert.equal(narrow_state.get_first_unread_id(), undefined);
 
     terms = [
         {operator: 'stream', operand: 'bogus'},
@@ -61,6 +62,7 @@ function set_filter(terms) {
     set_filter(terms);
     unread_ids = narrow_state.get_unread_ids();
     assert.deepEqual(unread_ids, []);
+    assert.equal(narrow_state.get_first_unread_id(), undefined);
 
     msg = {
         id: 101,
@@ -74,6 +76,7 @@ function set_filter(terms) {
 
     unread_ids = narrow_state.get_unread_ids();
     assert.deepEqual(unread_ids, [msg.id]);
+    assert.equal(narrow_state.get_first_unread_id(), msg.id);
 
     terms = [
         {operator: 'stream', operand: 'bogus'},
