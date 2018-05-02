@@ -17,6 +17,7 @@ apns2==0.3.0
 argon2-cffi==18.1.0
 asn1crypto==0.23.0        # via cryptography
 babel==2.5.1              # via django-phonenumber-field
+backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
@@ -54,7 +55,7 @@ hyperframe==3.2.0         # via h2, hyper
 idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.2.1
+ipython==6.3.1
 jedi==0.11.0              # via ipython
 jinja2==2.10
 lxml==4.2.1
