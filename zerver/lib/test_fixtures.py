@@ -103,6 +103,7 @@ def is_template_database_current(
     if check_files is None:
         check_files = [
             'zilencer/management/commands/populate_db.py',
+            'zerver/lib/bulk_create.py',
             'zerver/lib/generate_test_data.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
