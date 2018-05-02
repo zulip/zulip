@@ -37,7 +37,8 @@ class HomeTest(ZulipTestCase):
             'Next message',
             'Search streams',
             'Welcome to Zulip',
-            'pygments.css',
+            # Check for the presence of the app-styles-stubentry
+            'app-styles.*\.js',
             'var page_params',
         ]
 
@@ -201,9 +202,8 @@ class HomeTest(ZulipTestCase):
         self.assert_length(cache_mock.call_args_list, 7)
 
         html = result.content.decode('utf-8')
-
         for html_bit in html_bits:
-            if html_bit not in html:
+            if re.search(html_bit, html) is None:
                 raise AssertionError('%s not in result' % (html_bit,))
 
         page_params = self._get_page_params(result)
