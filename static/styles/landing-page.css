@@ -2844,6 +2844,18 @@ nav ul li.active::after {
         margin: 10px;
     }
 
+    .portico-landing.hello .testimonials .carousel-quotes {
+        width: 100%;
+    }
+
+    .portico-landing.hello .testimonials .fa-chevron-right {
+        right: -40px;
+    }
+
+    .portico-landing.hello .testimonials .fa-chevron-left {
+        left: -40px;
+    }
+
     .screen.hero-screen .line {
         height: 4px;
         margin: 4px 0px;
@@ -3329,14 +3341,6 @@ nav ul li.active::after {
     .portico-landing.hello .testimonials .company-box .company {
         margin: 10px;
         width: calc(33% - 24px);
-    }
-
-    .portico-landing.hello .testimonials .fa-chevron-right {
-        right: 0;
-    }
-
-    .portico-landing.hello .testimonials .fa-chevron-left {
-        left: 0;
     }
 }
 
