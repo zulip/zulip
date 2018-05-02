@@ -219,11 +219,16 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
-                "Verona": {"description": "A city in Italy", "invite_only": False},
-                "Denmark": {"description": "A Scandinavian country", "invite_only": False},
-                "Scotland": {"description": "Located in the United Kingdom", "invite_only": False},
-                "Venice": {"description": "A northeastern Italian city", "invite_only": False},
-                "Rome": {"description": "Yet another Italian city", "invite_only": False}
+                "Verona": {"description": "A city in Italy",
+                           "invite_only": False, "is_web_public": False},
+                "Denmark": {"description": "A Scandinavian country",
+                            "invite_only": False, "is_web_public": False},
+                "Scotland": {"description": "Located in the United Kingdom",
+                             "invite_only": False, "is_web_public": False},
+                "Venice": {"description": "A northeastern Italian city",
+                           "invite_only": False, "is_web_public": False},
+                "Rome": {"description": "Yet another Italian city",
+                         "invite_only": False, "is_web_public": True}
             }  # type: Dict[Text, Dict[Text, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -391,15 +396,24 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_dict = {
-                    "devel": {"description": "For developing", "invite_only": False},
-                    "all": {"description": "For everything", "invite_only": False},
-                    "announce": {"description": "For announcements", "invite_only": False},
-                    "design": {"description": "For design", "invite_only": False},
-                    "support": {"description": "For support", "invite_only": False},
-                    "social": {"description": "For socializing", "invite_only": False},
-                    "test": {"description": "For testing", "invite_only": False},
-                    "errors": {"description": "For errors", "invite_only": False},
-                    "sales": {"description": "For sales discussion", "invite_only": False}
+                    "devel": {"description": "For developing",
+                              "invite_only": False, "is_web_public": False},
+                    "all": {"description": "For everything",
+                            "invite_only": False, "is_web_public": False},
+                    "announce": {"description": "For announcements",
+                                 "invite_only": False, "is_web_public": False},
+                    "design": {"description": "For design",
+                               "invite_only": False, "is_web_public": False},
+                    "support": {"description": "For support",
+                                "invite_only": False, "is_web_public": False},
+                    "social": {"description": "For socializing",
+                               "invite_only": False, "is_web_public": False},
+                    "test": {"description": "For testing",
+                             "invite_only": False, "is_web_public": False},
+                    "errors": {"description": "For errors",
+                               "invite_only": False, "is_web_public": False},
+                    "sales": {"description": "For sales discussion",
+                              "invite_only": False, "is_web_public": False}
                 }  # type: Dict[Text, Dict[Text, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
@@ -417,6 +431,7 @@ class Command(BaseCommand):
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
                         "invite_only": False,
+                        "is_web_public": False,
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)
