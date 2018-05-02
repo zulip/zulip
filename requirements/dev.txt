@@ -26,9 +26,9 @@ backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
-boto3==1.4.7              # via moto
+boto3==1.7.11             # via moto
 boto==2.48.0
-botocore==1.7.46          # via boto3, moto, s3transfer
+botocore==1.10.11         # via boto3, moto, s3transfer
 cchardet==2.1.1
 certifi==2018.4.16
 cffi==1.11.5
@@ -36,7 +36,7 @@ chardet==3.0.4
 click==6.6                # via gitlint, pip-tools
 commonmark==0.5.4
 constantly==15.1.0        # via twisted
-cookies==2.2.1            # via moto
+cookies==2.2.1            # via moto, responses
 coverage==4.5.1
 cryptography==2.2.2
 cssselect==1.0.1          # via parsel, premailer, scrapy
@@ -88,7 +88,7 @@ markdown-include==0.5.1
 markdown==2.6.11
 markupsafe==1.0
 mock==2.0.0
-moto==1.3.1
+moto==1.3.3
 mypy==0.590
 mypy_extensions==0.3.0
 ndg-httpsclient==0.4.4
@@ -140,7 +140,8 @@ recommonmark==0.4.0
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests==2.18.4          # via aws-xray-sdk, docker, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, social-auth-core, sphinx, stripe, twilio
+requests==2.18.4          # via aws-xray-sdk, docker, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+responses==0.9.0          # via moto
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
 scrapy==1.5.0
