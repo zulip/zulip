@@ -19,7 +19,8 @@ from zerver.views.users import add_service
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
     get_display_recipient, bulk_remove_subscriptions, do_create_user,
-    check_send_stream_message, gather_subscriptions
+    check_send_stream_message, gather_subscriptions,
+    get_default_value_for_history_public_to_subscribers,
 )
 
 from zerver.lib.stream_subscription import (
@@ -530,23 +531,8 @@ class ZulipTestCase(TestCase):
         if realm is None:
             realm = self.DEFAULT_REALM
 
-        if invite_only:
-            if history_public_to_subscribers is None:
-                # TODO: Once we have a UI for this feature, we'll remove
-                # settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS and set
-                # this to be False here
-                history_public_to_subscribers = settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS
-            else:
-                # If we later decide to support public streams without
-                # history, we can remove this code path.
-                history_public_to_subscribers = True
-        else:
-            history_public_to_subscribers = True
-
-        if realm.is_zephyr_mirror_realm:
-            # In the Zephyr mirroring model, history is unconditionally
-            # not public to subscribers, even for public streams.
-            history_public_to_subscribers = False
+        history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
+            realm, invite_only, history_public_to_subscribers)
 
         try:
             stream = Stream.objects.create(
