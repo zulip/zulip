@@ -324,18 +324,18 @@ Filter.unparse = function (operators) {
 
 
 Filter.prototype = {
-    predicate: function Filter_predicate() {
+    predicate: function () {
         if (this._predicate === undefined) {
             this._predicate = this._build_predicate();
         }
         return this._predicate;
     },
 
-    operators: function Filter_operators() {
+    operators: function () {
         return this._operators;
     },
 
-    public_operators: function Filter_public_operators() {
+    public_operators: function () {
         var safe_to_return = _.filter(this._operators, function (value) {
             // Filter out the embedded narrow (if any).
             return !(page_params.narrow_stream !== undefined &&
@@ -345,20 +345,20 @@ Filter.prototype = {
         return safe_to_return;
     },
 
-    operands: function Filter_get_operands(operator) {
+    operands: function (operator) {
         return _.chain(this._operators)
             .filter(function (elem) { return !elem.negated && (elem.operator === operator); })
             .map(function (elem) { return elem.operand; })
             .value();
     },
 
-    has_operand: function Filter_has_operand(operator, operand) {
+    has_operand: function (operator, operand) {
         return _.any(this._operators, function (elem) {
             return !elem.negated && (elem.operator === operator && elem.operand === operand);
         });
     },
 
-    has_operator: function Filter_has_operator(operator) {
+    has_operator: function (operator) {
         return _.any(this._operators, function (elem) {
             if (elem.negated && (!_.contains(['search', 'has'], elem.operator))) {
                 return false;
@@ -367,21 +367,21 @@ Filter.prototype = {
         });
     },
 
-    is_search: function Filter_is_search() {
+    is_search: function () {
         return this.has_operator('search');
     },
 
-    can_apply_locally: function Filter_can_apply_locally() {
+    can_apply_locally: function () {
         return (!this.is_search()) && (!this.has_operator('has'));
     },
 
-    _canonicalize_operators: function Filter__canonicalize_operators(operators_mixed_case) {
+    _canonicalize_operators: function (operators_mixed_case) {
         return _.map(operators_mixed_case, function (tuple) {
             return Filter.canonicalize_term(tuple);
         });
     },
 
-    filter_with_new_topic: function Filter_filter_with_new_topic(new_topic) {
+    filter_with_new_topic: function (new_topic) {
         var terms = _.map(this._operators, function (term) {
             var new_term = _.clone(term);
             if (new_term.operator === 'topic' && !new_term.negated) {
@@ -392,7 +392,7 @@ Filter.prototype = {
         return new Filter(terms);
     },
 
-    has_topic: function Filter_has_topic(stream_name, topic) {
+    has_topic: function (stream_name, topic) {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
@@ -413,7 +413,7 @@ Filter.prototype = {
     },
 
     // Build a filter function from a list of operators.
-    _build_predicate: function Filter__build_predicate() {
+    _build_predicate: function () {
         var operators = this._operators;
 
         if (! this.can_apply_locally()) {
