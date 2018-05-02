@@ -65,11 +65,17 @@ def bulk_create_streams(realm: Realm,
                                   .values_list('name', flat=True)])
     streams_to_create = []  # type: List[Stream]
     for name, options in stream_dict.items():
+        if 'history_public_to_subscribers' not in options:
+            options['history_public_to_subscribers'] = (
+                not options["invite_only"] and not realm.is_zephyr_mirror_realm)
         if name.lower() not in existing_streams:
             streams_to_create.append(
                 Stream(
-                    realm=realm, name=name, description=options["description"],
+                    realm=realm,
+                    name=name,
+                    description=options["description"],
                     invite_only=options["invite_only"],
+                    history_public_to_subscribers=options["history_public_to_subscribers"],
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 )
             )
