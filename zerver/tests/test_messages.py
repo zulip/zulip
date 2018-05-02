@@ -88,6 +88,26 @@ from typing import Any, Dict, List, Optional, Set, Text
 from collections import namedtuple
 
 class TopicHistoryTest(ZulipTestCase):
+    def test_topics_history_zephyr_mirror(self) -> None:
+        user_profile = self.mit_user('sipbtest')
+        stream_name = 'new_stream'
+
+        # Send a message to this new stream from another user
+        self.subscribe(self.mit_user("starnine"), stream_name)
+        stream = get_stream(stream_name, user_profile.realm)
+        self.send_stream_message(self.mit_email("starnine"), stream_name,
+                                 topic_name="secret topic", sender_realm="zephyr")
+
+        # Now subscribe this MIT user to the new stream and verify
+        # that the new topic is not accessible
+        self.login(user_profile.email, realm=user_profile.realm)
+        self.subscribe(user_profile, stream_name)
+        endpoint = '/json/users/me/%d/topics' % (stream.id,)
+        result = self.client_get(endpoint, dict(), subdomain="zephyr")
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual(history, [])
+
     def test_topics_history(self) -> None:
         # verified: int(UserMessage.flags.read) == 1
         user_profile = self.example_user('iago')
