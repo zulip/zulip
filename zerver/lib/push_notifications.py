@@ -445,13 +445,24 @@ def get_mobile_push_content(rendered_content: Text) -> Text:
         # Handles realm emojis, avatars etc.
         if elem.tag == "img":
             return elem.get("alt", "")
+        if elem.tag == 'blockquote':
+            return ''  # To avoid empty line before quote text
+        return elem.text or ''
 
-        return elem.text or ""
+    def format_as_quote(quote_text: Text) -> Text:
+        quote_text_list = filter(None, quote_text.split('\n'))  # Remove empty lines
+        quote_text = '\n'.join(map(lambda x: "> "+x, quote_text_list))
+        quote_text += '\n'
+        return quote_text
 
     def process(elem: LH.HtmlElement) -> Text:
         plain_text = get_text(elem)
+        sub_text = ''
         for child in elem:
-            plain_text += process(child)
+            sub_text += process(child)
+        if elem.tag == 'blockquote':
+            sub_text = format_as_quote(sub_text)
+        plain_text += sub_text
         plain_text += elem.tail or ""
         return plain_text
 
