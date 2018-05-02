@@ -405,7 +405,7 @@ stream_data.get_stream_id = function () {
     assert.equal(counts.pm_count.get('999'), 0);
 }());
 
-(function test_num_unread_for_person() {
+(function test_private_messages() {
     var alice = {
         email: 'alice@example.com',
         user_id: 101,
@@ -425,6 +425,7 @@ stream_data.get_stream_id = function () {
     assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), []);
     assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
     assert.deepEqual(unread.get_msg_ids_for_person(), []);
+    assert.deepEqual(unread.get_msg_ids_for_private(), []);
 
     var message = {
         id: 15,
@@ -443,6 +444,7 @@ stream_data.get_stream_id = function () {
 
     assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), [message.id]);
     assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
+    assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
 }());
 
 
