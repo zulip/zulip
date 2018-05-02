@@ -676,6 +676,7 @@ function make_sub(name, stream_id) {
     var filter = new Filter(terms);
     assert.equal(filter.is_stream_only(), true);
     assert.equal(filter.is_stream_topic_only(), false);
+    assert.equal(filter.is_pm_with_only(), false);
 
     terms = [
         {operator: 'stream', operand: 'My Stream'},
@@ -684,6 +685,7 @@ function make_sub(name, stream_id) {
     filter = new Filter(terms);
     assert.equal(filter.is_stream_only(), false);
     assert.equal(filter.is_stream_topic_only(), true);
+    assert.equal(filter.is_pm_with_only(), false);
 
     terms = [
         {operator: 'stream', operand: 'My Stream', negated: true},
@@ -692,6 +694,23 @@ function make_sub(name, stream_id) {
     filter = new Filter(terms);
     assert.equal(filter.is_stream_only(), false);
     assert.equal(filter.is_stream_topic_only(), false);
+    assert.equal(filter.is_pm_with_only(), false);
+
+    terms = [
+        {operator: 'pm-with', operand: 'foo@example.com', negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_stream_only(), false);
+    assert.equal(filter.is_stream_topic_only(), false);
+    assert.equal(filter.is_pm_with_only(), false);
+
+    terms = [
+        {operator: 'pm-with', operand: 'foo@example.com,bar@example.com'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.is_stream_only(), false);
+    assert.equal(filter.is_stream_topic_only(), false);
+    assert.equal(filter.is_pm_with_only(), true);
 }());
 
 (function test_update_email() {

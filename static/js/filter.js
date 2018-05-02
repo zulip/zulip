@@ -419,6 +419,20 @@ Filter.prototype = {
         return this.has_operator('stream') && this.has_operator('topic');
     },
 
+    is_pm_with_only: function () {
+        if (this._operators.length !== 1) {
+            return false;
+        }
+
+        var term = this._operators[0];
+
+        if (term.negated) {
+            return false;
+        }
+
+        return (term.operator === 'pm-with');
+    },
+
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
