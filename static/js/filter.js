@@ -396,6 +396,21 @@ Filter.prototype = {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
+
+    is_stream_only: function () {
+        if (this._operators.length !== 1) {
+            return false;
+        }
+
+        var term = this._operators[0];
+
+        if (term.negated) {
+            return false;
+        }
+
+        return (term.operator === 'stream');
+    },
+
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
