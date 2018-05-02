@@ -9,31 +9,38 @@ from zerver.models import Message, UserProfile
 
 from zerver.lib.avatar import get_gravatar_url
 from zerver.lib.timestamp import datetime_to_timestamp
+from zerver.lib.exceptions import JsonableError
 
 def archive(request: HttpRequest,
             stream_id: int,
             topic_name: str) -> HttpResponse:
-    stream = get_stream_by_id(stream_id)
 
-    def get_response(rendered_message_list: List[str], is_web_public: bool) -> HttpResponse:
+    def get_response(rendered_message_list: List[str],
+                     is_web_public: bool,
+                     stream_name: str) -> HttpResponse:
         return render(
             request,
             'zerver/archive/index.html',
             context={
                 'is_web_public': is_web_public,
                 'message_list': rendered_message_list,
-                'stream': stream.name,
+                'stream': stream_name,
                 'topic': topic_name,
             }
         )
 
+    try:
+        stream = get_stream_by_id(stream_id)
+    except JsonableError:
+        return get_response([], False, '')
+
     if not stream.is_web_public:
-        return get_response([], False)
+        return get_response([], False, '')
 
     all_messages = list(Message.objects.select_related(
         'sender').filter(recipient__type_id=stream_id, subject=topic_name).order_by('pub_date'))
     if not all_messages:
-        return get_response([], True)
+        return get_response([], True, stream.name)
 
     rendered_message_list = []
     prev_sender = None
@@ -60,4 +67,4 @@ def archive(request: HttpRequest,
         }
         rendered_msg = loader.render_to_string('zerver/archive/single_message.html', context)
         rendered_message_list.append(rendered_msg)
-    return get_response(rendered_message_list, True)
+    return get_response(rendered_message_list, True, stream.name)
