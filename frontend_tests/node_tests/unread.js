@@ -479,6 +479,12 @@ stream_data.get_stream_id = function () {
     assert.equal(counts.mentioned_message_count, 0);
 }());
 
+(function test_starring() {
+    // We don't need any setup here, because we just hard code
+    // this to [] in the code.
+    assert.deepEqual(unread.get_msg_ids_for_starred(), []);
+}());
+
 (function test_declare_bankruptcy() {
     var message = {
         id: 16,

@@ -236,6 +236,10 @@ exports.get_unread_ids = function () {
         return unread.get_msg_ids_for_mentions();
     }
 
+    if (current_filter.is_for_only('starred')) {
+        return unread.get_msg_ids_for_starred();
+    }
+
     return;
 };
 
