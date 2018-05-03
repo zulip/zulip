@@ -645,6 +645,13 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(!page_params.never_subscribed);
     assert.equal(page_params.notifications_stream, "");
 
+    // Simulate a private stream the user isn't subscribed to
+    initialize();
+    page_params.realm_notifications_stream_id = 89;
+    stream_data.initialize_from_page_params();
+    assert.equal(page_params.notifications_stream, "");
+
+    // Now actually subscribe the user to the stream
     initialize();
     var foo = {
         name: 'foo',
@@ -652,7 +659,6 @@ zrequire('marked', 'third/marked/lib/marked');
     };
 
     stream_data.add_sub('foo', foo);
-    page_params.realm_notifications_stream_id = 89;
     stream_data.initialize_from_page_params();
 
     assert.equal(page_params.notifications_stream, "foo");
