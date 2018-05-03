@@ -168,7 +168,6 @@ exports.activate = function (raw_operators, opts) {
             }
 
             var preserve_pre_narrowing_screen_position =
-                !select_first_unread &&
                 (message_list.narrowed.get(then_select_id) !== undefined) &&
                 (then_select_offset !== undefined);
 
