@@ -621,6 +621,16 @@ form#add_new_subscription {
     vertical-align: top;
 }
 
+.stream-row::-moz-selection,
+.stream-row .icon .hashtag::-moz-selection {
+    background: transparent;
+}
+
+.stream-row::selection,
+.stream-row .icon .hashtag::selection {
+    background: transparent;
+}
+
 .stream-row .check {
     width: 25px;
     height: 35px;
