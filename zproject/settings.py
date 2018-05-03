@@ -876,15 +876,6 @@ PIPELINE = {
             ),
             'output_filename': 'min/twitter_sprite.css',
         },
-        'archive_css': {
-            'source_filenames': (
-                'node_modules/katex/dist/katex.css',
-                'styles/zulip.css',
-                'styles/media.css',
-                'styles/archive.css',
-            ),
-            'output_filename': 'min/archive_css.css',
-        },
     },
     'JAVASCRIPT': {},
 }
