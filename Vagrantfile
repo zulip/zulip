@@ -126,10 +126,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.provider "lxc" do |lxc|
     if command? "lxc-ls"
       LXC_VERSION = `lxc-ls --version`.strip unless defined? LXC_VERSION
-      if LXC_VERSION >= "1.1.0"
+      if LXC_VERSION >= "1.1.0" and LXC_VERSION < "3.0.0"
         # Allow start without AppArmor, otherwise Box will not Start on Ubuntu 14.10
         # see https://github.com/fgrehm/vagrant-lxc/issues/333
         lxc.customize 'aa_allow_incomplete', 1
+      end
+      if LXC_VERSION >= "3.0.0"
+        lxc.customize 'apparmor.allow_incomplete', 1
       end
       if LXC_VERSION >= "2.0.0"
         lxc.backingstore = 'dir'
