@@ -9,10 +9,14 @@ def get_remote_server_by_uuid(uuid: Text) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
-    uuid = models.CharField(max_length=36, unique=True)  # type: Text
-    api_key = models.CharField(max_length=64)  # type: Text
+    UUID_LENGTH = 36
+    API_KEY_LENGTH = 64
+    HOSTNAME_MAX_LENGTH = 128
 
-    hostname = models.CharField(max_length=128)  # type: Text
+    uuid = models.CharField(max_length=UUID_LENGTH, unique=True)  # type: Text
+    api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: Text
+
+    hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)  # type: Text
     contact_email = models.EmailField(blank=True, null=False)  # type: Text
     last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 

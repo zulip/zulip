@@ -18,28 +18,28 @@ support forwarding push notifications to a central push notification
 forwarding service.  You can enable this for your Zulip server as
 follows:
 
-1. First, contact support@zulipchat.com with the `zulip_org_id` and
-   `zulip_org_key` values from your `/etc/zulip/zulip-secrets.conf` file, as
-   well as a `hostname` and `contact email` address you'd like us to use in case
-   of any issues (we hope to have a nice web flow available for this soon).
+1. If you're running Zulip 1.8.1 or newer, you can run `manage.py
+   register_server` from `/home/zulip/deployments/current`.  This
+   command will print the registration data it would send to the
+   mobile push notifications service, ask you to accept the terms of
+   service, and if you accept, register your server.  Otherwise, see
+   the [legacy signup instructions](#legacy-signup).
 
-2. We'll enable push notifications for your server on our end. Look for a
-   reply from Zulipchat support within 24 hours.
-
-3. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL = "https://push.zulipchat.com"`
-   line in your `/etc/zulip/settings.py` file, and
+1. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL =
+   'https://push.zulipchat.com'` line in your `/etc/zulip/settings.py`
+   file (i.e. remove the `#` at the start of the line), and
    [restart your Zulip server](../production/maintain-secure-upgrade.html#updating-settings).
-   Note that if you installed Zulip older than 1.6, you'll need to add
-   the line (it won't be there to uncomment).
+   If you installed your Zulip server with a version older than 1.6,
+   you'll need to add the line (it won't be there to uncomment).
 
-4. If you or your users have already set up the Zulip mobile app,
+1. If you or your users have already set up the Zulip mobile app,
    you'll each need to log out and log back in again in order to start
    getting push notifications.
 
-That should be all you need to do!
+Congratulations!  You've successful setup the service.
 
-If you'd like to verify the full pipeline, you can do the following.
-Please follow the instructions carefully:
+If you'd like to verify that everything is working, you can do the
+following.  Please follow the instructions carefully:
 
 * [Configure mobile push notifications to always be sent][notification-settings]
   (normally they're only sent if you're idle, which isn't ideal for
@@ -57,9 +57,19 @@ in the Android notification area.
 
 [notification-settings]: https://zulipchat.com/help/configure-mobile-notifications
 
-Note that use of the push notification bouncer is subject to the
-[Zulipchat Terms of Service](https://zulipchat.com/terms/). By using push
-notifications, you agree to those terms.
+## Updating your server's registration
+
+Your server's registration includes the server's hostname and contact
+email address (from `EXTERNAL_HOST` and `ZULIP_ADMINISTRATOR` in
+`/etc/zulip/settings.py`, aka the `--hostname` and `--email` options
+in the installer).  You can update your server's registration data by
+running `manage.py register_server` again.
+
+If you'd like to rotate your server's API key for this service
+(`zulip_org_key`), you need to use `manage.py register_server
+--rotate-key` option; it will automatically generate a new
+`zulip_org_key` and store that new key in
+`/etc/zulip/zulip-secrets.conf`.
 
 ## Why this is necessary
 
@@ -77,7 +87,11 @@ notification forwarding service, which allows registered Zulip servers
 to send push notifications to the Zulip app indirectly (through the
 forwarding service).
 
-## Security and privacy implications
+## Security and privacy
+
+Use of the push notification bouncer is subject to the
+[Zulipchat Terms of Service](https://zulipchat.com/terms/). By using
+push notifications, you agree to those terms.
 
 We've designed this push notification bouncer service with security
 and privacy in mind:
@@ -110,6 +124,18 @@ and privacy in mind:
 If you have any questions about the security model, contact
 support@zulipchat.com.
 
+## Legacy signup
+
+Here are the legacy instructions for signing a server up for push
+notifications:
+
+1. First, contact support@zulipchat.com with the `zulip_org_id` and
+   `zulip_org_key` values from your `/etc/zulip/zulip-secrets.conf` file, as
+   well as a `hostname` and `contact email` address you'd like us to use in case
+   of any issues (we hope to have a nice web flow available for this soon).
+
+2. We'll enable push notifications for your server on our end. Look for a
+   reply from Zulipchat support within 24 hours.
 ## Sending push notifications directly from your server
 
 As we discussed above, it is impossible for a single app in their

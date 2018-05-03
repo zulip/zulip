@@ -1,6 +1,9 @@
 
 from typing import Any, Dict, Optional, Text, Union, cast
 
+from django.core.exceptions import ValidationError
+from django.core.validators import validate_email, URLValidator
+from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse
 from django.utils import timezone
 from django.utils.translation import ugettext as _, ugettext as err_
@@ -15,7 +18,8 @@ from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.validator import check_int
+from zerver.lib.validator import check_int, check_string, check_url, \
+    validate_login_email, check_capped_string, check_string_fixed_length
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, count_stripe_cards, \
@@ -32,6 +36,49 @@ def validate_bouncer_token_request(entity: Union[UserProfile, RemoteZulipServer]
         raise JsonableError(err_("Invalid token type"))
     validate_entity(entity)
     validate_token(token, kind)
+
+@csrf_exempt
+@require_post
+@has_request_variables
+def register_remote_server(
+        request: HttpRequest,
+        zulip_org_id: str=REQ(str_validator=check_string_fixed_length(RemoteZulipServer.UUID_LENGTH)),
+        zulip_org_key: str=REQ(str_validator=check_string_fixed_length(RemoteZulipServer.API_KEY_LENGTH)),
+        hostname: str=REQ(str_validator=check_capped_string(RemoteZulipServer.HOSTNAME_MAX_LENGTH)),
+        contact_email: str=REQ(str_validator=check_string),
+        new_org_key: Optional[str]=REQ(str_validator=check_string_fixed_length(
+            RemoteZulipServer.API_KEY_LENGTH), default=None),
+) -> HttpResponse:
+    # REQ validated the the field lengths, but we still need to
+    # validate the format of these fields.
+    try:
+        # TODO: Ideally we'd not abuse the URL validator this way
+        url_validator = URLValidator()
+        url_validator('http://' + hostname)
+    except ValidationError:
+        raise JsonableError(_('%s is not a valid hostname') % (hostname,))
+
+    try:
+        validate_email(contact_email)
+    except ValidationError as e:
+        raise JsonableError(e.message)
+
+    remote_server, created = RemoteZulipServer.objects.get_or_create(
+        uuid=zulip_org_id,
+        defaults={'hostname': hostname, 'contact_email': contact_email,
+                  'api_key': zulip_org_key})
+
+    if not created:
+        if remote_server.api_key != zulip_org_key:
+            raise JsonableError(err_("zulip_org_id and zulip_org_key do not match."))
+        else:
+            remote_server.hostname = hostname
+            remote_server.contact_email = contact_email
+            if new_org_key is not None:
+                remote_server.api_key = new_org_key
+            remote_server.save()
+
+    return json_success({'created': created})
 
 @has_request_variables
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
