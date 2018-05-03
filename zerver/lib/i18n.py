@@ -77,3 +77,18 @@ def get_available_language_codes() -> List[str]:
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes
+
+def get_language_translation_data(language: str) -> Dict[str, str]:
+    if language == 'zh-hans':
+        language = 'zh_Hans'
+    elif language == 'zh-hant':
+        language = 'zh_Hant'
+    elif language == 'id-id':
+        language = 'id_ID'
+    path = os.path.join(settings.STATIC_ROOT, 'locale', language, 'translations.json')
+    try:
+        with open(path, 'r') as reader:
+            return ujson.load(reader)
+    except FileNotFoundError:
+        print('Translation for {} not found at {}'.format(language, path))
+        return {}
