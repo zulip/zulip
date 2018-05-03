@@ -98,8 +98,19 @@ exports.activate = function (raw_operators, opts) {
         opts.then_select_id = parseInt(filter.operands("id")[0], 10);
     }
 
-    var select_first_unread = (opts.then_select_id === -1);
-    var then_select_id = opts.then_select_id;
+    var select_strategy;
+
+    if (opts.then_select_id >= 0) {
+        select_strategy = {
+            flavor: 'exact',
+            msg_id: opts.then_select_id,
+        };
+    } else {
+        select_strategy = {
+            flavor: 'first_unread',
+        };
+    }
+
     if (!was_narrowed_already) {
         unread.messages_read_in_narrow = false;
     }
@@ -109,8 +120,8 @@ exports.activate = function (raw_operators, opts) {
     if (opts.then_select_offset !== undefined) {
         then_select_offset = opts.then_select_offset;
     } else {
-        if (!select_first_unread) {
-            var row = current_msg_list.get_row(then_select_id);
+        if (select_strategy.flavor === 'exact') {
+            var row = current_msg_list.get_row(select_strategy.msg_id);
             if (row.length > 0) {
                 then_select_offset = row.offset().top;
             }
@@ -163,9 +174,11 @@ exports.activate = function (raw_operators, opts) {
 
     function maybe_select_closest() {
         if (! message_list.narrowed.empty()) {
-            var msg_id = then_select_id;
+            var msg_id;
 
-            if (select_first_unread) {
+            if (select_strategy.flavor === 'exact') {
+                msg_id = select_strategy.msg_id;
+            } else if (select_strategy.flavor === 'first_unread') {
                 msg_id = message_list.narrowed.first_unread_message_id();
             }
 
@@ -193,8 +206,9 @@ exports.activate = function (raw_operators, opts) {
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
     if (narrow_state.get_current_filter().can_apply_locally()) {
-        if (then_select_id !== -1) {
-            if (message_list.all.get(then_select_id) !== undefined) {
+        if (select_strategy.flavor === 'exact') {
+            var msg_to_select = message_list.all.get(select_strategy.msg_id);
+            if (msg_to_select !== undefined) {
                 message_util.add_messages(
                     message_list.all.all_messages(),
                     message_list.narrowed,
@@ -205,10 +219,21 @@ exports.activate = function (raw_operators, opts) {
 
     var defer_selecting_closest = message_list.narrowed.empty();
 
-    (function fetch_message() {
+    (function fetch_messages() {
+        var anchor;
+        var use_first_unread;
+
+        if (select_strategy.flavor === 'exact') {
+            anchor = select_strategy.msg_id;
+            use_first_unread = false;
+        } else if (select_strategy.flavor === 'first_unread') {
+            anchor = -1;
+            use_first_unread = true;
+        }
+
         message_fetch.load_messages_for_narrow({
-            then_select_id: then_select_id,
-            use_first_unread_anchor: select_first_unread,
+            then_select_id: anchor,
+            use_first_unread_anchor: use_first_unread,
             cont: function () {
                 if (defer_selecting_closest) {
                     maybe_select_closest();
