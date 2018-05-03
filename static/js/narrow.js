@@ -100,16 +100,21 @@ exports.activate = function (raw_operators, opts) {
 
     var select_first_unread = (opts.then_select_id === -1);
     var then_select_id = opts.then_select_id;
-    var then_select_offset;
-
     if (!was_narrowed_already) {
         unread.messages_read_in_narrow = false;
     }
 
+    var then_select_offset;
+
     if (opts.then_select_offset !== undefined) {
         then_select_offset = opts.then_select_offset;
-    } else if (!select_first_unread && current_msg_list.get_row(then_select_id).length > 0) {
-        then_select_offset = current_msg_list.get_row(then_select_id).offset().top;
+    } else {
+        if (!select_first_unread) {
+            var row = current_msg_list.get_row(then_select_id);
+            if (row.length > 0) {
+                then_select_offset = row.offset().top;
+            }
+        }
     }
 
     // For legacy reasons, we need to set current_filter before calling
