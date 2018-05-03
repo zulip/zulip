@@ -169,19 +169,26 @@ exports.pm_string = function () {
     return user_ids_string;
 };
 
-exports.get_first_unread_id = function () {
-    // This function may return undefined for two different
-    // reasons: we have no unread messages, or we don't have
-    // an easy, inexpensive way to calculate them.  See the
-    // comment in get_unread_ids() for more details.
-
+exports.get_first_unread_info = function () {
     var unread_ids = exports.get_unread_ids();
 
     if (unread_ids === undefined) {
-        return;
+        // get_unread_ids() only works for certain narrows
+        return {
+            flavor: 'cannot_compute',
+        };
     }
 
-    return unread_ids[0];
+    if (unread_ids.length === 0) {
+        return {
+            flavor: 'not_found',
+        };
+    }
+
+    return {
+        flavor: 'found',
+        msg_id: unread_ids[0],
+    };
 };
 
 exports.get_unread_ids = function () {

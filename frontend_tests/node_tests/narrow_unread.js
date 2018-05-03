@@ -27,6 +27,10 @@ function set_filter(terms) {
     narrow_state.set_current_filter(filter);
 }
 
+function assert_unread_info(expected) {
+    assert.deepEqual(narrow_state.get_first_unread_info(), expected);
+}
+
 (function test_get_unread_ids() {
     var unread_ids;
     var terms;
@@ -47,7 +51,7 @@ function set_filter(terms) {
     set_filter(terms);
     unread_ids = narrow_state.get_unread_ids();
     assert.equal(unread_ids, undefined);
-    assert.equal(narrow_state.get_first_unread_id(), undefined);
+    assert_unread_info({flavor: 'cannot_compute'});
 
     terms = [
         {operator: 'stream', operand: 'bogus'},
@@ -62,7 +66,7 @@ function set_filter(terms) {
     set_filter(terms);
     unread_ids = narrow_state.get_unread_ids();
     assert.deepEqual(unread_ids, []);
-    assert.equal(narrow_state.get_first_unread_id(), undefined);
+    assert_unread_info({flavor: 'not_found'});
 
     msg = {
         id: 101,
@@ -76,7 +80,10 @@ function set_filter(terms) {
 
     unread_ids = narrow_state.get_unread_ids();
     assert.deepEqual(unread_ids, [msg.id]);
-    assert.equal(narrow_state.get_first_unread_id(), msg.id);
+    assert_unread_info({
+        flavor: 'found',
+        msg_id: msg.id,
+    });
 
     terms = [
         {operator: 'stream', operand: 'bogus'},
