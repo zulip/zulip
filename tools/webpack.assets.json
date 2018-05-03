@@ -1,5 +1,8 @@
 {
-    "activity": "./static/third/sorttable/sorttable.js",
+    "activity": [
+        "./static/third/sorttable/sorttable.js",
+        "./static/styles/activity.scss"
+    ],
     "portico": [
         "./static/js/portico/header.js",
         "./static/styles/portico-styles.scss"
