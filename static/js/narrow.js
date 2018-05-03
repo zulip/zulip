@@ -204,17 +204,20 @@ exports.activate = function (raw_operators, opts) {
     }
 
     var defer_selecting_closest = message_list.narrowed.empty();
-    message_fetch.load_messages_for_narrow({
-        then_select_id: then_select_id,
-        use_first_unread_anchor: select_first_unread,
-        cont: function () {
-            if (defer_selecting_closest) {
-                maybe_select_closest();
-            }
-            msg_list.network_time = new Date();
-            maybe_report_narrow_time(msg_list);
-        },
-    });
+
+    (function fetch_message() {
+        message_fetch.load_messages_for_narrow({
+            then_select_id: then_select_id,
+            use_first_unread_anchor: select_first_unread,
+            cont: function () {
+                if (defer_selecting_closest) {
+                    maybe_select_closest();
+                }
+                msg_list.network_time = new Date();
+                maybe_report_narrow_time(msg_list);
+            },
+        });
+    }());
 
     if (! defer_selecting_closest) {
         message_scroll.hide_indicators();
