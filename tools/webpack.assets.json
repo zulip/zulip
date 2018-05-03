@@ -35,6 +35,7 @@
               ],
     "stats": [
               "./static/js/stats/stats.js",
+              "./static/styles/stats.scss",
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
