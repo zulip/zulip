@@ -494,16 +494,10 @@ MIDDLEWARE = (
     'django.middleware.locale.LocaleMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-)
-
-# Make sure these come after authentication middleware.
-TWO_FACTOR_MIDDLEWARE = (
+    # Make sure 2FA middlewares come after authentication middleware.
     'django_otp.middleware.OTPMiddleware',  # Required by Two Factor auth.
     'two_factor.middleware.threadlocals.ThreadLocals',  # Required by Twilio
 )
-
-if TWO_FACTOR_AUTHENTICATION_ENABLED:
-    MIDDLEWARE += TWO_FACTOR_MIDDLEWARE
 
 ANONYMOUS_USER_ID = None
 
@@ -529,16 +523,14 @@ INSTALLED_APPS = [
     'webpack_loader',
     'zerver',
     'social_django',
+    # 2FA related apps.
+    'django_otp',
+    'django_otp.plugins.otp_static',
+    'django_otp.plugins.otp_totp',
+    'two_factor',
 ]
 if USING_PGROONGA:
     INSTALLED_APPS += ['pgroonga']
-if TWO_FACTOR_AUTHENTICATION_ENABLED:
-    INSTALLED_APPS += [
-        'django_otp',
-        'django_otp.plugins.otp_static',
-        'django_otp.plugins.otp_totp',
-        'two_factor',
-    ]
 INSTALLED_APPS += EXTRA_INSTALLED_APPS
 
 ZILENCER_ENABLED = 'zilencer' in INSTALLED_APPS
