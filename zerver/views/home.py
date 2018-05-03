@@ -21,7 +21,7 @@ from zerver.lib.actions import update_user_presence, do_change_tos_version, \
     do_update_pointer, realm_user_count
 from zerver.lib.avatar import avatar_url
 from zerver.lib.i18n import get_language_list, get_language_name, \
-    get_language_list_for_templates
+    get_language_list_for_templates, get_language_translation_data
 from zerver.lib.json_encoder_for_html import JSONEncoderForHTML
 from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
@@ -243,6 +243,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
         show_invites = False
 
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
+
+    page_params['translation_data'] = {}
+    if not default_language == 'en':
+        page_params['translation_data'] = get_language_translation_data(translation.get_language())
 
     csp_nonce = generate_random_token(48)
     response = render(request, 'zerver/app/index.html',
