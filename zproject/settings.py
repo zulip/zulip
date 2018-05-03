@@ -860,10 +860,6 @@ PIPELINE = {
     'STYLESHEETS': {
         # If you add a style here, please update stylesheets()
         # in frontend_tests/zjsunit/output.js as needed.
-        'stats': {
-            'source_filenames': ('styles/stats.css',),
-            'output_filename': 'min/stats.css'
-        },
         'landing-page': {
             'source_filenames': (
                 'styles/landing-page.css',

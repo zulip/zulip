@@ -34,9 +34,10 @@
                "./node_modules/jquery-validation/dist/jquery.validate.min.js"
               ],
     "stats": [
-              "./static/js/stats/stats.js",
-              "./node_modules/plotly.js/dist/plotly-basic.min.js"
-             ],
+        "./static/styles/stats.scss",
+        "./static/js/stats/stats.js",
+        "./node_modules/plotly.js/dist/plotly-basic.min.js"
+    ],
     "translations": "./static/js/translations.js",
     "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
     "app-styles": [
