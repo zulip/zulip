@@ -645,7 +645,7 @@ class StreamAdminTest(ZulipTestCase):
 
         result = self.client_patch('/json/streams/%d' % (stream_id,),
                                    {'description': ujson.dumps('a' * 1025)})
-        self.assert_json_error(result, "description is too long (limit: %s characters)."
+        self.assert_json_error(result, "description is too long (limit: %s characters)"
                                % (Stream.MAX_DESCRIPTION_LENGTH))
 
     def test_change_stream_description_requires_realm_admin(self) -> None:

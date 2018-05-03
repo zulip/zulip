@@ -59,8 +59,8 @@ def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
             return _('%s is not a string') % (var_name,)
-        if len(val) >= max_length:
-            return _("{var_name} is too long (limit: {max_length} characters).".format(
+        if len(val) > max_length:
+            return _("{var_name} is too long (limit: {max_length} characters)".format(
                 var_name=var_name, max_length=max_length))
         return None
     return validator

@@ -57,7 +57,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         data["hint"] = "*" * 81
         data["field_type"] = CustomProfileField.SHORT_TEXT
         result = self.client_post("/json/realm/profile_fields", info=data)
-        msg = "hint is too long (limit: 80 characters)."
+        msg = "hint is too long (limit: 80 characters)"
         self.assert_json_error(result, msg)
 
         data["name"] = "Phone"
@@ -182,7 +182,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             info={'name': 'New phone number',
                   'hint': '*' * 81,
                   'field_type': CustomProfileField.SHORT_TEXT})
-        msg = "hint is too long (limit: 80 characters)."
+        msg = "hint is too long (limit: 80 characters)"
         self.assert_json_error(result, msg)
 
         result = self.client_patch(
@@ -324,7 +324,7 @@ class CustomProfileFieldTest(ZulipTestCase):
     def test_update_invalid_short_text(self) -> None:
         field_name = "Phone number"
         self.assert_error_update_invalid_value(field_name, 't' * 201,
-                                               u"{} is too long (limit: 50 characters).".format(field_name))
+                                               u"{} is too long (limit: 50 characters)".format(field_name))
 
     def test_update_invalid_date(self) -> None:
         field_name = "Birthday"
