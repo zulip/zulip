@@ -1,4 +1,18 @@
 .popover {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.85);
+    transition-property: transform, opacity;
+}
+
+.popover.fade.in {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+.popover {
     width: auto;
 }
 
@@ -205,6 +219,22 @@ ul.remind_me_popover .remind_icon {
 
 .message-info-popover .popover-title {
     padding: 0;
+}
+
+/* -- this is for the gear menu popover -- */
+.dropdown-menu {
+    display: block;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.85);
+
+    transition-property: opacity, transform;
+    transition-duration: 0.15s;
+}
+.open > .dropdown-menu {
+    opacity: 1;
+    pointer-events: all;
+    transform: scale(1);
 }
 
 @media (max-width: 768px) {
