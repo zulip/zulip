@@ -181,6 +181,31 @@ class DecoratorTestCase(TestCase):
         result = get_total(request)
         self.assertEqual(result, 21)
 
+    def test_REQ_str_validator(self) -> None:
+
+        @has_request_variables
+        def get_middle_characters(request: HttpRequest,
+                                  value: str=REQ(str_validator=check_string_fixed_length(5))) -> str:
+            return value[1:-1]
+
+        class Request:
+            GET = {}  # type: Dict[str, str]
+            POST = {}  # type: Dict[str, str]
+
+        request = Request()
+
+        with self.assertRaises(RequestVariableMissingError):
+            get_middle_characters(request)
+
+        request.POST['value'] = 'long_value'
+        with self.assertRaises(JsonableError) as cm:
+            get_middle_characters(request)
+        self.assertEqual(str(cm.exception), 'value has incorrect length 10; should be 5')
+
+        request.POST['value'] = 'valid'
+        result = get_middle_characters(request)
+        self.assertEqual(result, 'ali')
+
     def test_REQ_argument_type(self) -> None:
         @has_request_variables
         def get_payload(request: HttpRequest,

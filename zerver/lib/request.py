@@ -50,6 +50,7 @@ class REQ:
 
     def __init__(self, whence: str=None, *, converter: Callable[[Any], Any]=None,
                  default: Any=NotSpecified, validator: Callable[[Any], Any]=None,
+                 str_validator: Callable[[Any], Any]=None,
                  argument_type: str=None, type: Type=None) -> None:
         """whence: the name of the request variable that should be used
         for this parameter.  Defaults to a request variable of the
@@ -66,6 +67,8 @@ class REQ:
         data structure.  If specified, we will parse the JSON request
         variable value before passing to the function
 
+        str_validator: Like validator, but doesn't parse JSON first.
+
         argument_type: pass 'body' to extract the parsed JSON
         corresponding to the request body
 
@@ -78,12 +81,16 @@ class REQ:
         self.func_var_name = None  # type: str
         self.converter = converter
         self.validator = validator
+        self.str_validator = str_validator
         self.default = default
         self.argument_type = argument_type
 
-        if converter and validator:
+        if converter and (validator or str_validator):
             # Not user-facing, so shouldn't be tagged for translation
             raise AssertionError('converter and validator are mutually exclusive')
+        if validator and str_validator:
+            # Not user-facing, so shouldn't be tagged for translation
+            raise AssertionError('validator and str_validator are mutually exclusive')
 
 # Extracts variables from the request object and passes them as
 # named function arguments.  The request object must be the first
@@ -166,6 +173,12 @@ def has_request_variables(view_func):
                     raise JsonableError(_('Argument "%s" is not valid JSON.') % (param.post_var_name,))
 
                 error = param.validator(param.post_var_name, val)
+                if error:
+                    raise JsonableError(error)
+
+            # str_validators is like validator, but for direct strings (no JSON parsing).
+            if param.str_validator is not None and not default_assigned:
+                error = param.str_validator(param.post_var_name, val)
                 if error:
                     raise JsonableError(error)
 
