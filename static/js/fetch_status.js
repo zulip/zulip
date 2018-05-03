@@ -45,6 +45,10 @@ var FetchStatus = function () {
         return !loading_newer && !found_newest;
     };
 
+    self.has_found_newest = function () {
+        return found_newest;
+    };
+
     return self;
 
 };

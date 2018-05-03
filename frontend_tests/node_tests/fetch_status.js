@@ -22,6 +22,14 @@ function blocked_older() {
     assert.equal(fetch_status.can_load_older_messages(), false);
 }
 
+function has_found_newest() {
+    assert.equal(fetch_status.has_found_newest(), true);
+}
+
+function has_not_found_newest() {
+    assert.equal(fetch_status.has_found_newest(), false);
+}
+
 (function test_basics() {
     reset();
 
@@ -29,12 +37,14 @@ function blocked_older() {
 
     blocked_newer();
     blocked_older();
+    has_not_found_newest();
 
     fetch_status.finish_initial_narrow({
         found_oldest: true,
         found_newest: true,
     });
 
+    has_found_newest();
     blocked_newer();
     blocked_older();
 
