@@ -539,6 +539,14 @@ exports.get_msg_ids_for_mentions = function () {
     return util.sorted_ids(ids);
 };
 
+exports.get_msg_ids_for_starred = function () {
+    // This is here for API consistency sake--we never
+    // have unread starred messages.  (Some day we may ironically
+    // want to make starring the same as mark-as-unread, but
+    // for now starring === reading.)
+    return [];
+};
+
 exports.load_server_counts = function () {
     var unread_msgs = page_params.unread_msgs;
 

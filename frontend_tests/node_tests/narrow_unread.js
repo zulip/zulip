@@ -143,4 +143,11 @@ function assert_unread_info(expected) {
     blueslip.set_test_data('warn', 'Unknown emails: bob@example.com');
     unread_ids = narrow_state.get_unread_ids();
     assert.deepEqual(unread_ids, []);
+
+    terms = [
+        {operator: 'is', operand: 'starred'},
+    ];
+    set_filter(terms);
+    unread_ids = narrow_state.get_unread_ids();
+    assert.deepEqual(unread_ids, []);
 }());
