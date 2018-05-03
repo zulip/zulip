@@ -61,7 +61,7 @@ docutils==0.14
 fakeldap==0.6.1
 first==2.0.1              # via pip-tools
 gitdb==0.6.4
-gitlint==0.9.0
+gitlint==0.10.0
 google-api-python-client==1.6.6
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
@@ -93,7 +93,6 @@ mypy_extensions==0.3.0
 ndg-httpsclient==0.4.4
 oauth2client==4.1.2
 oauthlib==2.0.7
-ordereddict==1.1          # via gitlint
 packaging==16.8           # via sphinx
 parsel==1.2.0             # via scrapy
 parso==0.1.0              # via jedi
