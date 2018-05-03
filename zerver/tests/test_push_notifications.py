@@ -9,12 +9,15 @@ from typing import Any, Dict, List, Optional, Union, SupportsInt, Text
 
 import base64
 import gcm
+import json
 import os
 import ujson
+import uuid
 
 from django.test import TestCase, override_settings
 from django.conf import settings
 from django.http import HttpResponse
+from django.utils.crypto import get_random_string
 
 from zerver.models import (
     PushDeviceToken,
@@ -1302,3 +1305,95 @@ class TestPushNotificationsContent(ZulipTestCase):
         for test in fixtures:
             actual_output = get_mobile_push_content(test["rendered_content"])
             self.assertEqual(actual_output, test["expected_output"])
+
+class PushBouncerSignupTest(ZulipTestCase):
+    def test_push_signup_invalid_host(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="invalid-host",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "invalid-host is not a valid hostname")
+
+    def test_push_signup_invalid_email(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "Enter a valid email address.")
+
+    def test_push_signup_success(self) -> None:
+        zulip_org_id = str(uuid.uuid4())
+        zulip_org_key = get_random_string(64)
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "example.com")
+        self.assertEqual(server.contact_email, "server-admin@example.com")
+
+        # Update our hostname
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="zulip.example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "zulip.example.com")
+        self.assertEqual(server.contact_email, "server-admin@example.com")
+
+        # Now test rotating our key
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+            new_org_key=get_random_string(64),
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "example.com")
+        self.assertEqual(server.contact_email, "server-admin@example.com")
+        zulip_org_key = request["new_org_key"]
+        self.assertEqual(server.api_key, zulip_org_key)
+
+        # Update our hostname
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=zulip_org_key,
+            hostname="zulip.example.com",
+            contact_email="new-server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_success(result)
+        server = RemoteZulipServer.objects.get(uuid=zulip_org_id)
+        self.assertEqual(server.hostname, "zulip.example.com")
+        self.assertEqual(server.contact_email, "new-server-admin@example.com")
+
+        # Now test trying to double-create with a new random key fails
+        request = dict(
+            zulip_org_id=zulip_org_id,
+            zulip_org_key=get_random_string(64),
+            hostname="example.com",
+            contact_email="server-admin@example.com",
+        )
+        result = self.client_post("/api/v1/remotes/server/register", request)
+        self.assert_json_error(result, "zulip_org_id and zulip_org_key do not match.")
