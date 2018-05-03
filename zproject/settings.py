@@ -852,12 +852,6 @@ PIPELINE = {
     'STYLESHEETS': {
         # If you add a style here, please update stylesheets()
         # in frontend_tests/zjsunit/output.js as needed.
-        'landing-page': {
-            'source_filenames': (
-                'styles/landing-page.css',
-            ),
-            'output_filename': 'min/landing.css'
-        },
         'apple_sprite': {
             'source_filenames': (
                 'generated/emoji/apple_sprite.css',
