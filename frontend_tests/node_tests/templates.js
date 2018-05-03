@@ -1251,12 +1251,14 @@ run_test('handlebars_bug', () => {
     };
     var html = render('subscription_stream_privacy_modal', args);
 
-    var stream_desc = $(html).find(".modal-body b");
-    assert.equal(stream_desc.text(), 'an invite-only stream');
+    var other_options = $(html).find("input[name=privacy]");
+    assert.equal(other_options[0].value, 'public');
+    assert.equal(other_options[1].value, 'invite-only');
+    assert.equal(other_options[2].value, 'invite-only-public-history');
 
     var button = $(html).find("#change-stream-privacy-button");
-    assert(button.hasClass("btn-primary"));
-    assert.equal(button.text().trim(), "translated: Make stream public");
+    assert(button.hasClass("btn-danger"));
+    assert.equal(button.text().trim(), "translated: Change privacy");
 }());
 
 

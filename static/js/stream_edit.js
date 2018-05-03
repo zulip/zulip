@@ -343,11 +343,28 @@ function change_stream_privacy(e) {
     var stream_id = $(e.target).data("stream-id");
     var sub = stream_data.get_sub_by_id(stream_id);
 
+    var privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
+
+    var invite_only;
+    var history_public_to_subscribers;
+
+    if (privacy_setting === 'invite-only') {
+        invite_only = true;
+        history_public_to_subscribers = false;
+    } else if (privacy_setting === 'invite-only-public-history') {
+        invite_only = true;
+        history_public_to_subscribers = true;
+    } else {
+        invite_only = false;
+        history_public_to_subscribers = true;
+    }
+
     $(".stream_change_property_info").hide();
     var data = {
         stream_name: sub.name,
         // toggle the privacy setting
-        is_private: !sub.invite_only,
+        is_private: JSON.stringify(invite_only),
+        history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
     };
 
     channel.patch({
@@ -358,7 +375,8 @@ function change_stream_privacy(e) {
             var sub_row = $(".stream-row[data-stream-id='" + stream_id + "']");
 
             // save new privacy settings.
-            sub.invite_only = !sub.invite_only;
+            sub.invite_only = invite_only;
+            sub.history_public_to_subscribers = history_public_to_subscribers;
 
             redraw_privacy_related_stuff(sub_row, sub);
             $("#stream_privacy_modal").remove();
@@ -488,8 +506,12 @@ exports.initialize = function () {
         var stream_id = get_stream_id(e.target);
         var stream = stream_data.get_sub_by_id(stream_id);
         var template_data = {
-            is_private: stream.can_make_public,
             stream_id: stream_id,
+            stream_name: stream.name,
+            is_public: !stream.invite_only,
+            is_private: stream.invite_only && !stream.history_public_to_subscribers,
+            is_private_with_public_history: (stream.invite_only &&
+                                             stream.history_public_to_subscribers),
         };
         var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
 
