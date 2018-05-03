@@ -3,6 +3,7 @@
 import sys
 
 from argparse import ArgumentParser
+from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
 from typing import Any, Dict, Optional, Text, List
@@ -15,6 +16,16 @@ def is_integer_string(val: str) -> bool:
         return True
     except ValueError:
         return False
+
+def check_config() -> None:
+    for (setting_name, default) in settings.REQUIRED_SETTINGS:
+        try:
+            if settings.__getattr__(setting_name) != default:
+                continue
+        except AttributeError:
+            pass
+
+        raise CommandError("Error: You must set %s in /etc/zulip/settings.py." % (setting_name,))
 
 class ZulipBaseCommand(BaseCommand):
     def add_realm_args(self, parser: ArgumentParser, required: bool=False,
