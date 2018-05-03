@@ -144,9 +144,12 @@ exports.activate = function (raw_operators, opts) {
         }
     }
 
-    // For legacy reasons, we need to set current_filter before calling
-    // muting_enabled.
+    // IMPORTANT!  At this point we are heavily committed to
+    // populating the new narrow, so we update our narrow_state.
+    // From here on down, any calls to the narrow_state API will
+    // reflect the upcoming narrow.
     narrow_state.set_current_filter(filter);
+
     var muting_enabled = narrow_state.muting_enabled();
 
     // Save how far from the pointer the top of the message list was.
