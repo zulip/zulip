@@ -77,6 +77,10 @@ class TestGetChartData(ZulipTestCase):
     def test_number_of_humans(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, [None], [])
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
@@ -85,7 +89,7 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'human': self.data(100)},
+            'realm': {'_1day_actives': self.data(100), '_15day_actives': self.data(100), 'total_users': self.data(100)},
             'display_order': None,
             'result': 'success',
         })
@@ -158,7 +162,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {'human': [0]})
+        self.assertEqual(data['realm'], {"_1day_actives": [0], "_15day_actives": [0], "total_users": [0]})
         self.assertFalse('user' in data)
 
         FillState.objects.create(
@@ -198,6 +202,10 @@ class TestGetChartData(ZulipTestCase):
     def test_start_and_end(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, [None], [])
         end_time_timestamps = [datetime_to_timestamp(dt) for dt in self.end_times_day]
 
         # valid start and end
@@ -208,7 +216,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], end_time_timestamps[1:3])
-        self.assertEqual(data['realm'], {'human': [0, 100]})
+        self.assertEqual(data['realm'], {'_1day_actives': [0, 100], '_15day_actives': [0, 100], 'total_users': [0, 100]})
 
         # start later then end
         result = self.client_get('/json/analytics/chart_data',
@@ -220,6 +228,10 @@ class TestGetChartData(ZulipTestCase):
     def test_min_length(self) -> None:
         stat = COUNT_STATS['realm_active_humans::day']
         self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['1day_actives::day']
+        self.insert_data(stat, [None], [])
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        self.insert_data(stat, [None], [])
         # test min_length is too short to change anything
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans',
@@ -227,7 +239,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in self.end_times_day])
-        self.assertEqual(data['realm'], {'human': self.data(100)})
+        self.assertEqual(data['realm'], {'_1day_actives': self.data(100), '_15day_actives': self.data(100), 'total_users': self.data(100)})
         # test min_length larger than filled data
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans',
@@ -236,7 +248,7 @@ class TestGetChartData(ZulipTestCase):
         data = result.json()
         end_times = [ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)]
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in end_times])
-        self.assertEqual(data['realm'], {'human': [0]+self.data(100)})
+        self.assertEqual(data['realm'], {'_1day_actives': [0]+self.data(100), '_15day_actives': [0]+self.data(100), 'total_users': [0]+self.data(100)})
 
     def test_non_existent_chart(self) -> None:
         result = self.client_get('/json/analytics/chart_data',

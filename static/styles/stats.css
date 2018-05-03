@@ -104,6 +104,10 @@ hr {
     margin: 3px;
 }
 
+.button-active-users {
+    float: right;
+}
+
 .chart-container .button-container > * {
     display: inline-block;
     vertical-align: top;
