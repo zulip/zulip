@@ -11,7 +11,7 @@ from django.conf import settings
 from django.core.management import call_command
 from django.test import TestCase, override_settings
 from zerver.lib.actions import do_create_user
-from zerver.lib.management import ZulipBaseCommand, CommandError
+from zerver.lib.management import ZulipBaseCommand, CommandError, check_config
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import stdout_suppressed
 from zerver.lib.test_runner import slow
@@ -19,6 +19,12 @@ from zerver.models import get_user_profile_by_email
 
 from zerver.models import get_realm, UserProfile, Realm
 from confirmation.models import RealmCreationKey, generate_realm_creation_url
+
+class TestCheckConfig(ZulipTestCase):
+    def test_check_config(self) -> None:
+        with self.assertRaisesRegex(CommandError, "Error: You must set ZULIP_ADMINISTRATOR in /etc/zulip/settings.py."):
+            check_config()
+
 
 class TestZulipBaseCommand(ZulipTestCase):
     def setUp(self) -> None:
