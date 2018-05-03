@@ -1,5 +1,8 @@
 {
-    "activity": "./static/third/sorttable/sorttable.js",
+    "activity": [
+        "./static/third/sorttable/sorttable.js",
+        "./static/styles/activity.scss"
+    ],
     "portico": [
         "./static/js/portico/header.js",
         "./static/styles/portico-styles.scss"
@@ -32,6 +35,7 @@
               ],
     "stats": [
               "./static/js/stats/stats.js",
+              "./static/styles/stats.scss",
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
