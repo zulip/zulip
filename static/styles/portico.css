@@ -1626,7 +1626,8 @@ input.new-organization-button {
 
 .integration-instructions .tip,
 .markdown .warn,
-.markdown .tip {
+.markdown .tip,
+.markdown .keyboard_tip {
     position: relative;
     display: block;
     background-color: hsl(210, 22%, 96%);
@@ -1637,14 +1638,16 @@ input.new-organization-button {
 }
 
 .integration-instructions .tip,
-.markdown .tip {
+.markdown .tip,
+.markdown .keyboard_tip {
     background-color: hsl(46, 63%, 95%);
     border: 1px solid hsl(46, 63%, 84%);
 }
 
 .integration-instructions .tip,
 .markdown .warn p,
-.markdown .tip p {
+.markdown .tip p,
+.markdown .keyboard_tip p {
     margin-bottom: 0;
 }
 
@@ -1656,8 +1659,16 @@ input.new-organization-button {
     font-weight: 600;
 }
 
+.markdown .keyboard_tip::before {
+    display: inline;
+    content: "\f11c   Keyboard Shortcut:  ";
+    font-family: FontAwesome, "Yantramanav", Source Sans Pro;
+    font-weight: 600;
+}
+
 .integration-instructions .tip p:first-of-type,
-.markdown .tip p:first-of-type {
+.markdown .tip p:first-of-type,
+.markdown .keyboard_tip p:first-of-type {
     display: inline;
 }
 
@@ -1665,6 +1676,7 @@ input.new-organization-button {
     margin: 20px 0;
 }
 
+.markdown ol > li > div.keyboard_tip,
 .markdown ol > li > div.tip,
 .markdown ol > li > div.warn {
     margin: 5px 25px 5px;

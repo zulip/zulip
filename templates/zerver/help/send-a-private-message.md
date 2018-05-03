@@ -42,13 +42,9 @@ Once you have the user card displayed, select the **Send private message**
 option from the actions dropdown.  This will open the compose box with the
 target user as the recipient.
 
-### Use a keyboard shortcut
-
-You can open a compose box with the addressee autopopulated if you press `R`
-while a message is highlighted, but the compose box is not open. You can close
-the compose box by pressing `Esc` or by clicking the x (<i class="icon-vector-
-remove"></i>) icon located at the top right corner of the compose box. Look
-[here](/help/keyboard-shortcuts) for more keyboard shortcuts.
+!!! keyboard_tip ""
+    You can open a compose box with the addressee autopopulated if you press `R`
+    while a message is highlighted, but the compose box is not open.
 
 ## View your private message history with a user and compose
 
@@ -85,4 +81,7 @@ key or clicking the **Send** button, depending on your settings.
 
 You can always cancel your message by clicking the x (<i
 class="icon-vector-remove"></i>) icon located at the top right corner of
-your compose box or pressing the `Esc` key.
+your compose box
+
+!!! keyboard_tip ""
+    You can close the compose box by pressing the `Esc` key.
