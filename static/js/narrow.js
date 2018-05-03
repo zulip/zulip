@@ -172,37 +172,6 @@ exports.activate = function (raw_operators, opts) {
     message_list.narrowed = msg_list;
     current_msg_list = message_list.narrowed;
 
-    function maybe_select_closest() {
-        if (! message_list.narrowed.empty()) {
-            var msg_id;
-
-            if (select_strategy.flavor === 'exact') {
-                msg_id = select_strategy.msg_id;
-            } else if (select_strategy.flavor === 'first_unread') {
-                msg_id = message_list.narrowed.first_unread_message_id();
-            }
-
-            var preserve_pre_narrowing_screen_position =
-                (message_list.narrowed.get(msg_id) !== undefined) &&
-                (then_select_offset !== undefined);
-
-            var then_scroll = !preserve_pre_narrowing_screen_position;
-
-            message_list.narrowed.select_id(msg_id, {then_scroll: then_scroll,
-                                                     use_closest: true,
-                                                     force_rerender: true,
-                                                    });
-
-            if (preserve_pre_narrowing_screen_position) {
-                // Scroll so that the selected message is in the same
-                // position in the viewport as it was prior to
-                // narrowing
-                message_list.narrowed.view.set_message_offset(then_select_offset);
-            }
-            unread_ops.process_visible();
-        }
-    }
-
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
     if (narrow_state.get_current_filter().can_apply_locally()) {
@@ -236,7 +205,10 @@ exports.activate = function (raw_operators, opts) {
             use_first_unread_anchor: use_first_unread,
             cont: function () {
                 if (defer_selecting_closest) {
-                    maybe_select_closest();
+                    exports.update_selection({
+                        select_strategy: select_strategy,
+                        select_offset: then_select_offset,
+                    });
                 }
                 msg_list.network_time = new Date();
                 maybe_report_narrow_time(msg_list);
@@ -246,7 +218,10 @@ exports.activate = function (raw_operators, opts) {
 
     if (! defer_selecting_closest) {
         message_scroll.hide_indicators();
-        maybe_select_closest();
+        exports.update_selection({
+            select_strategy: select_strategy,
+            select_offset: then_select_offset,
+        });
     } else {
         message_scroll.show_loading_older();
     }
@@ -277,6 +252,42 @@ exports.activate = function (raw_operators, opts) {
         msg_list.initial_free_time = new Date();
         maybe_report_narrow_time(msg_list);
     }, 0);
+};
+
+exports.update_selection = function (opts) {
+    if (message_list.narrowed.empty()) {
+        return;
+    }
+
+    var select_strategy = opts.select_strategy;
+    var select_offset = opts.select_offset;
+
+    var msg_id;
+
+    if (select_strategy.flavor === 'exact') {
+        msg_id = select_strategy.msg_id;
+    } else if (select_strategy.flavor === 'first_unread') {
+        msg_id = message_list.narrowed.first_unread_message_id();
+    }
+
+    var preserve_pre_narrowing_screen_position =
+        (message_list.narrowed.get(msg_id) !== undefined) &&
+        (select_offset !== undefined);
+
+    var then_scroll = !preserve_pre_narrowing_screen_position;
+
+    message_list.narrowed.select_id(msg_id, {then_scroll: then_scroll,
+                                             use_closest: true,
+                                             force_rerender: true,
+                                            });
+
+    if (preserve_pre_narrowing_screen_position) {
+        // Scroll so that the selected message is in the same
+        // position in the viewport as it was prior to
+        // narrowing
+        message_list.narrowed.view.set_message_offset(select_offset);
+    }
+    unread_ops.process_visible();
 };
 
 exports.stream_topic = function () {
