@@ -25,6 +25,7 @@ def REQ(whence: Optional[str] = None,
         converter: Optional[Callable[[str], ResultT]] = None,
         default: Union[_NotSpecified, ResultT] = NotSpecified,
         validator: Optional[Validator] = None,
+        str_validator: Optional[Validator] = None,
         argument_type: Optional[str] = None) -> ResultT: ...
 
 def has_request_variables(view_func: ViewFuncT) -> ViewFuncT: ...
