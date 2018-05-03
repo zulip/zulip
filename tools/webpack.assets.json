@@ -20,7 +20,11 @@
                "./static/third/bootstrap/js/bootstrap.js",
                "./static/js/common.js",
                "./node_modules/moment/min/moment.min.js",
-               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
+               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
+               "./static/third/bootstrap/css/bootstrap.css",
+               "./static/third/bootstrap/css/bootstrap-btn.css",
+               "./static/third/bootstrap/css/bootstrap-responsive.css",
+               "./node_modules/perfect-scrollbar/css/perfect-scrollbar.css"
               ],
     "help": [
             "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.js",
