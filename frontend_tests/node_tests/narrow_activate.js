@@ -96,8 +96,14 @@ function test_helper() {
 
 function stub_message_list() {
     message_list.MessageList = function (table_name, filter) {
+        var list = this;
         this.messages = [];
         this.filter = filter;
+        this.view = {
+            set_message_offset: function (offset) {
+                list.view.offset = offset;
+            },
+        };
 
         return this;
     };
@@ -109,12 +115,15 @@ function stub_message_list() {
             this.messages = this.messages.concat(messages);
         },
 
-        empty: function () {
-            return this.messages.length === 0;
+        get: function (msg_id) {
+            var msg = _.find(this.messages, (msg) => {
+                return msg.id === msg_id;
+            });
+            return msg;
         },
 
-        first_unread_message_id: function () {
-            return this.messages[0].id;
+        empty: function () {
+            return this.messages.length === 0;
         },
 
         select_id: function (msg_id) {
@@ -130,7 +139,6 @@ function stub_message_list() {
     var terms = [
         { operator: 'stream', operand: 'Denmark' },
     ];
-    var opts = {};
 
     var selected_id = 1000;
 
@@ -142,14 +150,20 @@ function stub_message_list() {
 
     var messages = [selected_message];
 
+    var row = {
+        length: 1,
+        offset: () => { return {top: 25}; },
+    };
+
     current_msg_list.selected_id = () => { return -1; };
+    current_msg_list.get_row = () => { return row; };
 
     message_list.all = {
         all_messages: () => {
             return messages;
         },
         get: (msg_id) => {
-            assert.equal(msg_id, -1);
+            assert.equal(msg_id, selected_id);
             return selected_message;
         },
     };
@@ -161,14 +175,17 @@ function stub_message_list() {
 
         assert.deepEqual(opts, {
             cont: opts.cont,
-            then_select_id: -1,
-            use_first_unread_anchor: true,
+            then_select_id: 1000,
+            use_first_unread_anchor: false,
         });
     };
 
-    narrow.activate(terms, opts);
+    narrow.activate(terms, {
+        then_select_id: selected_id,
+    });
 
     assert.equal(message_list.narrowed.selected_id, selected_id);
+    assert.equal(message_list.narrowed.view.offset, 25);
 
     helper.assert_events([
         'notifications.clear_compose_notifications',
