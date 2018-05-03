@@ -15,8 +15,7 @@
     {{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}
     {{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
     {{ render_bundle('portico') }}
-    {% stylesheet 'portico' %}
-    {% stylesheet 'archive_css' %}
+    {{ render_bundle('archive-styles') }}
 
 {% endblock %}
 

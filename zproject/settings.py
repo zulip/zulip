@@ -849,19 +849,7 @@ PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
     'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
     'YUI_BINARY': '/usr/bin/env yui-compressor',
-    'STYLESHEETS': {
-        # If you add a style here, please update stylesheets()
-        # in frontend_tests/zjsunit/output.js as needed.
-        'archive_css': {
-            'source_filenames': (
-                'node_modules/katex/dist/katex.css',
-                'styles/zulip.css',
-                'styles/media.css',
-                'styles/archive.css',
-            ),
-            'output_filename': 'min/archive_css.css',
-        },
-    },
+    'STYLESHEETS': {},
     'JAVASCRIPT': {},
 }
 
