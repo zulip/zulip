@@ -858,15 +858,6 @@ PIPELINE = {
             ),
             'output_filename': 'min/landing.css'
         },
-        'common': {
-            'source_filenames': (
-                'third/bootstrap/css/bootstrap.css',
-                'third/bootstrap/css/bootstrap-btn.css',
-                'third/bootstrap/css/bootstrap-responsive.css',
-                'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
-            ),
-            'output_filename': 'min/common.css'
-        },
         'apple_sprite': {
             'source_filenames': (
                 'generated/emoji/apple_sprite.css',
