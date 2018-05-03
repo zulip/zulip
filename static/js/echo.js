@@ -157,7 +157,8 @@ exports.try_deliver_locally = function try_deliver_locally(message_request) {
 };
 
 exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
-    message.raw_content = raw_content;
+    var message_content_edited = raw_content !== undefined && message.raw_content !== raw_content;
+
     if (new_topic !== undefined) {
         topic_data.remove_message({
             stream_id: message.stream_id,
@@ -173,7 +174,10 @@ exports.edit_locally = function edit_locally(message, raw_content, new_topic) {
         });
     }
 
-    markdown.apply_markdown(message);
+    if (message_content_edited) {
+        message.raw_content = raw_content;
+        markdown.apply_markdown(message);
+    }
 
     // We don't handle unread counts since local messages must be sent by us
 
