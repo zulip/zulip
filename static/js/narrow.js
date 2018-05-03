@@ -44,6 +44,22 @@ function report_unnarrow_time() {
     unnarrow_times = {};
 }
 
+exports.save_pre_narrow_offset_for_reload = function () {
+    if (current_msg_list.selected_id() !== -1) {
+        if (current_msg_list.selected_row().length === 0) {
+            blueslip.debug("narrow.activate missing selected row", {
+                selected_id: current_msg_list.selected_id(),
+                selected_idx: current_msg_list.selected_idx(),
+                selected_idx_exact: current_msg_list._items.indexOf(
+                                        current_msg_list.get(current_msg_list.selected_id())),
+                render_start: current_msg_list.view._render_win_start,
+                render_end: current_msg_list.view._render_win_end,
+            });
+        }
+        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
+    }
+};
+
 exports.narrow_title = "home";
 exports.activate = function (raw_operators, opts) {
     var start_time = new Date();
@@ -134,19 +150,7 @@ exports.activate = function (raw_operators, opts) {
     var muting_enabled = narrow_state.muting_enabled();
 
     // Save how far from the pointer the top of the message list was.
-    if (current_msg_list.selected_id() !== -1) {
-        if (current_msg_list.selected_row().length === 0) {
-            blueslip.debug("narrow.activate missing selected row", {
-                selected_id: current_msg_list.selected_id(),
-                selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list._items.indexOf(
-                                        current_msg_list.get(current_msg_list.selected_id())),
-                render_start: current_msg_list.view._render_win_start,
-                render_end: current_msg_list.view._render_win_end,
-            });
-        }
-        current_msg_list.pre_narrow_offset = current_msg_list.selected_row().offset().top;
-    }
+    exports.save_pre_narrow_offset_for_reload();
 
     var msg_list_opts = {
         collapse_messages: ! narrow_state.get_current_filter().is_search(),
