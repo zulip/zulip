@@ -40,7 +40,8 @@ from zerver.decorator import (
 from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
-    check_variable_type, equals, check_none_or, check_url, check_short_string
+    check_variable_type, equals, check_none_or, check_url, check_short_string,
+    check_capped_string
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm, Recipient
@@ -567,12 +568,25 @@ class ValidatorTestCase(TestCase):
         x = 4
         self.assertEqual(check_string('x', x), 'x is not a string')
 
+    def test_check_capped_string(self) -> None:
+        x = "hello"  # type: Any
+        self.assertEqual(check_capped_string(5)('x', x), None)
+
+        x = 4
+        self.assertEqual(check_capped_string(5)('x', x), 'x is not a string')
+
+        x = "helloz"
+        self.assertEqual(check_capped_string(5)('x', x), 'x is too long (limit: 5 characters)')
+
+        x = "hi"
+        self.assertEqual(check_capped_string(5)('x', x), None)
+
     def test_check_short_string(self) -> None:
         x = "hello"  # type: Any
         self.assertEqual(check_short_string('x', x), None)
 
         x = 'x' * 201
-        self.assertEqual(check_short_string('x', x), "x is too long (limit: 50 characters).")
+        self.assertEqual(check_short_string('x', x), "x is too long (limit: 50 characters)")
 
         x = 4
         self.assertEqual(check_short_string('x', x), 'x is not a string')
