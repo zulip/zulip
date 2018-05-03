@@ -7,6 +7,21 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+### 1.8.1 -- 2018-05-07
+
+- Added an automated tool (`manage.py register_server`) to sign up for
+  the [mobile push notifications service](../production/mobile-push-notifications.html).
+- Improved rendering of block quotes in mobile push notifications.
+- Improved some installer error messages.
+- Fixed several minor bugs with the new Slack import feature.
+- Fixed several visual bugs with the new compose input pills.
+- Fixed several minor visual bugs with night mode.
+- Fixed bug with visual clipping of "g" in the left sidebar.
+- Fixed an issue with the LDAP backend users' Organization Unit (OU)
+  being cached, resulting in trouble logging in after a user was moved
+  between OUs.
+- Fixed a couple subtle bugs with muting.
+
 ### 1.8.0 -- 2018-04-17
 
 **Highlights:**
