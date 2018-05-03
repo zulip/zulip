@@ -2,10 +2,10 @@
     "activity": "./static/third/sorttable/sorttable.js",
     "portico": [
         "./static/js/portico/header.js",
-        "./static/styles/scss/portico.scss"
+        "./static/styles/portico-styles.scss"
     ],
     "error-styles": [
-        "./static/styles/scss/portico.scss"
+        "./static/styles/portico-styles.scss"
     ],
     "common": [
                "string.prototype.endswith",
@@ -35,5 +35,6 @@
               "./node_modules/plotly.js/dist/plotly-basic.min.js"
              ],
     "translations": "./static/js/translations.js",
-    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js"
+    "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
+    "app-styles": "./static/styles/app.scss"
 }
