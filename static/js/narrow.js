@@ -163,20 +163,22 @@ exports.activate = function (raw_operators, opts) {
 
     function maybe_select_closest() {
         if (! message_list.narrowed.empty()) {
+            var msg_id = then_select_id;
+
             if (select_first_unread) {
-                then_select_id = message_list.narrowed.first_unread_message_id();
+                msg_id = message_list.narrowed.first_unread_message_id();
             }
 
             var preserve_pre_narrowing_screen_position =
-                (message_list.narrowed.get(then_select_id) !== undefined) &&
+                (message_list.narrowed.get(msg_id) !== undefined) &&
                 (then_select_offset !== undefined);
 
             var then_scroll = !preserve_pre_narrowing_screen_position;
 
-            message_list.narrowed.select_id(then_select_id, {then_scroll: then_scroll,
-                                                         use_closest: true,
-                                                         force_rerender: true,
-                                                        });
+            message_list.narrowed.select_id(msg_id, {then_scroll: then_scroll,
+                                                     use_closest: true,
+                                                     force_rerender: true,
+                                                    });
 
             if (preserve_pre_narrowing_screen_position) {
                 // Scroll so that the selected message is in the same
