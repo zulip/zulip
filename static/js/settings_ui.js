@@ -21,7 +21,7 @@ exports.strings = {
 exports.do_settings_change = function (request_method, url, data, status_element, opts) {
     var spinner = $(status_element).expectOne();
     spinner.fadeTo(0, 1);
-    loading.make_indicator(spinner, {text: exports.strings.saving});
+    loading.make_indicator(spinner, {text: opts.saving_msg || exports.strings.saving});
     var success_msg;
     var success_continuation;
     var error_continuation;
@@ -53,7 +53,7 @@ exports.do_settings_change = function (request_method, url, data, status_element
             }
         },
         error: function (xhr) {
-            ui_report.error(exports.strings.failure, xhr, spinner);
+            ui_report.error(opts.failure_msg || exports.strings.failure, xhr, spinner);
             if (error_continuation !== undefined) {
                 error_continuation(xhr);
             }
