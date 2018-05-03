@@ -31,8 +31,14 @@
             "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
-    "landing-page": "./static/js/portico/landing-page.js",
-    "integrations": "./static/js/portico/integrations.js",
+    "landing-page": [
+        "./static/js/portico/landing-page.js",
+        "./static/styles/landing-page.scss"
+    ],
+    "integrations": [
+        "./static/js/portico/integrations.js",
+        "./static/styles/landing-page.scss"
+    ],
     "signup": [
                "./static/js/portico/signup.js",
                "./node_modules/jquery-validation/dist/jquery.validate.min.js"
