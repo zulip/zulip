@@ -97,7 +97,8 @@ var stream_name_error = (function () {
     return self;
 }());
 
-function ajaxSubscribeForCreation(stream_name, description, principals, invite_only, announce) {
+function ajaxSubscribeForCreation(stream_name, description, principals, invite_only,
+                                  announce, history_public_to_subscribers) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -106,6 +107,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                principals: JSON.stringify(principals),
                invite_only: JSON.stringify(invite_only),
                announce: JSON.stringify(announce),
+               history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
         },
         success: function () {
             $("#create_stream_name").val("");
@@ -168,8 +170,22 @@ function get_principals() {
 function create_stream() {
     var stream_name = $.trim($("#create_stream_name").val());
     var description = $.trim($("#create_stream_description").val());
-    var is_invite_only = $('#stream_creation_form input[name=privacy]:checked').val() === "invite-only";
+    var privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
     var principals = get_principals();
+
+    var invite_only;
+    var history_public_to_subscribers;
+
+    if (privacy_setting === 'invite-only') {
+        invite_only = true;
+        history_public_to_subscribers = false;
+    } else if (privacy_setting === 'invite-only-public-history') {
+        invite_only = true;
+        history_public_to_subscribers = true;
+    } else {
+        invite_only = false;
+        history_public_to_subscribers = true;
+    }
 
     created_stream = stream_name;
 
@@ -182,8 +198,9 @@ function create_stream() {
         stream_name,
         description,
         principals,
-        is_invite_only,
-        announce
+        invite_only,
+        announce,
+        history_public_to_subscribers
     );
 }
 
