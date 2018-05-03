@@ -65,6 +65,16 @@ def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str
         return None
     return validator
 
+def check_string_fixed_length(length: int) -> Callable[[str, object], Optional[str]]:
+    def validator(var_name: str, val: object) -> Optional[str]:
+        if not isinstance(val, str):
+            return _('%s is not a string') % (var_name,)
+        if len(val) != length:
+            return _("{var_name} has incorrect length {length}; should be {target_length}".format(
+                var_name=var_name, target_length=length, length=len(val)))
+        return None
+    return validator
+
 def check_long_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(500)(var_name, val)
 

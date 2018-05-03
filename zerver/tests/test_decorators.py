@@ -41,7 +41,7 @@ from zerver.lib.cache import ignore_unhashable_lru_cache
 from zerver.lib.validator import (
     check_string, check_dict, check_dict_only, check_bool, check_float, check_int, check_list, Validator,
     check_variable_type, equals, check_none_or, check_url, check_short_string,
-    check_capped_string
+    check_string_fixed_length, check_capped_string
 )
 from zerver.models import \
     get_realm, get_user, UserProfile, Client, Realm, Recipient
@@ -567,6 +567,19 @@ class ValidatorTestCase(TestCase):
 
         x = 4
         self.assertEqual(check_string('x', x), 'x is not a string')
+
+    def test_check_string_fixed_length(self) -> None:
+        x = "hello"  # type: Any
+        self.assertEqual(check_string_fixed_length(5)('x', x), None)
+
+        x = 4
+        self.assertEqual(check_string_fixed_length(5)('x', x), 'x is not a string')
+
+        x = "helloz"
+        self.assertEqual(check_string_fixed_length(5)('x', x), 'x has incorrect length 6; should be 5')
+
+        x = "hi"
+        self.assertEqual(check_string_fixed_length(5)('x', x), 'x has incorrect length 2; should be 5')
 
     def test_check_capped_string(self) -> None:
         x = "hello"  # type: Any
