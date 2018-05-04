@@ -71,6 +71,7 @@ IGNORED_PHRASES = [
     r"images",
     r"enabled",
     r"disabled",
+    r"zulip_org_id",
 
     # Fragments of larger strings
     (r'your subscriptions on your Streams page'),
