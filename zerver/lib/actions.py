@@ -4715,17 +4715,12 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
             pass
     return service_dicts
 
-def get_services_for_bots(bot_profile_ids: List[int]) -> Dict[int, List[Service]]:
-    services = Service.objects.filter(user_profile_id__in=bot_profile_ids)
-    services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
-    for service in services:
-        services_by_uid[service.user_profile.id].append(service)
-    return services_by_uid
-
 def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                                realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
     bot_profile_ids = [bot_dict['id'] for bot_dict in bot_dicts]
-    bot_services_by_uid = get_services_for_bots(bot_profile_ids)
+    bot_services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
+    for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
+        bot_services_by_uid[service.user_profile.id].append(service)
 
     embedded_bot_ids = [bot_dict['id'] for bot_dict in bot_dicts
                         if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT]
