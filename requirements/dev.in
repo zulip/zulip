@@ -5,10 +5,10 @@
 -r docs.in
 
 # moto s3 mock
-moto==1.3.1
+moto==1.3.3
 
 # Needed for running tools/run-dev.py
-Twisted==17.9.0
+Twisted==18.4.0
 
 # Needed for documentation links test
 Scrapy==1.5.0
@@ -32,7 +32,7 @@ pyflakes==1.6.0
 tblib==1.3.2
 
 # Needed to lint Git commit messages
-gitlint==0.9.0
+gitlint==0.10.0
 
 # Needed for visualising cprofile reports
 snakeviz==0.4.2
@@ -44,6 +44,6 @@ transifex-client==0.12.5
 python-digitalocean==1.13.2
 
 # Needed for updating the locked pip dependencies
-pip-tools==1.11.0
+pip-tools==2.0.2
 
 -r mypy.in
