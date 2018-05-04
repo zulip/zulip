@@ -76,26 +76,28 @@ function render_attachments_ui(attachments) {
         return -1;
     });
 
-    ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
-
     uploaded_files_table.empty();
     _.each(attachments, function (attachment) {
         var row = templates.render('uploaded_files_list', { attachment: attachment });
         uploaded_files_table.append(row);
     });
+    ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
+}
+
+exports.set_up_attachments = function () {
+    // The settings page must be rendered before this function gets called.
+
+    var uploaded_files_table = $("#uploaded_files_table").expectOne();
+    var status = $('#delete-upload-status');
+    loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
+
+    ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
     $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {
         var row = $(e.target).closest(".uploaded_file_row");
         row.remove();
         delete_attachments($(this).attr('data-attachment-id'));
     });
-}
-
-exports.set_up_attachments = function () {
-    // The settings page must be rendered before this function gets called.
-
-    var status = $('#delete-upload-status');
-    loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
 
     channel.get({
         url: "/json/attachments",
