@@ -51,8 +51,8 @@ class DocPageTest(ZulipTestCase):
 
         if not landing_page:
             return
-        # Test the URL on the root subdomain with the landing page setting
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+            # Test the URL on the root subdomain with the landing page setting
             result = self.get_doc(url, subdomain="")
             self.assertEqual(result.status_code, 200)
             self.assertIn(expected_content, str(result.content))
@@ -63,6 +63,15 @@ class DocPageTest(ZulipTestCase):
             if not doc_html_str:
                 self.assert_in_success_response(['<meta name="description" content="Zulip combines'], result)
             self.assert_not_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
+
+            # Test the URL on the "zephyr" subdomain with the landing page setting
+            result = self.get_doc(url, subdomain="zephyr")
+            self.assertEqual(result.status_code, 200)
+            self.assertIn(expected_content, str(result.content))
+            for s in extra_strings:
+                self.assertIn(s, str(result.content))
+            if not doc_html_str:
+                self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
