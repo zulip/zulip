@@ -61,11 +61,23 @@ exports.add_custom_profile_fields_to_settings = function () {
         var type;
         var value = people.my_custom_profile_data(field.id);
         var is_long_text = field_type === "Long Text";
+        var is_choice_field = field_type === "Choice";
+        var field_choices = [];
 
         if (field_type === "Long Text" || field_type === "Short Text") {
             type = "text";
         } else if (field_type === "Choice") {
             type = "choice";
+            var field_choice_dict = JSON.parse(field.field_data);
+            for (var choice in field_choice_dict) {
+                if (choice) {
+                    field_choices[field_choice_dict[choice].order] = {
+                        value: choice,
+                        text: field_choice_dict[choice].text,
+                        selected: choice === value,
+                    };
+                }
+            }
         } else if (field_type === "Date") {
             type = "date";
         } else if (field_type === "URL") {
@@ -82,6 +94,8 @@ exports.add_custom_profile_fields_to_settings = function () {
                                                                   field_type: type,
                                                                   field_value: value,
                                                                   is_long_text_field: is_long_text,
+                                                                  is_choice_field: is_choice_field,
+                                                                  field_choices: field_choices,
                                                                   });
         $("#account-settings .custom-profile-fields-form").append(html);
     });
@@ -313,12 +327,12 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $(".custom_user_field input, .custom_user_field textarea").on('change', function () {
+    $(".custom_user_field_value").on('change', function () {
         var fields = [];
         var value = $(this).val();
+        fields.push({id: parseInt($(this).parent().attr("id"), 10), value: value});
         var spinner = $("#custom-field-status").expectOne();
         loading.make_indicator(spinner, {text: 'Saving ...'});
-        fields.push({id: parseInt($(this).attr("id"), 10), value: value});
         settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
                                        {data: JSON.stringify(fields)}, spinner);
     });
