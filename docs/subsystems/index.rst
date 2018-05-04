@@ -30,6 +30,7 @@ Subsystems Documentation
    logging
    typing-indicators
    users
+   guest-users
    release-checklist
    api-release-checklist
    swagger-api-docs
