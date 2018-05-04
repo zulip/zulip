@@ -4726,23 +4726,24 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                         if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT]
     embedded_bot_configs = get_bot_configs(embedded_bot_ids)
 
-    bot_profiles = user_ids_to_users(bot_profile_ids, realm)  # type: List[UserProfile]
     service_dicts_by_uid = {}  # type: Dict[int, List[Dict[Text, Any]]]
-    for bot_profile in bot_profiles:
-        services = bot_services_by_uid[bot_profile.id]
+    for bot_dict in bot_dicts:
+        bot_profile_id = bot_dict["id"]
+        bot_type = bot_dict["bot_type"]
+        services = bot_services_by_uid[bot_profile_id]
         service_dicts = []  # type: List[Dict[Text, Any]]
-        if bot_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
+        if bot_type  == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [{'base_url': service.base_url,
                               'interface': service.interface,
                               }
                              for service in services]
-        elif bot_profile.bot_type == UserProfile.EMBEDDED_BOT:
-            if bot_profile.id in embedded_bot_configs.keys():
-                bot_config = embedded_bot_configs[bot_profile.id]
+        elif bot_type == UserProfile.EMBEDDED_BOT:
+            if bot_profile_id in embedded_bot_configs.keys():
+                bot_config = embedded_bot_configs[bot_profile_id]
                 service_dicts = [{'config_data': bot_config,
                                   'service_name': services[0].name
                                   }]
-        service_dicts_by_uid[bot_profile.id] = service_dicts
+        service_dicts_by_uid[bot_profile_id] = service_dicts
     return service_dicts_by_uid
 
 def get_owned_bot_dicts(user_profile: UserProfile,
