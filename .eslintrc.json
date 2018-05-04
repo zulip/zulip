@@ -99,6 +99,7 @@
         "flatpickr": false,
         "pointer": false,
         "util": false,
+        "MessageListData": false,
         "MessageListView": false,
         "blueslip": false,
         "rows": false,

@@ -9,84 +9,28 @@ exports.MessageList = function (table_name, filter, opts) {
         collapse_messages: true,
         muting_enabled: true,
     }, opts);
+
+    this.data = new MessageListData({
+        muting_enabled: this.muting_enabled,
+        filter: filter,
+    });
+
     this.view = new MessageListView(this, table_name, this.collapse_messages);
-
     this.fetch_status = FetchStatus();
-
-    if (this.muting_enabled) {
-        this._all_items = [];
-    }
-    this._items = [];
-    this._hash = {};
-    this._local_only = {};
     this.table_name = table_name;
-    this.filter = filter;
-    this._selected_id = -1;
-
-    if (this.filter === undefined) {
-        this.filter = new Filter();
-    }
-
     this.narrowed = this.table_name === "zfilt";
-
     this.num_appends = 0;
 
     return this;
 };
 
 exports.MessageList.prototype = {
-    _get_predicate: function () {
-        // We cache this.
-        if (!this.predicate) {
-            this.predicate = this.filter.predicate();
-        }
-        return this.predicate;
-    },
-
-    valid_non_duplicated_messages: function (messages) {
-        var predicate = this._get_predicate();
-        var self = this;
-        return _.filter(messages, function (msg) {
-            return self.get(msg.id) === undefined && predicate(msg);
-        });
-    },
-
-    filter_incoming: function (messages) {
-        var predicate = this._get_predicate();
-        return _.filter(messages, predicate);
-    },
-
     add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
-        var top_messages = [];
-        var bottom_messages = [];
-        var interior_messages = [];
-
-        // If we're initially populating the list, save the messages in
-        // bottom_messages regardless
-        if (self.selected_id() === -1 && self.empty()) {
-            var narrow_messages = this.filter_incoming(messages);
-            bottom_messages = _.reject(narrow_messages, function (msg) {
-                return self.get(msg.id);
-            });
-        } else {
-            messages = self.valid_non_duplicated_messages(messages);
-            _.each(messages, function (msg) {
-
-                // Put messages in correct order on either side of the
-                // message list.  This code path assumes that messages
-                // is a (1) sorted, and (2) consecutive block of
-                // messages that belong in this message list; those
-                // facts should be ensured by the caller.
-                if (self.empty() || msg.id > self.last().id) {
-                    bottom_messages.push(msg);
-                } else if (msg.id < self.first().id) {
-                    top_messages.push(msg);
-                } else {
-                    interior_messages.push(msg);
-                }
-            });
-        }
+        var info = this.data.triage_messages(messages);
+        var top_messages = info.top_messages;
+        var bottom_messages = info.bottom_messages;
+        var interior_messages = info.interior_messages;
 
         if (interior_messages.length > 0) {
             self.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
@@ -95,6 +39,7 @@ exports.MessageList.prototype = {
         if (top_messages.length > 0) {
             self.prepend(top_messages);
         }
+
         if (bottom_messages.length > 0) {
             self.append(bottom_messages, opts);
         }
@@ -113,60 +58,47 @@ exports.MessageList.prototype = {
         }
     },
 
-    get: function MessageList_get(id) {
-        id = parseFloat(id);
-        if (isNaN(id)) {
-            return;
-        }
-        return this._hash[id];
+    get: function (id) {
+        return this.data.get(id);
     },
 
-    num_items: function MessageList_num_items() {
-        return this._items.length;
+    num_items: function () {
+        return this.data.num_items();
     },
 
-    empty: function MessageList_empty() {
-        return this._items.length === 0;
+    empty: function () {
+        return this.data.empty();
     },
 
-    first: function MessageList_first() {
-        return this._items[0];
+    first: function () {
+        return this.data.first();
     },
 
-    last: function MessageList_last() {
-        return this._items[this._items.length - 1];
+    last: function () {
+        return this.data.last();
     },
 
-    nth_most_recent_id: function MessageList_nth_most_recent_id(n) {
-        var i = this._items.length - n;
-        if (i < 0) {
-            return -1;
-        }
-        return this._items[i].id;
+    nth_most_recent_id: function (n) {
+        return this.data.nth_most_recent_id(n);
     },
 
     is_search: function () {
-        return this.filter.is_search();
+        return this.data.is_search();
     },
 
     clear: function  MessageList_clear(opts) {
         opts = _.extend({clear_selected_id: true}, opts);
 
-        if (this.muting_enabled) {
-            this._all_items = [];
-        }
-
-        this._items = [];
-        this._hash = {};
+        this.data.clear();
         this.view.clear_rendering_state(true);
 
         if (opts.clear_selected_id) {
-            this._selected_id = -1;
+            this.data.clear_selected_id();
         }
     },
 
-    selected_id: function MessageList_selected_id() {
-        return this._selected_id;
+    selected_id: function () {
+        return this.data.selected_id();
     },
 
     select_id: function MessageList_select_id(id, opts) {
@@ -180,7 +112,7 @@ exports.MessageList.prototype = {
             }, opts, {
                 id: id,
                 msg_list: this,
-                previously_selected: this._selected_id,
+                previously_selected: this.data.selected_id(),
             });
 
         function convert_id(str_id) {
@@ -217,14 +149,14 @@ exports.MessageList.prototype = {
             error_data = {
                 table_name: this.table_name,
                 id: id,
-                items_length: this._items.length,
+                items_length: this.data.num_items(),
             };
             blueslip.fatal("Cannot select id -1", error_data);
         }
 
         id = closest_id;
         opts.id = id;
-        this._selected_id = id;
+        this.data.set_selected_id(id);
 
         if (opts.force_rerender) {
             this.rerender();
@@ -236,150 +168,27 @@ exports.MessageList.prototype = {
     },
 
     reselect_selected_id: function MessageList_select_closest_id() {
-        this.select_id(this._selected_id, {from_rendering: true});
+        this.select_id(this.data.selected_id(), {from_rendering: true});
     },
 
     selected_message: function MessageList_selected_message() {
-        return this.get(this._selected_id);
+        return this.get(this.data.selected_id());
     },
 
     selected_row: function MessageList_selected_row() {
-        return this.get_row(this._selected_id);
+        return this.get_row(this.data.selected_id());
     },
 
-    // Returns the index where you could insert the desired ID
-    // into the message list, without disrupting the sort order
-    // This takes into account the potentially-unsorted
-    // nature of local message IDs in the message list
-    _lower_bound: function MessageList__lower_bound(id) {
-        var self = this;
-        function less_func(msg, ref_id, a_idx) {
-            if (self._is_localonly_id(msg.id)) {
-                // First non-local message before this one
-                var effective = self._next_nonlocal_message(self._items, a_idx,
-                                                            function (idx) { return idx - 1; });
-                if (effective) {
-                    // Turn the 10.02 in [11, 10.02, 12] into 11.02
-                    var decimal = parseFloat((msg.id % 1).toFixed(0.02));
-                    var effective_id = effective.id + decimal;
-                    return effective_id < ref_id;
-                }
-            }
-            return msg.id < ref_id;
-        }
-
-        return util.lower_bound(self._items, id, less_func);
+    closest_id: function (id) {
+        return this.data.closest_id(id);
     },
 
-    closest_id: function MessageList_closest_id(id) {
-        // We directly keep track of local-only messages,
-        // so if we're asked for one that we know we have,
-        // just return it directly
-        if (this._local_only.hasOwnProperty(id)) {
-            return id;
-        }
-
-        var items = this._items;
-
-        if (items.length === 0) {
-            return -1;
-        }
-
-        var closest = this._lower_bound(id);
-
-        if (closest < items.length && id === items[closest].id) {
-            return items[closest].id;
-        }
-
-        var potential_closest_matches = [];
-        if (closest > 0 && this._is_localonly_id(items[closest - 1].id)) {
-            // Since we treated all blocks of local ids as their left-most-non-local message
-            // for lower_bound purposes, find the real leftmost index (first non-local id)
-            do {
-                potential_closest_matches.push(closest);
-                closest -= 1;
-            } while (closest > 0 && this._is_localonly_id(items[closest - 1].id));
-        }
-        potential_closest_matches.push(closest);
-
-        if (closest === items.length) {
-            closest = closest - 1;
-        } else {
-            // Any of the ids that we skipped over (due to them being local-only) might be the
-            // closest ID to the desired one, in case there is no exact match.
-            potential_closest_matches.unshift(_.last(potential_closest_matches) - 1);
-            var best_match = items[closest].id;
-
-            _.each(potential_closest_matches, function (potential_idx) {
-                if (potential_idx < 0) {
-                    return;
-                }
-                var item = items[potential_idx];
-
-                if (item === undefined) {
-                    blueslip.warn('Invalid potential_idx: ' + potential_idx);
-                    return;
-                }
-
-                var potential_match = item.id;
-                // If the potential id is the closest to the requested, save that one
-                if (Math.abs(id - potential_match) < Math.abs(best_match - id)) {
-                    best_match = potential_match;
-                    closest = potential_idx;
-                }
-            });
-        }
-        return items[closest].id;
+    advance_past_messages: function (msg_ids) {
+        return this.data.advance_past_messages(msg_ids);
     },
 
-    advance_past_messages: function MessageList_advance_past_messages(msg_ids) {
-        // Start with the current pointer, but then keep advancing the
-        // pointer while the next message's id is in msg_ids.  See trac #1555
-        // for more context, but basically we are skipping over contiguous
-        // messages that we have recently visited.
-        var next_msg_id = 0;
-
-        var id_set = {};
-
-        _.each(msg_ids, function (msg_id) {
-            id_set[msg_id] = true;
-        });
-
-        var idx = this.selected_idx() + 1;
-        while (idx < this._items.length) {
-            var msg_id = this._items[idx].id;
-            if (!id_set[msg_id]) {
-                break;
-            }
-            next_msg_id = msg_id;
-            idx += 1;
-        }
-
-        if (next_msg_id > 0) {
-            this._selected_id = next_msg_id;
-        }
-    },
-
-    _add_to_hash: function MessageList__add_to_hash(messages) {
-        var self = this;
-        messages.forEach(function (elem) {
-            var id = parseFloat(elem.id);
-            if (isNaN(id)) {
-                blueslip.fatal("Bad message id");
-            }
-            if (self._is_localonly_id(id)) {
-                self._local_only[id] = elem;
-            }
-            if (self._hash[id] !== undefined) {
-                blueslip.error("Duplicate message added to MessageList");
-                return;
-            }
-            self._hash[id] = elem;
-        });
-    },
-
-    selected_idx: function MessageList_selected_idx() {
-        return this._lower_bound(this._selected_id);
+    selected_idx: function () {
+        return this.data.selected_idx();
     },
 
     subscribed_bookend_content: function (stream_name) {
@@ -435,44 +244,23 @@ exports.MessageList.prototype = {
         }
     },
 
-    unmuted_messages: function MessageList_unmuted_messages(messages) {
-        return _.reject(messages, function (message) {
-            return muting.is_topic_muted(message.stream, message.subject) &&
-                   !message.mentioned;
-        });
+    unmuted_messages: function (messages) {
+        return this.data.unmuted_messages(messages);
     },
 
     append: function MessageList_append(messages, opts) {
         opts = _.extend({delay_render: false, messages_are_new: false}, opts);
 
-        var viewable_messages;
-        if (this.muting_enabled) {
-            this._all_items = this._all_items.concat(messages);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
-        }
-        this._items = this._items.concat(viewable_messages);
+        var viewable_messages = this.data.append(messages);
 
         this.num_appends += 1;
-
-        this._add_to_hash(messages);
-
         if (!opts.delay_render) {
             this.view.append(viewable_messages, opts.messages_are_new);
         }
     },
 
     prepend: function MessageList_prepend(messages) {
-        var viewable_messages;
-        if (this.muting_enabled) {
-            this._all_items = messages.concat(this._all_items);
-            viewable_messages = this.unmuted_messages(messages);
-        } else {
-            viewable_messages = messages;
-        }
-        this._items = viewable_messages.concat(this._items);
-        this._add_to_hash(messages);
+        var viewable_messages = this.data.prepend(messages);
         this.view.prepend(viewable_messages);
     },
 
@@ -481,47 +269,12 @@ exports.MessageList.prototype = {
         // existing messages list, we just add the new messages and
         // then rerender the whole thing.
 
-        var viewable_messages;
-        if (this.muting_enabled) {
-            this._all_items = messages.concat(this._all_items);
-            this._all_items.sort(function (a, b) {return a.id - b.id;});
-
-            viewable_messages = this.unmuted_messages(messages);
-            this._items = viewable_messages.concat(this._items);
-
-        } else {
-            this._items = messages.concat(this._items);
-        }
-
-        this._items.sort(function (a, b) {return a.id - b.id;});
-        this._add_to_hash(messages);
-
+        this.data.add(messages);
         this.view.rerender_the_whole_thing();
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
-        var self = this;
-        _.each(messages, function (message) {
-            var stored_message = self._hash[message.id];
-            if (stored_message !== undefined) {
-                delete self._hash[stored_message];
-            }
-            delete self._local_only[message.id];
-        });
-
-        var msg_ids_to_remove = {};
-        _.each(messages, function (message) {
-            msg_ids_to_remove[message.id] = true;
-        });
-        this._items = _.filter(this._items, function (message) {
-            return !msg_ids_to_remove.hasOwnProperty(message.id);
-        });
-        if (this.muting_enabled) {
-            this._all_items = _.filter(this._all_items, function (message) {
-                return !msg_ids_to_remove.hasOwnProperty(message.id);
-            });
-        }
-
+        this.data.remove(messages);
         this.rerender();
     },
 
@@ -566,7 +319,7 @@ exports.MessageList.prototype = {
         // We need to clear the rendering state, rather than just
         // doing clear_table, since we want to potentially recollapse
         // things.
-        this._selected_id = this.closest_id(this._selected_id);
+        this.data.reset_select_to_closest();
         this.view.clear_rendering_state(false);
         this.view.update_render_window(this.selected_idx(), false);
 
@@ -579,8 +332,14 @@ exports.MessageList.prototype = {
         }
 
         this.view.rerender_preserving_scrolltop();
-        if (this._selected_id !== -1) {
-            this.select_id(this._selected_id);
+        this.redo_selection();
+    },
+
+    redo_selection: function () {
+        var selected_id = this.data.selected_id();
+
+        if (selected_id !== -1) {
+            this.select_id(selected_id);
         }
     },
 
@@ -588,159 +347,65 @@ exports.MessageList.prototype = {
         if (!this.muting_enabled) {
             return;
         }
-        this._items = this.unmuted_messages(this._all_items);
+        this.data.update_items_for_muting();
         this.rerender();
     },
 
     all_messages: function MessageList_all_messages() {
-        return this._items;
+        return this.data.all_messages();
     },
 
-    first_unread_message_id: function MessageList_first_unread_message_id() {
-        var first_unread = _.find(this._items, function (message) {
-            return unread.message_unread(message);
-        });
-
-        if (first_unread) {
-            return first_unread.id;
-        }
-
-        // if no unread, return the bottom message
-        return this.last().id;
+    first_unread_message_id: function () {
+        return this.data.first_unread_message_id();
     },
 
-    // Returns messages from the given message list in the specified range, inclusive
-    message_range: function MessageList_message_range(start, end) {
-        if (start === -1) {
-            blueslip.error("message_range given a start of -1");
-        }
-
-        var start_idx = this._lower_bound(start);
-        var end_idx   = this._lower_bound(end);
-        return this._items.slice(start_idx, end_idx + 1);
+    message_range: function (start, end) {
+        return this.data.message_range(start, end);
     },
 
     get_row: function (id) {
         return this.view.get_row(id);
     },
 
-    _is_localonly_id: function MessageList__is_localonly_id(id) {
-        return id % 1 !== 0;
-    },
-
-    _next_nonlocal_message: function MessageList__next_nonlocal_message(item_list,
-                                                                        start_index, op) {
-        var cur_idx = start_index;
-        do {
-            cur_idx = op(cur_idx);
-        } while (item_list[cur_idx] !== undefined && this._is_localonly_id(item_list[cur_idx].id));
-        return item_list[cur_idx];
-    },
-
     update_user_full_name: function (user_id, full_name) {
-        _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
-                item.sender_full_name = full_name;
-            }
-        });
+        this.data.update_user_full_name(user_id, full_name);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
         }
     },
 
     update_user_avatar: function (user_id, avatar_url) {
-        // TODO:
-        // We may want to de-dup some logic with update_user_full_name,
-        // especially if we want to optimize this with some kind of
-        // hash that maps sender_id -> messages.
-        _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
-                item.small_avatar_url = avatar_url;
-            }
-        });
+        this.data.update_user_avatar(user_id, avatar_url);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
         }
     },
 
-    update_stream_name: function MessageList_update_stream_name(stream_id,
-                                                                new_stream_name) {
-        _.each(this._items, function (item) {
-            if (item.stream_id && (item.stream_id === stream_id)) {
-                item.display_recipient = new_stream_name;
-                item.stream = new_stream_name;
-            }
-        });
+    update_stream_name: function (stream_id, new_stream_name) {
+        this.data.update_stream_name(stream_id, new_stream_name);
         if (this.table_name !== undefined) {
             this.view.rerender_preserving_scrolltop();
         }
     },
 
     change_message_id: function MessageList_change_message_id(old_id, new_id) {
-        // Update our local cache that uses the old id to the new id
-        function message_sort_func(a, b) {return a.id - b.id;}
-
-        if (this._hash.hasOwnProperty(old_id)) {
-            var msg = this._hash[old_id];
-            delete this._hash[old_id];
-            this._hash[new_id] = msg;
-        } else {
-            return;
-        }
-
-        if (this._local_only.hasOwnProperty(old_id)) {
-            if (this._is_localonly_id(new_id)) {
-                this._local_only[new_id] = this._local_only[old_id];
-            }
-            delete this._local_only[old_id];
-        }
-
-        if (this._selected_id === old_id) {
-            this._selected_id = new_id;
-        }
-
-        // If this message is now out of order, re-order and re-render
         var self = this;
-        setTimeout(function () {
-            var current_message = self._hash[new_id];
-            var index = self._items.indexOf(current_message);
-
-            if (index === -1) {
-                if (!self.muting_enabled && current_msg_list === self) {
-                    blueslip.error("Trying to re-order message but can't find message with new_id in _items!");
-                }
-                return;
-            }
-
-            var next = self._next_nonlocal_message(self._items, index,
-                                                   function (idx) { return idx + 1; });
-            var prev = self._next_nonlocal_message(self._items, index,
-                                                   function (idx) { return idx - 1; });
-
-            if ((next !== undefined && current_message.id > next.id) ||
-                (prev !== undefined && current_message.id < prev.id)) {
-                blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
-                self._items.sort(message_sort_func);
-                if (self.muting_enabled) {
-                    self._all_items.sort(message_sort_func);
-                }
+        var opts = {
+            is_current_list: function () {
+                return current_msg_list === self;
+            },
+            re_render: function () {
                 self.view.rerender_preserving_scrolltop();
-
-                if (self._selected_id !== -1) {
-                    self.select_id(self._selected_id);
-                }
-            }
-        }, 0);
+                self.redo_selection();
+            },
+        };
+        this.data.change_message_id(old_id, new_id, opts);
     },
 
     get_last_message_sent_by_me: function () {
-        var msg_index = _.findLastIndex(this._items, {sender_id: page_params.user_id});
-        if (msg_index === -1) {
-            return;
-        }
-        var msg = this._items[msg_index];
-        return msg;
+        return this.data.get_last_message_sent_by_me();
     },
+
 };
 
 exports.all = new exports.MessageList(

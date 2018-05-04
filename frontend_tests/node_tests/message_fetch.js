@@ -9,6 +9,7 @@ set_global('MessageListView', function () { return {}; });
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('Filter', 'js/filter');
+zrequire('MessageListData', 'js/message_list_data');
 zrequire('message_list');
 zrequire('util');
 

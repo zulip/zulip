@@ -5,6 +5,7 @@ zrequire('util');
 zrequire('XDate', 'node_modules/xdate/src/xdate');
 zrequire('Filter', 'js/filter');
 zrequire('FetchStatus', 'js/fetch_status');
+zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 zrequire('message_list');
 
@@ -376,7 +377,7 @@ set_global('rows', {
 
         // Stub out functionality that is not core to the rendering window
         // logic.
-        list.unmuted_messages = function (messages) {
+        list.data.unmuted_messages = function (messages) {
             return messages;
         };
 
