@@ -1,9 +1,20 @@
-<div class="user-name-section custom_user_field">
+<div class="user-name-section custom_user_field" name="{{ field.name }}" id="{{ field.id }}">
     <label for="{{ field.name }}" class="title">{{ field.name }}</label>
     {{#if is_long_text_field}}
-    <textarea name="{{ field.name }}" id="{{ field.id }}" maxlength="500">{{ field_value }}</textarea>
+        <textarea maxlength="500" class="custom_user_field_value">{{ field_value }}</textarea>
     {{else}}
-    <input type="{{ field_type }}" name="{{ field.name }}" id="{{ field.id }}" value="{{ field_value }}" maxlength="50" />
+        {{#if is_choice_field }}
+        <select class="custom_user_field_value">
+            {{#unless field_value}}
+            <option></option>
+            {{/unless}}
+            {{#each field_choices}}
+            <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
+            {{/each}}
+        </select>
+        {{else}}
+        <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value }}" maxlength="50" />
+        {{/if}}
     {{/if}}
     <div class="field_hint">{{ field.hint }}</div>
 </div>
