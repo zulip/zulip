@@ -87,7 +87,7 @@ function render_attachments_ui(attachments) {
     $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {
         var row = $(e.target).closest(".uploaded_file_row");
         row.remove();
-        delete_attachments($(this).data('attachment'));
+        delete_attachments($(this).attr('data-attachment-id'));
     });
 }
 
