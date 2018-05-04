@@ -4720,7 +4720,7 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
     bot_profile_ids = [bot_dict['id'] for bot_dict in bot_dicts]
     bot_services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
     for service in Service.objects.filter(user_profile_id__in=bot_profile_ids):
-        bot_services_by_uid[service.user_profile.id].append(service)
+        bot_services_by_uid[service.user_profile_id].append(service)
 
     embedded_bot_ids = [bot_dict['id'] for bot_dict in bot_dicts
                         if bot_dict['bot_type'] == UserProfile.EMBEDDED_BOT]
