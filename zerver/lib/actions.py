@@ -64,7 +64,7 @@ from zerver.lib.topic_mutes import (
 from zerver.lib.users import bulk_get_users, check_full_name, user_ids_to_users
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, \
+    RealmDomain, Service, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
@@ -83,7 +83,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    get_services_for_bots, DisposableEmailError
+    DisposableEmailError
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -4714,6 +4714,13 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
         except ConfigError:
             pass
     return service_dicts
+
+def get_services_for_bots(bot_profiles: List[UserProfile]) -> Dict[int, List[Service]]:
+    services = Service.objects.filter(user_profile__in=bot_profiles).select_related()
+    services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
+    for service in services:
+        services_by_uid[service.user_profile.id].append(service)
+    return services_by_uid
 
 def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
                                realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
