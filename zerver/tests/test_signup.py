@@ -772,6 +772,23 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
             self.invite(external_address, ["Denmark"]),
             "Some emails did not validate, so we didn't send any invitations.")
 
+    def test_invite_using_disposable_email(self) -> None:
+        """
+        In a realm with `restricted_to_domain = True`, you can't invite people
+        with a different domain from that of the realm or your e-mail address.
+        """
+        zulip_realm = get_realm("zulip")
+        zulip_realm.restricted_to_domain = False
+        zulip_realm.disallow_disposable_email_addresses = True
+        zulip_realm.save()
+
+        self.login(self.example_email("hamlet"))
+        external_address = "foo@mailnator.com"
+
+        self.assert_json_error(
+            self.invite(external_address, ["Denmark"]),
+            "Some emails did not validate, so we didn't send any invitations.")
+
     def test_invite_outside_domain_in_open_realm(self) -> None:
         """
         In a realm with `restricted_to_domain = False`, you can invite people
