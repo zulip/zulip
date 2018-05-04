@@ -11,7 +11,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'attachment':
-        // Do nothing for now.
+        attachments_ui.update_attachments(event);
         break;
 
     case 'default_streams':

@@ -33,8 +33,7 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
         size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
     }
     return size + ' ' + sizes[i];
- }
-
+}
 
 function render_attachments_ui() {
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
@@ -72,11 +71,6 @@ function render_attachments_ui() {
         return -1;
     });
 
-    uploaded_files_table.empty();
-    _.each(attachments, function (attachment) {
-        var row = templates.render('uploaded_files_list', { attachment: attachment });
-        uploaded_files_table.append(row);
-    });
     ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
@@ -88,6 +82,26 @@ function format_attachment_data(new_attachments) {
     });
 }
 
+exports.update_attachments = function (event) {
+    if (attachments === undefined) {
+        // If we haven't fetched attachment data yet, there's nothing to do.
+        return;
+    }
+    if (event.op === 'remove' || event.op === 'update') {
+        attachments = attachments.filter(function (a) {
+            return a.id !== event.attachment.id;
+        });
+    }
+    if (event.op === 'add' || event.op === 'update') {
+        format_attachment_data([event.attachment]);
+        attachments.push(event.attachment);
+    }
+
+    // TODO: This is inefficient and we should be able to do some sort
+    // of incremental list_render update instead.
+    render_attachments_ui();
+};
+
 exports.set_up_attachments = function () {
     // The settings page must be rendered before this function gets called.
 
@@ -98,9 +112,7 @@ exports.set_up_attachments = function () {
     ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
     $('#uploaded_files_table').on('click', '.remove-attachment', function (e) {
-        var row = $(e.target).closest(".uploaded_file_row");
-        row.remove();
-        delete_attachments($(this).attr('data-attachment-id'));
+        delete_attachments($(e.target).closest(".uploaded_file_row").attr('data-attachment-id'));
     });
 
     channel.get({
