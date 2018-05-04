@@ -113,6 +113,18 @@ class ChangeSettingsTest(ZulipTestCase):
                                         dict(full_name='Opheli*'))
         self.assert_json_error(json_result, 'Invalid characters in name!')
 
+    def test_change_email_to_disposable_email(self) -> None:
+        email = self.example_email("hamlet")
+        self.login(email)
+        realm = get_realm("zulip")
+        realm.disallow_disposable_email_addresses = True
+        realm.restricted_to_domain = False
+        realm.save()
+
+        json_result = self.client_patch("/json/settings",
+                                        dict(email='hamlet@mailnator.com'))
+        self.assert_json_error(json_result, 'Please use your real email address.')
+
     # This is basically a don't-explode test.
     def test_notify_settings(self) -> None:
         for notification_setting in UserProfile.notification_setting_types:
