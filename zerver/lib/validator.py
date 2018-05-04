@@ -55,7 +55,7 @@ def check_required_string(var_name: str, val: object) -> Optional[str]:
 def check_short_string(var_name: str, val: object) -> Optional[str]:
     return check_capped_string(50)(var_name, val)
 
-def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str]]:
+def check_capped_string(max_length: int) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
             return _('%s is not a string') % (var_name,)
@@ -65,7 +65,7 @@ def check_capped_string(max_length: int) -> Callable[[str, object], Optional[str
         return None
     return validator
 
-def check_string_fixed_length(length: int) -> Callable[[str, object], Optional[str]]:
+def check_string_fixed_length(length: int) -> Validator:
     def validator(var_name: str, val: object) -> Optional[str]:
         if not isinstance(val, str):
             return _('%s is not a string') % (var_name,)

@@ -23,7 +23,7 @@ def REQ(whence: Optional[str] = None,
         *,
         type: Type[ResultT] = Type[None],
         converter: Optional[Callable[[str], ResultT]] = None,
-        default: Union[_NotSpecified, ResultT] = NotSpecified,
+        default: Union[_NotSpecified, ResultT, None] = Optional[NotSpecified],
         validator: Optional[Validator] = None,
         str_validator: Optional[Validator] = None,
         argument_type: Optional[str] = None) -> ResultT: ...
