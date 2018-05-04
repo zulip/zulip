@@ -33,10 +33,8 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
     return size + ' ' + sizes[i];
  }
 
-exports.set_up_attachments = function () {
-    // The settings page must be rendered before this function gets called.
 
-    var attachments = page_params.attachments;
+function render_attachments_ui(attachments) {
     _.each(attachments, function (attachment) {
         var time = new XDate(attachment.create_time);
         attachment.create_time_str = timerender.render_now(time).time_str;
@@ -78,8 +76,6 @@ exports.set_up_attachments = function () {
         return -1;
     });
 
-
-
     ui.set_up_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 
     uploaded_files_table.empty();
@@ -92,6 +88,26 @@ exports.set_up_attachments = function () {
         var row = $(e.target).closest(".uploaded_file_row");
         row.remove();
         delete_attachments($(this).data('attachment'));
+    });
+}
+
+exports.set_up_attachments = function () {
+    // The settings page must be rendered before this function gets called.
+
+    var status = $('#delete-upload-status');
+    loading.make_indicator($('#attachments_loading_indicator'), {text: 'Loading...'});
+
+    channel.get({
+        url: "/json/attachments",
+        idempotent: true,
+        success: function (data) {
+            loading.destroy_indicator($('#attachments_loading_indicator'));
+            render_attachments_ui(data.attachments);
+        },
+        error: function (xhr) {
+            loading.destroy_indicator($('#attachments_loading_indicator'));
+            ui_report.error(i18n.t("Failed"), xhr, status);
+        },
     });
 };
 

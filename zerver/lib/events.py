@@ -125,9 +125,6 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
         state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
 
-    if want('attachments'):
-        state['attachments'] = user_attachments(user_profile)
-
     if want('hotspots'):
         state['hotspots'] = get_next_hotspots(user_profile)
 
