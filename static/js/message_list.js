@@ -565,6 +565,9 @@ exports.MessageList.prototype = {
     },
 
     update_muting_and_rerender: function MessageList_update_muting_and_rerender() {
+        if (!this.muting_enabled) {
+            return;
+        }
         this._items = this.unmuted_messages(this._all_items);
         this.rerender();
     },
