@@ -151,11 +151,11 @@
 
     function sendRawImageData(event, image) {
       function finished_callback(serverResponse, timeDiff, xhr) {
-        return opts.uploadFinished(-1, undefined, serverResponse, timeDiff, xhr);
+        return opts.uploadFinished(-1, image.file, serverResponse, timeDiff, xhr);
       }
 
       var url_params = "?mimetype=" + encodeURIComponent(image.type);
-      do_xhr("pasted_image", image.data, image.type, {}, url_params, finished_callback, function () {});
+      do_xhr("pasted_image", image.data, image.type, {file: image.file}, url_params, finished_callback, function () {});
     }
 
     function uploadRawImageData(event, image) {
@@ -203,9 +203,10 @@
       var data = item.getAsFile();
       var reader = new FileReader();
       reader.onload = function(event) {
-        sendRawImageData(event, {type: data.type, data: event.target.result});
+        sendRawImageData(event, {type: data.type, data: event.target.result, file: data});
       };
       reader.readAsBinaryString(data);
+      opts.uploadStarted(undefined, data);
     }
 
     function getBuilder(filename, filedata, mime, boundary) {
