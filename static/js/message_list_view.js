@@ -515,7 +515,7 @@ MessageListView.prototype = {
 
             rendered_groups = $(templates.render('message_group', {
                 message_groups: message_actions.prepend_groups,
-                use_match_properties: self.list.filter.is_search(),
+                use_match_properties: self.list.is_search(),
                 table_name: self.table_name,
             }));
 
@@ -542,7 +542,7 @@ MessageListView.prototype = {
 
                 rendered_groups = $(templates.render('message_group', {
                     message_groups: [message_group],
-                    use_match_properties: self.list.filter.is_search(),
+                    use_match_properties: self.list.is_search(),
                     table_name: self.table_name,
                 }));
 
@@ -589,7 +589,7 @@ MessageListView.prototype = {
 
             rendered_groups = $(templates.render('message_group', {
                 message_groups: message_actions.append_groups,
-                use_match_properties: self.list.filter.is_search(),
+                use_match_properties: self.list.is_search(),
                 table_name: self.table_name,
             }));
 

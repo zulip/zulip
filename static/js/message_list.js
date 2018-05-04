@@ -129,6 +129,10 @@ exports.MessageList.prototype = {
         return this._items[i].id;
     },
 
+    is_search: function () {
+        return this.filter.is_search();
+    },
+
     clear: function  MessageList_clear(opts) {
         opts = _.extend({clear_selected_id: true}, opts);
 
