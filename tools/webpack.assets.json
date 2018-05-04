@@ -20,15 +20,25 @@
                "./static/third/bootstrap/js/bootstrap.js",
                "./static/js/common.js",
                "./node_modules/moment/min/moment.min.js",
-               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js"
+               "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
+               "./static/third/bootstrap/css/bootstrap.css",
+               "./static/third/bootstrap/css/bootstrap-btn.css",
+               "./static/third/bootstrap/css/bootstrap-responsive.css",
+               "./node_modules/perfect-scrollbar/css/perfect-scrollbar.css"
               ],
     "help": [
             "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.js",
             "./static/js/portico/help.js"
     ],
     "katex": "./node_modules/katex/dist/katex.min.js",
-    "landing-page": "./static/js/portico/landing-page.js",
-    "integrations": "./static/js/portico/integrations.js",
+    "landing-page": [
+        "./static/js/portico/landing-page.js",
+        "./static/styles/landing-page.scss"
+    ],
+    "integrations": [
+        "./static/js/portico/integrations.js",
+        "./static/styles/landing-page.scss"
+    ],
     "signup": [
                "./static/js/portico/signup.js",
                "./node_modules/jquery-validation/dist/jquery.validate.min.js"
@@ -69,5 +79,11 @@
         "./static/styles/typing_notifications.scss",
         "./static/styles/hotspots.scss",
         "./static/styles/night_mode.scss"
+    ],
+    "archive-styles": [
+        "./node_modules/katex/dist/katex.css",
+        "./static/styles/zulip.scss",
+        "./static/styles/media.scss",
+        "./static/styles/archive.scss"
     ]
 }

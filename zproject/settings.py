@@ -849,58 +849,7 @@ PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
     'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
     'YUI_BINARY': '/usr/bin/env yui-compressor',
-    'STYLESHEETS': {
-        # If you add a style here, please update stylesheets()
-        # in frontend_tests/zjsunit/output.js as needed.
-        'landing-page': {
-            'source_filenames': (
-                'styles/landing-page.css',
-            ),
-            'output_filename': 'min/landing.css'
-        },
-        'common': {
-            'source_filenames': (
-                'third/bootstrap/css/bootstrap.css',
-                'third/bootstrap/css/bootstrap-btn.css',
-                'third/bootstrap/css/bootstrap-responsive.css',
-                'node_modules/perfect-scrollbar/css/perfect-scrollbar.css',
-            ),
-            'output_filename': 'min/common.css'
-        },
-        'apple_sprite': {
-            'source_filenames': (
-                'generated/emoji/apple_sprite.css',
-            ),
-            'output_filename': 'min/apple_sprite.css',
-        },
-        'emojione_sprite': {
-            'source_filenames': (
-                'generated/emoji/emojione_sprite.css',
-            ),
-            'output_filename': 'min/emojione_sprite.css',
-        },
-        'google_sprite': {
-            'source_filenames': (
-                'generated/emoji/google_sprite.css',
-            ),
-            'output_filename': 'min/google_sprite.css',
-        },
-        'twitter_sprite': {
-            'source_filenames': (
-                'generated/emoji/twitter_sprite.css',
-            ),
-            'output_filename': 'min/twitter_sprite.css',
-        },
-        'archive_css': {
-            'source_filenames': (
-                'node_modules/katex/dist/katex.css',
-                'styles/zulip.css',
-                'styles/media.css',
-                'styles/archive.css',
-            ),
-            'output_filename': 'min/archive_css.css',
-        },
-    },
+    'STYLESHEETS': {},
     'JAVASCRIPT': {},
 }
 
