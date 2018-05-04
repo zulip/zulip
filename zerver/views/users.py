@@ -10,7 +10,8 @@ from django.shortcuts import redirect, render
 from django.conf import settings
 from django.core.exceptions import ValidationError
 
-from zerver.decorator import require_realm_admin, zulip_login_required
+from zerver.decorator import require_realm_admin, zulip_login_required, \
+    require_non_guest_human_user
 from zerver.forms import CreateUserForm
 from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_change_is_admin, do_change_default_all_public_streams, \
@@ -154,6 +155,7 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
         return stream.name
     return None
 
+@require_non_guest_human_user
 @has_request_variables
 def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, email: str,
@@ -242,6 +244,7 @@ def patch_bot_backend(
 
     return json_success(json_result)
 
+@require_non_guest_human_user
 @has_request_variables
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, email: str) -> HttpResponse:
     try:
@@ -267,6 +270,7 @@ def add_service(name: str, user_profile: UserProfile, base_url: str=None,
                            interface=interface,
                            token=token)
 
+@require_non_guest_human_user
 @has_request_variables
 def add_bot_backend(
         request: HttpRequest, user_profile: UserProfile,
@@ -362,6 +366,7 @@ def add_bot_backend(
     )
     return json_success(json_result)
 
+@require_non_guest_human_user
 def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     bot_profiles = UserProfile.objects.filter(is_bot=True, is_active=True,
                                               bot_owner=user_profile)

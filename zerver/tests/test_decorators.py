@@ -1343,7 +1343,7 @@ class TestZulipLoginRequiredDecorator(ZulipTestCase):
             result = self.client_get('/accounts/accept_terms/')
             self.assertEqual(result.status_code, 302)
 
-class TestRequireServerAdminDecorator(ZulipTestCase):
+class TestRequireDecorators(ZulipTestCase):
     def test_require_server_admin_decorator(self) -> None:
         user_email = self.example_email('hamlet')
         user_realm = get_realm('zulip')
@@ -1358,6 +1358,22 @@ class TestRequireServerAdminDecorator(ZulipTestCase):
 
         result = self.client_get('/activity')
         self.assertEqual(result.status_code, 200)
+
+    def test_require_non_guest_user_decorator(self) -> None:
+        guest_user = self.example_user('polonius')
+        self.login(guest_user.email)
+        result = self.common_subscribe_to_streams(guest_user.email, ["Denmark"])
+        self.assert_json_error(result, "Not allowed for guest users")
+
+    def test_require_non_guest_human_user_decorator(self) -> None:
+        result = self.api_get("outgoing-webhook@zulip.com", '/api/v1/bots')
+        self.assert_json_error(result, "This endpoint does not accept bot requests.")
+
+        guest_user = self.example_user('polonius')
+        self.login(guest_user.email)
+        result = self.client_get('/json/bots')
+        self.assert_json_error(result, "Not allowed for guest users")
+
 
 class ReturnSuccessOnHeadRequestDecorator(ZulipTestCase):
     def test_returns_200_if_request_method_is_head(self) -> None:

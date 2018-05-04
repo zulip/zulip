@@ -27,7 +27,7 @@ from zerver.lib.response import (
 )
 
 from zerver.lib.streams import (
-    access_stream_by_id, access_stream_by_name
+    access_stream_by_id, access_stream_by_name, filter_stream_authorization
 )
 
 from zerver.lib.stream_subscription import (
@@ -2102,16 +2102,23 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(add_event['event']['op'], 'add')
         self.assertEqual(add_event['users'], [self.example_user("iago").id])
 
-    def test_guest_user_subscribe_public(self) -> None:
+    def test_guest_user_subscribe(self) -> None:
         """Guest users cannot subscribe themselves to anything"""
         guest_user = self.example_user("polonius")
         guest_email = guest_user.email
         result = self.common_subscribe_to_streams(guest_email, ["Denmark"])
-        self.assert_json_error(result, "Unable to access stream (Denmark).")
+        self.assert_json_error(result, "Not allowed for guest users")
 
-        self.make_stream('private_stream', invite_only=True)
+        # Verify the internal checks also block guest users.
+        stream = get_stream("Denmark", guest_user.realm)
+        self.assertEqual(filter_stream_authorization(guest_user, [stream]),
+                         ([], [stream]))
+
+        stream = self.make_stream('private_stream', invite_only=True)
         result = self.common_subscribe_to_streams(guest_email, ["private_stream"])
-        self.assert_json_error(result, "Unable to access stream (private_stream).")
+        self.assert_json_error(result, "Not allowed for guest users")
+        self.assertEqual(filter_stream_authorization(guest_user, [stream]),
+                         ([], [stream]))
 
     def test_users_getting_add_peer_event(self) -> None:
         """

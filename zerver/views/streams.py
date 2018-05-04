@@ -9,7 +9,7 @@ from django.http import HttpRequest, HttpResponse
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.request import REQ, has_request_variables
 from zerver.decorator import authenticated_json_post_view, \
-    require_realm_admin, to_non_negative_int
+    require_realm_admin, to_non_negative_int, require_non_guest_user
 from zerver.lib.actions import bulk_remove_subscriptions, \
     do_change_subscription_property, internal_prep_private_message, \
     internal_prep_stream_message, \
@@ -284,6 +284,7 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
 
     return msg
 
+@require_non_guest_user
 @has_request_variables
 def add_subscriptions_backend(
         request: HttpRequest, user_profile: UserProfile,

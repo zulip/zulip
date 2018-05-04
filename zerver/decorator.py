@@ -459,6 +459,26 @@ def require_server_admin_api(view_func: ViewFuncT) -> ViewFuncT:
         return view_func(request, user_profile, *args, **kwargs)
     return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
 
+def require_non_guest_user(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any,
+                           **kwargs: Any) -> HttpResponse:
+        if user_profile.is_guest:
+            raise JsonableError(_("Not allowed for guest users"))
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
+def require_non_guest_human_user(view_func: ViewFuncT) -> ViewFuncT:
+    @wraps(view_func)
+    def _wrapped_view_func(request: HttpRequest, user_profile: UserProfile, *args: Any,
+                           **kwargs: Any) -> HttpResponse:
+        if user_profile.is_guest:
+            raise JsonableError(_("Not allowed for guest users"))
+        if user_profile.is_bot:
+            return json_error(_("This endpoint does not accept bot requests."))
+        return view_func(request, user_profile, *args, **kwargs)
+    return _wrapped_view_func  # type: ignore # https://github.com/python/mypy/issues/1927
+
 # authenticated_api_view will add the authenticated user's
 # user_profile to the view function's arguments list, since we have to
 # look it up anyway.  It is deprecated in favor on the REST API
