@@ -11,6 +11,7 @@ set_global('document', null);
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('util');
 zrequire('muting');
+zrequire('MessageListData', 'js/message_list_data');
 zrequire('MessageListView', 'js/message_list_view');
 var MessageList = zrequire('message_list').MessageList;
 
@@ -395,7 +396,7 @@ var with_overrides = global.with_overrides; // make lint happy
 
     var messages = [{id: 1}, {id: 2}, {id: 3}];
 
-    list.unmuted_messages = function (m) { return m; };
+    list.data.unmuted_messages = function (msgs) { return msgs; };
     global.with_stub(function (stub) {
         list.view.rerender_the_whole_thing = stub.f;
         list.add_and_rerender(messages);
