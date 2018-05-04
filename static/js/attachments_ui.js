@@ -2,6 +2,8 @@ var attachments_ui = (function () {
 
 var exports = {};
 
+var attachments;
+
 function delete_attachments(attachment) {
     var status = $('#delete-upload-status');
     channel.del({
@@ -34,7 +36,7 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
  }
 
 
-function render_attachments_ui(attachments) {
+function render_attachments_ui() {
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
     var $search_input = $("#upload_file_search");
 
@@ -107,7 +109,8 @@ exports.set_up_attachments = function () {
         success: function (data) {
             loading.destroy_indicator($('#attachments_loading_indicator'));
             format_attachment_data(data.attachments);
-            render_attachments_ui(data.attachments);
+            attachments = data.attachments;
+            render_attachments_ui();
         },
         error: function (xhr) {
             loading.destroy_indicator($('#attachments_loading_indicator'));
