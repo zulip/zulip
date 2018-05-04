@@ -4716,7 +4716,7 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
     return service_dicts
 
 def get_services_for_bots(bot_profile_ids: List[int]) -> Dict[int, List[Service]]:
-    services = Service.objects.filter(user_profile_id__in=bot_profile_ids).select_related()
+    services = Service.objects.filter(user_profile_id__in=bot_profile_ids)
     services_by_uid = defaultdict(list)  # type: Dict[int, List[Service]]
     for service in services:
         services_by_uid[service.user_profile.id].append(service)
