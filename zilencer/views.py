@@ -12,7 +12,7 @@ from django.conf import settings
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
-from zerver.decorator import require_post, zulip_login_required
+from zerver.decorator import require_post, zulip_login_required, InvalidZulipServerKeyError
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.push_notifications import send_android_push_notification, \
     send_apple_push_notification
@@ -70,7 +70,7 @@ def register_remote_server(
 
     if not created:
         if remote_server.api_key != zulip_org_key:
-            raise JsonableError(err_("zulip_org_id and zulip_org_key do not match."))
+            raise InvalidZulipServerKeyError(zulip_org_id)
         else:
             remote_server.hostname = hostname
             remote_server.contact_email = contact_email

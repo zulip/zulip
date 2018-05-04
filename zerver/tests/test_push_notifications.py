@@ -1396,4 +1396,5 @@ class PushBouncerSignupTest(ZulipTestCase):
             contact_email="server-admin@example.com",
         )
         result = self.client_post("/api/v1/remotes/server/register", request)
-        self.assert_json_error(result, "zulip_org_id and zulip_org_key do not match.")
+        self.assert_json_error(result, "Zulip server auth failure: key does not match role %s" %
+                               (zulip_org_id,))
