@@ -4721,7 +4721,7 @@ def get_service_dicts_for_bots(bot_profile_ids: List[int], realm: Realm) -> Dict
 
     embedded_bot_profiles = [profile for profile in bot_profiles
                              if profile.bot_type == UserProfile.EMBEDDED_BOT]
-    embedded_bot_configs = get_bot_configs(embedded_bot_profiles)
+    embedded_bot_configs = get_bot_configs([bot_profile.id for bot_profile in embedded_bot_profiles])
 
     service_dicts_by_uid = {}  # type: Dict[int, List[Dict[Text, Any]]]
     for bot_profile in bot_profiles:

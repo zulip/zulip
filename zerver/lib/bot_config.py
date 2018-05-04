@@ -22,13 +22,13 @@ def get_bot_config(bot_profile: UserProfile) -> Dict[Text, Text]:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
 
-def get_bot_configs(bot_profiles: List[UserProfile]) -> Dict[int, Dict[Text, Text]]:
-    if not bot_profiles:
+def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[Text, Text]]:
+    if not bot_profile_ids:
         return {}
-    entries = BotConfigData.objects.filter(bot_profile__in=bot_profiles).select_related()
+    entries = BotConfigData.objects.filter(bot_profile_id__in=bot_profile_ids)
     entries_by_uid = defaultdict(dict)  # type: Dict[int, Dict[Text, Text]]
     for entry in entries:
-        entries_by_uid[entry.bot_profile.id].update({entry.key: entry.value})
+        entries_by_uid[entry.bot_profile_id].update({entry.key: entry.value})
     return entries_by_uid
 
 def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
