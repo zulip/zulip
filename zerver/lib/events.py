@@ -560,6 +560,10 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == 'typing':
         # Typing notification events are transient and thus ignored
         pass
+    elif event['type'] == "attachment":
+        # Attachment events are just for updating the "uploads" UI;
+        # they are not sent directly.
+        pass
     elif event['type'] == "update_message_flags":
         # We don't return messages in `/register`, so most flags we
         # can ignore, but we do need to update the unread_msgs data if

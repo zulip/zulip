@@ -540,16 +540,19 @@ def upload_message_file(uploaded_file_name: Text, uploaded_file_size: int,
 def claim_attachment(user_profile: UserProfile,
                      path_id: Text,
                      message: Message,
-                     is_message_realm_public: bool) -> None:
+                     is_message_realm_public: bool) -> Attachment:
     attachment = Attachment.objects.get(path_id=path_id)
     attachment.messages.add(message)
     attachment.is_realm_public = attachment.is_realm_public or is_message_realm_public
     attachment.save()
+    return attachment
 
 def create_attachment(file_name: Text, path_id: Text, user_profile: UserProfile,
                       file_size: int) -> bool:
-    Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile,
-                              realm=user_profile.realm, size=file_size)
+    attachment = Attachment.objects.create(file_name=file_name, path_id=path_id, owner=user_profile,
+                                           realm=user_profile.realm, size=file_size)
+    from zerver.lib.actions import notify_attachment_update
+    notify_attachment_update(user_profile, 'add', attachment.to_dict())
     return True
 
 def upload_message_image_from_request(request: HttpRequest, user_file: File,

@@ -1,6 +1,7 @@
 from django.http import HttpRequest, HttpResponse
 
 from zerver.models import UserProfile
+from zerver.lib.actions import notify_attachment_update
 from zerver.lib.validator import check_int
 from zerver.lib.response import json_success
 from zerver.lib.attachments import user_attachments, remove_attachment, \
@@ -14,5 +15,6 @@ def list_by_user(request: HttpRequest, user_profile: UserProfile) -> HttpRespons
 def remove(request: HttpRequest, user_profile: UserProfile, attachment_id: int) -> HttpResponse:
     attachment = access_attachment_by_id(user_profile, attachment_id,
                                          needs_owner=True)
+    notify_attachment_update(user_profile, "remove", {"id": attachment.id})
     remove_attachment(user_profile, attachment)
     return json_success()

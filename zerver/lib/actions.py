@@ -4516,6 +4516,15 @@ def do_get_streams(user_profile: UserProfile, include_public: bool=True,
 
     return streams
 
+def notify_attachment_update(user_profile: UserProfile, op: str,
+                             attachment_dict: Dict[str, Any]) -> None:
+    event = {
+        'type': 'attachment',
+        'op': op,
+        'attachment': attachment_dict,
+    }
+    send_event(event, [user_profile.id])
+
 def do_claim_attachments(message: Message) -> None:
     attachment_url_list = attachment_url_re.findall(message.content)
 
@@ -4540,7 +4549,8 @@ def do_claim_attachments(message: Message) -> None:
                 user_profile.id, path_id, message.id))
             continue
 
-        claim_attachment(user_profile, path_id, message, is_message_realm_public)
+        attachment = claim_attachment(user_profile, path_id, message, is_message_realm_public)
+        notify_attachment_update(user_profile, "update", attachment.to_dict())
 
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)

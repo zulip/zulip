@@ -10,11 +10,13 @@ from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.test import TestCase
 from django.utils.timezone import now as timezone_now
+from io import StringIO
 
 from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
+    Attachment,
 )
 
 from zerver.lib.actions import (
@@ -79,6 +81,7 @@ from zerver.lib.actions import (
     do_update_user_presence,
     log_event,
     lookup_default_stream_groups,
+    notify_attachment_update,
     notify_realm_custom_profile_fields,
     check_add_user_group,
     do_update_user_group_name,
@@ -110,6 +113,7 @@ from zerver.lib.validator import (
     check_bool, check_dict, check_dict_only, check_float, check_int, check_list, check_string,
     equals, check_none_or, Validator, check_url
 )
+from zerver.lib.upload import upload_backend, attachment_url_to_path_id
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 from zerver.views.users import add_service
@@ -2095,6 +2099,88 @@ class EventsRegisterTest(ZulipTestCase):
         )
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_add_attachment(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('attachment')),
+            ('op', equals('add')),
+            ('attachment', check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+                ('size', check_int),
+                ('path_id', check_string),
+                ('create_time', check_float),
+                ('messages', check_list(check_dict_only([
+                    ('id', check_int),
+                    ('name', check_float),
+                ]))),
+            ])),
+        ])
+
+        self.login(self.example_email("hamlet"))
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        data = {'uri': None}
+
+        def do_upload() -> None:
+            result = self.client_post("/json/user_uploads", {'file': fp})
+
+            self.assert_json_success(result)
+            self.assertIn("uri", result.json())
+            uri = result.json()["uri"]
+            base = '/user_uploads/'
+            self.assertEqual(base, uri[:len(base)])
+            data['uri'] = uri
+
+        events = self.do_test(
+            lambda: do_upload(),
+            num_events=1, state_change_expected=False)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Verify that the DB has the attachment marked as unclaimed
+        entry = Attachment.objects.get(file_name='zulip.txt')
+        self.assertEqual(entry.is_claimed(), False)
+
+        # Now we send an actual message using this attachment.
+        schema_checker = self.check_events_dict([
+            ('type', equals('attachment')),
+            ('op', equals('update')),
+            ('attachment', check_dict_only([
+                ('id', check_int),
+                ('name', check_string),
+                ('size', check_int),
+                ('path_id', check_string),
+                ('create_time', check_float),
+                ('messages', check_list(check_dict_only([
+                    ('id', check_int),
+                    ('name', check_float),
+                ]))),
+            ])),
+        ])
+
+        self.subscribe(self.example_user("hamlet"), "Denmark")
+        body = "First message ...[zulip.txt](http://localhost:9991" + data['uri'] + ")"
+        events = self.do_test(
+            lambda: self.send_stream_message(self.example_email("hamlet"), "Denmark", body, "test"),
+            num_events=2)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+        # Now remove the attachment
+        schema_checker = self.check_events_dict([
+            ('type', equals('attachment')),
+            ('op', equals('remove')),
+            ('attachment', check_dict_only([
+                ('id', check_int),
+            ])),
+        ])
+
+        events = self.do_test(
+            lambda: self.client_delete("/json/attachments/%s" % (entry.id,)),
+            num_events=1, state_change_expected=False)
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
 
 class FetchInitialStateDataTest(ZulipTestCase):
     # Non-admin users don't have access to all bots

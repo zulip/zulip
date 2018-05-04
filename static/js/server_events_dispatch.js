@@ -10,6 +10,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         alert_words_ui.render_alert_words_ui();
         break;
 
+    case 'attachment':
+        // Do nothing for now.
+        break;
+
     case 'default_streams':
         stream_data.set_realm_default_streams(event.default_streams);
         settings_streams.update_default_streams_table();
