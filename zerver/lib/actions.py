@@ -4715,7 +4715,9 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
             pass
     return service_dicts
 
-def get_service_dicts_for_bots(bot_profile_ids: List[int], realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
+def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
+                               realm: Realm) -> Dict[int, List[Dict[str, Any]]]:
+    bot_profile_ids = [bot_dict['id'] for bot_dict in bot_dicts]
     bot_profiles = user_ids_to_users(bot_profile_ids, realm)  # type: List[UserProfile]
     bot_services_by_uid = get_services_for_bots(bot_profiles)
 
@@ -4748,8 +4750,7 @@ def get_owned_bot_dicts(user_profile: UserProfile,
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
-    bot_profile_ids = [botdict['id'] for botdict in result]
-    services_by_ids = get_service_dicts_for_bots(bot_profile_ids, user_profile.realm)
+    services_by_ids = get_service_dicts_for_bots(result, user_profile.realm)
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
