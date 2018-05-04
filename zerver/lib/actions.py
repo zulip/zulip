@@ -123,6 +123,7 @@ from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image
 from zerver.lib.str_utils import NonBinaryStr, force_str
+from zerver.lib.attachments import access_attachment_by_path_id
 from zerver.tornado.event_queue import request_event_queue, send_event
 from zerver.lib.types import ProfileFieldData
 
@@ -3855,6 +3856,14 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
 def is_old_stream(stream_date_created: datetime.datetime) -> bool:
     return (datetime.date.today() - stream_date_created.date()).days >= 7
 
+def notify_attachment_update(user_profile: UserProfile, op: str,
+                             attachment: Dict[str, Any]) -> None:
+    event = {
+        'type': 'attachments',
+        'op': op,
+        'attachment': attachment}
+    send_event(event, [user_profile.id])
+
 def encode_email_address(stream: Stream) -> Text:
     return encode_email_address_helper(stream.name, stream.email_token)
 
@@ -4541,6 +4550,8 @@ def do_claim_attachments(message: Message) -> None:
             continue
 
         claim_attachment(user_profile, path_id, message, is_message_realm_public)
+        attachment = access_attachment_by_path_id(user_profile, path_id)
+        notify_attachment_update(user_profile, "add", attachment)
 
 def do_delete_old_unclaimed_attachments(weeks_ago: int) -> None:
     old_unclaimed_attachments = get_old_unclaimed_attachments(weeks_ago)

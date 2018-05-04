@@ -21,6 +21,13 @@ def access_attachment_by_id(user_profile: UserProfile, attachment_id: int,
         raise JsonableError(_("Invalid attachment"))
     return attachment
 
+def access_attachment_by_path_id(user_profile: UserProfile, path_id: str) -> Attachment:
+    query = Attachment.objects.filter(owner=user_profile).filter(path_id=path_id)
+    attachment = query.first()
+    if attachment is not None:
+        attachment = attachment.to_dict()
+    return attachment
+
 def remove_attachment(user_profile: UserProfile, attachment: Attachment) -> None:
     try:
         delete_message_image(attachment.path_id)
