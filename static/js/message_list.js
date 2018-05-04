@@ -35,9 +35,29 @@ exports.MessageList = function (table_name, filter, opts) {
 };
 
 exports.MessageList.prototype = {
+    _get_predicate: function () {
+        // We cache this.
+        if (!this.predicate) {
+            this.predicate = this.filter.predicate();
+        }
+        return this.predicate;
+    },
+
+    valid_non_duplicated_messages: function (messages) {
+        var predicate = this._get_predicate();
+        var self = this;
+        return _.filter(messages, function (msg) {
+            return self.get(msg.id) === undefined && predicate(msg);
+        });
+    },
+
+    filter_incoming: function (messages) {
+        var predicate = this._get_predicate();
+        return _.filter(messages, predicate);
+    },
+
     add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
-        var predicate = self.filter.predicate();
         var top_messages = [];
         var bottom_messages = [];
         var interior_messages = [];
@@ -45,17 +65,13 @@ exports.MessageList.prototype = {
         // If we're initially populating the list, save the messages in
         // bottom_messages regardless
         if (self.selected_id() === -1 && self.empty()) {
-            var narrow_messages = _.filter(messages, predicate);
+            var narrow_messages = this.filter_incoming(messages);
             bottom_messages = _.reject(narrow_messages, function (msg) {
                 return self.get(msg.id);
             });
         } else {
+            messages = self.valid_non_duplicated_messages(messages);
             _.each(messages, function (msg) {
-                // Filter out duplicates that are already in self, and all messages
-                // that fail our filter predicate
-                if (! (self.get(msg.id) === undefined && predicate(msg))) {
-                    return;
-                }
 
                 // Put messages in correct order on either side of the
                 // message list.  This code path assumes that messages
