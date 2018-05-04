@@ -35,12 +35,6 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
 
 
 function render_attachments_ui(attachments) {
-    _.each(attachments, function (attachment) {
-        var time = new XDate(attachment.create_time);
-        attachment.create_time_str = timerender.render_now(time).time_str;
-        attachment.size_str = bytes_to_size(attachment.size);
-    });
-
     var uploaded_files_table = $("#uploaded_files_table").expectOne();
     var $search_input = $("#upload_file_search");
 
@@ -84,6 +78,14 @@ function render_attachments_ui(attachments) {
     ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
 }
 
+function format_attachment_data(new_attachments) {
+    _.each(new_attachments, function (attachment) {
+        var time = new XDate(attachment.create_time);
+        attachment.create_time_str = timerender.render_now(time).time_str;
+        attachment.size_str = bytes_to_size(attachment.size);
+    });
+}
+
 exports.set_up_attachments = function () {
     // The settings page must be rendered before this function gets called.
 
@@ -104,6 +106,7 @@ exports.set_up_attachments = function () {
         idempotent: true,
         success: function (data) {
             loading.destroy_indicator($('#attachments_loading_indicator'));
+            format_attachment_data(data.attachments);
             render_attachments_ui(data.attachments);
         },
         error: function (xhr) {
