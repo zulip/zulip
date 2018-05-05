@@ -440,7 +440,7 @@ exports.change_stream_description = function (e) {
     $(".stream_change_property_info").hide();
 
     channel.patch({
-        // Stream names might contain unsafe characters so we must encode it first.
+        // Description might contain unsafe characters so we must encode it first.
         url: '/json/streams/' + stream_id,
         data: {
             description: JSON.stringify(description),
