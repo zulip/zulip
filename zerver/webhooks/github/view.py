@@ -8,7 +8,8 @@ from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, JsonableError, has_request_variables
 from zerver.lib.response import json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import CONTENT_MESSAGE_TEMPLATE, \
     SUBJECT_WITH_BRANCH_TEMPLATE, SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
@@ -379,7 +380,7 @@ def api_github_webhook(
     return json_success()
 
 def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> Optional[str]:
-    event = request.META['HTTP_X_GITHUB_EVENT']
+    event = validate_extract_webhook_http_header(request, 'X_GITHUB_EVENT', 'GitHub')
     if event == 'pull_request':
         action = payload['action']
         if action in ('opened', 'synchronize', 'reopened', 'edited'):

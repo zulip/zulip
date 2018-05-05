@@ -1835,13 +1835,13 @@ def check_default_stream_group_name(group_name: Text) -> None:
             raise JsonableError(_("Default stream group name '%s' contains NULL (0x00) characters."
                                 % (group_name)))
 
-def send_pm_if_empty_stream(sender: UserProfile,
-                            stream: Optional[Stream],
-                            stream_name: Text,
-                            realm: Realm) -> None:
-    """If a bot sends a message to a stream that doesn't exist or has no
-    subscribers, sends a notification to the bot owner (if not a
-    cross-realm bot) so that the owner can correct the issue."""
+def send_rate_limited_pm_notification_to_bot_owner(sender: UserProfile,
+                                                   realm: Realm,
+                                                   content: Text) -> None:
+    """
+    Sends a PM error notification to a bot's owner if one hasn't already
+    been sent in the last 5 minutes.
+    """
     if sender.realm.is_zephyr_mirror_realm or sender.realm.deactivated:
         return
 
@@ -1855,11 +1855,6 @@ def send_pm_if_empty_stream(sender: UserProfile,
     if sender.realm != realm:
         return
 
-    if stream is not None:
-        num_subscribers = num_subscribers_for_stream_id(stream.id)
-        if num_subscribers > 0:
-            return
-
     # We warn the user once every 5 minutes to avoid a flood of
     # PMs on a misconfigured integration, re-using the
     # UserProfile.last_reminder field, which is not used for bots.
@@ -1867,6 +1862,28 @@ def send_pm_if_empty_stream(sender: UserProfile,
     waitperiod = datetime.timedelta(minutes=UserProfile.BOT_OWNER_STREAM_ALERT_WAITPERIOD)
     if last_reminder and timezone_now() - last_reminder <= waitperiod:
         return
+
+    internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
+                                  sender.bot_owner, content)
+
+    sender.last_reminder = timezone_now()
+    sender.save(update_fields=['last_reminder'])
+
+
+def send_pm_if_empty_stream(sender: UserProfile,
+                            stream: Optional[Stream],
+                            stream_name: Text,
+                            realm: Realm) -> None:
+    """If a bot sends a message to a stream that doesn't exist or has no
+    subscribers, sends a notification to the bot owner (if not a
+    cross-realm bot) so that the owner can correct the issue."""
+    if not sender.is_bot or sender.bot_owner is None:
+        return
+
+    if stream is not None:
+        num_subscribers = num_subscribers_for_stream_id(stream.id)
+        if num_subscribers > 0:
+            return
 
     if stream is None:
         error_msg = "that stream does not yet exist. To create it, "
@@ -1879,11 +1896,7 @@ def send_pm_if_empty_stream(sender: UserProfile,
                "click the gear in the left-side stream list." %
                (sender.full_name, stream_name, error_msg))
 
-    internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT),
-                                  sender.bot_owner, content)
-
-    sender.last_reminder = timezone_now()
-    sender.save(update_fields=['last_reminder'])
+    send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.

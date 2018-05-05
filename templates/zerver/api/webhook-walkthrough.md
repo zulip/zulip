@@ -510,3 +510,28 @@ class QuerytestHookTests(WebhookTestCase):
 You can also override `get_body` if your test data needs to be constructed in
 an unusual way. For more, see the definition for the base class, `WebhookTestCase`
 in `zerver/lib/test_classes.py.`
+
+
+### Custom HTTP event-type headers
+
+Some third-party services set a custom HTTP header to indicate the event type that
+generates a particular payload. To extract such headers, we recommend using the
+`validate_extract_webhook_http_header` function in `zerver/lib/webhooks/common.py`,
+like so:
+
+```
+event = validate_extract_webhook_http_header(request, header, integration_name)
+```
+
+`request` is the `HttpRequest` object passed to your main webhook function. `header`
+is the name of the custom header you'd like to extract, such as `X_EVENT_KEY`, and
+`integration_name` is the name of the third-party service in question, such as
+`GitHub`.
+
+Because such headers are how some integrations indicate the event types of their
+payloads, the absence of such a header usually indicates a configuration
+issue, where one either entered the URL for a different integration, or happens to
+be running an older version of the integration that doesn't set that header.
+
+If the requisite header is missing, this function sends a PM to the owner of the
+webhook bot, notifying them of the missing header.

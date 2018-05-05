@@ -9,7 +9,8 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    validate_extract_webhook_http_header
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
@@ -24,7 +25,9 @@ USER_PART = 'User {display_name}(login: {username})'
 BITBUCKET_FORK_BODY = USER_PART + ' forked the repository into [{fork_name}]({fork_url}).'
 BITBUCKET_COMMIT_STATUS_CHANGED_BODY = ('[System {key}]({system_url}) changed status of'
                                         ' {commit_info} to {status}.')
-
+BITBUCKET_REPO_UPDATED_CHANGED = ('{actor} changed the {change} of the **{repo_name}**'
+                                  ' repo from **{old}** to **{new}**\n')
+BITBUCKET_REPO_UPDATED_ADDED = '{actor} changed the {change} of the **{repo_name}** repo to **{new}**\n'
 
 PULL_REQUEST_SUPPORTED_ACTIONS = [
     'approved',
@@ -110,7 +113,6 @@ def get_subject_based_on_type(payload: Dict[str, Any], type: str) -> Text:
     return get_subject(payload)
 
 def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
-    event_key = request.META.get("HTTP_X_EVENT_KEY")
     if payload.get('push'):
         return 'push'
     elif payload.get('fork'):
@@ -127,11 +129,19 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         return "issue_created"
     elif payload.get('pullrequest'):
         pull_request_template = 'pull_request_{}'
+        # Note that we only need the HTTP header to determine pullrequest events.
+        # We rely on the payload itself to determine the other ones.
+        event_key = validate_extract_webhook_http_header(request, "X_EVENT_KEY", "BitBucket")
         action = re.match('pullrequest:(?P<action>.*)$', event_key)
         if action:
-            action = action.group('action')
-            if action in PULL_REQUEST_SUPPORTED_ACTIONS:
-                return pull_request_template.format(action)
+            action_group = action.group('action')
+            if action_group in PULL_REQUEST_SUPPORTED_ACTIONS:
+                return pull_request_template.format(action_group)
+    else:
+        event_key = validate_extract_webhook_http_header(request, "X_EVENT_KEY", "BitBucket")
+        if event_key == 'repo:updated':
+            return event_key
+
     raise UnknownTriggerType("We don't support {} event type".format(event_key))
 
 def get_body_based_on_type(type: str) -> Callable[[Dict[str, Any]], Text]:
@@ -307,6 +317,31 @@ def get_push_tag_body(payload: Dict[str, Any], change: Dict[str, Any]) -> Text:
         action=action
     )
 
+def get_repo_updated_body(payload: Dict[str, Any]) -> Text:
+    changes = ['website', 'name', 'links', 'language', 'full_name', 'description']
+    body = ""
+    repo_name = payload['repository']['name']
+    actor = payload['actor']['username']
+
+    for change in changes:
+        new = payload['changes'][change]['new']
+        old = payload['changes'][change]['old']
+        if change == 'full_name':
+            change = 'full name'
+        if new and old:
+            message = BITBUCKET_REPO_UPDATED_CHANGED.format(
+                actor=actor, change=change, repo_name=repo_name,
+                old=old, new=new
+            )
+            body += message
+        elif new and not old:
+            message = BITBUCKET_REPO_UPDATED_ADDED.format(
+                actor=actor, change=change, repo_name=repo_name, new=new
+            )
+            body += message
+
+    return body
+
 def get_pull_request_title(pullrequest_payload: Dict[str, Any]) -> str:
     return pullrequest_payload['title']
 
@@ -353,5 +388,6 @@ GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER = {
     'pull_request_comment_updated': partial(get_pull_request_deleted_or_updated_comment_action_body,
                                             action='updated'),
     'pull_request_comment_deleted': partial(get_pull_request_deleted_or_updated_comment_action_body,
-                                            action='deleted')
+                                            action='deleted'),
+    'repo:updated': get_repo_updated_body,
 }
