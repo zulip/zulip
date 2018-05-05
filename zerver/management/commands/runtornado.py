@@ -19,6 +19,8 @@ from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
 settings.RUNNING_INSIDE_TORNADO = True
 instrument_tornado_ioloop()
 
+instance = ioloop.IOLoop.current()
+
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, \
     setup_tornado_rabbitmq
@@ -105,8 +107,6 @@ class Command(BaseCommand):
                 setup_event_queue()
                 add_client_gc_hook(missedmessage_hook)
                 setup_tornado_rabbitmq()
-
-                instance = ioloop.IOLoop.current()
 
                 if django.conf.settings.DEBUG:
 #                    instance.set_blocking_log_threshold(5)
