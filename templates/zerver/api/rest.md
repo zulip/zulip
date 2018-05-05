@@ -13,7 +13,7 @@ you can do in Zulip, you can do with Zulip's REST API.  To use this API:
   appropriate HTTP Basic Authentication headers; see each endpoint's
   `curl` option for details on the request format.
 * The Zulip API has a standard
-  [system for reporting errors](/api/rest_error_handling).
+  [system for reporting errors](/api/rest-error-handling).
 
 Most other details are covered in the documentation for the individual
 endpoints:
