@@ -109,7 +109,7 @@ class Command(BaseCommand):
                 instance = ioloop.IOLoop.current()
 
                 if django.conf.settings.DEBUG:
-                    instance.set_blocking_log_threshold(5)
+#                    instance.set_blocking_log_threshold(5)
                     instance.handle_callback_exception = handle_callback_exception
                 instance.start()
             except KeyboardInterrupt:
