@@ -87,4 +87,3 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
-PUSH_NOTIFICATION_BOUNCER_URL = EXTERNAL_URI_SCHEME + EXTERNAL_HOST

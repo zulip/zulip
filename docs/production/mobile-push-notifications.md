@@ -18,19 +18,19 @@ support forwarding push notifications to a central push notification
 forwarding service.  You can enable this for your Zulip server as
 follows:
 
-1. If you're running Zulip 1.8.1 or newer, you can run `manage.py
-   register_server` from `/home/zulip/deployments/current`.  This
-   command will print the registration data it would send to the
-   mobile push notifications service, ask you to accept the terms of
-   service, and if you accept, register your server.  Otherwise, see
-   the [legacy signup instructions](#legacy-signup).
-
 1. Uncomment the `PUSH_NOTIFICATION_BOUNCER_URL =
    'https://push.zulipchat.com'` line in your `/etc/zulip/settings.py`
    file (i.e. remove the `#` at the start of the line), and
    [restart your Zulip server](../production/maintain-secure-upgrade.html#updating-settings).
    If you installed your Zulip server with a version older than 1.6,
    you'll need to add the line (it won't be there to uncomment).
+
+1. If you're running Zulip 1.8.1 or newer, you can run `manage.py
+   register_server` from `/home/zulip/deployments/current`.  This
+   command will print the registration data it would send to the
+   mobile push notifications service, ask you to accept the terms of
+   service, and if you accept, register your server.  Otherwise, see
+   the [legacy signup instructions](#legacy-signup).
 
 1. If you or your users have already set up the Zulip mobile app,
    you'll each need to log out and log back in again in order to start

@@ -32,7 +32,8 @@ class Command(ZulipBaseCommand):
                             help="Automatically rotate your server's zulip_org_key")
 
     def handle(self, **options: Any) -> None:
-        check_config()
+        if not settings.DEVELOPMENT:
+            check_config()
 
         if not options['agree_to_terms_of_service'] and not options["rotate_key"]:
             raise CommandError(
@@ -43,6 +44,13 @@ class Command(ZulipBaseCommand):
             raise CommandError("Missing zulip_org_id; run scripts/setup/generate_secrets.py to generate.")
         if not settings.ZULIP_ORG_KEY:
             raise CommandError("Missing zulip_org_key; run scripts/setup/generate_secrets.py to generate.")
+        if settings.PUSH_NOTIFICATION_BOUNCER_URL is None:
+            if settings.DEVELOPMENT:
+                settings.PUSH_NOTIFICATION_BOUNCER_URL = (settings.EXTERNAL_URI_SCHEME +
+                                                          settings.EXTERNAL_HOST)
+            else:
+                raise CommandError("Please uncomment PUSH_NOTIFICATION_BOUNCER_URL "
+                                   "in /etc/zulip/settings.py (remove the '#')")
 
         request = {
             "zulip_org_id": settings.ZULIP_ORG_ID,
@@ -77,7 +85,6 @@ class Command(ZulipBaseCommand):
         if response.json()['created']:
             print("You've successfully register for the Mobile Push Notification Service!\n"
                   "To finish setup for sending push notifications:")
-            print("- Uncomment PUSH_NOTIFICATION_BOUNCER_URL in /etc/zulip/settings.py (remove the '#')")
             print("- Restart the server, using /home/zulip/deployments/current/scripts/restart-server")
             print("- Return to the documentation to learn how to test push notifications")
         else:
