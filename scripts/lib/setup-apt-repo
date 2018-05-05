@@ -21,8 +21,10 @@ deb-src http://ppa.launchpad.net/groonga/ppa/ubuntu $release main
 deb-src http://ppa.launchpad.net/tabbott/zulip/ubuntu $release main
 EOF
 elif [ "$release" = "stretch" ]; then
+    apt-key add "$SCRIPTS_PATH"/setup/packagecloud.asc
     apt-key add "$SCRIPTS_PATH"/setup/pgroonga-debian.asc
     cat >/etc/apt/sources.list.d/zulip.list <<EOF
+deb https://packagecloud.io/zulip/server/debian/ stretch main
 deb https://packages.groonga.org/debian/ stretch main
 deb-src https://packages.groonga.org/debian/ stretch main
 EOF
