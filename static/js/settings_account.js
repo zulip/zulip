@@ -327,10 +327,11 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $(".custom_user_field_value").on('change', function () {
+    $(".custom_user_field_value").on('change', function (e) {
         var fields = [];
         var value = $(this).val();
-        fields.push({id: parseInt($(this).parent().attr("id"), 10), value: value});
+        fields.push({id: parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10),
+                     value: value});
         var spinner = $("#custom-field-status").expectOne();
         loading.make_indicator(spinner, {text: 'Saving ...'});
         settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",

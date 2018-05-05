@@ -610,7 +610,7 @@ function render(template_name, args) {
     var field = {name: "GitHub user name", id: 2, hint: "Or link to profile"};
     var args = {field: field, field_value: "@GitHub", field_type: "text"};
     var html = render('custom-user-profile-field', args);
-    assert.equal($(html).attr('id'), 2);
+    assert.equal($(html).attr('data-field-id'), 2);
     assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
     assert.equal($(html).find('.field_hint').text(), "Or link to profile");
     assert.equal($(html).find('label').text(), "GitHub user name");

@@ -1,4 +1,4 @@
-<div class="user-name-section custom_user_field" name="{{ field.name }}" id="{{ field.id }}">
+<div class="user-name-section custom_user_field" name="{{ field.name }}" data-field-id="{{ field.id }}">
     <label for="{{ field.name }}" class="title">{{ field.name }}</label>
     {{#if is_long_text_field}}
         <textarea maxlength="500" class="custom_user_field_value">{{ field_value }}</textarea>
