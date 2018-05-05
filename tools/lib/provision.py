@@ -29,9 +29,9 @@ SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
         "xenial",
-        # Platforms that are blocked on on tsearch_extras
-        # "stretch",
-        # "zesty",
+    ],
+    "Debian": [
+        "stretch",
     ],
 }
 
