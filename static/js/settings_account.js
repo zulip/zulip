@@ -57,18 +57,30 @@ exports.add_custom_profile_fields_to_settings = function () {
     var all_custom_fields = page_params.custom_profile_fields;
 
     all_custom_fields.forEach(function (field) {
+        var field_type = settings_profile_fields.field_type_id_to_string(field.type);
         var type;
         var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field.type === 2;
+        var is_long_text = field_type === "Long Text";
+        var is_choice_field = field_type === "Choice";
+        var field_choices = [];
 
-        // 1 & 2 type represent textual data.
-        if (field.type === 1 || field.type === 2) {
+        if (field_type === "Long Text" || field_type === "Short Text") {
             type = "text";
-        } else if (field.type === 3) {
+        } else if (field_type === "Choice") {
             type = "choice";
-        } else if (field.type === 4) {
+            var field_choice_dict = JSON.parse(field.field_data);
+            for (var choice in field_choice_dict) {
+                if (choice) {
+                    field_choices[field_choice_dict[choice].order] = {
+                        value: choice,
+                        text: field_choice_dict[choice].text,
+                        selected: choice === value,
+                    };
+                }
+            }
+        } else if (field_type === "Date") {
             type = "date";
-        } else if (field.type === 5) {
+        } else if (field_type === "URL") {
             type = "url";
         } else {
             blueslip.error("Undefined field type.");
@@ -78,12 +90,12 @@ exports.add_custom_profile_fields_to_settings = function () {
             value = "";
         }
 
-        var html = templates.render("custom-user-profile-field", {field_name: field.name,
-                                                                  field_id: field.id,
+        var html = templates.render("custom-user-profile-field", {field: field,
                                                                   field_type: type,
                                                                   field_value: value,
                                                                   is_long_text_field: is_long_text,
-                                                                  field_hint: field.hint,
+                                                                  is_choice_field: is_choice_field,
+                                                                  field_choices: field_choices,
                                                                   });
         $("#account-settings .custom-profile-fields-form").append(html);
     });
@@ -315,12 +327,12 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $(".custom_user_field input, .custom_user_field textarea").on('change', function () {
+    $(".custom_user_field_value").on('change', function () {
         var fields = [];
         var value = $(this).val();
+        fields.push({id: parseInt($(this).parent().attr("id"), 10), value: value});
         var spinner = $("#custom-field-status").expectOne();
         loading.make_indicator(spinner, {text: 'Saving ...'});
-        fields.push({id: parseInt($(this).attr("id"), 10), value: value});
         settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
                                        {data: JSON.stringify(fields)}, spinner);
     });

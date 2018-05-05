@@ -8,12 +8,12 @@ var meta = {
 
 var order = [];
 
-function field_type_id_to_string(type_id) {
+exports.field_type_id_to_string = function (type_id) {
     var name = _.find(page_params.custom_profile_field_types, function (type) {
         return type[0] === type_id;
     })[1];
     return name;
-}
+};
 
 function delete_profile_field(e) {
     e.preventDefault();
@@ -180,7 +180,7 @@ exports.populate_profile_fields = function (profile_fields_data) {
                         id: profile_field.id,
                         name: profile_field.name,
                         hint: profile_field.hint,
-                        type: field_type_id_to_string(profile_field.type),
+                        type: exports.field_type_id_to_string(profile_field.type),
                         choices: choices,
                         is_choice_field: is_choice_field,
                     },
