@@ -9,6 +9,8 @@ from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id, query_for_ids
 
+from unicodedata import category
+
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 def check_full_name(full_name_raw: Text) -> Text:
@@ -19,6 +21,11 @@ def check_full_name(full_name_raw: Text) -> Text:
         raise JsonableError(_("Name too short!"))
     if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
         raise JsonableError(_("Invalid characters in name!"))
+    for character in full_name:
+        # if the first letter is C it is a unicode control character
+        # this method catches zero width characters such as rtl
+        if category(character)[0] == 'C':
+            raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
 def check_short_name(short_name_raw: Text) -> Text:

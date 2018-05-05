@@ -610,7 +610,11 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
+    # Invalid characters pulled from RFC 5322
+    NAME_INVALID_CHARS = ['*', '`', '"', '@',
+                          "(", ")", "<", ">",
+                          "[", "]", ":", ";",
+                          "@", "\\", ",", "."]
 
     # Our custom site-specific fields
     full_name = models.CharField(max_length=MAX_NAME_LENGTH)  # type: Text
