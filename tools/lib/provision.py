@@ -111,6 +111,7 @@ POSTGRES_VERSION_MAP = {
     "trusty": "9.3",
     "xenial": "9.5",
     "zesty": "9.6",
+    "bionic": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
 
@@ -154,9 +155,10 @@ APT_DEPENDENCIES = {
         "postgresql-9.5-pgroonga",
         "virtualenv",  # see comment on stretch
     ],
-    "zesty": UBUNTU_COMMON_APT_DEPENDENCIES + [
-        "postgresql-9.6",
-        "postgresql-9.6-pgroonga",
+    "bionic": UBUNTU_COMMON_APT_DEPENDENCIES + [
+        "postgresql-10",
+        "postgresql-10-pgroonga",
+        "postgresql-10-tsearch-extras",
         "virtualenv",  # see comment on stretch
     ],
 }

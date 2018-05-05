@@ -37,17 +37,19 @@ class zulip::base {
     '15.04' => 'vivid',
     '15.10' => 'wily',
     '16.04' => 'xenial',
+    '18.04' => 'bionic',
   }
 
   $postgres_version = $release_name ? {
     'wheezy'  => '9.1',
     'jessie'  => '9.4',
-    'stretch'  => '9.6',
+    'stretch' => '9.6',
     'precise' => '9.1',
     'trusty'  => '9.3',
     'vivid'   => '9.4',
     'wily'    => '9.4',
     'xenial'  => '9.5',
+    'bionic'  => '10',
   }
 
   $normal_queues = [
