@@ -1,11 +1,7 @@
 class zulip::static_asset_compiler {
   if $zulip::base::release_name == 'trusty' {
     $closure_compiler_package = 'libclosure-compiler-java'
-  } elsif $zulip::base::release_name == 'xenial' {
-    $closure_compiler_package = 'closure-compiler'
-  } elsif $zulip::base::release_name == 'bionic' {
-    $closure_compiler_package = 'closure-compiler'
-  } elsif $zulip::base::release_name == 'stretch' {
+  } else {
     $closure_compiler_package = 'closure-compiler'
   }
   $static_asset_compiler_packages = [
