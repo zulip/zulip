@@ -110,7 +110,6 @@ POSTGRES_VERSION_MAP = {
     "stretch": "9.6",
     "trusty": "9.3",
     "xenial": "9.5",
-    "zesty": "9.6",
     "bionic": "10",
 }
 POSTGRES_VERSION = POSTGRES_VERSION_MAP[codename]
