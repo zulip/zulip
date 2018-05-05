@@ -7,7 +7,7 @@ Contents:
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
 
-## Installing directly on Ubuntu
+## Installing directly on Ubuntu or Debian
 
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
@@ -18,8 +18,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 If you'd like to install a Zulip development environment on a computer
-that's already running Ubuntu 16.04 Xenial or Ubuntu 14.04 Trusty, you
-can do that by just running:
+that's already running Ubuntu 16.04 Xenial, Ubuntu 14.04 Trusty, or
+Debian 9 Stretch, you can do that by just running:
 
 ```
 # From a clone of zulip.git
@@ -91,6 +91,8 @@ sudo apt-get install postgresql-9.3-pgroonga
 sudo apt-get install postgresql-9.5-pgroonga
 # On 17.04 or 17.10
 sudo apt-get install postgresql-9.6-pgroonga
+# On 18.04
+sudo apt-get install postgresql-10-pgroonga
 
 # If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
 
@@ -103,6 +105,8 @@ sudo apt-get update
 sudo apt-get install postgresql-9.3-tsearch-extras
 # On 16.04
 sudo apt-get install postgresql-9.5-tsearch-extras
+# On 18.04
+sudo apt-get install postgresql-10-tsearch-extras
 
 
 # Otherwise, you can download a .deb directly
@@ -118,9 +122,14 @@ sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
 wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
 sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 
-# If on 16.04 or stretch
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.2_amd64.deb
-sudo dpkg -i postgresql-9.5-tsearch-extras_0.3_amd64.deb
+# If on 16.04
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.4_amd64.deb
+sudo dpkg -i postgresql-9.5-tsearch-extras_0.4_amd64.deb
+
+# If on Stretch
+wget --content-disposition \
+  https://packagecloud.io/zulip/server/packages/debian/stretch/postgresql-9.6-tsearch-extras_0.4_amd64.deb/download.deb
+sudo dpkg -i postgresql-9.6-tsearch-extras_0.4_amd64.deb
 ```
 
 Alternatively, you can always build the package from [tsearch-extras
