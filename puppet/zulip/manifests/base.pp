@@ -21,6 +21,8 @@ class zulip::base {
     'crudini',
     # Used for tools like sponge
     'moreutils',
+    # Required for using HTTPS in apt repositories.
+    'apt-transport-https',
   ]
   package { $base_packages: ensure => 'installed' }
 
