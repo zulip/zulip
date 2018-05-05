@@ -73,6 +73,11 @@ class zulip::base {
     'user_presence',
   ]
 
+  # We can't use the built-in $memorysize fact because it's a string with human-readable units
+  # Meanwhile $memorysize_mb is a string, and can't be compared with integers in puppet 4.
+  $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
+  $total_memory_mb = $total_memory / 1024 / 1024
+
   group { 'zulip':
     ensure     => present,
   }

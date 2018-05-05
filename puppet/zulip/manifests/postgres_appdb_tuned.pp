@@ -17,9 +17,7 @@ if $zulip::base::release_name == 'trusty' {
     content => template("zulip/postgresql/${zulip::base::postgres_version}/postgresql.conf.template.erb"),
   }
 
-  # We can't use the built-in $memorysize fact because it's a string with human-readable units
-  $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
-  $half_memory = $total_memory / 2
+  $half_memory = $zulip::base::total_memory / 2
   $half_memory_pages = $half_memory / 4096
 
   file {'/etc/sysctl.d/40-postgresql.conf':
@@ -57,16 +55,13 @@ vm.dirty_background_ratio = 5
     subscribe   => [ Exec['pgtune'], File['/etc/sysctl.d/40-postgresql.conf'] ]
   }
 } else {
-  # We can't use the built-in $memorysize fact because it's a string with human-readable units
-  $total_memory = regsubst(file('/proc/meminfo'), '^.*MemTotal:\s*(\d+) kB.*$', '\1', 'M') * 1024
-  $half_memory = $total_memory / 2
+  $half_memory = $zulip::base::total_memory / 2
   $half_memory_pages = $half_memory / 4096
-  $total_memory_mb = $total_memory / 1024 / 1024
 
-  $work_mem = $total_memory_mb / 512
-  $shared_buffers = $total_memory_mb / 8
-  $effective_cache_size = $total_memory_mb * 10 / 32
-  $maintenance_work_mem = $total_memory_mb / 32
+  $work_mem = $zulip::base::total_memory_mb / 512
+  $shared_buffers = $zulip::base::total_memory_mb / 8
+  $effective_cache_size = $zulip::base::total_memory_mb * 10 / 32
+  $maintenance_work_mem = $zulip::base::total_memory_mb / 32
 
   $random_page_cost = zulipconf('postgresql', 'random_page_cost', undef)
   $effective_io_concurrency = zulipconf('postgresql', 'effective_io_concurrency', undef)
