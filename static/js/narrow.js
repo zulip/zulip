@@ -321,15 +321,14 @@ exports.maybe_add_local_messages = function (opts) {
             if (load_local_messages()) {
                 return select_strategy;
             }
-
-            // Back out to first_unread strategy since we can't find
-            // any messages.
-            select_strategy = {
-                flavor: 'first_unread',
-            };
-            return select_strategy;
-
         }
+
+        // Back out to first_unread strategy since we can't find
+        // any messages.
+        select_strategy = {
+            flavor: 'first_unread',
+        };
+        return select_strategy;
     }
 
     // We may still be in our original select_strategy.
