@@ -77,7 +77,7 @@ export LC_ALL="en_US.UTF-8"
 apt-get install -y lsb-release
 os_release="$(lsb_release -sc)"
 case "$os_release" in
-    trusty|xenial) ;;
+    trusty|xenial|stretch) ;;
     *)
         set +x
         cat <<EOF
@@ -85,6 +85,7 @@ case "$os_release" in
 Unsupported OS release: $os_release
 
 Zulip in production is supported only on:
+ - Debian 9 "stretch"
  - Ubuntu 14.04 LTS "trusty"
  - Ubuntu 16.04 LTS "xenial"
 
