@@ -36,7 +36,8 @@ from zerver.lib.validator import check_int, check_float, \
     check_url
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
-    ProfileDataElement, ProfileData, FieldTypeData
+    ProfileDataElement, ProfileData, FieldTypeData, FieldElement, \
+    RealmUserValidator
 
 from django.utils.encoding import force_text
 
@@ -1971,16 +1972,24 @@ class CustomProfileField(models.Model):
     CHOICE = 3
     DATE = 4
     URL = 5
+    USER = 6
 
-    # These are the fields whose validators require field_data
-    # argument as well.
-    EXTENDED_FIELD_TYPE_DATA = [
+    # These are the fields whose validators require more than var_name
+    # and value argument. i.e. CHOICE require field_data, USER require
+    # realm as argument.
+    CHOICE_FIELD_TYPE_DATA = [
         (CHOICE, str(_('Choice')), validate_choice_field, str),
     ]  # type: FieldTypeData
+    USER_FIELD_TYPE_DATA = [
+        (USER, str(_('User')), check_valid_user_id, int),
+    ]  # type: FieldTypeData
 
-    EXTENDED_FIELD_VALIDATORS = {
-        item[0]: item[2] for item in EXTENDED_FIELD_TYPE_DATA
+    CHOICE_FIELD_VALIDATORS = {
+        item[0]: item[2] for item in CHOICE_FIELD_TYPE_DATA
     }  # type: Dict[int, ExtendedValidator]
+    USER_FIELD_VALIDATORS = {
+        item[0]: item[2] for item in USER_FIELD_TYPE_DATA
+    }  # type: Dict[int, RealmUserValidator]
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
@@ -1990,7 +1999,7 @@ class CustomProfileField(models.Model):
         (URL, str(_('URL')), check_url, str),
     ]  # type: FieldTypeData
 
-    ALL_FIELD_TYPES = FIELD_TYPE_DATA + EXTENDED_FIELD_TYPE_DATA
+    ALL_FIELD_TYPES = FIELD_TYPE_DATA + CHOICE_FIELD_TYPE_DATA + USER_FIELD_TYPE_DATA
 
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
     FIELD_CONVERTERS = {item[0]: item[3] for item in ALL_FIELD_TYPES}  # type: Dict[int, Callable[[Any], Any]]

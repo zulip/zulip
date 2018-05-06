@@ -131,18 +131,21 @@ def update_user_custom_profile_data(
             return json_error(_('Field id {id} not found.').format(id=field_id))
 
         validators = CustomProfileField.FIELD_VALIDATORS
-        extended_validators = CustomProfileField.EXTENDED_FIELD_VALIDATORS
         field_type = field.field_type
         value = item['value']
         var_name = '{}'.format(field.name)
         if field_type in validators:
             validator = validators[field_type]
             result = validator(var_name, value)
-        else:
-            # Check extended validators.
-            extended_validator = extended_validators[field_type]
+        elif field_type == CustomProfileField.CHOICE:
+            choice_field_validator = CustomProfileField.CHOICE_FIELD_VALIDATORS[field_type]
             field_data = field.field_data
-            result = extended_validator(var_name, field_data, value)
+            result = choice_field_validator(var_name, field_data, value)
+        elif field_type == CustomProfileField.USER:
+            user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
+            result = user_field_validator(user_profile.realm.id, value, False)
+        else:
+            raise AssertionError("Invalid field type")
 
         if result is not None:
             return json_error(result)
