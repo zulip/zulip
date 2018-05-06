@@ -62,26 +62,26 @@ function status_from_timestamp(baseline_time, info) {
         }
         if (age < OFFLINE_THRESHOLD_SECS) {
             switch (device_presence.status) {
-                case 'active':
-                    if (is_mobile(device)) {
-                        mobileAvailable = true;
-                    } else {
-                        nonmobileAvailable = true;
-                    }
+            case 'active':
+                if (is_mobile(device)) {
+                    mobileAvailable = true;
+                } else {
+                    nonmobileAvailable = true;
+                }
+                status = device_presence.status;
+                break;
+            case 'idle':
+                if (status !== 'active') {
                     status = device_presence.status;
-                    break;
-                case 'idle':
-                    if (status !== 'active') {
-                        status = device_presence.status;
-                    }
-                    break;
-                case 'offline':
-                    if (status !== 'active' && status !== 'idle') {
-                        status = device_presence.status;
-                    }
-                    break;
-                default:
-                    blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
+                }
+                break;
+            case 'offline':
+                if (status !== 'active' && status !== 'idle') {
+                    status = device_presence.status;
+                }
+                break;
+            default:
+                blueslip.error('Unexpected status', {presence_object: device_presence, device: device}, undefined);
             }
         }
     });
