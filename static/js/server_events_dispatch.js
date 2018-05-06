@@ -35,11 +35,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'restart':
-        var reload_options = {save_pointer: true,
-                              save_narrow: true,
-                              save_compose: true,
-                              message: "The application has been updated; reloading!",
-                             };
+        var reload_options = {
+            save_pointer: true,
+            save_narrow: true,
+            save_compose: true,
+            message: "The application has been updated; reloading!",
+        };
         if (event.immediate) {
             reload_options.immediate = true;
         }
@@ -92,8 +93,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
-                    page_params.can_create_streams = (!page_params.
-                                                        realm_create_stream_by_admins_only);
+                    page_params.can_create_streams = (
+                        !page_params.realm_create_stream_by_admins_only);
                 }
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(

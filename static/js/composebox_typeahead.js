@@ -276,23 +276,23 @@ exports.tokenize_compose_str = function (s) {
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
-            case '`':
-            case '~':
-                // Code block must start on a new line
-                if (i === 2) {
-                    return s.slice(0);
-                } else if (i > 2 && s[i-3] === "\n") {
-                    return s.slice(i-2);
-                }
-                break;
-            case '#':
-            case '@':
-            case ':':
-                if (i === 0) {
-                    return s.slice(i);
-                } else if (/[\s(){}\[\]]/.test(s[i-1])) {
-                    return s.slice(i);
-                }
+        case '`':
+        case '~':
+            // Code block must start on a new line
+            if (i === 2) {
+                return s.slice(0);
+            } else if (i > 2 && s[i-3] === "\n") {
+                return s.slice(i-2);
+            }
+            break;
+        case '#':
+        case '@':
+        case ':':
+            if (i === 0) {
+                return s.slice(i);
+            } else if (/[\s(){}\[\]]/.test(s[i-1])) {
+                return s.slice(i);
+            }
         }
     }
 

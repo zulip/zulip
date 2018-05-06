@@ -137,9 +137,12 @@ exports.restore_draft = function (draft_id) {
 
     if (draft.type === "stream") {
         if (draft.stream !== "") {
-            narrow.activate([{operator: "stream", operand: draft.stream},
-                             {operator: "topic", operand: draft.subject}],
-                            {trigger: "restore draft"});
+            narrow.activate(
+                [
+                    {operator: "stream", operand: draft.stream},
+                    {operator: "topic", operand: draft.subject},
+                ],
+                {trigger: "restore draft"});
         }
     } else {
         if (draft.private_message_recipient !== "") {

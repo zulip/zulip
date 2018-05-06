@@ -30,9 +30,20 @@ function floor_to_local_week(date) {
 }
 
 function format_date(date, include_hour) {
-    var months = [i18n.t('January'), i18n.t('February'), i18n.t('March'), i18n.t('April'), i18n.t('May'), i18n.t('June'),
-                  i18n.t('July'), i18n.t('August'), i18n.t('September'), i18n.t('October'), i18n.t('November'),
-                  i18n.t('December')];
+    var months = [
+        i18n.t('January'),
+        i18n.t('February'),
+        i18n.t('March'),
+        i18n.t('April'),
+        i18n.t('May'),
+        i18n.t('June'),
+        i18n.t('July'),
+        i18n.t('August'),
+        i18n.t('September'),
+        i18n.t('October'),
+        i18n.t('November'),
+        i18n.t('December'),
+    ];
     var month_str = months[date.getMonth()];
     var year = date.getFullYear();
     var day = date.getDate();
@@ -135,10 +146,11 @@ function populate_messages_sent_over_time(data) {
     };
 
     function make_rangeselector(x, y, button1, button2) {
-        return { x: x, y: y,
-                 buttons: [$.extend({stepmode: 'backward'}, button1),
-                           $.extend({stepmode: 'backward'}, button2),
-                           {step: 'all', label: 'All time'}] };
+        return {x: x, y: y,
+                buttons: [
+                    $.extend({stepmode: 'backward'}, button1),
+                    $.extend({stepmode: 'backward'}, button2),
+                    {step: 'all', label: 'All time'}]};
     }
 
     // This is also the cumulative rangeselector
@@ -247,7 +259,7 @@ function populate_messages_sent_over_time(data) {
         return new Date(timestamp*1000);
     });
     values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot),
-        me: partial_sums(data.user.human)};
+              me: partial_sums(data.user.human)};
     date_formatter = function (date) {
         return format_date(date, true);
     };
