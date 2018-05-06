@@ -342,6 +342,21 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assert_error_update_invalid_value(field_name, u"not URL",
                                                u"{} is not a URL".format(field_name))
 
+    def test_update_invalid_user_field(self) -> None:
+        field_name = "Mentor"
+        invalid_user_id = 1000
+        self.assert_error_update_invalid_value(field_name, invalid_user_id,
+                                               u"Invalid user ID: %d"
+                                               % (invalid_user_id))
+
+    def test_creat_user_type_of_field(self) -> None:
+        self.login(self.example_email("iago"))
+        data = {"name": "Your mentor",
+                "field_type": CustomProfileField.USER,
+                }
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_success(result)
+
     def test_update_profile_data_successfully(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
@@ -352,6 +367,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
             ('GitHub profile', 'https://github.com/ABC'),
+            ('Mentor', self.example_user("cordelia").id),
         ]
 
         data = []

@@ -82,6 +82,8 @@ exports.add_custom_profile_fields_to_settings = function () {
             type = "date";
         } else if (field_type === "URL") {
             type = "url";
+        } else if (field_type === "User") {
+            type = "user";
         } else {
             blueslip.error("Undefined field type.");
         }
