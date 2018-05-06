@@ -166,15 +166,15 @@ casper.then(function () {
         var form_sel = '.edit_bot_form[data-email="' + bot_email + '"]';
         casper.test.info('Testing edit bot form values');
 
-    //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_name]'),
-    //         'Bot 1');
-    //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
-    //         'Denmark');
-    //     casper.test.assertEqual(
-    //         common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
-    //         'Rome');
+        // casper.test.assertEqual(
+        //     common.get_form_field_value(form_sel + ' [name=bot_name]'),
+        //     'Bot 1');
+        // casper.test.assertEqual(
+        //     common.get_form_field_value(form_sel + ' [name=bot_default_sending_stream]'),
+        //     'Denmark');
+        // casper.test.assertEqual(
+        //     common.get_form_field_value(form_sel + ' [name=bot_default_events_register_stream]'),
+        //     'Rome');
         casper.test.assertEqual(
             common.get_form_field_value(form_sel + ' [name=bot_name]'),
             'Bot 1');
