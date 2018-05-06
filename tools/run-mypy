@@ -84,7 +84,7 @@ if not python_files and not pyi_files:
     sys.exit(0)
 
 extra_args = ["--follow-imports=silent",
-              "-i", "--cache-dir=var/mypy-cache"]
+              "--cache-dir=var/mypy-cache"]
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("var/linecoverage-report")
