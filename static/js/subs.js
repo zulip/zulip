@@ -71,8 +71,8 @@ function export_hash(hash) {
 }
 
 function selectText(element) {
-  var range;
-  var sel;
+    var range;
+    var sel;
     if (window.getSelection) {
         sel = window.getSelection();
         range = document.createRange();
@@ -375,7 +375,7 @@ exports.filter_table = function (query) {
             exports.stream_description_match_stream_ids.push(sub.stream_id);
 
             widgets[sub.stream_id] = $(row).detach();
-       } else {
+        } else {
             $(row).addClass("notdisplayed");
             others.push($(row).detach());
         }

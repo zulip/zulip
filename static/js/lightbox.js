@@ -222,7 +222,7 @@ $(function () {
     });
 
     $("#lightbox_overlay .download").click(function () {
-      this.blur();
+        this.blur();
     });
 
     $("#lightbox_overlay").on("click", ".image-list .image", function () {

@@ -1,3 +1,5 @@
+/* eslint indent: "off" */
+
 var LightboxCanvas = (function () {
     var events = {
         documentMouseup: [],

@@ -1,3 +1,5 @@
+/* eslint indent: "off" */
+
 var list_render = (function () {
     var DEFAULTS = {
         INITIAL_RENDER_COUNT: 80,

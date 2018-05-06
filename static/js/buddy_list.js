@@ -1,3 +1,5 @@
+/* eslint indent: "off" */
+
 var buddy_list = (function () {
     var self = {};
 

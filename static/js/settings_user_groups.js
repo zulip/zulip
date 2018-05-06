@@ -21,8 +21,8 @@ exports.reload = function () {
 };
 
 exports.can_edit = function (group_id) {
-   var me = people.get_person_from_user_id(people.my_current_user_id());
-   return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
+    var me = people.get_person_from_user_id(people.my_current_user_id());
+    return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
 };
 
 exports.populate_user_groups = function () {
@@ -84,8 +84,7 @@ exports.populate_user_groups = function () {
             });
             pill_container.find('.pill').hover(function () {
                 pill_container.find('.pill').find('.exit').css('opacity', '0.5');
-                    }, function () {}
-            );
+            }, function () {});
         }
         update_membership(data.id);
 
@@ -119,9 +118,9 @@ exports.populate_user_groups = function () {
                 save_instructions.css({display: 'block', opacity: 0}).fadeTo(400, 1);
             } else if (!is_user_group_changed() &&
                 cancel_button.is(':visible')) {
-                    cancel_button.fadeOut();
-                    save_instructions.fadeOut();
-                }
+                cancel_button.fadeOut();
+                save_instructions.fadeOut();
+            }
         }
 
         function show_saved_button() {
@@ -204,8 +203,8 @@ exports.populate_user_groups = function () {
             }
             if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
                 $(event.relatedTarget).closest('.cancel').length) {
-                    settings_user_groups.reload();
-                    return;
+                settings_user_groups.reload();
+                return;
             }
             save_name_desc();
             save_members();

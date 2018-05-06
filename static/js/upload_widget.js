@@ -1,3 +1,4 @@
+/* eslint indent: "off" */
 var upload_widget = (function () {
 
     var exports = {};

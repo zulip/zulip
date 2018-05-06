@@ -301,8 +301,9 @@ exports.set_click_handlers = function (callbacks) {
         var sub = stream_data.get_sub_by_id(stream_id);
         var topic = $(e.target).parents('li').attr('data-topic-name');
 
-        narrow.activate([{operator: 'stream', operand: sub.name},
-                         {operator: 'topic', operand: topic}],
+        narrow.activate([
+            {operator: 'stream', operand: sub.name},
+            {operator: 'topic', operand: topic}],
                         {trigger: 'sidebar'});
 
         e.preventDefault();

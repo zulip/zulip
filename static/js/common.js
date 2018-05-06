@@ -49,8 +49,8 @@ exports.password_quality = function (password, bar, password_field) {
         // The bar bottoms out at 10% so there's always something
         // for the user to see.
         bar.width(((90 * bar_progress) + 10) + '%')
-           .removeClass('bar-success bar-danger')
-           .addClass(acceptable ? 'bar-success' : 'bar-danger');
+            .removeClass('bar-success bar-danger')
+            .addClass(acceptable ? 'bar-success' : 'bar-danger');
     }
 
     return acceptable;

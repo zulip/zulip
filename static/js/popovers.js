@@ -46,8 +46,8 @@ function copy_email_handler(e) {
     email_textnode.nodeValue = i18n.t('Email copied');
 
     setTimeout(function () {
-      email_el.removeClass('email_copied');
-      email_textnode.nodeValue = copy_icon.attr('data-clipboard-text');
+        email_el.removeClass('email_copied');
+        email_textnode.nodeValue = copy_icon.attr('data-clipboard-text');
     }, 1500);
     e.clearSelection();
 }
@@ -99,16 +99,16 @@ function user_last_seen_time_status(user_id) {
 }
 
 function calculate_info_popover_placement(size, elt) {
-  var ypos = elt.offset().top;
+    var ypos = elt.offset().top;
 
-  if (!((ypos + (size / 2) < message_viewport.height()) &&
-      (ypos > (size / 2)))) {
-      if (((ypos + size) < message_viewport.height())) {
-          return 'bottom';
-      } else if (ypos > size) {
-          return 'top';
-      }
-  }
+    if (!((ypos + (size / 2) < message_viewport.height()) &&
+          (ypos > (size / 2)))) {
+        if (((ypos + size) < message_viewport.height())) {
+            return 'bottom';
+        } else if (ypos > size) {
+            return 'top';
+        }
+    }
 }
 
 // exporting for testability
@@ -221,7 +221,7 @@ function fetch_group_members(member_ids) {
 function sort_group_members(members) {
     return members
         .sort(function (a, b) {
-              return a.full_name.localeCompare(b.full_name);
+            return a.full_name.localeCompare(b.full_name);
         });
 }
 

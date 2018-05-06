@@ -14,12 +14,12 @@ var realm_filter_list = [];
 
 // Helper function
 function escape(html, encode) {
-  return html
-    .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    return html
+        .replace(!encode ? /&(?!#?\w+;)/g : /&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // Regexes that match some of our common bugdown markup
@@ -327,9 +327,8 @@ exports.initialize = function () {
 
     function disable_markdown_regex(rules, name) {
         rules[name] = {exec: function () {
-                return false;
-            },
-        };
+            return false;
+        }};
     }
 
     // Configure the marked markdown parser for our usage

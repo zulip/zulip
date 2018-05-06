@@ -53,18 +53,18 @@ exports.notify_with_undo_option = (function () {
         var $exit = $("#unmute_muted_topic_notification .exit-me");
 
         if (!meta.$mute) {
-          meta.$mute = $("#unmute_muted_topic_notification");
+            meta.$mute = $("#unmute_muted_topic_notification");
 
-          $exit.click(function () {
-              animate.fadeOut();
-          });
+            $exit.click(function () {
+                animate.fadeOut();
+            });
 
-          meta.$mute.find("#unmute").click(function () {
-              // it should reference the meta variable and not get stuck with
-              // a pass-by-value of stream, topic.
-              exports.unmute(meta.stream, meta.topic);
-              animate.fadeOut();
-          });
+            meta.$mute.find("#unmute").click(function () {
+                // it should reference the meta variable and not get stuck with
+                // a pass-by-value of stream, topic.
+                exports.unmute(meta.stream, meta.topic);
+                animate.fadeOut();
+            });
         }
 
         meta.stream = stream;

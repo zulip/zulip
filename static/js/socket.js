@@ -32,8 +32,14 @@ function Socket(url) {
         that._try_to_reconnect({reason: 'unsuspend'});
     });
 
-    this._supported_protocols = ['websocket', 'xdr-streaming', 'xhr-streaming',
-                                 'xdr-polling', 'xhr-polling', 'jsonp-polling'];
+    this._supported_protocols = [
+        'websocket',
+        'xdr-streaming',
+        'xhr-streaming',
+        'xdr-polling',
+        'xhr-polling',
+        'jsonp-polling',
+    ];
     if (page_params.test_suite) {
         this._supported_protocols = _.reject(this._supported_protocols,
                                              function (x) { return x === 'xhr-streaming'; });
@@ -209,30 +215,30 @@ Socket.prototype = {
                                queue_id: page_params.queue_id,
                                status_inquiries: _.keys(that._requests)};
                 request.success = function (resp) {
-                  that._is_authenticated = true;
-                  that._is_reconnecting = false;
-                  that._reconnect_initiation_time = null;
-                  that._connection_failures = 0;
-                  var resend_queue = [];
-                  _.each(resp.status_inquiries, function (status, id) {
-                    if (status.status === 'complete') {
-                        that._process_response(id, status.response);
-                    } else if (status.status === 'received') {
-                        that._update_request_state(id, 'sent');
-                    } else if (status.status === 'not_received') {
-                        resend_queue.push(id);
-                    }
-                  });
-                  resend_queue.sort(that._req_id_sorter);
-                  _.each(resend_queue, function (id) {
-                      that._resend(id);
-                  });
+                    that._is_authenticated = true;
+                    that._is_reconnecting = false;
+                    that._reconnect_initiation_time = null;
+                    that._connection_failures = 0;
+                    var resend_queue = [];
+                    _.each(resp.status_inquiries, function (status, id) {
+                        if (status.status === 'complete') {
+                            that._process_response(id, status.response);
+                        } else if (status.status === 'received') {
+                            that._update_request_state(id, 'sent');
+                        } else if (status.status === 'not_received') {
+                            resend_queue.push(id);
+                        }
+                    });
+                    resend_queue.sort(that._req_id_sorter);
+                    _.each(resend_queue, function (id) {
+                        that._resend(id);
+                    });
                 };
                 request.error = function (type, resp) {
-                  blueslip.info("Could not authenticate with server: " + resp.msg);
-                  that._connection_failures += 1;
-                  that._try_to_reconnect({reason: 'auth_fail',
-                                          wait_time: that._reconnect_wait_time()});
+                    blueslip.info("Could not authenticate with server: " + resp.msg);
+                    that._connection_failures += 1;
+                    that._try_to_reconnect({reason: 'auth_fail',
+                                            wait_time: that._reconnect_wait_time()});
                 };
                 that._save_request(request);
                 that._do_send(request);

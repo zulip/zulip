@@ -195,14 +195,9 @@ function build_all_messages_popover(e) {
 }
 
 exports.register_click_handlers = function () {
-    $('#stream_filters').on('click',
-        '.stream-sidebar-arrow', build_stream_popover);
-
-    $('#stream_filters').on('click',
-        '.topic-sidebar-arrow', build_topic_popover);
-
-    $('#global_filters').on('click',
-        '.stream-sidebar-arrow', build_all_messages_popover);
+    $('#stream_filters').on('click', '.stream-sidebar-arrow', build_stream_popover);
+    $('#stream_filters').on('click', '.topic-sidebar-arrow', build_topic_popover);
+    $('#global_filters').on('click', '.stream-sidebar-arrow', build_all_messages_popover);
 
     exports.register_stream_handlers();
     exports.register_topic_handlers();

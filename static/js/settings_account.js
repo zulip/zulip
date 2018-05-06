@@ -90,13 +90,14 @@ exports.add_custom_profile_fields_to_settings = function () {
             value = "";
         }
 
-        var html = templates.render("custom-user-profile-field", {field: field,
-                                                                  field_type: type,
-                                                                  field_value: value,
-                                                                  is_long_text_field: is_long_text,
-                                                                  is_choice_field: is_choice_field,
-                                                                  field_choices: field_choices,
-                                                                  });
+        var html = templates.render("custom-user-profile-field", {
+            field: field,
+            field_type: type,
+            field_value: value,
+            is_long_text_field: is_long_text,
+            is_choice_field: is_choice_field,
+            field_choices: field_choices,
+        });
         $("#account-settings .custom-profile-fields-form").append(html);
     });
 };

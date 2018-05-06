@@ -71,8 +71,8 @@ exports.initialize = function () {
         success: function () {
             $('#submit-invitation').button('reset');
             invite_status.text(i18n.t('User(s) invited successfully.'))
-                          .addClass('alert-success')
-                          .show();
+                .addClass('alert-success')
+                .show();
             invitee_emails.val('');
 
             if (page_params.development_environment) {
@@ -87,8 +87,8 @@ exports.initialize = function () {
             if (arr.errors === undefined) {
                 // There was a fatal error, no partial processing occurred.
                 invite_status.text(arr.msg)
-                              .addClass('alert-error')
-                              .show();
+                    .addClass('alert-error')
+                    .show();
             } else {
                 // Some users were not invited.
                 var invitee_emails_errored = [];
@@ -99,10 +99,10 @@ exports.initialize = function () {
                 });
 
                 invite_status.addClass('alert-warning')
-                              .empty()
-                              .append($('<p>').text(arr.msg))
-                              .append(error_list)
-                              .show();
+                    .empty()
+                    .append($('<p>').text(arr.msg))
+                    .append(error_list)
+                    .show();
                 invitee_emails_group.addClass('warning');
 
                 if (arr.sent_invitations) {

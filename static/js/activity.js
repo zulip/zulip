@@ -352,9 +352,9 @@ exports.initialize = function () {
 
     $(window).focus(focus_gained);
     $(window).idle({idle: DEFAULT_IDLE_TIMEOUT_MS,
-                onIdle: focus_lost,
-                onActive: focus_gained,
-                keepTracking: true});
+                    onIdle: focus_lost,
+                    onActive: focus_gained,
+                    keepTracking: true});
 
     presence.set_info(page_params.presences,
                       page_params.initial_servertime);

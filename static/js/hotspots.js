@@ -192,8 +192,7 @@ function insert_hotspot_into_DOM(hotspot) {
         }
 
         // reposition on any event that might update the UI
-        ['resize', 'scroll', 'onkeydown', 'click']
-        .forEach(function (event_name) {
+        ['resize', 'scroll', 'onkeydown', 'click'].forEach(function (event_name) {
             window.addEventListener(event_name, _.debounce(function () {
                 if (place_icon(hotspot)) {
                     place_popover(hotspot);

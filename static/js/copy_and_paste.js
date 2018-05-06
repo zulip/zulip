@@ -37,9 +37,9 @@ function find_boundary_tr(initial_tr, iterate_row) {
 
 function construct_recipient_header(message_row) {
     var message_header_content = rows.get_message_recipient_header(message_row)
-                                     .text()
-                                     .replace(/\s+/g, " ")
-                                     .replace(/^\s/, "").replace(/\s$/, "");
+        .text()
+        .replace(/\s+/g, " ")
+        .replace(/^\s/, "").replace(/\s$/, "");
     return $('<p>').append($('<strong>').text(message_header_content));
 }
 
@@ -50,9 +50,7 @@ function construct_copy_div(div, start_id, end_id) {
     var should_include_start_recipient_header = false;
 
     var last_recipient_row_id = start_recipient_row_id;
-    for (var row = start_row;
-         rows.id(row) <= end_id;
-         row = rows.next_visible(row)) {
+    for (var row = start_row; rows.id(row) <= end_id; row = rows.next_visible(row)) {
         var recipient_row_id = rows.id_for_recipient_row(rows.get_message_recipient_row(row));
         // if we found a message from another recipient,
         // it means that we have messages from several recipients,
@@ -146,7 +144,7 @@ function copy_handler() {
     // Select div so that the browser will copy it
     // instead of copying the original selection
     div.css({position: 'absolute', left: '-99999px'})
-            .attr('id', 'copytempdiv');
+        .attr('id', 'copytempdiv');
     $('body').append(div);
     selection.selectAllChildren(div[0]);
 

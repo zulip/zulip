@@ -59,7 +59,7 @@ function make_tab_data() {
                    filter.has_operand("is", "private")) {
 
             tabs.push(make_tab("Private Messages", '#narrow/is/private',
-                                undefined, 'private_message '));
+                               undefined, 'private_message '));
 
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
@@ -76,7 +76,7 @@ function make_tab_data() {
         } else if (filter.has_operator("group-pm-with")) {
 
             tabs.push(make_tab("Group Private", '#narrow/group-pm-with',
-                                undefined, 'private_message '));
+                               undefined, 'private_message '));
 
 
         } else if (filter.has_operand("is", "starred")) {
@@ -131,19 +131,19 @@ exports.colorize_tab_bar = function () {
         var color_for_stream = stream_data.get_color(stream_name);
         var stream_dark = stream_color.get_color_class(color_for_stream);
         var stream_light = colorspace.getHexColor(
-                           colorspace.getLighterColor(
-                           colorspace.getDecimalColor(color_for_stream), 0.2));
+            colorspace.getLighterColor(
+                colorspace.getDecimalColor(color_for_stream), 0.2));
 
         if (stream_tab.hasClass("stream")) {
             stream_tab.css('background-color', color_for_stream);
             if (stream_tab.hasClass("inactive")) {
-              stream_tab.hover (
-                function () {
-                 $(this).css('background-color', stream_light);
-                }, function () {
-                 $(this).css('background-color', color_for_stream);
-                }
-              );
+                stream_tab.hover (
+                    function () {
+                        $(this).css('background-color', stream_light);
+                    }, function () {
+                        $(this).css('background-color', color_for_stream);
+                    }
+                );
             }
             stream_tab.removeClass(stream_color.color_classes);
             stream_tab.addClass(stream_dark);

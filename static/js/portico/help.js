@@ -1,3 +1,4 @@
+/* eslint indent: "off" */
 import PerfectScrollbar from 'perfect-scrollbar';
 
 function registerCodeSection($codeSection) {

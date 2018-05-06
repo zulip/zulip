@@ -139,12 +139,12 @@ exports.restore_draft = function (draft_id) {
         if (draft.stream !== "") {
             narrow.activate([{operator: "stream", operand: draft.stream},
                              {operator: "topic", operand: draft.subject}],
-                             {trigger: "restore draft"});
+                            {trigger: "restore draft"});
         }
     } else {
         if (draft.private_message_recipient !== "") {
             narrow.activate([{operator: "pm-with", operand: draft.private_message_recipient}],
-                             {trigger: "restore draft"});
+                            {trigger: "restore draft"});
         }
     }
 
@@ -221,7 +221,7 @@ exports.setup_page = function (callback) {
                 var space_string = new Handlebars.SafeString("&nbsp;");
                 var stream = (draft.stream.length > 0 ? draft.stream : space_string);
                 var draft_topic = draft.subject.length === 0 ?
-                        compose.empty_topic_placeholder() : draft.subject;
+                    compose.empty_topic_placeholder() : draft.subject;
 
                 formatted = {
                     draft_id: id,
@@ -277,8 +277,8 @@ exports.setup_page = function (callback) {
         $('#drafts_table').empty();
         var drafts = format_drafts(draft_model.get());
         var rendered = templates.render('draft_table_body',{
-                drafts: drafts,
-                draft_lifetime: DRAFT_LIFETIME,
+            drafts: drafts,
+            draft_lifetime: DRAFT_LIFETIME,
         });
         $('#drafts_table').append(rendered);
         if ($("#drafts_table .draft-row").length > 0) {

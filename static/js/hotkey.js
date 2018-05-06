@@ -397,7 +397,7 @@ exports.process_shift_tab_key = function () {
     var focused_message_edit_save = $(".message_edit_save").filter(":focus");
     if (focused_message_edit_save.length > 0) {
         focused_message_edit_save.closest(".message_edit_form")
-                                 .find(".message_edit_content").focus();
+            .find(".message_edit_content").focus();
         return true;
     }
 

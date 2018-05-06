@@ -16,8 +16,8 @@ var ScrollTo = function () {
         // then use that as the scrollTop, else assume it is a selector name
         // and find the `offsetTop`.
         var top = /\dpx/.test(sel) ?
-                parseInt(sel, 10) :
-                $("[name='" + sel + "']").offset().top;
+            parseInt(sel, 10) :
+            $("[name='" + sel + "']").offset().top;
 
         $("body").animate({ scrollTop: top + "px" }, 300);
     });
@@ -88,16 +88,16 @@ var apps_events = function () {
             return "android";
         }
         if (/iPhone|iPad|iPod/i.test(navigator.userAgent)) {
-             return "ios";
+            return "ios";
         }
         if (/Mac/i.test(navigator.userAgent)) {
-             return "mac";
+            return "mac";
         }
         if (/Win/i.test(navigator.userAgent)) {
-             return "windows";
+            return "windows";
         }
         if (/Linux/i.test(navigator.userAgent)) {
-             return "linux";
+            return "linux";
         }
         return "mac"; // if unable to determine OS return Mac by default
     }

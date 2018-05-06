@@ -167,8 +167,8 @@ exports.create_message_object = create_message_object;
 
 function compose_error(error_text, bad_input) {
     $('#compose-send-status').removeClass(common.status_classes)
-               .addClass('alert-error')
-               .stop(true).fadeTo(0, 1);
+        .addClass('alert-error')
+        .stop(true).fadeTo(0, 1);
     $('#compose-error-msg').html(error_text);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
@@ -187,8 +187,8 @@ function nonexistent_stream_reply_error() {
 
 function compose_not_subscribed_error(error_text, bad_input) {
     $('#compose-send-status').removeClass(common.status_classes)
-               .addClass('home-error-bar')
-               .stop(true).fadeTo(0, 1);
+        .addClass('home-error-bar')
+        .stop(true).fadeTo(0, 1);
     $('#compose-error-msg').html(error_text);
     $("#compose-send-button").prop('disabled', false);
     $("#sending-indicator").hide();
@@ -369,7 +369,7 @@ exports.schedule_message = function schedule_message(request, success, error) {
     request = patch_request_for_scheduling(request);
 
     if (request === undefined) {
-       return;
+        return;
     }
 
     transmit.send_message(request, success, error);
@@ -567,11 +567,11 @@ function validate_stream_message() {
         }
     // If either criteria isn't met, just do the normal validation.
     } else {
-      if (!exports.validate_stream_message_address_info(stream_name) ||
-          !validate_stream_message_mentions(stream_name) ||
-          !validate_stream_message_announce(stream_name)) {
-          return false;
-      }
+        if (!exports.validate_stream_message_address_info(stream_name) ||
+            !validate_stream_message_mentions(stream_name) ||
+            !validate_stream_message_announce(stream_name)) {
+            return false;
+        }
     }
 
     return true;
@@ -740,8 +740,8 @@ exports.initialize = function () {
     $('#compose-textarea').on('keydown', exports.handle_keydown);
 
     $("#compose form").on("submit", function (e) {
-       e.preventDefault();
-       compose.finish();
+        e.preventDefault();
+        compose.finish();
     });
 
     resize.watch_manual_resize("#compose-textarea");
@@ -957,7 +957,7 @@ exports.initialize = function () {
                 var text = $(this).attr("title");
                 return ":" + text + ":";
             });
-         }
+        }
     }
 
     $('#compose').on('click', '#video_link', function (e) {

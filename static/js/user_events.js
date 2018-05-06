@@ -68,8 +68,8 @@ exports.update_person = function update(person) {
         people.set_custom_profile_field_data(person.user_id, person.custom_profile_field);
     }
 
-     if (_.has(person, 'timezone')) {
-         person_obj.timezone = person.timezone;
+    if (_.has(person, 'timezone')) {
+        person_obj.timezone = person.timezone;
     }
 };
 

@@ -154,8 +154,8 @@ exports.render_emoji = function (item) {
 };
 
 exports.sorter = function (query, objs, get_item) {
-   var results = util.prefix_sort(query, objs, get_item);
-   return results.matches.concat(results.rest);
+    var results = util.prefix_sort(query, objs, get_item);
+    return results.matches.concat(results.rest);
 };
 
 exports.compare_by_pms = function (user_a, user_b) {
@@ -273,8 +273,8 @@ exports.sort_languages = function (matches, query) {
 };
 
 exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
-    var users_name_results =  util.prefix_sort(query, users,
-        function (x) { return x.full_name; });
+    var users_name_results =  util.prefix_sort(
+        query, users, function (x) { return x.full_name; });
     var result = exports.sort_for_at_mentioning(
         users_name_results.matches,
         current_stream,
@@ -288,7 +288,7 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
     }
 
     var email_results = util.prefix_sort(query, users_name_results.rest,
-        function (x) { return x.email; });
+                                         function (x) { return x.email; });
     result = result.concat(exports.sort_for_at_mentioning(
         email_results.matches,
         current_stream,

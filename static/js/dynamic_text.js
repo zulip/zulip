@@ -1,3 +1,5 @@
+/* eslint indent: "off" */
+
 // This is a public instance of the `DynamicText` class.
 // The `DynamicText` object serves to resize text that is set through its
 // public methods so that the text won't ever overrun the parent container.

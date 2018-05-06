@@ -107,7 +107,7 @@ exports.create = function (opts) {
         // input block.
         appendPill: function (value) {
             if (value.length === 0) {
-              return;
+                return;
             }
             if (value.match(",")) {
                 funcs.insertManyPills(value);

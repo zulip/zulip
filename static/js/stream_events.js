@@ -37,8 +37,8 @@ exports.update_property = function (stream_id, property, value) {
     if (sub === undefined) {
         // This isn't a stream we know about, so ignore it.
         blueslip.warn("Update for an unknown subscription", {stream_id: stream_id,
-                                                            property: property,
-                                                            value: value});
+                                                             property: property,
+                                                             value: value});
         return;
     }
 

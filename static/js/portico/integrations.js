@@ -47,7 +47,7 @@ function adjust_font_sizing() {
         if ($integration_name.height() > 30) {
             $integration_name.css('font-size', '1em');
             if ($integration_name.height() > 30) {
-                 $integration_name.css('font-size', '.95em');
+                $integration_name.css('font-size', '.95em');
             }
         }
 
@@ -382,7 +382,7 @@ function integration_events() {
         if (document.body.scrollTop > 330) {
             $('.integration-categories-sidebar').addClass('sticky');
         } else {
-             $('.integration-categories-sidebar').removeClass('sticky');
+            $('.integration-categories-sidebar').removeClass('sticky');
         }
     });
 

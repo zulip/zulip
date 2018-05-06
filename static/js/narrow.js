@@ -51,7 +51,7 @@ exports.save_pre_narrow_offset_for_reload = function () {
                 selected_id: current_msg_list.selected_id(),
                 selected_idx: current_msg_list.selected_idx(),
                 selected_idx_exact: current_msg_list._items.indexOf(
-                                        current_msg_list.get(current_msg_list.selected_id())),
+                    current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
                 render_end: current_msg_list.view._render_win_end,
             });
@@ -250,8 +250,8 @@ exports.activate = function (raw_operators, opts) {
     stream_list.handle_narrow_activated(current_filter);
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
-                                                            filter: current_filter,
-                                                            trigger: opts.trigger}));
+                                                           filter: current_filter,
+                                                           trigger: opts.trigger}));
     msg_list.initial_core_time = new Date();
     setTimeout(function () {
         msg_list.initial_free_time = new Date();
@@ -357,10 +357,11 @@ exports.update_selection = function (opts) {
 
     var then_scroll = !preserve_pre_narrowing_screen_position;
 
-    message_list.narrowed.select_id(msg_id, {then_scroll: then_scroll,
-                                             use_closest: true,
-                                             force_rerender: true,
-                                            });
+    message_list.narrowed.select_id(msg_id, {
+        then_scroll: then_scroll,
+        use_closest: true,
+        force_rerender: true,
+    });
 
     if (preserve_pre_narrowing_screen_position) {
         // Scroll so that the selected message is in the same

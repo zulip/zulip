@@ -215,14 +215,15 @@ exports.set_in_home_view = function (stream_id, in_home) {
 
 function build_stream_sidebar_li(sub) {
     var name = sub.name;
-    var args = {name: name,
-                id: sub.stream_id,
-                uri: narrow.by_stream_uri(name),
-                not_in_home_view: (stream_data.in_home_view(sub.stream_id) === false),
-                invite_only: sub.invite_only,
-                color: stream_data.get_color(name),
-                pin_to_top: sub.pin_to_top,
-               };
+    var args = {
+        name: name,
+        id: sub.stream_id,
+        uri: narrow.by_stream_uri(name),
+        not_in_home_view: (stream_data.in_home_view(sub.stream_id) === false),
+        invite_only: sub.invite_only,
+        color: stream_data.get_color(name),
+        pin_to_top: sub.pin_to_top,
+    };
     args.dark_background = stream_color.get_color_class(args.color);
     var list_item = $(templates.render('stream_sidebar_row', args));
     return list_item;

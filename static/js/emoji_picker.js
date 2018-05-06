@@ -392,8 +392,8 @@ function get_next_emoji_coordinates(move_by) {
                 var prev_multiple = round_off_to_previous_multiple(max_len, 6);
                 next_index =  prev_multiple + current_index;
                 next_index = next_index >= max_len
-                            ? (prev_multiple + current_index - 6)
-                            : next_index;
+                    ? (prev_multiple + current_index - 6)
+                    : next_index;
             }
         }
     } else if (next_index >= get_max_index(next_section)) {

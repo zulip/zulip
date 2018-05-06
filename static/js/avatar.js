@@ -62,22 +62,22 @@ exports.build_user_avatar_widget = function (upload_function) {
         channel.del({
             url: '/json/users/me/avatar',
             success: function (data) {
-              $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
-              $("#user_avatar_delete_button").hide();
-              $("#user-avatar-source").show();
-              // Need to clear input because of a small edge case
-              // where you try to upload the same image you just deleted.
-              get_file_input().val('');
+                $("#user-settings-avatar").expectOne().attr("src", data.avatar_url);
+                $("#user_avatar_delete_button").hide();
+                $("#user-avatar-source").show();
+                // Need to clear input because of a small edge case
+                // where you try to upload the same image you just deleted.
+                get_file_input().val('');
             },
         });
     });
 
     return upload_widget.build_direct_upload_widget(
-            get_file_input,
-            $("#user_avatar_file_input_error").expectOne(),
-            $("#user_avatar_upload_button").expectOne(),
-            upload_function,
-            page_params.max_avatar_file_size
+        get_file_input,
+        $("#user_avatar_file_input_error").expectOne(),
+        $("#user_avatar_upload_button").expectOne(),
+        upload_function,
+        page_params.max_avatar_file_size
     );
 };
 

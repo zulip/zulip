@@ -115,9 +115,9 @@ function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
 }
 
 function add_to_visible(candidates, visible,
-                                 top_of_feed, bottom_of_feed,
-                                 require_fully_visible,
-                                 row_to_id) {
+                        top_of_feed, bottom_of_feed,
+                        require_fully_visible,
+                        row_to_id) {
     _.every(candidates, function (row) {
         var row_rect = row.getBoundingClientRect();
         // Mark very tall messages as read once we've gotten past them
@@ -157,11 +157,11 @@ function _visible_divs(selected_row, row_min_height, row_to_output, div_class,
     var above_pointer = selected_row.prevAll("div." + div_class + ":lt(" + num_neighbors + ")");
     var below_pointer = selected_row.nextAll("div." + div_class + ":lt(" + num_neighbors + ")");
     add_to_visible(selected_row, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
     add_to_visible(above_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
     add_to_visible(below_pointer, visible, top_of_feed.get(), bottom_of_feed.get(),
-            require_fully_visible, row_to_output);
+                   require_fully_visible, row_to_output);
 
     return visible;
 }

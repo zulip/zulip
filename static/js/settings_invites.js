@@ -102,7 +102,7 @@ exports.on_load_success = function (invites_data) {
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite revoking canceled due to non-matching fields.");
             ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
-               $("#home-error"), 'alert-error');
+                              $("#home-error"), 'alert-error');
         }
         $("#revoke_invite_modal").modal("hide");
         revoke_button.prop("disabled", true).text(i18n.t("Working…"));
@@ -124,7 +124,7 @@ exports.on_load_success = function (invites_data) {
         if (modal_invite_id !== meta.invite_id) {
             blueslip.error("Invite resending canceled due to non-matching fields.");
             ui_report.message(i18n.t("Resending encountered an error. Please reload and try again."),
-               $("#home-error"), 'alert-error');
+                              $("#home-error"), 'alert-error');
         }
         $("#resend_invite_modal").modal("hide");
         resend_button.prop("disabled", true).text(i18n.t("Working…"));

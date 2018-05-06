@@ -65,7 +65,7 @@ exports.update_unread_counts = function () {
     notifications.update_pm_count(res.private_message_count);
 
     exports.set_count_toggle_button($("#streamlist-toggle-unreadcount"),
-                                      res.home_unread_messages);
+                                    res.home_unread_messages);
 
 };
 
@@ -109,7 +109,7 @@ function _initialize() {
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
-                      .text(i18n.t("Bringing you to your latest messages…")));
+            .text(i18n.t("Bringing you to your latest messages…")));
     });
 
     consider_bankruptcy();

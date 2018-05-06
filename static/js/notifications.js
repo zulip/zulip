@@ -56,10 +56,10 @@ function browser_desktop_notifications_on() {
 }
 
 function cancel_notification_object(notification_object) {
-        // We must remove the .onclose so that it does not trigger on .cancel
-        notification_object.onclose = function () {};
-        notification_object.onclick = function () {};
-        notification_object.cancel();
+    // We must remove the .onclose so that it does not trigger on .cancel
+    notification_object.onclose = function () {};
+    notification_object.onclick = function () {};
+    notification_object.cancel();
 }
 
 exports.get_notifications = function () {
@@ -71,7 +71,7 @@ exports.initialize = function () {
         window_has_focus = true;
 
         _.each(notice_memory, function (notice_mem_entry) {
-           cancel_notification_object(notice_mem_entry.obj);
+            cancel_notification_object(notice_mem_entry.obj);
         });
         notice_memory = {};
 
@@ -96,13 +96,15 @@ exports.initialize = function () {
         supports_sound = true;
         $("#notifications-area").append(audio);
         if (audio[0].canPlayType('audio/ogg; codecs="vorbis"')) {
-            audio.append($("<source>").attr("type", "audio/ogg")
-                                      .attr("loop", "yes")
-                                      .attr("src", "/static/audio/zulip.ogg"));
+            audio.append(
+                $("<source>").attr("type", "audio/ogg")
+                    .attr("loop", "yes")
+                    .attr("src", "/static/audio/zulip.ogg"));
         } else {
-            audio.append($("<source>").attr("type", "audio/mpeg")
-                                      .attr("loop", "yes")
-                                      .attr("src", "/static/audio/zulip.mp3"));
+            audio.append(
+                $("<source>").attr("type", "audio/mpeg")
+                    .attr("loop", "yes")
+                    .attr("src", "/static/audio/zulip.mp3"));
         }
     }
 };
@@ -338,15 +340,16 @@ function process_notification(notification) {
 
     if (message.type === "stream") {
         title += " (to " + message.stream + " > " + message.subject + ")";
-        raw_operators = [{operator: "stream", operand: message.stream},
-                         {operator: "topic", operand: message.subject}];
+        raw_operators = [
+            {operator: "stream", operand: message.stream},
+            {operator: "topic", operand: message.subject},
+        ];
     }
 
     if (window.bridge === undefined && notification.webkit_notify === true) {
         var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
-            obj: notifications_api.createNotification(
-                    icon_url, title, content, message.id),
+            obj: notifications_api.createNotification(icon_url, title, content, message.id),
             msg_count: msg_count,
             message_id: message.id,
         };
@@ -394,10 +397,10 @@ exports.process_notification = process_notification;
 
 exports.close_notification = function (message) {
     _.each(Object.keys(notice_memory), function (key) {
-       if (notice_memory[key].message_id === message.id) {
-           cancel_notification_object(notice_memory[key].obj);
-           delete notice_memory[key];
-       }
+        if (notice_memory[key].message_id === message.id) {
+            cancel_notification_object(notice_memory[key].obj);
+            delete notice_memory[key];
+        }
     });
 };
 

@@ -392,10 +392,12 @@ function update_dependent_subsettings(property_name) {
         set_create_stream_permission_dropdown();
     } else if (property_name === 'realm_invite_required') {
         settings_ui.disable_sub_setting_onchange(page_params.realm_invite_required,
-            "id_realm_invite_by_admins_only", true);
-    } else if (property_name === 'realm_video_chat_provider' || property_name === 'realm_google_hangouts_domain') {
+                                                 "id_realm_invite_by_admins_only", true);
+    } else if (property_name === 'realm_video_chat_provider' ||
+               property_name === 'realm_google_hangouts_domain') {
         set_video_chat_provider_dropdown();
-    } else if (property_name === 'realm_msg_edit_limit_setting' || property_name === 'realm_message_content_edit_limit_minutes') {
+    } else if (property_name === 'realm_msg_edit_limit_setting' ||
+               property_name === 'realm_message_content_edit_limit_minutes') {
         set_msg_edit_limit_dropdown();
     } else if (property_name === 'realm_msg_delete_limit_setting' ||
         property_name === 'realm_message_content_delete_limit_minutes') {
@@ -654,9 +656,9 @@ function _set_up() {
             var add_emoji_permission = $("#id_realm_add_emoji_by_admins_only").val();
             var new_message_retention_days = $("#id_realm_message_retention_days").val();
 
-            if (parseInt(new_message_retention_days, 10).toString() !==
-                new_message_retention_days && new_message_retention_days !== "") {
-                    new_message_retention_days = "";
+            if (parseInt(new_message_retention_days, 10).toString() !== new_message_retention_days
+                && new_message_retention_days !== "") {
+                new_message_retention_days = "";
             }
 
             var data = {
@@ -955,7 +957,7 @@ function _set_up() {
     $("#id_realm_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         if (e.type === "keypress") {
             if (e.which === 13) {
-               dropdown_menu.dropdown("toggle");
+                dropdown_menu.dropdown("toggle");
             } else {
                 return;
             }
@@ -1002,7 +1004,7 @@ function _set_up() {
     $("#id_realm_signup_notifications_stream .dropdown-list-body").on("click keypress", ".stream_name", function (e) {
         if (e.type === "keypress") {
             if (e.which === 13) {
-               dropdown_menu.dropdown("toggle");
+                dropdown_menu.dropdown("toggle");
             } else {
                 return;
             }

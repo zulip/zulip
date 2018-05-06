@@ -572,7 +572,7 @@ exports.delete_message = function (msg_id) {
             },
             error: function (xhr) {
                 ui_report.error(i18n.t("Error deleting message"), xhr,
-                    $("#delete-message-error"));
+                                $("#delete-message-error"));
             },
         });
 
