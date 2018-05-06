@@ -60,11 +60,11 @@ exports.add_custom_profile_fields_to_settings = function () {
         var field_type = settings_profile_fields.field_type_id_to_string(field.type);
         var type;
         var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field_type === "Long Text";
+        var is_long_text = field_type === "Long text";
         var is_choice_field = field_type === "Choice";
         var field_choices = [];
 
-        if (field_type === "Long Text" || field_type === "Short Text") {
+        if (field_type === "Long text" || field_type === "Short text") {
             type = "text";
         } else if (field_type === "Choice") {
             type = "choice";

@@ -203,7 +203,7 @@ casper.then(function () {
     });
     casper.waitUntilVisible('.profile-field-row span.profile_field_name', function () {
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
         casper.click('.profile-field-row button.open-edit-form');
     });
 });
@@ -223,7 +223,7 @@ casper.then(function () {
     });
     casper.waitForSelectorTextChange('.profile-field-row span.profile_field_name', function () {
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'team');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
         casper.click('.profile-field-row button.delete');
     });
 });

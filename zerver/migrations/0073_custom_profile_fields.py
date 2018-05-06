@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('name', models.CharField(max_length=100)),
-                ('field_type', models.PositiveSmallIntegerField(choices=[(1, 'Integer'), (2, 'Float'), (3, 'Short Text'), (4, 'Long Text')], default=3)),
+                ('field_type', models.PositiveSmallIntegerField(choices=[(1, 'Integer'), (2, 'Float'), (3, 'Short text'), (4, 'Long text')], default=3)),
                 ('realm', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Realm')),
             ],
         ),
