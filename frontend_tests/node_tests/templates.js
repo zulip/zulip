@@ -192,7 +192,7 @@ function render(template_name, args) {
     var args = {
         profile_field: {
             name: "teams",
-            type: "Long Text",
+            type: "Long text",
         },
         can_modify: true,
     };
@@ -207,14 +207,14 @@ function render(template_name, args) {
     var td = $(html).find('tr.profile-field-row:first td');
 
     assert.equal(field_name.text(), 'teams');
-    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(field_type.text(), 'Long text');
     assert.equal(td.length, 4);
 
     // When the logged in user is not admin
     args = {
         profile_field: {
             name: "teams",
-            type: "Long Text",
+            type: "Long text",
         },
         can_modify: false,
     };
@@ -229,7 +229,7 @@ function render(template_name, args) {
     td = $(html).find('tr.profile-field-row:first td');
 
     assert.equal(field_name.text(), 'teams');
-    assert.equal(field_type.text(), 'Long Text');
+    assert.equal(field_type.text(), 'Long text');
     assert.equal(td.length, 3);
 }());
 

@@ -1914,8 +1914,8 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
-        (SHORT_TEXT, str(_('Short Text')), check_short_string, str),
-        (LONG_TEXT, str(_('Long Text')), check_long_string, str),
+        (SHORT_TEXT, str(_('Short text')), check_short_string, str),
+        (LONG_TEXT, str(_('Long text')), check_long_string, str),
         (DATE, str(_('Date')), check_date, str),
         (URL, str(_('URL')), check_url, str),
     ]  # type: FieldTypeData
