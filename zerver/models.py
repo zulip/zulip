@@ -1905,7 +1905,7 @@ class CustomProfileField(models.Model):
     # These are the fields whose validators require field_data
     # argument as well.
     EXTENDED_FIELD_TYPE_DATA = [
-        (CHOICE, 'Choice', validate_choice_field, str),
+        (CHOICE, str(_('Choice')), validate_choice_field, str),
     ]  # type: FieldTypeData
 
     EXTENDED_FIELD_VALIDATORS = {
@@ -1914,10 +1914,10 @@ class CustomProfileField(models.Model):
 
     FIELD_TYPE_DATA = [
         # Type, Name, Validator, Converter
-        (SHORT_TEXT, u'Short Text', check_short_string, str),
-        (LONG_TEXT, u'Long Text', check_long_string, str),
-        (DATE, u'Date', check_date, str),
-        (URL, u'URL', check_url, str),
+        (SHORT_TEXT, str(_('Short Text')), check_short_string, str),
+        (LONG_TEXT, str(_('Long Text')), check_long_string, str),
+        (DATE, str(_('Date')), check_date, str),
+        (URL, str(_('URL')), check_url, str),
     ]  # type: FieldTypeData
 
     ALL_FIELD_TYPES = FIELD_TYPE_DATA + EXTENDED_FIELD_TYPE_DATA
