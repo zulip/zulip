@@ -14,6 +14,7 @@ and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
 ```
 git clone --config pull.rebase https://github.com/YOURUSERNAME/zulip.git
+cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 

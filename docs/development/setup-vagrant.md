@@ -1,7 +1,7 @@
 ## Vagrant environment setup tutorial
 
 This section guides first-time contributors through installing the
-Zulip development environment on Windows, macOS, and Ubuntu.
+Zulip development environment on Windows, macOS, Ubuntu and Debian.
 
 The recommended method for installing the Zulip development environment is to use
 Vagrant with VirtualBox on Windows and macOS, and Vagrant with LXC on
