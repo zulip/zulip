@@ -13,7 +13,13 @@ import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):
     def setUp(self) -> None:
-        self.original_count = len(custom_profile_fields_for_realm(get_realm("zulip").id))
+        self.realm = get_realm("zulip")
+        self.original_count = len(custom_profile_fields_for_realm(self.realm.id))
+
+    def custom_field_exists_in_realm(self, field_id: int) -> bool:
+        fields = custom_profile_fields_for_realm(self.realm.id)
+        field_ids = [field.id for field in fields]
+        return (field_id in field_ids)
 
     def test_list(self) -> None:
         self.login(self.example_email("iago"))
@@ -140,11 +146,11 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_delete("/json/realm/profile_fields/100")
         self.assert_json_error(result, 'Field id 100 not found.')
 
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count)
+        self.assertTrue(self.custom_field_exists_in_realm(field.id))
         result = self.client_delete(
             "/json/realm/profile_fields/{}".format(field.id))
         self.assert_json_success(result)
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count - 1)
+        self.assertFalse(self.custom_field_exists_in_realm(field.id))
 
     def test_update(self) -> None:
         self.login(self.example_email("iago"))
@@ -229,18 +235,16 @@ class CustomProfileFieldTest(ZulipTestCase):
     def test_update_is_aware_of_uniqueness(self) -> None:
         self.login(self.example_email("iago"))
         realm = get_realm('zulip')
-        try_add_realm_custom_profile_field(realm, u"Phone",
-                                           CustomProfileField.SHORT_TEXT)
+        field_1 = try_add_realm_custom_profile_field(realm, u"Phone",
+                                                     CustomProfileField.SHORT_TEXT)
 
-        field = try_add_realm_custom_profile_field(
-            realm,
-            u"Phone 1",
-            CustomProfileField.SHORT_TEXT
-        )
+        field_2 = try_add_realm_custom_profile_field(realm, u"Phone 1",
+                                                     CustomProfileField.SHORT_TEXT)
 
-        self.assertEqual(CustomProfileField.objects.count(), self.original_count + 2)
+        self.assertTrue(self.custom_field_exists_in_realm(field_1.id))
+        self.assertTrue(self.custom_field_exists_in_realm(field_2.id))
         result = self.client_patch(
-            "/json/realm/profile_fields/{}".format(field.id),
+            "/json/realm/profile_fields/{}".format(field_2.id),
             info={'name': 'Phone', 'field_type': CustomProfileField.SHORT_TEXT})
         self.assert_json_error(
             result, u'A field with that name already exists.')
@@ -372,8 +376,6 @@ class CustomProfileFieldTest(ZulipTestCase):
             for k in ['id', 'type', 'name', 'field_data']:
                 self.assertIn(k, field_dict)
 
-            self.assertEqual(len(iago.profile_data), self.original_count)
-
         # Update value of one field.
         field = CustomProfileField.objects.get(name='Biography', realm=realm)
         data = [{
@@ -413,10 +415,10 @@ class CustomProfileFieldTest(ZulipTestCase):
         data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str]]]
         do_update_user_custom_profile_data(user_profile, data)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), self.original_count)
+        self.assertTrue(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count)
 
         do_remove_realm_custom_profile_field(realm, field)
 
-        self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), self.original_count - 1)
+        self.assertFalse(self.custom_field_exists_in_realm(field.id))
         self.assertEqual(user_profile.customprofilefieldvalue_set.count(), self.original_count - 1)
