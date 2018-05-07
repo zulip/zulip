@@ -8,7 +8,7 @@ var loading_more_messages_indicator_showing = false;
 exports.show_loading_older = function () {
     if (! loading_more_messages_indicator_showing) {
         loading.make_indicator($('#loading_more_messages_indicator'),
-                                    {abs_positioned: true});
+                               {abs_positioned: true});
         loading_more_messages_indicator_showing = true;
         floating_recipient_bar.hide();
     }

@@ -1,0 +1,12 @@
+{
+    "rules": {
+        "indent": ["error", 4, {
+            "ArrayExpression": "first",
+            "ObjectExpression": "first",
+            "SwitchCase": 0,
+            "CallExpression": {"arguments": "first"},
+            "FunctionExpression": {"parameters": "first"},
+            "FunctionDeclaration": {"parameters": "first"}
+        }]
+    }
+}

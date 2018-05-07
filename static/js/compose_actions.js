@@ -285,8 +285,9 @@ exports.respond_to_message = function (opts) {
             return;
         }
 
-        msg_type = 'stream'; // Set msg_type to stream by default
-                                 // in the case of an empty home view.
+        // Set msg_type to stream by default in the case of an empty
+        // home view.
+        msg_type = 'stream';
         if (narrow_state.narrowed_by_pm_reply()) {
             msg_type = 'private';
         }

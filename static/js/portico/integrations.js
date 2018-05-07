@@ -47,7 +47,7 @@ function adjust_font_sizing() {
         if ($integration_name.height() > 30) {
             $integration_name.css('font-size', '1em');
             if ($integration_name.height() > 30) {
-                 $integration_name.css('font-size', '.95em');
+                $integration_name.css('font-size', '.95em');
             }
         }
 
@@ -269,48 +269,48 @@ function render(next_state) {
 
 function dispatch(action, payload) {
     switch (action) {
-        case 'CHANGE_CATEGORY':
-            render(Object.assign({}, state, {
-                category: payload.category,
-            }));
-            update_path();
-            break;
+    case 'CHANGE_CATEGORY':
+        render(Object.assign({}, state, {
+            category: payload.category,
+        }));
+        update_path();
+        break;
 
-        case 'SHOW_INTEGRATION':
-            render(Object.assign({}, state, {
-                integration: payload.integration,
-            }));
-            update_path();
-            break;
+    case 'SHOW_INTEGRATION':
+        render(Object.assign({}, state, {
+            integration: payload.integration,
+        }));
+        update_path();
+        break;
 
-        case 'HIDE_INTEGRATION':
-            render(Object.assign({}, state, {
-                integration: null,
-            }));
-            update_path();
-            break;
+    case 'HIDE_INTEGRATION':
+        render(Object.assign({}, state, {
+            integration: null,
+        }));
+        update_path();
+        break;
 
-        case 'SHOW_CATEGORY':
-            render(Object.assign({}, state, {
-                integration: null,
-                category: payload.category,
-            }));
-            update_path();
-            break;
+    case 'SHOW_CATEGORY':
+        render(Object.assign({}, state, {
+            integration: null,
+            category: payload.category,
+        }));
+        update_path();
+        break;
 
-        case 'UPDATE_QUERY':
-            render(Object.assign({}, state, {
-                query: payload.query,
-            }));
-            break;
+    case 'UPDATE_QUERY':
+        render(Object.assign({}, state, {
+            query: payload.query,
+        }));
+        break;
 
-        case 'LOAD_PATH':
-            render(get_state_from_path());
-            break;
+    case 'LOAD_PATH':
+        render(get_state_from_path());
+        break;
 
-        default:
-            blueslip.error('Invalid action dispatched on /integrations.');
-            break;
+    default:
+        blueslip.error('Invalid action dispatched on /integrations.');
+        break;
     }
 }
 
@@ -382,7 +382,7 @@ function integration_events() {
         if (document.body.scrollTop > 330) {
             $('.integration-categories-sidebar').addClass('sticky');
         } else {
-             $('.integration-categories-sidebar').removeClass('sticky');
+            $('.integration-categories-sidebar').removeClass('sticky');
         }
     });
 

@@ -31,11 +31,12 @@ let _markdownComparerInstance = null;
 class MarkdownComparer {
     constructor(output_formatter) {
         this._output_formatter = output_formatter || function (actual, expected) {
-            return ["Actual and expected output do not match.",
-                    actual,
-                    "!=",
-                    expected,
-                ].join('\n');
+            return [
+                "Actual and expected output do not match.",
+                actual,
+                "!=",
+                expected,
+            ].join('\n');
         };
         this._document = jsdom.jsdom();
     }

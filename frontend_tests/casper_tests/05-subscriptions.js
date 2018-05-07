@@ -160,8 +160,8 @@ casper.then(function () {
 casper.then(function () {
     casper.fill('form#add_new_subscription', {stream_name: 'was'});
     casper.evaluate(function () {
-      $('#add_new_subscription input[type="text"]').expectOne()
-        .trigger($.Event('input'));
+        $('#add_new_subscription input[type="text"]').expectOne()
+            .trigger($.Event('input'));
     });
 });
 casper.waitForSelectorTextChange('form#add_new_subscription', function () {

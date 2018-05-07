@@ -106,18 +106,20 @@ exports.mark_current_list_as_read = function (options) {
 
 exports.mark_stream_as_read = function (stream_id, cont) {
     channel.post({
-        url:      '/json/mark_stream_as_read',
+        url: '/json/mark_stream_as_read',
         idempotent: true,
-        data:     {stream_id: stream_id},
-        success:  cont});
+        data: {stream_id: stream_id},
+        success: cont,
+    });
 };
 
 exports.mark_topic_as_read = function (stream_id, topic, cont) {
     channel.post({
-    url:      '/json/mark_topic_as_read',
-    idempotent: true,
-    data:     {stream_id: stream_id, topic_name: topic},
-    success:  cont});
+        url: '/json/mark_topic_as_read',
+        idempotent: true,
+        data: {stream_id: stream_id, topic_name: topic},
+        success: cont,
+    });
 };
 
 

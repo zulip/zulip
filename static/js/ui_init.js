@@ -192,8 +192,9 @@ $(function () {
                 // Scroll to place the message within the current view;
                 // but if this is the initial placement of the pointer,
                 // just place it in the very center
-                message_viewport.recenter_view(row, {from_scroll: event.from_scroll,
-                                    force_center: event.previously_selected === -1});
+                message_viewport.recenter_view(row,
+                                               {from_scroll: event.from_scroll,
+                                                force_center: event.previously_selected === -1});
             }
         }
     });
@@ -205,17 +206,17 @@ $(function () {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    $('#streams_header h4').tooltip({ placement: 'right',
-                                       animation: false });
+    $('#streams_header h4').tooltip({placement: 'right',
+                                     animation: false});
 
-    $('#streams_header i[data-toggle="tooltip"]').tooltip({ placement: 'left',
-                                       animation: false });
+    $('#streams_header i[data-toggle="tooltip"]').tooltip({placement: 'left',
+                                                           animation: false});
 
-    $('#userlist-header #userlist-title').tooltip({ placement: 'right',
-                                       animation: false });
+    $('#userlist-header #userlist-title').tooltip({placement: 'right',
+                                                   animation: false});
 
-    $('#userlist-header #user_filter_icon').tooltip({ placement: 'left',
-                                       animation: false });
+    $('#userlist-header #user_filter_icon').tooltip({placement: 'left',
+                                                     animation: false});
 
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 

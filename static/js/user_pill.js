@@ -48,7 +48,7 @@ exports.create_item_from_email = function (email, current_items) {
 };
 
 exports.get_email_from_item = function (item) {
-  return item.email;
+    return item.email;
 };
 
 exports.append_person = function (opts) {

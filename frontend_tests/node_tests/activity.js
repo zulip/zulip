@@ -266,18 +266,18 @@ presence.presence_info = presence_info;
         activity.huddle_fraction_present(huddle),
         '0.50');
 
-        huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
-        huddle = people.emails_strings_to_user_ids_string(huddle);
-        presence_info = {};
-        presence_info[alice.user_id] = { status: 'idle' };
-        presence_info[fred.user_id] = { status: 'idle' }; // does not count as present
-        // jill not in list
-        presence_info[mark.user_id] = { status: 'offline' }; // does not count
-        presence.presence_info = presence_info;
+    huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
+    huddle = people.emails_strings_to_user_ids_string(huddle);
+    presence_info = {};
+    presence_info[alice.user_id] = { status: 'idle' };
+    presence_info[fred.user_id] = { status: 'idle' }; // does not count as present
+    // jill not in list
+    presence_info[mark.user_id] = { status: 'offline' }; // does not count
+    presence.presence_info = presence_info;
 
-        assert.equal(
-            activity.huddle_fraction_present(huddle),
-            false);
+    assert.equal(
+        activity.huddle_fraction_present(huddle),
+        false);
 }());
 
 presence.presence_info = {};
@@ -307,7 +307,8 @@ reset_setup();
     compose_fade.set_focused_recipient("private");
 
     const users = activity.build_user_sidebar();
-    assert.deepEqual(users, [{
+    assert.deepEqual(users, [
+        {
             name: 'Fred Flintstone',
             href: '#narrow/pm-with/2-fred',
             user_id: fred.user_id,
@@ -839,45 +840,44 @@ reset_setup();
 }());
 
 (function test_initialize() {
-  $.stub_selector('html', {
-      on: function (name, func) {
-          func();
-      },
-  });
-  $(window).focus = func => func();
-  $(window).idle = () => {};
+    $.stub_selector('html', {
+        on: function (name, func) {
+            func();
+        },
+    });
+    $(window).focus = func => func();
+    $(window).idle = () => {};
 
-  channel.post = function (payload) {
-      payload.success({});
-  };
-  global.server_events = {
-      check_for_unsuspend: function () {},
-  };
-  activity.has_focus = false;
-  activity.initialize();
-  assert(!activity.new_user_input);
-  assert(!$('#zephyr-mirror-error').hasClass('show'));
-  assert.equal(page_params.presences, undefined);
-  assert(activity.has_focus);
-  $(window).idle = function (params) {
-      params.onIdle();
-  };
-  channel.post = function (payload) {
-      payload.success({
-          zephyr_mirror_active: false,
-      });
-  };
-  global.setInterval = (func) => func();
+    channel.post = function (payload) {
+        payload.success({});
+    };
+    global.server_events = {
+        check_for_unsuspend: function () {},
+    };
+    activity.has_focus = false;
+    activity.initialize();
+    assert(!activity.new_user_input);
+    assert(!$('#zephyr-mirror-error').hasClass('show'));
+    assert.equal(page_params.presences, undefined);
+    assert(activity.has_focus);
+    $(window).idle = function (params) {
+        params.onIdle();
+    };
+    channel.post = function (payload) {
+        payload.success({
+            zephyr_mirror_active: false,
+        });
+    };
+    global.setInterval = (func) => func();
 
-  activity.initialize();
-  assert($('#zephyr-mirror-error').hasClass('show'));
-  assert(!activity.new_user_input);
-  assert(!activity.has_focus);
+    activity.initialize();
+    assert($('#zephyr-mirror-error').hasClass('show'));
+    assert(!activity.new_user_input);
+    assert(!activity.has_focus);
 
-  // Now execute the reload-in-progress code path
-  reload.is_in_progress = function () {
-      return true;
-  };
-  activity.initialize();
-
+    // Now execute the reload-in-progress code path
+    reload.is_in_progress = function () {
+        return true;
+    };
+    activity.initialize();
 }());

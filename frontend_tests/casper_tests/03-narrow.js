@@ -351,14 +351,14 @@ casper.then(function () {
 casper.waitForSelector('#stream_filters [data-stream-name="Scotland"].highlighted_stream', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
     casper.test.assertDoesntExist(
-            '#stream_filters [data-stream-name="Denmark"].highlighted_stream',
-            'Stream Denmark is not highlighted');
+        '#stream_filters [data-stream-name="Denmark"].highlighted_stream',
+        'Stream Denmark is not highlighted');
     casper.test.assertExist(
-            '#stream_filters [data-stream-name="Scotland"].highlighted_stream',
-            'Stream Scotland is  highlighted');
+        '#stream_filters [data-stream-name="Scotland"].highlighted_stream',
+        'Stream Scotland is  highlighted');
     casper.test.assertDoesntExist(
-            '#stream_filters [data-stream-name="Verona"].highlighted_stream',
-            'Stream Verona is not highlighted');
+        '#stream_filters [data-stream-name="Verona"].highlighted_stream',
+        'Stream Verona is not highlighted');
 });
 
 // We search for the beginning of "Scotland", not case sensitive
@@ -490,9 +490,9 @@ casper.then(function () {
 casper.waitForSelector('#user_presences li.highlighted_user [data-name="King Hamlet"]', function () {
     casper.test.info('Suggestion highlighting - after arrow key navigation');
     casper.test.assertDoesntExist('#user_presences li.highlighted_user [data-name="Cordelia Lear"]',
-        'User Cordelia Lear not is selected');
+                                  'User Cordelia Lear not is selected');
     casper.test.assertExist('#user_presences li.highlighted_user [data-name="King Hamlet"]',
-        'User King Hamlet is selected');
+                            'User King Hamlet is selected');
 });
 
 common.then_log_out();

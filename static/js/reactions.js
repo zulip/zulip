@@ -4,9 +4,11 @@ var exports = {};
 exports.view = {}; // function namespace
 
 exports.get_local_reaction_id = function (reaction_info) {
-    return [reaction_info.reaction_type,
-            reaction_info.emoji_name,
-            reaction_info.emoji_code].join(',');
+    return [
+        reaction_info.reaction_type,
+        reaction_info.emoji_name,
+        reaction_info.emoji_code,
+    ].join(',');
 };
 
 exports.get_reaction_info = function (reaction_id) {

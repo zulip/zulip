@@ -158,43 +158,43 @@ set_global('current_msg_list', {
     result.sort(function (a, b) { return a.count - b.count; });
 
     var expected_result = [
-      {
-         emoji_name: 'frown',
-         reaction_type: 'unicode_emoji',
-         emoji_code: '1f626',
-         local_id: 'unicode_emoji,frown,1f626',
-         count: 1,
-         user_ids: [7],
-         title: 'Cali reacted with :frown:',
-         emoji_alt_code: false,
-         class: 'message_reaction',
-      },
-      {
-         emoji_name: 'inactive_realm_emoji',
-         reaction_type: 'realm_emoji',
-         emoji_code: '992',
-         local_id: 'realm_emoji,inactive_realm_emoji,992',
-         count: 1,
-         user_ids: [5],
-         title: 'You (click to remove) reacted with :inactive_realm_emoji:',
-         emoji_alt_code: false,
-         is_realm_emoji: true,
-         url: 'TBD',
-         class: 'message_reaction reacted',
-      },
-      {
-         emoji_name: 'smile',
-         reaction_type: 'unicode_emoji',
-         emoji_code: '1f604',
-         local_id: 'unicode_emoji,smile,1f604',
-         count: 2,
-         user_ids: [5, 6],
-         title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
-         emoji_alt_code: false,
-         class: 'message_reaction reacted',
-      },
-   ];
-   assert.deepEqual(result, expected_result);
+        {
+            emoji_name: 'frown',
+            reaction_type: 'unicode_emoji',
+            emoji_code: '1f626',
+            local_id: 'unicode_emoji,frown,1f626',
+            count: 1,
+            user_ids: [7],
+            title: 'Cali reacted with :frown:',
+            emoji_alt_code: false,
+            class: 'message_reaction',
+        },
+        {
+            emoji_name: 'inactive_realm_emoji',
+            reaction_type: 'realm_emoji',
+            emoji_code: '992',
+            local_id: 'realm_emoji,inactive_realm_emoji,992',
+            count: 1,
+            user_ids: [5],
+            title: 'You (click to remove) reacted with :inactive_realm_emoji:',
+            emoji_alt_code: false,
+            is_realm_emoji: true,
+            url: 'TBD',
+            class: 'message_reaction reacted',
+        },
+        {
+            emoji_name: 'smile',
+            reaction_type: 'unicode_emoji',
+            emoji_code: '1f604',
+            local_id: 'unicode_emoji,smile,1f604',
+            count: 2,
+            user_ids: [5, 6],
+            title: 'You (click to remove) and Bob van Roberts reacted with :smile:',
+            emoji_alt_code: false,
+            class: 'message_reaction reacted',
+        },
+    ];
+    assert.deepEqual(result, expected_result);
 }());
 
 (function test_sending() {

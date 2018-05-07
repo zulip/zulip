@@ -110,6 +110,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
                              queue_id: str, client_gravatar: bool,
                              include_subscribers: bool = True) -> Dict[str, Any]:
     state = {'queue_id': queue_id}  # type: Dict[str, Any]
+    realm = user_profile.realm
 
     if event_types is None:
         # return True always
@@ -121,7 +122,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['alert_words'] = user_alert_words(user_profile)
 
     if want('custom_profile_fields'):
-        fields = custom_profile_fields_for_realm(user_profile.realm.id)
+        fields = custom_profile_fields_for_realm(realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
         state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
 
@@ -149,12 +150,11 @@ def fetch_initial_state_data(user_profile: UserProfile,
 
     if want('realm'):
         for property_name in Realm.property_types:
-            state['realm_' + property_name] = getattr(user_profile.realm, property_name)
+            state['realm_' + property_name] = getattr(realm, property_name)
 
         # Most state is handled via the property_types framework;
         # these manual entries are for those realm settings that don't
         # fit into that framework.
-        realm = user_profile.realm
         state['realm_authentication_methods'] = realm.authentication_methods_dict()
         state['realm_allow_message_editing'] = realm.allow_message_editing
         state['realm_allow_community_topic_editing'] = realm.allow_community_topic_editing
@@ -178,27 +178,27 @@ def fetch_initial_state_data(user_profile: UserProfile,
         else:
             state['realm_notifications_stream_id'] = -1
 
-        if user_profile.realm.get_signup_notifications_stream():
-            signup_notifications_stream = user_profile.realm.get_signup_notifications_stream()
+        if realm.get_signup_notifications_stream():
+            signup_notifications_stream = realm.get_signup_notifications_stream()
             state['realm_signup_notifications_stream_id'] = signup_notifications_stream.id
         else:
             state['realm_signup_notifications_stream_id'] = -1
 
     if want('realm_domains'):
-        state['realm_domains'] = get_realm_domains(user_profile.realm)
+        state['realm_domains'] = get_realm_domains(realm)
 
     if want('realm_emoji'):
-        state['realm_emoji'] = user_profile.realm.get_emoji()
+        state['realm_emoji'] = realm.get_emoji()
 
     if want('realm_filters'):
-        state['realm_filters'] = realm_filters_for_realm(user_profile.realm_id)
+        state['realm_filters'] = realm_filters_for_realm(realm.id)
 
     if want('realm_user_groups'):
-        state['realm_user_groups'] = user_groups_in_realm_serialized(user_profile.realm)
+        state['realm_user_groups'] = user_groups_in_realm_serialized(realm)
 
     if want('realm_user'):
         state['raw_users'] = get_raw_user_data(
-            realm_id=user_profile.realm_id,
+            realm_id=realm.id,
             client_gravatar=client_gravatar,
         )
 
@@ -258,10 +258,10 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['stream_description_max_length'] = Stream.MAX_DESCRIPTION_LENGTH
     if want('default_streams'):
         state['realm_default_streams'] = streams_to_dicts_sorted(
-            get_default_streams_for_realm(user_profile.realm_id))
+            get_default_streams_for_realm(realm.id))
     if want('default_stream_groups'):
         state['realm_default_stream_groups'] = default_stream_groups_to_dicts_sorted(
-            get_default_stream_groups(user_profile.realm))
+            get_default_stream_groups(realm))
 
     if want('update_display_settings'):
         for prop in UserProfile.property_types:
@@ -663,6 +663,15 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                  client_gravatar=client_gravatar,
                  fetch_event_types=fetch_event_types)
 
+    post_process_state(ret)
+
+    if len(events) > 0:
+        ret['last_event_id'] = events[-1]['id']
+    else:
+        ret['last_event_id'] = -1
+    return ret
+
+def post_process_state(ret: Dict[str, Any]) -> None:
     '''
     NOTE:
 
@@ -701,9 +710,3 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
             d.pop('is_active')
 
         del ret['raw_users']
-
-    if len(events) > 0:
-        ret['last_event_id'] = events[-1]['id']
-    else:
-        ret['last_event_id'] = -1
-    return ret

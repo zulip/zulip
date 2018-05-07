@@ -276,23 +276,23 @@ exports.tokenize_compose_str = function (s) {
     while (i > min_i) {
         i -= 1;
         switch (s[i]) {
-            case '`':
-            case '~':
-                // Code block must start on a new line
-                if (i === 2) {
-                    return s.slice(0);
-                } else if (i > 2 && s[i-3] === "\n") {
-                    return s.slice(i-2);
-                }
-                break;
-            case '#':
-            case '@':
-            case ':':
-                if (i === 0) {
-                    return s.slice(i);
-                } else if (/[\s(){}\[\]]/.test(s[i-1])) {
-                    return s.slice(i);
-                }
+        case '`':
+        case '~':
+            // Code block must start on a new line
+            if (i === 2) {
+                return s.slice(0);
+            } else if (i > 2 && s[i-3] === "\n") {
+                return s.slice(i-2);
+            }
+            break;
+        case '#':
+        case '@':
+        case ':':
+            if (i === 0) {
+                return s.slice(i);
+            } else if (/[\s(){}\[\]]/.test(s[i-1])) {
+                return s.slice(i);
+            }
         }
     }
 
@@ -377,7 +377,7 @@ exports.compose_content_begins_typeahead = function (query) {
         var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
             return {
                 special_item_text: i18n.t("__wildcard_mention_token__ (Notify stream)",
-                {wildcard_mention_token: mention}),
+                                          {wildcard_mention_token: mention}),
                 email: mention,
                 // Always sort above, under the assumption that names will
                 // be longer and only contain "all" as a substring.
@@ -526,9 +526,12 @@ exports.compose_matches_sorter = function (matches) {
             }
         });
 
-        var recipients = typeahead_helper.sort_recipients(users, this.token,
-                                                      compose_state.stream_name(),
-                                                      compose_state.subject(), groups);
+        var recipients = typeahead_helper.sort_recipients(
+            users,
+            this.token,
+            compose_state.stream_name(),
+            compose_state.subject(),
+            groups);
         return recipients;
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);

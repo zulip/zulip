@@ -47,7 +47,7 @@ set_global('page_params', {
 set_global('blueslip', global.make_zblueslip());
 
 set_global('Image', function () {
-  return {};
+    return {};
 });
 emoji.initialize();
 
@@ -147,44 +147,43 @@ markdown.initialize();
 var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
 
 (function test_bugdown_detection() {
-
     var no_markup = [
-                     "This is a plaintext message",
-                     "This is a plaintext: message",
-                     "This is a :plaintext message",
-                     "This is a :plaintext message: message",
-                     "Contains a not an image.jpeg/ok file",
-                     "Contains a not an http://www.google.com/ok/image.png/stop file",
-                     "No png to be found here, a png",
-                     "No user mention **leo**",
-                     "No user mention @what there",
-                     "No group mention *hamletcharacters*",
-                     "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
-                     "This is a\nmultiline :emoji: here\n message",
-                     "This is an :emoji: message",
-                     "User Mention @**leo**",
-                     "User Mention @**leo f**",
-                     "User Mention @**leo with some name**",
-                     "Group Mention @*hamletcharacters*",
-                     "Stream #**Verona**",
-                     "This contains !gravatar(leo@zulip.com)",
-                     "And an avatar !avatar(leo@zulip.com) is here",
-                    ];
+        "This is a plaintext message",
+        "This is a plaintext: message",
+        "This is a :plaintext message",
+        "This is a :plaintext message: message",
+        "Contains a not an image.jpeg/ok file",
+        "Contains a not an http://www.google.com/ok/image.png/stop file",
+        "No png to be found here, a png",
+        "No user mention **leo**",
+        "No user mention @what there",
+        "No group mention *hamletcharacters*",
+        "We like to code\n~~~\ndef code():\n    we = \"like to do\"\n~~~",
+        "This is a\nmultiline :emoji: here\n message",
+        "This is an :emoji: message",
+        "User Mention @**leo**",
+        "User Mention @**leo f**",
+        "User Mention @**leo with some name**",
+        "Group Mention @*hamletcharacters*",
+        "Stream #**Verona**",
+        "This contains !gravatar(leo@zulip.com)",
+        "And an avatar !avatar(leo@zulip.com) is here",
+    ];
 
     var markup = [
-                   "Contains a https://zulip.com/image.png file",
-                   "Contains a https://zulip.com/image.jpg file",
-                   "https://zulip.com/image.jpg",
-                   "also https://zulip.com/image.jpg",
-                   "https://zulip.com/image.jpg too",
-                   "Contains a zulip.com/foo.jpeg file",
-                   "Contains a https://zulip.com/image.png file",
-                   "twitter url https://twitter.com/jacobian/status/407886996565016579",
-                   "https://twitter.com/jacobian/status/407886996565016579",
-                   "then https://twitter.com/jacobian/status/407886996565016579",
-                   "twitter url http://twitter.com/jacobian/status/407886996565016579",
-                   "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
-                 ];
+        "Contains a https://zulip.com/image.png file",
+        "Contains a https://zulip.com/image.jpg file",
+        "https://zulip.com/image.jpg",
+        "also https://zulip.com/image.jpg",
+        "https://zulip.com/image.jpg too",
+        "Contains a zulip.com/foo.jpeg file",
+        "Contains a https://zulip.com/image.png file",
+        "twitter url https://twitter.com/jacobian/status/407886996565016579",
+        "https://twitter.com/jacobian/status/407886996565016579",
+        "then https://twitter.com/jacobian/status/407886996565016579",
+        "twitter url http://twitter.com/jacobian/status/407886996565016579",
+        "youtube url https://www.youtube.com/watch?v=HHZ8iqswiCw&feature=youtu.be&a",
+    ];
 
     no_markup.forEach(function (content) {
         assert.equal(markdown.contains_backend_only_syntax(content), false);
@@ -305,14 +304,14 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
         {input: 'T\n#**Denmark**',
          expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
-          expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
+         expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
         {input: 'T\n@hamletcharacters',
          expected: '<p>T<br>\n@hamletcharacters</p>'},
         {input: 'T\n@*hamletcharacters*',
          expected: '<p>T<br>\n<span class="user-group-mention" data-user-group-id="1">@hamletcharacters</span></p>'},
         {input: 'T\n@*notagroup*',
          expected: '<p>T<br>\n@*notagroup*</p>'},
-       {input: 'T\n@*backend*',
+        {input: 'T\n@*backend*',
          expected: '<p>T<br>\n<span class="user-group-mention" data-user-group-id="2">@Backend</span></p>'},
         {input: '@*notagroup*',
          expected: '<p>@*notagroup*</p>'},
@@ -324,7 +323,7 @@ var bugdown_data = global.read_fixture_data('markdown_test_cases.json');
         {input: ':)',
          expected: '<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>',
          translate_emoticons: true},
-         // Test HTML Escape in Custom Zulip Rules
+        // Test HTML Escape in Custom Zulip Rules
         {input: '@**<h1>The Rogue One</h1>**',
          expected: '<p>@**&lt;h1&gt;The Rogue One&lt;/h1&gt;**</p>'},
         {input: '#**<h1>The Rogue One</h1>**',

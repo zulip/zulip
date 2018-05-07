@@ -32,12 +32,12 @@ var fade_config = {
 
 function level(status) {
     switch (status) {
-        case 'active':
-            return 1;
-        case 'idle':
-            return 2;
-        default:
-            return 3;
+    case 'active':
+        return 1;
+    case 'idle':
+        return 2;
+    default:
+        return 3;
     }
 }
 

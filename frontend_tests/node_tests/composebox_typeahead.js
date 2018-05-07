@@ -369,8 +369,10 @@ user_pill.get_user_ids = function () {
         assert.deepEqual(actual_value, expected_value);
 
         // options.highlighter()
-        options.query = 'De';  // Beginning of "Denmark", one of the streams
-                               // provided in stream_list through .source().
+
+        // Beginning of "Denmark", one of the streams
+        // provided in stream_list through .source().
+        options.query = 'De';
         actual_value = options.highlighter('Denmark');
         expected_value = '<strong>Denmark</strong>';
         assert.equal(actual_value, expected_value);
@@ -751,9 +753,9 @@ user_pill.get_user_ids = function () {
         pm_recipient_blur_called = true;
     };
 
-    page_params.enter_sends = false;  // We manually specify it the first
-                                      // time because the click_func
-                                      // doesn't exist yet.
+    page_params.enter_sends = false;
+    // We manually specify it the first time because the click_func
+    // doesn't exist yet.
     $("#stream").select(noop);
     $("#subject").select(noop);
     $("#private_message_recipient").select(noop);
@@ -1164,7 +1166,7 @@ user_pill.get_user_ids = function () {
     }
 
     assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
-        {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
+                               {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('da_', []);
     assert_emoji_matches('da ', []);
     assert_emoji_matches('panda ', [{emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);

@@ -1,3 +1,5 @@
+/* eslint indent: "off" */
+
 var bot_data = (function () {
     var exports = {};
 

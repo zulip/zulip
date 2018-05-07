@@ -270,10 +270,10 @@ function is_odd(i) { return i % 2 === 1; }
 
     topic_data.get_recent_names = function (stream_id) {
         switch (stream_id) {
-            case muted_stream_id:
-                return ['ms-topic1', 'ms-topic2'];
-            case devel_stream_id:
-                return ['muted', 'python'];
+        case muted_stream_id:
+            return ['ms-topic1', 'ms-topic2'];
+        case devel_stream_id:
+            return ['muted', 'python'];
         }
 
         return [];

@@ -242,7 +242,7 @@ initialize();
 }());
 
 (function test_filtered_users() {
-     var charles = {
+    var charles = {
         email: 'charles@example.com',
         user_id: 301,
         full_name: 'Charles Dickens',
@@ -391,9 +391,9 @@ initialize();
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/451,452-group');
     assert.equal(people.pm_reply_to(message),
-        'athens@example.com,charles@example.com');
+                 'athens@example.com,charles@example.com');
     assert.equal(people.small_avatar_url(message),
-        'charles.com/foo.png&s=50');
+                 'charles.com/foo.png&s=50');
 
     message = {
         type: 'private',
@@ -405,16 +405,16 @@ initialize();
     };
     assert.equal(people.pm_with_url(message), '#narrow/pm-with/452-athens');
     assert.equal(people.pm_reply_to(message),
-        'athens@example.com');
+                 'athens@example.com');
     assert.equal(people.small_avatar_url(message),
-        'legacy.png&s=50');
+                 'legacy.png&s=50');
 
     message = {
         avatar_url: undefined,
         sender_id: maria.user_id,
     };
     assert.equal(people.small_avatar_url(message),
-        'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
+                 'https://secure.gravatar.com/avatar/md5-athens@example.com?d=identicon&s=50'
     );
 
     message = {
@@ -423,7 +423,7 @@ initialize();
         sender_id: 9999999,
     };
     assert.equal(people.small_avatar_url(message),
-        'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50'
+                 'https://secure.gravatar.com/avatar/md5-foo@example.com?d=identicon&s=50'
     );
 
     message = {
@@ -616,7 +616,8 @@ initialize();
     // Test shim where we can still retrieve user info using the
     // old email.
     blueslip.set_test_data('warn',
-        'Obsolete email passed to get_by_email: FOO@example.com new email = bar@example.com');
+                           'Obsolete email passed to get_by_email: ' +
+                           'FOO@example.com new email = bar@example.com');
     person = people.get_by_email(old_email);
     assert.equal(person.user_id, user_id);
     assert.equal(blueslip.get_test_logs('warn').length, 1);

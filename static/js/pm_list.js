@@ -126,9 +126,9 @@ exports._build_private_messages_list = function (active_conversation, max_privat
     }
 
     var recipients_dom = templates.render('sidebar_private_message_list',
-                                  {messages: display_messages,
-                                   zoom_class: zoom_class,
-                                   want_show_more_messages_links: hiding_messages});
+                                          {messages: display_messages,
+                                           zoom_class: zoom_class,
+                                           want_show_more_messages_links: hiding_messages});
     return recipients_dom;
 };
 
@@ -137,8 +137,8 @@ exports.rebuild_recent = function (active_conversation) {
     if (private_messages_open) {
         var max_private_messages = 5;
         var private_li = get_filter_li();
-        var private_messages_dom = exports._build_private_messages_list(active_conversation,
-            max_private_messages);
+        var private_messages_dom = exports._build_private_messages_list(
+            active_conversation, max_private_messages);
 
         private_li.append(private_messages_dom);
     }

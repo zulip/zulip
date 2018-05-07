@@ -203,7 +203,7 @@ casper.then(function () {
     });
     casper.waitUntilVisible('.profile-field-row span.profile_field_name', function () {
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'Teams');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
         casper.click('.profile-field-row button.open-edit-form');
     });
 });
@@ -223,7 +223,7 @@ casper.then(function () {
     });
     casper.waitForSelectorTextChange('.profile-field-row span.profile_field_name', function () {
         casper.test.assertSelectorHasText('.profile-field-row span.profile_field_name', 'team');
-        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short Text');
+        casper.test.assertSelectorHasText('.profile-field-row span.profile_field_type', 'Short text');
         casper.click('.profile-field-row button.delete');
     });
 });
@@ -287,9 +287,9 @@ function get_suggestions(str) {
     casper.then(function () {
         casper.evaluate(function (str) {
             $('.create_default_stream')
-            .focus()
-            .val(str)
-            .trigger($.Event('keyup', { which: 0 }));
+                .focus()
+                .val(str)
+                .trigger($.Event('keyup', { which: 0 }));
         }, str);
     });
 }
@@ -350,7 +350,7 @@ casper.then(function () {
         // Hack: Rather than submitting the form, we just fill the
         // form and then trigger a click event by clicking the button.
         casper.fill('form.admin-realm-form', {
-                realm_icon_file_input: 'static/images/logo/zulip-icon-128x128.png',
+            realm_icon_file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, false);
         casper.click("#realm_icon_upload_button");
         casper.waitWhileVisible("#upload_icon_spinner .loading_indicator_spinner", function () {

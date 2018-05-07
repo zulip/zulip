@@ -147,7 +147,7 @@ exports.add_message_metadata = function (message) {
     case 'private':
         message.is_private = true;
         message.reply_to = util.normalize_recipients(
-                exports.get_pm_emails(message));
+            exports.get_pm_emails(message));
         message.display_reply_to = exports.get_pm_full_names(message);
         message.pm_with_url = people.pm_with_url(message);
         message.to_user_ids = people.pm_reply_user_string(message);

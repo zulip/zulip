@@ -248,9 +248,9 @@ topic_data.reset();
     };
 
     set_global('activity', {
-            get_huddles: function () {
-                return [];
-            },
+        get_huddles: function () {
+            return [];
+        },
     });
 
     var ted =
@@ -382,9 +382,9 @@ topic_data.reset();
     assert.deepEqual(suggestions.strings, expected);
 
     set_global('activity', {
-            get_huddles: function () {
-                return ['101,42', '101,103,42'];
-            },
+        get_huddles: function () {
+            return ['101,42', '101,103,42'];
+        },
     });
 
     // Simulate a past huddle which should now prioritize ted over alice
@@ -560,8 +560,8 @@ init();
 
     global.stream_data.get_stream_id = function (stream_name) {
         switch (stream_name) {
-            case 'office': return office_id;
-            case 'devel': return devel_id;
+        case 'office': return office_id;
+        case 'devel': return devel_id;
         }
     };
 
@@ -758,9 +758,9 @@ init();
         return suggestions.lookup_table[q].description;
     }
     assert.equal(describe('pm-with:ted@zulip.com'),
-        "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+                 "Private messages with <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
     assert.equal(describe('sender:ted@zulip.com'),
-        "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
+                 "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
     suggestions = search.get_suggestions('Ted '); // note space
 

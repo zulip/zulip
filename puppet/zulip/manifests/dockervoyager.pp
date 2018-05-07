@@ -7,9 +7,6 @@ class zulip::dockervoyager {
   # zulip::apt_repository must come after zulip::base
   include zulip::apt_repository
   include zulip::app_frontend
-
-  $ignoreSupervisorService = true
-
   include zulip::supervisor
 
   file { '/etc/supervisor/conf.d/cron.conf':

@@ -13,8 +13,9 @@ internet connection throughout the entire installation processes.** You can
 
 ## Recommended setup (Vagrant)
 
-**For first-time contributors on macOS, Windows, and Ubuntu, we recommend using
-the [Vagrant development environment][install-vagrant]**.
+**For first-time contributors on macOS, Windows, and most Debian-based distros
+(like Ubuntu), we recommend using the [Vagrant development
+environment][install-vagrant]**.
 
 This method creates a virtual machine (for Windows and macOS) or a Linux
 container (for Ubuntu) inside which the Zulip server and all related services

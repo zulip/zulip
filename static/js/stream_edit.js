@@ -449,7 +449,7 @@ exports.change_stream_description = function (e) {
         success: function () {
             // The event from the server will update the rest of the UI
             ui_report.success(i18n.t("The stream description has been updated!"),
-                             $(".stream_change_property_info"));
+                              $(".stream_change_property_info"));
         },
         error: function (xhr) {
             sub_settings.find('.stream-description-editable').html(sub.rendered_description);
@@ -538,13 +538,12 @@ $(function () {
                 stream_subscription_info_elem.text(i18n.t("User already subscribed."));
             }
             stream_subscription_info_elem.addClass("text-success")
-                                         .removeClass("text-error");
+                .removeClass("text-error");
         }
 
         function invite_failure() {
             stream_subscription_info_elem.text(i18n.t("Could not add user to this stream."))
-                                         .addClass("text-error")
-                                         .removeClass("text-success");
+                .addClass("text-error").removeClass("text-success");
         }
 
         exports.invite_user_to_stream(principal, sub, invite_success, invite_failure);
@@ -574,14 +573,13 @@ $(function () {
                 stream_subscription_info_elem.text(i18n.t("User is already not subscribed."));
             }
             stream_subscription_info_elem.addClass('text-success')
-                                         .removeClass('text-error');
+                .removeClass('text-error');
             ui.update_scrollbar($("#subscription_overlay .settings"));
         }
 
         function removal_failure() {
             stream_subscription_info_elem.text(i18n.t("Error removing user from this stream."))
-                                         .addClass("text-error")
-                                         .removeClass("text-success");
+                .addClass("text-error").removeClass("text-success");
         }
 
         exports.remove_user_from_stream(principal, sub, removal_success,

@@ -19,9 +19,9 @@ casper.then(function () {
 });
 
 common.then_send_message('stream', {
-        stream:  'Verona',
-        subject: 'stars',
-        content: 'test star',
+    stream:  'Verona',
+    subject: 'stars',
+    content: 'test star',
 });
 
 casper.then(function () {

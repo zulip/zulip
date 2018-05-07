@@ -38,14 +38,6 @@ parser.add_argument('--force', action="store_true",
                     help="run tests despite possible provisioning problems")
 parser.add_argument('--linecoverage-report', action='store_true',
                     help="emit a coverage report under var/")
-parser.add_argument('--no-disallow-untyped-defs',
-                    dest='disallow_untyped_defs', action='store_false',
-                    help="don't pass --disallow-untyped-defs to mypy")
-parser.add_argument('--warn-unused-ignores', action='store_true',
-                    help="pass --warn-unused-ignores to mypy")
-parser.add_argument('--no-ignore-missing-imports',
-                    dest='ignore_missing_imports', action='store_false',
-                    help="don't pass --ignore-missing-imports to mypy")
 args = parser.parse_args()
 
 if not args.force:
@@ -83,17 +75,10 @@ if not python_files and not pyi_files:
     print("There are no files to run mypy on.")
     sys.exit(0)
 
-extra_args = ["--follow-imports=silent",
-              "-i", "--cache-dir=var/mypy-cache"]
+extra_args = []
 if args.linecoverage_report:
     extra_args.append("--linecoverage-report")
     extra_args.append("var/linecoverage-report")
-if args.disallow_untyped_defs:
-    extra_args.append("--disallow-untyped-defs")
-if args.warn_unused_ignores:
-    extra_args.append("--warn-unused-ignores")
-if args.ignore_missing_imports:
-    extra_args.append("--ignore-missing-imports")
 if args.quick:
     extra_args.append("--quick")
 

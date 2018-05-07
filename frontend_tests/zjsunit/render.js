@@ -85,15 +85,15 @@ exports.template_finder = (function () {
     // get all files and then map them into friendlier names.
     var all_files = exports.walk(template_dir());
     var files = all_files
-            .filter(function (file) {
-                return (/\.handlebars$/).test(file.name);
-            })
-            .map(function (file) {
-                return {
-                    url: file.url,
-                    name: file.name.replace(/\.handlebars$/, ""),
-                };
-            });
+        .filter(function (file) {
+            return (/\.handlebars$/).test(file.name);
+        })
+        .map(function (file) {
+            return {
+                url: file.url,
+                name: file.name.replace(/\.handlebars$/, ""),
+            };
+        });
 
     self.get = function (name) {
         var file = files.find(function (file) {

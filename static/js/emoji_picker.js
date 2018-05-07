@@ -392,8 +392,8 @@ function get_next_emoji_coordinates(move_by) {
                 var prev_multiple = round_off_to_previous_multiple(max_len, 6);
                 next_index =  prev_multiple + current_index;
                 next_index = next_index >= max_len
-                            ? (prev_multiple + current_index - 6)
-                            : next_index;
+                    ? (prev_multiple + current_index - 6)
+                    : next_index;
             }
         }
     } else if (next_index >= get_max_index(next_section)) {
@@ -496,18 +496,18 @@ exports.navigate = function (event_name) {
     } else if (!is_filter_focused) {
         var next_coord = {};
         switch (event_name) {
-            case 'down_arrow':
-                next_coord = get_next_emoji_coordinates(6);
-                break;
-            case 'up_arrow':
-                next_coord = get_next_emoji_coordinates(-6);
-                break;
-            case 'left_arrow':
-                next_coord = get_next_emoji_coordinates(-1);
-                break;
-            case 'right_arrow':
-                next_coord = get_next_emoji_coordinates(1);
-                break;
+        case 'down_arrow':
+            next_coord = get_next_emoji_coordinates(6);
+            break;
+        case 'up_arrow':
+            next_coord = get_next_emoji_coordinates(-6);
+            break;
+        case 'left_arrow':
+            next_coord = get_next_emoji_coordinates(-1);
+            break;
+        case 'right_arrow':
+            next_coord = get_next_emoji_coordinates(1);
+            break;
         }
         return may_be_change_focused_emoji(next_coord.section, next_coord.index);
     }

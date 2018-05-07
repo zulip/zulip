@@ -224,16 +224,15 @@ exports.all_subscribed_streams_are_in_home_view = function () {
 
 exports.home_view_stream_names = function () {
     var home_view_subs = _.filter(exports.subscribed_subs(), function (sub) {
-            return sub.in_home_view;
-        }
-    );
+        return sub.in_home_view;
+    });
     return _.map(home_view_subs, function (sub) {
         return sub.name;
     });
 };
 
 exports.canonicalized_name = function (stream_name) {
-   return stream_name.toString().toLowerCase();
+    return stream_name.toString().toLowerCase();
 };
 
 exports.get_color = function (stream_name) {
@@ -554,7 +553,8 @@ exports.get_newbie_stream = function () {
 };
 
 exports.remove_default_stream = function (stream_id) {
-    page_params.realm_default_streams = _.reject(page_params.realm_default_streams,
+    page_params.realm_default_streams = _.reject(
+        page_params.realm_default_streams,
         function (stream) {
             return stream.stream_id === stream_id;
         }

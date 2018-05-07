@@ -250,8 +250,10 @@ exports.prefix_sort = function (query, objs, get_item) {
             noMatch.push(obj);
         }
     }
-    return { matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
-             rest:    noMatch };
+    return {
+        matches: beginswithCaseSensitive.concat(beginswithCaseInsensitive),
+        rest: noMatch,
+    };
 };
 
 // manipulate prefix_sort to select popular emojis first

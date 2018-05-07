@@ -1,3 +1,4 @@
+/* eslint indent: "off" */
 var realm_icon = (function () {
 
     var exports = {};

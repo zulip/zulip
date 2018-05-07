@@ -12,7 +12,7 @@ zrequire('message_list');
 var noop = function () {};
 
 set_global('page_params', {
-  twenty_four_hour_time: false,
+    twenty_four_hour_time: false,
 });
 set_global('home_msg_list', null);
 set_global('feature_flags', {twenty_four_hour_time: false});
@@ -275,7 +275,7 @@ set_global('rows', {
         assert_message_groups_list_equal(result.append_groups, []);
         assert_message_groups_list_equal(result.prepend_groups, []);
         assert_message_groups_list_equal(result.rerender_groups,
-            [build_message_group([message2, message1])]);
+                                         [build_message_group([message2, message1])]);
         assert_message_list_equal(result.append_messages, []);
         assert_message_list_equal(result.rerender_messages, []);
     }());

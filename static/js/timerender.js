@@ -65,7 +65,7 @@ exports.render_now = function (time, today) {
 // Current date is passed as an argument for unit testing
 exports.last_seen_status_from_date = function (last_active_date, current_date) {
     if (typeof  current_date === 'undefined') {
-         current_date = new XDate();
+        current_date = new XDate();
     }
 
     var minutes = Math.floor(last_active_date.diffMinutes(current_date));
@@ -78,7 +78,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     var hours = Math.floor(minutes / 60);
     if (hours === 1) {
-         return i18n.t("Last seen an hour ago");
+        return i18n.t("Last seen an hour ago");
     }
     if (hours < 24) {
         return i18n.t("Last seen __hours__ hours ago", {hours: hours});
@@ -155,10 +155,10 @@ exports.render_date = function (time, time_above, today) {
         node = render_date_span(node, rendered_time);
     }
     maybe_add_update_list_entry({
-      needs_update: rendered_time.needs_update,
-      className: className,
-      time: time,
-      time_above: time_above,
+        needs_update: rendered_time.needs_update,
+        className: className,
+        time: time,
+        time_above: time_above,
     });
     return node;
 };
@@ -220,8 +220,10 @@ exports.stringify_time = function (time) {
 // this is for rendering absolute time based off the preferences for twenty-four
 // hour time in the format of "%mmm %d, %h:%m %p".
 exports.absolute_time = (function () {
-    var MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    var MONTHS = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+    ];
 
     var fmt_time = function (date, H_24) {
         var payload = {
@@ -245,7 +247,7 @@ exports.absolute_time = (function () {
 
     return function (timestamp, today) {
         if (typeof today === 'undefined') {
-             today = new Date();
+            today = new Date();
         }
         var date = new Date(timestamp);
         var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;

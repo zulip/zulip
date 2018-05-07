@@ -222,7 +222,7 @@ exports.clear_compose = function () {
 
 exports.update_message_list = function () {
     if (want_normal_display()) {
-       display_messages_normally();
+        display_messages_normally();
     } else {
         fade_messages();
     }

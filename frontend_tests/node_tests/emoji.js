@@ -102,7 +102,7 @@ zrequire('util');
             var expected = t.expected;
             original = original.replace(/(<original>)/g, shortcut);
             expected = expected.replace(/(<original>)/g, shortcut)
-                               .replace(/(<converted>)/g, converted_value);
+                .replace(/(<converted>)/g, converted_value);
             var result = emoji.translate_emoticons_to_names(original);
             assert.equal(result, expected);
         });

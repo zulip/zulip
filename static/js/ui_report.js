@@ -21,7 +21,7 @@ exports.message = function (response, status_box, cls, type, remove_after) {
     // Note we use html() below, since we can rely on our callers escaping HTML
     // via i18n.t when interpolating data.
     status_box.removeClass(common.status_classes).addClass(cls)
-              .html(response).stop(true).fadeTo(0, 1);
+        .html(response).stop(true).fadeTo(0, 1);
     if (remove_after) {
         setTimeout(function () {
             status_box.fadeTo(200, 0);
@@ -31,12 +31,12 @@ exports.message = function (response, status_box, cls, type, remove_after) {
 };
 
 function escape(html) {
-  return html
-    .toString()
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
+    return html
+        .toString()
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 exports.error = function (response, xhr, status_box, type) {

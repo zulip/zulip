@@ -280,7 +280,8 @@ function test_with_mock_ajax(test_params) {
     };
 
     blueslip.set_test_data('warn',
-        'The length of pending_requests is over 50. Most likely they are not being correctly removed.');
+                           'The length of pending_requests is over 50. ' +
+                           'Most likely they are not being correctly removed.');
     _.times(50, function () {
         channel.post({});
     });

@@ -22,8 +22,8 @@ exports.smart_insert = function (textarea, syntax) {
     }
 
     if (!(after_str.length > 0 && is_space(after_str[0]))) {
-            syntax += ' ';
-        }
+        syntax += ' ';
+    }
 
     textarea.focus();
 

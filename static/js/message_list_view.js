@@ -148,8 +148,7 @@ MessageListView.prototype = {
         }
     },
 
-    add_subscription_marker: function MessageListView__add_subscription_marker(
-                                group, last_msg_container, first_msg_container) {
+    add_subscription_marker: function (group, last_msg_container, first_msg_container) {
         if (last_msg_container === undefined) {
             return;
         }
@@ -198,8 +197,8 @@ MessageListView.prototype = {
                 populate_group_from_message_container(current_group,
                                                       current_group.message_containers[0]);
                 current_group
-                   .message_containers[current_group.message_containers.length - 1]
-                   .include_footer = true;
+                    .message_containers[current_group.message_containers.length - 1]
+                    .include_footer = true;
                 new_message_groups.push(current_group);
             }
         }
@@ -349,7 +348,7 @@ MessageListView.prototype = {
 
                 new_message_groups = _.initial(new_message_groups);
             } else if (!same_day(second_group.message_containers[0],
-                       first_group.message_containers[0])) {
+                                 first_group.message_containers[0])) {
                 // The groups did not merge, so we need up update the date row for the old group
                 add_display_time(
                     second_group,
@@ -980,8 +979,7 @@ MessageListView.prototype = {
         trailing_bookend.remove();
     },
 
-    render_trailing_bookend: function MessageListView_render_trailing_bookend(
-                                trailing_bookend_content, subscribed, show_button) {
+    render_trailing_bookend: function (trailing_bookend_content, subscribed, show_button) {
         var rendered_trailing_bookend = $(templates.render('bookend', {
             bookend_content: trailing_bookend_content,
             trailing: show_button,

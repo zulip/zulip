@@ -227,9 +227,9 @@ Filter.canonicalize_term = function (opts) {
    URI encoding to avoid problematic characters. */
 function encodeOperand(operand) {
     return operand.replace(/%/g, '%25')
-                  .replace(/\+/g, '%2B')
-                  .replace(/ /g, '+')
-                  .replace(/"/g, '%22');
+        .replace(/\+/g, '%2B')
+        .replace(/ /g, '+')
+        .replace(/"/g, '%22');
 }
 
 function decodeOperand(encoded, operator) {
@@ -458,15 +458,15 @@ Filter.prototype = {
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {
-                case 'group-pm-with':
-                case 'pm-with':
-                case 'sender':
-                case 'from':
-                    term.operand = people.update_email_in_reply_to(
-                        term.operand,
-                        user_id,
-                        new_email
-                    );
+            case 'group-pm-with':
+            case 'pm-with':
+            case 'sender':
+            case 'from':
+                term.operand = people.update_email_in_reply_to(
+                    term.operand,
+                    user_id,
+                    new_email
+                );
             }
         });
     },

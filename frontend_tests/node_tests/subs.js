@@ -173,7 +173,7 @@ subs.stream_description_match_stream_ids = [];
     subs.sub_or_unsub(denmark);
     assert.equal(post_params.url, '/json/users/me/subscriptions');
     assert.deepEqual(post_params.data,
-        {subscriptions: '[{"name":"Denmark"}]'});
+                     {subscriptions: '[{"name":"Denmark"}]'});
 
     global.channel.post = undefined;
 
@@ -185,7 +185,7 @@ subs.stream_description_match_stream_ids = [];
     subs.sub_or_unsub(denmark);
     assert.equal(post_params.url, '/json/users/me/subscriptions');
     assert.deepEqual(post_params.data,
-        {subscriptions: '["Denmark"]'});
+                     {subscriptions: '["Denmark"]'});
 
 }());
 

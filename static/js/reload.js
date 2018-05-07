@@ -143,9 +143,9 @@ exports.initialize = function () {
         try {
             // TODO: preserve focus
             compose_actions.start(vars.msg_type, {stream: vars.stream || '',
-                                          subject: vars.subject || '',
-                                          private_message_recipient: vars.recipient || '',
-                                          content: vars.msg || ''});
+                                                  subject: vars.subject || '',
+                                                  private_message_recipient: vars.recipient || '',
+                                                  content: vars.msg || ''});
             if (send_now) {
                 compose.finish();
             }

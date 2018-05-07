@@ -178,7 +178,8 @@ function create_stream() {
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 
-    ajaxSubscribeForCreation(stream_name,
+    ajaxSubscribeForCreation(
+        stream_name,
         description,
         principals,
         is_invite_only,
@@ -408,10 +409,11 @@ exports.set_up_handlers = function () {
 
     container.on("mouseover", "#announce-stream-docs", function (e) {
         var announce_stream_docs = $("#announce-stream-docs");
-        announce_stream_docs.popover({placement: "right",
-                                      content: templates.render('announce_stream_docs', {
-                                        notifications_stream: page_params.notifications_stream}),
-                                      trigger: "manual"});
+        announce_stream_docs.popover({
+            placement: "right",
+            content: templates.render('announce_stream_docs', {
+                notifications_stream: page_params.notifications_stream}),
+            trigger: "manual"});
         announce_stream_docs.popover('show');
         announce_stream_docs.data('popover').tip().css('z-index', 2000);
         announce_stream_docs.data('popover').tip().find('.popover-content').css('margin', '9px 14px');

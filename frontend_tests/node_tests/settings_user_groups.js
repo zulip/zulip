@@ -255,7 +255,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
             return bob;
         }
         assert.equal(user_email,
-            'Expected user email to be of Alice or Iago here.');
+                     'Expected user email to be of Alice or Iago here.');
     };
     pills.onPillCreate = function (handler) {
         assert.equal(typeof(handler), 'function');
@@ -380,7 +380,7 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     var turned_off = {};
     pill_container_stub.off = function (event_name, sel) {
         if (sel === undefined) {
-           sel = 'whole';
+            sel = 'whole';
         }
         turned_off[event_name + '/' + sel] = true;
     };

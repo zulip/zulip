@@ -103,17 +103,17 @@ exports.MessageList.prototype = {
 
     select_id: function MessageList_select_id(id, opts) {
         opts = _.extend({
-                then_scroll: false,
-                target_scroll_offset: undefined,
-                use_closest: false,
-                empty_ok: false,
-                mark_read: true,
-                force_rerender: false,
-            }, opts, {
-                id: id,
-                msg_list: this,
-                previously_selected: this.data.selected_id(),
-            });
+            then_scroll: false,
+            target_scroll_offset: undefined,
+            use_closest: false,
+            empty_ok: false,
+            mark_read: true,
+            force_rerender: false,
+        }, opts, {
+            id: id,
+            msg_list: this,
+            previously_selected: this.data.selected_id(),
+        });
 
         function convert_id(str_id) {
             var id = parseFloat(str_id);

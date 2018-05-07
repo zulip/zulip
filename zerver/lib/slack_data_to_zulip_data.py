@@ -280,7 +280,7 @@ def process_customprofilefields(customprofilefield: List[ZerverFieldsT],
     for field in customprofilefield:
         for field_value in customprofilefield_value:
             if field_value['field'] == field['id'] and len(field_value['value']) > 50:
-                field['field_type'] = 2  # corresponding to Long Text
+                field['field_type'] = 2  # corresponding to Long text
                 break
 
 def get_user_email(user: ZerverFieldsT, domain_name: str) -> str:

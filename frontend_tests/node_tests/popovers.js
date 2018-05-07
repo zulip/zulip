@@ -127,40 +127,40 @@ function make_image_stubber() {
 
     templates.render = function (fn, opts) {
         switch (fn) {
-            case 'user_info_popover':
-                assert.deepEqual(opts, {
-                    class: 'message-info-popover',
-                });
-                return 'popover-html';
+        case 'user_info_popover':
+            assert.deepEqual(opts, {
+                class: 'message-info-popover',
+            });
+            return 'popover-html';
 
-            case 'user_info_popover_title':
-                assert.deepEqual(opts, {
-                    user_avatar: 'avatar/alice@example.com',
-                });
-                return 'title-html';
+        case 'user_info_popover_title':
+            assert.deepEqual(opts, {
+                user_avatar: 'avatar/alice@example.com',
+            });
+            return 'title-html';
 
-            case 'user_info_popover_content':
-                assert.deepEqual(opts, {
-                    user_full_name: 'Alice Smith',
-                    user_email: 'alice@example.com',
-                    user_id: 42,
-                    user_time: undefined,
-                    presence_status: 'offline',
-                    user_last_seen_time_status: 'translated: Unknown',
-                    pm_with_uri: '#narrow/pm-with/42-alice',
-                    sent_by_uri: '#narrow/sender/42-alice',
-                    narrowed: false,
-                    private_message_class: 'respond_personal_button',
-                    show_user_profile: false,
-                    is_me: false,
-                    is_active: true,
-                    is_bot: undefined,
-                    is_sender_popover: true,
-                });
-                return 'content-html';
+        case 'user_info_popover_content':
+            assert.deepEqual(opts, {
+                user_full_name: 'Alice Smith',
+                user_email: 'alice@example.com',
+                user_id: 42,
+                user_time: undefined,
+                presence_status: 'offline',
+                user_last_seen_time_status: 'translated: Unknown',
+                pm_with_uri: '#narrow/pm-with/42-alice',
+                sent_by_uri: '#narrow/sender/42-alice',
+                narrowed: false,
+                private_message_class: 'respond_personal_button',
+                show_user_profile: false,
+                is_me: false,
+                is_active: true,
+                is_bot: undefined,
+                is_sender_popover: true,
+            });
+            return 'content-html';
 
-            default:
-                throw Error('unrecognized template: ' + fn);
+        default:
+            throw Error('unrecognized template: ' + fn);
         }
     };
 

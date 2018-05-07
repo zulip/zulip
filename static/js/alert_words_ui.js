@@ -43,7 +43,7 @@ function add_alert_word(alert_word) {
 
     var words_to_be_added = [alert_word];
 
-     channel.post({
+    channel.post({
         url: '/json/users/me/alert_words',
         data: {alert_words: JSON.stringify(words_to_be_added)},
         success: function () {

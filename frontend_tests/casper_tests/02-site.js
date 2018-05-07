@@ -19,14 +19,14 @@ casper.then(function () {
 
     msg.headings.forEach(function (heading) {
         casper.test.assertMatch(common.normalize_spaces(heading),
-            /(^You and )|( )/,
-            'Heading is well-formed');
+                                /(^You and )|( )/,
+                                'Heading is well-formed');
     });
 
     msg.bodies.forEach(function (body) {
         casper.test.assertMatch(body,
-            /^(<p>(.|\n)*<\/p>)?$/,
-            'Body is well-formed');
+                                /^(<p>(.|\n)*<\/p>)?$/,
+                                'Body is well-formed');
     });
 
     casper.test.info('Sending messages');
