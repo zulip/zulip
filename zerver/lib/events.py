@@ -663,6 +663,15 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                  client_gravatar=client_gravatar,
                  fetch_event_types=fetch_event_types)
 
+    post_process_state(ret)
+
+    if len(events) > 0:
+        ret['last_event_id'] = events[-1]['id']
+    else:
+        ret['last_event_id'] = -1
+    return ret
+
+def post_process_state(ret: Dict[str, Any]) -> None:
     '''
     NOTE:
 
@@ -701,9 +710,3 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
             d.pop('is_active')
 
         del ret['raw_users']
-
-    if len(events) > 0:
-        ret['last_event_id'] = events[-1]['id']
-    else:
-        ret['last_event_id'] = -1
-    return ret
