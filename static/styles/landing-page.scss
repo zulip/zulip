@@ -1246,6 +1246,19 @@ nav ul li.active::after {
     background-color: #fff;
 }
 
+.portico-landing.hello .features .cta::after {
+    content: "\2192";
+
+    margin-left: 5px;
+    transform: scaleX(2);
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.hello .features .cta:hover::after {
+    margin-left: 10px;
+}
+
 .portico-landing.hello .features .col-2 {
     text-align: center;
 
