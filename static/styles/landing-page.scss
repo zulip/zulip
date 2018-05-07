@@ -3037,6 +3037,20 @@ nav ul li.active::after {
         font-size: 3em;
     }
 
+    .portico-landing.hello .open-source .flex {
+        display: block;
+    }
+
+    .portico-landing.hello .open-source img {
+        display: block;
+        width: 300px;
+        margin: 0 auto;
+    }
+
+    .portico-landing.hello .open-source .il-block {
+        width: 75%
+    }
+
     .portico-landing.integrations .main,
     .main {
         width: auto;
