@@ -1802,15 +1802,15 @@ blockquote p {
 #searchbox .input-append {
     position: relative;
     width: 100%;
-}
 
-#searchbox .input-append .icon-vector-search {
-    padding: 0px;
-    font-size: 20px;
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    z-index: 5;
+    .icon-vector-search {
+        padding: 0px;
+        font-size: 20px;
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        z-index: 5;
+    }
 }
 
 nav .column-left {
