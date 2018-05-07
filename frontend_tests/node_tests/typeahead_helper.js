@@ -177,7 +177,7 @@ _.each(matches, function (person) {
         'a_user@zulip.org',
         'zman@test.net',
         'a_bot@zulip.com',
-     ]);
+    ]);
 
     // Typeahead for private message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
@@ -188,7 +188,7 @@ _.each(matches, function (person) {
         'b_user_3@zulip.net',
         'zman@test.net',
         'b_bot@example.com',
-     ]);
+    ]);
 
     var subscriber_email_1 = "b_user_2@zulip.net";
     var subscriber_email_2 = "b_user_3@zulip.net";

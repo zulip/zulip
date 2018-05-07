@@ -143,9 +143,10 @@ function render(template_name, args) {
 
     // When the logged in user is admin
     _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false},
-                    can_modify: true,
-                    };
+        var args = {
+            stream: {name: stream, invite_only: false},
+            can_modify: true,
+        };
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
@@ -155,9 +156,10 @@ function render(template_name, args) {
     // When the logged in user is not admin
     html = '<table>';
     _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false},
-                    can_modify: false,
-                    };
+        var args = {
+            stream: {name: stream, invite_only: false},
+            can_modify: false,
+        };
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
@@ -596,7 +598,7 @@ function render(template_name, args) {
 
 (function compose_private_stream_alert() {
     var args = {
-      stream_name: 'Denmark',
+        stream_name: 'Denmark',
     };
     var html = render('compose_private_stream_alert', args);
     assert($(html).hasClass('compose_private_stream_alert'));
@@ -947,11 +949,11 @@ function render(template_name, args) {
         ],
     };
     var html = render('message_edit_history', {
-            edited_messages: message.edit_history,
-        });
+        edited_messages: message.edit_history,
+    });
     var edited_message = $(html).find("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
-                "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
+                 "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
 }());
 
 (function message_reaction() {

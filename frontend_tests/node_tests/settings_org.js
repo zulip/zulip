@@ -167,7 +167,7 @@ function createSaveButtons(subsection) {
     var props  = {};
     props.hidden = false;
     save_btn_controls.fadeIn = () => {
-            props.hidden = false;
+        props.hidden = false;
     };
     save_btn_controls.fadeOut = () => {
         props.hidden = true;
@@ -473,7 +473,8 @@ function test_parse_time_limit() {
         global.page_params.realm_message_content_edit_limit_seconds =
             settings_org.parse_time_limit(elem);
         assert.equal(expected_value,
-            settings_org.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds'));
+                     settings_org.get_realm_time_limits_in_minutes(
+                         'realm_message_content_edit_limit_seconds'));
     };
 
     test_function('0.01', '0');
@@ -570,7 +571,7 @@ function test_parse_time_limit() {
 
     var stub_notification_disable_parent = $.create('<stub notification_disable parent');
     stub_notification_disable_parent.set_find_results('.notification-disable',
-        $.create('<disable link>'));
+                                                      $.create('<disable link>'));
 
     page_params.realm_name_changes_disabled = false;
     settings_account.update_name_change_display();

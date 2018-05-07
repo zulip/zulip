@@ -516,18 +516,18 @@ people.add(bob);
         };
         transmit.send_message = function (payload, success) {
             var single_msg = {
-              type: 'private',
-              content: '[foobar](/user_uploads/123456)',
-              sender_id: 101,
-              queue_id: undefined,
-              stream: '',
-              subject: '',
-              to: '["alice@example.com"]',
-              reply_to: 'alice@example.com',
-              private_message_recipient: 'alice@example.com',
-              to_user_ids: '31',
-              local_id: 1,
-              locally_echoed: true,
+                type: 'private',
+                content: '[foobar](/user_uploads/123456)',
+                sender_id: 101,
+                queue_id: undefined,
+                stream: '',
+                subject: '',
+                to: '["alice@example.com"]',
+                reply_to: 'alice@example.com',
+                private_message_recipient: 'alice@example.com',
+                to_user_ids: '31',
+                local_id: 1,
+                locally_echoed: true,
             };
             assert.deepEqual(payload, single_msg);
             payload.id = stub_state.local_id_counter;
@@ -624,7 +624,7 @@ people.add(bob);
         assert(!echo_error_msg_checked);
         assert.equal($("#compose-send-button").prop('disabled'), false);
         assert.equal($('#compose-error-msg').html(),
-                       'Error sending message: Server says 408');
+                     'Error sending message: Server says 408');
         assert.equal($("#compose-textarea").val(), 'foobarfoobar');
         assert($("#compose-textarea").is_focused());
         assert($("#compose-send-status").visible());
@@ -917,7 +917,7 @@ function test_raw_file_drop(raw_drop_func) {
 
         var data = {
             mentioned: {
-              email: 'foo@bar.com',
+                email: 'foo@bar.com',
             },
         };
 
@@ -977,8 +977,8 @@ function test_raw_file_drop(raw_drop_func) {
 
         data = {
             mentioned: {
-              email: 'foo@bar.com',
-              full_name: 'Foo Barson',
+                email: 'foo@bar.com',
+                full_name: 'Foo Barson',
             },
         };
 
@@ -1035,7 +1035,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_compose_all_everyone_confirm_clicked() {
         var handler = $("#compose-all-everyone")
-                      .get_on_handler('click', '.compose-all-everyone-confirm');
+            .get_on_handler('click', '.compose-all-everyone-confirm');
 
         setup_parents_and_mock_remove('compose-all-everyone',
                                       'compose-all-everyone',
@@ -1059,7 +1059,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_compose_invite_users_clicked() {
         var handler = $("#compose_invite_users")
-                      .get_on_handler('click', '.compose_invite_link');
+            .get_on_handler('click', '.compose_invite_link');
         var subscription = {
             stream_id: 102,
             name: 'test',
@@ -1124,7 +1124,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_compose_invite_close_clicked() {
         var handler = $("#compose_invite_users")
-                        .get_on_handler('click', '.compose_invite_close');
+            .get_on_handler('click', '.compose_invite_close');
 
         setup_parents_and_mock_remove('compose_invite_users_close',
                                       'compose_invite_close',
@@ -1146,7 +1146,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_compose_not_subscribed_clicked() {
         var handler = $("#compose-send-status")
-                      .get_on_handler('click', '.sub_unsub_button');
+            .get_on_handler('click', '.sub_unsub_button');
         var subscription = {
             stream_id: 102,
             name: 'test',
@@ -1176,7 +1176,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_compose_not_subscribed_close_clicked() {
         var handler = $("#compose-send-status")
-                      .get_on_handler('click', '#compose_not_subscribed_close');
+            .get_on_handler('click', '#compose_not_subscribed_close');
 
         setup_parents_and_mock_remove('compose_user_not_subscribed_close',
                                       'compose_not_subscribed_close',
@@ -1222,33 +1222,33 @@ function test_raw_file_drop(raw_drop_func) {
         compose_state.set_message_type('stream');
 
         var checks = [
-           (function () {
-               var called;
-               templates.render = function (template_name, context) {
-                   called = true;
-                   assert.equal(template_name, 'compose_private_stream_alert');
-                   assert.equal(context.stream_name, 'Denmark');
-                   return 'fake-compose_private_stream_alert-template';
-               };
-               return function () { assert(called); };
-           }()),
+            (function () {
+                var called;
+                templates.render = function (template_name, context) {
+                    called = true;
+                    assert.equal(template_name, 'compose_private_stream_alert');
+                    assert.equal(context.stream_name, 'Denmark');
+                    return 'fake-compose_private_stream_alert-template';
+                };
+                return function () { assert(called); };
+            }()),
 
-           (function () {
-              var called;
-              $("#compose_private_stream_alert").append = function (html) {
-                  called = true;
-                  assert.equal(html, 'fake-compose_private_stream_alert-template');
-              };
-              return function () { assert(called); };
-           }()),
+            (function () {
+                var called;
+                $("#compose_private_stream_alert").append = function (html) {
+                    called = true;
+                    assert.equal(html, 'fake-compose_private_stream_alert-template');
+                };
+                return function () { assert(called); };
+            }()),
         ];
 
         data = {
-           stream: {
-               invite_only: true,
-               name: 'Denmark',
-               subscribers: Dict.from_array([1]),
-           },
+            stream: {
+                invite_only: true,
+                name: 'Denmark',
+                subscribers: Dict.from_array([1]),
+            },
         };
 
         handler({}, data);
@@ -1260,7 +1260,7 @@ function test_raw_file_drop(raw_drop_func) {
 
     (function test_attach_files_compose_clicked() {
         var handler = $("#compose")
-                        .get_on_handler("click", "#attach_files");
+            .get_on_handler("click", "#attach_files");
         $('#file_input').clone = function (param) {
             assert(param);
         };
@@ -1334,7 +1334,7 @@ function test_raw_file_drop(raw_drop_func) {
         function test_post_error(error_callback) {
             error_callback();
             assert.equal($("#preview_content").html(),
-                            'translated: Failed to generate preview');
+                         'translated: Failed to generate preview');
         }
 
         function mock_channel_post(msg) {
@@ -1364,7 +1364,7 @@ function test_raw_file_drop(raw_drop_func) {
         }
 
         var handler = $("#compose")
-                        .get_on_handler("click", "#markdown_preview");
+            .get_on_handler("click", "#markdown_preview");
 
         // Tests start here
         $("#compose-textarea").val('');
@@ -1373,7 +1373,7 @@ function test_raw_file_drop(raw_drop_func) {
         handler(event);
 
         assert.equal($("#preview_content").html(),
-                      'translated: Nothing to preview');
+                     'translated: Nothing to preview');
         assert_visibilities();
 
         var make_indicator_called = false;
@@ -1409,12 +1409,12 @@ function test_raw_file_drop(raw_drop_func) {
         assert(apply_markdown_called);
         assert_visibilities();
         assert.equal($("#preview_content").html(),
-                      'Server: foobarfoobar');
+                     'Server: foobarfoobar');
     }());
 
     (function test_undo_markdown_preview_clicked() {
         var handler = $("#compose")
-                        .get_on_handler("click", "#undo_markdown_preview");
+            .get_on_handler("click", "#undo_markdown_preview");
 
         $("#compose-textarea").hide();
         $("#undo_markdown_preview").show();

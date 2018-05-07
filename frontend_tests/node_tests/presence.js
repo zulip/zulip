@@ -159,15 +159,15 @@ people.initialize_current_user(me.user_id);
     presence.set_info(presences, base_time);
 
     assert.deepEqual(presence.presence_info[alice.user_id],
-        { status: 'active', mobile: false, last_active: 500}
+                     { status: 'active', mobile: false, last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[fred.user_id],
-        { status: 'idle', mobile: false, last_active: 500}
+                     { status: 'idle', mobile: false, last_active: 500}
     );
 
     assert.deepEqual(presence.presence_info[zoe.user_id],
-        { status: 'offline', mobile: false, last_active: undefined}
+                     { status: 'offline', mobile: false, last_active: undefined}
     );
 
     assert(!presence.presence_info[bot.user_id]);

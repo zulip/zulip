@@ -64,96 +64,96 @@ stream_data.add_sub('stream_two', two);
 
     // Case 1: If the message was sent by this user,
     //  DO NOT notify the user
-        // In this test, all other circumstances should trigger notification
-        // EXCEPT sent_by_me, which should trump them
-        assert.equal(notifications.message_is_notifiable({
-            id: 10,
-            content: 'message number 1',
-            sent_by_me: true,
-            notification_sent: false,
-            mentioned_me_directly: true,
-            type: 'stream',
-            stream: 'stream_two',
-            stream_id: 20,
-            subject: 'topic_two',
-        }), false);
+    // In this test, all other circumstances should trigger notification
+    // EXCEPT sent_by_me, which should trump them
+    assert.equal(notifications.message_is_notifiable({
+        id: 10,
+        content: 'message number 1',
+        sent_by_me: true,
+        notification_sent: false,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_two',
+        stream_id: 20,
+        subject: 'topic_two',
+    }), false);
 
     // Case 2: If the user has already been sent a notificaton about this message,
     //  DO NOT notify the user
-        // In this test, all other circumstances should trigger notification
-        // EXCEPT notification_sent, which should trump them
-        // (ie: it mentions user, it's not muted, etc)
-        assert.equal(notifications.message_is_notifiable({
-            id: 20,
-            content: 'message number 2',
-            sent_by_me: false,
-            notification_sent: true,
-            mentioned_me_directly: true,
-            type: 'stream',
-            stream: 'stream_two',
-            stream_id: 20,
-            subject: 'topic_two',
-        }), false);
+    // In this test, all other circumstances should trigger notification
+    // EXCEPT notification_sent, which should trump them
+    // (ie: it mentions user, it's not muted, etc)
+    assert.equal(notifications.message_is_notifiable({
+        id: 20,
+        content: 'message number 2',
+        sent_by_me: false,
+        notification_sent: true,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_two',
+        stream_id: 20,
+        subject: 'topic_two',
+    }), false);
 
     // Case 3: If a message mentions the user directly,
     //  DO notify the user
-        // Mentioning trumps muting
-        assert.equal(notifications.message_is_notifiable({
-            id: 30,
-            content: 'message number three',
-            sent_by_me: false,
-            notification_sent: false,
-            mentioned_me_directly: true,
-            type: 'stream',
-            stream: 'stream_one',
-            stream_id: 10,
-            subject: 'topic_three',
-        }), true);
+    // Mentioning trumps muting
+    assert.equal(notifications.message_is_notifiable({
+        id: 30,
+        content: 'message number three',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_one',
+        stream_id: 10,
+        subject: 'topic_three',
+    }), true);
 
-        // Mentioning should trigger notification in unmuted topic
-        assert.equal(notifications.message_is_notifiable({
-            id: 40,
-            content: 'message number 4',
-            sent_by_me: false,
-            notification_sent: false,
-            mentioned_me_directly: true,
-            type: 'stream',
-            stream: 'stream_two',
-            stream_id: 20,
-            subject: 'topic_two',
-        }), true);
+    // Mentioning should trigger notification in unmuted topic
+    assert.equal(notifications.message_is_notifiable({
+        id: 40,
+        content: 'message number 4',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: true,
+        type: 'stream',
+        stream: 'stream_two',
+        stream_id: 20,
+        subject: 'topic_two',
+    }), true);
 
     // Case 4: If a message is in a muted stream
     //  and does not mention the user DIRECTLY,
     //  DO NOT notify the user
-        assert.equal(notifications.message_is_notifiable({
-            id: 50,
-            content: 'message number 5',
-            sent_by_me: false,
-            notification_sent: false,
-            mentioned_me_directly: false,
-            type: 'stream',
-            stream: 'stream_one',
-            stream_id: 10,
-            subject: 'topic_one',
-        }), false);
+    assert.equal(notifications.message_is_notifiable({
+        id: 50,
+        content: 'message number 5',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: false,
+        type: 'stream',
+        stream: 'stream_one',
+        stream_id: 10,
+        subject: 'topic_one',
+    }), false);
 
     // Case 5
-        // If none of the above cases apply
-        // (ie: topic is not muted, message does not mention user,
-        //  no notification sent before, message not sent by user),
-        // return true to pass it to notifications settings
-        assert.equal(notifications.message_is_notifiable({
-            id: 60,
-            content: 'message number 6',
-            sent_by_me: false,
-            notification_sent: false,
-            mentioned_me_directly: false,
-            type: 'stream',
-            stream: 'stream_two',
-            stream_id: 20,
-            subject: 'topic_two',
-        }), true);
+    // If none of the above cases apply
+    // (ie: topic is not muted, message does not mention user,
+    //  no notification sent before, message not sent by user),
+    // return true to pass it to notifications settings
+    assert.equal(notifications.message_is_notifiable({
+        id: 60,
+        content: 'message number 6',
+        sent_by_me: false,
+        notification_sent: false,
+        mentioned_me_directly: false,
+        type: 'stream',
+        stream: 'stream_two',
+        stream_id: 20,
+        subject: 'topic_two',
+    }), true);
 }());
 
 
@@ -191,7 +191,7 @@ stream_data.add_sub('stream_two', two);
         },
     });
 
-   var message_1 = {
+    var message_1 = {
         id: 1000,
         content: '@-mentions the user',
         sent_by_me: false,

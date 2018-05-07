@@ -193,9 +193,9 @@ function sort_button(opts) {
 
     function data(sel) {
         switch (sel) {
-            case "sort": return opts.sort_type;
-            case "sort-prop": return opts.prop_name;
-            default: throw Error('unknown selector: ' + sel);
+        case "sort": return opts.sort_type;
+        case "sort-prop": return opts.prop_name;
+        default: throw Error('unknown selector: ' + sel);
         }
     }
 

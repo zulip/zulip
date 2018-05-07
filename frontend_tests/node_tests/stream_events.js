@@ -166,12 +166,12 @@ stream_data.add_sub('Frontend', frontend);
     set_global('message_util', { do_unread_count_updates: noop });
 
     // Test jQuery event
-        global.with_stub(function (stub) {
-            $(document).on('subscription_add_done.zulip', stub.f);
-            stream_events.mark_subscribed(frontend, [], '');
-            var args = stub.get_args('event');
-            assert.equal(args.event.sub.stream_id, 1);
-        });
+    global.with_stub(function (stub) {
+        $(document).on('subscription_add_done.zulip', stub.f);
+        stream_events.mark_subscribed(frontend, [], '');
+        var args = stub.get_args('event');
+        assert.equal(args.event.sub.stream_id, 1);
+    });
 
     // Test bookend update
     with_overrides(function (override) {

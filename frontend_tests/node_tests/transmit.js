@@ -141,11 +141,11 @@ page_params.use_websockets = false;
     reload.initiate = function (opts) {
         reload_initiated = true;
         assert.deepEqual(opts, {
-           immediate: true,
-           save_pointer: true,
-           save_narrow: true,
-           save_compose: true,
-           send_after_reload: true,
+            immediate: true,
+            save_pointer: true,
+            save_narrow: true,
+            save_compose: true,
+            send_after_reload: true,
         });
     };
 

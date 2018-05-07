@@ -95,33 +95,33 @@ var draft_2 = {
 
     localStorage.clear();
     (function test_addDraft() {
-         stub_timestamp(1, function () {
-             var expected = _.clone(draft_1);
-             expected.updatedAt = 1;
-             var id = draft_model.addDraft(_.clone(draft_1));
+        stub_timestamp(1, function () {
+            var expected = _.clone(draft_1);
+            expected.updatedAt = 1;
+            var id = draft_model.addDraft(_.clone(draft_1));
 
-             assert.deepEqual(ls.get("drafts")[id], expected);
-         });
+            assert.deepEqual(ls.get("drafts")[id], expected);
+        });
     }());
 
     localStorage.clear();
     (function test_editDraft() {
-         stub_timestamp(2, function () {
-             ls.set("drafts", { id1: draft_1 });
-             var expected = _.clone(draft_2);
-             expected.updatedAt = 2;
-             draft_model.editDraft("id1", _.clone(draft_2));
+        stub_timestamp(2, function () {
+            ls.set("drafts", { id1: draft_1 });
+            var expected = _.clone(draft_2);
+            expected.updatedAt = 2;
+            draft_model.editDraft("id1", _.clone(draft_2));
 
-             assert.deepEqual(ls.get("drafts").id1, expected);
-         });
+            assert.deepEqual(ls.get("drafts").id1, expected);
+        });
     }());
 
     localStorage.clear();
     (function test_deleteDraft() {
-         ls.set("drafts", { id1: draft_1 });
-         draft_model.deleteDraft("id1");
+        ls.set("drafts", { id1: draft_1 });
+        draft_model.deleteDraft("id1");
 
-         assert.deepEqual(ls.get("drafts"), {});
+        assert.deepEqual(ls.get("drafts"), {});
     }());
 }());
 
