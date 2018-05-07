@@ -2,7 +2,7 @@
 
 Contents:
 
-* [Installing directly on Ubuntu](#installing-directly-on-ubuntu)
+* [Installing directly on Ubuntu or Debian](#installing-directly-on-ubuntu-or-debian)
 * [Installing manually on Linux](#installing-manually-on-linux)
 * [Installing directly on cloud9](#installing-on-cloud9)
 * [Using Docker (experimental)](#using-docker-experimental)
