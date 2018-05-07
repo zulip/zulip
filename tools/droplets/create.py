@@ -135,7 +135,7 @@ def create_droplet(my_token, template_id, username, tags, user_data):
     droplet = digitalocean.Droplet(
         token=my_token,
         name='{0}.zulipdev.org'.format(username),
-        region='sfo1',
+        region='nyc3',
         image=template_id,
         size_slug='2gb',
         user_data=user_data,
