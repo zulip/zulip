@@ -2503,6 +2503,15 @@ nav ul li.active::after {
     line-height: 0.8;
 }
 
+.pricing-model .pricing-container .text-content .premium-price-box {
+	display: flex;
+}
+
+.pricing-model .pricing-container .text-content .price .price-cents {
+	font-size: .4em;
+	vertical-align: top;
+}
+
 .pricing-model .pricing-container .bottom .details {
     display: inline-block;
     vertical-align: top;
