@@ -6,6 +6,8 @@ from django.http import HttpResponseRedirect, HttpResponse, HttpRequest
 from django.shortcuts import redirect, render
 from django.utils import translation
 from django.utils.cache import patch_cache_control
+from django.utils.timezone import now as timezone_now
+from itertools import zip_longest
 
 from zerver.context_processors import latest_info_context
 from zerver.decorator import zulip_login_required
@@ -162,13 +164,24 @@ def home_real(request: HttpRequest) -> HttpResponse:
 
     narrow, narrow_stream, narrow_topic = detect_narrowed_window(request, user_profile)
 
-    register_ret = do_events_register(user_profile, request.client,
-                                      apply_markdown=True, client_gravatar=True,
-                                      slim_presence=True,
-                                      notification_settings_null=True,
-                                      narrow=narrow)
-    user_has_messages = (register_ret['max_message_id'] != -1)
-    update_last_reminder(user_profile)
+    if user_profile is not None:
+        register_ret = do_events_register(user_profile, request.client,
+                                          apply_markdown=True, client_gravatar=True,
+                                          slim_presence=True,
+                                          notification_settings_null=True,
+                                          narrow=narrow)
+        user_has_messages = (register_ret['max_message_id'] != -1)
+        update_last_reminder(user_profile)
+    else:
+        from zerver.models import get_user_profile_by_email, get_client
+        from zerver.lib.events import fetch_archive_state_data, post_process_state
+        user_profile = get_user_profile_by_email("hamlet@zulip.com")
+        register_ret = fetch_archive_state_data(user_profile.realm, user_profile,
+                                                None,
+                                                'fake_queue_id',
+                                                client_gravatar=True,
+                                                include_subscribers=False)
+        post_process_state(register_ret)
 
     if user_profile is not None:
         first_in_realm = realm_user_count(user_profile.realm) == 1
