@@ -1769,32 +1769,34 @@ blockquote p {
     z-index: 10;
 }
 
-#navbar-buttons ul.nav .dropdown-toggle,
-#navbar-buttons ul.nav li.active .dropdown-toggle {
-    font-size: 20px;
-    color: inherit;
-    opacity: 0.5;
-    text-shadow: none;
-    padding-left: 0px !important;
-    background-color: inherit;
-    box-shadow: inherit;
-    -webkit-box-shadow: inherit;
-    -moz-box-shadow: inherit;
-    display: block;
-    position: absolute;
-    right: 0px;
-    top: 3px;
-}
+#navbar-buttons ul.nav {
+    .dropdown-toggle,
+    li.active .dropdown-toggle {
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.5;
+        text-shadow: none;
+        padding-left: 0px !important;
+        background-color: inherit;
+        box-shadow: inherit;
+        -webkit-box-shadow: inherit;
+        -moz-box-shadow: inherit;
+        display: block;
+        position: absolute;
+        right: 0px;
+        top: 3px;
+    }
 
-#navbar-buttons ul.nav .dropdown-toggle,
-#navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    opacity: 1;
-}
+    .dropdown-toggle,
+    li.active .dropdown-toggle:hover {
+        opacity: 1;
+    }
 
-#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
-    background: none;
-    opacity: 1;
-    text-shadow: none;
+    li.dropdown.open .dropdown-toggle {
+        background: none;
+        opacity: 1;
+        text-shadow: none;
+    }
 }
 
 #searchbox .input-append {
