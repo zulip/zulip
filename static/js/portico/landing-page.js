@@ -192,7 +192,7 @@ var events = function () {
         if (window.location.pathname !== this.pathname && !this.hasAttribute("download") &&
             !/no-action/.test(this.className)) {
             e.preventDefault();
-            $(".portico-landing").removeClass("show");
+
             setTimeout(function () {
                 window.location.href = $(this).attr("href");
             }.bind(this), 500);
@@ -235,16 +235,6 @@ var events = function () {
 
 // run this callback when the page is determined to have loaded.
 var load = function () {
-    // show the .portico-landing when the document is loaded.
-    setTimeout(function () {
-        $(".portico-landing").addClass("show");
-    }, 200);
-
-    // display the `x-grad` element a second after load so that the slide up
-    // transition on the .portico-landing is nice and smooth.
-    setTimeout(function () {
-        $("x-grad").addClass("show");
-    }, 1000);
 
     // Initiate the bootstrap carousel logic
     $('.carousel').carousel({
