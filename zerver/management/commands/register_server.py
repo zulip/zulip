@@ -9,7 +9,6 @@ from django.core.management.base import CommandError
 from django.utils.crypto import get_random_string
 
 from zerver.lib.management import ZulipBaseCommand, check_config
-from zilencer.models import RemoteZulipServer
 
 if settings.DEVELOPMENT:
     SECRETS_FILENAME = "zproject/dev-secrets.conf"
