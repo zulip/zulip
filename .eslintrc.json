@@ -20,7 +20,6 @@
         "md5": false,
         "moment": false,
         "i18n": false,
-        "DynamicText": false,
         "LightboxCanvas": false,
         "bridge": false,
         "page_params": false,

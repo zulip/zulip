@@ -260,7 +260,6 @@ def build_custom_checkers(by_lang):
              'frontend_tests/node_tests/upload.js',
              'frontend_tests/node_tests/templates.js',
              'static/js/upload.js',
-             'static/js/dynamic_text.js',
              'static/js/stream_color.js',
          ]),
          'good_lines': ['#my-style {color: blue;}'],
