@@ -97,6 +97,20 @@ class zulip::base {
     owner  => 'zulip',
     group  => 'zulip',
   }
+  file { ['/etc/zulip/zulip.conf', '/etc/zulip/settings.py']:
+    ensure => 'file',
+    require => File['/etc/zulip'],
+    mode   => '0644',
+    owner  => 'zulip',
+    group  => 'zulip',
+  }
+  file { '/etc/zulip/zulip-secrets.conf':
+    ensure => 'file',
+    require => File['/etc/zulip'],
+    mode   => '0640',
+    owner  => 'zulip',
+    group  => 'zulip',
+  }
 
   file { '/etc/security/limits.conf':
     ensure => file,
