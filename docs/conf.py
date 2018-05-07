@@ -54,7 +54,7 @@ author = 'The Zulip Team'
 # The short X.Y version.
 version = '1.8'
 # The full version, including alpha/beta/rc tags.
-release = '1.8.0'
+release = '1.8.1'
 
 # This allows us to insert a warning that appears only on an unreleased
 # version, e.g. to say that something is likely to have changed.
