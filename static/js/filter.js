@@ -495,6 +495,22 @@ Filter.prototype = {
     },
 };
 
+Filter.term_type = function (term) {
+    var operator = term.operator;
+    var operand = term.operand;
+    var negated = term.negated;
+
+    var result = negated ? 'not-' : '';
+
+    result += operator;
+
+    if (_.contains(['is', 'has'], operator)) {
+        result += '-' + operand;
+    }
+
+    return result;
+};
+
 Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 

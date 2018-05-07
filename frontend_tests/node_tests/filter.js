@@ -744,6 +744,27 @@ function make_sub(name, stream_id) {
     assert.equal(filter.is_for_only('private'), false);
 }());
 
+(function test_term_type() {
+    function assert_term_type(term, expected_term_type) {
+        assert.equal(Filter.term_type(term), expected_term_type);
+    }
+
+    function term(operator, operand, negated) {
+        return {
+            operator: operator,
+            operand: operand,
+            negated: negated,
+        };
+    }
+
+    assert_term_type(term('stream', 'whatever'), 'stream');
+    assert_term_type(term('pm-with', 'whomever'), 'pm-with');
+    assert_term_type(term('pm-with', 'whomever', true), 'not-pm-with');
+    assert_term_type(term('is', 'private'), 'is-private');
+    assert_term_type(term('has', 'link'), 'has-link');
+    assert_term_type(term('has', 'attachment', true), 'not-has-attachment');
+}());
+
 (function test_update_email() {
     var terms = [
         {operator: 'pm-with', operand: 'steve@foo.com'},
