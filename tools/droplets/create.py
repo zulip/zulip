@@ -111,21 +111,28 @@ def set_user_data(username, userkeys):
         ssh_authorized_keys += "\n          - {0}".format(key['key'])
     # print(ssh_authorized_keys)
 
-    git_add_remote = "git remote add origin"  # get around "line too long" lint error
+    setup_repo = """\
+cd /home/zulipdev/{1} && git remote add origin https://github.com/{0}/{1}.git && git fetch origin"""
+
+    server_repo_setup = setup_repo.format(username, "zulip")
+    python_api_repo_setup = setup_repo.format(username, "python-zulip-api")
+
     cloudconf = """
     #cloud-config
     users:
       - name: zulipdev
-        ssh_authorized_keys:{1}
+        ssh_authorized_keys:{0}
     runcmd:
-      - su -c 'cd /home/zulipdev/zulip && {2} https://github.com/{0}/zulip.git && git fetch origin' zulipdev
+      - su -c '{1}' zulipdev
+      - su -c 'git clean -f' zulipdev
+      - su -c '{2}' zulipdev
       - su -c 'git clean -f' zulipdev
       - su -c 'git config --global core.editor nano' zulipdev
       - su -c 'git config --global pull.rebase true' zulipdev
     power_state:
      mode: reboot
      condition: True
-    """.format(username, ssh_authorized_keys, git_add_remote)
+    """.format(ssh_authorized_keys, server_repo_setup, python_api_repo_setup)
 
     print("...returning cloud-config data.")
     return cloudconf
