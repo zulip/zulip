@@ -982,10 +982,13 @@ class Stream(models.Model):
 
     # This is stream information that is sent to clients
     def to_dict(self) -> Dict[str, Any]:
-        return dict(name=self.name,
-                    stream_id=self.id,
-                    description=self.description,
-                    invite_only=self.invite_only)
+        return dict(
+            name=self.name,
+            stream_id=self.id,
+            description=self.description,
+            invite_only=self.invite_only,
+            history_public_to_subscribers=self.history_public_to_subscribers
+        )
 
 post_save.connect(flush_stream, sender=Stream)
 post_delete.connect(flush_stream, sender=Stream)

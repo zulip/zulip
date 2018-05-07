@@ -1124,7 +1124,8 @@ class EventsRegisterTest(ZulipTestCase):
                     ('description', check_string),
                     ('invite_only', check_bool),
                     ('name', check_string),
-                    ('stream_id', check_int)]))),
+                    ('stream_id', check_int),
+                    ('history_public_to_subscribers', check_bool)]))),
             ]))),
         ])
 
@@ -1933,6 +1934,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('push_notifications', check_bool),
             ('audible_notifications', check_bool),
             ('stream_id', check_int),
+            ('history_public_to_subscribers', check_bool),
         ]
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore

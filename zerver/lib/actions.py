@@ -2311,7 +2311,8 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     is_old_stream=is_old_stream(stream.date_created),
                     stream_weekly_traffic=get_average_weekly_stream_traffic(
                         stream.id, stream.date_created, recent_traffic),
-                    subscribers=stream_user_ids(stream))
+                    subscribers=stream_user_ids(stream),
+                    history_public_to_subscribers=stream.history_public_to_subscribers)
                for (subscription, stream) in sub_pairs]
     event = dict(type="subscription", op="add",
                  subscriptions=payload)
@@ -3983,7 +3984,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
 
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
-                        "email_token", "description", "date_created")
+                        "email_token", "description", "date_created",
+                        "history_public_to_subscribers")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
     stream_hash = {}
@@ -4046,7 +4048,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                        'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
                                                                                   stream["date_created"],
                                                                                   recent_traffic),
-                       'email_address': encode_email_address_helper(stream["name"], stream["email_token"])}
+                       'email_address': encode_email_address_helper(stream["name"], stream["email_token"]),
+                       'history_public_to_subscribers': stream['history_public_to_subscribers']}
         if subscribers is not None:
             stream_dict['subscribers'] = subscribers
         if sub["active"]:
@@ -4073,7 +4076,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                            'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
                                                                                       stream["date_created"],
                                                                                       recent_traffic),
-                           'description': stream['description']}
+                           'description': stream['description'],
+                           'history_public_to_subscribers': stream['history_public_to_subscribers']}
             if is_public or user_profile.is_realm_admin:
                 subscribers = subscriber_map[stream["id"]]
                 if subscribers is not None:
