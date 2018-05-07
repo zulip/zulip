@@ -1,0 +1,15 @@
+@mixin prefixed-transition($property, $timing, $timing-functions...) {
+    -webkit-transition: $property $timing $timing-functions;
+    -moz-transition: $property $timing $timing-functions;
+    -o-transition: $property $timing $timing-functions;
+    -ms-transition: $property $timing $timing-functions;
+    transition: $property $timing $timing-functions;
+}
+
+@mixin prefixed-user-select($value) {
+    -webkit-touch-callout: $value;
+    -webkit-user-select: $value;
+    -moz-user-select: $value;
+    -ms-user-select: $value;
+    user-select: $value;
+}
