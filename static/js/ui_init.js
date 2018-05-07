@@ -212,6 +212,11 @@ function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
+    // compose-content padding = icon bottom to make keyboard popover shortcut
+    // vertically aligned with the compose box
+    $('#sidebar-keyboard-shortcuts #keyboard-icon').css('bottom',
+                                                        parseInt($(".compose-content").css("paddingBottom"), 10));
+
     $('#streams_header h4').tooltip({placement: 'right',
                                      animation: false});
 
@@ -227,6 +232,8 @@ function initialize_kitchen_sink_stuff() {
     $('.message_failed i[data-toggle="tooltip"]').tooltip();
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
+
+    $('#keyboard-icon').tooltip();
 
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();

@@ -72,6 +72,7 @@ function get_new_heights() {
     // RIGHT SIDEBAR
     var user_presences = $('#user_presences').expectOne();
     var group_pms = $('#group-pms').expectOne();
+    var keyboard_popover_shortcut = $('#sidebar-keyboard-shortcuts #keyboard-icon').expectOne();
 
     var usable_height =
         res.right_sidebar_height
@@ -83,7 +84,9 @@ function get_new_heights() {
         - invite_user_link_height
         - parseInt(group_pms.css("marginTop"),10)
         - parseInt(group_pms.css("marginBottom"), 10)
-        - $("#group-pm-header").safeOuterHeight(true);
+        - $("#group-pm-header").safeOuterHeight(true)
+        - keyboard_popover_shortcut.safeOuterHeight(true)
+        - parseInt(keyboard_popover_shortcut.css("marginBottom"), 10);
 
     // set these
     // res.user_presences_max_height
