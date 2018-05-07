@@ -53,7 +53,7 @@ def generate_django_secretkey():
 
 def get_old_conf(output_filename):
     # type: (str) -> Dict[str, Text]
-    if not os.path.exists(output_filename):
+    if not os.path.exists(output_filename) or os.path.getsize(output_filename) == 0:
         return {}
 
     secrets_file = configparser.RawConfigParser()
