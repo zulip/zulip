@@ -2716,16 +2716,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     white-space: nowrap;
     overflow: hidden;
     transition: all 0.4s ease;
-}
 
-.user_popover_email .tooltip_holder {
-    display: none;
-    position: absolute;
-    left: 50%;
-}
+    .tooltip_holder {
+        display: none;
+        position: absolute;
+        left: 50%;
+    }
 
-.user_popover_email i {
-    cursor: pointer;
+    i {
+        cursor: pointer;
+    }
 }
 
 .email_copied,
