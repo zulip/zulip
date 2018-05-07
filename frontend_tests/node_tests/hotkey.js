@@ -99,7 +99,7 @@ function stubbing(func_name_to_stub, test_function) {
     assert.equal(map_press(106).name, 'vim_down'); // j
 
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
-    assert.equal(map_down(75, false, true).name, 'search'); // ctrl + k
+    assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -124,7 +124,7 @@ function stubbing(func_name_to_stub, test_function) {
     // CMD tests for MacOS
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
     assert.equal(map_down(219, false, false, true).name, 'escape'); // cmd + [
-    assert.equal(map_down(75, false, false, true).name, 'search'); // cmd + k
+    assert.equal(map_down(75, false, false, true).name, 'search_with_k'); // cmd + k
 
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
 

@@ -48,7 +48,7 @@ var keydown_unshift_mappings = {
 };
 
 var keydown_cmd_or_ctrl_mappings = {
-    75: {name: 'search', message_view_only: false}, // 'K'
+    75: {name: 'search_with_k', message_view_only: false}, // 'K'
     219: {name: 'escape', message_view_only: false}, // '['
 };
 
@@ -555,6 +555,8 @@ exports.process_hotkey = function (e, hotkey) {
             var height = $("#compose-textarea")[0].scrollHeight;
             $("#compose-textarea").caret(Infinity).animate({ scrollTop: height }, "fast");
             return true;
+        } else if (event_name === "search_with_k") {
+            // Do nothing; this allows one to use ctrl+k inside compose.
         } else {
             // Let the browser handle the key normally.
             return false;
@@ -616,6 +618,7 @@ exports.process_hotkey = function (e, hotkey) {
             activity.initiate_search();
             return true;
         case 'search':
+        case 'search_with_k':
             search.initiate_search();
             return true;
         case 'gear_menu':
