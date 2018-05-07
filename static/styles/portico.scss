@@ -1890,6 +1890,10 @@ input.new-organization-button {
         display: inline-block;
         margin-top: 10px;
     }
+
+    .line-break-desktop {
+    	display: none;
+    }
 }
 
 @media (max-height: 600px) {
