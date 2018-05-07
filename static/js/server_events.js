@@ -169,6 +169,9 @@ function get_events(options) {
     if (reload_state.is_in_progress()) {
         return;
     }
+    if (page_params.is_web_public_guest) {
+        return;
+    }
 
     get_events_params.dont_block = options.dont_block || get_events_failures > 0;
 
