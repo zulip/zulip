@@ -241,6 +241,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     csp_nonce = generate_random_token(48)
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
+                               'emojiset': user_profile.emojiset,
                                'page_params': JSONEncoderForHTML().encode(page_params),
                                'csp_nonce': csp_nonce,
                                'avatar_url': avatar_url(user_profile),
