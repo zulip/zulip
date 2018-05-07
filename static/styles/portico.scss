@@ -76,6 +76,18 @@ body {
     -moz-osx-font-smoothing: grayscale;
 }
 
+.instructions .blocks {
+    padding: 20px;
+
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.instructions .blocks ol {
+    margin: 0%;
+}
+
 .code-section ul.nav {
     margin: 0;
 }
@@ -1522,6 +1534,7 @@ input.new-organization-button {
 .markdown .content {
     padding: 30px;
     max-width: 768px;
+    max-width: 80ch;
     margin-left: 0px;
 
     min-height: calc(100% - 60px);

@@ -8,6 +8,9 @@ There are several ways to get a compose box for private messaging.
 
 ### Fill out all the fields yourself
 
+<div class="instructions" markdown="1">
+<div class="blocks">
+
 1. If the compose box is not currently open, click the **New private message**
 button located near the bottom of the screen.
 The compose box will open, showing the **one or more people...** and
@@ -20,10 +23,18 @@ address of the user you want to privately message. When you begin
 typing an email address or username, autocomplete suggestions will
 appear.
 
+</div>
+</div>
+
+
+
 ### Autopopulate private message addressee
 
 You can also compose a private message to someone using the user card. There
 are three ways to get to the user card.
+
+<div class="instructions" markdown="1">
+<div class="blocks">
 
 1. In the user list on the right sidebar, hover over the name of the user you
 want to privately message to reveal a down chevron (<i class="icon-vector-
@@ -46,10 +57,17 @@ target user as the recipient.
     You can open a compose box with the addressee autopopulated if you press `R`
     while a message is highlighted, but the compose box is not open.
 
+</div>
+</div>
+
+
 ## View your private message history with a user and compose
 
 If you'd like to look at your message history with a user while you
 compose your message, do the following:
+
+<div class="instructions" markdown="1">
+<div class="blocks">
 
 1. In the user list on the right sidebar, click on the name of the user
 you want to privately message.
@@ -62,8 +80,14 @@ you want to privately message.
 private message history with the selected user, and the compose box will be
 transformed to include the selected user's email address in the
 **one or more people...** field.
+</div>
+</div>
+
 
 ## Compose and send the private message
+
+<div class="instructions" markdown="1">
+<div class="blocks">
 
 1. Once you have the private message compose box open, you can enter your
 message in the **Compose your message here...** field.
@@ -76,6 +100,10 @@ key or clicking the **Send** button, depending on your settings.
         Whether or not the **Press Enter to send** option is enabled, pressing
         `Ctrl` + `Enter` or `Tab` then `Enter` sends a message, while pressing
         `Shift` + `Enter` inserts a new line in your message.
+</div>
+</div>
+
+
 
 ## Cancel a private message
 
