@@ -5,7 +5,8 @@
 Zulip is not just a “better Slack”, in the same way that iPods were not just
 “better CD players”. Zulip’s topic-based threading changes what is possible
 in chat. If you haven’t seen Zulip in action, log on to our developers’
-server at [chat.zulip.org](https://chat.zulip.org), or check out our short screencast (coming soon) on topics and threading.
+server at [chat.zulip.org](https://chat.zulip.org),
+or check out our short screencast (coming soon) on topics and threading.
 
 ## Zulip vs. Slack
 
