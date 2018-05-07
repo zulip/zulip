@@ -2752,18 +2752,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
     background-color: #4c4c4c;
     color: #fff;
     transition: visibility 0.2s ease-out, opacity 0.2s linear;
-}
 
-.email_tooltip::after {
-    content: "";
-    position: absolute;
-    top: -47%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 7px;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom: #4c4c4c solid 7px;
+    ::after {
+        content: "";
+        position: absolute;
+        top: -47%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 7px;
+        border-style: solid;
+        border-color: transparent;
+        border-bottom: #4c4c4c solid 7px;
+    }
 }
 
 .user_popover_email:hover .email_tooltip {
