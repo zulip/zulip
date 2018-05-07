@@ -134,7 +134,7 @@ Rough steps:
 1. `tools/run-dev.py`, let it run to completion, and then Ctrl-C (to clear
    out anything in the Rabbit MQ queue, load messages, etc).
 1. `tools/run-dev.py`, and check that `base.zulipdev.org:9991` is up and running.
-1. `history -c` to clear any command line history, if you made a typo (to
+1. `> ~/.bash_history && history -c` to clear any command line history, if you made a typo (to
    reduce chance of confusing new contributors).
 1. `sudo shutdown -h now`
 1. Go to the Images tab on DigitalOcean, and "Take a Snapshot".
