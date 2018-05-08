@@ -14,7 +14,6 @@
         "Handlebars": false,
         "XDate": false,
         "zxcvbn": false,
-        "LazyLoad": false,
         "SockJS": false,
         "marked": false,
         "md5": false,
