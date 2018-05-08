@@ -1015,7 +1015,7 @@ nav ul li.active::after {
 }
 
 .faqs header {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -1025,8 +1025,9 @@ nav ul li.active::after {
 
 .faqs .faq {
     margin: 50px auto;
-    max-width: 800px;
-    font-size: 1.3em;
+    max-width: 700px;
+    font-size: 1.2em;
+    color: #3b3d42;
 }
 
 /* the last faq in the box shouldn't have an extra 50px of margin. */
@@ -1036,11 +1037,13 @@ nav ul li.active::after {
 
 .faqs .faq .question {
     font-weight: 600;
+    color: #525e7a;
+    font-size: 1.1em;
 }
 
 .faqs .faq .answer {
     margin: 20px 0px 0px 0px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .screen .line {
