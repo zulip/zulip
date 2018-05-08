@@ -56,3 +56,8 @@ the filter you want to delete.
 their messages.
 
     ![Custom linkification filter demo](/static/images/help/custom-filter-demo.png)
+
+9. If the pattern appears in a message topic, Zulip can't linkify the
+   text in the topic itself (since clicking a topic narrows to that
+   topic), so Zulip instead provides a little button to the right of
+   the topic that you can click to go to the appropriate URL.
