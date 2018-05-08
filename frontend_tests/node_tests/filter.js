@@ -787,6 +787,16 @@ function make_sub(name, stream_id) {
         ['stream', 'topic', 'stream'],
         ['stream', 'stream', 'topic']
     );
+
+    const terms = [
+        {operator: 'topic', operand: 'lunch'},
+        {operator: 'sender', operand: 'steve@foo.com'},
+        {operator: 'stream', operand: 'Verona'},
+    ];
+    const filter = new Filter(terms);
+    const term_types = filter.sorted_term_types();
+
+    assert.deepEqual(term_types, ['stream', 'topic', 'sender']);
 }());
 
 (function test_update_email() {

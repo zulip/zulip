@@ -396,6 +396,12 @@ Filter.prototype = {
         return this.has_operand('stream', stream_name) && this.has_operand('topic', topic);
     },
 
+    sorted_term_types: function () {
+        var terms = this._operators;
+        var term_types = _.map(terms, Filter.term_type);
+        var sorted_terms = Filter.sorted_term_types(term_types);
+        return sorted_terms;
+    },
 
     is_stream_only: function () {
         if (this._operators.length !== 1) {
