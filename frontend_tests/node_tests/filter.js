@@ -685,15 +685,20 @@ function make_sub(name, stream_id) {
         {operator: 'stream', operand: 'My Stream'},
     ];
     filter = new Filter(terms);
+    assert.equal(filter.can_bucket_by('stream'), true);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), true);
     assert.equal(filter.is_exactly('stream'), false);
     assert.equal(filter.is_exactly('stream', 'topic'), true);
     assert.equal(filter.is_exactly('pm-with'), false);
+    assert.equal(filter.can_bucket_by('pm-with'), false);
 
     terms = [
         {operator: 'stream', operand: 'My Stream', negated: true},
         {operator: 'topic', operand: 'My Topic'},
     ];
     filter = new Filter(terms);
+    assert.equal(filter.can_bucket_by('stream'), false);
+    assert.equal(filter.can_bucket_by('stream', 'topic'), false);
     assert.equal(filter.is_exactly('stream'), false);
     assert.equal(filter.is_exactly('stream', 'topic'), false);
     assert.equal(filter.is_exactly('pm-with'), false);
@@ -737,6 +742,13 @@ function make_sub(name, stream_id) {
     filter = new Filter(terms);
     assert.equal(filter.is_exactly('is-mentioned'), false);
     assert.equal(filter.is_exactly('is-private'), false);
+    assert.equal(filter.can_bucket_by('is-mentioned'), true);
+    assert.equal(filter.can_bucket_by('is-private'), false);
+
+    // The call below returns false for somewhat arbitrary
+    // reasons -- we say is-private has precedence over
+    // is-starred.
+    assert.equal(filter.can_bucket_by('is-starred'), false);
 
     terms = [
         {operator: 'is', operand: 'mentioned', negated: true},

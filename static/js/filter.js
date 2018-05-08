@@ -415,6 +415,26 @@ Filter.prototype = {
         return _.isEqual(term_types, wanted_term_types);
     },
 
+    can_bucket_by: function () {
+        // TODO: in ES6 use spread operator
+        //
+        // Examples call:
+        //     filter.can_bucket_by('stream', 'topic')
+        //
+        // The use case of this function is that we want
+        // to know if a filter can start with a bucketing
+        // data structure similar to the ones we have in
+        // unread.js to pre-filter ids, rather than apply
+        // a predicate to a larger list of candidate ids.
+        //
+        // (It's for optimization, basically.)
+        var wanted_term_types = [].slice.call(arguments);
+        var all_term_types = this.sorted_term_types();
+        var term_types = all_term_types.slice(0, wanted_term_types.length);
+
+        return _.isEqual(term_types, wanted_term_types);
+    },
+
     first_valid_id_from: function (msg_ids) {
         var predicate = this.predicate();
 
