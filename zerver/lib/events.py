@@ -26,6 +26,7 @@ from zerver.lib.message import (
     get_raw_unread_data,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter
+from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.request import JsonableError
@@ -172,6 +173,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)
+        state['realm_push_notifications_enabled'] = push_notifications_enabled()
         if realm.notifications_stream and not realm.notifications_stream.deactivated:
             notifications_stream = realm.notifications_stream
             state['realm_notifications_stream_id'] = notifications_stream.id
