@@ -203,14 +203,6 @@ exports.get_unread_ids = function () {
     var topic_name;
     var pm_string;
 
-    if (current_filter.is_exactly('stream')) {
-        stream_id = exports.stream_id();
-        if (stream_id === undefined) {
-            return [];
-        }
-        return unread.get_msg_ids_for_stream(stream_id);
-    }
-
     if (current_filter.is_exactly('stream', 'topic')) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
@@ -218,6 +210,14 @@ exports.get_unread_ids = function () {
         }
         topic_name = exports.topic();
         return unread.get_msg_ids_for_topic(stream_id, topic_name);
+    }
+
+    if (current_filter.is_exactly('stream')) {
+        stream_id = exports.stream_id();
+        if (stream_id === undefined) {
+            return [];
+        }
+        return unread.get_msg_ids_for_stream(stream_id);
     }
 
     if (current_filter.is_exactly('pm-with')) {
