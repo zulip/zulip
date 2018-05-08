@@ -5,6 +5,9 @@ zrequire('unread');
 zrequire('util');
 set_global('blueslip', global.make_zblueslip());
 
+set_global('message_store', {});
+set_global('page_params', {});
+
 set_global('muting', {
     is_topic_muted: () => false,
 });
@@ -91,6 +94,10 @@ function candidate_ids() {
     assert_unread_info({flavor: 'not_found'});
 
     unread.process_loaded_messages([stream_msg]);
+    message_store.get = (msg_id) => {
+        assert.equal(msg_id, stream_msg.id);
+        return stream_msg;
+    };
 
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
@@ -131,8 +138,18 @@ function candidate_ids() {
 
     unread.process_loaded_messages([private_msg]);
 
+    message_store.get = (msg_id) => {
+        assert.equal(msg_id, private_msg.id);
+        return private_msg;
+    };
+
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
+
+    assert_unread_info({
+        flavor: 'found',
+        msg_id: private_msg.id,
+    });
 
     terms = [
         {operator: 'is', operand: 'private'},
@@ -156,4 +173,14 @@ function candidate_ids() {
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
+
+    terms = [
+        {operator: 'search', operand: 'needle'},
+    ];
+    set_filter(terms);
+
+    blueslip.set_test_data('error', 'unexpected call to get_first_unread_info');
+    assert_unread_info({
+        flavor: 'cannot_compute',
+    });
 }());

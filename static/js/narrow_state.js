@@ -170,6 +170,15 @@ exports.pm_string = function () {
 };
 
 exports.get_first_unread_info = function () {
+    if ((current_filter === undefined) || !current_filter.can_apply_locally()) {
+        // we expect our callers to make sure a "local" narrow
+        // makes sense (and we don't yet support the all-messages view)
+        blueslip.error('unexpected call to get_first_unread_info');
+        return {
+            flavor: 'cannot_compute',
+        };
+    }
+
     var unread_ids = exports._possible_unread_message_ids();
 
     if (unread_ids === undefined) {
@@ -179,11 +188,14 @@ exports.get_first_unread_info = function () {
         };
     }
 
-    if (unread_ids.length === 0) {
+    var msg_id = current_filter.first_valid_id_from(unread_ids);
+
+    if (msg_id === undefined) {
         return {
             flavor: 'not_found',
         };
     }
+
 
     return {
         flavor: 'found',
@@ -207,7 +219,7 @@ exports._possible_unread_message_ids = function () {
     var topic_name;
     var pm_string;
 
-    if (current_filter.is_exactly('stream', 'topic')) {
+    if (current_filter.can_bucket_by('stream', 'topic')) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -216,7 +228,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_topic(stream_id, topic_name);
     }
 
-    if (current_filter.is_exactly('stream')) {
+    if (current_filter.can_bucket_by('stream')) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -224,7 +236,7 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_stream(stream_id);
     }
 
-    if (current_filter.is_exactly('pm-with')) {
+    if (current_filter.can_bucket_by('pm-with')) {
         pm_string = exports.pm_string();
         if (pm_string === undefined) {
             return [];
@@ -232,15 +244,15 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_person(pm_string);
     }
 
-    if (current_filter.is_exactly('is-private')) {
+    if (current_filter.can_bucket_by('is-private')) {
         return unread.get_msg_ids_for_private();
     }
 
-    if (current_filter.is_exactly('is-mentioned')) {
+    if (current_filter.can_bucket_by('is-mentioned')) {
         return unread.get_msg_ids_for_mentions();
     }
 
-    if (current_filter.is_exactly('is-starred')) {
+    if (current_filter.can_bucket_by('is-starred')) {
         return unread.get_msg_ids_for_starred();
     }
 
