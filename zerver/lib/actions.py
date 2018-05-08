@@ -3918,11 +3918,40 @@ def decode_email_address(email: Text) -> Optional[Tuple[Text, Text]]:
     stream_name = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), encoded_stream_name)
     return stream_name, token
 
+SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
+
+def get_web_public_subs(realm: Realm) -> SubHelperT:
+    color_idx = 0
+
+    def get_next_color() -> str:
+        nonlocal color_idx
+        color = STREAM_ASSIGNMENT_COLORS[color_idx]
+        color_idx = (color_idx + 1) % len(STREAM_ASSIGNMENT_COLORS)
+        return color
+
+    subscribed = [
+        {'name': stream.name,
+         'in_home_view': True,
+         'invite_only': False,
+         'color': get_next_color(),
+         'desktop_notifications': True,
+         'audible_notifications': True,
+         'push_notifications': False,
+         'pin_to_top': False,
+         'stream_id': stream.id,
+         'description': stream.description,
+         'is_old_stream': is_old_stream(stream.date_created),
+         'stream_weekly_traffic': get_average_weekly_stream_traffic(stream.id,
+                                                                    stream.date_created,
+                                                                    {}),
+         'email_address': ''}
+        for stream in Stream.objects.filter(realm=realm, is_web_public=True, deactivated=False)]
+    return (subscribed, [], [])
+
 # In general, it's better to avoid using .values() because it makes
 # the code pretty ugly, but in this case, it has significant
 # performance impact for loading / for users with large numbers of
 # subscriptions, so it's worth optimizing.
-SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]
 def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
@@ -4486,6 +4515,11 @@ def get_occupied_streams(realm: Realm) -> QuerySet:
         type=Recipient.STREAM, id__in=subs_filter).values('type_id')
 
     return Stream.objects.filter(id__in=stream_ids, realm=realm, deactivated=False)
+
+def get_web_public_streams(realm: Realm) -> List[Dict[str, Any]]:
+    query = Stream.objects.filter(realm=realm, deactivated=False, is_web_public=True)
+    streams = [(row.to_dict()) for row in query]
+    return streams
 
 def do_get_streams(user_profile: UserProfile, include_public: bool=True,
                    include_subscribed: bool=True, include_all_active: bool=False,
