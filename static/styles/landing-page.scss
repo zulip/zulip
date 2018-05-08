@@ -369,10 +369,6 @@ nav ul li.active::after {
 
     padding-top: 120px;
 
-    transition: opacity 0.3s ease;
-
-    opacity: 0;
-
     z-index: 1;
 }
 
@@ -504,6 +500,7 @@ nav ul li.active::after {
 
 .portico-landing.features-app section.keyboard-shortcuts a.cta {
     font-size: 1em;
+    color: #8cdbce;
 }
 
 .portico-landing.features-app section.keyboard-shortcuts img {
@@ -671,7 +668,7 @@ nav ul li.active::after {
 .portico-landing.features-app .feature-block p {
     margin: 0;
 
-    opacity: 0.6;
+    opacity: 0.8;
 }
 
 /* -- hello page -- */
@@ -1018,7 +1015,7 @@ nav ul li.active::after {
 }
 
 .faqs header {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -1028,8 +1025,9 @@ nav ul li.active::after {
 
 .faqs .faq {
     margin: 50px auto;
-    max-width: 800px;
+    max-width: 700px;
     font-size: 1.3em;
+    line-height: 170%;
 }
 
 /* the last faq in the box shouldn't have an extra 50px of margin. */
@@ -1245,6 +1243,19 @@ nav ul li.active::after {
     padding: 50px 0px 100px 0px;
 
     background-color: #fff;
+}
+
+.portico-landing.hello .features .cta::after {
+    content: "\2192";
+
+    margin-left: 5px;
+    transform: scaleX(2);
+
+    transition: all 0.3s ease;
+}
+
+.portico-landing.hello .features .cta:hover::after {
+    margin-left: 10px;
 }
 
 .portico-landing.hello .features .col-2 {
@@ -1573,7 +1584,7 @@ nav ul li.active::after {
 
 .portico-landing.hello .integrations .integration-icons {
     width: 100%;
-    margin-top: 20px;
+    margin: 20px 0;
     text-align: center;
 }
 
@@ -1826,7 +1837,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main {
-    max-width: 900px;
+    max-width: 800px;
 }
 
 .portico-landing.why-page .hero {
@@ -1870,8 +1881,9 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main p {
-    font-size: 1em;
+    font-size: 1.2em;
     margin: 0px 0px 20px;
+    line-height: 170%;
 }
 
 .portico-landing.why-page .main h3 {
@@ -2371,7 +2383,7 @@ nav ul li.active::after {
 
 .pricing-model .pricing-container .block {
     display: inline-block;
-    margin: 0px 20px;
+    margin: 40px 20px 20px 20px;
 }
 
 .pricing-model .pricing-container .block .plan-title {
@@ -2489,6 +2501,15 @@ nav ul li.active::after {
     font-size: 3.5em;
     font-weight: 600;
     line-height: 0.8;
+}
+
+.pricing-model .pricing-container .text-content .premium-price-box {
+	display: flex;
+}
+
+.pricing-model .pricing-container .text-content .price .price-cents {
+	font-size: .4em;
+	vertical-align: top;
 }
 
 .pricing-model .pricing-container .bottom .details {
@@ -3038,18 +3059,18 @@ nav ul li.active::after {
     }
 
     .portico-landing.hello .open-source .flex {
-        display: block;
+    	display: block;
     }
 
     .portico-landing.hello .open-source img {
-        display: block;
-        width: 300px;
-        margin: 0 auto;
-    }
+		display: block;
+		width: 300px;
+		margin: 0 auto;
+	}
 
-    .portico-landing.hello .open-source .il-block {
-        width: 75%
-    }
+	.portico-landing.hello .open-source .il-block {
+		width: 75%
+	}
 
     .portico-landing.integrations .main,
     .main {
