@@ -20,7 +20,7 @@ from zerver.lib.error_notify import do_report_error
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
-from zerver.lib.notifications import handle_missedmessage_emails, enqueue_welcome_emails
+from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
