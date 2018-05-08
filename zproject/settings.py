@@ -898,7 +898,6 @@ JS_SPECS = {
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
             'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
-            'third/lazyload/lazyload.js',
             'third/spectrum/spectrum.js',
             'third/sockjs/sockjs-0.3.4.js',
             'node_modules/string.prototype.codepointat/codepointat.js',

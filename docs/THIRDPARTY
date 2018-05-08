@@ -149,10 +149,6 @@ Files: static/third/jquery-throttle-debounce/*
 Copyright: 2010 "Cowboy" Ben Alman
 License: Expat or GPL
 
-Files: src/zulip/static/third/lazyload/*
-Copyright: 2011 Ryan Grove
-License: Expat
-
 Files: static/third/marked/*
 Copyright: 2011-2013, Christopher Jeffrey
 License: Expat
