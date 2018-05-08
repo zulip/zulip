@@ -196,6 +196,7 @@ exports.setup_page = function (callback) {
 
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
+                $('#drafts_table .removed-drafts').hide();
             }
         });
     }
@@ -286,6 +287,8 @@ exports.setup_page = function (callback) {
         $('#drafts_table').append(rendered);
         if ($("#drafts_table .draft-row").length > 0) {
             $('#drafts_table .no-drafts').hide();
+        } else {
+            $('#drafts_table .removed-drafts').hide();
         }
 
         if (callback) {
@@ -406,6 +409,7 @@ exports.drafts_handle_events = function (e, event_key) {
             }
             if ($("#drafts_table .draft-row").length === 0) {
                 $('#drafts_table .no-drafts').show();
+                $('#drafts_table .removed-drafts').hide();
             }
         }
     }
