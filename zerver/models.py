@@ -1939,6 +1939,23 @@ class UserHotspot(models.Model):
     class Meta:
         unique_together = ("user", "hotspot")
 
+def check_valid_user_id(realm_id: int, user_id: object,
+                        allow_deactivated: bool=False) -> Optional[str]:
+    if not isinstance(user_id, int):
+        return _('User id is not an integer')
+    try:
+        realm = Realm.objects.get(id=realm_id)
+        user_profile = get_user_profile_by_id_in_realm(user_id, realm)
+        if not allow_deactivated:
+            if not user_profile.is_active:
+                return _('User is deactivated')
+
+        if (user_profile.is_bot):
+            return _('User with id %d is bot') % (user_id)
+        return None
+    except UserProfile.DoesNotExist:
+        return _('Invalid user ID: %d') % (user_id)
+
 class CustomProfileField(models.Model):
     HINT_MAX_LENGTH = 80
 
