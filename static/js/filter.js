@@ -511,6 +511,36 @@ Filter.term_type = function (term) {
     return result;
 };
 
+Filter.sorted_term_types = function (term_types) {
+    var levels = [
+        'stream', 'topic',
+        'pm-with', 'group-pm-with', 'sender',
+        'near', 'id',
+        'is-alerted', 'is-mentioned', 'is-private',
+        'is-starred', 'is-unread',
+        'has-link', 'has-image', 'has-attachment',
+        'search',
+    ];
+
+    function level(term_type) {
+        var i = levels.indexOf(term_type);
+        if (i === -1) {
+            i = 999;
+        }
+        return i;
+    }
+
+    function compare(a, b) {
+        var diff = level(a) - level(b);
+        if (diff !== 0) {
+            return diff;
+        }
+        return util.strcmp(a, b);
+    }
+
+    return _.clone(term_types).sort(compare);
+};
+
 Filter.operator_to_prefix = function (operator, negated) {
     var verb;
 

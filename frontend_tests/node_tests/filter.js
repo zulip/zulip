@@ -763,6 +763,30 @@ function make_sub(name, stream_id) {
     assert_term_type(term('is', 'private'), 'is-private');
     assert_term_type(term('has', 'link'), 'has-link');
     assert_term_type(term('has', 'attachment', true), 'not-has-attachment');
+
+    function assert_term_sort(in_terms, expected) {
+        const sorted_terms = Filter.sorted_term_types(in_terms);
+        assert.deepEqual(sorted_terms, expected);
+    }
+
+    assert_term_sort(
+        ['topic', 'stream', 'sender'],
+        ['stream', 'topic', 'sender']
+    );
+
+    assert_term_sort(
+        ['has-link', 'near', 'is-unread', 'pm-with'],
+        ['pm-with', 'near', 'is-unread', 'has-link']
+    );
+
+    assert_term_sort(
+        ['bogus', 'stream', 'topic'],
+        ['stream', 'topic', 'bogus']
+    );
+    assert_term_sort(
+        ['stream', 'topic', 'stream'],
+        ['stream', 'stream', 'topic']
+    );
 }());
 
 (function test_update_email() {
