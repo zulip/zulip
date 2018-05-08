@@ -1823,7 +1823,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main {
-    max-width: 900px;
+    max-width: 800px;
 }
 
 .portico-landing.why-page .hero {
@@ -1847,7 +1847,6 @@ nav ul li.active::after {
 
 .portico-landing.why-page .hero p {
     width: 70%;
-    max-width: 700px;
     margin: 0 auto;
 
     font-size: 1.3em;
@@ -1867,8 +1866,9 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main p {
-    font-size: 1em;
+    font-size: 1.2em;
     margin: 0px 0px 20px;
+    color: #3b3d42;
 }
 
 .portico-landing.why-page .main h3 {
