@@ -78,7 +78,7 @@ function assert_same_operators(result, terms) {
 
     assert(filter.is_search());
     assert(! filter.can_apply_locally());
-    assert(! filter.is_stream_only());
+    assert(! filter.is_exactly('stream'));
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't
@@ -134,7 +134,7 @@ function assert_same_operators(result, terms) {
     var filter = new Filter(operators);
 
     assert.deepEqual(filter.operands('stream'), ['foo']);
-    assert(filter.is_stream_only());
+    assert(filter.is_exactly('stream'));
 }());
 
 (function test_public_operators() {
@@ -146,7 +146,7 @@ function assert_same_operators(result, terms) {
 
     var filter = new Filter(operators);
     assert_same_operators(filter.public_operators(), operators);
-    assert(!filter.is_stream_only());
+    assert(!filter.is_exactly('stream'));
 
     global.page_params.narrow_stream = 'default';
     operators = [
@@ -674,74 +674,75 @@ function make_sub(name, stream_id) {
         {operator: 'stream', operand: 'My Stream'},
     ];
     var filter = new Filter(terms);
-    assert.equal(filter.is_stream_only(), true);
-    assert.equal(filter.is_stream_topic_only(), false);
-    assert.equal(filter.is_pm_with_only(), false);
+    assert.equal(filter.is_exactly('stream'), true);
+    assert.equal(filter.is_exactly('stream', 'topic'), false);
+    assert.equal(filter.is_exactly('pm-with'), false);
 
     terms = [
-        {operator: 'stream', operand: 'My Stream'},
+        // try a non-orthodox ordering
         {operator: 'topic', operand: 'My Topic'},
+        {operator: 'stream', operand: 'My Stream'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_stream_only(), false);
-    assert.equal(filter.is_stream_topic_only(), true);
-    assert.equal(filter.is_pm_with_only(), false);
+    assert.equal(filter.is_exactly('stream'), false);
+    assert.equal(filter.is_exactly('stream', 'topic'), true);
+    assert.equal(filter.is_exactly('pm-with'), false);
 
     terms = [
         {operator: 'stream', operand: 'My Stream', negated: true},
         {operator: 'topic', operand: 'My Topic'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_stream_only(), false);
-    assert.equal(filter.is_stream_topic_only(), false);
-    assert.equal(filter.is_pm_with_only(), false);
+    assert.equal(filter.is_exactly('stream'), false);
+    assert.equal(filter.is_exactly('stream', 'topic'), false);
+    assert.equal(filter.is_exactly('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_stream_only(), false);
-    assert.equal(filter.is_stream_topic_only(), false);
-    assert.equal(filter.is_pm_with_only(), false);
+    assert.equal(filter.is_exactly('stream'), false);
+    assert.equal(filter.is_exactly('stream', 'topic'), false);
+    assert.equal(filter.is_exactly('pm-with'), false);
 
     terms = [
         {operator: 'pm-with', operand: 'foo@example.com,bar@example.com'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_stream_only(), false);
-    assert.equal(filter.is_stream_topic_only(), false);
-    assert.equal(filter.is_pm_with_only(), true);
-    assert.equal(filter.is_for_only('mentioned'), false);
-    assert.equal(filter.is_for_only('private'), false);
+    assert.equal(filter.is_exactly('stream'), false);
+    assert.equal(filter.is_exactly('stream', 'topic'), false);
+    assert.equal(filter.is_exactly('pm-with'), true);
+    assert.equal(filter.is_exactly('is-mentioned'), false);
+    assert.equal(filter.is_exactly('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'private'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_for_only('mentioned'), false);
-    assert.equal(filter.is_for_only('private'), true);
+    assert.equal(filter.is_exactly('is-mentioned'), false);
+    assert.equal(filter.is_exactly('is-private'), true);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_for_only('mentioned'), true);
-    assert.equal(filter.is_for_only('private'), false);
+    assert.equal(filter.is_exactly('is-mentioned'), true);
+    assert.equal(filter.is_exactly('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
         {operator: 'is', operand: 'starred'},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_for_only('mentioned'), false);
-    assert.equal(filter.is_for_only('private'), false);
+    assert.equal(filter.is_exactly('is-mentioned'), false);
+    assert.equal(filter.is_exactly('is-private'), false);
 
     terms = [
         {operator: 'is', operand: 'mentioned', negated: true},
     ];
     filter = new Filter(terms);
-    assert.equal(filter.is_for_only('mentioned'), false);
-    assert.equal(filter.is_for_only('private'), false);
+    assert.equal(filter.is_exactly('is-mentioned'), false);
+    assert.equal(filter.is_exactly('is-private'), false);
 }());
 
 (function test_term_type() {

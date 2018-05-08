@@ -403,62 +403,16 @@ Filter.prototype = {
         return sorted_terms;
     },
 
-    is_stream_only: function () {
-        if (this._operators.length !== 1) {
-            return false;
-        }
+    is_exactly: function () {
+        // TODO: in ES6 use spread operator
+        //
+        // Examples calls:
+        //     filter.is_exactly('stream', 'topic')
+        //     filter.is_exactly('pm-with')
+        var wanted_term_types = [].slice.call(arguments);
+        var term_types = this.sorted_term_types();
 
-        var term = this._operators[0];
-
-        if (term.negated) {
-            return false;
-        }
-
-        return (term.operator === 'stream');
-    },
-
-    is_stream_topic_only: function () {
-        if (this._operators.length !== 2) {
-            return false;
-        }
-
-        return this.has_operator('stream') && this.has_operator('topic');
-    },
-
-    is_pm_with_only: function () {
-        if (this._operators.length !== 1) {
-            return false;
-        }
-
-        var term = this._operators[0];
-
-        if (term.negated) {
-            return false;
-        }
-
-        return (term.operator === 'pm-with');
-    },
-
-    is_for_only: function (operand) {
-        // Call as:
-        //    filter.is_for_only('mentioned')
-        //    filter.is_for_only('private')
-        //    filter.is_for_only('starred')
-        if (this._operators.length !== 1) {
-            return false;
-        }
-
-        var term = this._operators[0];
-
-        if (term.negated) {
-            return false;
-        }
-
-        if (term.operator !== 'is') {
-            return false;
-        }
-
-        return (term.operand === operand);
+        return _.isEqual(term_types, wanted_term_types);
     },
 
     update_email: function (user_id, new_email) {

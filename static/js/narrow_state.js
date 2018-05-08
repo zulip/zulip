@@ -203,7 +203,7 @@ exports.get_unread_ids = function () {
     var topic_name;
     var pm_string;
 
-    if (current_filter.is_stream_only()) {
+    if (current_filter.is_exactly('stream')) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -211,7 +211,7 @@ exports.get_unread_ids = function () {
         return unread.get_msg_ids_for_stream(stream_id);
     }
 
-    if (current_filter.is_stream_topic_only()) {
+    if (current_filter.is_exactly('stream', 'topic')) {
         stream_id = exports.stream_id();
         if (stream_id === undefined) {
             return [];
@@ -220,7 +220,7 @@ exports.get_unread_ids = function () {
         return unread.get_msg_ids_for_topic(stream_id, topic_name);
     }
 
-    if (current_filter.is_pm_with_only()) {
+    if (current_filter.is_exactly('pm-with')) {
         pm_string = exports.pm_string();
         if (pm_string === undefined) {
             return [];
@@ -228,15 +228,15 @@ exports.get_unread_ids = function () {
         return unread.get_msg_ids_for_person(pm_string);
     }
 
-    if (current_filter.is_for_only('private')) {
+    if (current_filter.is_exactly('is-private')) {
         return unread.get_msg_ids_for_private();
     }
 
-    if (current_filter.is_for_only('mentioned')) {
+    if (current_filter.is_exactly('is-mentioned')) {
         return unread.get_msg_ids_for_mentions();
     }
 
-    if (current_filter.is_for_only('starred')) {
+    if (current_filter.is_exactly('is-starred')) {
         return unread.get_msg_ids_for_starred();
     }
 
