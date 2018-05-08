@@ -170,10 +170,10 @@ exports.pm_string = function () {
 };
 
 exports.get_first_unread_info = function () {
-    var unread_ids = exports.get_unread_ids();
+    var unread_ids = exports._possible_unread_message_ids();
 
     if (unread_ids === undefined) {
-        // get_unread_ids() only works for certain narrows
+        // _possible_unread_message_ids() only works for certain narrows
         return {
             flavor: 'cannot_compute',
         };
@@ -191,10 +191,14 @@ exports.get_first_unread_info = function () {
     };
 };
 
-exports.get_unread_ids = function () {
+exports._possible_unread_message_ids = function () {
     // This function currently only returns valid results for
     // certain types of narrows, mostly left sidebar narrows.
     // For more complicated narrows we may return undefined.
+    //
+    // If we do return a result, it will be a subset of unread
+    // message ids but possibly a superset of unread message ids
+    // that match our filter.
     if (current_filter === undefined) {
         return;
     }
