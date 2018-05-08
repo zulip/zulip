@@ -34,6 +34,13 @@ AddedUsersT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedRecipientsT = Dict[str, int]
 
+# Stores any relations formed during the conversion
+maps = {
+    'recipient_id_to_stream': {},  # Map recipient id to stream id and name
+                                   # Specifically used for rendering message urls in slack threads
+    'user_id_to_user_name': {},  # Map Zulip user id to user's 'full_name'
+}   # type: Dict[str, Dict[Any, Any]]
+
 def rm_tree(path: str) -> None:
     if os.path.exists(path):
         shutil.rmtree(path)
@@ -225,6 +232,8 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
         userprofile_dict = model_to_dict(userprofile)
         # Set realm id separately as the corresponding realm is not yet a Realm model instance
         userprofile_dict['realm'] = realm_id
+
+        maps['user_id_to_user_name'][user_id] = userprofile_dict['full_name']
 
         zerver_userprofile.append(userprofile_dict)
         added_users[slack_user_id] = user_id
@@ -421,6 +430,9 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         added_recipient[stream['name']] = recipient_id
         # TODO add recipients for private message and huddles
 
+        # map for rendering message urls in slack threads
+        maps['recipient_id_to_stream'][recipient_id] = str(stream_id) + '-' + channel["name"]
+
         # construct the subscription object and append it to zerver_subscription
         subscription_id_count = build_subscription(channel['members'], zerver_subscription,
                                                    recipient_id, added_users,
@@ -614,11 +626,14 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     6. id_list, which is a tuple of max ids of messages, usermessages, reactions and attachments
     """
     message_id_count, usermessage_id_count, reaction_id_count, attachment_id_count = id_list
+    message_subject = 'imported from slack'
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
     zerver_attachment = []  # type: List[ZerverFieldsT]
     reaction_list = []  # type: List[ZerverFieldsT]
+
+    thread_timestamp_to_id_map = {}
 
     # For unicode emoji
     with open(NAME_TO_CODEPOINT_PATH) as fp:
@@ -653,12 +668,33 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
         recipient_id = added_recipient[message['channel_name']]
         message_id = message_id_count
+        user_id = added_users[user]  # map slack id to zulip id
 
         # Process message reactions
         if 'reactions' in message.keys():
             reaction_id_count = build_reactions(reaction_list, message['reactions'], added_users,
                                                 message_id, reaction_id_count, name_to_codepoint,
                                                 zerver_realmemoji)
+
+        # Process Slack threads
+        if 'replies' in message.keys():
+            # Only way of recognizing slack thread replies from the slack data
+            # is through the timestamp as slack messages have no ids
+            thread_timestamp_to_id_map[message['thread_ts']] = message_id
+
+        # Process Slack threads
+        if 'parent_user_id' in message.keys():
+            # Add the url to the parent message of the thread
+            realm_uri = settings.EXTERNAL_URI_SCHEME + domain_name
+            stream_name = maps['recipient_id_to_stream'][recipient_id]
+            user_full_name = maps['user_id_to_user_name'][user_id]
+            thread_message_id = thread_timestamp_to_id_map[message['thread_ts']]
+
+            message_url = ('%s/#narrow/stream/%s/subject/%s/near/%s' %
+                           (realm_uri, stream_name, message_subject, thread_message_id))
+
+            content = ("Slack thread: reply to [%s's message](%s)\n" %
+                       (user_full_name, message_url)) + content
 
         # Process different subtypes of slack messages
         if 'subtype' in message.keys():
@@ -707,13 +743,13 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             sending_client=1,
             rendered_content_version=1,  # This is Zulip-specific
             has_image=has_image,
-            subject='imported from slack',  # This is Zulip-specific
+            subject=message_subject,  # This is Zulip-specific
             pub_date=float(message['ts']),
             id=message_id,
             has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
                                             # this is how Slack does it, i.e. less like email
             edit_history=None,
-            sender=added_users[user],  # map slack id to zulip id
+            sender=user_id,
             content=content,
             rendered_content=rendered_content,  # slack doesn't cache this
             recipient=recipient_id,
