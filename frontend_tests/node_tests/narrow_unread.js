@@ -31,6 +31,10 @@ function assert_unread_info(expected) {
     assert.deepEqual(narrow_state.get_first_unread_info(), expected);
 }
 
+function candidate_ids() {
+    return narrow_state._possible_unread_message_ids();
+}
+
 (function test_get_unread_ids() {
     var unread_ids;
     var terms;
@@ -42,14 +46,14 @@ function assert_unread_info(expected) {
     };
     stream_data.add_sub(sub.name, sub);
 
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);
 
     terms = [
         {operator: 'sender', operand: 'me@example.com'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: 'cannot_compute'});
 
@@ -57,14 +61,14 @@ function assert_unread_info(expected) {
         {operator: 'stream', operand: 'bogus'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
     terms = [
         {operator: 'stream', operand: sub.name},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
     assert_unread_info({flavor: 'not_found'});
 
@@ -78,7 +82,7 @@ function assert_unread_info(expected) {
     };
     unread.process_loaded_messages([msg]);
 
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [msg.id]);
     assert_unread_info({
         flavor: 'found',
@@ -90,7 +94,7 @@ function assert_unread_info(expected) {
         {operator: 'topic', operand: 'my topic'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
     terms = [
@@ -98,21 +102,21 @@ function assert_unread_info(expected) {
         {operator: 'topic', operand: 'my topic'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [msg.id]);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [msg.id]);
 
     terms = [
         {operator: 'pm-with', operand: 'alice@example.com'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
     msg = {
@@ -125,14 +129,14 @@ function assert_unread_info(expected) {
     };
     unread.process_loaded_messages([msg]);
 
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [msg.id]);
 
     terms = [
         {operator: 'is', operand: 'private'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [msg.id]);
 
     terms = [
@@ -141,13 +145,13 @@ function assert_unread_info(expected) {
     set_filter(terms);
 
     blueslip.set_test_data('warn', 'Unknown emails: bob@example.com');
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
     terms = [
         {operator: 'is', operand: 'starred'},
     ];
     set_filter(terms);
-    unread_ids = narrow_state.get_unread_ids();
+    unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 }());
