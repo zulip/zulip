@@ -1,3 +1,5 @@
+@import './reuseable_components.scss';
+
 body,
 html {
     width: 100%;
@@ -20,11 +22,7 @@ body {
 body,
 #tab_bar_underpadding {
     background-color: hsl(0, 0%, 100%);
-    -webkit-transition: background-color 200ms linear;
-    -moz-transition: background-color 200ms linear;
-    -o-transition: background-color 200ms linear;
-    -ms-transition: background-color 200ms linear;
-    transition: background-color 200ms linear;
+    @include prefixed-transition(background-color, 200ms, linear);
 }
 
 input,
@@ -44,27 +42,15 @@ a {
 }
 
 .no-select {
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    @include prefixed-user-select(none);
 }
 
 .auto-select {
-    -webkit-touch-callout: auto;
-    -webkit-user-select: auto;
-    -moz-user-select: auto;
-    -ms-user-select: auto;
-    user-select: auto;
+    @include prefixed-user-select(auto);
 }
 
 .text-select {
-    -webkit-touch-callout: text;
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    user-select: text;
+    @include prefixed-user-select(text);
 }
 
 p.n-margin {
@@ -598,10 +584,7 @@ td.pointer {
 
 .new_messages,
 .new_messages_fadeout {
-    -webkit-transition: all 3s ease-in-out;
-    -moz-transition: all 3s ease-in-out;
-    -o-transition: all 3s ease-in-out;
-    transition: all 3s ease-in-out;
+    @include prefixed-transition(all, 3s, ease-in-out);
 }
 
 .include-sender .message_edit_notice {
@@ -627,11 +610,7 @@ td.pointer {
     position: absolute;
     left: 0px;
     top: 16px;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
+    @include prefixed-user-select(none);
 }
 
 .include-sender .message_edit_notice:before {
@@ -657,10 +636,7 @@ td.pointer {
     right: -105px;
     line-height: 20px;
     text-align: right;
-    -webkit-transition: background-color 1.5s ease-in, color 1.5s ease-in;
-    -moz-transition: background-color 1.5s ease-in, color 1.5s ease-in;
-    -o-transition: background-color 1.5s ease-in, color 1.5s ease-in;
-    transition: background-color 1.5s ease-in, color 1.5s ease-in;
+    @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
 }
 
 /* The way this overrides the menus with a background-color and a high
@@ -1081,10 +1057,7 @@ td.pointer {
     opacity: 0;
     z-index: 1;
     height: 100%;
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
-    transition: all 0.3s ease-out;
+    @include prefixed-transition(all, 0.3s, ease-out);
 }
 
 .unread-marker-fill {
@@ -1099,25 +1072,16 @@ td.pointer {
 }
 
 .unread .unread_marker {
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
-    transition: all 0.3s ease-out;
+    @include prefixed-transition(all, 0.3s, ease-out);
     opacity: 1;
 }
 
 .unread_marker.slow_fade {
-    -webkit-transition: all 2s ease-out;
-    -moz-transition: all 2s ease-out;
-    -o-transition: all 2s ease-out;
-    transition: all 2s ease-out;
+    @include prefixed-transition(all, 2s, ease-out);
 }
 
 .unread_marker.fast_fade {
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
-    transition: all 0.3s ease-out;
+    @include prefixed-transition(all, 0.3s, ease-out);
 }
 
 .selected_message .messagebox {
@@ -1805,46 +1769,48 @@ blockquote p {
     z-index: 10;
 }
 
-#navbar-buttons ul.nav .dropdown-toggle,
-#navbar-buttons ul.nav li.active .dropdown-toggle {
-    font-size: 20px;
-    color: inherit;
-    opacity: 0.5;
-    text-shadow: none;
-    padding-left: 0px !important;
-    background-color: inherit;
-    box-shadow: inherit;
-    -webkit-box-shadow: inherit;
-    -moz-box-shadow: inherit;
-    display: block;
-    position: absolute;
-    right: 0px;
-    top: 3px;
-}
+#navbar-buttons ul.nav {
+    .dropdown-toggle,
+    li.active .dropdown-toggle {
+        font-size: 20px;
+        color: inherit;
+        opacity: 0.5;
+        text-shadow: none;
+        padding-left: 0px !important;
+        background-color: inherit;
+        box-shadow: inherit;
+        -webkit-box-shadow: inherit;
+        -moz-box-shadow: inherit;
+        display: block;
+        position: absolute;
+        right: 0px;
+        top: 3px;
+    }
 
-#navbar-buttons ul.nav .dropdown-toggle,
-#navbar-buttons ul.nav li.active .dropdown-toggle:hover {
-    opacity: 1;
-}
+    .dropdown-toggle,
+    li.active .dropdown-toggle:hover {
+        opacity: 1;
+    }
 
-#navbar-buttons ul.nav li.dropdown.open .dropdown-toggle {
-    background: none;
-    opacity: 1;
-    text-shadow: none;
+    li.dropdown.open .dropdown-toggle {
+        background: none;
+        opacity: 1;
+        text-shadow: none;
+    }
 }
 
 #searchbox .input-append {
     position: relative;
     width: 100%;
-}
 
-#searchbox .input-append .icon-vector-search {
-    padding: 0px;
-    font-size: 20px;
-    position: absolute;
-    left: 10px;
-    top: 10px;
-    z-index: 5;
+    .icon-vector-search {
+        padding: 0px;
+        font-size: 20px;
+        position: absolute;
+        left: 10px;
+        top: 10px;
+        z-index: 5;
+    }
 }
 
 nav .column-left {
@@ -2750,16 +2716,16 @@ div.topic_edit_spinner .loading_indicator_spinner {
     white-space: nowrap;
     overflow: hidden;
     transition: all 0.4s ease;
-}
 
-.user_popover_email .tooltip_holder {
-    display: none;
-    position: absolute;
-    left: 50%;
-}
+    .tooltip_holder {
+        display: none;
+        position: absolute;
+        left: 50%;
+    }
 
-.user_popover_email i {
-    cursor: pointer;
+    i {
+        cursor: pointer;
+    }
 }
 
 .email_copied,
@@ -2786,18 +2752,18 @@ div.topic_edit_spinner .loading_indicator_spinner {
     background-color: #4c4c4c;
     color: #fff;
     transition: visibility 0.2s ease-out, opacity 0.2s linear;
-}
 
-.email_tooltip::after {
-    content: "";
-    position: absolute;
-    top: -47%;
-    left: 50%;
-    margin-left: -5px;
-    border-width: 7px;
-    border-style: solid;
-    border-color: transparent;
-    border-bottom: #4c4c4c solid 7px;
+    ::after {
+        content: "";
+        position: absolute;
+        top: -47%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 7px;
+        border-style: solid;
+        border-color: transparent;
+        border-bottom: #4c4c4c solid 7px;
+    }
 }
 
 .user_popover_email:hover .email_tooltip {
