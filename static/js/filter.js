@@ -415,6 +415,22 @@ Filter.prototype = {
         return _.isEqual(term_types, wanted_term_types);
     },
 
+    first_valid_id_from: function (msg_ids) {
+        var predicate = this.predicate();
+
+        var first_id = _.find(msg_ids, function (msg_id) {
+            var message = message_store.get(msg_id);
+
+            if (message === undefined) {
+                return false;
+            }
+
+            return predicate(message);
+        });
+
+        return first_id;
+    },
+
     update_email: function (user_id, new_email) {
         _.each(this._operators, function (term) {
             switch (term.operator) {

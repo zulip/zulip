@@ -5,6 +5,7 @@ zrequire('people');
 zrequire('Handlebars', 'handlebars');
 zrequire('Filter', 'js/filter');
 
+set_global('message_store', {});
 set_global('page_params', {});
 set_global('feature_flags', {});
 
@@ -798,6 +799,32 @@ function make_sub(name, stream_id) {
     const term_types = filter.sorted_term_types();
 
     assert.deepEqual(term_types, ['stream', 'topic', 'sender']);
+}());
+
+(function test_first_valid_id_from() {
+    const terms = [
+        {operator: 'is', operand: 'alerted'},
+    ];
+
+    const filter = new Filter(terms);
+
+    const messages = {
+        5: { id: 5, alerted: true },
+        10: { id: 10 },
+        20: { id: 20, alerted: true },
+        30: { id: 30, type: 'stream' },
+        40: { id: 40, alerted: false },
+    };
+
+    const msg_ids = [10, 20, 30, 40];
+
+    message_store.get = () => {};
+
+    assert.equal(filter.first_valid_id_from(msg_ids), undefined);
+
+    message_store.get = (msg_id) => messages[msg_id];
+
+    assert.equal(filter.first_valid_id_from(msg_ids), 20);
 }());
 
 (function test_update_email() {
