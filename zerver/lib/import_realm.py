@@ -4,6 +4,7 @@ import os
 import ujson
 import shutil
 import subprocess
+import re
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -26,6 +27,10 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, \
     Attachment, get_system_bot, email_to_username
+
+
+MESSAGE_URL_REGEX = ("(%s[a-z0-9-:.]+)/(#narrow/stream/([^/]+)/subject/[^/]+/near/([0-9]+))" %
+                     settings.EXTERNAL_URI_SCHEME)
 
 # Code from here is the realm import code path
 
@@ -93,6 +98,40 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                     message['content'] = message['content'].replace(key, value)
                     if message['rendered_content']:
                         message['rendered_content'] = message['rendered_content'].replace(key, value)
+
+def fix_message_urls(data: TableData, message_table: TableName,
+                     updated_realm_uri: str) -> None:
+    """
+    If a message contains a link to another message, this function replaces
+    the older link with the new one with the updated message id, realm uri and stream name
+    """
+    for message in data[message_table]:
+        # For stream messages
+        for match in re.finditer(MESSAGE_URL_REGEX, message['content']):
+            message_url = match.group()
+            realm_uri = match.group(1)
+            rendered_message_url = match.group(2)
+            stream_name = match.group(3)
+            old_message_id = int(match.group(4))
+
+            if old_message_id in id_maps['message']:
+                new_message_id = id_maps['message'][old_message_id]
+
+                # strip the id of the stream from the stream name
+                stream_name_strip = '-'.join(stream_name.split('-')[1:])
+
+                # Update the message url with the realm uri, message_id and stream name
+                updated_message_url = message_url.replace(str(old_message_id), str(new_message_id))
+                updated_message_url = updated_message_url.replace(stream_name, stream_name_strip)
+                updated_message_url = updated_message_url.replace(realm_uri, updated_realm_uri)
+                message['content'] = message['content'].replace(message_url, updated_message_url)
+
+                if message['rendered_content']:
+                    updated_rendered_message_url = updated_message_url.replace(updated_realm_uri, '')
+                    message['rendered_content'] = message['rendered_content'].replace(
+                        message_url, updated_message_url)
+                    message['rendered_content'] = message['rendered_content'].replace(
+                        rendered_message_url, updated_rendered_message_url)
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -441,6 +480,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         notifications_stream_id = None
     realm.notifications_stream_id = None
     realm.save()
+    realm_uri = realm.uri
     bulk_import_client(data, Client, 'zerver_client')
 
     # Email tokens will automatically be randomly generated when the
@@ -553,7 +593,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         import_uploads(os.path.join(import_dir, "emoji"), processing_emojis=True)
 
     # Import zerver_message and zerver_usermessage
-    import_message_data(import_dir)
+    import_message_data(import_dir, realm_uri)
 
     re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
     re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
@@ -608,7 +648,7 @@ def update_message_foreign_keys(import_dir: Path) -> None:
         update_model_ids(Message, data, 'zerver_message', 'message')
         dump_file_id += 1
 
-def import_message_data(import_dir: Path) -> None:
+def import_message_data(import_dir: Path, realm_uri: str) -> None:
     dump_file_id = 1
     while True:
         message_filename = os.path.join(import_dir, "messages-%06d.json" % (dump_file_id,))
@@ -627,6 +667,7 @@ def import_message_data(import_dir: Path) -> None:
         fix_upload_links(data, 'zerver_message')
 
         re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
+        fix_message_urls(data, 'zerver_message', realm_uri)
         bulk_import_model(data, Message, 'zerver_message')
 
         # Due to the structure of these message chunks, we're
