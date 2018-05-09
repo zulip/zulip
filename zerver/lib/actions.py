@@ -98,7 +98,6 @@ from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
 from confirmation import settings as confirmation_settings
-from six import unichr
 
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.create_user import random_api_key
@@ -3915,7 +3914,7 @@ def decode_email_address(email: Text) -> Optional[Tuple[Text, Text]]:
         encoded_stream_name, token = msg_string.split('.')
     else:
         encoded_stream_name, token = msg_string.split('+')
-    stream_name = re.sub("%\d{4}", lambda x: unichr(int(x.group(0)[1:])), encoded_stream_name)
+    stream_name = re.sub("%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
     return stream_name, token
 
 SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]

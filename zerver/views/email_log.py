@@ -12,7 +12,7 @@ from zproject.email_backends import (
     get_forward_address,
     set_forward_address,
 )
-from six.moves import urllib
+import urllib
 from confirmation.models import Confirmation, confirmation_url
 
 import os
