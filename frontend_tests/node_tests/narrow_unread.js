@@ -38,12 +38,30 @@ function candidate_ids() {
 (function test_get_unread_ids() {
     var unread_ids;
     var terms;
-    var msg;
 
     const sub = {
         name: 'My Stream',
         stream_id: 55,
     };
+
+    const stream_msg = {
+        id: 101,
+        type: 'stream',
+        stream_id: sub.stream_id,
+        subject: 'my topic',
+        unread: true,
+        mentioned: true,
+    };
+
+    const private_msg = {
+        id: 102,
+        type: 'private',
+        unread: true,
+        display_recipient: [
+            {user_id: alice.user_id},
+        ],
+    };
+
     stream_data.add_sub(sub.name, sub);
 
     unread_ids = candidate_ids();
@@ -72,21 +90,13 @@ function candidate_ids() {
     assert.deepEqual(unread_ids, []);
     assert_unread_info({flavor: 'not_found'});
 
-    msg = {
-        id: 101,
-        type: 'stream',
-        stream_id: sub.stream_id,
-        subject: 'my topic',
-        unread: true,
-        mentioned: true,
-    };
-    unread.process_loaded_messages([msg]);
+    unread.process_loaded_messages([stream_msg]);
 
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, [msg.id]);
+    assert.deepEqual(unread_ids, [stream_msg.id]);
     assert_unread_info({
         flavor: 'found',
-        msg_id: msg.id,
+        msg_id: stream_msg.id,
     });
 
     terms = [
@@ -103,14 +113,14 @@ function candidate_ids() {
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, [msg.id]);
+    assert.deepEqual(unread_ids, [stream_msg.id]);
 
     terms = [
         {operator: 'is', operand: 'mentioned'},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, [msg.id]);
+    assert.deepEqual(unread_ids, [stream_msg.id]);
 
     terms = [
         {operator: 'pm-with', operand: 'alice@example.com'},
@@ -119,25 +129,17 @@ function candidate_ids() {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, []);
 
-    msg = {
-        id: 102,
-        type: 'private',
-        unread: true,
-        display_recipient: [
-            {user_id: alice.user_id},
-        ],
-    };
-    unread.process_loaded_messages([msg]);
+    unread.process_loaded_messages([private_msg]);
 
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, [msg.id]);
+    assert.deepEqual(unread_ids, [private_msg.id]);
 
     terms = [
         {operator: 'is', operand: 'private'},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
-    assert.deepEqual(unread_ids, [msg.id]);
+    assert.deepEqual(unread_ids, [private_msg.id]);
 
     terms = [
         {operator: 'pm-with', operand: 'bob@example.com'},
