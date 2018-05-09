@@ -82,6 +82,55 @@ exports.typeahead_source = function (pill_widget) {
     return items;
 };
 
+exports.append_user = function (user, pills) {
+    if (user) {
+        exports.append_person({
+            pill_widget: pills,
+            person: user,
+        });
+    } else {
+        blueslip.warn('Undefined user in function append_user');
+    }
+};
+
+exports.create_pills = function (pill_container) {
+    var pills = input_pill.create({
+        container: pill_container,
+        create_item_from_text: exports.create_item_from_email,
+        get_text_from_item: exports.get_email_from_item,
+    });
+    return pills;
+};
+
+exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
+    input.typeahead({
+        items: 5,
+        fixed: true,
+        dropup: true,
+        source: function () {
+            return exports.typeahead_source(pills);
+        },
+        highlighter: function (item) {
+            return typeahead_helper.render_person(item);
+        },
+        matcher: function (item) {
+            var query = this.query.toLowerCase();
+            return (item.email.toLowerCase().indexOf(query) !== -1
+                    || item.full_name.toLowerCase().indexOf(query) !== -1);
+        },
+        sorter: function (matches) {
+            return typeahead_helper.sort_recipientbox_typeahead(
+                this.query, matches, "");
+        },
+        updater: function (user) {
+            exports.append_user(user, pills);
+            input.focus();
+            update_func();
+        },
+        stopAdvance: true,
+    });
+};
+
 return exports;
 }());
 

@@ -38,32 +38,16 @@ exports.populate_user_groups = function () {
             },
         }));
         var pill_container = $('.pill-container[data-group-pills="' + data.name + '"]');
-        var pills = input_pill.create({
-            container: pill_container,
-            create_item_from_text: user_pill.create_item_from_email,
-            get_text_from_item: user_pill.get_email_from_item,
-        });
+        var pills = user_pill.create_pills(pill_container);
 
         function get_pill_user_ids() {
             return user_pill.get_user_ids(pills);
         }
 
-        function append_user(user) {
-            user_pill.append_person({
-                pill_widget: pills,
-                person: user,
-            });
-        }
-
         var userg = $('div.user-group[id="' + data.id + '"]');
         data.members.keys().forEach(function (user_id) {
             var user = people.get_person_from_user_id(user_id);
-
-            if (user) {
-                append_user(user);
-            } else {
-                blueslip.warn('Unknown user ID ' + user_id + ' in members of user group ' + data.name);
-            }
+            user_pill.append_user(user, pills);
         });
 
         function update_membership(group_id) {
@@ -229,37 +213,9 @@ exports.populate_user_groups = function () {
         });
 
         var input = pill_container.children('.input');
-        (function set_up_typeahead() {
-            if (!exports.can_edit(data.id)) {
-                return;
-            }
-            input.typeahead({
-                items: 5,
-                fixed: true,
-                dropup: true,
-                source: function () {
-                    return user_pill.typeahead_source(pills);
-                },
-                highlighter: function (item) {
-                    return typeahead_helper.render_person(item);
-                },
-                matcher: function (item) {
-                    var query = this.query.toLowerCase();
-                    return (item.email.toLowerCase().indexOf(query) !== -1
-                            || item.full_name.toLowerCase().indexOf(query) !== -1);
-                },
-                sorter: function (matches) {
-                    return typeahead_helper.sort_recipientbox_typeahead(
-                        this.query, matches, "");
-                },
-                updater: function (user) {
-                    append_user(user);
-                    input.focus();
-                    update_cancel_button();
-                },
-                stopAdvance: true,
-            });
-        }());
+        if (exports.can_edit(data.id)) {
+            user_pill.set_up_typeahead_on_pills(input, pills, update_cancel_button);
+        }
 
         (function pill_remove() {
             if (!exports.can_edit(data.id)) {

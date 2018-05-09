@@ -118,7 +118,7 @@ run_test('populate_user_groups', () => {
             return noop;
         }
         assert.equal(user_id, 4);
-        blueslip.set_test_data('warn', 'Unknown user ID 4 in members of user group Mobile');
+        blueslip.set_test_data('warn', 'Undefined user in function append_user');
         get_person_from_user_id_called = true;
     };
 
