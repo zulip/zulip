@@ -1306,6 +1306,218 @@ nav ul li.active::after {
     display: inline-block;
 }
 
+.portico-landing.hello .tour {
+    padding: 80px 0;
+    background: #e9ecf1;
+}
+
+.portico-landing.hello .tour h1 {
+    text-align: center;
+}
+
+.portico-landing.hello .tour .tour-inner {
+    width: 1200px;
+    max-width: 100%;
+    margin: 20px auto;
+}
+
+.portico-landing.hello .tour .tour-inner .carousel-inner .item-inner {
+    width: 80%;
+    height: 440px;
+    margin: 20px auto;
+    padding: 30px 20px;
+    background: #f6f7f9;
+    border-radius: 12px;
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.02);
+}
+
+.tour .tour-inner .carousel-inner .tour-item-header {
+    text-align: center;
+    margin: 0 auto 30px;
+    max-width: 600px;
+}
+
+.tour .tour-inner .carousel-inner .tour-item-header-top-push {
+    margin-top: 40px;
+}
+
+.tour .tour-inner .carousel-inner .other-resources {
+    text-align: left;
+    margin: 30px auto;
+    max-width: 300px;
+}
+
+.tour .tour-inner .carousel-inner .other-resources h3 {
+    text-align: center;
+}
+
+.tour .tour-inner .carousel-inner .other-resources li {
+    margin: 7px 0;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison {
+	 display: flex;
+	 flex-wrap: wrap;
+	 text-align: center;
+	 width: 700px;
+	 max-width: 100%;
+	 margin: 0 auto;
+    position: relative;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-1 {
+    margin-top: 60px;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 {
+    width: 750px;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison .comparison-zulip,
+.tour .tour-inner .carousel-inner .zulip-slack-comparison .comparison-slack {
+    width: 50%;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-zulip {
+    width: 70%;
+    min-width: 90px;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-slack {
+    width: 30%;
+    min-width: 90px;
+}
+
+.tour .tour-inner .carousel-inner img {
+    border: 1px solid #f2f3f4;
+    display: block;
+    margin: 0 auto;
+}
+
+.tour .tour-inner .carousel-inner .mobile-show {
+    display: none;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-slack img {
+    margin: 0;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison img.zulip-unreads-arrows {
+    border: none;
+    height: 330px;
+    width: 379px;
+}
+
+.tour .tour-inner .carousel-inner img.slack-overwhelming {
+    border: none;
+    width: 600px;
+    position: relative;
+    left: 80px;
+    top: 20px;
+}
+
+.tour .tour-inner .carousel-inner img.zulip-easy {
+    border: none;
+    width: 550px;
+    position: relative;
+    left: 45px;
+}
+
+.tour .tour-inner .carousel-inner img.zulip-topic {
+    margin-top: -10px;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-slack img.slack-unreads {
+    width: 250px;
+    margin: 15px 0 0 -26px;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison .caption {
+    position: absolute;
+    bottom: -30px;
+    width: 50%;
+    text-align: center;
+}
+
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-2-caption-zulip {
+    width: 50%
+}
+.tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-2-caption-slack {
+    width: 25%
+}
+
+.tour .tour-inner .carousel-inner button.call-to-action {
+    display: block;
+    margin: 50px auto;
+    padding: 11px 25px 11px 25px;
+
+    font-size: 1.2rem;
+    font-weight: 400;
+    color: white;
+
+    border: 1px solid hsl(220, 15%, 66%);
+    background: #61b1b8;
+    background: linear-gradient(145deg, rgb(76, 181, 205), rgb(37, 177, 151));
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.tour .tour-inner .carousel-inner button.call-to-action:hover {
+    border: 1px solid hsl(220, 15%, 55%);
+    background: rgb(37, 177, 151);
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+.tour .carousel-control {
+    background: 0;
+    border: 0;
+    color: #414e68;
+}
+
+.carousel-indicators {
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    padding-left: 0;
+    list-style: none;
+}
+
+.carousel-indicators li {
+    position: relative;
+    flex: 0 1 auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 10px;
+    margin-right: 10px;
+    margin-left: 10px;
+    text-indent: -999px;
+    cursor: pointer;
+    background-color: #9fa5b3;
+}
+
+.carousel-indicators li::before {
+	 position: absolute;
+	 top: -10px;
+	 left: 0;
+ 	 display: inline-block;
+	 width: 100%;
+	 height: 10px;
+	 content: "";
+}
+
+.carousel-indicators li::after {
+    position: absolute;
+    bottom: -10px;
+    left: 0;
+    display: inline-block;
+    width: 100%;
+    height: 10px;
+    content: "";
+}
+
+.carousel-indicators li.active {
+    background-color: #414e68;
+}
+
 .portico-landing.hello .testimonials {
     color: #fff;
     background-color: hsl(169, 35%, 35%);
@@ -2892,6 +3104,13 @@ nav ul li.active::after {
     .portico-landing.hello .testimonials .company-box .company {
         width: calc(25% - 44px);
     }
+
+    .tour .tour-inner .carousel-inner img.slack-overwhelming,
+    .tour .tour-inner .carousel-inner img.zulip-easy {
+		 width: 80%;
+		 left: 0;
+		 top: 20px;
+	}
 }
 
 @media (max-width: 906px) {
@@ -3147,6 +3366,16 @@ nav ul li.active::after {
     .portico-landing.features-app section {
         padding: 0px 20px;
     }
+
+    .tour .tour-inner .carousel-inner .zulip-slack-comparison img.zulip-unreads-arrows {
+        width: 250px;
+        height: 217px;
+    }
+
+    .tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-slack img.slack-unreads {
+        margin-left: 0;
+    }
+
 }
 
 @media (max-width: 686px) {
@@ -3229,6 +3458,10 @@ nav ul li.active::after {
 
     .portico-landing.hello .hero .waves {
         height: 450px;
+    }
+
+    .portico-landing.hello .tour .tour-inner .carousel-inner .item-inner {
+        width: 70%;
     }
 
     nav ul {
@@ -3396,6 +3629,14 @@ nav ul li.active::after {
         width: -o-calc(100% - 80px);
         width: calc(100% - 80px);
     }
+
+    .tour .carousel-control.right {
+        right: 5px;
+    }
+
+    .tour .carousel-control.left {
+        left: 5px;
+    }
 }
 
 @media (max-width: 450px) {
@@ -3451,6 +3692,41 @@ nav ul li.active::after {
         margin: 0;
     }
 
+    .portico-landing.hello .tour .tour-inner .carousel-inner .item-inner {
+        height: 380px;
+    }
+
+    .tour .tour-inner .carousel-inner .zulip-slack-comparison img {
+        width: 120px;
+    }
+
+    .tour .tour-inner .carousel-inner .tour-item-header-top-push {
+        margin-top: 20px;
+    }
+
+    .tour .tour-inner .carousel-inner button.call-to-action {
+        margin: 20px auto;
+    }
+
+    .tour .tour-inner .carousel-inner .zulip-slack-comparison-2 .comparison-zulip {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+
+    .tour .tour-inner .carousel-inner .tour-explanation {
+        text-align: center;
+        font-size: 80%;
+        opacity: 0.8;
+    }
+
+    .tour .tour-inner .carousel-inner .mobile-hide {
+        display: none;
+    }
+
+    .tour .tour-inner .carousel-inner .mobile-show {
+        display: block;
+    }
+
     .main .padded-content {
         padding: 20px;
     }
@@ -3473,6 +3749,7 @@ nav ul li.active::after {
     .gradients .gradient.sunburst {
         background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
     }
+
 }
 
 @media (max-width: 375px) {
