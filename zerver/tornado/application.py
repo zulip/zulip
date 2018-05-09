@@ -9,7 +9,7 @@ from zerver.lib.queue import get_queue_client
 from zerver.tornado.handlers import AsyncDjangoHandler
 from zerver.tornado.socket import get_sockjs_router
 
-def setup_tornado_rabbitmq() -> None:
+def setup_tornado_rabbitmq() -> None:  # nocoverage
     # When tornado is shut down, disconnect cleanly from rabbitmq
     if settings.USING_RABBITMQ:
         queue_client = get_queue_client()
