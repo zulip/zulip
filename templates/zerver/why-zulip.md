@@ -69,9 +69,3 @@ conversations don’t require coordinating busy schedules, or hour long
 commitments from folks that just need a 5 minute update. And unlike email, a
 lively discussion of 300 Zulip messages is just as easy to digest and
 respond to as an in-person conversation.
-
-## Read more about how we’ve made Zulip work for you
-
-* [Zulip for companies](/for/companies)
-* [Zulip for open source projects](/for/open-source)
-* [Zulip for working groups and part-time communities](/for/working-groups-and-communities)
