@@ -1,7 +1,7 @@
 import logging
 
 from typing import List
-from six.moves import configparser
+import configparser
 
 import smtplib
 from email.mime.multipart import MIMEMultipart
