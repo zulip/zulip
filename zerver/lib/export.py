@@ -226,7 +226,7 @@ class Config:
             self.parent = None
 
         if virtual_parent is not None and normal_parent is not None:
-            raise ValueError('''
+            raise AssertionError('''
                 If you specify a normal_parent, please
                 do not create a virtual_parent.
                 ''')
@@ -236,18 +236,18 @@ class Config:
         elif virtual_parent is not None:
             virtual_parent.children.append(self)
         elif is_seeded is None:
-            raise ValueError('''
+            raise AssertionError('''
                 You must specify a parent if you are
                 not using is_seeded.
                 ''')
 
         if self.id_source is not None:
             if self.virtual_parent is None:
-                raise ValueError('''
+                raise AssertionError('''
                     You must specify a virtual_parent if you are
                     using id_source.''')
             if self.id_source[0] != self.virtual_parent.table:
-                raise ValueError('''
+                raise AssertionError('''
                     Configuration error.  To populate %s, you
                     want data from %s, but that differs from
                     the table name of your virtual parent (%s),
@@ -273,7 +273,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         exported_tables = [table]
     else:
         if config.custom_tables is None:
-            raise ValueError('''
+            raise AssertionError('''
                 You must specify config.custom_tables if you
                 are not specifying config.table''')
         exported_tables = config.custom_tables
@@ -294,7 +294,7 @@ def export_from_config(response: TableData, config: Config, seed_object: Optiona
         if config.custom_tables:
             for t in config.custom_tables:
                 if t not in response:
-                    raise Exception('Custom fetch failed to populate %s' % (t,))
+                    raise AssertionError('Custom fetch failed to populate %s' % (t,))
 
     elif config.concat_and_destroy:
         # When we concat_and_destroy, we are working with
@@ -877,16 +877,16 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         # This can happen if an email address has moved realms
         if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
             if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-                raise Exception("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+                raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
             # Email gateway bot sends messages, potentially including attachments, cross-realm.
             print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
         elif processing_avatars:
             if 'user_profile_id' not in key.metadata:
-                raise Exception("Missing user_profile_id in key metadata: %s" % (key.metadata,))
+                raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
             if int(key.metadata['user_profile_id']) not in user_ids:
-                raise Exception("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
+                raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
         elif 'realm_id' not in key.metadata:
-            raise Exception("Missing realm_id in key metadata: %s" % (key.metadata,))
+            raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
 
         record = dict(s3_path=key.name, bucket=bucket_name,
                       size=key.size, last_modified=key.last_modified,
@@ -906,7 +906,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         else:
             fields = key.name.split('/')
             if len(fields) != 3:
-                raise Exception("Suspicious key %s" % (key.name))
+                raise AssertionError("Suspicious key with invalid format %s" % (key.name))
             dirname = os.path.join(output_dir, fields[1])
             filename = os.path.join(dirname, fields[2])
             record['path'] = os.path.join(fields[1], fields[2])
