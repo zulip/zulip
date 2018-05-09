@@ -93,7 +93,6 @@ not_yet_fully_covered = {
     'zerver/lib/unminify.py',
     'zerver/lib/utils.py',
     # Low priority for coverage
-    'zerver/lib/bulk_create.py',
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
     'zerver/lib/statistics.py',
