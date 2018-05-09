@@ -41,6 +41,7 @@ IGNORED_PHRASES = [
     r'Slack',
     r"SSO",
     r'Terms of Service',
+    r'Tuesday',
     r"URL",
     r"Ubuntu",
     r"Updown",
