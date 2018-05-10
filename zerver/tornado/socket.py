@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Mapping, Optional, Text, Union
+from typing import Any, Dict, Mapping, Optional, Union
 
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
@@ -32,7 +32,7 @@ from zerver.tornado.exceptions import BadEventQueueIdError
 
 logger = logging.getLogger('zulip.socket')
 
-def get_user_profile(session_id: Optional[Text]) -> Optional[UserProfile]:
+def get_user_profile(session_id: Optional[str]) -> Optional[UserProfile]:
     if session_id is None:
         return None
 
@@ -66,7 +66,7 @@ def deregister_connection(conn: 'SocketConnection') -> None:
 
 redis_client = get_redis_client()
 
-def req_redis_key(req_id: Text) -> Text:
+def req_redis_key(req_id: str) -> str:
     return 'socket_req_status:%s' % (req_id,)
 
 class CloseErrorInfo:
