@@ -3,7 +3,7 @@ from django.utils.translation import ugettext as _
 
 from zerver.models import UserProfile, UserHotspot
 
-from typing import List, Text, Dict
+from typing import List, Dict
 
 ALL_HOTSPOTS = {
     'intro_reply': {
@@ -26,7 +26,7 @@ ALL_HOTSPOTS = {
         'description': _('Click here to start a new conversation. Pick a topic '
                          '(2-3 words is best), and give it a go!'),
     },
-}  # type: Dict[str, Dict[str, Text]]
+}  # type: Dict[str, Dict[str, str]]
 
 def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     # For manual testing, it can be convenient to set

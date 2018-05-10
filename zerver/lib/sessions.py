@@ -6,13 +6,13 @@ from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.models import Session
 from django.utils.timezone import now as timezone_now
 from importlib import import_module
-from typing import List, Mapping, Optional, Text
+from typing import List, Mapping, Optional
 
 from zerver.models import Realm, UserProfile, get_user_profile_by_id
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
-def get_session_dict_user(session_dict: Mapping[Text, int]) -> Optional[int]:
+def get_session_dict_user(session_dict: Mapping[str, int]) -> Optional[int]:
     # Compare django.contrib.auth._get_user_session_key
     try:
         return get_user_model()._meta.pk.to_python(session_dict[SESSION_KEY])

@@ -3,17 +3,17 @@ import re
 import os
 import sourcemap
 
-from typing import Dict, List, Text
+from typing import Dict, List
 
 
 class SourceMap:
     '''Map (line, column) pairs from generated to source file.'''
 
-    def __init__(self, sourcemap_dirs: List[Text]) -> None:
+    def __init__(self, sourcemap_dirs: List[str]) -> None:
         self._dirs = sourcemap_dirs
-        self._indices = {}  # type: Dict[Text, sourcemap.SourceMapDecoder]
+        self._indices = {}  # type: Dict[str, sourcemap.SourceMapDecoder]
 
-    def _index_for(self, minified_src: Text) -> sourcemap.SourceMapDecoder:
+    def _index_for(self, minified_src: str) -> sourcemap.SourceMapDecoder:
         '''Return the source map index for minified_src, loading it if not
            already loaded.'''
         if minified_src not in self._indices:
@@ -26,8 +26,8 @@ class SourceMap:
 
         return self._indices[minified_src]
 
-    def annotate_stacktrace(self, stacktrace: Text) -> Text:
-        out = ''  # type: Text
+    def annotate_stacktrace(self, stacktrace: str) -> str:
+        out = ''  # type: str
         for ln in stacktrace.splitlines():
             out += ln + '\n'
             match = re.search(r'/static/(?:webpack-bundles|min)/(.+)(\.[\.0-9a-f]+)\.js:(\d+):(\d+)', ln)

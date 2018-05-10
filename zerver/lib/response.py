@@ -2,13 +2,13 @@
 from django.http import HttpResponse, HttpResponseNotAllowed
 import ujson
 
-from typing import Optional, Any, Dict, List, Text
+from typing import Optional, Any, Dict, List
 from zerver.lib.exceptions import JsonableError
 
 class HttpResponseUnauthorized(HttpResponse):
     status_code = 401
 
-    def __init__(self, realm: Text, www_authenticate: Optional[Text]=None) -> None:
+    def __init__(self, realm: str, www_authenticate: Optional[str]=None) -> None:
         HttpResponse.__init__(self)
         if www_authenticate is None:
             self["WWW-Authenticate"] = 'Basic realm="%s"' % (realm,)
@@ -17,21 +17,21 @@ class HttpResponseUnauthorized(HttpResponse):
         else:
             raise AssertionError("Invalid www_authenticate value!")
 
-def json_unauthorized(message: Text, www_authenticate: Optional[Text]=None) -> HttpResponse:
+def json_unauthorized(message: str, www_authenticate: Optional[str]=None) -> HttpResponse:
     resp = HttpResponseUnauthorized("zulip", www_authenticate=www_authenticate)
     resp.content = (ujson.dumps({"result": "error",
                                  "msg": message}) + "\n").encode()
     return resp
 
-def json_method_not_allowed(methods: List[Text]) -> HttpResponseNotAllowed:
+def json_method_not_allowed(methods: List[str]) -> HttpResponseNotAllowed:
     resp = HttpResponseNotAllowed(methods)
     resp.content = ujson.dumps({"result": "error",
                                 "msg": "Method Not Allowed",
                                 "allowed_methods": methods}).encode()
     return resp
 
-def json_response(res_type: Text="success",
-                  msg: Text="",
+def json_response(res_type: str="success",
+                  msg: str="",
                   data: Optional[Dict[str, Any]]=None,
                   status: int=200) -> HttpResponse:
     content = {"result": res_type, "msg": msg}
@@ -56,5 +56,5 @@ def json_response_from_error(exception: JsonableError) -> HttpResponse:
                          data=exception.data,
                          status=exception.http_status_code)
 
-def json_error(msg: Text, data: Optional[Dict[str, Any]]=None, status: int=400) -> HttpResponse:
+def json_error(msg: str, data: Optional[Dict[str, Any]]=None, status: int=400) -> HttpResponse:
     return json_response(res_type="error", msg=msg, data=data, status=status)

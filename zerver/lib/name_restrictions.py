@@ -1,7 +1,6 @@
-from typing import Text
 from disposable_email_domains import blacklist
 
-def is_reserved_subdomain(subdomain: Text) -> bool:
+def is_reserved_subdomain(subdomain: str) -> bool:
     if subdomain in ZULIP_RESERVED_SUBDOMAINS:
         return True
     if subdomain[-1] == 's' and subdomain[:-1] in ZULIP_RESERVED_SUBDOMAINS:
@@ -12,7 +11,7 @@ def is_reserved_subdomain(subdomain: Text) -> bool:
         return True
     return False
 
-def is_disposable_domain(domain: Text) -> bool:
+def is_disposable_domain(domain: str) -> bool:
     return domain.lower() in DISPOSABLE_DOMAINS
 
 ZULIP_RESERVED_SUBDOMAINS = frozenset([

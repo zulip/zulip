@@ -7,7 +7,7 @@ from django.conf import settings
 from django.core.mail import mail_admins
 from django.http import HttpResponse
 from django.utils.translation import ugettext as _
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, Optional
 
 from zerver.models import get_system_bot
 from zerver.lib.actions import internal_send_message
@@ -136,7 +136,7 @@ def email_server_error(report: Dict[str, Any]) -> None:
 
     mail_admins(format_subject(subject), message, fail_silently=True)
 
-def do_report_error(deployment_name: Text, type: Text, report: Dict[str, Any]) -> HttpResponse:
+def do_report_error(deployment_name: str, type: str, report: Dict[str, Any]) -> HttpResponse:
     report['deployment'] = deployment_name
     if type == 'browser':
         notify_browser_error(report)

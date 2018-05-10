@@ -1,10 +1,10 @@
 
-from typing import Text, List
+from typing import List
 
 import pytz
 
-def get_all_timezones() -> List[Text]:
+def get_all_timezones() -> List[str]:
     return sorted(pytz.all_timezones)
 
-def get_timezone(tz: Text) -> pytz.datetime.tzinfo:
+def get_timezone(tz: str) -> pytz.datetime.tzinfo:
     return pytz.timezone(tz)

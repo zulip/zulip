@@ -2,7 +2,7 @@
 import time
 import logging
 
-from typing import Callable, List, TypeVar, Text
+from typing import Callable, List, TypeVar
 from psycopg2.extensions import cursor
 CursorObj = TypeVar('CursorObj', bound=cursor)
 
@@ -20,7 +20,7 @@ migration runs.
 logger = logging.getLogger('zulip.fix_unreads')
 logger.setLevel(logging.WARNING)
 
-def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Callable[[int, Text], bool]:
+def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Callable[[int, str], bool]:
     '''
     This function is similar to the function of the same name
     in zerver/lib/topic_mutes.py, but it works without the ORM,
@@ -43,7 +43,7 @@ def build_topic_mute_checker(cursor: CursorObj, user_profile: UserProfile) -> Ca
         for (recipient_id, topic_name) in rows
     }
 
-    def is_muted(recipient_id: int, topic: Text) -> bool:
+    def is_muted(recipient_id: int, topic: str) -> bool:
         return (recipient_id, topic.lower()) in tups
 
     return is_muted
