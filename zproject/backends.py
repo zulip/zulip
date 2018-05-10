@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional, Text
+from typing import Any, Dict, List, Set, Tuple, Optional
 
 from apiclient.sample_tools import client as googleapiclient
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -22,7 +22,7 @@ from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     remote_user_to_email, email_to_username, get_realm, get_user
 
-def pad_method_dict(method_dict: Dict[Text, bool]) -> Dict[Text, bool]:
+def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
     configured on this server"""
@@ -31,7 +31,7 @@ def pad_method_dict(method_dict: Dict[Text, bool]) -> Dict[Text, bool]:
             method_dict[key] = False
     return method_dict
 
-def auth_enabled_helper(backends_to_check: List[Text], realm: Optional[Realm]) -> bool:
+def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) -> bool:
     if realm is not None:
         enabled_method_dict = realm.authentication_methods_dict()
         pad_method_dict(enabled_method_dict)
@@ -113,12 +113,12 @@ class ZulipAuthMixin:
             return None
 
 class SocialAuthMixin(ZulipAuthMixin):
-    auth_backend_name = None  # type: Text
+    auth_backend_name = None  # type: str
 
-    def get_email_address(self, *args: Any, **kwargs: Any) -> Text:
+    def get_email_address(self, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError
 
-    def get_full_name(self, *args: Any, **kwargs: Any) -> Text:
+    def get_full_name(self, *args: Any, **kwargs: Any) -> str:
         raise NotImplementedError
 
     def get_authenticated_user(self, *args: Any, **kwargs: Any) -> Optional[UserProfile]:
@@ -392,7 +392,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         # the arguments and always return empty set.
         return set()
 
-    def django_to_ldap_username(self, username: Text) -> Text:
+    def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
                 raise ZulipLDAPException("Username does not match LDAP domain.")
@@ -491,13 +491,13 @@ class DevAuthBackend(ZulipAuthMixin):
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
 
-    def get_email_address(self, *args: Any, **kwargs: Any) -> Optional[Text]:
+    def get_email_address(self, *args: Any, **kwargs: Any) -> Optional[str]:
         try:
             return kwargs['response']['email']
         except KeyError:  # nocoverage # TODO: investigate
             return None
 
-    def get_full_name(self, *args: Any, **kwargs: Any) -> Text:
+    def get_full_name(self, *args: Any, **kwargs: Any) -> str:
         # In case of any error return an empty string. Name is used by
         # the registration page to pre-populate the name field. However,
         # if it is not supplied, our registration process will make sure
@@ -557,4 +557,4 @@ AUTH_BACKEND_NAME_MAP = {
     'Google': GoogleMobileOauth2Backend,
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,
-}  # type: Dict[Text, Any]
+}  # type: Dict[str, Any]
