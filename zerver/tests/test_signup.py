@@ -64,7 +64,7 @@ import re
 import smtplib
 import ujson
 
-from typing import Any, Dict, List, Optional, Set, Text
+from typing import Any, Dict, List, Optional, Set
 
 import urllib
 import os
@@ -126,7 +126,7 @@ class AddNewUserHistoryTest(ZulipTestCase):
         stream_dict = {
             "Denmark": {"description": "A Scandinavian country", "invite_only": False},
             "Verona": {"description": "A city in Italy", "invite_only": False}
-        }  # type: Dict[Text, Dict[Text, Any]]
+        }  # type: Dict[str, Dict[str, Any]]
         realm = get_realm('zulip')
         set_default_streams(realm, stream_dict)
         with patch("zerver.lib.actions.add_new_user_history"):
@@ -351,7 +351,7 @@ class LoginTest(ZulipTestCase):
     def test_register(self) -> None:
         realm = get_realm("zulip")
         stream_dict = {"stream_"+str(i): {"description": "stream_%s_description" % i, "invite_only": False}
-                       for i in range(40)}  # type: Dict[Text, Dict[Text, Any]]
+                       for i in range(40)}  # type: Dict[str, Dict[str, Any]]
         for stream_name in stream_dict.keys():
             self.make_stream(stream_name, realm=realm)
 
@@ -455,7 +455,7 @@ class LoginTest(ZulipTestCase):
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
 class InviteUserBase(ZulipTestCase):
-    def check_sent_emails(self, correct_recipients: List[Text],
+    def check_sent_emails(self, correct_recipients: List[str],
                           custom_from_name: Optional[str]=None) -> None:
         from django.core.mail import outbox
         self.assertEqual(len(outbox), len(correct_recipients))
@@ -469,7 +469,7 @@ class InviteUserBase(ZulipTestCase):
 
         self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
 
-    def invite(self, users: Text, streams: List[Text], body: str='',
+    def invite(self, users: str, streams: List[str], body: str='',
                invite_as_admin: str="false") -> HttpResponse:
         """
         Invites the specified users to Zulip with the specified streams.
@@ -1096,7 +1096,7 @@ class MultiuseInviteTest(ZulipTestCase):
         self.realm.save()
 
     def generate_multiuse_invite_link(self, streams: List[Stream]=None,
-                                      date_sent: Optional[datetime.datetime]=None) -> Text:
+                                      date_sent: Optional[datetime.datetime]=None) -> str:
         invite = MultiuseInvite(realm=self.realm, referred_by=self.example_user("iago"))
         invite.save()
 
@@ -1111,7 +1111,7 @@ class MultiuseInviteTest(ZulipTestCase):
 
         return confirmation_url(key, self.realm.host, Confirmation.MULTIUSE_INVITE)
 
-    def check_user_able_to_register(self, email: Text, invite_link: Text) -> None:
+    def check_user_able_to_register(self, email: str, invite_link: str) -> None:
         password = "password"
 
         result = self.client_post(invite_link, {'email': email})
@@ -1550,7 +1550,7 @@ class RealmCreationTest(ZulipTestCase):
 
 class UserSignUpTest(ZulipTestCase):
 
-    def _assert_redirected_to(self, result: HttpResponse, url: Text) -> None:
+    def _assert_redirected_to(self, result: HttpResponse, url: str) -> None:
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result['LOCATION'], url)
 

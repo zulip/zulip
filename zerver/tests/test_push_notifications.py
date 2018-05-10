@@ -5,7 +5,7 @@ import requests
 import mock
 from mock import call
 import time
-from typing import Any, Dict, List, Optional, Union, SupportsInt, Text
+from typing import Any, Dict, List, Optional, Union, SupportsInt
 
 import base64
 import gcm
@@ -77,7 +77,7 @@ class BouncerTestCase(ZulipTestCase):
             raise AssertionError("Unsupported method for bounce_request")
         return result
 
-    def get_generic_payload(self, method: Text='register') -> Dict[str, Any]:
+    def get_generic_payload(self, method: str='register') -> Dict[str, Any]:
         user_id = 10
         token = "111222"
         token_kind = PushDeviceToken.GCM
@@ -1109,7 +1109,7 @@ class GCMCanonicalTest(GCMTest):
         res['canonical'] = {t1: t2}
         mock_send.return_value = res
 
-        def get_count(hex_token: Text) -> int:
+        def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
@@ -1137,7 +1137,7 @@ class GCMCanonicalTest(GCMTest):
         res['canonical'] = {old_token: new_token}
         mock_send.return_value = res
 
-        def get_count(hex_token: Text) -> int:
+        def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()
@@ -1162,7 +1162,7 @@ class GCMNotRegisteredTest(GCMTest):
         res['errors'] = {'NotRegistered': [token]}
         mock_send.return_value = res
 
-        def get_count(hex_token: Text) -> int:
+        def get_count(hex_token: str) -> int:
             token = apn.hex_to_b64(hex_token)
             return PushDeviceToken.objects.filter(
                 token=token, kind=PushDeviceToken.GCM).count()

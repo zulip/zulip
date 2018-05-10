@@ -8,7 +8,7 @@ import requests
 from builtins import object
 from django.test import override_settings
 from requests import Response
-from typing import Any, Dict, Tuple, Text, Optional
+from typing import Any, Dict, Tuple, Optional
 
 from zerver.lib.outgoing_webhook import do_rest_call, OutgoingWebhookServiceInterface
 from zerver.lib.test_classes import ZulipTestCase
@@ -27,7 +27,7 @@ def timeout_error(http_method: Any, final_url: Any, data: Any, **request_kwargs:
     raise requests.exceptions.Timeout("Time is up!")
 
 class MockServiceHandler(OutgoingWebhookServiceInterface):
-    def process_success(self, response: Response, event: Dict[Text, Any]) -> Tuple[Optional[str], Optional[str]]:
+    def process_success(self, response: Response, event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
         return "Success!", None
 
 service_handler = MockServiceHandler(None, None, None, None)
@@ -134,7 +134,7 @@ class TestOutgoingWebhookMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "Success! Hidley ho, I'm a webhook responding!")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         display_recipient = get_display_recipient(last_message.recipient)
-        # The next two lines error on mypy because the display_recipient is of type Union[Text, List[Dict[str, Any]]].
+        # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
         # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
         # Otherwise this test will error, which is wanted behavior anyway.
         self.assert_length(display_recipient, 1)  # type: ignore

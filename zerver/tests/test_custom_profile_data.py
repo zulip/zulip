@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Union, List, Dict, Text, Any
+from typing import Union, List, Dict, Any
 from mock import patch
 
 from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
@@ -410,7 +410,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         user_profile = self.example_user('iago')
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, Text]]]
+        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str]]]
         do_update_user_custom_profile_data(user_profile, data)
 
         self.assertEqual(len(custom_profile_fields_for_realm(realm.id)), self.original_count)

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Any, List, Optional, Text
+from typing import Any, List, Optional
 
 import ujson
 import django
@@ -19,7 +19,7 @@ from zerver.models import UserProfile, UserGroup, get_realm, Realm, \
     UserGroupMembership
 
 class UserGroupTestCase(ZulipTestCase):
-    def create_user_group_for_test(self, group_name: Text,
+    def create_user_group_for_test(self, group_name: str,
                                    realm: Realm=get_realm('zulip')) -> UserGroup:
         members = [self.example_user('othello')]
         return create_user_group(group_name, members, realm)

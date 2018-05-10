@@ -6,7 +6,7 @@ from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 from builtins import object
 from oauth2client.crypt import AppIdentityError
 from django.core import signing
@@ -66,7 +66,7 @@ import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
 
 class AuthBackendTest(ZulipTestCase):
-    def get_username(self, email_to_username: Optional[Callable[[Text], Text]]=None) -> Text:
+    def get_username(self, email_to_username: Optional[Callable[[str], str]]=None) -> str:
         username = self.example_email('hamlet')
         if email_to_username is not None:
             username = email_to_username(self.example_email('hamlet'))
@@ -776,7 +776,7 @@ class GoogleOAuthTest(ZulipTestCase):
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
                            is_signup: Optional[str]=None,
-                           next: Text='') -> HttpResponse:
+                           next: str='') -> HttpResponse:
         url = "/accounts/login/google/"
         params = {}
         headers = {}
@@ -898,7 +898,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         return self.client_get(url_path, subdomain=subdomain)
 
     def test_redirect_to_next_url_for_log_into_subdomain(self) -> None:
-        def test_redirect_to_next_url(next: Text='') -> HttpResponse:
+        def test_redirect_to_next_url(next: str='') -> HttpResponse:
             data = {'name': 'Hamlet',
                     'email': self.example_email("hamlet"),
                     'subdomain': 'zulip',
@@ -1595,7 +1595,7 @@ class TestDevAuthBackend(ZulipTestCase):
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
     def test_redirect_to_next_url(self) -> None:
-        def do_local_login(formaction: Text) -> HttpResponse:
+        def do_local_login(formaction: str) -> HttpResponse:
             user_email = self.example_email('hamlet')
             data = {'direct_email': user_email}
             return self.client_post(formaction, data)
@@ -1791,7 +1791,7 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_redirect_to(self) -> None:
         """This test verifies the behavior of the redirect_to logic in
         login_or_register_remote_user."""
-        def test_with_redirect_to_param_set_as_next(next: Text='') -> HttpResponse:
+        def test_with_redirect_to_param_set_as_next(next: str='') -> HttpResponse:
             user_profile = self.example_user('hamlet')
             email = user_profile.email
             with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipRemoteUserBackend',)):

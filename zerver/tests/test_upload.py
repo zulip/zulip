@@ -52,7 +52,7 @@ from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 from sendfile import _get_sendfile
 
-from typing import Any, Callable, Text
+from typing import Any, Callable
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
@@ -464,7 +464,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_cross_realm_file_access(self) -> None:
 
-        def create_user(email: Text, realm_id: Text) -> UserProfile:
+        def create_user(email: str, realm_id: str) -> UserProfile:
             self.register(email, 'test', subdomain=realm_id)
             return get_user(email, get_realm(realm_id))
 
@@ -574,8 +574,8 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
             self.logout()
 
     def test_serve_local(self) -> None:
-        def check_xsend_links(name: Text, name_str_for_test: Text,
-                              content_disposition: Text='') -> None:
+        def check_xsend_links(name: str, name_str_for_test: str,
+                              content_disposition: str='') -> None:
             with self.settings(SENDFILE_BACKEND='sendfile.backends.nginx'):
                 _get_sendfile.clear()  # To clearout cached version of backend from djangosendfile
                 self.login(self.example_email("hamlet"))

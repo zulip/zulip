@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from typing import (Any, Dict, Iterable, List, Mapping,
-                    Optional, TypeVar, Text, Union)
+                    Optional, TypeVar, Union)
 
 from django.http import HttpResponse
 from django.test import TestCase
@@ -501,7 +501,7 @@ class BulkUsersTest(ZulipTestCase):
 
         hamlet = self.example_user('hamlet')
 
-        def get_hamlet_avatar(client_gravatar: bool) -> Optional[Text]:
+        def get_hamlet_avatar(client_gravatar: bool) -> Optional[str]:
             data = dict(client_gravatar=ujson.dumps(client_gravatar))
             result = self.client_get('/json/users', data)
             self.assert_json_success(result)
@@ -531,12 +531,12 @@ class BulkUsersTest(ZulipTestCase):
 
 class GetProfileTest(ZulipTestCase):
 
-    def common_update_pointer(self, email: Text, pointer: int) -> None:
+    def common_update_pointer(self, email: str, pointer: int) -> None:
         self.login(email)
         result = self.client_post("/json/users/me/pointer", {"pointer": pointer})
         self.assert_json_success(result)
 
-    def common_get_profile(self, user_id: str) -> Dict[Text, Any]:
+    def common_get_profile(self, user_id: str) -> Dict[str, Any]:
         # Assumes all users are example users in realm 'zulip'
         user_profile = self.example_user(user_id)
         self.send_stream_message(user_profile.email, "Verona", "hello")

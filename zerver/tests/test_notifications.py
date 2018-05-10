@@ -10,7 +10,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from email.utils import formataddr
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Text, Optional
+from typing import Any, Dict, List, Optional
 
 from zerver.lib.notifications import fix_emojis, \
     handle_missedmessage_emails, relative_to_full_url
@@ -29,7 +29,7 @@ from zerver.models import (
 from zerver.lib.test_helpers import get_test_image_file
 
 class TestMissedMessages(ZulipTestCase):
-    def normalize_string(self, s: Text) -> Text:
+    def normalize_string(self, s: str) -> str:
         s = s.strip()
         return re.sub(r'\s+', ' ', s)
 

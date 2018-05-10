@@ -83,7 +83,7 @@ import DNS
 import mock
 import time
 import ujson
-from typing import Any, Dict, List, Optional, Set, Text
+from typing import Any, Dict, List, Optional, Set
 
 from collections import namedtuple
 
@@ -246,12 +246,12 @@ class TopicHistoryTest(ZulipTestCase):
 
 
 class TestCrossRealmPMs(ZulipTestCase):
-    def make_realm(self, domain: Text) -> Realm:
+    def make_realm(self, domain: str) -> Realm:
         realm = Realm.objects.create(string_id=domain, invite_required=False)
         RealmDomain.objects.create(realm=realm, domain=domain)
         return realm
 
-    def create_user(self, email: Text) -> UserProfile:
+    def create_user(self, email: str) -> UserProfile:
         subdomain = email.split("@")[1]
         self.register(email, 'test', subdomain=subdomain)
         return get_user(email, get_realm(subdomain))
@@ -436,7 +436,7 @@ class PersonalMessagesTest(ZulipTestCase):
         recipient = Recipient.objects.get(type_id=user_profile.id, type=Recipient.PERSONAL)
         self.assertEqual(most_recent_message(user_profile).recipient, recipient)
 
-    def assert_personal(self, sender_email: Text, receiver_email: Text, content: Text="testcontent") -> None:
+    def assert_personal(self, sender_email: str, receiver_email: str, content: str="testcontent") -> None:
         """
         Send a private message from `sender_email` to `receiver_email` and check
         that only those two parties actually received the message.
@@ -489,8 +489,8 @@ class PersonalMessagesTest(ZulipTestCase):
 
 class StreamMessagesTest(ZulipTestCase):
 
-    def assert_stream_message(self, stream_name: Text, topic_name: Text="test topic",
-                              content: Text="test content") -> None:
+    def assert_stream_message(self, stream_name: str, topic_name: str="test topic",
+                              content: str="test content") -> None:
         """
         Check that messages sent to a stream reach all subscribers to that stream.
         """
@@ -657,7 +657,7 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
-    def _send_stream_message(self, email: Text, stream_name: Text, content: Text) -> Set[int]:
+    def _send_stream_message(self, email: str, stream_name: str, content: str) -> Set[int]:
         with mock.patch('zerver.lib.actions.send_event') as m:
             self.send_stream_message(
                 email,
@@ -1548,8 +1548,8 @@ class ScheduledMessageTest(ZulipTestCase):
         self.assert_json_error(result, 'Missing deliver_at in a request for delayed message delivery')
 
 class EditMessageTest(ZulipTestCase):
-    def check_message(self, msg_id: int, subject: Optional[Text]=None,
-                      content: Optional[Text]=None) -> Message:
+    def check_message(self, msg_id: int, subject: Optional[str]=None,
+                      content: Optional[str]=None) -> Message:
         msg = Message.objects.get(id=msg_id)
         cached = MessageDict.wide_dict(msg)
         MessageDict.finalize_payload(cached, apply_markdown=False, client_gravatar=False)
@@ -1952,7 +1952,7 @@ class EditMessageTest(ZulipTestCase):
             })
             self.assert_json_success(result)
 
-        def do_edit_message_assert_success(id_: int, unique_str: Text, topic_only: bool=False) -> None:
+        def do_edit_message_assert_success(id_: int, unique_str: str, topic_only: bool=False) -> None:
             new_subject = 'subject' + unique_str
             new_content = 'content' + unique_str
             params_dict = {'message_id': id_, 'subject': new_subject}
@@ -1965,7 +1965,7 @@ class EditMessageTest(ZulipTestCase):
             else:
                 self.check_message(id_, subject=new_subject, content=new_content)
 
-        def do_edit_message_assert_error(id_: int, unique_str: Text, error: Text,
+        def do_edit_message_assert_error(id_: int, unique_str: str, error: str,
                                          topic_only: bool=False) -> None:
             message = Message.objects.get(id=id_)
             old_subject = message.topic_name()
@@ -2023,7 +2023,7 @@ class EditMessageTest(ZulipTestCase):
             self.assert_json_success(result)
 
         def do_edit_message_assert_success(id_, unique_str):
-            # type: (int, Text) -> None
+            # type: (int, str) -> None
             new_subject = 'subject' + unique_str
             params_dict = {'message_id': id_, 'subject': new_subject}
             result = self.client_patch("/json/messages/" + str(id_), params_dict)
@@ -2031,7 +2031,7 @@ class EditMessageTest(ZulipTestCase):
             self.check_message(id_, subject=new_subject)
 
         def do_edit_message_assert_error(id_, unique_str, error):
-            # type: (int, Text, Text) -> None
+            # type: (int, str, str) -> None
             message = Message.objects.get(id=id_)
             old_subject = message.topic_name()
             old_content = message.content
@@ -2136,7 +2136,7 @@ class EditMessageTest(ZulipTestCase):
 class MirroredMessageUsersTest(ZulipTestCase):
     def test_invalid_sender(self) -> None:
         user = self.example_user('hamlet')
-        recipients = []  # type: List[Text]
+        recipients = []  # type: List[str]
 
         Request = namedtuple('Request', ['POST'])
         request = Request(POST=dict())  # no sender
@@ -2153,7 +2153,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         user = self.example_user('hamlet')
         sender = user
 
-        recipients = []  # type: List[Text]
+        recipients = []  # type: List[str]
 
         Request = namedtuple('Request', ['POST', 'client'])
         request = Request(POST = dict(sender=sender.email, type='private'),
@@ -2545,7 +2545,7 @@ class MissedMessageTest(ZulipTestCase):
             )
             self.assertEqual(sorted(user_ids), sorted(presence_idle_user_ids))
 
-        def set_presence(user_id: int, client_name: Text, ago: int) -> None:
+        def set_presence(user_id: int, client_name: str, ago: int) -> None:
             when = timezone_now() - datetime.timedelta(seconds=ago)
             UserPresence.objects.create(
                 user_profile_id=user_id,
@@ -2970,7 +2970,7 @@ class SoftDeactivationMessageTest(ZulipTestCase):
             user_messages = get_user_messages(user)
             self.assertEqual(len(user_messages), count)
 
-        def assert_last_um_content(user: UserProfile, content: Text, negate: bool=False) -> None:
+        def assert_last_um_content(user: UserProfile, content: str, negate: bool=False) -> None:
             user_messages = get_user_messages(user)
             if negate:
                 self.assertNotEqual(user_messages[-1].content, content)
