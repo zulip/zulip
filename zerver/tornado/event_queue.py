@@ -1,7 +1,7 @@
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
 from typing import cast, AbstractSet, Any, Callable, Dict, List, \
-    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Text, Union
+    Mapping, MutableMapping, Optional, Iterable, Sequence, Set, Union
 from mypy_extensions import TypedDict
 
 from django.utils.translation import ugettext as _
@@ -59,10 +59,10 @@ HEARTBEAT_MIN_FREQ_SECS = 45
 class ClientDescriptor:
     def __init__(self,
                  user_profile_id: int,
-                 user_profile_email: Text,
+                 user_profile_email: str,
                  realm_id: int, event_queue: 'EventQueue',
                  event_types: Optional[Sequence[str]],
-                 client_type_name: Text,
+                 client_type_name: str,
                  apply_markdown: bool=True,
                  client_gravatar: bool=True,
                  all_public_streams: bool=False,
@@ -76,7 +76,7 @@ class ClientDescriptor:
         self.user_profile_email = user_profile_email
         self.realm_id = realm_id
         self.current_handler_id = None  # type: Optional[int]
-        self.current_client_name = None  # type: Optional[Text]
+        self.current_client_name = None  # type: Optional[str]
         self.event_queue = event_queue
         self.queue_timeout = lifespan_secs
         self.event_types = event_types
@@ -185,7 +185,7 @@ class ClientDescriptor:
         return (self.current_handler_id is None and
                 now - self.last_connection_time >= self.queue_timeout)
 
-    def connect_handler(self, handler_id: int, client_name: Text) -> None:
+    def connect_handler(self, handler_id: int, client_name: str) -> None:
         self.current_handler_id = handler_id
         self.current_client_name = client_name
         set_descriptor_by_handler_id(handler_id, self)
@@ -488,8 +488,8 @@ def fetch_events(query: Mapping[str, Any]) -> Dict[str, Any]:
     last_event_id = query["last_event_id"]  # type: int
     user_profile_id = query["user_profile_id"]  # type: int
     new_queue_data = query.get("new_queue_data")  # type: Optional[MutableMapping[str, Any]]
-    user_profile_email = query["user_profile_email"]  # type: Text
-    client_type_name = query["client_type_name"]  # type: Text
+    user_profile_email = query["user_profile_email"]  # type: str
+    client_type_name = query["client_type_name"]  # type: str
     handler_id = query["handler_id"]  # type: int
 
     try:
@@ -553,7 +553,7 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                         client_gravatar: bool, queue_lifespan_secs: int,
                         event_types: Optional[Iterable[str]]=None,
                         all_public_streams: bool=False,
-                        narrow: Iterable[Sequence[Text]]=[]) -> Optional[str]:
+                        narrow: Iterable[Sequence[str]]=[]) -> Optional[str]:
     if settings.TORNADO_SERVER:
         req = {'dont_block': 'true',
                'apply_markdown': ujson.dumps(apply_markdown),
@@ -767,7 +767,7 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
     sender_id = wide_dict['sender_id']  # type: int
     message_id = wide_dict['id']  # type: int
     message_type = wide_dict['type']  # type: str
-    sending_client = wide_dict['client']  # type: Text
+    sending_client = wide_dict['client']  # type: str
 
     @cachify
     def get_client_payload(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:

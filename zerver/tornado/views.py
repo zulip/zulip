@@ -1,6 +1,6 @@
 
 import time
-from typing import Iterable, List, Optional, Sequence, Text, Union
+from typing import Iterable, List, Optional, Sequence, Union
 
 import ujson
 from django.core.handlers.base import BaseHandler
@@ -24,7 +24,7 @@ def notify(request: HttpRequest) -> HttpResponse:
 
 @has_request_variables
 def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
-                        queue_id: Text=REQ()) -> HttpResponse:
+                        queue_id: str=REQ()) -> HttpResponse:
     client = get_client_descriptor(str(queue_id))
     if client is None:
         raise BadEventQueueIdError(queue_id)
@@ -39,13 +39,13 @@ def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
 def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler,
                        user_client: Optional[Client]=REQ(converter=get_client, default=None),
                        last_event_id: Optional[int]=REQ(converter=int, default=None),
-                       queue_id: Optional[List[Text]]=REQ(default=None),
+                       queue_id: Optional[List[str]]=REQ(default=None),
                        apply_markdown: bool=REQ(default=False, validator=check_bool),
                        client_gravatar: bool=REQ(default=False, validator=check_bool),
                        all_public_streams: bool=REQ(default=False, validator=check_bool),
-                       event_types: Optional[Text]=REQ(default=None, validator=check_list(check_string)),
+                       event_types: Optional[str]=REQ(default=None, validator=check_list(check_string)),
                        dont_block: bool=REQ(default=False, validator=check_bool),
-                       narrow: Iterable[Sequence[Text]]=REQ(default=[], validator=check_list(None)),
+                       narrow: Iterable[Sequence[str]]=REQ(default=[], validator=check_list(None)),
                        lifespan_secs: int=REQ(default=0, converter=int)
                        ) -> Union[HttpResponse, _RespondAsynchronously]:
     if user_client is None:
