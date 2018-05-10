@@ -1,7 +1,7 @@
 
 import sys
 from argparse import ArgumentParser, RawTextHelpFormatter
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 from zerver.lib.actions import set_default_streams
 from zerver.lib.management import ZulipBaseCommand
@@ -46,6 +46,6 @@ with `--streams=`).", file=sys.stderr)
         stream_dict = {
             stream.strip(): {"description": stream.strip(), "invite_only": False}
             for stream in options["streams"].split(",")
-        }  # type: Dict[Text, Dict[Text, Any]]
+        }  # type: Dict[str, Dict[str, Any]]
 
         set_default_streams(realm, stream_dict)

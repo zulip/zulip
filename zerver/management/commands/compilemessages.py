@@ -2,7 +2,7 @@
 import os
 import re
 from subprocess import CalledProcessError, check_output
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List
 
 import polib
 import ujson
@@ -58,14 +58,14 @@ class Command(compilemessages.Command):
             ujson.dump({'name_map': lang_list}, output_file, indent=4)
             output_file.write('\n')
 
-    def get_po_filename(self, locale_path: Text, locale: Text) -> Text:
+    def get_po_filename(self, locale_path: str, locale: str) -> str:
         po_template = '{}/{}/LC_MESSAGES/django.po'
         return po_template.format(locale_path, locale)
 
-    def get_json_filename(self, locale_path: Text, locale: Text) -> Text:
+    def get_json_filename(self, locale_path: str, locale: str) -> str:
         return "{}/{}/translations.json".format(locale_path, locale)
 
-    def get_name_from_po_file(self, po_filename: Text, locale: Text) -> Text:
+    def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
         lang_name_re = re.compile('"Language-Team: (.*?) \(')
         with open(po_filename, 'r') as reader:
             result = lang_name_re.search(reader.read())
@@ -78,7 +78,7 @@ class Command(compilemessages.Command):
             else:
                 raise Exception("Unknown language %s" % (locale,))
 
-    def get_locales(self) -> List[Text]:
+    def get_locales(self) -> List[str]:
         tracked_files = check_output(['git', 'ls-files', 'static/locale'])
         tracked_files = tracked_files.decode().split()
         regex = re.compile('static/locale/(\w+)/LC_MESSAGES/django.po')
@@ -143,7 +143,7 @@ class Command(compilemessages.Command):
             ujson.dump(data, writer, indent=2)
             writer.write('\n')
 
-    def get_translation_percentage(self, locale_path: Text, locale: Text) -> int:
+    def get_translation_percentage(self, locale_path: str, locale: str) -> int:
 
         # backend stats
         po = polib.pofile(self.get_po_filename(locale_path, locale))

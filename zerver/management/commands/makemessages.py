@@ -34,7 +34,7 @@ import json
 import os
 import re
 from argparse import ArgumentParser
-from typing import Any, Dict, Iterable, List, Mapping, Text
+from typing import Any, Dict, Iterable, List, Mapping
 
 from django.conf import settings
 from django.core.management.commands import makemessages
@@ -63,7 +63,7 @@ frontend_compiled_regexes = [re.compile(regex) for regex in regexes]
 multiline_js_comment = re.compile("/\*.*?\*/", re.DOTALL)
 singleline_js_comment = re.compile("//.*?\n")
 
-def strip_whitespaces(src: Text) -> Text:
+def strip_whitespaces(src: str) -> str:
     src = strip_whitespace_left.sub('\\1', src)
     src = strip_whitespace_right.sub('\\1', src)
     return src
@@ -124,7 +124,7 @@ class Command(makemessages.Command):
             template.plural_re.pattern + '|' + r"""^-?\s*pluralize(?:\s+.+|-?$)""")
         template.constant_re = re.compile(r"""_\(((?:".*?")|(?:'.*?')).*\)""")
 
-        def my_templatize(src: Text, *args: Any, **kwargs: Any) -> Text:
+        def my_templatize(src: str, *args: Any, **kwargs: Any) -> str:
             new_src = strip_whitespaces(src)
             return old_templatize(new_src, *args, **kwargs)
 

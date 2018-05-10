@@ -2,7 +2,7 @@
 import logging
 import sys
 from argparse import ArgumentParser
-from typing import Any, List, Optional, Text
+from typing import Any, List, Optional
 
 from django.core.management.base import CommandError
 from django.db import connection
@@ -38,7 +38,7 @@ class Command(ZulipBaseCommand):
             fix(user_profile)
             connection.commit()
 
-    def fix_emails(self, realm: Optional[Realm], emails: List[Text]) -> None:
+    def fix_emails(self, realm: Optional[Realm], emails: List[str]) -> None:
 
         for email in emails:
             try:
