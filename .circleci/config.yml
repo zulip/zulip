@@ -111,6 +111,7 @@ jobs:
       - run:
           name: install dependencies
           command: |
+            sudo apt-get update
             sudo apt-get install -y moreutils
             rm -f /home/circleci/.gitconfig
             mispipe "tools/travis/setup-backend" ts
