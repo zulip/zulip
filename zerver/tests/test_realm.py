@@ -4,7 +4,7 @@ import ujson
 
 from django.http import HttpResponse
 from mock import patch
-from typing import Any, Dict, List, Text, Union, Mapping
+from typing import Any, Dict, List, Union, Mapping
 
 from zerver.lib.actions import (
     do_change_is_admin,
@@ -21,7 +21,7 @@ from zerver.models import get_realm, Realm, UserProfile, ScheduledEmail, get_str
 
 class RealmTest(ZulipTestCase):
     def assert_user_profile_cache_gets_new_name(self, user_profile: UserProfile,
-                                                new_realm_name: Text) -> None:
+                                                new_realm_name: str) -> None:
         self.assertEqual(user_profile.realm.name, new_realm_name)
 
     def test_do_set_realm_name_caching(self) -> None:

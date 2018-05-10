@@ -51,7 +51,7 @@ import ujson
 
 import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
 class FencedBlockPreprocessorTest(TestCase):
     def test_simple_quoting(self) -> None:
@@ -166,7 +166,7 @@ class FencedBlockPreprocessorTest(TestCase):
         lines = processor.run(markdown)
         self.assertEqual(lines, expected)
 
-def bugdown_convert(text: Text) -> Text:
+def bugdown_convert(text: str) -> str:
     return bugdown.convert(text, message_realm=get_realm('zulip'))
 
 class BugdownMiscTest(ZulipTestCase):
@@ -179,7 +179,7 @@ class BugdownMiscTest(ZulipTestCase):
     def test_get_full_name_info(self) -> None:
         realm = get_realm('zulip')
 
-        def make_user(email: Text, full_name: Text) -> UserProfile:
+        def make_user(email: str, full_name: str) -> UserProfile:
             return create_user(
                 email=email,
                 password='whatever',
@@ -225,15 +225,15 @@ class BugdownMiscTest(ZulipTestCase):
                 mock_logger.assert_called_with("Cannot find KaTeX for latex rendering!")
 
 class BugdownTest(ZulipTestCase):
-    def assertEqual(self, first: Any, second: Any, msg: Text = "") -> None:
-        if isinstance(first, Text) and isinstance(second, Text):
+    def assertEqual(self, first: Any, second: Any, msg: str = "") -> None:
+        if isinstance(first, str) and isinstance(second, str):
             if first != second:
                 raise AssertionError("Actual and expected outputs do not match; showing diff.\n" +
                                      mdiff.diff_strings(first, second) + msg)
         else:
             super().assertEqual(first, second)
 
-    def load_bugdown_tests(self) -> Tuple[Dict[Text, Any], List[List[Text]]]:
+    def load_bugdown_tests(self) -> Tuple[Dict[str, Any], List[List[str]]]:
         test_fixtures = {}
         data_file = open(os.path.join(os.path.dirname(__file__), 'fixtures/markdown_test_cases.json'), 'r')
         data = ujson.loads('\n'.join(data_file.readlines()))
@@ -278,7 +278,7 @@ class BugdownTest(ZulipTestCase):
             print("Running Bugdown test %s" % (name,))
             self.assertEqual(converted, test['expected_output'])
 
-        def replaced(payload: Text, url: Text, phrase: Text='') -> Text:
+        def replaced(payload: str, url: str, phrase: str='') -> str:
             target = " target=\"_blank\""
             if url[:4] == 'http':
                 href = url
@@ -478,7 +478,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(bugdown.get_tweet_id('https://twitter.com/windyoona/status/410766290349879296/'), '410766290349879296')
 
     def test_inline_interesting_links(self) -> None:
-        def make_link(url: Text) -> Text:
+        def make_link(url: str) -> str:
             return '<a href="%s" target="_blank" title="%s">%s</a>' % (url, url, url)
 
         normal_tweet_html = ('<a href="https://twitter.com/Twitter" target="_blank"'
@@ -498,7 +498,7 @@ class BugdownTest(ZulipTestCase):
 
         emoji_in_tweet_html = """Zulip is <span class="emoji emoji-1f4af" title="hundred points">:hundred_points:</span>% open-source!"""
 
-        def make_inline_twitter_preview(url: Text, tweet_html: Text, image_html: Text='') -> Text:
+        def make_inline_twitter_preview(url: str, tweet_html: str, image_html: str='') -> str:
             ## As of right now, all previews are mocked to be the exact same tweet
             return ('<div class="inline-preview-twitter">'
                     '<div class="twitter-tweet">'
@@ -612,7 +612,7 @@ class BugdownTest(ZulipTestCase):
         self.assertTrue(bugdown.content_has_emoji_syntax(':smile: ::::::'))
 
     def test_realm_emoji(self) -> None:
-        def emoji_img(name: Text, file_name: Text, realm_id: int) -> Text:
+        def emoji_img(name: str, file_name: str, realm_id: int) -> str:
             return '<img alt="%s" class="emoji" src="%s" title="%s">' % (
                 name, get_emoji_url(file_name, realm_id), name[1:-1].replace("_", " "))
 
@@ -796,7 +796,7 @@ class BugdownTest(ZulipTestCase):
         msg = Message(sender=user_profile, sending_client=get_client("test"))
         realm_alert_words = alert_words_in_realm(user_profile.realm)
 
-        def render(msg: Message, content: Text) -> Text:
+        def render(msg: Message, content: str) -> str:
             return render_markdown(msg,
                                    content,
                                    realm_alert_words=realm_alert_words,
@@ -898,7 +898,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_ids, set([user_profile.id]))
 
     def test_possible_mentions(self) -> None:
-        def assert_mentions(content: Text, names: Set[Text]) -> None:
+        def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_mentions(content), names)
 
         assert_mentions('', set())
@@ -937,7 +937,7 @@ class BugdownTest(ZulipTestCase):
                          '<p>Hey @<strong>Nonexistent User</strong></p>')
         self.assertEqual(msg.mentions_user_ids, set())
 
-    def create_user_group_for_test(self, user_group_name: Text) -> UserGroup:
+    def create_user_group_for_test(self, user_group_name: str) -> UserGroup:
         othello = self.example_user('othello')
         return create_user_group(user_group_name, [othello], get_realm('zulip'))
 
@@ -961,7 +961,7 @@ class BugdownTest(ZulipTestCase):
         self.assertEqual(msg.mentions_user_group_ids, set([user_group.id]))
 
     def test_possible_user_group_mentions(self) -> None:
-        def assert_mentions(content: Text, names: Set[Text]) -> None:
+        def assert_mentions(content: str, names: Set[str]) -> None:
             self.assertEqual(possible_user_group_mentions(content), names)
 
         assert_mentions('', set())

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Dict, Generator, Mapping, Text, Union
+from typing import Any, Dict, Generator, Mapping, Union
 
 import mock
 
@@ -26,7 +26,7 @@ from zerver.tornado.event_queue import (
 )
 
 class EditMessageSideEffectsTest(ZulipTestCase):
-    def _assert_update_does_not_notify_anybody(self, message_id: int, content: Text) -> None:
+    def _assert_update_does_not_notify_anybody(self, message_id: int, content: str) -> None:
         url = '/json/messages/' + str(message_id)
 
         request = dict(
@@ -57,7 +57,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
             content='now we mention @**Cordelia Lear**',
         )
 
-    def _login_and_send_original_stream_message(self, content: Text) -> int:
+    def _login_and_send_original_stream_message(self, content: str) -> int:
         '''
             Note our conventions here:
 
@@ -80,7 +80,7 @@ class EditMessageSideEffectsTest(ZulipTestCase):
 
         return message_id
 
-    def _get_queued_data_for_message_update(self, message_id: int, content: Text,
+    def _get_queued_data_for_message_update(self, message_id: int, content: str,
                                             expect_short_circuit: bool=False) -> Dict[str, Any]:
         '''
         This function updates a message with a post to

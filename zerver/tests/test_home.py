@@ -8,7 +8,7 @@ from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
 import urllib
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List
 
 from zerver.lib.actions import do_create_user
 from zerver.lib.test_classes import ZulipTestCase
@@ -388,7 +388,7 @@ class HomeTest(ZulipTestCase):
         page_params = self._get_page_params(result)
         self.assertEqual(page_params['realm_notifications_stream_id'], get_stream('Denmark', realm).id)
 
-    def create_bot(self, owner: UserProfile, bot_email: Text, bot_name: Text) -> UserProfile:
+    def create_bot(self, owner: UserProfile, bot_email: str, bot_name: str) -> UserProfile:
         user = do_create_user(
             email=bot_email,
             password='123',
@@ -400,7 +400,7 @@ class HomeTest(ZulipTestCase):
         )
         return user
 
-    def create_non_active_user(self, realm: Realm, email: Text, name: Text) -> UserProfile:
+    def create_non_active_user(self, realm: Realm, email: str, name: str) -> UserProfile:
         user = do_create_user(
             email=email,
             password='123',

@@ -5,7 +5,7 @@ import re
 import os
 from collections import defaultdict
 
-from typing import Any, Dict, Iterable, List, Optional, Text, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 from django.test import TestCase, override_settings
 from django.http import HttpResponse, HttpRequest
 from django.test.client import RequestFactory
@@ -236,7 +236,7 @@ class DecoratorTestCase(TestCase):
 
     def test_api_key_only_webhook_view(self) -> None:
         @api_key_only_webhook_view('ClientName')
-        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> Text:
+        def my_webhook(request: HttpRequest, user_profile: UserProfile) -> str:
             return user_profile.email
 
         @api_key_only_webhook_view('ClientName')
@@ -1286,13 +1286,13 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         self.assert_json_error_contains(self._do_test(user_email), "This organization has been deactivated")
         do_reactivate_realm(user_profile.realm)
 
-    def _do_test(self, user_email: Text) -> HttpResponse:
+    def _do_test(self, user_email: str) -> HttpResponse:
         stream_name = "stream name"
         self.common_subscribe_to_streams(user_email, [stream_name])
         data = {"password": initial_password(user_email), "stream": stream_name}
         return self.client_post(r'/json/subscriptions/exists', data)
 
-    def _login(self, user_email: Text, user_realm: Realm, password: str=None) -> None:
+    def _login(self, user_email: str, user_realm: Realm, password: str=None) -> None:
         if password:
             user_profile = get_user(user_email, user_realm)
             user_profile.set_password(password)
@@ -1439,13 +1439,13 @@ class CacheTestCase(ZulipTestCase):
 
     def test_cachify_is_per_call(self) -> None:
 
-        def test_greetings(greeting: Text) -> Tuple[List[Text], List[Text]]:
+        def test_greetings(greeting: str) -> Tuple[List[str], List[str]]:
 
-            result_log = []  # type: List[Text]
-            work_log = []  # type: List[Text]
+            result_log = []  # type: List[str]
+            work_log = []  # type: List[str]
 
             @cachify
-            def greet(first_name: Text, last_name: Text) -> Text:
+            def greet(first_name: str, last_name: str) -> str:
                 msg = '%s %s %s' % (greeting, first_name, last_name)
                 work_log.append(msg)
                 return msg

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # See https://zulip.readthedocs.io/en/latest/subsystems/events-system.html for
 # high-level documentation on how this system works.
-from typing import Any, Callable, Dict, List, Optional, Set, Text, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple, Union
 import os
 import shutil
 import sys
@@ -1265,7 +1265,7 @@ class EventsRegisterTest(ZulipTestCase):
         if property_type is bool:
             validator = check_bool
             vals = bool_tests
-        elif property_type is Text:
+        elif property_type is str:
             validator = check_string
         elif property_type is int:
             validator = check_int
@@ -1440,7 +1440,7 @@ class EventsRegisterTest(ZulipTestCase):
         property_type = UserProfile.property_types[setting_name]
         if property_type is bool:
             validator = check_bool
-        elif property_type is Text:
+        elif property_type is str:
             validator = check_string
         else:
             raise AssertionError("Unexpected property type %s" % (property_type,))
@@ -2219,8 +2219,8 @@ class GetUnreadMsgsTest(ZulipTestCase):
         subscription.in_home_view = False
         subscription.save()
 
-    def mute_topic(self, user_profile: UserProfile, stream_name: Text,
-                   topic_name: Text) -> None:
+    def mute_topic(self, user_profile: UserProfile, stream_name: str,
+                   topic_name: str) -> None:
         realm = user_profile.realm
         stream = get_stream(stream_name, realm)
         recipient = get_stream_recipient(stream.id)

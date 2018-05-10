@@ -38,24 +38,24 @@ from http.cookies import SimpleCookie
 import urllib.parse
 
 from unittest.mock import patch
-from typing import Any, Callable, Dict, Generator, Optional, Text, List, cast
+from typing import Any, Callable, Dict, Generator, Optional, List, cast
 
 class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def setUp(self) -> None:
         super().setUp()
         signals.request_started.disconnect(close_old_connections)
         signals.request_finished.disconnect(close_old_connections)
-        self.session_cookie = None  # type: Optional[Dict[Text, Text]]
+        self.session_cookie = None  # type: Optional[Dict[str, str]]
 
     def tearDown(self) -> None:
         super().tearDown()
-        self.session_cookie = None  # type: Optional[Dict[Text, Text]]
+        self.session_cookie = None  # type: Optional[Dict[str, str]]
 
     @override_settings(DEBUG=False)
     def get_app(self) -> Application:
         return create_tornado_application()
 
-    def client_get(self, path: Text, **kwargs: Any) -> HTTPResponse:
+    def client_get(self, path: str, **kwargs: Any) -> HTTPResponse:
         self.add_session_cookie(kwargs)
         self.set_http_host(kwargs)
         if 'HTTP_HOST' in kwargs:
@@ -63,7 +63,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             del kwargs['HTTP_HOST']
         return self.fetch(path, method='GET', **kwargs)
 
-    def fetch_async(self, method: Text, path: Text, **kwargs: Any) -> None:
+    def fetch_async(self, method: str, path: str, **kwargs: Any) -> None:
         self.add_session_cookie(kwargs)
         self.set_http_host(kwargs)
         if 'HTTP_HOST' in kwargs:
@@ -76,7 +76,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             **kwargs
         )
 
-    def client_get_async(self, path: Text, **kwargs: Any) -> None:
+    def client_get_async(self, path: str, **kwargs: Any) -> None:
         self.set_http_host(kwargs)
         self.fetch_async('GET', path, **kwargs)
 
@@ -88,7 +88,7 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
             "Cookie": "{}={}".format(session_cookie, session_key)
         }
 
-    def get_session_cookie(self) -> Dict[Text, Text]:
+    def get_session_cookie(self) -> Dict[str, str]:
         return {} if self.session_cookie is None else self.session_cookie
 
     def add_session_cookie(self, kwargs: Dict[str, Any]) -> None:
@@ -211,7 +211,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
         raise gen.Return([response_ack, response_message])
 
     @staticmethod
-    def _get_queue_events_data(email: Text) -> Dict[str, Dict[str, str]]:
+    def _get_queue_events_data(email: str) -> Dict[str, Dict[str, str]]:
         user_profile = UserProfile.objects.filter(email=email).first()
         events_query = {
             'queue_id': None,
