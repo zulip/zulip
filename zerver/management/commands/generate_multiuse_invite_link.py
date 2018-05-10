@@ -1,6 +1,6 @@
 
 from argparse import ArgumentParser
-from typing import Any, List, Text
+from typing import Any, List
 
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.actions import ensure_stream, do_create_multiuse_invite_link

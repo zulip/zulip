@@ -1,12 +1,12 @@
 
-from typing import Any, Callable, Dict, List, Set, Text
+from typing import Any, Callable, Dict, List, Set
 
 from django.db import connection
 
 from zerver.lib.management import ZulipBaseCommand
 
-def create_index_if_not_exist(index_name: Text, table_name: Text,
-                              column_string: Text, where_clause: Text) -> None:
+def create_index_if_not_exist(index_name: str, table_name: str,
+                              column_string: str, where_clause: str) -> None:
     #
     #  This function is somewhat similar to
     #  zerver.lib.migrate.create_index_if_not_exist.

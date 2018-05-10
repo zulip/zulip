@@ -1,5 +1,5 @@
 
-from typing import Any, Iterable, Text, Tuple
+from typing import Any, Iterable, Tuple
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
