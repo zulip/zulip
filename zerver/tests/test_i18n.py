@@ -8,7 +8,7 @@ from django.test import TestCase
 from django.utils import translation
 from django.conf import settings
 from django.http import HttpResponse
-from six.moves.http_cookies import SimpleCookie
+from http.cookies import SimpleCookie
 
 from zerver.lib.test_classes import (
     ZulipTestCase,
@@ -55,7 +55,7 @@ class TranslationTestCase(ZulipTestCase):
         for lang, word in languages:
             # Applying str function to LANGUAGE_COOKIE_NAME to convert unicode
             # into an ascii otherwise SimpleCookie will raise an exception
-            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})
+            self.client.cookies = SimpleCookie({str(settings.LANGUAGE_COOKIE_NAME): lang})  # type: ignore # https://github.com/python/typeshed/issues/1476
 
             response = self.fetch('get', '/integrations/', 200)
             self.assert_in_response(word, response)
