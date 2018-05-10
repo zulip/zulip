@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.http import HttpRequest
 from django.utils.translation import ugettext as _
-from typing import Optional, Text
+from typing import Optional
 
 from zerver.lib.actions import check_send_stream_message, \
     check_send_private_message, send_rate_limited_pm_notification_to_bot_owner
@@ -28,7 +28,7 @@ class MissingHTTPEventHeader(JsonableError):
     code = ErrorCode.MISSING_HTTP_EVENT_HEADER
     data_fields = ['header']
 
-    def __init__(self, header: Text) -> None:
+    def __init__(self, header: str) -> None:
         self.header = header
 
     @staticmethod
@@ -38,8 +38,8 @@ class MissingHTTPEventHeader(JsonableError):
 @has_request_variables
 def check_send_webhook_message(
         request: HttpRequest, user_profile: UserProfile,
-        topic: Text, body: Text, stream: Optional[Text]=REQ(default=None),
-        user_specified_topic: Optional[Text]=REQ("topic", default=None)
+        topic: str, body: str, stream: Optional[str]=REQ(default=None),
+        user_specified_topic: Optional[str]=REQ("topic", default=None)
 ) -> None:
 
     if stream is None:
@@ -60,8 +60,8 @@ def check_send_webhook_message(
             # webhook-errors.log
             pass
 
-def validate_extract_webhook_http_header(request: HttpRequest, header: Text,
-                                         integration_name: Text) -> Text:
+def validate_extract_webhook_http_header(request: HttpRequest, header: str,
+                                         integration_name: str) -> str:
     extracted_header = request.META.get(DJANGO_HTTP_PREFIX + header)
     if extracted_header is None:
         message_body = MISSING_EVENT_HEADER_MESSAGE.format(

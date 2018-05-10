@@ -7,7 +7,7 @@ from zerver.lib.actions import set_default_streams, bulk_add_subscriptions, \
     do_add_reaction_legacy, create_users
 from zerver.models import Realm, UserProfile, Message, Reaction, get_system_bot
 
-from typing import Any, Dict, List, Mapping, Text
+from typing import Any, Dict, List, Mapping
 
 def setup_realm_internal_bots(realm: Realm) -> None:
     """Create this realm's internal bots.
@@ -96,7 +96,7 @@ def send_initial_realm_messages(realm: Realm) -> None:
          'content': "This is a message in a second topic.\n\nTopics are similar to email subjects, "
          "in that each conversation should get its own topic. Keep them short, though; one "
          "or two words will do it!"},
-    ]  # type: List[Dict[str, Text]]
+    ]  # type: List[Dict[str, str]]
     messages = [internal_prep_stream_message(
         realm, welcome_bot,
         message['stream'], message['topic'], message['content']) for message in welcome_messages]

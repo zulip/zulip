@@ -1,4 +1,4 @@
-from typing import (Dict, List, Text, Set)
+from typing import (Dict, List, Set)
 from django.db.models.query import QuerySet
 
 from zerver.lib.stream_subscription import (
@@ -16,7 +16,7 @@ class StreamTopicTarget:
     places where we are are still using `subject` or
     `topic_name` as a key into tables.
     '''
-    def __init__(self, stream_id: int, topic_name: Text) -> None:
+    def __init__(self, stream_id: int, topic_name: str) -> None:
         self.stream_id = stream_id
         self.topic_name = topic_name
 

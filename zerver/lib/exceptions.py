@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Any, Dict, List, Optional, Text, Type
+from typing import Any, Dict, List, Optional, Type
 
 from django.core.exceptions import PermissionDenied
 from django.utils.translation import ugettext as _
@@ -93,15 +93,15 @@ class JsonableError(Exception):
     # like 403 or 404.
     http_status_code = 400  # type: int
 
-    def __init__(self, msg: Text, code: Optional[ErrorCode]=None) -> None:
+    def __init__(self, msg: str, code: Optional[ErrorCode]=None) -> None:
         if code is not None:
             self.code = code
 
         # `_msg` is an implementation detail of `JsonableError` itself.
-        self._msg = msg  # type: Text
+        self._msg = msg  # type: str
 
     @staticmethod
-    def msg_format() -> Text:
+    def msg_format() -> str:
         '''Override in subclasses.  Gets the items in `data_fields` as format args.
 
         This should return (a translation of) a string literal.
@@ -119,7 +119,7 @@ class JsonableError(Exception):
     #
 
     @property
-    def msg(self) -> Text:
+    def msg(self) -> str:
         format_data = dict(((f, getattr(self, f)) for f in self.data_fields),
                            _msg=getattr(self, '_msg', None))
         return self.msg_format().format(**format_data)

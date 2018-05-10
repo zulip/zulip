@@ -19,7 +19,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Iterable, Text
+    Iterable
 
 # Custom mypy types follow:
 Record = Dict[str, Any]

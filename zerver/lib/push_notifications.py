@@ -10,7 +10,7 @@ import re
 import time
 import random
 
-from typing import Any, Dict, List, Optional, SupportsInt, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, SupportsInt, Tuple, Type, Union
 
 from apns2.client import APNsClient
 from apns2.payload import Payload as APNsPayload
@@ -44,10 +44,10 @@ else:  # nocoverage  -- Not convenient to add test for this.
 DeviceToken = Union[PushDeviceToken, RemotePushDeviceToken]
 
 # We store the token as b64, but apns-client wants hex strings
-def b64_to_hex(data: bytes) -> Text:
+def b64_to_hex(data: bytes) -> str:
     return binascii.hexlify(base64.b64decode(data)).decode('utf-8')
 
-def hex_to_b64(data: Text) -> bytes:
+def hex_to_b64(data: str) -> bytes:
     return base64.b64encode(binascii.unhexlify(data.encode('utf-8')))
 
 #
@@ -255,7 +255,7 @@ class PushNotificationBouncerException(Exception):
 
 def send_to_push_bouncer(method: str,
                          endpoint: str,
-                         post_data: Union[Text, Dict[str, Any]],
+                         post_data: Union[str, Dict[str, Any]],
                          extra_headers: Optional[Dict[str, Any]]=None) -> None:
     """While it does actually send the notice, this function has a lot of
     code and comments around error handling for the push notifications
@@ -413,7 +413,7 @@ def push_notifications_enabled() -> bool:
         return True
     return False
 
-def get_alert_from_message(message: Message) -> Text:
+def get_alert_from_message(message: Message) -> str:
     """
     Determine what alert string to display based on the missed messages.
     """
@@ -430,8 +430,8 @@ def get_alert_from_message(message: Message) -> Text:
     else:
         return "New Zulip mentions and private messages from %s" % (sender_str,)
 
-def get_mobile_push_content(rendered_content: Text) -> Text:
-    def get_text(elem: LH.HtmlElement) -> Text:
+def get_mobile_push_content(rendered_content: str) -> str:
+    def get_text(elem: LH.HtmlElement) -> str:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
@@ -449,13 +449,13 @@ def get_mobile_push_content(rendered_content: Text) -> Text:
             return ''  # To avoid empty line before quote text
         return elem.text or ''
 
-    def format_as_quote(quote_text: Text) -> Text:
+    def format_as_quote(quote_text: str) -> str:
         quote_text_list = filter(None, quote_text.split('\n'))  # Remove empty lines
         quote_text = '\n'.join(map(lambda x: "> "+x, quote_text_list))
         quote_text += '\n'
         return quote_text
 
-    def process(elem: LH.HtmlElement) -> Text:
+    def process(elem: LH.HtmlElement) -> str:
         plain_text = get_text(elem)
         sub_text = ''
         for child in elem:
@@ -473,7 +473,7 @@ def get_mobile_push_content(rendered_content: Text) -> Text:
         plain_text = process(elem)
         return plain_text
 
-def truncate_content(content: Text) -> Tuple[Text, bool]:
+def truncate_content(content: str) -> Tuple[str, bool]:
     # We use unicode character 'HORIZONTAL ELLIPSIS' (U+2026) instead
     # of three dots as this saves two extra characters for textual
     # content. This function will need to be updated to handle unicode

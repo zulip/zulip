@@ -1,7 +1,7 @@
 
 from django.conf import settings
 from django.core.mail import EmailMessage
-from typing import Any, Mapping, Optional, Text
+from typing import Any, Mapping, Optional
 
 from zerver.lib.actions import internal_send_message
 from zerver.lib.send_email import FromAddress
@@ -13,7 +13,7 @@ import time
 
 client = get_redis_client()
 
-def has_enough_time_expired_since_last_message(sender_email: Text, min_delay: float) -> bool:
+def has_enough_time_expired_since_last_message(sender_email: str, min_delay: float) -> bool:
     # This function returns a boolean, but it also has the side effect
     # of noting that a new message was received.
     key = 'zilencer:feedback:%s' % (sender_email,)

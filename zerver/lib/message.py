@@ -43,10 +43,10 @@ from zerver.models import (
     Reaction
 )
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Text, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union
 from mypy_extensions import TypedDict
 
-RealmAlertWords = Dict[int, List[Text]]
+RealmAlertWords = Dict[int, List[str]]
 
 RawUnreadMessagesResult = TypedDict('RawUnreadMessagesResult', {
     'pm_dict': Dict[int, Any],
@@ -69,7 +69,7 @@ MAX_UNREAD_MESSAGES = 5000
 
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
-                     search_fields: Dict[int, Dict[str, Text]],
+                     search_fields: Dict[int, Dict[str, str]],
                      apply_markdown: bool,
                      client_gravatar: bool,
                      allow_edit_history: bool) -> List[Dict[str, Any]]:
@@ -267,15 +267,15 @@ class MessageDict:
             message: Optional[Message],
             message_id: int,
             last_edit_time: Optional[datetime.datetime],
-            edit_history: Optional[Text],
-            content: Text,
-            subject: Text,
+            edit_history: Optional[str],
+            content: str,
+            subject: str,
             pub_date: datetime.datetime,
-            rendered_content: Optional[Text],
+            rendered_content: Optional[str],
             rendered_content_version: Optional[int],
             sender_id: int,
             sender_realm_id: int,
-            sending_client_name: Text,
+            sending_client_name: str,
             recipient_id: int,
             recipient_type: int,
             recipient_type_id: int,
@@ -406,7 +406,7 @@ class MessageDict:
         if recipient_type == Recipient.STREAM:
             display_type = "stream"
         elif recipient_type in (Recipient.HUDDLE, Recipient.PERSONAL):
-            assert not isinstance(display_recipient, Text)
+            assert not isinstance(display_recipient, str)
             display_type = "private"
             if len(display_recipient) == 1:
                 # add the sender in if this isn't a message between
@@ -507,12 +507,12 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
     return (message, user_message)
 
 def render_markdown(message: Message,
-                    content: Text,
+                    content: str,
                     realm: Optional[Realm]=None,
                     realm_alert_words: Optional[RealmAlertWords]=None,
                     user_ids: Optional[Set[int]]=None,
                     mention_data: Optional[bugdown.MentionData]=None,
-                    email_gateway: Optional[bool]=False) -> Text:
+                    email_gateway: Optional[bool]=False) -> str:
     """Return HTML for given markdown. Bugdown may add properties to the
     message object such as `mentions_user_ids`, `mentions_user_group_ids`, and
     `mentions_wildcard`.  These are only on this Django object and are not
@@ -533,7 +533,7 @@ def render_markdown(message: Message,
     if realm is None:
         realm = message.get_realm()
 
-    possible_words = set()  # type: Set[Text]
+    possible_words = set()  # type: Set[str]
     if realm_alert_words is not None:
         for user_id, words in realm_alert_words.items():
             if user_id in message_user_ids:
@@ -566,10 +566,10 @@ def render_markdown(message: Message,
 def huddle_users(recipient_id: int) -> str:
     display_recipient = get_display_recipient_by_id(recipient_id,
                                                     Recipient.HUDDLE,
-                                                    None)  # type: Union[Text, List[Dict[str, Any]]]
+                                                    None)  # type: Union[str, List[Dict[str, Any]]]
 
-    # Text is for streams.
-    assert not isinstance(display_recipient, Text)
+    # str is for streams.
+    assert not isinstance(display_recipient, str)
 
     user_ids = [obj['id'] for obj in display_recipient]  # type: List[int]
     user_ids = sorted(user_ids)
@@ -689,7 +689,7 @@ def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
     topic_mute_checker = build_topic_mute_checker(user_profile)
 
-    def is_row_muted(stream_id: int, recipient_id: int, topic: Text) -> bool:
+    def is_row_muted(stream_id: int, recipient_id: int, topic: str) -> bool:
         if stream_id in muted_stream_ids:
             return True
 

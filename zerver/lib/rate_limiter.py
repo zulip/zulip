@@ -1,7 +1,7 @@
 
 import os
 
-from typing import Any, Iterator, List, Optional, Tuple, Text
+from typing import Any, Iterator, List, Optional, Tuple
 
 from django.conf import settings
 from zerver.lib.redis_utils import get_redis_client
@@ -21,23 +21,23 @@ rules = settings.RATE_LIMITING_RULES  # type: List[Tuple[int, int]]
 KEY_PREFIX = ''
 
 class RateLimitedObject:
-    def get_keys(self) -> List[Text]:
+    def get_keys(self) -> List[str]:
         key_fragment = self.key_fragment()
         return ["{}ratelimit:{}:{}".format(KEY_PREFIX, key_fragment, keytype)
                 for keytype in ['list', 'zset', 'block']]
 
-    def key_fragment(self) -> Text:
+    def key_fragment(self) -> str:
         raise NotImplementedError()
 
     def rules(self) -> List[Tuple[int, int]]:
         raise NotImplementedError()
 
 class RateLimitedUser(RateLimitedObject):
-    def __init__(self, user: UserProfile, domain: Text='all') -> None:
+    def __init__(self, user: UserProfile, domain: str='all') -> None:
         self.user = user
         self.domain = domain
 
-    def key_fragment(self) -> Text:
+    def key_fragment(self) -> str:
         return "{}:{}:{}".format(type(self.user), self.user.id, self.domain)
 
     def rules(self) -> List[Tuple[int, int]]:
@@ -49,9 +49,9 @@ class RateLimitedUser(RateLimitedObject):
             return result
         return rules
 
-def bounce_redis_key_prefix_for_testing(test_name: Text) -> None:
+def bounce_redis_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
-    KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
+    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
 
 def max_api_calls(entity: RateLimitedObject) -> int:
     "Returns the API rate limit for the highest limit"

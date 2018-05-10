@@ -1,5 +1,5 @@
 
-from typing import Any, Iterable, List, Mapping, Set, Text, Tuple, Optional
+from typing import Any, Iterable, List, Mapping, Set, Tuple, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -32,7 +32,7 @@ def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
 def access_stream_common(user_profile: UserProfile, stream: Stream,
-                         error: Text,
+                         error: str,
                          require_active: bool=True,
                          allow_realm_admin: bool=False) -> Tuple[Recipient, Optional[Subscription]]:
     """Common function for backend code where the target use attempts to
@@ -93,7 +93,7 @@ def get_stream_by_id(stream_id: int) -> Stream:
         raise JsonableError(error)
     return stream
 
-def check_stream_name_available(realm: Realm, name: Text) -> None:
+def check_stream_name_available(realm: Realm, name: str) -> None:
     check_stream_name(name)
     try:
         get_stream(name, realm)
@@ -102,7 +102,7 @@ def check_stream_name_available(realm: Realm, name: Text) -> None:
         pass
 
 def access_stream_by_name(user_profile: UserProfile,
-                          stream_name: Text) -> Tuple[Stream, Recipient, Optional[Subscription]]:
+                          stream_name: str) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
@@ -112,7 +112,7 @@ def access_stream_by_name(user_profile: UserProfile,
     (recipient, sub) = access_stream_common(user_profile, stream, error)
     return (stream, recipient, sub)
 
-def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: Text, error: Text) -> Stream:
+def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: str, error: str) -> Stream:
     """
     It may seem a little silly to have this helper function for unmuting
     topics, but it gets around a linter warning, and it helps to be able
@@ -132,7 +132,7 @@ def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: Text,
         raise JsonableError(error)
     return stream
 
-def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: Text) -> bool:
+def can_access_stream_history_by_name(user_profile: UserProfile, stream_name: str) -> bool:
     """Determine whether the provided user is allowed to access the
     history of the target stream.  The stream is specified by name.
 

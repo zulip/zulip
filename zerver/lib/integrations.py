@@ -1,7 +1,7 @@
 import os
 import pathlib
 
-from typing import Dict, List, Optional, TypeVar, Any, Text
+from typing import Dict, List, Optional, TypeVar, Any
 from django.conf import settings
 from django.conf.urls import url
 from django.urls.resolvers import LocaleRegexProvider

@@ -11,7 +11,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils.timezone import utc as timezone_utc
 from typing import Any, Dict, List, Optional, Set, Tuple, \
-    Iterable, Text
+    Iterable
 
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
@@ -567,7 +567,7 @@ def do_import_system_bots(realm: Any) -> None:
     create_users(realm, names, bot_type=UserProfile.DEFAULT_BOT)
     print("Finished importing system bots.")
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None) -> None:
     user_set = set()
     for full_name, email in name_list:

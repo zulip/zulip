@@ -29,7 +29,7 @@ import ujson
 from django.utils.translation import ugettext as _
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from typing import Callable, Iterable, Optional, Tuple, TypeVar, Text, cast, \
+from typing import Callable, Iterable, Optional, Tuple, TypeVar, cast, \
     Dict
 
 from datetime import datetime
@@ -189,7 +189,7 @@ def equals(expected_val: object) -> Validator:
         return None
     return f
 
-def validate_login_email(email: Text) -> None:
+def validate_login_email(email: str) -> None:
     try:
         validate_email(email)
     except ValidationError as err:

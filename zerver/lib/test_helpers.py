@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from typing import (
     cast, Any, Callable, Dict, Generator, Iterable, Iterator, List, Mapping,
-    Optional, Set, Sized, Tuple, Union, IO, Text, TypeVar
+    Optional, Set, Sized, Tuple, Union, IO, TypeVar
 )
 
 from django.core import signing
@@ -108,14 +108,14 @@ def tornado_redirected_to_list(lst: List[Mapping[str, Any]]) -> Iterator[None]:
 
 @contextmanager
 def simulated_empty_cache() -> Generator[
-        List[Tuple[str, Union[Text, List[Text]], Text]], None, None]:
-    cache_queries = []  # type: List[Tuple[str, Union[Text, List[Text]], Text]]
+        List[Tuple[str, Union[str, List[str]], str]], None, None]:
+    cache_queries = []  # type: List[Tuple[str, Union[str, List[str]], str]]
 
-    def my_cache_get(key: Text, cache_name: Optional[str]=None) -> Optional[Dict[Text, Any]]:
+    def my_cache_get(key: str, cache_name: Optional[str]=None) -> Optional[Dict[str, Any]]:
         cache_queries.append(('get', key, cache_name))
         return None
 
-    def my_cache_get_many(keys: List[Text], cache_name: Optional[str]=None) -> Dict[Text, Any]:  # nocoverage -- simulated code doesn't use this
+    def my_cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:  # nocoverage -- simulated code doesn't use this
         cache_queries.append(('getmany', keys, cache_name))
         return {}
 
@@ -186,7 +186,7 @@ def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
     return open(os.path.join(test_avatar_dir, filename), 'rb')
 
-def avatar_disk_path(user_profile: UserProfile, medium: bool=False) -> Text:
+def avatar_disk_path(user_profile: UserProfile, medium: bool=False) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
                                     avatar_url_path.split("/")[-2],
@@ -197,7 +197,7 @@ def make_client(name: str) -> Client:
     client, _ = Client.objects.get_or_create(name=name)
     return client
 
-def find_key_by_email(address: Text) -> Optional[Text]:
+def find_key_by_email(address: str) -> Optional[str]:
     from django.core.mail import outbox
     key_regex = re.compile("accounts/do_confirm/([a-z0-9]{24})>")
     for message in reversed(outbox):
@@ -222,7 +222,7 @@ def most_recent_message(user_profile: UserProfile) -> Message:
     usermessage = most_recent_usermessage(user_profile)
     return usermessage.message
 
-def get_subscription(stream_name: Text, user_profile: UserProfile) -> Subscription:
+def get_subscription(stream_name: str, user_profile: UserProfile) -> Subscription:
     stream = get_stream(stream_name, user_profile.realm)
     recipient = get_stream_recipient(stream.id)
     return Subscription.objects.get(user_profile=user_profile,
@@ -255,7 +255,7 @@ class HostRequestMock:
     """A mock request object where get_host() works.  Useful for testing
     routes that use Zulip's subdomains feature"""
 
-    def __init__(self, user_profile: UserProfile=None, host: Text=settings.EXTERNAL_HOST) -> None:
+    def __init__(self, user_profile: UserProfile=None, host: str=settings.EXTERNAL_HOST) -> None:
         self.host = host
         self.GET = {}  # type: Dict[str, Any]
         self.POST = {}  # type: Dict[str, Any]
@@ -267,11 +267,11 @@ class HostRequestMock:
         self.content_type = ''
         self._email = ''
 
-    def get_host(self) -> Text:
+    def get_host(self) -> str:
         return self.host
 
 class MockPythonResponse:
-    def __init__(self, text: Text, status_code: int) -> None:
+    def __init__(self, text: str, status_code: int) -> None:
         self.text = text
         self.status_code = status_code
 
@@ -291,7 +291,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self: 'ZulipTestCase', url: Text, info: Dict[str, Any]={},
+        def wrapper(self: 'ZulipTestCase', url: str, info: Dict[str, Any]={},
                     **kwargs: Any) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
@@ -420,7 +420,7 @@ def get_all_templates() -> List[str]:
     isfile = os.path.isfile
     path_exists = os.path.exists
 
-    def is_valid_template(p: Text, n: Text) -> bool:
+    def is_valid_template(p: str, n: str) -> bool:
         return 'webhooks' not in p \
                and not n.startswith('.') \
                and not n.startswith('__init__') \
