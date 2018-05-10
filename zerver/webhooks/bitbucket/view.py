@@ -1,4 +1,4 @@
-from typing import Any, Mapping, Optional, Text
+from typing import Any, Mapping, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -14,8 +14,8 @@ from zerver.models import UserProfile, get_client
 @authenticated_rest_api_view(webhook_client_name="Bitbucket")
 @has_request_variables
 def api_bitbucket_webhook(request: HttpRequest, user_profile: UserProfile,
-                          payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
-                          branches: Optional[Text]=REQ(default=None)) -> HttpResponse:
+                          payload: Mapping[str, Any]=REQ(validator=check_dict([])),
+                          branches: Optional[str]=REQ(default=None)) -> HttpResponse:
     repository = payload['repository']
 
     commits = [

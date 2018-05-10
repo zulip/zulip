@@ -1,7 +1,7 @@
 import logging
 import re
 from functools import partial
-from typing import Any, Callable, Dict, Optional, Text
+from typing import Any, Callable, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 
@@ -20,7 +20,7 @@ from zerver.models import UserProfile
 class UnknownEventType(Exception):
     pass
 
-def get_opened_or_update_pull_request_body(payload: Dict[str, Any]) -> Text:
+def get_opened_or_update_pull_request_body(payload: Dict[str, Any]) -> str:
     pull_request = payload['pull_request']
     action = payload['action']
     if action == 'synchronize':
@@ -39,7 +39,7 @@ def get_opened_or_update_pull_request_body(payload: Dict[str, Any]) -> Text:
         assignee=assignee
     )
 
-def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any]) -> Text:
+def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any]) -> str:
     pull_request = payload['pull_request']
     assignee = pull_request.get('assignee')
     if assignee is not None:
@@ -54,7 +54,7 @@ def get_assigned_or_unassigned_pull_request_body(payload: Dict[str, Any]) -> Tex
         return "{} to {}".format(base_message, assignee)
     return base_message
 
-def get_closed_pull_request_body(payload: Dict[str, Any]) -> Text:
+def get_closed_pull_request_body(payload: Dict[str, Any]) -> str:
     pull_request = payload['pull_request']
     action = 'merged' if pull_request['merged'] else 'closed without merge'
     return get_pull_request_event_message(
@@ -63,7 +63,7 @@ def get_closed_pull_request_body(payload: Dict[str, Any]) -> Text:
         pull_request['html_url'],
     )
 
-def get_membership_body(payload: Dict[str, Any]) -> Text:
+def get_membership_body(payload: Dict[str, Any]) -> str:
     action = payload['action']
     member = payload['member']
     scope = payload['scope']
@@ -78,7 +78,7 @@ def get_membership_body(payload: Dict[str, Any]) -> Text:
         scope
     )
 
-def get_member_body(payload: Dict[str, Any]) -> Text:
+def get_member_body(payload: Dict[str, Any]) -> str:
     return u"{} {} [{}]({}) to [{}]({})".format(
         get_sender_name(payload),
         payload['action'],
@@ -88,7 +88,7 @@ def get_member_body(payload: Dict[str, Any]) -> Text:
         payload['repository']['html_url']
     )
 
-def get_issue_body(payload: Dict[str, Any]) -> Text:
+def get_issue_body(payload: Dict[str, Any]) -> str:
     action = payload['action']
     issue = payload['issue']
     assignee = issue['assignee']
@@ -101,7 +101,7 @@ def get_issue_body(payload: Dict[str, Any]) -> Text:
         assignee=assignee['login'] if assignee else None
     )
 
-def get_issue_comment_body(payload: Dict[str, Any]) -> Text:
+def get_issue_comment_body(payload: Dict[str, Any]) -> str:
     action = payload['action']
     comment = payload['comment']
     issue = payload['issue']
@@ -120,7 +120,7 @@ def get_issue_comment_body(payload: Dict[str, Any]) -> Text:
         comment['body'],
     )
 
-def get_fork_body(payload: Dict[str, Any]) -> Text:
+def get_fork_body(payload: Dict[str, Any]) -> str:
     forkee = payload['forkee']
     return u"{} forked [{}]({})".format(
         get_sender_name(payload),
@@ -128,17 +128,17 @@ def get_fork_body(payload: Dict[str, Any]) -> Text:
         forkee['html_url']
     )
 
-def get_deployment_body(payload: Dict[str, Any]) -> Text:
+def get_deployment_body(payload: Dict[str, Any]) -> str:
     return u'{} created new deployment'.format(
         get_sender_name(payload),
     )
 
-def get_change_deployment_status_body(payload: Dict[str, Any]) -> Text:
+def get_change_deployment_status_body(payload: Dict[str, Any]) -> str:
     return u'Deployment changed status to {}'.format(
         payload['deployment_status']['state'],
     )
 
-def get_create_or_delete_body(payload: Dict[str, Any], action: Text) -> Text:
+def get_create_or_delete_body(payload: Dict[str, Any], action: str) -> str:
     ref_type = payload['ref_type']
     return u'{} {} {} {}'.format(
         get_sender_name(payload),
@@ -147,7 +147,7 @@ def get_create_or_delete_body(payload: Dict[str, Any], action: Text) -> Text:
         payload['ref']
     ).rstrip()
 
-def get_commit_comment_body(payload: Dict[str, Any]) -> Text:
+def get_commit_comment_body(payload: Dict[str, Any]) -> str:
     comment = payload['comment']
     comment_url = comment['html_url']
     commit_url = comment_url.split('#', 1)[0]
@@ -160,14 +160,14 @@ def get_commit_comment_body(payload: Dict[str, Any]) -> Text:
         comment['body'],
     )
 
-def get_push_tags_body(payload: Dict[str, Any]) -> Text:
+def get_push_tags_body(payload: Dict[str, Any]) -> str:
     return get_push_tag_event_message(
         get_sender_name(payload),
         get_tag_name_from_ref(payload['ref']),
         action='pushed' if payload.get('created') else 'removed'
     )
 
-def get_push_commits_body(payload: Dict[str, Any]) -> Text:
+def get_push_commits_body(payload: Dict[str, Any]) -> str:
     commits_data = [{
         'name': (commit.get('author').get('username') or
                  commit.get('author').get('name')),
@@ -183,13 +183,13 @@ def get_push_commits_body(payload: Dict[str, Any]) -> Text:
         deleted=payload['deleted']
     )
 
-def get_public_body(payload: Dict[str, Any]) -> Text:
+def get_public_body(payload: Dict[str, Any]) -> str:
     return u"{} made [the repository]({}) public".format(
         get_sender_name(payload),
         payload['repository']['html_url'],
     )
 
-def get_wiki_pages_body(payload: Dict[str, Any]) -> Text:
+def get_wiki_pages_body(payload: Dict[str, Any]) -> str:
     wiki_page_info_template = u"* {action} [{title}]({url})\n"
     wiki_info = u''
     for page in payload['pages']:
@@ -200,32 +200,32 @@ def get_wiki_pages_body(payload: Dict[str, Any]) -> Text:
         )
     return u"{}:\n{}".format(get_sender_name(payload), wiki_info.rstrip())
 
-def get_watch_body(payload: Dict[str, Any]) -> Text:
+def get_watch_body(payload: Dict[str, Any]) -> str:
     return u"{} starred [the repository]({})".format(
         get_sender_name(payload),
         payload['repository']['html_url']
     )
 
-def get_repository_body(payload: Dict[str, Any]) -> Text:
+def get_repository_body(payload: Dict[str, Any]) -> str:
     return u"{} {} [the repository]({})".format(
         get_sender_name(payload),
         payload.get('action'),
         payload['repository']['html_url']
     )
 
-def get_add_team_body(payload: Dict[str, Any]) -> Text:
+def get_add_team_body(payload: Dict[str, Any]) -> str:
     return u"[The repository]({}) was added to team {}".format(
         payload['repository']['html_url'],
         payload['team']['name']
     )
 
-def get_release_body(payload: Dict[str, Any]) -> Text:
+def get_release_body(payload: Dict[str, Any]) -> str:
     return u"{} published [the release]({})".format(
         get_sender_name(payload),
         payload['release']['html_url'],
     )
 
-def get_page_build_body(payload: Dict[str, Any]) -> Text:
+def get_page_build_body(payload: Dict[str, Any]) -> str:
     build = payload['build']
     action = build['status']
     if action == 'null':
@@ -243,7 +243,7 @@ def get_page_build_body(payload: Dict[str, Any]) -> Text:
         action
     )
 
-def get_status_body(payload: Dict[str, Any]) -> Text:
+def get_status_body(payload: Dict[str, Any]) -> str:
     if payload['target_url']:
         status = '[{}]({})'.format(
             payload['state'],
@@ -257,7 +257,7 @@ def get_status_body(payload: Dict[str, Any]) -> Text:
         status
     )
 
-def get_pull_request_review_body(payload: Dict[str, Any]) -> Text:
+def get_pull_request_review_body(payload: Dict[str, Any]) -> str:
     return get_pull_request_event_message(
         get_sender_name(payload),
         'submitted',
@@ -265,7 +265,7 @@ def get_pull_request_review_body(payload: Dict[str, Any]) -> Text:
         type='PR Review'
     )
 
-def get_pull_request_review_comment_body(payload: Dict[str, Any]) -> Text:
+def get_pull_request_review_comment_body(payload: Dict[str, Any]) -> str:
     action = payload['action']
     message = None
     if action == 'created':
@@ -279,28 +279,28 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any]) -> Text:
         type='PR Review Comment'
     )
 
-def get_ping_body(payload: Dict[str, Any]) -> Text:
+def get_ping_body(payload: Dict[str, Any]) -> str:
     return get_setup_webhook_message('GitHub', get_sender_name(payload))
 
-def get_repository_name(payload: Dict[str, Any]) -> Text:
+def get_repository_name(payload: Dict[str, Any]) -> str:
     return payload['repository']['name']
 
-def get_organization_name(payload: Dict[str, Any]) -> Text:
+def get_organization_name(payload: Dict[str, Any]) -> str:
     return payload['organization']['login']
 
-def get_sender_name(payload: Dict[str, Any]) -> Text:
+def get_sender_name(payload: Dict[str, Any]) -> str:
     return payload['sender']['login']
 
-def get_branch_name_from_ref(ref_string: Text) -> Text:
+def get_branch_name_from_ref(ref_string: str) -> str:
     return re.sub(r'^refs/heads/', '', ref_string)
 
-def get_tag_name_from_ref(ref_string: Text) -> Text:
+def get_tag_name_from_ref(ref_string: str) -> str:
     return re.sub(r'^refs/tags/', '', ref_string)
 
 def is_commit_push_event(payload: Dict[str, Any]) -> bool:
     return bool(re.match(r'^refs/heads/', payload['ref']))
 
-def get_subject_based_on_type(payload: Dict[str, Any], event: Text) -> Text:
+def get_subject_based_on_type(payload: Dict[str, Any], event: str) -> str:
     if 'pull_request' in event:
         return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
             repo=get_repository_name(payload),
@@ -371,7 +371,7 @@ EVENT_FUNCTION_MAPPER = {
 def api_github_webhook(
         request: HttpRequest, user_profile: UserProfile,
         payload: Dict[str, Any]=REQ(argument_type='body'),
-        branches: Text=REQ(default=None)) -> HttpResponse:
+        branches: str=REQ(default=None)) -> HttpResponse:
     event = get_event(request, payload, branches)
     if event is not None:
         subject = get_subject_based_on_type(payload, event)
@@ -379,7 +379,7 @@ def api_github_webhook(
         check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
-def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Text) -> Optional[str]:
+def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> Optional[str]:
     event = validate_extract_webhook_http_header(request, 'X_GITHUB_EVENT', 'GitHub')
     if event == 'pull_request':
         action = payload['action']
