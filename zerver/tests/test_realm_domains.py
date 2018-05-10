@@ -2,7 +2,7 @@
 
 from django.core.exceptions import ValidationError
 from django.db.utils import IntegrityError
-from typing import Optional, Text
+from typing import Optional
 
 from zerver.lib.actions import do_change_is_admin, \
     do_change_realm_domain, do_create_realm, \

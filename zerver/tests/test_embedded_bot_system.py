@@ -2,7 +2,7 @@
 
 from unittest import mock
 from mock import patch
-from typing import Any, Dict, Tuple, Text, Optional
+from typing import Any, Dict, Tuple, Optional
 
 from zerver.lib.bot_lib import EmbeddedBotQuitException, EmbeddedBotHandler
 from zerver.lib.test_classes import ZulipTestCase
@@ -29,7 +29,7 @@ class TestEmbeddedBotMessaging(ZulipTestCase):
         self.assertEqual(last_message.content, "beep boop")
         self.assertEqual(last_message.sender_id, self.bot_profile.id)
         display_recipient = get_display_recipient(last_message.recipient)
-        # The next two lines error on mypy because the display_recipient is of type Union[Text, List[Dict[str, Any]]].
+        # The next two lines error on mypy because the display_recipient is of type Union[str, List[Dict[str, Any]]].
         # In this case, we know that display_recipient will be of type List[Dict[str, Any]].
         # Otherwise this test will error, which is wanted behavior anyway.
         self.assert_length(display_recipient, 1)  # type: ignore

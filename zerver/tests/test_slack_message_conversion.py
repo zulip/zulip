@@ -13,11 +13,11 @@ from zerver.lib import mdiff
 import ujson
 
 import os
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
 class SlackMessageConversion(ZulipTestCase):
-    def assertEqual(self, first: Any, second: Any, msg: Text = "") -> None:
-        if isinstance(first, Text) and isinstance(second, Text):
+    def assertEqual(self, first: Any, second: Any, msg: str="") -> None:
+        if isinstance(first, str) and isinstance(second, str):
             if first != second:
                 raise AssertionError("Actual and expected outputs do not match; showing diff.\n" +
                                      mdiff.diff_strings(first, second) + msg)

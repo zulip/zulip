@@ -2,7 +2,7 @@
 
 import ujson
 from django.http import HttpResponse
-from typing import Any, Dict, List, Mapping, Text
+from typing import Any, Dict, List, Mapping
 from unittest import mock
 
 from zerver.lib.emoji import emoji_name_to_emoji_code

@@ -1,4 +1,4 @@
-from typing import Any, Callable, Text
+from typing import Any, Callable
 
 from zerver.lib.sessions import (
     user_sessions,
@@ -18,7 +18,7 @@ from zerver.lib.test_classes import ZulipTestCase
 
 class TestSessions(ZulipTestCase):
 
-    def do_test_session(self, user: Text,
+    def do_test_session(self, user: str,
                         action: Callable[[], Any],
                         realm: Realm,
                         expected_result: bool) -> None:

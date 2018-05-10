@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-AA
 
-from typing import Any, Dict, List, Mapping, Text
+from typing import Any, Dict, List, Mapping
 
 from django.db import connection
 
@@ -361,7 +361,7 @@ class FixUnreadTests(ZulipTestCase):
         user = self.example_user('hamlet')
         realm = get_realm('zulip')
 
-        def send_message(stream_name: Text, topic_name: Text) -> int:
+        def send_message(stream_name: str, topic_name: str) -> int:
             msg_id = self.send_stream_message(
                 self.example_email("othello"),
                 stream_name,
@@ -379,7 +379,7 @@ class FixUnreadTests(ZulipTestCase):
             um = UserMessage.objects.get(id=user_message_id)
             self.assertFalse(um.flags.read)
 
-        def mute_stream(stream_name: Text) -> None:
+        def mute_stream(stream_name: str) -> None:
             stream = get_stream(stream_name, realm)
             recipient = get_stream_recipient(stream.id)
             subscription = Subscription.objects.get(
@@ -389,7 +389,7 @@ class FixUnreadTests(ZulipTestCase):
             subscription.in_home_view = False
             subscription.save()
 
-        def mute_topic(stream_name: Text, topic_name: Text) -> None:
+        def mute_topic(stream_name: str, topic_name: str) -> None:
             stream = get_stream(stream_name, realm)
             recipient = get_stream_recipient(stream.id)
 
@@ -400,7 +400,7 @@ class FixUnreadTests(ZulipTestCase):
                 topic_name=topic_name,
             )
 
-        def force_unsubscribe(stream_name: Text) -> None:
+        def force_unsubscribe(stream_name: str) -> None:
             '''
             We don't want side effects here, since the eventual
             unsubscribe path may mark messages as read, defeating

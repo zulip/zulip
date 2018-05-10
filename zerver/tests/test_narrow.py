@@ -42,25 +42,25 @@ from zerver.views.messages import (
     LARGER_THAN_MAX_MESSAGE_ID,
 )
 
-from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional, Text
+from typing import Dict, List, Mapping, Sequence, Tuple, Generic, Union, Any, Optional
 import mock
 import os
 import re
 import ujson
 
-def get_sqlalchemy_query_params(query: Text) -> Dict[Text, Text]:
+def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     dialect = get_sqlalchemy_connection().dialect
     comp = compiler.SQLCompiler(dialect, query)
     return comp.params
 
-def fix_ws(s: Text) -> Text:
+def fix_ws(s: str) -> str:
     return re.sub('\s+', ' ', str(s)).strip()
 
-def get_recipient_id_for_stream_name(realm: Realm, stream_name: Text) -> Text:
+def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
     return get_stream_recipient(stream.id).id
 
-def mute_stream(realm: Realm, user_profile: Text, stream_name: Text) -> None:
+def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
     stream = get_stream(stream_name, realm)
     recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
@@ -333,7 +333,7 @@ class NarrowBuilderTest(ZulipTestCase):
         query = self._build_query(term)
         self.assertEqual(str(query), 'SELECT id \nFROM zerver_message')
 
-    def _do_add_term_test(self, term: Dict[str, Any], where_clause: Text,
+    def _do_add_term_test(self, term: Dict[str, Any], where_clause: str,
                           params: Optional[Dict[str, Any]]=None) -> None:
         query = self._build_query(term)
         if params is not None:
@@ -664,11 +664,11 @@ class GetOldMessagesTest(ZulipTestCase):
         for message in result["messages"]:
             assert(message["id"] in message_ids)
 
-    def get_query_ids(self) -> Dict[Text, int]:
+    def get_query_ids(self) -> Dict[str, int]:
         hamlet_user = self.example_user('hamlet')
         othello_user = self.example_user('othello')
 
-        query_ids = {}  # type: Dict[Text, int]
+        query_ids = {}  # type: Dict[str, int]
 
         scotland_stream = get_stream('Scotland', hamlet_user.realm)
         query_ids['scotland_recipient'] = get_stream_recipient(scotland_stream.id).id
@@ -685,7 +685,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        def get_content_type(apply_markdown: bool) -> Text:
+        def get_content_type(apply_markdown: bool) -> str:
             req = dict(
                 apply_markdown=ujson.dumps(apply_markdown),
             )  # type: Dict[str, Any]
@@ -768,7 +768,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         me = self.example_email('hamlet')
 
-        def dr_emails(dr: Union[Text, List[Dict[str, Any]]]) -> Text:
+        def dr_emails(dr: Union[str, List[Dict[str, Any]]]) -> str:
             assert isinstance(dr, list)
             return ','.join(sorted(set([r['email'] for r in dr] + [me])))
 
@@ -1124,7 +1124,7 @@ class GetOldMessagesTest(ZulipTestCase):
         email = self.example_email("cordelia")
         self.login(email)
 
-        def send(content: Text) -> int:
+        def send(content: str) -> int:
             msg_id = self.send_stream_message(
                 sender_email=email,
                 stream_name="Verona",
@@ -1442,7 +1442,7 @@ class GetOldMessagesTest(ZulipTestCase):
         email = self.example_email("cordelia")
         self.login(email)
 
-        def send(content: Text) -> int:
+        def send(content: str) -> int:
             msg_id = self.send_stream_message(
                 sender_email=email,
                 stream_name="Verona",
@@ -1633,7 +1633,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[Text, int], ...]
+        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
@@ -1670,7 +1670,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[Text, Union[int, str, bool]]]
+        other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Union[int, str, bool]]]
 
         bad_types = (False, 0, '', '{malformed json,',
                      '{foo: 3}', '[1,2]', '[["x","y","z"]]')  # type: Tuple[Union[int, str, bool], ...]
@@ -1703,9 +1703,9 @@ class GetOldMessagesTest(ZulipTestCase):
         result = self.client_get("/json/messages", params)
         self.assert_json_error_contains(result, 'elem["operand"] is not a string')
 
-    def exercise_bad_narrow_operand(self, operator: Text,
+    def exercise_bad_narrow_operand(self, operator: str,
                                     operands: Sequence[Any],
-                                    error_msg: Text) -> None:
+                                    error_msg: str) -> None:
         other_params = [("anchor", 0), ("num_before", 0), ("num_after", 0)]  # type: List[Tuple[str, Any]]
         for operand in operands:
             post_params = dict(other_params + [
@@ -1719,7 +1719,7 @@ class GetOldMessagesTest(ZulipTestCase):
         returned.
         """
         self.login(self.example_email("hamlet"))
-        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[Text]]
+        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[str]]
         self.exercise_bad_narrow_operand("stream", bad_stream_content,
                                          "Bad value for 'narrow'")
 
@@ -1729,7 +1729,7 @@ class GetOldMessagesTest(ZulipTestCase):
         error is returned.
         """
         self.login(self.example_email("hamlet"))
-        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[Text]]
+        bad_stream_content = (0, [], ["x", "y"])  # type: Tuple[int, List[None], List[str]]
         self.exercise_bad_narrow_operand("pm-with", bad_stream_content,
                                          "Bad value for 'narrow'")
 
@@ -1752,7 +1752,7 @@ class GetOldMessagesTest(ZulipTestCase):
         MessageDict.finalize_payload(d, apply_markdown=True, client_gravatar=False)
         self.assertEqual(d['content'], '<p>test content</p>')
 
-    def common_check_get_messages_query(self, query_params: Dict[str, object], expected: Text) -> None:
+    def common_check_get_messages_query(self, query_params: Dict[str, object], expected: str) -> None:
         user_profile = self.example_user('hamlet')
         request = POSTRequestMock(query_params, user_profile)
         with queries_captured() as queries:
@@ -2180,7 +2180,7 @@ class GetOldMessagesTest(ZulipTestCase):
     def test_get_messages_with_search_queries(self) -> None:
         query_ids = self.get_query_ids()
 
-        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: Text
+        sql_template = "SELECT anon_1.message_id, anon_1.flags, anon_1.subject, anon_1.rendered_content, anon_1.content_matches, anon_1.subject_matches \nFROM (SELECT message_id, flags, subject, rendered_content, ts_match_locs_array('zulip.english_us_search', rendered_content, plainto_tsquery('zulip.english_us_search', 'jumping')) AS content_matches, ts_match_locs_array('zulip.english_us_search', escape_html(subject), plainto_tsquery('zulip.english_us_search', 'jumping')) AS subject_matches \nFROM zerver_usermessage JOIN zerver_message ON zerver_usermessage.message_id = zerver_message.id \nWHERE user_profile_id = {hamlet_id} AND (search_tsvector @@ plainto_tsquery('zulip.english_us_search', 'jumping')) ORDER BY message_id ASC \n LIMIT 10) AS anon_1 ORDER BY message_id ASC"  # type: str
         sql = sql_template.format(**query_ids)
         self.common_check_get_messages_query({'anchor': 0, 'num_before': 0, 'num_after': 9,
                                               'narrow': '[["search", "jumping"]]'},

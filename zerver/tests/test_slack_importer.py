@@ -46,7 +46,7 @@ import shutil
 import requests
 import os
 import mock
-from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple, Text
+from typing import Any, AnyStr, Dict, List, Optional, Set, Tuple
 
 def remove_folder(path: str) -> None:
     if os.path.exists(path):

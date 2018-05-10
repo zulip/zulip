@@ -21,8 +21,6 @@ from zerver.models import (
     UserProfile,
 )
 
-from typing import Text
-
 import ujson
 
 class AlertWordTests(ZulipTestCase):
@@ -130,7 +128,7 @@ class AlertWordTests(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['alert_words'], ['two', 'three'])
 
-    def message_does_alert(self, user_profile: UserProfile, message: Text) -> bool:
+    def message_does_alert(self, user_profile: UserProfile, message: str) -> bool:
         """Send a bunch of messages as othello, so Hamlet is notified"""
         self.send_stream_message(self.example_email("othello"), "Denmark", message)
         user_message = most_recent_usermessage(user_profile)
