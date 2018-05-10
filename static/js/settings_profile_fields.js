@@ -27,11 +27,13 @@ function delete_profile_field(e) {
 
 function read_field_data_from_form(selector) {
     var field_data = {};
+    var i = 0;
     selector.each(function (ind, row) {
-        var value = row.children[0].value;
-        var text = row.children[1].value;
-        var order = row.children[2].value;
+        var value = i;
+        var text = row.children[0].value;
+        var order = row.children[1].value;
         field_data[value] = {text: text, order: order};
+        i += 1;
     });
     return field_data;
 }
