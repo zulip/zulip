@@ -22,7 +22,7 @@ from zerver.models import PreregistrationUser, EmailChangeStatus, MultiuseInvite
     UserProfile, Realm
 from random import SystemRandom
 import string
-from typing import Any, Dict, Optional, Text, Union
+from typing import Any, Dict, Optional, Union
 
 class ConfirmationKeyException(Exception):
     WRONG_LENGTH = 1
@@ -102,7 +102,7 @@ class Confirmation(models.Model):
     REALM_CREATION = 7
     type = models.PositiveSmallIntegerField()  # type: int
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return '<Confirmation: %s>' % (self.content_object,)
 
 class ConfirmationType:
@@ -145,7 +145,7 @@ def validate_key(creation_key: Optional[str]) -> Optional['RealmCreationKey']:
         raise RealmCreationKey.Invalid()
     return key_record
 
-def generate_realm_creation_url(by_admin: bool=False) -> Text:
+def generate_realm_creation_url(by_admin: bool=False) -> str:
     key = generate_key()
     RealmCreationKey.objects.create(creation_key=key,
                                     date_created=timezone_now(),
