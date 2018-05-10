@@ -328,7 +328,7 @@ exports.set_up = function () {
         $("#deactivate_self_modal").modal("show");
     });
 
-    $(".custom_user_field_value").on('change', function (e) {
+    $('#settings_page').on('change', '.custom_user_field_value', function (e) {
         var fields = [];
         var value = $(this).val();
         fields.push({id: parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10),
