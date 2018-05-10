@@ -2,7 +2,7 @@
 
 import logging
 import re
-from typing import Any, Dict, List, Optional, Text, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import ujson
 from defusedxml.ElementTree import fromstring as xml_fromstring
@@ -15,7 +15,7 @@ from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile
 
-def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[Text, Text]:
+def api_pivotal_webhook_v3(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = xml_fromstring(request.body)
 
     def get_text(attrs: List[str]) -> str:
@@ -79,7 +79,7 @@ UNSUPPORTED_EVENT_TYPES = [
     "epic_update_activity",
 ]
 
-def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[Text, Text]:
+def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> Tuple[str, str]:
     payload = ujson.loads(request.body)
 
     event_type = payload["kind"]
@@ -103,7 +103,7 @@ def api_pivotal_webhook_v5(request: HttpRequest, user_profile: UserProfile) -> T
     content = ""
     subject = "#%s: %s" % (story_id, story_name)
 
-    def extract_comment(change: Dict[str, Any]) -> Optional[Text]:
+    def extract_comment(change: Dict[str, Any]) -> Optional[str]:
         if change.get("kind") == "comment":
             return change.get("new_values", {}).get("text", None)
         return None

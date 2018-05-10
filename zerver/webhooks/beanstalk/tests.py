@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, Text
+from typing import Dict
 
 from mock import MagicMock, patch
 
@@ -139,5 +139,5 @@ class BeanstalkHookTests(WebhookTestCase):
         self.api_stream_message(self.TEST_USER_EMAIL, 'svn_changefile', expected_subject, expected_message,
                                 content_type=None)
 
-    def get_body(self, fixture_name: Text) -> Dict[str, Text]:
+    def get_body(self, fixture_name: str) -> Dict[str, str]:
         return {'payload': self.webhook_fixture_data('beanstalk', fixture_name)}

@@ -1,4 +1,3 @@
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -40,5 +39,5 @@ May 18 20:30:02 abc cron OR server1:
         self.send_and_test_stream_message('long_post', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("papertrail", fixture_name, file_type="json")

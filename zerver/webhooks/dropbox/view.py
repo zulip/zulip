@@ -1,4 +1,3 @@
-from typing import Text
 from django.http import HttpRequest, HttpResponse
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message

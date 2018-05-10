@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 
@@ -12,8 +11,8 @@ from zerver.models import UserProfile
 @api_key_only_webhook_view("Heroku")
 @has_request_variables
 def api_heroku_webhook(request: HttpRequest, user_profile: UserProfile,
-                       head: Text=REQ(), app: Text=REQ(), user: Text=REQ(),
-                       url: Text=REQ(), git_log: Text=REQ()) -> HttpResponse:
+                       head: str=REQ(), app: str=REQ(), user: str=REQ(),
+                       url: str=REQ(), git_log: str=REQ()) -> HttpResponse:
     template = "{} deployed version {} of [{}]({})\n> {}"
     content = template.format(user, head, app, url, git_log)
 

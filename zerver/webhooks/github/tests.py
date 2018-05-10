@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Text
+from typing import Dict, Optional
 
 import ujson
 from mock import MagicMock, patch

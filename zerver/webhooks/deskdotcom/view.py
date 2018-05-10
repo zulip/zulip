@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 
@@ -17,7 +16,7 @@ from zerver.models import UserProfile, get_client
 @authenticated_rest_api_view(webhook_client_name="Desk")
 @has_request_variables
 def api_deskdotcom_webhook(request: HttpRequest, user_profile: UserProfile,
-                           data: Text=REQ()) -> HttpResponse:
+                           data: str=REQ()) -> HttpResponse:
     topic = "Desk.com notification"
     check_send_webhook_message(request, user_profile, topic, data)
     return json_success()

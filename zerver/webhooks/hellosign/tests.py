@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -23,5 +22,5 @@ class HelloSignHookTests(WebhookTestCase):
         self.send_and_test_stream_message('signatures_with_own_subject', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded", topic=expected_subject)
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("hellosign", fixture_name, file_type="json")

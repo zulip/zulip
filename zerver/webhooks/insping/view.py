@@ -8,7 +8,7 @@ from zerver.lib.validator import check_dict, check_string
 from zerver.models import Client, UserProfile
 
 from django.http import HttpRequest, HttpResponse
-from typing import Dict, Any, Iterable, Optional, Text
+from typing import Dict, Any, Iterable, Optional
 
 import time
 

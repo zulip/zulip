@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -13,12 +13,12 @@ from zerver.lib.webhooks.common import check_send_webhook_message, \
     validate_extract_webhook_http_header
 from zerver.models import UserProfile
 
-def ticket_started_body(payload: Dict[str, Any]) -> Text:
+def ticket_started_body(payload: Dict[str, Any]) -> str:
     body = u'New ticket from {customer_name}'
     body += u"\n```quote\n**[Ticket #{number}: {title}]({app_url})**\n{summary}\n```"
     return body.format(**payload)
 
-def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[Text]:
+def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[str]:
     # Take the state, assignee, and assigned group from the payload.
     state = payload['state']
     assignee = payload['assignee']
@@ -46,7 +46,7 @@ def ticket_assigned_body(payload: Dict[str, Any]) -> Optional[Text]:
     else:
         return None
 
-def agent_replied_body(payload: Dict[str, Any]) -> Text:
+def agent_replied_body(payload: Dict[str, Any]) -> str:
     # Take the agent's email and the ticket number from the payload.
     agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
     number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]
@@ -56,7 +56,7 @@ def agent_replied_body(payload: Dict[str, Any]) -> Text:
     body += u"({app_ticket_url})**\n{plain_text_body}\n```"
     return body.format(**payload)
 
-def customer_replied_body(payload: Dict[str, Any]) -> Text:
+def customer_replied_body(payload: Dict[str, Any]) -> str:
     # Take the customer's email and the ticket number from the payload.
     customer = payload['links']['author']['href'].split("http://api.groovehq.com/v1/customers/")[1]
     number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]
@@ -66,7 +66,7 @@ def customer_replied_body(payload: Dict[str, Any]) -> Text:
     body += u"({app_ticket_url})**\n{plain_text_body}\n```"
     return body.format(**payload)
 
-def note_added_body(payload: Dict[str, Any]) -> Text:
+def note_added_body(payload: Dict[str, Any]) -> str:
     # Take the agent's email and the ticket number from the payload.
     agent = payload['links']['author']['href'].split("http://api.groovehq.com/v1/agents/")[1]
     number = payload['links']['ticket']['href'].split("http://api.groovehq.com/v1/tickets/")[1]

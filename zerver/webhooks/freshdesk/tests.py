@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -49,7 +48,7 @@ Priority: **High** => **Low**"""
         self.api_stream_message(self.TEST_USER_EMAIL, 'priority_changed', expected_subject, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
-    def note_change(self, fixture: Text, note_type: Text) -> None:
+    def note_change(self, fixture: str, note_type: str) -> None:
         """
         Messages are generated when a note gets added to a ticket through
         Freshdesk's "Observer" service.
@@ -76,5 +75,5 @@ Priority: **High** => **Low**"""
         self.api_stream_message(self.TEST_USER_EMAIL, "inline_images", expected_subject, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("freshdesk", fixture_name, file_type="json")

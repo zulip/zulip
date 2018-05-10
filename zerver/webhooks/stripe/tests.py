@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 import mock
 
@@ -141,5 +140,5 @@ class StripeHookTests(WebhookTestCase):
         self.send_and_test_stream_message('transfer_paid', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("stripe", fixture_name, file_type="json")

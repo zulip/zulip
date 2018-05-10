@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Callable, Dict, List, Optional, Text, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -23,22 +23,22 @@ class LibratoWebhookParser:
         self.payload = payload
         self.attachments = attachments
 
-    def generate_alert_url(self, alert_id: int) -> Text:
+    def generate_alert_url(self, alert_id: int) -> str:
         return self.ALERT_URL_TEMPLATE.format(alert_id=alert_id)
 
-    def parse_alert(self) -> Tuple[int, Text, Text, Text]:
+    def parse_alert(self) -> Tuple[int, str, str, str]:
         alert = self.payload['alert']
         alert_id = alert['id']
         return alert_id, alert['name'], self.generate_alert_url(alert_id), alert['runbook_url']
 
-    def parse_condition(self, condition: Dict[str, Any]) -> Tuple[Text, Text, Text, Text]:
+    def parse_condition(self, condition: Dict[str, Any]) -> Tuple[str, str, str, str]:
         summary_function = condition['summary_function']
         threshold = condition.get('threshold', '')
         condition_type = condition['type']
         duration = condition.get('duration', '')
         return summary_function, threshold, condition_type, duration
 
-    def parse_violation(self, violation: Dict[str, Any]) -> Tuple[Text, Text]:
+    def parse_violation(self, violation: Dict[str, Any]) -> Tuple[str, str]:
         metric_name = violation['metric']
         recorded_at = datetime.fromtimestamp((violation['recorded_at']),
                                              tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
@@ -52,7 +52,7 @@ class LibratoWebhookParser:
         violations = self.payload['violations']['test-source']
         return violations
 
-    def parse_snapshot(self, snapshot: Dict[str, Any]) -> Tuple[Text, Text, Text]:
+    def parse_snapshot(self, snapshot: Dict[str, Any]) -> Tuple[str, str, str]:
         author_name, image_url, title = snapshot['author_name'], snapshot['image_url'], snapshot['title']
         return author_name, image_url, title
 
@@ -68,7 +68,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
             SNAPSHOT: self.handle_snapshots
         }
 
-    def find_handle_method(self) -> Callable[[], Text]:
+    def find_handle_method(self) -> Callable[[], str]:
         for available_type in self.payload_available_types:
             if self.payload.get(available_type):
                 return self.payload_available_types[available_type]
@@ -77,17 +77,17 @@ class LibratoWebhookHandler(LibratoWebhookParser):
                 return self.attachments_available_types[available_type]
         raise Exception("Unexcepted message type")
 
-    def handle(self) -> Text:
+    def handle(self) -> str:
         return self.find_handle_method()()
 
-    def generate_topic(self) -> Text:
+    def generate_topic(self) -> str:
         if self.attachments:
             return "Snapshots"
         topic_template = "Alert {alert_name}"
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         return topic_template.format(alert_name=alert_name)
 
-    def handle_alert_clear_message(self) -> Text:
+    def handle_alert_clear_message(self) -> str:
         alert_clear_template = "Alert [alert_name]({alert_url}) has cleared at {trigger_time} UTC!"
         trigger_time = datetime.fromtimestamp((self.payload['trigger_time']),
                                               tz=timezone_utc).strftime('%Y-%m-%d %H:%M:%S')
@@ -97,19 +97,19 @@ class LibratoWebhookHandler(LibratoWebhookParser):
                                               trigger_time=trigger_time)
         return content
 
-    def handle_snapshots(self) -> Text:
+    def handle_snapshots(self) -> str:
         content = u''
         for attachment in self.attachments:
             content += self.handle_snapshot(attachment)
         return content
 
-    def handle_snapshot(self, snapshot: Dict[str, Any]) -> Text:
+    def handle_snapshot(self, snapshot: Dict[str, Any]) -> str:
         snapshot_template = u"**{author_name}** sent a [snapshot]({image_url}) of [metric]({title})"
         author_name, image_url, title = self.parse_snapshot(snapshot)
         content = snapshot_template.format(author_name=author_name, image_url=image_url, title=title)
         return content
 
-    def handle_alert_violation_message(self) -> Text:
+    def handle_alert_violation_message(self) -> str:
         alert_violation_template = u"Alert [alert_name]({alert_url}) has triggered! "
         alert_id, alert_name, alert_url, alert_runbook_url = self.parse_alert()
         content = alert_violation_template.format(alert_name=alert_name, alert_url=alert_url)
@@ -119,7 +119,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         content += self.generate_conditions_and_violations()
         return content
 
-    def generate_conditions_and_violations(self) -> Text:
+    def generate_conditions_and_violations(self) -> str:
         conditions = self.parse_conditions()
         violations = self.parse_violations()
         content = u""
@@ -128,7 +128,7 @@ class LibratoWebhookHandler(LibratoWebhookParser):
         return content
 
     def generate_violated_metric_condition(self, violation: Dict[str, Any],
-                                           condition: Dict[str, Any]) -> Text:
+                                           condition: Dict[str, Any]) -> str:
         summary_function, threshold, condition_type, duration = self.parse_condition(condition)
         metric_name, recorded_at = self.parse_violation(violation)
         metric_condition_template = (u"\n>Metric `{metric_name}`, {summary_function} "

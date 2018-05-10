@@ -1,7 +1,7 @@
 """Webhooks for external integrations."""
 
 import logging
-from typing import Any, Dict, List, Optional, Text, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import ujson
 from django.http import HttpRequest, HttpResponse

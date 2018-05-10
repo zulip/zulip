@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict, List, Mapping, Optional, Sequence, Text, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Sequence, Tuple
 
 import ujson
 from django.conf import settings
@@ -22,20 +22,20 @@ from zerver.views.messages import send_message_backend
 ZULIP_TEST_REPO_NAME = 'zulip-test'
 ZULIP_TEST_REPO_ID = 6893087
 
-def flexible_boolean(boolean: Text) -> bool:
+def flexible_boolean(boolean: str) -> bool:
     """Returns True for any of "1", "true", or "True".  Returns False otherwise."""
     if boolean in ("1", "true", "True"):
         return True
     else:
         return False
 
-def is_test_repository(repository: Mapping[Text, Any]) -> bool:
+def is_test_repository(repository: Mapping[str, Any]) -> bool:
     return repository['name'] == ZULIP_TEST_REPO_NAME and repository['id'] == ZULIP_TEST_REPO_ID
 
 class UnknownEventType(Exception):
     pass
 
-def github_pull_request_content(payload: Mapping[Text, Any]) -> Text:
+def github_pull_request_content(payload: Mapping[str, Any]) -> str:
     pull_request = payload['pull_request']
     action = get_pull_request_or_issue_action(payload)
 
@@ -57,7 +57,7 @@ def github_pull_request_content(payload: Mapping[Text, Any]) -> Text:
         pull_request['number']
     )
 
-def github_issues_content(payload: Mapping[Text, Any]) -> Text:
+def github_issues_content(payload: Mapping[str, Any]) -> str:
     issue = payload['issue']
     action = get_pull_request_or_issue_action(payload)
 
@@ -77,7 +77,7 @@ def github_issues_content(payload: Mapping[Text, Any]) -> Text:
         issue['number'],
     )
 
-def github_object_commented_content(payload: Mapping[Text, Any], type: Text) -> Text:
+def github_object_commented_content(payload: Mapping[str, Any], type: str) -> str:
     comment = payload['comment']
     issue = payload['issue']
     action = u'[commented]({}) on'.format(comment['html_url'])
@@ -91,18 +91,18 @@ def github_object_commented_content(payload: Mapping[Text, Any], type: Text) -> 
         type=type
     )
 
-def get_pull_request_or_issue_action(payload: Mapping[Text, Any]) -> Text:
+def get_pull_request_or_issue_action(payload: Mapping[str, Any]) -> str:
     return 'synchronized' if payload['action'] == 'synchronize' else payload['action']
 
-def get_pull_request_or_issue_assignee(object_payload: Mapping[Text, Any]) -> Optional[Text]:
+def get_pull_request_or_issue_assignee(object_payload: Mapping[str, Any]) -> Optional[str]:
     assignee_dict = object_payload.get('assignee')
     if assignee_dict:
         return assignee_dict.get('login')
     return None
 
-def get_pull_request_or_issue_subject(repository: Mapping[Text, Any],
-                                      payload_object: Mapping[Text, Any],
-                                      type: Text) -> Text:
+def get_pull_request_or_issue_subject(repository: Mapping[str, Any],
+                                      payload_object: Mapping[str, Any],
+                                      type: str) -> str:
     return SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE.format(
         repo=repository['name'],
         type=type,
@@ -110,16 +110,16 @@ def get_pull_request_or_issue_subject(repository: Mapping[Text, Any],
         title=payload_object['title']
     )
 
-def github_generic_subject(noun: Text, topic_focus: Text, blob: Mapping[Text, Any]) -> Text:
+def github_generic_subject(noun: str, topic_focus: str, blob: Mapping[str, Any]) -> str:
     # issue and pull_request objects have the same fields we're interested in
     return u'%s: %s %d: %s' % (topic_focus, noun, blob['number'], blob['title'])
 
 def api_github_v1(user_profile: UserProfile,
-                  event: Text,
-                  payload: Mapping[Text, Any],
-                  branches: Text,
-                  stream: Text,
-                  **kwargs: Any) -> Tuple[Text, Text, Text]:
+                  event: str,
+                  payload: Mapping[str, Any],
+                  branches: str,
+                  stream: str,
+                  **kwargs: Any) -> Tuple[str, str, str]:
     """
     processes github payload with version 1 field specification
     `payload` comes in unmodified from github
@@ -131,9 +131,9 @@ def api_github_v1(user_profile: UserProfile,
                          stream, commit_stream, issue_stream, **kwargs)
 
 
-def api_github_v2(user_profile: UserProfile, event: Text, payload: Mapping[Text, Any],
-                  branches: Text, default_stream: Text, commit_stream: Text,
-                  issue_stream: Text, topic_focus: Optional[Text]=None) -> Tuple[Text, Text, Text]:
+def api_github_v2(user_profile: UserProfile, event: str, payload: Mapping[str, Any],
+                  branches: str, default_stream: str, commit_stream: str,
+                  issue_stream: str, topic_focus: Optional[str]=None) -> Tuple[str, str, str]:
     """
     processes github payload with version 2 field specification
     `payload` comes in unmodified from github
@@ -201,13 +201,13 @@ def api_github_v2(user_profile: UserProfile, event: Text, payload: Mapping[Text,
 
 @authenticated_api_view(is_webhook=True)
 @has_request_variables
-def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: Text=REQ(),
-                       payload: Mapping[Text, Any]=REQ(validator=check_dict([])),
-                       branches: Text=REQ(default=''),
-                       stream: Text=REQ(default=''),
+def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: str=REQ(),
+                       payload: Mapping[str, Any]=REQ(validator=check_dict([])),
+                       branches: str=REQ(default=''),
+                       stream: str=REQ(default=''),
                        version: int=REQ(converter=to_non_negative_int, default=1),
-                       commit_stream: Text=REQ(default=''),
-                       issue_stream: Text=REQ(default=''),
+                       commit_stream: str=REQ(default=''),
+                       issue_stream: str=REQ(default=''),
                        exclude_pull_requests: bool=REQ(converter=flexible_boolean, default=False),
                        exclude_issues: bool=REQ(converter=flexible_boolean, default=False),
                        exclude_commits: bool=REQ(converter=flexible_boolean, default=False),
@@ -286,11 +286,11 @@ def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: T
                                 forged=False, topic_name=subject,
                                 message_content=content)
 
-def build_message_from_gitlog(user_profile: UserProfile, name: Text, ref: Text,
-                              commits: List[Dict[str, str]], before: Text, after: Text,
-                              url: Text, pusher: Text, forced: Optional[Text]=None,
-                              created: Optional[Text]=None, deleted: Optional[bool]=False
-                              ) -> Tuple[Text, Text]:
+def build_message_from_gitlog(user_profile: UserProfile, name: str, ref: str,
+                              commits: List[Dict[str, str]], before: str, after: str,
+                              url: str, pusher: str, forced: Optional[str]=None,
+                              created: Optional[str]=None, deleted: Optional[bool]=False
+                              ) -> Tuple[str, str]:
     short_ref = re.sub(r'^refs/heads/', '', ref)
     subject = SUBJECT_WITH_BRANCH_TEMPLATE.format(repo=name, branch=short_ref)
 

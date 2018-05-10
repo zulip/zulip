@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Text, Dict, Any
+from typing import Dict, Any
 from django.http import HttpRequest, HttpResponse
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables

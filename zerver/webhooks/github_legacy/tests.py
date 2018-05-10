@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Text
+from typing import Dict, Optional
 
 import ujson
 
@@ -7,11 +7,11 @@ from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import Message
 
 class GithubV1HookTests(WebhookTestCase):
-    STREAM_NAME = None  # type: Optional[Text]
+    STREAM_NAME = None  # type: Optional[str]
     URL_TEMPLATE = u"/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github_legacy'
     SEND_STREAM = False
-    BRANCHES = None  # type: Optional[Text]
+    BRANCHES = None  # type: Optional[str]
 
     push_content = u"""zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
 
@@ -38,7 +38,7 @@ class GithubV1HookTests(WebhookTestCase):
         after_count = Message.objects.count()
         self.assertEqual(prior_count, after_count)
 
-    def get_body(self, fixture_name: Text) -> Dict[str, Text]:
+    def get_body(self, fixture_name: str) -> Dict[str, str]:
         api_key = self.test_user.api_key
         data = ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'v1_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
@@ -51,9 +51,9 @@ class GithubV1HookTests(WebhookTestCase):
             data['branches'] = self.BRANCHES
         return data
 
-    def basic_test(self, fixture_name: Text, stream_name: Text,
-                   expected_subject: Text, expected_content: Text,
-                   send_stream: bool=False, branches: Optional[Text]=None) -> None:
+    def basic_test(self, fixture_name: str, stream_name: str,
+                   expected_subject: str, expected_content: str,
+                   send_stream: bool=False, branches: Optional[str]=None) -> None:
         self.STREAM_NAME = stream_name
         self.SEND_STREAM = send_stream
         self.BRANCHES = branches
@@ -132,11 +132,11 @@ class GithubV1HookTests(WebhookTestCase):
                         "zbenjamin [commented](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533#commitcomment-4252307) on [7c99467](https://github.com/zbenjamin/zulip-test/commit/7c994678d2f98797d299abed852d3ff9d0834533)\n~~~ quote\nThis line adds /unlucky/ cowbell (because of its line number).  We should remove it.\n~~~")
 
 class GithubV2HookTests(WebhookTestCase):
-    STREAM_NAME = None  # type: Optional[Text]
+    STREAM_NAME = None  # type: Optional[str]
     URL_TEMPLATE = u"/api/v1/external/github"
     FIXTURE_DIR_NAME = 'github_legacy'
     SEND_STREAM = False
-    BRANCHES = None  # type: Optional[Text]
+    BRANCHES = None  # type: Optional[str]
 
     push_content = """zbenjamin [pushed](https://github.com/zbenjamin/zulip-test/compare/4f9adc4777d5...b95449196980) 3 commits to branch master.
 
@@ -163,7 +163,7 @@ class GithubV2HookTests(WebhookTestCase):
         after_count = Message.objects.count()
         self.assertEqual(prior_count, after_count)
 
-    def get_body(self, fixture_name: Text) -> Dict[str, Text]:
+    def get_body(self, fixture_name: str) -> Dict[str, str]:
         api_key = self.test_user.api_key
         data = ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'v2_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
@@ -176,9 +176,9 @@ class GithubV2HookTests(WebhookTestCase):
             data['branches'] = self.BRANCHES
         return data
 
-    def basic_test(self, fixture_name: Text, stream_name: Text,
-                   expected_subject: Text, expected_content: Text,
-                   send_stream: bool=False, branches: Optional[Text]=None) -> None:
+    def basic_test(self, fixture_name: str, stream_name: str,
+                   expected_subject: str, expected_content: str,
+                   send_stream: bool=False, branches: Optional[str]=None) -> None:
         self.STREAM_NAME = stream_name
         self.SEND_STREAM = send_stream
         self.BRANCHES = branches

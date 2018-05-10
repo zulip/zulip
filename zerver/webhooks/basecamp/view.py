@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 from django.http import HttpRequest, HttpResponse
 
@@ -54,22 +54,22 @@ def api_basecamp_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
-def get_project_name(payload: Dict[str, Any]) -> Text:
+def get_project_name(payload: Dict[str, Any]) -> str:
     return payload['recording']['bucket']['name']
 
-def get_event_type(payload: Dict[str, Any]) -> Text:
+def get_event_type(payload: Dict[str, Any]) -> str:
     return payload['kind']
 
-def get_event_creator(payload: Dict[str, Any]) -> Text:
+def get_event_creator(payload: Dict[str, Any]) -> str:
     return payload['creator']['name']
 
-def get_subject_url(payload: Dict[str, Any]) -> Text:
+def get_subject_url(payload: Dict[str, Any]) -> str:
     return payload['recording']['app_url']
 
-def get_subject_title(payload: Dict[str, Any]) -> Text:
+def get_subject_title(payload: Dict[str, Any]) -> str:
     return payload['recording']['title']
 
-def get_verb(event: Text, prefix: Text) -> Text:
+def get_verb(event: str, prefix: str) -> str:
     verb = event.replace(prefix, '')
     if verb == 'active':
         return 'activated'
@@ -79,10 +79,10 @@ def get_verb(event: Text, prefix: Text) -> Text:
         return "changed {} of".format(matched.group('subject'))
     return verb
 
-def get_document_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_document_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'document_', DOCUMENT_TEMPLATE)
 
-def get_questions_answer_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_questions_answer_body(event: str, payload: Dict[str, Any]) -> str:
     verb = get_verb(event, 'question_answer_')
     question = payload['recording']['parent']
 
@@ -94,7 +94,7 @@ def get_questions_answer_body(event: Text, payload: Dict[str, Any]) -> Text:
         question_url=question['app_url']
     )
 
-def get_comment_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_comment_body(event: str, payload: Dict[str, Any]) -> str:
     verb = get_verb(event, 'comment_')
     task = payload['recording']['parent']
 
@@ -106,19 +106,19 @@ def get_comment_body(event: Text, payload: Dict[str, Any]) -> Text:
         task_url=task['app_url']
     )
 
-def get_questions_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_questions_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'question_', QUESTION_TEMPLATE)
 
-def get_message_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_message_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'message_', MESSAGE_TEMPLATE)
 
-def get_todo_list_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_todo_list_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'todolist_', TODO_LIST_TEMPLATE)
 
-def get_todo_body(event: Text, payload: Dict[str, Any]) -> Text:
+def get_todo_body(event: str, payload: Dict[str, Any]) -> str:
     return get_generic_body(event, payload, 'todo_', TODO_TEMPLATE)
 
-def get_generic_body(event: Text, payload: Dict[str, Any], prefix: Text, template: Text) -> Text:
+def get_generic_body(event: str, payload: Dict[str, Any], prefix: str, template: str) -> str:
     verb = get_verb(event, prefix)
 
     return template.format(

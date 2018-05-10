@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -119,5 +118,5 @@ Adding a comment. Oh, what a comment it is!"""
             self.send_and_test_stream_message('change_status_v1', expected_subject, expected_message)
             self.send_and_test_stream_message('change_status_v2', expected_subject, expected_message)
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('jira', fixture_name)

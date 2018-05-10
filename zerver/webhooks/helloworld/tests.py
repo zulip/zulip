@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import get_system_bot
@@ -56,5 +55,5 @@ class HelloWorldHookTests(WebhookTestCase):
         self.send_and_test_stream_message('goodbye', expected_subject, expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("helloworld", fixture_name, file_type="json")
