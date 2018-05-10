@@ -32,7 +32,7 @@ import logging
 import re
 import DNS
 
-from typing import Any, Callable, List, Optional, Text, Dict
+from typing import Any, Callable, List, Optional, Dict
 
 MIT_VALIDATION_ERROR = u'That user does not exist at MIT or is a ' + \
                        u'<a href="https://ist.mit.edu/email-lists">mailing list</a>. ' + \
@@ -42,7 +42,7 @@ WRONG_SUBDOMAIN_ERROR = "Your Zulip account is not a member of the " + \
                         "organization associated with this subdomain.  " + \
                         "Please contact %s with any questions!" % (FromAddress.SUPPORT,)
 
-def email_is_not_mit_mailing_list(email: Text) -> None:
+def email_is_not_mit_mailing_list(email: str) -> None:
     """Prevent MIT mailing lists from signing up for Zulip"""
     if "@mit.edu" in email:
         username = email.rsplit("@", 1)[0]
@@ -99,7 +99,7 @@ class RegistrationForm(forms.Form):
             max_length=Realm.MAX_REALM_NAME_LENGTH,
             required=self.realm_creation)
 
-    def clean_full_name(self) -> Text:
+    def clean_full_name(self) -> str:
         try:
             return check_full_name(self.cleaned_data['full_name'])
         except JsonableError as e:
@@ -164,7 +164,7 @@ class HomepageForm(forms.Form):
 
         return email
 
-def email_is_not_disposable(email: Text) -> None:
+def email_is_not_disposable(email: str) -> None:
     if is_disposable_domain(email_to_domain(email)):
         raise ValidationError(_("Please use your real email address."))
 
@@ -182,13 +182,13 @@ class LoggingSetPasswordForm(SetPasswordForm):
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
              domain_override: Optional[bool]=None,
-             subject_template_name: Text='registration/password_reset_subject.txt',
-             email_template_name: Text='registration/password_reset_email.html',
+             subject_template_name: str='registration/password_reset_subject.txt',
+             email_template_name: str='registration/password_reset_email.html',
              use_https: bool=False,
              token_generator: PasswordResetTokenGenerator=default_token_generator,
-             from_email: Optional[Text]=None,
+             from_email: Optional[str]=None,
              request: HttpRequest=None,
-             html_email_template_name: Optional[Text]=None,
+             html_email_template_name: Optional[str]=None,
              extra_email_context: Optional[Dict[str, Any]]=None
              ) -> None:
         """
@@ -286,7 +286,7 @@ class OurAuthenticationForm(AuthenticationForm):
 
         return self.cleaned_data
 
-    def add_prefix(self, field_name: Text) -> Text:
+    def add_prefix(self, field_name: str) -> str:
         """Disable prefix, since Zulip doesn't use this Django forms feature
         (and django-two-factor does use it), and we'd like both to be
         happy with this form.
@@ -294,14 +294,14 @@ class OurAuthenticationForm(AuthenticationForm):
         return field_name
 
 class MultiEmailField(forms.Field):
-    def to_python(self, emails: Text) -> List[Text]:
+    def to_python(self, emails: str) -> List[str]:
         """Normalize data to a list of strings."""
         if not emails:
             return []
 
         return [email.strip() for email in emails.split(',')]
 
-    def validate(self, emails: List[Text]) -> None:
+    def validate(self, emails: List[str]) -> None:
         """Check if value consists only of valid emails."""
         super().validate(emails)
         for email in emails:
@@ -311,7 +311,7 @@ class FindMyTeamForm(forms.Form):
     emails = MultiEmailField(
         help_text=_("Add up to 10 comma-separated email addresses."))
 
-    def clean_emails(self) -> List[Text]:
+    def clean_emails(self) -> List[str]:
         emails = self.cleaned_data['emails']
         if len(emails) > 10:
             raise forms.ValidationError(_("Please enter at most 10 emails."))

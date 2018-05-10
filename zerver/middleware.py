@@ -4,7 +4,7 @@ import logging
 import time
 import traceback
 from typing import Any, AnyStr, Callable, Dict, \
-    Iterable, List, MutableMapping, Optional, Text
+    Iterable, List, MutableMapping, Optional
 
 from django.conf import settings
 from django.contrib.sessions.middleware import SessionMiddleware
@@ -78,7 +78,7 @@ def format_timedelta(timedelta: float) -> str:
         return "%.1fs" % (timedelta)
     return "%.0fms" % (timedelta_ms(timedelta),)
 
-def is_slow_query(time_delta: float, path: Text) -> bool:
+def is_slow_query(time_delta: float, path: str) -> bool:
     if time_delta < 1.2:
         return False
     is_exempt = \
@@ -92,8 +92,8 @@ def is_slow_query(time_delta: float, path: Text) -> bool:
         return time_delta >= 10
     return True
 
-def write_log_line(log_data: MutableMapping[str, Any], path: Text, method: str, remote_ip: str, email: Text,
-                   client_name: Text, status_code: int=200, error_content: Optional[AnyStr]=None,
+def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, remote_ip: str, email: str,
+                   client_name: str, status_code: int=200, error_content: Optional[AnyStr]=None,
                    error_content_iter: Optional[Iterable[AnyStr]]=None) -> None:
     assert error_content is None or error_content_iter is None
     if error_content is not None:
@@ -213,7 +213,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: Text, method: str, 
         error_content_list = list(error_content_iter)
         if error_content_list:
             error_data = u''
-        elif isinstance(error_content_list[0], Text):
+        elif isinstance(error_content_list[0], str):
             error_data = u''.join(error_content_list)
         elif isinstance(error_content_list[0], bytes):
             error_data = repr(b''.join(error_content_list))
@@ -299,14 +299,14 @@ class CsrfFailureError(JsonableError):
     code = ErrorCode.CSRF_FAILED
     data_fields = ['reason']
 
-    def __init__(self, reason: Text) -> None:
-        self.reason = reason  # type: Text
+    def __init__(self, reason: str) -> None:
+        self.reason = reason  # type: str
 
     @staticmethod
-    def msg_format() -> Text:
+    def msg_format() -> str:
         return _("CSRF Error: {reason}")
 
-def csrf_failure(request: HttpRequest, reason: Text="") -> HttpResponse:
+def csrf_failure(request: HttpRequest, reason: str="") -> HttpResponse:
     if request.error_format == "JSON":
         return json_response_from_error(CsrfFailureError(reason))
     else:
