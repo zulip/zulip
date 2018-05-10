@@ -539,6 +539,12 @@ exports.get_msg_ids_for_mentions = function () {
     return util.sorted_ids(ids);
 };
 
+exports.get_all_msg_ids = function () {
+    var ids = unread_messages.members();
+
+    return util.sorted_ids(ids);
+};
+
 exports.get_msg_ids_for_starred = function () {
     // This is here for API consistency sake--we never
     // have unread starred messages.  (Some day we may ironically

@@ -91,6 +91,7 @@ var zero_counts = {
 
     unread.process_loaded_messages([message, other_message]);
 
+    assert.deepEqual(unread.get_all_msg_ids(), [15, 16]);
     assert.deepEqual(unread.get_unread_message_ids([15, 16]), [15, 16]);
     assert.deepEqual(
         unread.get_unread_messages([message, other_message]),
@@ -234,6 +235,9 @@ stream_data.get_stream_id = function () {
     assert.equal(counts.home_unread_messages, 0);
     assert.equal(unread.num_unread_for_stream(stream_id), 0);
     assert.deepEqual(unread.get_msg_ids_for_stream(stream_id), []);
+
+    // we still find the message id here (muting is ignored)
+    assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
 }());
@@ -445,6 +449,7 @@ stream_data.get_stream_id = function () {
     assert.deepEqual(unread.get_msg_ids_for_person(alice.user_id), [message.id]);
     assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
+    assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 }());
 
 
@@ -474,6 +479,7 @@ stream_data.get_stream_id = function () {
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 1);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), [message.id]);
+    assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
@@ -573,6 +579,7 @@ stream_data.get_stream_id = function () {
 
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
+    assert.deepEqual(unread.get_all_msg_ids(), []);
 }());
 
 (function test_errors() {
