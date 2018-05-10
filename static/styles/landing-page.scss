@@ -1015,7 +1015,7 @@ nav ul li.active::after {
 }
 
 .faqs header {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
 }
 
@@ -1025,8 +1025,9 @@ nav ul li.active::after {
 
 .faqs .faq {
     margin: 50px auto;
-    max-width: 800px;
-    font-size: 1.3em;
+    max-width: 700px;
+    font-size: 1.2em;
+    color: #3b3d42;
 }
 
 /* the last faq in the box shouldn't have an extra 50px of margin. */
@@ -1036,11 +1037,14 @@ nav ul li.active::after {
 
 .faqs .faq .question {
     font-weight: 600;
+    color: #525e7a;
+    font-size: 1.1em;
+    line-height: 1.5;
 }
 
 .faqs .faq .answer {
     margin: 20px 0px 0px 0px;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .screen .line {
@@ -1823,12 +1827,11 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main {
-    max-width: 900px;
+    max-width: 800px;
 }
 
 .portico-landing.why-page .hero {
     padding: 200px 50px 100px 50px;
-
 
     background: #69b190;
     color: #fff;
@@ -1847,7 +1850,6 @@ nav ul li.active::after {
 
 .portico-landing.why-page .hero p {
     width: 70%;
-    max-width: 700px;
     margin: 0 auto;
 
     font-size: 1.3em;
@@ -1863,12 +1865,14 @@ nav ul li.active::after {
 
 .portico-landing.why-page .main li {
     line-height: 1.6;
-    font-size: 1em;
+    font-size: 1.2em;
 }
 
 .portico-landing.why-page .main p {
-    font-size: 1em;
+    font-size: 1.2em;
     margin: 0px 0px 20px;
+    color: #3b3d42;
+    line-height: 1.4;
 }
 
 .portico-landing.why-page .main h3 {
