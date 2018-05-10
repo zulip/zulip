@@ -1,6 +1,6 @@
 # Webhooks for external integrations.
 
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -27,10 +27,10 @@ def api_circleci_webhook(request: HttpRequest, user_profile: UserProfile,
     check_send_webhook_message(request, user_profile, subject, body)
     return json_success()
 
-def get_subject(payload: Dict[str, Any]) -> Text:
+def get_subject(payload: Dict[str, Any]) -> str:
     return CIRCLECI_SUBJECT_TEMPLATE.format(repository_name=payload['reponame'])
 
-def get_body(payload: Dict[str, Any]) -> Text:
+def get_body(payload: Dict[str, Any]) -> str:
     data = {
         'build_url': payload['build_url'],
         'username': payload['username'],
@@ -39,7 +39,7 @@ def get_body(payload: Dict[str, Any]) -> Text:
     }
     return CIRCLECI_MESSAGE_TEMPLATE.format(**data)
 
-def get_status(payload: Dict[str, Any]) -> Text:
+def get_status(payload: Dict[str, Any]) -> str:
     status = payload['status']
     if payload['previous'] and payload['previous']['status'] == FAILED_STATUS and status == FAILED_STATUS:
         return u'is still failing'

@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -129,5 +128,5 @@ class BasecampHookTests(WebhookTestCase):
         expected_message = u"Tomasz created the [comment](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624#__recording_427058780) of the task [New task](https://3.basecamp.com/3688623/buckets/2957043/todos/427055624)"
         self._send_and_test_message('comment_created', expected_message)
 
-    def _send_and_test_message(self, fixture_name: Text, expected_message: Text) -> None:
+    def _send_and_test_message(self, fixture_name: str, expected_message: str) -> None:
         self.send_and_test_stream_message(fixture_name, self.EXPECTED_SUBJECT, expected_message)

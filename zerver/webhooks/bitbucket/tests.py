@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Dict, Optional, Text, Union
+from typing import Dict, Optional, Union
 
 from mock import MagicMock, patch
 
@@ -74,5 +74,5 @@ class BitbucketHookTests(WebhookTestCase):
         self.assertFalse(check_send_webhook_message_mock.called)
         self.assert_json_success(result)
 
-    def get_body(self, fixture_name: Text) -> Union[Text, Dict[str, Text]]:
+    def get_body(self, fixture_name: str) -> Union[str, Dict[str, str]]:
         return self.webhook_fixture_data(self.FIXTURE_DIR_NAME, fixture_name)

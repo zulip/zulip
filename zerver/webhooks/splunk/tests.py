@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -104,5 +103,5 @@ class SplunkHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("splunk", fixture_name, file_type="json")

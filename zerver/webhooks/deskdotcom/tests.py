@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -55,5 +54,5 @@ class DeskDotComHookTests(WebhookTestCase):
         self.api_stream_message(self.TEST_USER_EMAIL, 'unicode_text_japanese', expected_subject, expected_message,
                                 content_type="application/x-www-form-urlencoded")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("deskdotcom", fixture_name, file_type="txt")

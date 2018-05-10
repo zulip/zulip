@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import urllib
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 from zerver.models import get_realm, get_user
@@ -39,5 +38,5 @@ class GocdHookTests(WebhookTestCase):
             content_type="application/x-www-form-urlencoded"
         )
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("gocd", fixture_name, file_type="json")

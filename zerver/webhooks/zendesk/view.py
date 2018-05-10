@@ -1,5 +1,4 @@
 # Webhooks for external integrations.
-from typing import Text
 
 from django.http import HttpRequest, HttpResponse
 
@@ -9,7 +8,7 @@ from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message
 from zerver.models import UserProfile, get_client
 
-def truncate(string: Text, length: int) -> Text:
+def truncate(string: str, length: int) -> str:
     if len(string) > length:
         string = string[:length-3] + '...'
     return string

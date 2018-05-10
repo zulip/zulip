@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
-
 from zerver.lib.test_classes import WebhookTestCase
 
 class GrooveHookTests(WebhookTestCase):
@@ -115,5 +113,5 @@ class GrooveHookTests(WebhookTestCase):
                                   HTTP_X_GROOVE_EVENT='ticket_started')
         self.assert_json_error(result, 'Missing required data')
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")

@@ -1,5 +1,5 @@
 # Webhooks for external integrations.
-from typing import Any, Dict, Iterable, Optional, Text
+from typing import Any, Dict, Iterable, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _

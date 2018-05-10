@@ -1,4 +1,3 @@
-from typing import Text
 import ujson
 
 from zerver.lib.test_classes import WebhookTestCase
@@ -179,5 +178,5 @@ class FrontHookTests(WebhookTestCase):
 
         self.assert_json_error(result, "Unknown webhook request")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('front', fixture_name, file_type="json")

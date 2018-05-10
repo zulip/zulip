@@ -18,7 +18,7 @@ value should always be in bold; otherwise the subject of US/task
 should be in bold.
 """
 
-from typing import Any, Dict, List, Mapping, Optional, Text, Tuple
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import ujson
 from django.http import HttpRequest, HttpResponse

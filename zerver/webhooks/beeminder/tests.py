@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest.mock import patch
-from typing import Text, Any
+from typing import Any
 from zerver.lib.test_classes import WebhookTestCase
 
 class BeeminderHookTests(WebhookTestCase):
@@ -36,5 +36,5 @@ class BeeminderHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type="application/json")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("beeminder", fixture_name, file_type="json")

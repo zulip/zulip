@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -62,5 +61,5 @@ class GreenhouseHookTests(WebhookTestCase):
                                           expected_message,
                                           content_type=self.CONTENT_TYPE)
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("greenhouse", fixture_name, file_type="json")

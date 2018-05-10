@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
-
 from zerver.lib.test_classes import WebhookTestCase
 
 class TaigaHookTests(WebhookTestCase):

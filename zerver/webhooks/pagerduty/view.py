@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 
 import pprint
-from typing import Any, Dict, Iterable, Optional, Text
+from typing import Any, Dict, Iterable, Optional
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -83,7 +83,7 @@ def send_raw_pagerduty_json(request: HttpRequest,
 
 def send_formated_pagerduty(request: HttpRequest,
                             user_profile: UserProfile,
-                            message_type: Text,
+                            message_type: str,
                             format_dict: Dict[str, Any]) -> None:
     if message_type in ('incident.trigger', 'incident.unacknowledge'):
         template = (u':imp: Incident '

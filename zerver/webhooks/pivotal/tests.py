@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from typing import Text
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -69,7 +68,7 @@ class PivotalV3HookTests(WebhookTestCase):
 [(view)](https://www.pivotaltracker.com/s/projects/807213/stories/48276573)'
         self.send_and_test_stream_message('type_changed', expected_subject, expected_message, content_type="application/xml")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('pivotal', fixture_name, file_type='xml')
 
 class PivotalV5HookTests(WebhookTestCase):
@@ -145,5 +144,5 @@ Try again next time
 * type changed from **feature** to **bug**"""
         self.send_and_test_stream_message('type_changed', expected_subject, expected_message, content_type="application/xml")
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data('pivotal', "v5_{}".format(fixture_name), file_type='json')

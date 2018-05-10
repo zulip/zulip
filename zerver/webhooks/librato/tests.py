@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib
-from typing import Optional, Text
+from typing import Optional
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -10,7 +10,7 @@ class LibratoHookTests(WebhookTestCase):
     FIXTURE_DIR_NAME = 'librato'
     IS_ATTACHMENT = False
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         if self.IS_ATTACHMENT:
             return self.webhook_fixture_data("librato", fixture_name, file_type='json')
         return urllib.parse.urlencode({'payload': self.webhook_fixture_data("librato", fixture_name, file_type='json')})

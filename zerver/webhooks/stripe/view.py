@@ -1,7 +1,7 @@
 # Webhooks for external integrations.
 import time
 from datetime import datetime
-from typing import Any, Dict, Optional, Text
+from typing import Any, Dict, Optional
 
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
@@ -16,7 +16,7 @@ from zerver.models import UserProfile
 @has_request_variables
 def api_stripe_webhook(request: HttpRequest, user_profile: UserProfile,
                        payload: Dict[str, Any]=REQ(argument_type='body'),
-                       stream: Text=REQ(default='test')) -> HttpResponse:
+                       stream: str=REQ(default='test')) -> HttpResponse:
     body = None
     event_type = payload["type"]
     data_object = payload["data"]["object"]

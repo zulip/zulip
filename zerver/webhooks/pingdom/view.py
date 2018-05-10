@@ -1,5 +1,5 @@
 # Webhooks pfor external integrations.
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 import ujson
 from django.http import HttpRequest, HttpResponse
@@ -47,11 +47,11 @@ def api_pingdom_webhook(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 
-def get_subject_for_http_request(payload: Dict[str, Any]) -> Text:
+def get_subject_for_http_request(payload: Dict[str, Any]) -> str:
     return PINGDOM_SUBJECT_TEMPLATE.format(name=payload['check_name'])
 
 
-def get_body_for_http_request(payload: Dict[str, Any]) -> Text:
+def get_body_for_http_request(payload: Dict[str, Any]) -> str:
     current_state = payload['current_state']
     previous_state = payload['previous_state']
 
@@ -68,5 +68,5 @@ def get_body_for_http_request(payload: Dict[str, Any]) -> Text:
     return body
 
 
-def get_check_type(payload: Dict[str, Any]) -> Text:
+def get_check_type(payload: Dict[str, Any]) -> str:
     return payload['check_type']

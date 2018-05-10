@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Any, Dict, Text
+from typing import Any, Dict
 
 from zerver.lib.test_classes import WebhookTestCase
 
@@ -39,5 +39,5 @@ class TransifexHookTests(WebhookTestCase):
         )
         self.send_and_test_stream_message("", expected_subject, expected_message)
 
-    def get_body(self, fixture_name: Text) -> Dict[str, Any]:
+    def get_body(self, fixture_name: str) -> Dict[str, Any]:
         return {}
