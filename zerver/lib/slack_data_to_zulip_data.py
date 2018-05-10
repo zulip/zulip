@@ -39,6 +39,7 @@ maps = {
     'recipient_id_to_stream': {},  # Map recipient id to stream id and name
                                    # Specifically used for rendering message urls in slack threads
     'user_id_to_user_name': {},  # Map Zulip user id to user's 'full_name'
+    'private_to_attachment_url': {},  # Map attachment's private url to its Zulip url
 }   # type: Dict[str, Dict[Any, Any]]
 
 def rm_tree(path: str) -> None:
@@ -709,6 +710,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # For attachments with slack download link
             elif subtype == "file_share" and 'files.slack.com' in message['file']['url_private']:
                 fileinfo = message['file']
+                realm_uri = settings.EXTERNAL_URI_SCHEME + domain_name
 
                 has_attachment = has_link = True
                 has_image = True if 'image' in fileinfo['mimetype'] else False
@@ -717,6 +719,10 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 file_user_email = get_user_email(file_user[0], domain_name)
 
                 s3_path, content = get_attachment_path_and_content(fileinfo, realm_id)
+
+                # To map attachment's private url to the attachment url in Zulip
+                attachment_path = ('%s/user_uploads/%s' % (realm_uri, s3_path))
+                maps['private_to_attachment_url'][message['file']['url_private']] = attachment_path
 
                 # construct attachments
                 build_uploads(added_users[user], realm_id, file_user_email, fileinfo, s3_path,
@@ -737,6 +743,20 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 else:
                     file_name = fileinfo['name']
                 content = '[%s](%s)' % (file_name, fileinfo['url_private'])
+
+            elif subtype == "file_comment":
+                has_attachment = True
+                fileinfo = message['file']
+                tokens = content.split(' ')
+                for token in tokens:
+                    if 'http' in token and '|' in token:
+                        # change the format of the message from 'url|title:' to '[comment](title)'
+                        url = token.split('|')
+                        url[1] = url[1].replace(':', '')
+                        new_token = ("[%s](%s)" % (url[1], url[0]))
+                        content = content.replace(token, new_token)
+                content = content.replace(fileinfo['permalink'],
+                                          maps['private_to_attachment_url'][fileinfo['url_private']])
 
         # construct message
         zulip_message = dict(

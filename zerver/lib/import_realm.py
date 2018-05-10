@@ -84,7 +84,7 @@ def fix_datetime_fields(data: TableData, table: TableName) -> None:
             if item[field_name] is not None:
                 item[field_name] = datetime.datetime.fromtimestamp(item[field_name], tz=timezone_utc)
 
-def fix_upload_links(data: TableData, message_table: TableName) -> None:
+def fix_upload_links(data: TableData, message_table: TableName, realm_uri: str) -> None:
     """
     Because the URLs for uploaded files encode the realm ID of the
     organization being imported (which is only determined at import
@@ -95,8 +95,12 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
         if message['has_attachment'] is True:
             for key, value in path_maps['attachment_path'].items():
                 if key in message['content']:
+                    prev_realm_uri = settings.EXTERNAL_URI_SCHEME + Realm.host_for_subdomain('')
+                    message['content'] = message['content'].replace(prev_realm_uri, realm_uri)
                     message['content'] = message['content'].replace(key, value)
                     if message['rendered_content']:
+                        message['rendered_content'] = message['rendered_content'].replace(
+                            prev_realm_uri, realm_uri)
                         message['rendered_content'] = message['rendered_content'].replace(key, value)
 
 def fix_message_urls(data: TableData, message_table: TableName,
@@ -664,7 +668,7 @@ def import_message_data(import_dir: Path, realm_uri: str) -> None:
         re_map_foreign_keys(data, 'zerver_message', 'sending_client', related_table='client')
         fix_datetime_fields(data, 'zerver_message')
         # Parser to update message content with the updated attachment urls
-        fix_upload_links(data, 'zerver_message')
+        fix_upload_links(data, 'zerver_message', realm_uri)
 
         re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
         fix_message_urls(data, 'zerver_message', realm_uri)
