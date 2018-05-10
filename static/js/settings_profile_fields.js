@@ -36,6 +36,24 @@ function read_field_data_from_form(selector) {
     return field_data;
 }
 
+function create_choice_row(container, add_delete_button) {
+    var context = {};
+    context.add_delete_button = add_delete_button;
+    var row = templates.render("profile-field-choice", context);
+    $(container).append(row);
+}
+
+function clear_form_data() {
+    $("#profile_field_name").val("");
+    $("#profile_field_hint").val("");
+    // Set default in field type dropdown
+    $("#profile_field_type").val("1");
+    // Clear data from choice field form
+    $("#profile_field_choices").html("");
+    create_choice_row($("#profile_field_choices"), false);
+    $("#profile_field_choices_row").hide();
+}
+
 function create_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -47,16 +65,12 @@ function create_profile_field(e) {
         field_data = read_field_data_from_form(selector);
     }
     $('#profile_field_data').val(JSON.stringify(field_data));
+    var opts = {
+        success_continuation: clear_form_data,
+    };
 
     settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", $(this).serialize(),
-                                   $('#admin-profile-field-status').expectOne());
-}
-
-function create_choice_row(container, add_delete_button) {
-    var context = {};
-    context.add_delete_button = add_delete_button;
-    var row = templates.render("profile-field-choice", context);
-    $(container).append(row);
+                                   $('#admin-profile-field-status').expectOne(), opts);
 }
 
 function add_choice_row(e) {
@@ -96,12 +110,28 @@ function get_profile_field_info(id) {
     return info;
 }
 
+function get_profile_field(id) {
+    var all_custom_fields = page_params.custom_profile_fields;
+    var field;
+    for (var i = 0; i < all_custom_fields.length; i += 1) {
+        if (all_custom_fields[i].id === id) {
+            field = all_custom_fields[i];
+            break;
+        }
+    }
+    return field;
+}
+
 function open_edit_form(e) {
     var field_id = $(e.currentTarget).attr("data-profile-field-id");
     var profile_field = get_profile_field_info(field_id);
 
     profile_field.row.hide();
     profile_field.form.show();
+    var field = get_profile_field(parseInt(field_id,10));
+    // Set initial value in edit form
+    profile_field.form.find('input[name=name]').val(field.name);
+    profile_field.form.find('input[name=hint]').val(field.hint);
 
     profile_field.form.find('.reset').on("click", function () {
         profile_field.form.hide();
