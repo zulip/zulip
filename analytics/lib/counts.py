@@ -3,7 +3,7 @@ from collections import OrderedDict, defaultdict
 from datetime import datetime, timedelta
 import logging
 from typing import Any, Callable, Dict, List, \
-    Optional, Text, Tuple, Type, Union
+    Optional, Tuple, Type, Union
 
 from django.conf import settings
 from django.db import connection, models
@@ -48,7 +48,7 @@ class CountStat:
         else:  # frequency == CountStat.DAY
             self.interval = timedelta(days=1)
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<CountStat: %s>" % (self.property,)
 
 class LoggingCountStat(CountStat):
