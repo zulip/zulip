@@ -71,7 +71,7 @@ function candidate_ids() {
     assert.equal(unread_ids, undefined);
 
     terms = [
-        {operator: 'sender', operand: 'me@example.com'},
+        {operator: 'bogus_operator', operand: 'me@example.com'},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
@@ -128,6 +128,17 @@ function candidate_ids() {
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [stream_msg.id]);
+
+    terms = [
+        {operator: 'sender', operand: 'me@example.com'},
+    ];
+    set_filter(terms);
+    // note that our candidate ids are just "all" ids now
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [stream_msg.id]);
+
+    // this actually does filtering
+    assert_unread_info({flavor: 'not_found'});
 
     terms = [
         {operator: 'pm-with', operand: 'alice@example.com'},

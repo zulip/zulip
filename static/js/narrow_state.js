@@ -256,6 +256,11 @@ exports._possible_unread_message_ids = function () {
         return unread.get_msg_ids_for_starred();
     }
 
+    if (current_filter.can_bucket_by('sender')) {
+        // TODO: see #9352 to make this more efficient
+        return unread.get_all_msg_ids();
+    }
+
     return;
 };
 
