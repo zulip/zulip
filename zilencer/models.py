@@ -1,11 +1,10 @@
 import datetime
-from typing import Text
 
 from django.db import models
 
 from zerver.models import AbstractPushDeviceToken, Realm
 
-def get_remote_server_by_uuid(uuid: Text) -> 'RemoteZulipServer':
+def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
 
 class RemoteZulipServer(models.Model):
@@ -13,11 +12,11 @@ class RemoteZulipServer(models.Model):
     API_KEY_LENGTH = 64
     HOSTNAME_MAX_LENGTH = 128
 
-    uuid = models.CharField(max_length=UUID_LENGTH, unique=True)  # type: Text
-    api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: Text
+    uuid = models.CharField(max_length=UUID_LENGTH, unique=True)  # type: str
+    api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: str
 
-    hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)  # type: Text
-    contact_email = models.EmailField(blank=True, null=False)  # type: Text
+    hostname = models.CharField(max_length=HOSTNAME_MAX_LENGTH)  # type: str
+    contact_email = models.EmailField(blank=True, null=False)  # type: str
     last_updated = models.DateTimeField('last updated', auto_now=True)  # type: datetime.datetime
 
     def __str__(self) -> str:
