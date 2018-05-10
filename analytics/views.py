@@ -7,7 +7,7 @@ import time
 from collections import defaultdict
 from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, List, \
-    Optional, Set, Text, Tuple, Type, Union
+    Optional, Set, Tuple, Type, Union
 
 import pytz
 from django.conf import settings
@@ -74,7 +74,7 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
 
 @has_request_variables
-def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: Text=REQ(),
+def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: str=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                    start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
                    end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
@@ -1013,7 +1013,7 @@ def user_activity_summary_table(user_summary: Dict[str, Dict[str, Any]]) -> str:
     return make_table(title, cols, rows)
 
 def realm_user_summary_table(all_records: List[QuerySet],
-                             admin_emails: Set[Text]) -> Tuple[Dict[str, Dict[str, Any]], str]:
+                             admin_emails: Set[str]) -> Tuple[Dict[str, Dict[str, Any]], str]:
     user_records = {}
 
     def by_email(record: QuerySet) -> str:

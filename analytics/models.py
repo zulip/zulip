@@ -1,5 +1,5 @@
 import datetime
-from typing import Any, Dict, Optional, Text, Tuple, Union
+from typing import Any, Dict, Optional, Tuple, Union
 
 from django.db import models
 
@@ -7,7 +7,7 @@ from zerver.lib.timestamp import floor_to_day
 from zerver.models import Realm, Recipient, Stream, UserProfile
 
 class FillState(models.Model):
-    property = models.CharField(max_length=40, unique=True)  # type: Text
+    property = models.CharField(max_length=40, unique=True)  # type: str
     end_time = models.DateTimeField()  # type: datetime.datetime
 
     # Valid states are {DONE, STARTED}
@@ -17,7 +17,7 @@ class FillState(models.Model):
 
     last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<FillState: %s %s %s>" % (self.property, self.end_time, self.state)
 
 # The earliest/starting end_time in FillState
@@ -36,17 +36,17 @@ def last_successful_fill(property: str) -> Optional[datetime.datetime]:
 
 # would only ever make entries here by hand
 class Anomaly(models.Model):
-    info = models.CharField(max_length=1000)  # type: Text
+    info = models.CharField(max_length=1000)  # type: str
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<Anomaly: %s... %s>" % (self.info, self.id)
 
 class BaseCount(models.Model):
     # Note: When inheriting from BaseCount, you may want to rearrange
     # the order of the columns in the migration to make sure they
     # match how you'd like the table to be arranged.
-    property = models.CharField(max_length=32)  # type: Text
-    subgroup = models.CharField(max_length=16, null=True)  # type: Optional[Text]
+    property = models.CharField(max_length=32)  # type: str
+    subgroup = models.CharField(max_length=16, null=True)  # type: Optional[str]
     end_time = models.DateTimeField()  # type: datetime.datetime
     value = models.BigIntegerField()  # type: int
     anomaly = models.ForeignKey(Anomaly, on_delete=models.SET_NULL, null=True)  # type: Optional[Anomaly]
@@ -59,7 +59,7 @@ class InstallationCount(BaseCount):
     class Meta:
         unique_together = ("property", "subgroup", "end_time")
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<InstallationCount: %s %s %s>" % (self.property, self.subgroup, self.value)
 
 class RealmCount(BaseCount):
@@ -69,7 +69,7 @@ class RealmCount(BaseCount):
         unique_together = ("realm", "property", "subgroup", "end_time")
         index_together = ["property", "end_time"]
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<RealmCount: %s %s %s %s>" % (self.realm, self.property, self.subgroup, self.value)
 
 class UserCount(BaseCount):
@@ -82,7 +82,7 @@ class UserCount(BaseCount):
         # aggregating from users to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<UserCount: %s %s %s %s>" % (self.user, self.property, self.subgroup, self.value)
 
 class StreamCount(BaseCount):
@@ -95,6 +95,6 @@ class StreamCount(BaseCount):
         # aggregating from streams to realms
         index_together = ["property", "realm", "end_time"]
 
-    def __str__(self) -> Text:
+    def __str__(self) -> str:
         return "<StreamCount: %s %s %s %s %s>" % (
             self.stream, self.property, self.subgroup, self.value, self.id)

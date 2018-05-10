@@ -1,6 +1,6 @@
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Mapping, Optional, Text, Type, Union
+from typing import Any, Dict, List, Mapping, Optional, Type, Union
 
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now as timezone_now
@@ -20,8 +20,8 @@ class Command(BaseCommand):
     DAYS_OF_DATA = 100
     random_seed = 26
 
-    def create_user(self, email: Text,
-                    full_name: Text,
+    def create_user(self, email: str,
+                    full_name: str,
                     is_staff: bool,
                     date_joined: datetime,
                     realm: Realm) -> UserProfile:

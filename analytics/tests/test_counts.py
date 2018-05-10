@@ -1,6 +1,6 @@
 
 from datetime import datetime, timedelta
-from typing import Any, Dict, List, Optional, Text, Tuple, Type, Union
+from typing import Any, Dict, List, Optional, Tuple, Type, Union
 
 import ujson
 from django.apps import apps
@@ -91,8 +91,8 @@ class AnalyticsTestCase(TestCase):
         return Message.objects.create(**kwargs)
 
     # kwargs should only ever be a UserProfile or Stream.
-    def assertCountEquals(self, table: Type[BaseCount], value: int, property: Optional[Text]=None,
-                          subgroup: Optional[Text]=None, end_time: datetime=TIME_ZERO,
+    def assertCountEquals(self, table: Type[BaseCount], value: int, property: Optional[str]=None,
+                          subgroup: Optional[str]=None, end_time: datetime=TIME_ZERO,
                           realm: Optional[Realm]=None, **kwargs: models.Model) -> None:
         if property is None:
             property = self.current_property
