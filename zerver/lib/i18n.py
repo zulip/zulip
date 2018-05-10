@@ -7,12 +7,12 @@ from django.utils.translation import ugettext as _
 from django.utils.lru_cache import lru_cache
 
 from itertools import zip_longest
-from typing import Any, List, Dict, Optional, Text
+from typing import Any, List, Dict, Optional
 
 import os
 import ujson
 
-def with_language(string: Text, language: Text) -> Text:
+def with_language(string: str, language: str) -> str:
     """
     This is an expensive function. If you are using it in a loop, it will
     make your code slow.
@@ -30,7 +30,7 @@ def get_language_list() -> List[Dict[str, Any]]:
         languages = ujson.load(reader)
         return languages['name_map']
 
-def get_language_list_for_templates(default_language: Text) -> List[Dict[str, Dict[str, str]]]:
+def get_language_list_for_templates(default_language: str) -> List[Dict[str, Dict[str, str]]]:
     language_list = [l for l in get_language_list()
                      if 'percent_translated' not in l or
                         l['percent_translated'] >= 5.]
@@ -67,13 +67,13 @@ def get_language_list_for_templates(default_language: Text) -> List[Dict[str, Di
 
     return formatted_list
 
-def get_language_name(code: str) -> Optional[Text]:
+def get_language_name(code: str) -> Optional[str]:
     for lang in get_language_list():
         if code in (lang['code'], lang['locale']):
             return lang['name']
     return None
 
-def get_available_language_codes() -> List[Text]:
+def get_available_language_codes() -> List[str]:
     language_list = get_language_list()
     codes = [language['code'] for language in language_list]
     return codes

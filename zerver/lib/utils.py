@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple, Text
+from typing import Any, Callable, List, Optional, Sequence, TypeVar, Iterable, Set, Tuple
 import base64
 import errno
 import hashlib
@@ -85,8 +85,8 @@ def run_in_batches(all_list: Sequence[T],
         if i != limit - 1:
             sleep(sleep_time)
 
-def make_safe_digest(string: Text,
-                     hash_func: Callable[[bytes], Any]=hashlib.sha1) -> Text:
+def make_safe_digest(string: str,
+                     hash_func: Callable[[bytes], Any]=hashlib.sha1) -> str:
     """
     return a hex digest of `string`.
     """
@@ -178,7 +178,7 @@ def split_by(array: List[Any], group_size: int, filler: Any) -> List[List[Any]]:
     args = [iter(array)] * group_size
     return list(map(list, zip_longest(*args, fillvalue=filler)))
 
-def is_remote_server(identifier: Text) -> bool:
+def is_remote_server(identifier: str) -> bool:
     """
     This function can be used to identify the source of API auth
     request. We can have two types of sources, Remote Zulip Servers

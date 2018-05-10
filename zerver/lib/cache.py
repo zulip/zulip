@@ -8,7 +8,7 @@ from django.conf import settings
 from django.db.models import Q
 from django.core.cache.backends.base import BaseCache
 
-from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Text, Tuple
+from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
 import subprocess
@@ -51,7 +51,7 @@ def remote_cache_stats_finish() -> None:
     remote_cache_total_requests += 1
     remote_cache_total_time += (time.time() - remote_cache_time_start)
 
-def get_or_create_key_prefix() -> Text:
+def get_or_create_key_prefix() -> str:
     if settings.CASPER_TESTS:
         # This sets the prefix for the benefit of the Casper tests.
         #
@@ -70,7 +70,7 @@ def get_or_create_key_prefix() -> Text:
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
         fd = os.open(filename, os.O_CREAT | os.O_EXCL | os.O_RDWR, 0o444)
-        random_hash = hashlib.sha256(Text(random.getrandbits(256)).encode('utf-8')).digest()
+        random_hash = hashlib.sha256(str(random.getrandbits(256)).encode('utf-8')).digest()
         prefix = base64.b16encode(random_hash)[:32].decode('utf-8').lower() + ':'
         # This does close the underlying file
         with os.fdopen(fd, 'w') as f:
@@ -93,11 +93,11 @@ def get_or_create_key_prefix() -> Text:
 
     return prefix
 
-KEY_PREFIX = get_or_create_key_prefix()  # type: Text
+KEY_PREFIX = get_or_create_key_prefix()  # type: str
 
-def bounce_key_prefix_for_testing(test_name: Text) -> None:
+def bounce_key_prefix_for_testing(test_name: str) -> None:
     global KEY_PREFIX
-    KEY_PREFIX = test_name + ':' + Text(os.getpid()) + ':'
+    KEY_PREFIX = test_name + ':' + str(os.getpid()) + ':'
     # We are taking the hash of the KEY_PREFIX to decrease the size of the key.
     # Memcached keys should have a length of less than 256.
     KEY_PREFIX = hashlib.sha1(KEY_PREFIX.encode('utf-8')).hexdigest()
@@ -108,7 +108,7 @@ def get_cache_backend(cache_name: Optional[str]) -> BaseCache:
     return caches[cache_name]
 
 def get_cache_with_key(
-        keyfunc: Callable[..., Text],
+        keyfunc: Callable[..., str],
         cache_name: Optional[str]=None
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """
@@ -130,7 +130,7 @@ def get_cache_with_key(
     return decorator
 
 def cache_with_key(
-        keyfunc: Callable[..., Text], cache_name: Optional[str]=None,
+        keyfunc: Callable[..., str], cache_name: Optional[str]=None,
         timeout: Optional[int]=None, with_statsd_key: Optional[str]=None
 ) -> Callable[[Callable[..., ReturnT]], Callable[..., ReturnT]]:
     """Decorator which applies Django caching to a function.
@@ -174,27 +174,27 @@ def cache_with_key(
 
     return decorator
 
-def cache_set(key: Text, val: Any, cache_name: Optional[str]=None, timeout: Optional[int]=None) -> None:
+def cache_set(key: str, val: Any, cache_name: Optional[str]=None, timeout: Optional[int]=None) -> None:
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     cache_backend.set(KEY_PREFIX + key, (val,), timeout=timeout)
     remote_cache_stats_finish()
 
-def cache_get(key: Text, cache_name: Optional[str]=None) -> Any:
+def cache_get(key: str, cache_name: Optional[str]=None) -> Any:
     remote_cache_stats_start()
     cache_backend = get_cache_backend(cache_name)
     ret = cache_backend.get(KEY_PREFIX + key)
     remote_cache_stats_finish()
     return ret
 
-def cache_get_many(keys: List[Text], cache_name: Optional[str]=None) -> Dict[Text, Any]:
+def cache_get_many(keys: List[str], cache_name: Optional[str]=None) -> Dict[str, Any]:
     keys = [KEY_PREFIX + key for key in keys]
     remote_cache_stats_start()
     ret = get_cache_backend(cache_name).get_many(keys)
     remote_cache_stats_finish()
     return dict([(key[len(KEY_PREFIX):], value) for key, value in ret.items()])
 
-def cache_set_many(items: Dict[Text, Any], cache_name: Optional[str]=None,
+def cache_set_many(items: Dict[str, Any], cache_name: Optional[str]=None,
                    timeout: Optional[int]=None) -> None:
     new_items = {}
     for key in items:
@@ -204,12 +204,12 @@ def cache_set_many(items: Dict[Text, Any], cache_name: Optional[str]=None,
     get_cache_backend(cache_name).set_many(items, timeout=timeout)
     remote_cache_stats_finish()
 
-def cache_delete(key: Text, cache_name: Optional[str]=None) -> None:
+def cache_delete(key: str, cache_name: Optional[str]=None) -> None:
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete(KEY_PREFIX + key)
     remote_cache_stats_finish()
 
-def cache_delete_many(items: Iterable[Text], cache_name: Optional[str]=None) -> None:
+def cache_delete_many(items: Iterable[str], cache_name: Optional[str]=None) -> None:
     remote_cache_stats_start()
     get_cache_backend(cache_name).delete_many(
         KEY_PREFIX + item for item in items)
@@ -247,7 +247,7 @@ def default_cache_transformer(obj: ItemT) -> ItemT:
 #   value for cache (in case the values that we're caching are some
 #   function of the objects, not the objects themselves)
 def generic_bulk_cached_fetch(
-        cache_key_function: Callable[[ObjKT], Text],
+        cache_key_function: Callable[[ObjKT], str],
         query_function: Callable[[List[ObjKT]], Iterable[Any]],
         object_ids: Iterable[ObjKT],
         extractor: Callable[[CompressedItemT], ItemT] = default_extractor,
@@ -255,19 +255,19 @@ def generic_bulk_cached_fetch(
         id_fetcher: Callable[[ItemT], ObjKT] = default_id_fetcher,
         cache_transformer: Callable[[ItemT], ItemT] = default_cache_transformer
 ) -> Dict[ObjKT, ItemT]:
-    cache_keys = {}  # type: Dict[ObjKT, Text]
+    cache_keys = {}  # type: Dict[ObjKT, str]
     for object_id in object_ids:
         cache_keys[object_id] = cache_key_function(object_id)
     cached_objects_compressed = cache_get_many([cache_keys[object_id]
-                                                for object_id in object_ids])  # type: Dict[Text, Tuple[CompressedItemT]]
-    cached_objects = {}  # type: Dict[Text, ItemT]
+                                                for object_id in object_ids])  # type: Dict[str, Tuple[CompressedItemT]]
+    cached_objects = {}  # type: Dict[str, ItemT]
     for (key, val) in cached_objects_compressed.items():
         cached_objects[key] = extractor(cached_objects_compressed[key][0])
     needed_ids = [object_id for object_id in object_ids if
                   cache_keys[object_id] not in cached_objects]
     db_objects = query_function(needed_ids)
 
-    items_for_remote_cache = {}  # type: Dict[Text, Tuple[CompressedItemT]]
+    items_for_remote_cache = {}  # type: Dict[str, Tuple[CompressedItemT]]
     for obj in db_objects:
         key = cache_keys[id_fetcher(obj)]
         item = cache_transformer(obj)
@@ -294,28 +294,28 @@ def cache(func: Callable[..., ReturnT]) -> Callable[..., ReturnT]:
 
     return cache_with_key(keyfunc)(func)
 
-def display_recipient_cache_key(recipient_id: int) -> Text:
+def display_recipient_cache_key(recipient_id: int) -> str:
     return "display_recipient_dict:%d" % (recipient_id,)
 
-def user_profile_by_email_cache_key(email: Text) -> Text:
+def user_profile_by_email_cache_key(email: str) -> str:
     # See the comment in zerver/lib/avatar_hash.py:gravatar_hash for why we
     # are proactively encoding email addresses even though they will
     # with high likelihood be ASCII-only for the foreseeable future.
     return 'user_profile_by_email:%s' % (make_safe_digest(email.strip()),)
 
-def user_profile_cache_key_id(email: Text, realm_id: int) -> Text:
+def user_profile_cache_key_id(email: str, realm_id: int) -> str:
     return u"user_profile:%s:%s" % (make_safe_digest(email.strip()), realm_id,)
 
-def user_profile_cache_key(email: Text, realm: 'Realm') -> Text:
+def user_profile_cache_key(email: str, realm: 'Realm') -> str:
     return user_profile_cache_key_id(email, realm.id)
 
-def bot_profile_cache_key(email: Text) -> Text:
+def bot_profile_cache_key(email: str) -> str:
     return "bot_profile:%s" % (make_safe_digest(email.strip()))
 
-def user_profile_by_id_cache_key(user_profile_id: int) -> Text:
+def user_profile_by_id_cache_key(user_profile_id: int) -> str:
     return "user_profile_by_id:%s" % (user_profile_id,)
 
-def user_profile_by_api_key_cache_key(api_key: Text) -> Text:
+def user_profile_by_api_key_cache_key(api_key: str) -> str:
     return "user_profile_by_api_key:%s" % (api_key,)
 
 realm_user_dict_fields = [
@@ -323,10 +323,10 @@ realm_user_dict_fields = [
     'avatar_source', 'avatar_version', 'is_active',
     'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
 
-def realm_user_dicts_cache_key(realm_id: int) -> Text:
+def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
 
-def active_user_ids_cache_key(realm_id: int) -> Text:
+def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)
 
 bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
@@ -337,10 +337,10 @@ bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'bot_owner__email', 'avatar_source',
                    'avatar_version']  # type: List[str]
 
-def bot_dicts_in_realm_cache_key(realm: 'Realm') -> Text:
+def bot_dicts_in_realm_cache_key(realm: 'Realm') -> str:
     return "bot_dicts_in_realm:%s" % (realm.id,)
 
-def get_stream_cache_key(stream_name: Text, realm_id: int) -> Text:
+def get_stream_cache_key(stream_name: str, realm_id: int) -> str:
     return "stream_by_realm_and_name:%s:%s" % (
         realm_id, make_safe_digest(stream_name.strip().lower()))
 
@@ -419,10 +419,10 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
 
-def realm_alert_words_cache_key(realm: 'Realm') -> Text:
+def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
 
-def realm_first_visible_message_id_cache_key(realm: 'Realm') -> Text:
+def realm_first_visible_message_id_cache_key(realm: 'Realm') -> str:
     return u"realm_first_visible_message_id:%s" % (realm.string_id,)
 
 # Called by models.py to flush the stream cache whenever we save a stream
@@ -440,10 +440,10 @@ def flush_stream(sender: Any, **kwargs: Any) -> None:
            Q(default_events_register_stream=stream)).exists():
         cache_delete(bot_dicts_in_realm_cache_key(stream.realm))
 
-def to_dict_cache_key_id(message_id: int) -> Text:
+def to_dict_cache_key_id(message_id: int) -> str:
     return 'message_dict:%d' % (message_id,)
 
-def to_dict_cache_key(message: 'Message') -> Text:
+def to_dict_cache_key(message: 'Message') -> str:
     return to_dict_cache_key_id(message.id)
 
 def flush_message(sender: Any, **kwargs: Any) -> None:

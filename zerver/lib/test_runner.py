@@ -3,7 +3,7 @@ from functools import partial
 import random
 
 from typing import Any, Callable, Dict, Iterable, List, Optional, Set, Tuple, \
-    Text, Type, cast, Union, TypeVar
+    Type, cast, Union, TypeVar
 from unittest import loader, runner  # type: ignore  # Mypy cannot pick these up.
 from unittest.result import TestResult
 
@@ -140,7 +140,7 @@ class TextTestResult(runner.TextTestResult):
         super().__init__(*args, **kwargs)
         self.failed_tests = []  # type: List[str]
 
-    def addInfo(self, test: TestCase, msg: Text) -> None:
+    def addInfo(self, test: TestCase, msg: str) -> None:
         self.stream.write(msg)
         self.stream.flush()
 
@@ -165,7 +165,7 @@ class TextTestResult(runner.TextTestResult):
         test_name = full_test_name(args[0])
         self.failed_tests.append(test_name)
 
-    def addSkip(self, test: TestCase, reason: Text) -> None:
+    def addSkip(self, test: TestCase, reason: str) -> None:
         TestResult.addSkip(self, test, reason)
         self.stream.writeln("** Skipping {}: {}".format(full_test_name(test),
                                                         reason))
@@ -176,7 +176,7 @@ class RemoteTestResult(django_runner.RemoteTestResult):
     The class follows the unpythonic style of function names of the
     base class.
     """
-    def addInfo(self, test: TestCase, msg: Text) -> None:
+    def addInfo(self, test: TestCase, msg: str) -> None:
         self.events.append(('addInfo', self.test_index, msg))
 
     def addInstrumentation(self, test: TestCase, data: Dict[str, Any]) -> None:
@@ -353,7 +353,7 @@ class ParallelTestSuite(django_runner.ParallelTestSuite):
         # definitions.
         self.subsuites = SubSuiteList(self.subsuites)  # type: ignore # Type of self.subsuites changes.
 
-def check_import_error(test_name: Text) -> None:
+def check_import_error(test_name: str) -> None:
     try:
         # Directly using __import__ is not recommeded, but here it gives
         # clearer traceback as compared to importlib.import_module.

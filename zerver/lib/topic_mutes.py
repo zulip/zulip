@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, List, Optional, Text
+from typing import Any, Callable, Dict, List, Optional
 
 from zerver.models import (
     get_stream_recipient,
@@ -15,7 +15,7 @@ from sqlalchemy.sql import (
     Selectable
 )
 
-def get_topic_mutes(user_profile: UserProfile) -> List[List[Text]]:
+def get_topic_mutes(user_profile: UserProfile) -> List[List[str]]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -27,7 +27,7 @@ def get_topic_mutes(user_profile: UserProfile) -> List[List[Text]]:
         for row in rows
     ]
 
-def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[Text]]) -> None:
+def set_topic_mutes(user_profile: UserProfile, muted_topics: List[List[str]]) -> None:
 
     '''
     This is only used in tests.
@@ -64,7 +64,7 @@ def remove_topic_mute(user_profile: UserProfile, stream_id: int, topic_name: str
     )
     row.delete()
 
-def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: Text) -> bool:
+def topic_is_muted(user_profile: UserProfile, stream_id: int, topic_name: str) -> bool:
     is_muted = MutedTopic.objects.filter(
         user_profile=user_profile,
         stream_id=stream_id,
@@ -103,7 +103,7 @@ def exclude_topic_mutes(conditions: List[Selectable],
     condition = not_(or_(*list(map(mute_cond, rows))))
     return conditions + [condition]
 
-def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, Text], bool]:
+def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, str], bool]:
     rows = MutedTopic.objects.filter(
         user_profile=user_profile,
     ).values(
@@ -118,7 +118,7 @@ def build_topic_mute_checker(user_profile: UserProfile) -> Callable[[int, Text],
         topic_name = row['topic_name']
         tups.add((recipient_id, topic_name.lower()))
 
-    def is_muted(recipient_id: int, topic: Text) -> bool:
+    def is_muted(recipient_id: int, topic: str) -> bool:
         return (recipient_id, topic.lower()) in tups
 
     return is_muted

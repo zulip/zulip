@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Text
+from typing import Dict, List, Optional
 
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
@@ -11,7 +11,7 @@ from zerver.models import UserProfile, Service, Realm, \
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
-def check_full_name(full_name_raw: Text) -> Text:
+def check_full_name(full_name_raw: str) -> str:
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -21,7 +21,7 @@ def check_full_name(full_name_raw: Text) -> Text:
         raise JsonableError(_("Invalid characters in name!"))
     return full_name
 
-def check_short_name(short_name_raw: Text) -> Text:
+def check_short_name(short_name_raw: str) -> str:
     short_name = short_name_raw.strip()
     if len(short_name) == 0:
         raise JsonableError(_("Bad name or username"))

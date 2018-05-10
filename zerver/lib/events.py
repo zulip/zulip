@@ -9,7 +9,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from importlib import import_module
 from typing import (
-    cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Text, Tuple, Union
+    cast, Any, Callable, Dict, Iterable, List, Optional, Sequence, Set, Tuple, Union
 )
 
 session_engine = import_module(settings.SESSION_ENGINE)
@@ -50,7 +50,7 @@ from zproject.backends import email_auth_enabled, password_auth_enabled
 from version import ZULIP_VERSION
 
 
-def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, Text]]:
+def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[str, str]]:
     user_dicts = get_realm_user_dicts(realm_id)
 
     # TODO: Consider optimizing this query away with caching.
@@ -476,7 +476,7 @@ def apply_event(state: Dict[str, Any],
                     event['subscriptions'][i] = copy.deepcopy(event['subscriptions'][i])
                     del event['subscriptions'][i]['subscribers']
 
-        def name(sub: Dict[str, Any]) -> Text:
+        def name(sub: Dict[str, Any]) -> str:
             return sub['name'].lower()
 
         if event['op'] == "add":
@@ -629,7 +629,7 @@ def do_events_register(user_profile: UserProfile, user_client: Client,
                        queue_lifespan_secs: int = 0,
                        all_public_streams: bool = False,
                        include_subscribers: bool = True,
-                       narrow: Iterable[Sequence[Text]] = [],
+                       narrow: Iterable[Sequence[str]] = [],
                        fetch_event_types: Optional[Iterable[str]] = None) -> Dict[str, Any]:
     # Technically we don't need to check this here because
     # build_narrow_filter will check it, but it's nicer from an error

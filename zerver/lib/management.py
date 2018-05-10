@@ -6,7 +6,7 @@ from argparse import ArgumentParser
 from django.conf import settings
 from django.core.exceptions import MultipleObjectsReturned
 from django.core.management.base import BaseCommand, CommandError
-from typing import Any, Dict, Optional, Text, List
+from typing import Any, Dict, Optional, List
 
 from zerver.models import Realm, UserProfile
 
@@ -107,7 +107,7 @@ You can use the command list_realms to find ID of the realms in this server."""
             user_profiles.append(self.get_user(email, realm))
         return user_profiles
 
-    def get_user(self, email: Text, realm: Optional[Realm]) -> UserProfile:
+    def get_user(self, email: str, realm: Optional[Realm]) -> UserProfile:
 
         # If a realm is specified, try to find the user there, and
         # throw an error if they don't exist.
