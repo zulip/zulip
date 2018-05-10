@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Text
+from typing import Any, Dict, List, Optional
 
 # This file is adapted from samples/shellinabox/ssh-krb-wrapper in
 # https://github.com/davidben/webathena, which has the following
@@ -82,8 +82,8 @@ def der_encode_uint32(val: int) -> bytes:
         raise ValueError("Bad value")
     return der_encode_integer(val)
 
-def der_encode_string(val: Text) -> bytes:
-    if not isinstance(val, Text):
+def der_encode_string(val: str) -> bytes:
+    if not isinstance(val, str):
         raise TypeError("unicode")
     return der_encode_tlv(0x1b, val.encode("utf-8"))
 

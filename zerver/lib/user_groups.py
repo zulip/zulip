@@ -5,7 +5,7 @@ from django.db import transaction
 from django.utils.translation import ugettext as _
 from zerver.lib.exceptions import JsonableError
 from zerver.models import UserProfile, Realm, UserGroupMembership, UserGroup
-from typing import Dict, Iterable, List, Text, Tuple, Any
+from typing import Dict, Iterable, List, Tuple, Any
 
 def access_user_group_by_id(user_group_id: int, user_profile: UserProfile) -> UserGroup:
     try:
@@ -22,7 +22,7 @@ def user_groups_in_realm(realm: Realm) -> List[UserGroup]:
     user_groups = UserGroup.objects.filter(realm=realm)
     return list(user_groups)
 
-def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[Text, Any]]:
+def user_groups_in_realm_serialized(realm: Realm) -> List[Dict[str, Any]]:
     """This function is used in do_events_register code path so this code
     should be performant.  We need to do 2 database queries because
     Django's ORM doesn't properly support the left join between
@@ -67,8 +67,8 @@ def check_remove_user_from_user_group(user_profile: UserProfile, user_group: Use
     except Exception:
         return False
 
-def create_user_group(name: Text, members: List[UserProfile], realm: Realm,
-                      description: Text='') -> UserGroup:
+def create_user_group(name: str, members: List[UserProfile], realm: Realm,
+                      description: str='') -> UserGroup:
     with transaction.atomic():
         user_group = UserGroup.objects.create(name=name, realm=realm,
                                               description=description)

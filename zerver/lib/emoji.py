@@ -5,7 +5,7 @@ import ujson
 
 from django.conf import settings
 from django.utils.translation import ugettext as _
-from typing import Optional, Text, Tuple
+from typing import Optional, Tuple
 
 from zerver.lib.request import JsonableError
 from zerver.lib.upload import upload_backend
@@ -34,7 +34,7 @@ emoticon_regex = ('(?<![^{0}])(?P<emoticon>('.format(terminal_symbols)
                   + '))(?![^{0}])'.format(terminal_symbols))
 
 # Translates emoticons to their colon syntax, e.g. `:smiley:`.
-def translate_emoticons(text: Text) -> Text:
+def translate_emoticons(text: str) -> str:
     translated = text
 
     for emoticon in EMOTICON_CONVERSIONS:
@@ -48,7 +48,7 @@ with open(NAME_TO_CODEPOINT_PATH) as fp:
 with open(CODEPOINT_TO_NAME_PATH) as fp:
     codepoint_to_name = ujson.load(fp)
 
-def emoji_name_to_emoji_code(realm: Realm, emoji_name: Text) -> Tuple[Text, Text]:
+def emoji_name_to_emoji_code(realm: Realm, emoji_name: str) -> Tuple[str, str]:
     realm_emojis = realm.get_active_emoji()
     realm_emoji = realm_emojis.get(emoji_name)
     if realm_emoji is not None:
@@ -59,7 +59,7 @@ def emoji_name_to_emoji_code(realm: Realm, emoji_name: Text) -> Tuple[Text, Text
         return name_to_codepoint[emoji_name], Reaction.UNICODE_EMOJI
     raise JsonableError(_("Emoji '%s' does not exist" % (emoji_name,)))
 
-def check_valid_emoji(realm: Realm, emoji_name: Text) -> None:
+def check_valid_emoji(realm: Realm, emoji_name: str) -> None:
     emoji_name_to_emoji_code(realm, emoji_name)
 
 def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
@@ -89,7 +89,7 @@ def check_emoji_request(realm: Realm, emoji_name: str, emoji_code: str,
         # The above are the only valid emoji types
         raise JsonableError(_("Invalid emoji type."))
 
-def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[Text]=None) -> None:
+def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None) -> None:
     """Raises an exception if the user cannot administer the target realm
     emoji name in their organization."""
 
@@ -113,15 +113,15 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[Text]=None
     if not user_profile.is_realm_admin and not current_user_is_author:
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
-def check_valid_emoji_name(emoji_name: Text) -> None:
+def check_valid_emoji_name(emoji_name: str) -> None:
     if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
         return
     raise JsonableError(_("Invalid characters in emoji name"))
 
-def get_emoji_url(emoji_file_name: Text, realm_id: int) -> Text:
+def get_emoji_url(emoji_file_name: str, realm_id: int) -> str:
     return upload_backend.get_emoji_url(emoji_file_name, realm_id)
 
 
-def get_emoji_file_name(emoji_file_name: Text, emoji_id: int) -> Text:
+def get_emoji_file_name(emoji_file_name: str, emoji_id: int) -> str:
     _, image_ext = os.path.splitext(emoji_file_name)
     return ''.join((str(emoji_id), image_ext))

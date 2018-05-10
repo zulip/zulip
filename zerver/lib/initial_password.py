@@ -4,10 +4,10 @@ from django.conf import settings
 import hashlib
 import base64
 
-from typing import Optional, Text
+from typing import Optional
 
 
-def initial_password(email: Text) -> Optional[Text]:
+def initial_password(email: str) -> Optional[str]:
     """Given an email address, returns the initial password for that account, as
        created by populate_db."""
 

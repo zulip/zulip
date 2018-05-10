@@ -4,7 +4,7 @@ from django.db.models.query import F
 from django.db.models.functions import Length
 from zerver.models import BotConfigData, UserProfile
 
-from typing import Text, List, Dict, Optional
+from typing import List, Dict, Optional
 
 from collections import defaultdict
 
@@ -16,22 +16,22 @@ import importlib
 class ConfigError(Exception):
     pass
 
-def get_bot_config(bot_profile: UserProfile) -> Dict[Text, Text]:
+def get_bot_config(bot_profile: UserProfile) -> Dict[str, str]:
     entries = BotConfigData.objects.filter(bot_profile=bot_profile)
     if not entries:
         raise ConfigError("No config data available.")
     return {entry.key: entry.value for entry in entries}
 
-def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[Text, Text]]:
+def get_bot_configs(bot_profile_ids: List[int]) -> Dict[int, Dict[str, str]]:
     if not bot_profile_ids:
         return {}
     entries = BotConfigData.objects.filter(bot_profile_id__in=bot_profile_ids)
-    entries_by_uid = defaultdict(dict)  # type: Dict[int, Dict[Text, Text]]
+    entries_by_uid = defaultdict(dict)  # type: Dict[int, Dict[str, str]]
     for entry in entries:
         entries_by_uid[entry.bot_profile_id].update({entry.key: entry.value})
     return entries_by_uid
 
-def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
+def get_bot_config_size(bot_profile: UserProfile, key: Optional[str]=None) -> int:
     if key is None:
         return BotConfigData.objects.filter(bot_profile=bot_profile) \
                                     .annotate(key_size=Length('key'), value_size=Length('value')) \
@@ -42,7 +42,7 @@ def get_bot_config_size(bot_profile: UserProfile, key: Optional[Text]=None) -> i
         except BotConfigData.DoesNotExist:
             return 0
 
-def set_bot_config(bot_profile: UserProfile, key: Text, value: Text) -> None:
+def set_bot_config(bot_profile: UserProfile, key: str, value: str) -> None:
     config_size_limit = settings.BOT_CONFIG_SIZE_LIMIT
     old_entry_size = get_bot_config_size(bot_profile, key)
     new_entry_size = len(key) + len(value)

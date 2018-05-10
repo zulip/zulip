@@ -1,6 +1,6 @@
 import re
 import markdown
-from typing import Any, Dict, List, Optional, Union, Text
+from typing import Any, Dict, List, Optional, Union
 from typing.re import Match
 from markdown.preprocessors import Preprocessor
 
@@ -91,7 +91,7 @@ class Setting(Preprocessor):
                 done = True
         return lines
 
-    def handleMatch(self, match: Match[Text]) -> Text:
+    def handleMatch(self, match: Match[str]) -> str:
         setting_identifier = match.group('setting_identifier')
         setting_type_name = link_mapping[setting_identifier][0]
         setting_name = link_mapping[setting_identifier][1]

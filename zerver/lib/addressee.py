@@ -1,5 +1,5 @@
 
-from typing import Iterable, List, Optional, Sequence, Text
+from typing import Iterable, List, Optional, Sequence
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
@@ -11,7 +11,7 @@ from zerver.models import (
     get_user_including_cross_realm,
 )
 
-def user_profiles_from_unvalidated_emails(emails: Iterable[Text], realm: Realm) -> List[UserProfile]:
+def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
@@ -21,7 +21,7 @@ def user_profiles_from_unvalidated_emails(emails: Iterable[Text], realm: Realm) 
         user_profiles.append(user_profile)
     return user_profiles
 
-def get_user_profiles(emails: Iterable[Text], realm: Realm) -> List[UserProfile]:
+def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     try:
         return user_profiles_from_unvalidated_emails(emails, realm)
     except ValidationError as e:
@@ -42,8 +42,8 @@ class Addressee:
     # This should be treated as an immutable class.
     def __init__(self, msg_type: str,
                  user_profiles: Optional[Sequence[UserProfile]]=None,
-                 stream_name: Optional[Text]=None,
-                 topic: Optional[Text]=None) -> None:
+                 stream_name: Optional[str]=None,
+                 topic: Optional[str]=None) -> None:
         assert(msg_type in ['stream', 'private'])
         self._msg_type = msg_type
         self._user_profiles = user_profiles
@@ -63,21 +63,21 @@ class Addressee:
         assert(self.is_private())
         return self._user_profiles  # type: ignore # assertion protects us
 
-    def stream_name(self) -> Text:
+    def stream_name(self) -> str:
         assert(self.is_stream())
         assert(self._stream_name is not None)
         return self._stream_name
 
-    def topic(self) -> Text:
+    def topic(self) -> str:
         assert(self.is_stream())
         assert(self._topic is not None)
         return self._topic
 
     @staticmethod
     def legacy_build(sender: UserProfile,
-                     message_type_name: Text,
-                     message_to: Sequence[Text],
-                     topic_name: Text,
+                     message_type_name: str,
+                     message_to: Sequence[str],
+                     topic_name: str,
                      realm: Optional[Realm]=None) -> 'Addressee':
 
         # For legacy reason message_to used to be either a list of
@@ -110,7 +110,7 @@ class Addressee:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream_name: Text, topic: Text) -> 'Addressee':
+    def for_stream(stream_name: str, topic: str) -> 'Addressee':
         if topic is None:
             raise JsonableError(_("Missing topic"))
         topic = topic.strip()
@@ -123,7 +123,7 @@ class Addressee:
         )
 
     @staticmethod
-    def for_private(emails: Sequence[Text], realm: Realm) -> 'Addressee':
+    def for_private(emails: Sequence[str], realm: Realm) -> 'Addressee':
         user_profiles = get_user_profiles(emails, realm)
         return Addressee(
             msg_type='private',

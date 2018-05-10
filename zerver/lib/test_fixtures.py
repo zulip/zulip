@@ -3,7 +3,7 @@ import os
 import re
 import hashlib
 import sys
-from typing import Any, List, Optional, Text
+from typing import Any, List, Optional
 from importlib import import_module
 from io import StringIO
 
@@ -20,7 +20,7 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
 
-def database_exists(database_name: Text, **options: Any) -> bool:
+def database_exists(database_name: str, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
     try:
         connection = connections[db]
@@ -59,7 +59,7 @@ def get_migration_status(**options: Any) -> str:
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def are_migrations_the_same(migration_file: Text, **options: Any) -> bool:
+def are_migrations_the_same(migration_file: str, **options: Any) -> bool:
     if not os.path.exists(migration_file):
         return False
 

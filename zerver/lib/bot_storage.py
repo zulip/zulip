@@ -4,18 +4,18 @@ from django.db.models.query import F
 from django.db.models.functions import Length
 from zerver.models import BotStorageData, UserProfile, Length
 
-from typing import Text, Optional, List, Tuple
+from typing import Optional, List, Tuple
 
 class StateError(Exception):
     pass
 
-def get_bot_storage(bot_profile: UserProfile, key: Text) -> Text:
+def get_bot_storage(bot_profile: UserProfile, key: str) -> str:
     try:
         return BotStorageData.objects.get(bot_profile=bot_profile, key=key).value
     except BotStorageData.DoesNotExist:
         raise StateError("Key does not exist.")
 
-def get_bot_storage_size(bot_profile: UserProfile, key: Optional[Text]=None) -> int:
+def get_bot_storage_size(bot_profile: UserProfile, key: Optional[str]=None) -> int:
     if key is None:
         return BotStorageData.objects.filter(bot_profile=bot_profile) \
                                      .annotate(key_size=Length('key'), value_size=Length('value')) \
@@ -44,14 +44,14 @@ def set_bot_storage(bot_profile: UserProfile, entries: List[Tuple[str, str]]) ->
             BotStorageData.objects.update_or_create(bot_profile=bot_profile, key=key,
                                                     defaults={'value': value})
 
-def remove_bot_storage(bot_profile: UserProfile, keys: List[Text]) -> None:
+def remove_bot_storage(bot_profile: UserProfile, keys: List[str]) -> None:
     queryset = BotStorageData.objects.filter(bot_profile=bot_profile, key__in=keys)
     if len(queryset) < len(keys):
         raise StateError("Key does not exist.")
     queryset.delete()
 
-def is_key_in_bot_storage(bot_profile: UserProfile, key: Text) -> bool:
+def is_key_in_bot_storage(bot_profile: UserProfile, key: str) -> bool:
     return BotStorageData.objects.filter(bot_profile=bot_profile, key=key).exists()
 
-def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[Text]:
+def get_keys_in_bot_storage(bot_profile: UserProfile) -> List[str]:
     return list(BotStorageData.objects.filter(bot_profile=bot_profile).values_list('key', flat=True))

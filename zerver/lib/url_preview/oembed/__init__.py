@@ -1,8 +1,8 @@
-from typing import Optional, Text, Dict, Any
+from typing import Optional, Dict, Any
 from pyoembed import oEmbed, PyOembedException
 
 
-def get_oembed_data(url: Text,
+def get_oembed_data(url: str,
                     maxwidth: Optional[int]=640,
                     maxheight: Optional[int]=480) -> Optional[Dict[Any, Any]]:
     try:

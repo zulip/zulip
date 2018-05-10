@@ -1,7 +1,7 @@
 import itertools
 import ujson
 import random
-from typing import List, Dict, Any, Text, Optional
+from typing import List, Dict, Any, Optional
 
 def load_config() -> Dict[str, Any]:
     with open("zerver/tests/fixtures/config.generate_data.json", "r") as infile:
