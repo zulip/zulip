@@ -11,7 +11,7 @@ from django.utils.log import AdminEmailHandler
 from functools import wraps
 from mock import MagicMock, patch
 from mypy_extensions import NoReturn
-from typing import Any, Callable, Dict, Mapping, Optional, Text, Iterator
+from typing import Any, Callable, Dict, Mapping, Optional, Iterator
 
 from zerver.lib.request import JsonableError
 from zerver.lib.types import ViewFuncT
@@ -23,7 +23,7 @@ from zerver.worker.queue_processors import QueueProcessingWorker
 
 captured_request = None  # type: Optional[HttpRequest]
 captured_exc_info = None
-def capture_and_throw(domain: Optional[Text]=None) -> Callable[[ViewFuncT], ViewFuncT]:
+def capture_and_throw(domain: Optional[str]=None) -> Callable[[ViewFuncT], ViewFuncT]:
     def wrapper(view_func: ViewFuncT) -> ViewFuncT:
         @wraps(view_func)
         def wrapped_view(request: HttpRequest, *args: Any, **kwargs: Any) -> NoReturn:

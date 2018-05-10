@@ -45,12 +45,12 @@ import sys
 from io import StringIO
 from django.conf import settings
 
-from typing import Any, Callable, Dict, Mapping, Union, Text, Optional
+from typing import Any, Callable, Dict, Mapping, Union, Optional
 
 class TestEmailMirrorLibrary(ZulipTestCase):
     def test_get_missed_message_token(self) -> None:
 
-        def get_token(address: Text) -> Text:
+        def get_token(address: str) -> str:
             with self.settings(EMAIL_GATEWAY_PATTERN="%s@example.com"):
                 return get_missed_message_token_from_address(address)
 
@@ -422,7 +422,7 @@ class TestScriptMTA(ZulipTestCase):
 
 class TestEmailMirrorTornadoView(ZulipTestCase):
 
-    def send_private_message(self) -> Text:
+    def send_private_message(self) -> str:
         email = self.example_email('othello')
         self.login(email)
         result = self.client_post(

@@ -1,5 +1,4 @@
-from typing import Text
-
+# -*- coding: utf-8 -*-
 from zerver.lib.test_classes import ZulipTestCase, WebhookTestCase
 from zerver.lib.webhooks.common import \
     validate_extract_webhook_http_header, \
@@ -71,5 +70,5 @@ class MissingEventHeaderTestCase(WebhookTestCase):
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
 
-    def get_body(self, fixture_name: Text) -> Text:
+    def get_body(self, fixture_name: str) -> str:
         return self.webhook_fixture_data("groove", fixture_name, file_type="json")
