@@ -2,7 +2,7 @@ import itertools
 import os
 import random
 from typing import Any, Callable, Dict, Iterable, List, \
-    Mapping, Optional, Sequence, Set, Text, Tuple
+    Mapping, Optional, Sequence, Set, Tuple
 
 import ujson
 from django.conf import settings
@@ -34,10 +34,10 @@ settings.CACHES['default'] = {
     'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
 }
 
-def create_users(realm: Realm, name_list: Iterable[Tuple[Text, Text]],
+def create_users(realm: Realm, name_list: Iterable[Tuple[str, str]],
                  bot_type: Optional[int]=None,
                  bot_owner: Optional[UserProfile]=None) -> None:
-    user_set = set()  # type: Set[Tuple[Text, Text, Text, bool]]
+    user_set = set()  # type: Set[Tuple[str, str, str, bool]]
     for full_name, email in name_list:
         short_name = email_to_username(email)
         user_set.add((email, full_name, short_name, True))
@@ -229,7 +229,7 @@ class Command(BaseCommand):
                            "invite_only": False, "is_web_public": False},
                 "Rome": {"description": "Yet another Italian city",
                          "invite_only": False, "is_web_public": True}
-            }  # type: Dict[Text, Dict[Text, Any]]
+            }  # type: Dict[str, Dict[str, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
@@ -414,7 +414,7 @@ class Command(BaseCommand):
                                "invite_only": False, "is_web_public": False},
                     "sales": {"description": "For sales discussion",
                               "invite_only": False, "is_web_public": False}
-                }  # type: Dict[Text, Dict[Text, Any]]
+                }  # type: Dict[str, Dict[str, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
                 # number, since a stream with name "Extra Stream 3" could show
@@ -578,7 +578,7 @@ def send_messages(data: Tuple[int, Sequence[Sequence[int]], Mapping[str, Any],
             # Pick a random subscriber to the stream
             message.sender = random.choice(Subscription.objects.filter(
                 recipient=message.recipient)).user_profile
-            message.subject = stream.name + Text(random.randint(1, 3))
+            message.subject = stream.name + str(random.randint(1, 3))
             saved_data['subject'] = message.subject
 
         # Spoofing time not supported with threading

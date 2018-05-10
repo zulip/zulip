@@ -1,5 +1,5 @@
 
-from typing import Any, Dict, Optional, Text, Union, cast
+from typing import Any, Dict, Optional, Union, cast
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
@@ -84,7 +84,7 @@ def register_remote_server(
 def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                 user_id: int=REQ(), token: bytes=REQ(),
                                 token_kind: int=REQ(validator=check_int),
-                                ios_app_id: Optional[Text]=None) -> HttpResponse:
+                                ios_app_id: Optional[str]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
 
@@ -110,7 +110,7 @@ def register_remote_push_device(request: HttpRequest, entity: Union[UserProfile,
 def unregister_remote_push_device(request: HttpRequest, entity: Union[UserProfile, RemoteZulipServer],
                                   token: bytes=REQ(),
                                   token_kind: int=REQ(validator=check_int),
-                                  ios_app_id: Optional[Text]=None) -> HttpResponse:
+                                  ios_app_id: Optional[str]=None) -> HttpResponse:
     validate_bouncer_token_request(entity, token, token_kind)
     server = cast(RemoteZulipServer, entity)
     deleted = RemotePushDeviceToken.objects.filter(token=token,
