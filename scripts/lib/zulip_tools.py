@@ -15,7 +15,7 @@ import json
 import uuid
 
 if False:
-    from typing import Sequence, Set, Text, Any
+    from typing import Sequence, Set, Any
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -38,7 +38,7 @@ MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
 
 def parse_cache_script_args(description):
-    # type: (Text) -> argparse.Namespace
+    # type: (str) -> argparse.Namespace
     parser = argparse.ArgumentParser(description=description)
 
     parser.add_argument(
@@ -171,7 +171,7 @@ def run(args, **kwargs):
         raise
 
 def log_management_command(cmd, log_path):
-    # type: (Text, Text) -> None
+    # type: (str, str) -> None
     log_dir = os.path.dirname(log_path)
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
@@ -186,7 +186,7 @@ def log_management_command(cmd, log_path):
     logger.info("Ran '%s'" % (cmd,))
 
 def get_environment():
-    # type: () -> Text
+    # type: () -> str
     if os.path.exists(DEPLOYMENTS_DIR):
         return "prod"
     if os.environ.get("TRAVIS"):
@@ -194,7 +194,7 @@ def get_environment():
     return "dev"
 
 def get_recent_deployments(threshold_days):
-    # type: (int) -> Set[Text]
+    # type: (int) -> Set[str]
     # Returns a list of deployments not older than threshold days
     # including `/root/zulip` directory if it exists.
     recent = set()
@@ -230,7 +230,7 @@ def get_threshold_timestamp(threshold_days):
     return threshold_timestamp
 
 def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
-    # type: (Text, Set[Text], int) -> Set[Text]
+    # type: (str, Set[str], int) -> Set[str]
     # Given a directory containing caches, a list of caches in use
     # and threshold days, this function return a list of caches
     # which can be purged. Remove the cache only if it is:
@@ -250,7 +250,7 @@ def get_caches_to_be_purged(caches_dir, caches_in_use, threshold_days):
     return caches_to_purge
 
 def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
-    # type: (Text, Set[Text], Text, argparse.Namespace) -> None
+    # type: (str, Set[str], str, argparse.Namespace) -> None
     all_caches = set([os.path.join(caches_dir, cache) for cache in os.listdir(caches_dir)])
     caches_to_purge = get_caches_to_be_purged(caches_dir, caches_in_use, args.threshold_days)
     caches_to_keep = all_caches - caches_to_purge
@@ -261,7 +261,7 @@ def purge_unused_caches(caches_dir, caches_in_use, cache_type, args):
         print("Done!")
 
 def generate_sha1sum_emoji(zulip_path):
-    # type: (Text) -> Text
+    # type: (str) -> str
     ZULIP_EMOJI_DIR = os.path.join(zulip_path, 'tools', 'setup', 'emoji')
     sha = hashlib.sha1()
 
@@ -288,7 +288,7 @@ def generate_sha1sum_emoji(zulip_path):
     return sha.hexdigest()
 
 def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbose):
-    # type: (Set[Text], Set[Text], Text, bool, bool) -> None
+    # type: (Set[str], Set[str], str, bool, bool) -> None
     if dry_run:
         print("Performing a dry run...")
     else:
