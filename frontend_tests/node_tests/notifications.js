@@ -194,6 +194,7 @@ stream_data.add_sub('stream_two', two);
     var message_1 = {
         id: 1000,
         content: '@-mentions the user',
+        avatar_url: 'url',
         sent_by_me: false,
         notification_sent: false,
         mentioned_me_directly: true,
@@ -205,6 +206,7 @@ stream_data.add_sub('stream_two', two);
 
     var message_2 = {
         id: 1500,
+        avatar_url: 'url',
         content: '@-mentions the user',
         sent_by_me: false,
         notification_sent: false,

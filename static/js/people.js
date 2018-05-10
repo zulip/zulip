@@ -490,7 +490,7 @@ exports.sender_is_bot = function (message) {
 };
 
 function gravatar_url_for_email(email) {
-    var hash = md5(email);
+    var hash = md5(email.toLowerCase());
     var avatar_url = 'https://secure.gravatar.com/avatar/' + hash + '?d=identicon';
     var small_avatar_url = exports.format_small_avatar_url(avatar_url);
     return small_avatar_url;
