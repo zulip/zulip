@@ -52,7 +52,7 @@ from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
 from sendfile import _get_sendfile
 
-from typing import Any, Callable, Text
+from typing import Any, Callable, Text, Optional
 
 def destroy_uploads() -> None:
     if os.path.exists(settings.LOCAL_UPLOADS_DIR):
@@ -1130,6 +1130,38 @@ class S3Test(ZulipTestCase):
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
+
+    @use_s3_backend
+    def test_file_upload_headers_s3(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        user_profile = self.example_user('hamlet')
+
+        def check_upload_file_headers(uploaded_file_name: str,
+                                      content_type: Optional[str],
+                                      content_disposition: str='') -> None:
+            uri = upload_message_file(uploaded_file_name, len(b'zulip!'), content_type, b'zulip!', user_profile)
+            path_id = re.sub('/user_uploads/', '', uri)
+            key = bucket.get_key(path_id)
+
+            if content_type is not None:
+                self.assertEqual(content_type, key.content_type)
+            else:
+                self.assertEqual('application/octet-stream', key.content_type)
+
+            if content_disposition != '':
+                self.assertEqual(content_disposition, key.content_disposition)
+            else:
+                self.assertEqual(key.content_disposition, None)
+
+        check_upload_file_headers('dummy.txt', 'text/plain', "attachment; filename*=UTF-8''dummy.txt")
+        check_upload_file_headers('áéБД.txt', 'text/plain', "attachment; filename*=UTF-8''%C3%A1%C3%A9%D0%91%D0%94.txt")
+        check_upload_file_headers('zulip.html', 'text/html', "attachment; filename*=UTF-8''zulip.html")
+        check_upload_file_headers('zulip.sh', 'text/x-sh', "attachment; filename*=UTF-8''zulip.sh")
+        check_upload_file_headers('dummy.jpeg', 'image/jpeg')
+        check_upload_file_headers('dummy.pdf', 'application/pdf')
+        check_upload_file_headers('áéБД.pdf', 'application/pdf')
+        check_upload_file_headers('zulip', None, "attachment; filename*=UTF-8''zulip")
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
