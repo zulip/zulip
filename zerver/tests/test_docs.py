@@ -6,6 +6,7 @@ import subprocess
 
 from django.conf import settings
 from django.test import TestCase, override_settings
+from django.http import HttpResponse
 from typing import Any, Dict, List
 
 from zproject.settings import DEPLOY_ROOT
@@ -20,24 +21,29 @@ from zerver.views.integrations import (
 )
 
 class DocPageTest(ZulipTestCase):
+    def get_doc(self, url: str, subdomain: str) -> HttpResponse:
+        if url[0:23] == "/integrations/doc-html/":
+            return self.client_get(url, subdomain=subdomain, HTTP_X_REQUESTED_WITH='XMLHttpRequest')
+        return self.client_get(url, subdomain=subdomain)
+
     def _test(self, url: str, expected_content: str, extra_strings: List[str]=[],
               landing_missing_strings: List[str]=[], landing_page: bool=True,
-              check_search_engine_meta_tags: bool=True) -> None:
+              doc_html_str: bool=False) -> None:
 
         # Test the URL on the "zephyr" subdomain
-        result = self.client_get(url, subdomain="zephyr")
+        result = self.get_doc(url, subdomain="zephyr")
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
         for s in extra_strings:
             self.assertIn(s, str(result.content))
-        if check_search_engine_meta_tags:
+        if not doc_html_str:
             self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
         # Test the URL on the root subdomain
-        result = self.client_get(url, subdomain="")
+        result = self.get_doc(url, subdomain="")
         self.assertEqual(result.status_code, 200)
         self.assertIn(expected_content, str(result.content))
-        if check_search_engine_meta_tags:
+        if not doc_html_str:
             self.assert_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
         for s in extra_strings:
@@ -47,16 +53,16 @@ class DocPageTest(ZulipTestCase):
             return
         # Test the URL on the root subdomain with the landing page setting
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
-            result = self.client_get(url, subdomain="")
+            result = self.get_doc(url, subdomain="")
             self.assertEqual(result.status_code, 200)
             self.assertIn(expected_content, str(result.content))
             for s in extra_strings:
                 self.assertIn(s, str(result.content))
             for s in landing_missing_strings:
                 self.assertNotIn(s, str(result.content))
-            if check_search_engine_meta_tags:
+            if not doc_html_str:
                 self.assert_in_success_response(['<meta name="description" content="Zulip combines'], result)
-                self.assert_not_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
+            self.assert_not_in_success_response(['<meta name="robots" content="noindex,nofollow">'], result)
 
     @slow("Tests dozens of endpoints, including generating lots of emails")
     def test_doc_endpoints(self) -> None:
@@ -97,7 +103,8 @@ class DocPageTest(ZulipTestCase):
         self._test('/errors/5xx/', 'Internal server error')
         self._test('/emails/', 'manually generate most of the emails by clicking')
 
-        result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
+        result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True,
+                                 HTTP_X_REQUESTED_WITH='XMLHttpRequest')
         self.assertEqual(result.status_code, 404)
 
         result = self.client_get('/new-user/')
@@ -116,23 +123,41 @@ class DocPageTest(ZulipTestCase):
                        'Hubot',
                        'Zapier',
                        'IFTTT'
-                   ],
-                   check_search_engine_meta_tags=False)
+                   ])
 
         for integration in INTEGRATIONS.keys():
             url = '/integrations/doc-html/{}'.format(integration)
-            self._test(url, '', check_search_engine_meta_tags=False)
+            self._test(url, '', doc_html_str=True)
 
     def test_email_integration(self) -> None:
         self._test('/integrations/doc-html/email',
-                   'support+abcdefg@testserver', check_search_engine_meta_tags=False)
+                   'support+abcdefg@testserver', doc_html_str=True)
 
         with self.settings(EMAIL_GATEWAY_PATTERN=''):
-            result = self.client_get('integrations/doc-html/email', subdomain='zulip')
+            result = self.get_doc('integrations/doc-html/email', subdomain='zulip')
             self.assertNotIn('support+abcdefg@testserver', str(result.content))
             # if EMAIL_GATEWAY_PATTERN is empty, the main /integrations page should
             # be rendered instead
-            self._test('/integrations/', 'native integrations.', check_search_engine_meta_tags=False)
+            self._test('/integrations/', 'native integrations.')
+
+    def test_doc_html_str_non_ajax_call(self) -> None:
+        # We don't need to test all the pages for 404
+        for integration in list(INTEGRATIONS.keys())[5]:
+            with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
+                url = '/en/integrations/doc-html/{}'.format(integration)
+                result = self.client_get(url, subdomain="", follow=True)
+                self.assertEqual(result.status_code, 404)
+                result = self.client_get(url, subdomain="zephyr", follow=True)
+                self.assertEqual(result.status_code, 404)
+
+            url = '/en/integrations/doc-html/{}'.format(integration)
+            result = self.client_get(url, subdomain="", follow=True)
+            self.assertEqual(result.status_code, 404)
+            result = self.client_get(url, subdomain="zephyr", follow=True)
+            self.assertEqual(result.status_code, 404)
+
+        result = self.client_get('/integrations/doc-html/nonexistent_integration', follow=True)
+        self.assertEqual(result.status_code, 404)
 
 class HelpTest(ZulipTestCase):
     def test_html_settings_links(self) -> None:
