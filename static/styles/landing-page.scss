@@ -2522,6 +2522,17 @@ nav ul li.active::after {
     animation: box-shadow-pulse 2s infinite;
 }
 
+.pricing-model .pricing-container .text-content .premium-price-box {
+    display: flex;
+}
+
+.pricing-model .pricing-container .text-content .price .price-cents {
+    font-size: .4em;
+    vertical-align: top;
+    position: relative;
+    top: 6px;
+}
+
 /* while the overlay is showing, the transform properties should stay fixed
    for the container that sits inline in the page. */
 
