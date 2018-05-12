@@ -962,6 +962,7 @@ class Stream(models.Model):
 
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
+    is_announcement_only = models.BooleanField(default=False)  # type: bool
 
     def __str__(self) -> str:
         return "<Stream: %s>" % (self.name,)
