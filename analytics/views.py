@@ -94,10 +94,10 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
         tables = [RealmCount, UserCount]
-        subgroup_to_label = {'public_stream': 'Public streams',
-                             'private_stream': 'Private streams',
-                             'private_message': 'Private messages',
-                             'huddle_message': 'Group private messages'}
+        subgroup_to_label = {'public_stream': _('Public streams'),
+                             'private_stream': _('Private streams'),
+                             'private_message': _('Private messages'),
+                             'huddle_message': _('Group private messages')}
         labels_sort_function = lambda data: sort_by_totals(data['realm'])
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
