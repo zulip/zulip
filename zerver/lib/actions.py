@@ -1937,6 +1937,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             raise StreamDoesNotExistError(escape(stream_name))
         recipient = get_stream_recipient(stream.id)
 
+        if stream.is_announcement_only and not sender.is_realm_admin:
+            raise JsonableError(_("Only organization administrators can send to this stream."))
+
         if not stream.invite_only:
             # This is a public stream
             pass

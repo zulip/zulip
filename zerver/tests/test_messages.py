@@ -1024,6 +1024,44 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "subject": "Test subject"})
         self.assert_json_success(result)
 
+    def test_message_to_announce(self) -> None:
+        """
+        Sending a message to an announcement_only stream by a realm admin
+        successful.
+        """
+        user_profile = self.example_user("iago")
+        self.login(user_profile.email)
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, user_profile.realm)
+        stream.is_announcement_only = True
+        stream.save()
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": stream_name,
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
+        self.assert_json_success(result)
+
+    def test_message_fail_to_announce(self) -> None:
+        """
+        Sending a message to an announcement_only stream not by a realm
+        admin fails.
+        """
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
+
+        stream_name = "Verona"
+        stream = get_stream(stream_name, user_profile.realm)
+        stream.is_announcement_only = True
+        stream.save()
+        result = self.client_post("/json/messages", {"type": "stream",
+                                                     "to": stream_name,
+                                                     "client": "test suite",
+                                                     "content": "Test message",
+                                                     "subject": "Test subject"})
+        self.assert_json_error(result, "Only organization administrators can send to this stream.")
+
     def test_api_message_with_default_to(self) -> None:
         """
         Sending messages without a to field should be sent to the default
