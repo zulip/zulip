@@ -2977,6 +2977,10 @@ def do_change_stream_web_public(stream: Stream, is_web_public: bool) -> None:
     stream.is_web_public = is_web_public
     stream.save(update_fields=['is_web_public'])
 
+def do_change_stream_announcement_only(stream: Stream, is_announcement_only: bool) -> None:
+    stream.is_announcement_only = is_announcement_only
+    stream.save(update_fields=['is_announcement_only'])
+
 def do_rename_stream(stream: Stream, new_name: str, log: bool=True) -> Dict[str, str]:
     old_name = stream.name
     stream.name = new_name

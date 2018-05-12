@@ -21,7 +21,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
     do_create_default_stream_group, do_add_streams_to_default_stream_group, \
     do_remove_streams_from_default_stream_group, do_remove_default_stream_group, \
     do_change_default_stream_group_description, do_change_default_stream_group_name, \
-    prep_stream_welcome_message
+    prep_stream_welcome_message, do_change_stream_announcement_only
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
@@ -147,6 +147,7 @@ def update_stream_backend(
         description: Optional[str]=REQ(validator=check_capped_string(
             Stream.MAX_DESCRIPTION_LENGTH), default=None),
         is_private: Optional[bool]=REQ(validator=check_bool, default=None),
+        is_announcement_only: Optional[bool]=REQ(validator=check_bool, default=None),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         new_name: Optional[str]=REQ(validator=check_string, default=None),
 ) -> HttpResponse:
@@ -164,6 +165,8 @@ def update_stream_backend(
             # are only changing the casing of the stream name).
             check_stream_name_available(user_profile.realm, new_name)
         do_rename_stream(stream, new_name)
+    if is_announcement_only is not None:
+        do_change_stream_announcement_only(stream, is_announcement_only)
 
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.

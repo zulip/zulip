@@ -661,6 +661,32 @@ class StreamAdminTest(ZulipTestCase):
                                    {'description': ujson.dumps('Test description')})
         self.assert_json_error(result, 'Must be an organization administrator')
 
+    def test_change_stream_announcement_only(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        self.subscribe(user_profile, 'stream_name1')
+        do_change_is_admin(user_profile, True)
+
+        stream_id = get_stream('stream_name1', user_profile.realm).id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'is_announcement_only': ujson.dumps(True)})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', user_profile.realm)
+        self.assertEqual(True, stream.is_announcement_only)
+
+    def test_change_stream_announcement_only_requires_realm_admin(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        self.subscribe(user_profile, 'stream_name1')
+        do_change_is_admin(user_profile, False)
+
+        stream_id = get_stream('stream_name1', user_profile.realm).id
+        result = self.client_patch('/json/streams/%d' % (stream_id,),
+                                   {'is_announcement_only': ujson.dumps(True)})
+        self.assert_json_error(result, 'Must be an organization administrator')
+
     def set_up_stream_for_deletion(self, stream_name: str, invite_only: bool=False,
                                    subscribed: bool=True) -> Stream:
         """
