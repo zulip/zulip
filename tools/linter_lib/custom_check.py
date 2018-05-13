@@ -515,6 +515,21 @@ def build_custom_checkers(by_lang):
          'bad_lines': ['desc = models.TextField()  # type: Optional[Text]',
                        'stream = models.ForeignKey(Stream, on_delete=CASCADE)  # type: Optional[Stream]'],
          },
+        {'pattern': '[\s([]Text([^\s\w]|$)',
+         'exclude': set([
+             # We are likely to want to keep these dirs Python 2+3 compatible,
+             # since the plan includes extracting them to a separate project eventually.
+             'tools/check-frontend-i18n',
+             'tools/lib',
+             'tools/linter_lib',
+             # We don't want to migrate every migration already using typing.Text
+             # to use str.
+             'zerver/migrations/',
+             # thumbor is (currently) python2 only
+             'zthumbor/',
+         ]),
+         'description': "Now that we're a Python 3 only codebase, we don't need to use typing.Text. Please use str instead.",
+         },
     ]) + whitespace_rules + comma_whitespace_rule
     bash_rules = cast(RuleList, [
         {'pattern': '#!.*sh [-xe]',

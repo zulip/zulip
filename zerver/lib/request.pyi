@@ -6,7 +6,7 @@
 # scan the parameter list for REQ objects and patch the parameters as the true
 # types.
 
-from typing import Any, Callable, Text, TypeVar, Optional, Union, Type
+from typing import Any, Callable, TypeVar, Optional, Union, Type
 from zerver.lib.types import ViewFuncT, Validator
 
 from zerver.lib.exceptions import JsonableError as JsonableError

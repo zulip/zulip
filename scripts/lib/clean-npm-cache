@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 if False:
-    from typing import Set, Text
+    from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.append(ZULIP_PATH)
@@ -26,7 +26,7 @@ if ENV == "travis":
         sys.exit(0)
 
 def get_caches_in_use(threshold_days):
-    # type: (int) -> Set[Text]
+    # type: (int) -> Set[str]
     setups_to_check = set([ZULIP_PATH, ])
     caches_in_use = set()
 

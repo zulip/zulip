@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from lib.css_parser import parse, CssParserException
-from typing import Iterable, Text
+from typing import Iterable
 import sys
 import glob
 import subprocess
