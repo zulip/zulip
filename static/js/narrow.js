@@ -114,6 +114,19 @@ exports.activate = function (raw_operators, opts) {
         opts.then_select_id = parseInt(filter.operands("id")[0], 10);
     }
 
+    var offset_of_prev_selection = (function () {
+        if (opts.then_select_offset !== undefined) {
+            // If the caller passes in an explicit offset,
+            // we don't need the offset of then_select_id;
+            return;
+        }
+
+        var row = current_msg_list.get_row(opts.then_select_id);
+        if (row.length > 0) {
+            return row.offset().top;
+        }
+    }());
+
     var select_strategy;
 
     if (opts.then_select_id >= 0) {
@@ -129,19 +142,6 @@ exports.activate = function (raw_operators, opts) {
 
     if (!was_narrowed_already) {
         unread.messages_read_in_narrow = false;
-    }
-
-    var then_select_offset;
-
-    if (opts.then_select_offset !== undefined) {
-        then_select_offset = opts.then_select_offset;
-    } else {
-        if (select_strategy.flavor === 'exact') {
-            var row = current_msg_list.get_row(select_strategy.msg_id);
-            if (row.length > 0) {
-                then_select_offset = row.offset().top;
-            }
-        }
     }
 
     // IMPORTANT!  At this point we are heavily committed to
@@ -188,6 +188,19 @@ exports.activate = function (raw_operators, opts) {
             select_strategy: select_strategy,
         });
     }
+
+    var then_select_offset = (function () {
+        if (opts.then_select_offset !== undefined) {
+            // We get passed in a offset for reloads.
+            return opts.then_select_offset;
+        }
+
+        if (select_strategy.flavor === 'exact') {
+            if (select_strategy.msg_id === opts.then_select_id) {
+                return offset_of_prev_selection;
+            }
+        }
+    }());
 
     var select_immediately = (select_strategy.flavor === 'exact');
 
