@@ -8,7 +8,7 @@ exports.stream_has_topics = function (stream_id) {
     return stream_dict.has(stream_id);
 };
 
-exports.topic_history = function () {
+exports.topic_history = function (stream_id) {
     var topics = new Dict({fold_case: true});
 
     var self = {};
@@ -95,7 +95,14 @@ exports.topic_history = function () {
     };
 
     self.get_recent_names = function () {
-        var recents = topics.values();
+        var my_recents = topics.values();
+
+        var missing_topics = unread.get_missing_topics({
+            stream_id: stream_id,
+            topic_dict: topics,
+        });
+
+        var recents = my_recents.concat(missing_topics);
 
         recents.sort(function (a, b) {
             return b.message_id - a.message_id;
@@ -131,7 +138,7 @@ exports.find_or_create = function (stream_id) {
     var history = stream_dict.get(stream_id);
 
     if (!history) {
-        history = exports.topic_history();
+        history = exports.topic_history(stream_id);
         stream_dict.set(stream_id, history);
     }
 
@@ -171,11 +178,7 @@ exports.get_server_history = function (stream_id, on_success) {
 };
 
 exports.get_recent_names = function (stream_id) {
-    var history = stream_dict.get(stream_id);
-
-    if (!history) {
-        return [];
-    }
+    var history = exports.find_or_create(stream_id);
 
     return history.get_recent_names();
 };
