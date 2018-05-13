@@ -44,7 +44,8 @@ exports.MessageList.prototype = {
         }
 
         if (bottom_messages.length > 0) {
-            self.append(bottom_messages, opts);
+            bottom_messages = this.data.append(bottom_messages);
+            self.append_to_view(bottom_messages, opts);
         }
 
         if ((self === exports.narrowed) && !self.empty()) {
@@ -252,13 +253,16 @@ exports.MessageList.prototype = {
     },
 
     append: function MessageList_append(messages, opts) {
-        opts = _.extend({delay_render: false, messages_are_new: false}, opts);
-
         var viewable_messages = this.data.append(messages);
+        this.append_to_view(viewable_messages, opts);
+    },
+
+    append_to_view: function (messages, opts) {
+        opts = _.extend({delay_render: false, messages_are_new: false}, opts);
 
         this.num_appends += 1;
         if (!opts.delay_render) {
-            this.view.append(viewable_messages, opts.messages_are_new);
+            this.view.append(messages, opts.messages_are_new);
         }
     },
 
