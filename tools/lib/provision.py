@@ -24,6 +24,7 @@ from version import PROVISION_VERSION
 if False:
     from typing import Any
 
+from zproject import settings
 
 SUPPORTED_PLATFORMS = {
     "Ubuntu": [
@@ -294,6 +295,11 @@ def main(options):
         run(["sudo", "mkdir", EMOJI_CACHE_PATH])
     run(["sudo", "chown", "%s:%s" % (user_id, user_id), EMOJI_CACHE_PATH])
     run(["tools/setup/emoji/build_emoji"])
+
+    bots_dir = os.path.join(settings.STATIC_ROOT, 'generated/bots')
+    if os.path.isdir(bots_dir):
+        # delete old static files, they could be outdated
+        run(["sudo", "rm", "-r", bots_dir])
 
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
