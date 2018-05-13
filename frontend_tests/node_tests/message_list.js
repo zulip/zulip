@@ -32,7 +32,7 @@ function accept_all_filter() {
 
 run_test('basics', () => {
     var table;
-    var filter = {};
+    var filter = accept_all_filter();
 
     var list = new MessageList(table, filter);
 
@@ -101,7 +101,7 @@ run_test('basics', () => {
             id: 40,
         },
     ];
-    list.prepend(old_messages, true);
+    list.add_messages(old_messages);
     assert.equal(list.first().id, 30);
     assert.equal(list.last().id, 80);
 
