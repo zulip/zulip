@@ -1,3 +1,4 @@
+zrequire('unread');
 zrequire('topic_data');
 
 set_global('channel', {});
@@ -126,7 +127,42 @@ run_test('server_history', () => {
     assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
 });
 
+(function test_unread_logic() {
+    var stream_id = 77;
 
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 201,
+        topic_name: 'toPic1',
+    });
+
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 45,
+        topic_name: 'topic2',
+    });
+
+    var history = topic_data.get_recent_names(stream_id);
+    assert.deepEqual(history, ['toPic1', 'topic2']);
+
+    const msgs = [
+        { id: 150, subject: 'TOPIC2' }, // will be ignored
+        { id: 61, subject: 'unread1' },
+        { id: 60, subject: 'unread1' },
+        { id: 20, subject: 'UNREAD2' },
+    ];
+
+    _.each(msgs, (msg) => {
+        msg.type = 'stream';
+        msg.stream_id = stream_id;
+        msg.unread = true;
+    });
+
+    unread.process_loaded_messages(msgs);
+
+    history = topic_data.get_recent_names(stream_id);
+    assert.deepEqual(history, ['toPic1', 'unread1', 'topic2', 'UNREAD2']);
+}());
 
 run_test('server_history_end_to_end', () => {
     topic_data.reset();

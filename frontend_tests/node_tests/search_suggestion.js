@@ -6,6 +6,7 @@ zrequire('narrow_state');
 zrequire('stream_data');
 zrequire('topic_data');
 zrequire('people');
+zrequire('unread');
 var search = zrequire('search_suggestion');
 
 var bob = {
