@@ -19,6 +19,7 @@
 * [Overview](/api/rest)
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
+* [Configuring the Python bindings](/api/configuring-python-bindings)
 * [Error handling](/api/rest-error-handling)
 
 {!rest_endpoints.md!}

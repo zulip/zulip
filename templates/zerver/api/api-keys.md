@@ -22,34 +22,7 @@ your bot's details:
 
 <img class="screenshot" src="/static/images/api/download-zuliprc.png" />
 
-Or you may also create it manually, as follows:
-
-```
-[api]
-key=BOT_API_KEY
-email=BOT_EMAIL_ADDRESS
-```
-
-Additionally, you can also specify the parameters as environment variables as follows:
-
-```
-export ZULIP_CONFIG=/path/to/zulipconfig
-export ZULIP_EMAIL=BOT_EMAIL_ADDRESS
-export ZULIP_API_KEY=BOT_API_KEY
-```
-
-The parameters specified in environment variables would override the parameters
-provided in the config file. For example, if you specify the variable `key`
-in the config file and specify `ZULIP_API_KEY` as an environment variable,
-the value of `ZULIP_API_KEY` would be considered.
-
-The following variables can be specified:
-
-1. `ZULIP_CONFIG`
-2. `ZULIP_API_KEY`
-3. `ZULIP_EMAIL`
-4. `ZULIP_SITE`
-5. `ZULIP_CERT`
-6. `ZULIP_CERT_KEY`
-7. `ZULIP_CERT_BUNDLE`
+Another alternative is manually creating your own `.zuliprc` file, or setting
+environment variables that are equivalent. You can find out more about these
+methods [here](/api/configuring-python-bindings).
 
