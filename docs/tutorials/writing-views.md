@@ -275,7 +275,7 @@ and in [zerver/lib/actions.py](https://github.com/zulip/zulip/blob/master/zerver
 
 ```py
 def do_set_realm_name(realm, name):
-    # type: (Realm, Text) -> None
+    # type: (Realm, str) -> None
     realm.name = name
     realm.save(update_fields=['name'])
     event = dict(
