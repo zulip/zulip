@@ -1926,6 +1926,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('description', check_string),
             ('email_address', check_string),
             ('invite_only', check_bool),
+            ('is_announcement_only', check_bool),
             ('in_home_view', check_bool),
             ('name', check_string),
             ('desktop_notifications', check_bool),

@@ -2300,6 +2300,7 @@ def notify_subscriptions_added(user_profile: UserProfile,
                     stream_id=stream.id,
                     in_home_view=subscription.in_home_view,
                     invite_only=stream.invite_only,
+                    is_announcement_only=stream.is_announcement_only,
                     color=subscription.color,
                     email_address=encode_email_address(stream),
                     desktop_notifications=subscription.desktop_notifications,
@@ -3939,6 +3940,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
         {'name': stream.name,
          'in_home_view': True,
          'invite_only': False,
+         'is_announcement_only': stream.is_announcement_only,
          'color': get_next_color(),
          'desktop_notifications': True,
          'audible_notifications': True,
@@ -3980,7 +3982,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         stream_ids.add(sub['stream_id'])
 
     all_streams = get_active_streams(user_profile.realm).select_related(
-        "realm").values("id", "name", "invite_only", "realm_id",
+        "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
                         "email_token", "description", "date_created")
 
     stream_dicts = [stream for stream in all_streams if stream['id'] in stream_ids]
@@ -4032,6 +4034,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         stream_dict = {'name': stream["name"],
                        'in_home_view': sub["in_home_view"],
                        'invite_only': stream["invite_only"],
+                       'is_announcement_only': stream["is_announcement_only"],
                        'color': sub["color"],
                        'desktop_notifications': sub["desktop_notifications"],
                        'audible_notifications': sub["audible_notifications"],
@@ -4064,6 +4067,7 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if is_public or user_profile.is_realm_admin:
             stream_dict = {'name': stream['name'],
                            'invite_only': stream['invite_only'],
+                           'is_announcement_only': stream['is_announcement_only'],
                            'stream_id': stream['id'],
                            'is_old_stream': is_old_stream(stream["date_created"]),
                            'stream_weekly_traffic': get_average_weekly_stream_traffic(stream["id"],
