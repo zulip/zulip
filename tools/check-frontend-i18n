@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from typing import List, Text
+from typing import List
 # check for the venv
 from lib import sanity_check
 sanity_check.check_venv(__file__)
@@ -15,7 +15,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.zulip_tools import WARNING, FAIL, ENDC
 
 def find_handlebars(translatable_strings):
-    # type: (List[Text]) -> List[Text]
+    # type: (List[str]) -> List[str]
     errored = []
     for string in translatable_strings:
         if '{{' in string:

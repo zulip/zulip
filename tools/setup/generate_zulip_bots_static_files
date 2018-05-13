@@ -9,7 +9,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 if ZULIP_PATH not in sys.path:
     sys.path.append(ZULIP_PATH)
 
-from typing import List, Text
+from typing import List
 from zproject import settings
 from zulip_bots.lib import get_bots_directory_path
 
@@ -29,7 +29,7 @@ if os.path.isdir(bots_dir):
 os.makedirs(bots_dir, exist_ok=True)
 
 def copyfiles(paths):
-    # type: (List[Text]) -> None
+    # type: (List[str]) -> None
     for src_path in paths:
         bot_name = os.path.basename(os.path.dirname(src_path))
 
