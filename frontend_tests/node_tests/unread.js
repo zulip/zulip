@@ -261,7 +261,7 @@ run_test('num_unread_for_topic', () => {
     var message = {
         type: 'stream',
         stream_id: stream_id,
-        subject: 'lunch',
+        subject: 'LuncH',
         unread: true,
     };
 
@@ -282,6 +282,26 @@ run_test('num_unread_for_topic', () => {
 
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, _.range(1, 501));
+
+    var topic_dict = new Dict({fold_case: true});
+
+    var missing_topics = unread.get_missing_topics({
+        stream_id: stream_id,
+        topic_dict: topic_dict,
+    });
+
+    assert.deepEqual(missing_topics, [
+        { pretty_name: 'LuncH', message_id: 500 },
+    ]);
+
+    topic_dict.set('lUNCh', 'whatever');
+
+    missing_topics = unread.get_missing_topics({
+        stream_id: stream_id,
+        topic_dict: topic_dict,
+    });
+
+    assert.deepEqual(missing_topics, []);
 
     for (i = 0; i < num_msgs; i += 1) {
         message.id = i+1;
@@ -580,6 +600,13 @@ run_test('empty_cases', () => {
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
+
+    const missing_topics = unread.get_missing_topics({
+        stream_id: stream_id,
+        topic_dict: 'should-never-be-referenced',
+    });
+    assert.deepEqual(missing_topics, []);
+
 });
 
 run_test('errors', () => {
