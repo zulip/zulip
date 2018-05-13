@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 if False:
-    from typing import Set, Text
+    from typing import Set
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(ZULIP_PATH)
@@ -36,7 +36,7 @@ def parse_args():
     return args
 
 def get_deployments_to_be_purged(recent_deployments):
-    # type: (Set[Text]) -> Set[Text]
+    # type: (Set[str]) -> Set[str]
     all_deployments = set([os.path.join(DEPLOYMENTS_DIR, deployment)
                            for deployment in os.listdir(DEPLOYMENTS_DIR)])
     deployments_to_purge = set()
