@@ -39,7 +39,8 @@ exports.MessageList.prototype = {
             return true;
         }
         if (top_messages.length > 0) {
-            self.prepend(top_messages);
+            top_messages = this.data.prepend(top_messages);
+            self.view.prepend(top_messages);
         }
 
         if (bottom_messages.length > 0) {
@@ -259,11 +260,6 @@ exports.MessageList.prototype = {
         if (!opts.delay_render) {
             this.view.append(viewable_messages, opts.messages_are_new);
         }
-    },
-
-    prepend: function MessageList_prepend(messages) {
-        var viewable_messages = this.data.prepend(messages);
-        this.view.prepend(viewable_messages);
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
