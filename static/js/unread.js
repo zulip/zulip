@@ -313,8 +313,8 @@ exports.unread_topic_counter = (function () {
             return 0;
         }
 
+        var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            var sub = stream_data.get_sub_by_id(stream_id);
             if (sub && !muting.is_topic_muted(sub.name, topic)) {
                 stream_count += msgs.count();
             }
@@ -345,8 +345,8 @@ exports.unread_topic_counter = (function () {
         }
 
         var topic_lists = [];
+        var sub = stream_data.get_sub_by_id(stream_id);
         per_stream_bucketer.each(function (msgs, topic) {
-            var sub = stream_data.get_sub_by_id(stream_id);
             if (sub && !muting.is_topic_muted(sub.name, topic)) {
                 topic_lists.push(msgs.members());
             }
