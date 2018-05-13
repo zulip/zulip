@@ -12,7 +12,7 @@ import re
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import IO, Text
+from typing import IO
 
 # TODO: Convert this to use scripts/lib/queue_workers.py
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))

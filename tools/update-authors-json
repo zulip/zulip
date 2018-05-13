@@ -8,7 +8,7 @@ JSON data for the /team page contributors section.
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-from typing import Any, Dict, List, Optional, Union, Text, cast
+from typing import Any, Dict, List, Optional, Union, cast
 from mypy_extensions import TypedDict
 
 import os
