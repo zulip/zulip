@@ -20,6 +20,16 @@ set_global('feature_flags', {});
 
 var with_overrides = global.with_overrides; // make lint happy
 
+function accept_all_filter() {
+    var filter = {
+        predicate: () => {
+            return () => true;
+        },
+    };
+
+    return filter;
+}
+
 run_test('basics', () => {
     var table;
     var filter = {};
@@ -391,22 +401,15 @@ run_test('unmuted_messages', () => {
 
 run_test('add_remove_rerender', () => {
     var table;
-    var filter = {};
+    var filter = accept_all_filter();
 
     var list = new MessageList(table, filter);
 
     var messages = [{id: 1}, {id: 2}, {id: 3}];
 
     list.data.unmuted_messages = function (msgs) { return msgs; };
-    global.with_stub(function (stub) {
-        list.view.rerender_the_whole_thing = stub.f;
-        list.add_and_rerender(messages);
-
-        // Make sure the function has triggered a rerender
-        // and that all 3 items were added to the list.
-        assert.equal(stub.num_calls, 1);
-        assert.equal(list.num_items(), 3);
-    });
+    list.add_messages(messages);
+    assert.equal(list.num_items(), 3);
 
     global.with_stub(function (stub) {
         list.rerender = stub.f;

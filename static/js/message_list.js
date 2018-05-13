@@ -33,7 +33,9 @@ exports.MessageList.prototype = {
         var interior_messages = info.interior_messages;
 
         if (interior_messages.length > 0) {
-            self.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
+            var all_messages = top_messages.concat(interior_messages).concat(bottom_messages);
+            self.data.add(all_messages);
+            self.view.rerender_the_whole_thing();
             return true;
         }
         if (top_messages.length > 0) {
@@ -262,15 +264,6 @@ exports.MessageList.prototype = {
     prepend: function MessageList_prepend(messages) {
         var viewable_messages = this.data.prepend(messages);
         this.view.prepend(viewable_messages);
-    },
-
-    add_and_rerender: function MessageList_add_and_rerender(messages) {
-        // To add messages that might be in the interior of our
-        // existing messages list, we just add the new messages and
-        // then rerender the whole thing.
-
-        this.data.add(messages);
-        this.view.rerender_the_whole_thing();
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
