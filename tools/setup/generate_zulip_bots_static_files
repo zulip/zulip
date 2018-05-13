@@ -17,7 +17,14 @@ from zulip_bots.lib import get_bots_directory_path
 bots_dir = os.path.join(settings.STATIC_ROOT, 'generated/bots')
 if os.path.isdir(bots_dir):
     # delete old static files, they could be outdated
-    shutil.rmtree(bots_dir)
+    try:
+        shutil.rmtree(bots_dir)
+    except OSError:
+        print("There is a permission error with NFS file sharing on old versions of " +
+              "OSX. Either upgrade your OSX or give read and write permissions to your /zulip " +
+              "folder to everyone.")
+        sys.exit(1)
+
 
 os.makedirs(bots_dir, exist_ok=True)
 
