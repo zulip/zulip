@@ -95,10 +95,10 @@ function test_helper() {
 }
 
 function stub_message_list() {
-    message_list.MessageList = function (table_name, filter) {
+    message_list.MessageList = function (opts) {
         var list = this;
         this.messages = [];
-        this.filter = filter;
+        this.filter = opts.filter;
         this.view = {
             set_message_offset: function (offset) {
                 list.view.offset = offset;
