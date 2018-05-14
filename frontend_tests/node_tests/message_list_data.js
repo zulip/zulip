@@ -31,7 +31,7 @@ run_test('basics', () => {
 
     assert.equal(mld.is_search(), false);
 
-    mld.add(make_msgs([35, 25, 15, 45]));
+    mld.add_anywhere(make_msgs([35, 25, 15, 45]));
 
     function assert_contents(msg_ids) {
         const msgs = mld.all_messages();
@@ -40,20 +40,13 @@ run_test('basics', () => {
     assert_contents([15, 25, 35, 45]);
 
     const new_msgs = make_msgs([10, 20, 30, 40, 50, 60, 70]);
-    const info = mld.triage_messages(new_msgs);
+    const info = mld.add_messages(new_msgs);
 
     assert.deepEqual(info, {
         top_messages: make_msgs([10]),
         interior_messages: make_msgs([20, 30, 40]),
         bottom_messages: make_msgs([50, 60, 70]),
     });
-
-    mld.prepend(info.top_messages);
-    mld.append(info.bottom_messages);
-
-    assert_contents([10, 15, 25, 35, 45, 50, 60, 70]);
-
-    mld.add(info.interior_messages);
 
     assert_contents([10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70]);
 
@@ -86,7 +79,7 @@ run_test('basics', () => {
     assert.equal(mld.closest_id(99), -1);
     assert.equal(mld.get_last_message_sent_by_me(), undefined);
 
-    mld.add(make_msgs([120, 125.01, 130, 140]));
+    mld.add_messages(make_msgs([120, 125.01, 130, 140]));
     assert_contents([120, 125.01, 130, 140]);
     mld.set_selected_id(125.01);
     assert.equal(mld.selected_id(), 125.01);

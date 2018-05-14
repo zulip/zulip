@@ -27,24 +27,24 @@ exports.MessageList = function (table_name, filter, opts) {
 exports.MessageList.prototype = {
     add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
-        var info = this.data.triage_messages(messages);
+
+        // This adds all messages to our data, but only returns
+        // the currently viewable ones.
+        var info = this.data.add_messages(messages);
+
         var top_messages = info.top_messages;
         var bottom_messages = info.bottom_messages;
         var interior_messages = info.interior_messages;
 
         if (interior_messages.length > 0) {
-            var all_messages = top_messages.concat(interior_messages).concat(bottom_messages);
-            self.data.add(all_messages);
             self.view.rerender_the_whole_thing();
             return true;
         }
         if (top_messages.length > 0) {
-            top_messages = this.data.prepend(top_messages);
             self.view.prepend(top_messages);
         }
 
         if (bottom_messages.length > 0) {
-            bottom_messages = this.data.append(bottom_messages);
             self.append_to_view(bottom_messages, opts);
         }
 
