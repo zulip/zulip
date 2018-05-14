@@ -28,6 +28,11 @@ class TestCheckConfig(ZulipTestCase):
             with self.assertRaisesRegex(CommandError, "Error: You must set asdf in /etc/zulip/settings.py."):
                 check_config()
 
+    @override_settings(WARN_NO_EMAIL=True)
+    def test_check_send_email(self) -> None:
+        with self.assertRaisesRegex(CommandError, "Outgoing email not yet configured, see"):
+            call_command("send_test_email", 'test@example.com')
+
 class TestZulipBaseCommand(ZulipTestCase):
     def setUp(self) -> None:
         self.zulip_realm = get_realm("zulip")
