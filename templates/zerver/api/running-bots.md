@@ -15,11 +15,9 @@ On this page you'll find:
 
 ## Running a bot
 
-This guide will show you how to run a bot on a running Zulip
-server.  It assumes you want to use one of the existing bots
+This guide will show you how to run an **existing** Zulip bot
 found in [`zulip_bots/bots`](
-https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots)
-in your Zulip organization.
+https://github.com/zulip/python-zulip-api/tree/master/zulip_bots/zulip_bots/bots).
 
 *Hint: Looking for an easy way to test a bot's output? Check out [this](
  writing-bots#testing-a-bots-output) guide.*
