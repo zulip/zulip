@@ -1098,6 +1098,10 @@ class S3Test(ZulipTestCase):
         self.assertTrue(delete_message_image(path_id))
 
     @use_s3_backend
+    def test_message_image_delete_when_file_doesnt_exist(self) -> None:
+        self.assertEqual(False, delete_message_image('non-existant-file'))
+
+    @use_s3_backend
     def test_file_upload_authed(self) -> None:
         """
         A call to /json/user_uploads should return a uri and actually create an object.
