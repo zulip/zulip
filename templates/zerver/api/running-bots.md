@@ -42,14 +42,14 @@ You need:
      writing-bots#installing-a-development-version-of-the-zulip-bots-package)
      guide.*
 
-2. Register a new bot user on the Zulip server's web interface.
+1. Register a new bot user on the Zulip server's web interface.
 
     * Log in to the Zulip server.
     * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
       Select *Generic bot* for bot type, fill out the form and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-3. Download the bot's `zuliprc` configuration file to your computer.
+1. Download the bot's `zuliprc` configuration file to your computer.
 
     * Go to *Settings* -> *Your bots*
     * In the *Active bots* panel, click on the little green download icon
@@ -59,7 +59,7 @@ You need:
       on your browser and OS).
     * Copy the file to a destination of your choice, e.g. to `~/zuliprc-my-bot`.
 
-4. Run the bot.
+1. Run the bot.
 
     * Run
       ```
@@ -109,11 +109,11 @@ pip install zulip_botserver
       Select *Outgoing webhook* for bot type, fill out the form and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-2.  Download the `flaskbotrc` from the `your-bots` settings page. It
+1.  Download the `flaskbotrc` from the `your-bots` settings page. It
     contains the configuration details for all the active outgoing
     webhook bots. It's structure is very similar to that of zuliprc.
 
-3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
+1.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:
 
     ```
@@ -122,7 +122,7 @@ pip install zulip_botserver
 
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
-4.  Now set up the outgoing webhook service which will interact with
+r.  Now set up the outgoing webhook service which will interact with
     the server: Create an **Outgoing webhook** bot with its Endpoint URL
     of the form:
 
@@ -140,7 +140,7 @@ pip install zulip_botserver
     `outgoing-webhook@zulip.com`. This can be used for interacting
     with flask server bots.
 
-5.  Congrats, everything is set up! Test your botserver like you would
+1.  Congrats, everything is set up! Test your botserver like you would
     test a normal bot.
 
 ### Running Zulip Botserver with supervisord
@@ -153,7 +153,7 @@ section documents how to run the Zulip Botserver using *supervisord*.
 Running the Zulip Botserver with *supervisord* works almost like
 running it manually.
 
-0.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
+1.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
     ```
     sudo apt-get install supervisor
     ```
@@ -176,7 +176,7 @@ running it manually.
 
 [supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf
 
-2. Update *supervisord* to read the configuration file:
+1. Update *supervisord* to read the configuration file:
    ```
    supervisorctl reread
    supervisorctl update
@@ -184,7 +184,7 @@ running it manually.
    (or you can use `/etc/init.d/supervisord restart`, but this is less
    disruptive if you're using *supervisord* for other services as well).
 
-3. Test if your setup is successful:
+1. Test if your setup is successful:
    ```
    supervisorctl status
    ```
