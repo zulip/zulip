@@ -5,21 +5,25 @@ var exports = {};
 exports.narrowed = undefined;
 
 exports.MessageList = function (opts) {
+    if (opts.data) {
+        this.muting_enabled = opts.data.muting_enabled;
+        this.data = opts.data;
+    } else {
+        var filter = opts.filter;
+
+        this.muting_enabled = opts.muting_enabled;
+        this.data = new MessageListData({
+            muting_enabled: this.muting_enabled,
+            filter: filter,
+        });
+    }
+
     _.extend(opts, {
         collapse_messages: true,
     });
 
     var collapse_messages = opts.collapse_messages;
-    this.muting_enabled = opts.muting_enabled;
-
     var table_name = opts.table_name;
-    var filter = opts.filter;
-
-    this.data = new MessageListData({
-        muting_enabled: this.muting_enabled,
-        filter: filter,
-    });
-
     this.view = new MessageListView(this, table_name, collapse_messages);
     this.fetch_status = FetchStatus();
     this.table_name = table_name;

@@ -155,11 +155,15 @@ exports.activate = function (raw_operators, opts) {
     // Save how far from the pointer the top of the message list was.
     exports.save_pre_narrow_offset_for_reload();
 
-    var msg_list = new message_list.MessageList({
-        table_name: 'zfilt',
+    var msg_data =  new MessageListData({
         filter: narrow_state.get_current_filter(),
-        collapse_messages: ! narrow_state.get_current_filter().is_search(),
         muting_enabled: muting_enabled,
+    });
+
+    var msg_list = new message_list.MessageList({
+        data: msg_data,
+        table_name: 'zfilt',
+        collapse_messages: ! narrow_state.get_current_filter().is_search(),
     });
 
     msg_list.start_time = start_time;
