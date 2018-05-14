@@ -2259,10 +2259,6 @@ def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]
     )
     return subscriptions
 
-def get_subscribers(stream: Stream,
-                    requesting_user: Optional[UserProfile]=None) -> List[UserProfile]:
-    subscriptions = get_subscribers_query(stream, requesting_user).select_related()
-    return [subscription.user_profile for subscription in subscriptions]
 
 def get_subscriber_emails(stream: Stream,
                           requesting_user: Optional[UserProfile]=None) -> List[str]:
@@ -2270,15 +2266,6 @@ def get_subscriber_emails(stream: Stream,
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-def maybe_get_subscriber_emails(stream: Stream, user_profile: UserProfile) -> List[str]:
-    """ Alternate version of get_subscriber_emails that takes a Stream object only
-    (not a name), and simply returns an empty list if unable to get a real
-    subscriber list (because we're on the MIT realm). """
-    try:
-        subscribers = get_subscriber_emails(stream, requesting_user=user_profile)
-    except JsonableError:
-        subscribers = []
-    return subscribers
 
 def notify_subscriptions_added(user_profile: UserProfile,
                                sub_pairs: Iterable[Tuple[Subscription, Stream]],
