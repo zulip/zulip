@@ -68,17 +68,44 @@ global.read_fixture_data = (fn) => {
     return data;
 };
 
+function short_tb(tb) {
+    const lines = tb.split('\n');
+
+    var i = _.findIndex(lines, (line) => {
+        return line.includes('run_one_module');
+    });
+
+    if (i === -1) {
+        return tb;
+    }
+
+    return lines.splice(0, i+1).join('\n') + '\n(...)\n';
+}
+
 // Set up bugdown comparison helper
 global.bugdown_assert = require('./bugdown_assert.js');
 
-files.forEach(function (file) {
-    global.patch_builtin('setTimeout', noop);
-    global.patch_builtin('setInterval', noop);
-    _.throttle = immediate;
-    _.debounce = immediate;
-
+function run_one_module(file) {
     console.info('running tests for ' + file.name);
-    render.init();
     require(file.full_name);
-    namespace.restore();
-});
+}
+
+try {
+    files.forEach(function (file) {
+        global.patch_builtin('setTimeout', noop);
+        global.patch_builtin('setInterval', noop);
+        _.throttle = immediate;
+        _.debounce = immediate;
+
+        render.init();
+        run_one_module(file);
+        namespace.restore();
+    });
+} catch (e) {
+    if (e.stack) {
+        console.info(short_tb(e.stack));
+    } else {
+        console.info(e);
+    }
+    process.exit(1);
+}
