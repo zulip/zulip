@@ -1073,6 +1073,19 @@ class S3Test(ZulipTestCase):
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
+    def test_file_upload_s3_with_undefined_content_type(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+
+    @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
