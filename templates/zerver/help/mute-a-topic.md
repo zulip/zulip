@@ -17,7 +17,7 @@ stream's name, all the topics of the stream will appear.
 To mute the topic, simply select the **Mute the topic (topic name)** option
 from the dropdown.
 
-3. Upon clicking **Mute the topic (topic name)**, a tooltip titled **Topic Muted**
+3. Upon clicking **Mute the topic (topic name)**, a tooltip titled **Topic muted**
 will appear, and the topic will be grayed out in the stream list dropdown,
 confirming the success of your muting of the topic.
 
@@ -38,7 +38,7 @@ to mute in your current filter or in the **All messages** view.
 3. Select the **Mute the topic (topic name)** option from the dropdown to mute
 the topic that the selected message belongs to.
 
-4. Upon clicking **Mute the topic (topic name)**, a dialog titled **Topic Muted**
+4. Upon clicking **Mute the topic (topic name)**, a dialog titled **Topic muted**
 will appear, and any messages belonging to the topic will disappear from your
 filter, confirming the success of your muting of the topic.
 
