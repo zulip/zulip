@@ -1123,6 +1123,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('streams', check_list(check_dict_only([
                     ('description', check_string),
                     ('invite_only', check_bool),
+                    ('is_announcement_only', check_bool),
                     ('name', check_string),
                     ('stream_id', check_int),
                     ('history_public_to_subscribers', check_bool)]))),

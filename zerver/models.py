@@ -987,6 +987,7 @@ class Stream(models.Model):
             stream_id=self.id,
             description=self.description,
             invite_only=self.invite_only,
+            is_announcement_only=self.is_announcement_only,
             history_public_to_subscribers=self.history_public_to_subscribers
         )
 
