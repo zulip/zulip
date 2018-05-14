@@ -63,7 +63,6 @@ not_yet_fully_covered = {
     'zerver/lib/upload.py',
     # Other lib files that ideally would coverage, but aren't sorted
     'zerver/__init__.py',
-    'zerver/apps.py',
     'zerver/filters.py',
     'zerver/middleware.py',
     'zerver/storage.py',
