@@ -3,6 +3,7 @@ set_global('$', global.make_zjquery());
 zrequire('narrow_state');
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+zrequire('MessageListData', 'js/message_list_data');
 zrequire('unread');
 zrequire('narrow');
 
@@ -98,7 +99,7 @@ function stub_message_list() {
     message_list.MessageList = function (opts) {
         var list = this;
         this.messages = [];
-        this.filter = opts.filter;
+        this.filter = opts.data.filter;
         this.view = {
             set_message_offset: function (offset) {
                 list.view.offset = offset;
