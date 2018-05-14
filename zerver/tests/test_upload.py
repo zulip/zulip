@@ -115,6 +115,21 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)
 
+    def test_upload_file_with_supplied_mimetype(self) -> None:
+        """
+        When files are copied into the system clipboard and pasted for upload
+        the filename may not be supplied so the extension is determined from a
+        query string parameter.
+        """
+        fp = StringIO("zulip!")
+        fp.name = "pasted_file"
+        result = self.api_post(self.example_email("hamlet"),
+                               "/api/v1/user_uploads?mimetype=image/png",
+                               {"file": fp})
+        self.assertEqual(result.status_code, 200)
+        uri = result.json()["uri"]
+        self.assertTrue(uri.endswith("pasted_file.png"))
+
     def test_filename_encoding(self) -> None:
         """
         In Python 2, we need to encode unicode filenames (which converts them to
