@@ -46,7 +46,7 @@ You need:
 
 1. Download the bot's `zuliprc` configuration file to your computer.
 
-    * Go to *Settings* -> *Your bots*
+    * Go to *Settings* -> *Your bots*.
     * In the *Active bots* panel, click on the little green download icon
       to download its configuration file *zuliprc* (the structure of this file is
       explained [here](writing-bots#configuration-file)).
