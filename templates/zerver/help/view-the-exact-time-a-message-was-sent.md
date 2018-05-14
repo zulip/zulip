@@ -9,4 +9,4 @@ content.
 !!! tip ""
     Depending on your settings, the message's timestamp is displayed in
     either a 12-hour or 24-hour format; to change the format your messages
-    are displayed in, see [here](/help/change-the-date-and-time-format).
+    are displayed in, see [here](/help/change-the-time-format).

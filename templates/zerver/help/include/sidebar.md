@@ -11,7 +11,7 @@
 * [Edit your settings](/help/change-your-settings)
 * [Set your avatar](/help/change-your-avatar)
 * [Change your default language](/help/change-your-language)
-* [Use 24-hour time](/help/change-the-date-and-time-format)
+* [Use 24-hour time](/help/change-the-time-format)
 * [Joining an organization](/help/join-a-zulip-organization)
 * [Logging in](/help/logging-in)
 * [Logging out](/help/logging-out)
