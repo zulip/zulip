@@ -65,7 +65,7 @@ exports.MessageList.prototype = {
         }
 
         if ((self === exports.narrowed) && !self.empty() &&
-            (self.selected_id() === -1) && !opts.delay_render) {
+            (self.selected_id() === -1)) {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -267,12 +267,10 @@ exports.MessageList.prototype = {
     },
 
     append_to_view: function (messages, opts) {
-        opts = _.extend({delay_render: false, messages_are_new: false}, opts);
+        opts = _.extend({messages_are_new: false}, opts);
 
         this.num_appends += 1;
-        if (!opts.delay_render) {
-            this.view.append(messages, opts.messages_are_new);
-        }
+        this.view.append(messages, opts.messages_are_new);
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
