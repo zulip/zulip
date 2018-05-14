@@ -625,6 +625,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def tearDown(self) -> None:
         destroy_uploads()
 
+
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_avatar_field(self) -> None:
@@ -803,6 +804,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             user_profile = self.example_user('hamlet')
             medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
+
+            # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
+            with mock.patch('zerver.lib.upload.write_local_file') as mock_write_local_file:
+                zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+                self.assertFalse(mock_write_local_file.called)
 
             # Confirm that ensure_medium_avatar_url works to recreate
             # medium size avatars from the original if needed
