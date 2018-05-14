@@ -296,6 +296,33 @@ run_test('validate_stream_message', () => {
     assert($("#compose-all-everyone").visible());
 });
 
+run_test('test_validate_stream_message_announcement_only', () => {
+    // This test is in continuation with test_validate but it has been seperated out
+    // for better readabilty. Their relative position of execution should not be changed.
+    // Although the position with respect to test_validate_stream_message does not matter
+    // as `get_announcement_only` is reset at the end.
+    global.page_params.is_admin = false;
+    var sub = {
+        stream_id: 102,
+        name: 'stream102',
+        subscribed: true,
+        announcement_only: true,
+    };
+    stream_data.get_announcement_only = function () {
+        return true;
+    };
+    compose_state.subject('subject102');
+    stream_data.add_sub('stream102', sub);
+    assert(!compose.validate());
+    assert.equal($('#compose-error-msg').html(), i18n.t("Only organization admins are allowed to post to this stream."));
+
+    // reset `get_announcement_only` so that any tests occurung after this
+    // do not reproduce this error.
+    stream_data.get_announcement_only = function () {
+        return false;
+    };
+});
+
 run_test('markdown_shortcuts', () => {
     var queryCommandEnabled = true;
     var event = {

@@ -32,6 +32,7 @@ run_test('basics', () => {
         stream_id: 2,
         in_home_view: true,
         invite_only: true,
+        is_announcement_only: true,
     };
     var test = {
         subscribed: true,
@@ -61,6 +62,9 @@ run_test('basics', () => {
 
     assert(stream_data.get_invite_only('social'));
     assert(!stream_data.get_invite_only('unknown'));
+    assert(stream_data.get_announcement_only('social'));
+    assert(!stream_data.get_announcement_only('unknown'));
+
     assert.equal(stream_data.get_color('social'), 'red');
     assert.equal(stream_data.get_color('unknown'), global.stream_color.default_color);
 
