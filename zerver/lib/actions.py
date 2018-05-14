@@ -2956,10 +2956,6 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
                                  is_admin=value))
         send_event(event, active_user_ids(user_profile.realm_id))
 
-def do_change_bot_type(user_profile: UserProfile, value: int) -> None:
-    user_profile.bot_type = value
-    user_profile.save(update_fields=["bot_type"])
-
 def do_change_stream_invite_only(stream: Stream, invite_only: bool,
                                  history_public_to_subscribers: Optional[bool]=None) -> None:
     history_public_to_subscribers = get_default_value_for_history_public_to_subscribers(
