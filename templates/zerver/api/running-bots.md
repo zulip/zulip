@@ -54,21 +54,20 @@ You need:
       on your browser and OS).
     * Copy the file to a destination of your choice, e.g. to `~/zuliprc-my-bot`.
 
-1. Run the bot.
+1. Start the bot process.
 
     * Run
       ```
       zulip-run-bot <bot-name> --config-file ~/zuliprc-my-bot
       ```
       (using the path to the `zuliprc` file from step 3).
-    * Check the output of the command. It should start with the text
-      the `usage` function returns, followed by logging output similar
-      to this:
+    * Check the output of the command. It should include the following line:
 
             INFO:root:starting message handling...
-            INFO:requests.packages.urllib3.connectionpool:Starting new HTTP connection (1): localhost
 
-    * Congrats! Your bot is running.
+        Congrats! Your bot is running.
+
+1. To talk with the bot, mention its name `@**bot-name**`.
 
 You can now play around with the bot and get it configured the way you
 like.  Eventually, you'll probably want to run it in a production
