@@ -8,14 +8,11 @@ integrations).
 Usually, this involves a few steps:
 
 * Add text explaining all of the steps required to setup the
-  integration, including what URLs to use, etc.  If there are any
-  screens in the product involved, take a few screenshots with the
-  input fields filled out with sample values in order to make the
-  instructions really easy to follow.  For the screenshots, use a bot
-  with a name like "GitHub Bot", and an email address for the bot like
-  `github-bot@zulip.example.com`. Zulip's pre-defined Markdown macros
-  can be used for some of these steps. See
-  [Markdown macros](#markdown-macros) for further details.
+  integration, including what URLs to use, etc. See
+  [Writing guidelines](#writing-guidelines) for detailed writing guidelines.
+
+  Zulip's pre-defined Markdown macros can be used for some of these steps.
+  See [Markdown macros](#markdown-macros) for further details.
 
 * Make sure you've added your integration to
   `zerver/lib/integrations.py`; this results in your integration
@@ -45,7 +42,7 @@ Usually, this involves a few steps:
 
   When generating the screenshot of a sample message, give your test
   bot a nice name like "GitHub Bot", use the project's logo as the
-  bot's avatar, and take the screenshots showing the stream/topic bar
+  bot's avatar, and take the screenshot showing the stream/topic bar
   for the message, not just the message body.
 
 ## Markdown macros
@@ -65,14 +62,14 @@ Here are a few common macros used to document Zulip's integrations:
 * `{!create-stream.md!}` macro - Recommends that users create a dedicated
   stream for a given integration. Usually the first step in setting up an
   integration or webhook. For an example rendering, see **Step 1** of
-  [the docs for Zulip's GitHub integration][github].
+  [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
   for a given integration and construct a webhook URL using the bot API key
   and stream name. The URL is generated automatically for every webhook by using
   attributes in the [WebhookIntegration][1] class.
   This macro is usually used right after `{!create-stream!}`. For an example
-  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][github].
+  rendering, see **Step 2** of [the docs for Zulip's GitHub integration][GitHub].
 
     **Note:** If special configuration is
     required to set up the URL and you can't use this macro, be sure to use the
@@ -95,7 +92,7 @@ Here are a few common macros used to document Zulip's integrations:
   successful setup of a given integration. This macro is usually used at
   the end of the documentation, right before the sample message screenshot.
   For an example rendering, see the end of
-  [the docs for Zulip's GitHub integration][github].
+  [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!download-python-bindings.md!}` macro - Links to Zulip's
   [API page](https://zulipchat.com/api/) to download and install Zulip's
@@ -115,7 +112,7 @@ Here are a few common macros used to document Zulip's integrations:
   These two macros explain how to specify a list of branches in the webhook URL
   to filter notifications in our Git-related webhooks. For an example rendering,
   see the last paragraph of **Step 2** in
-  [the docs for Zulip's GitHub integration][github].
+  [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!webhook-url.md!}` - Used internally by `{!create-bot-construct-url.md!}`
   to generate the webhook URL.
@@ -133,7 +130,103 @@ Here are a few common macros used to document Zulip's integrations:
     For an example rendering, see
     [Zulip's Beanstalk integration](https://zulipchat.com/integrations/doc/beanstalk).
 
-[github]: https://zulipchat.com/integrations/doc/github
+[GitHub]: https://zulipchat.com/integrations/doc/github
 [codebase]: https://zulipchat.com/integrations/doc/codebase
 [beanstalk]: https://zulipchat.com/integrations/doc/beanstalk
 [1]: https://github.com/zulip/zulip/blob/708f3a4bb19c8e823c9ea1e577d360ac4229b199/zerver/lib/integrations.py#L78
+
+## Writing guidelines
+
+For the vast majority of integrations, you should just copy the docs for a
+similar integration and edit it. [Basecamp][basecamp] is a good one to copy.
+
+[basecamp]: https://zulipchat.com/integrations/doc/basecamp
+
+### General writing guidelines
+
+At at high level, the goals are for the instructions to feel simple, be easy to
+follow, and be easy to maintain. Easier said than done, but here are a few
+concrete guidelines.
+
+##### Feel simple
+
+- Use simple language.
+- Use the imperative tense.
+- Only describe things as much as necessary. For example: "Select **Project settings**."
+  is better than "Select **Project settings** from the dropdown."
+- Cut unnecessary words. For example, do not start steps with transition words
+  like "Next", "First", "Now", etc. Each step should be structurally
+  independent.
+
+##### Be easy to follow
+
+- Actions should appear in order, including implicit ones. So "Under
+  **Webhooks**, click **Add Webhook**." not "Click **Add Webhook** in the
+  **Webhooks** section." "Under **Webhooks**" is an action, since it’s basically
+  the same as "Find the Webhooks section".
+- UI elements in third-party websites should be **bolded**.
+- Trailing punctuation can be stripped from bolded elements. For example,
+  "**Enable this checkbox**" instead of "**Enable this checkbox?**".
+  Starting punctuation such as the "**+**" in "**+ New Notification**" should
+  be preserved.
+- You can use a screenshot if a step is particularly complicated
+  (see [Screenshots](#screenshots) below).
+
+##### Be easy to maintain
+
+- Follow the organization and wording of existing docs as much as possible.
+
+
+### Guidelines for specific steps
+
+Most doc files should start with a generic sentence about the
+integration, for example, "Get `webhook name` notifications in Zulip!"
+A typical doc will then have the following steps.
+
+##### "Create the stream" step
+
+- Use the `create-stream` macro. This step should be omitted if the
+  integration only supports notifications via PMs.
+
+##### "Create the bot" step
+
+- Typically, use the `create-bot-construct-url` macro.
+- [Existing macros](#markdown-macros) should be used for this if they exist, but if the macro
+  defaults don’t work, it may make sense to write something custom for the
+  integration in question. This step is mandatory for all integrations.
+
+##### "Navigate to this screen" step
+
+- In general, this should be one step, even if it takes multiple clicks.
+- Begin by mentioning the third-party service being documented with language
+  such as "Go to your Taiga project", "Go to your GitHub repository",
+  "On your X project", etc. Assume the user is already logged in to their
+  account.
+- If a UI element is difficult to spot, you can use additional cues like
+  "Click on **Settings** in the top-right corner" or "On the left, click
+  **Webhooks**.". Only do this if the element is actually difficult to spot.
+- If this step includes more than 5 sentences, it may need to be split up
+  into multiple steps.
+
+##### "Fill out form and save" step
+
+- Filling out a form and clicking **Save** should generally be one step, even if
+  there are multiple fields to fill out.
+- It’s fine to say things like "Follow the on-screen instructions to create an
+  app" if they have a sequence of steps they guide you through that are pretty
+  clear.
+
+Lastly, end with the `congrats.md` macro and a screenshot of a sample message
+within Zulip.
+
+### Screenshots
+
+Screenshots are hard to maintain, so we generally err on the side of not
+including screenshots. That being said, screenshots may be used to aid the
+process if the third-party UI is confusing or a specific UI element is hard
+to find. A few things to keep in mind:
+
+- Screenshots should be small and should mainly include the third-party UI that
+  the text is referring to that is difficult to locate.
+- Screenshots should never include the entirety of a third-party website’s page.
+- Each screenshot should come after the step that refers to it.
