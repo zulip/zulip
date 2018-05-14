@@ -19,7 +19,7 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_file, delete_message_image, LocalUploadBackend, \
+    upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
     currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE
@@ -1052,8 +1052,29 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         self.assertTrue(delete_message_image(path_id))
 
+    def test_emoji_upload_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), open(file_path + ".original", "rb").read())
+
+        resized_image = Image.open(open(file_path, "rb"))
+        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
+        self.assertEqual(expected_size, resized_image.size)
+
     def tearDown(self) -> None:
         destroy_uploads()
+
 
 class S3Test(ZulipTestCase):
 
