@@ -19,6 +19,8 @@ def is_integer_string(val: str) -> bool:
 
 def check_config() -> None:
     for (setting_name, default) in settings.REQUIRED_SETTINGS:
+        # if required setting is the same as default OR is not found in settings,
+        # throw error to add/set that setting in config
         try:
             if settings.__getattr__(setting_name) != default:
                 continue
