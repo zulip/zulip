@@ -22,4 +22,4 @@
 * [Configuring the Python bindings](/api/configuring-python-bindings)
 * [Error handling](/api/rest-error-handling)
 
-{!rest_endpoints.md!}
+{!rest-endpoints.md!}
