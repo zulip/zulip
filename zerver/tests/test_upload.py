@@ -1146,6 +1146,11 @@ class S3Test(ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
 
+    @use_s3_backend
+    def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
+        self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
+
+
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
