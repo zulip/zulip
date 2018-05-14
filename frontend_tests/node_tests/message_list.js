@@ -31,10 +31,11 @@ function accept_all_filter() {
 }
 
 run_test('basics', () => {
-    var table;
     var filter = accept_all_filter();
 
-    var list = new MessageList(table, filter);
+    var list = new MessageList({
+        filter: filter,
+    });
 
     var messages = [
         {
@@ -126,9 +127,7 @@ run_test('basics', () => {
 });
 
 run_test('message_range', () => {
-    var table;
-    var filter = {};
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
 
     var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
@@ -140,9 +139,7 @@ run_test('message_range', () => {
 });
 
 run_test('updates', () => {
-    var table;
-    var filter = {};
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
     list.view.rerender_the_whole_thing = noop;
 
     var messages = [
@@ -179,10 +176,7 @@ run_test('updates', () => {
 });
 
 run_test('nth_most_recent_id', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
     list.append([{id:10}, {id:20}, {id:30}]);
     assert.equal(list.nth_most_recent_id(1), 30);
     assert.equal(list.nth_most_recent_id(2), 20);
@@ -191,10 +185,7 @@ run_test('nth_most_recent_id', () => {
 });
 
 run_test('change_message_id', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
     list.append([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
     list.change_message_id(10.5, 11);
     assert.equal(list.get(11).content, "good job");
@@ -204,10 +195,7 @@ run_test('change_message_id', () => {
 });
 
 run_test('last_sent_by_me', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
     var items = [
         {
             id: 1,
@@ -230,10 +218,7 @@ run_test('last_sent_by_me', () => {
 });
 
 run_test('local_echo', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
     list.append([{id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40}, {id:50}, {id:60}]);
     list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03}};
 
@@ -255,7 +240,7 @@ run_test('local_echo', () => {
     assert.equal(list.closest_id(58), 60);
 
 
-    list = new MessageList(table, filter);
+    list = new MessageList({});
     list.append([
         {id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40},
         {id:50}, {id: 50.01}, {id: 50.02}, {id:60}]);
@@ -282,10 +267,7 @@ run_test('local_echo', () => {
 });
 
 run_test('bookend', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
 
     with_overrides(function (override) {
         var expected = "translated: You subscribed to stream IceCream";
@@ -362,10 +344,7 @@ run_test('bookend', () => {
 });
 
 run_test('unmuted_messages', () => {
-    var table;
-    var filter = {};
-
-    var list = new MessageList(table, filter);
+    var list = new MessageList({});
 
     var unmuted = [
         {
@@ -400,10 +379,9 @@ run_test('unmuted_messages', () => {
 });
 
 run_test('add_remove_rerender', () => {
-    var table;
     var filter = accept_all_filter();
 
-    var list = new MessageList(table, filter);
+    var list = new MessageList({filter: filter});
 
     var messages = [{id: 1}, {id: 2}, {id: 3}];
 

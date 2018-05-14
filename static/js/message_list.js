@@ -4,18 +4,23 @@ var exports = {};
 
 exports.narrowed = undefined;
 
-exports.MessageList = function (table_name, filter, opts) {
-    _.extend(this, {
+exports.MessageList = function (opts) {
+    _.extend(opts, {
         collapse_messages: true,
-        muting_enabled: true,
-    }, opts);
+    });
+
+    var collapse_messages = opts.collapse_messages;
+    this.muting_enabled = opts.muting_enabled;
+
+    var table_name = opts.table_name;
+    var filter = opts.filter;
 
     this.data = new MessageListData({
         muting_enabled: this.muting_enabled,
         filter: filter,
     });
 
-    this.view = new MessageListView(this, table_name, this.collapse_messages);
+    this.view = new MessageListView(this, table_name, collapse_messages);
     this.fetch_status = FetchStatus();
     this.table_name = table_name;
     this.narrowed = this.table_name === "zfilt";
@@ -401,10 +406,9 @@ exports.MessageList.prototype = {
 
 };
 
-exports.all = new exports.MessageList(
-    undefined, undefined,
-    {muting_enabled: false}
-);
+exports.all = new exports.MessageList({
+    muting_enabled: false,
+});
 
 // We stop autoscrolling when the user is clearly in the middle of
 // doing something.  Be careful, though, if you try to capture

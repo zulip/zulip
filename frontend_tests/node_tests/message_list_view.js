@@ -370,9 +370,12 @@ run_test('render_windows', () => {
     var view = (function make_view() {
         var table_name = 'zfilt';
         var filter = new Filter();
-        var opts = {};
 
-        var list = new message_list.MessageList(table_name, filter, opts);
+        var list = new message_list.MessageList({
+            table_name: table_name,
+            filter: filter,
+        });
+
         var view = list.view;
 
         // Stub out functionality that is not core to the rendering window
