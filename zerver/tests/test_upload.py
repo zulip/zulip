@@ -22,11 +22,11 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
-    currently_used_upload_space
+    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
-    RealmDomain, get_realm, get_system_bot
+    RealmDomain, RealmEmoji, get_realm, get_system_bot
 from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
@@ -1190,7 +1190,30 @@ class S3Test(ZulipTestCase):
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
         resized_data = bucket.get_key(resized_path_id).read()
-        self.assertEqual(Image.open(io.BytesIO(resized_data)).size, (100, 100))
+        resized_image = Image.open(io.BytesIO(resized_data)).size
+        self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+
+    @use_s3_backend
+    def test_upload_emoji_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        emoji_name = "emoji.png"
+        zerver.lib.upload.upload_backend.upload_emoji_image(image_file, emoji_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=emoji_name,
+        )
+        original_key = bucket.get_key(emoji_path + ".original")
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_data = bucket.get_key(emoji_path).read()
+        resized_image = Image.open(io.BytesIO(resized_data))
+        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 
 
 class UploadTitleTests(TestCase):
