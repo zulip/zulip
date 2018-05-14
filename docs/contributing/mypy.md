@@ -22,15 +22,11 @@ You can learn more about it at:
 
 * The
   [mypy cheat sheet for Python 3](http://mypy.readthedocs.io/en/latest/cheat_sheet_py3.html)
-  (and its
-  [python 2 version](https://github.com/python/mypy/blob/master/docs/source/cheat_sheet.rst))
-  are the best resources for quickly understanding how to write the
-  PEP 484 type annotations used by mypy correctly.
+  is the best resource for quickly understanding how to write the PEP
+  484 type annotations used by mypy correctly.
 
-* The [Python 2 type annotation syntax spec in PEP
-  484](https://www.python.org/dev/peps/pep-0484/#suggested-syntax-for-python-2-7-and-straddling-code)
-
-* [Using mypy with Python 2 code](http://mypy.readthedocs.io/en/latest/python2.html)
+* The
+  [Python type annotation spec in PEP 484](https://www.python.org/dev/peps/pep-0484/)
 
 The mypy type checker is run automatically as part of Zulip's Travis
 CI testing process in the `backend` build.
@@ -73,13 +69,6 @@ because a list can have many elements, which would make the output too large.
 Similarly in dicts, one key's type and the corresponding value's type are printed.
 So `{1: 'a', 2: 'b', 3: 'c'}` will be printed as `{int: str, ...}`.
 
-## Zulip goals
-
-Zulip is hoping to reach 100% of the codebase annotated with mypy
-static types, and then enforce that it stays that way.  Our current
-coverage is shown in
-[Codecov](https://codecov.io/gh/zulip/zulip).
-
 ## Installing mypy
 
 If you installed Zulip's development environment correctly, mypy
@@ -112,31 +101,6 @@ test.py: note: In function "test":
 test.py:200: error: Incompatible types in assignment (expression has type "str", variable has type "int")
 ```
 
-If you need help interpreting or debugging mypy errors, please feel
-free to mention @sharmaeklavya2 or @timabbott on your pull request (or
-ask in [chat.zulip.org](https://chat.zulip.org)) to get help; we'd love to both
-build a great troubleshooting guide in this doc and also help
-contribute improvements to error messages upstream.
-
-Since mypy is a new tool under rapid development and occasionally
-makes breaking changes, Zulip is using a pinned version of mypy from
-its [git repository](https://github.com/python/mypy) rather than
-tracking the (older) latest mypy release on PyPI.
-
-## Excluded files
-
-Since several Python files in Zulip's code don't pass mypy's checks
-(even for unannotated code) right now, a list of files to be excluded
-from the check for CI is present in `tools/run-mypy`.
-
-To run mypy on all Python files, ignoring the exclude list, you can
-pass the `--all` option to `tools/run-mypy`.
-
-    tools/run-mypy --all
-
-If you type annotate some of those files so that they pass without
-errors, please remove them from the exclude list.
-
 ## Mypy is there to find bugs in Zulip before they impact users
 
 For the purposes of Zulip development, you can treat `mypy` like a
@@ -164,48 +128,3 @@ developers by opening an issue on [Zulip's GitHub
 repository](https://github.com/zulip/zulip/issues) or posting on
 [zulip-devel](https://groups.google.com/d/forum/zulip-devel).  If it's
 indeed a mypy bug, we can help with reporting it upstream.
-
-## Annotating strings
-
-In Python 3, strings can have non-ASCII characters without any problems.
-Such characters are required to support languages which use non-latin
-scripts like Japanese and Hindi.  They are also needed to support special
-characters like mathematical symbols, musical symbols, etc.
-In Python 2, however, `str` generally doesn't work well with non-ASCII
-characters.  That's why `unicode` was introduced in Python 2.
-
-But there are problems with the `unicode` and `str` system.  Implicit
-conversions between `str` and `unicode` use the `ascii` codec, which
-fails on strings containing non-ASCII characters.  Such errors are hard
-to detect by people who always write in English.  To minimize such
-implicit conversions, we should have a strict separation between `str`
-and `unicode` in Python 2.  It might seem that using `unicode` everywhere
-will solve all problems, but unfortunately it doesn't.  This is because
-some parts of the standard library and the Python language (like keyword
-argument unpacking) insist that parameters passed to them are `str`.
-
-To make our code work correctly in Python 2, we have to identify strings
-which contain data which could come from non-ASCII sources like stream
-names, people's names, domain names, content of messages, emails, etc.
-These strings should be `unicode`.  We also have to identify strings
-which should be `str` like Exception names, attribute names, parameter
-names, etc.
-
-Mypy can help with this.  We just have to annotate each string as either
-`str` or `unicode` and mypy's static type checking will tell us if we
-are incorrectly mixing the two.  However, `unicode` is not defined in
-Python 3.  We want our code to be Python 3 compatible in the future.
-This can be achieved using 'typing.Text', a Python 2 and 3 compatibility type.
-
-`typing.Text` is defined as `str` in Python 3 and as `unicode` in
-Python 2.  We'll be using `Text` (instead of `unicode`) and `str`
-to annotate strings in Zulip's code.  We follow the style of doing
-`from typing import Text` and using `Text` for annotation instead
-of doing `import typing` and using `typing.Text` for annotation, because
-`Text` is used so extensively for type annotations that we don't
-need to be that verbose.
-
-Sometimes you'll find that you have to convert strings from one type to
-another.  `zerver/lib/str_utils.py` has utility functions to help with that.
-It also has documentation (in docstrings) which explains the right way
-to use them.
