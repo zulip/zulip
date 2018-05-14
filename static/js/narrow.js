@@ -160,6 +160,17 @@ exports.activate = function (raw_operators, opts) {
         muting_enabled: muting_enabled,
     });
 
+    // Populate the message list if we can apply our filter locally (i.e.
+    // with no backend help) and we have the message we want to select.
+    if (narrow_state.get_current_filter().can_apply_locally()) {
+        // We may get back a new select_strategy, or we may get our
+        // original back.
+        select_strategy = exports.maybe_add_local_messages({
+            select_strategy: select_strategy,
+            msg_data: msg_data,
+        });
+    }
+
     var msg_list = new message_list.MessageList({
         data: msg_data,
         table_name: 'zfilt',
@@ -178,16 +189,6 @@ exports.activate = function (raw_operators, opts) {
     ui_util.change_tab_to('#home');
     message_list.narrowed = msg_list;
     current_msg_list = message_list.narrowed;
-
-    // Populate the message list if we can apply our filter locally (i.e.
-    // with no backend help) and we have the message we want to select.
-    if (narrow_state.get_current_filter().can_apply_locally()) {
-        // We may get back a new select_strategy, or we may get our
-        // original back.
-        select_strategy = exports.maybe_add_local_messages({
-            select_strategy: select_strategy,
-        });
-    }
 
     var then_select_offset = (function () {
         if (opts.then_select_offset !== undefined) {
@@ -272,17 +273,16 @@ exports.activate = function (raw_operators, opts) {
     }, 0);
 };
 
-function load_local_messages() {
+function load_local_messages(msg_data) {
     // This little helper loads messages into our narrow message
-    // list and returns true unless it's empty.  We use this for
+    // data and returns true unless it's empty.  We use this for
     // cases when our local cache (message_list.all) has at least
     // one message the user will expect to see in the new narrow.
-    message_util.add_messages(
-        message_list.all.all_messages(),
-        message_list.narrowed,
-        {delay_render: true});
 
-    return !message_list.narrowed.empty();
+    var in_msgs = message_list.all.all_messages();
+    msg_data.add_messages(in_msgs);
+
+    return !msg_data.empty();
 }
 
 exports.maybe_add_local_messages = function (opts) {
@@ -292,6 +292,7 @@ exports.maybe_add_local_messages = function (opts) {
     //  - return a new select_strategy for where to advance the cursor
     //  - add messages into our message list from our local cache
     var select_strategy = opts.select_strategy;
+    var msg_data = opts.msg_data;
 
     if (select_strategy.flavor === 'first_unread') {
         // Try to upgrade to the "exact" strategy by looking for
@@ -313,8 +314,8 @@ exports.maybe_add_local_messages = function (opts) {
             if (message_list.all.fetch_status.has_found_newest()) {
                 // Load messages now and upgrade our strategy
                 // if we find at least one message.
-                if (load_local_messages()) {
-                    var last_msg = message_list.narrowed.last();
+                if (load_local_messages(msg_data)) {
+                    var last_msg = msg_data.last();
                     select_strategy = {
                         flavor: 'exact',
                         msg_id: last_msg.id,
@@ -331,7 +332,7 @@ exports.maybe_add_local_messages = function (opts) {
     if (select_strategy.flavor === 'exact') {
         var msg_to_select = message_list.all.get(select_strategy.msg_id);
         if (msg_to_select !== undefined) {
-            if (load_local_messages()) {
+            if (load_local_messages(msg_data)) {
                 return select_strategy;
             }
         }

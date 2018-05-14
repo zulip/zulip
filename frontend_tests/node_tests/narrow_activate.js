@@ -43,6 +43,10 @@ function stub_trigger(f) {
     };
 }
 
+set_global('muting', {
+    is_topic_muted: () => false,
+});
+
 var denmark = {
     subscribed: false,
     color: 'blue',
@@ -98,8 +102,7 @@ function test_helper() {
 function stub_message_list() {
     message_list.MessageList = function (opts) {
         var list = this;
-        this.messages = [];
-        this.filter = opts.data.filter;
+        this.data = opts.data;
         this.view = {
             set_message_offset: function (offset) {
                 list.view.offset = offset;
@@ -110,21 +113,12 @@ function stub_message_list() {
     };
 
     message_list.MessageList.prototype = {
-        add_messages: function (messages) {
-            var predicate = this.filter.predicate();
-            messages = _.filter(messages, predicate);
-            this.messages = this.messages.concat(messages);
-        },
-
         get: function (msg_id) {
-            var msg = _.find(this.messages, (msg) => {
-                return msg.id === msg_id;
-            });
-            return msg;
+            return this.data.get(msg_id);
         },
 
         empty: function () {
-            return this.messages.length === 0;
+            return this.data.empty();
         },
 
         select_id: function (msg_id) {
