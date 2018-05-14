@@ -96,11 +96,24 @@ pip install zulip_botserver
 
 ### Running bots using the Zulip Botserver
 
+
+1. Construct the URL for your bot, which will be of the form:
+
+    ```
+    http://<hostname>:<port>/bots/<bot_name>
+    ```
+
+    where the `hostname` is the hostname you'll be running the bot
+    server on, and `port` is the port for it (the recommended default
+    is `5002`).  `bot_name` is the name of the Python module for the
+    bot you'd like to run.
+
 1. Register new bot users on the Zulip server's web interface.
 
     * Log in to the Zulip server.
     * Navigate to *Settings (<i class="fa fa-cog"></i>)* -> *Your bots* -> *Add a new bot*.
-      Select *Outgoing webhook* for bot type, fill out the form and click on *Create bot*.
+      Select *Outgoing webhook* for bot type, fill out the form (using
+      the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
 1.  Download the `flaskbotrc` from the `your-bots` settings page. It
@@ -115,24 +128,6 @@ pip install zulip_botserver
     ```
 
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
-
-1.  Now set up the outgoing webhook service which will interact with
-    the server: Create an **Outgoing webhook** bot with its Endpoint URL
-    of the form:
-
-    ```
-    http://<hostname>:<port>/bots/<bot_name>
-    ```
-
-    `bot_name` refers to the name in the email address you specified
-    for the bot. It can be obtained by removing `-bot@*.*` from the
-    bot email: For example, the bot name of a bot with an email
-    `followup-bot@zulip.com` is `followup`.
-
-    In the development environment, an outgoing webhook bot and
-    corresponding service already exist, with the email
-    `outgoing-webhook@zulip.com`. This can be used for interacting
-    with flask server bots.
 
 1.  Congrats, everything is set up! Test your botserver like you would
     test a normal bot.
