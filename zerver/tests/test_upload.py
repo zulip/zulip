@@ -873,6 +873,12 @@ class EmojiTest(UploadSerializeMixin, ZulipTestCase):
         animated_img_data = get_test_image_file('animated_img.gif').read()
         self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
 
+        # Test for resize case
+        img_data = get_test_image_file('img.gif').read()
+        resized_img_data = resize_emoji(img_data, size=80)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((80, 80), im.size)
+
         # Test corrupt image exception
         corrupted_img_data = get_test_image_file('corrupt.gif').read()
         with self.assertRaises(BadImageError):
