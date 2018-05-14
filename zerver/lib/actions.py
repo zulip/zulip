@@ -2123,7 +2123,7 @@ def internal_send_huddle_message(realm: Realm, sender: UserProfile, emails: List
         return
     do_send_messages([message])
 
-def pick_color_helper(user_profile: UserProfile, subs: Iterable[Subscription]) -> str:
+def pick_color(user_profile: UserProfile, subs: Iterable[Subscription]) -> str:
     # These colors are shared with the palette in subs.js.
     used_colors = [sub.color for sub in subs if sub.active]
     available_colors = [s for s in STREAM_ASSIGNMENT_COLORS if s not in used_colors]
@@ -2403,7 +2403,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     subs_to_add = []  # type: List[Tuple[Subscription, Stream]]
     for (user_profile, recipient_id, stream) in new_subs:
-        color = pick_color_helper(user_profile, subs_by_user[user_profile.id])
+        color = pick_color(user_profile, subs_by_user[user_profile.id])
         sub_to_add = Subscription(user_profile=user_profile, active=True,
                                   color=color, recipient_id=recipient_id,
                                   desktop_notifications=user_profile.enable_stream_desktop_notifications,
