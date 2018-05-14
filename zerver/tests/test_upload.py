@@ -21,7 +21,8 @@ from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError, get_realm_for_filename
+    resize_emoji, BadImageError, get_realm_for_filename, \
+    currently_used_upload_space
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -1190,3 +1191,24 @@ class SanitizeNameTests(TestCase):
         self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
         self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
         self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+
+
+class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
+    def setUp(self) -> None:
+        self.realm = get_realm("zulip")
+        self.user_profile = self.example_user('hamlet')
+
+    def test_currently_used_upload_space_for_realm_with_no_uploads(self) -> None:
+        self.assertEqual(0, currently_used_upload_space(self.realm))
+
+    def test_currently_used_upload_space_for_realm_with_one_upload(self) -> None:
+        data = b'zulip!'
+        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        self.assertEqual(len(data), currently_used_upload_space(self.realm))
+
+    def test_currently_used_upload_space_for_realm_with_many_uploads(self) -> None:
+        data1 = b'zulip!'
+        data2 = b'more-data!'
+        upload_message_file(u'dummy1.txt', len(data1), u'text/plain', data1, self.user_profile)
+        upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
+        self.assertEqual(len(data1) + len(data2), currently_used_upload_space(self.realm))
