@@ -139,7 +139,7 @@ def run():
             if len(target_langs) != 0:
                 targets = [target for lang in target_langs for target in by_lang[lang]]
                 if len(targets) == 0:
-                    # If we this linter has a list of languages, and
+                    # If this linter has a list of languages, and
                     # no files in those languages are to be checked,
                     # then we can safely return success without
                     # invoking the external linter.
