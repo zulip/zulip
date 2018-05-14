@@ -1072,6 +1072,21 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
         self.assertEqual(expected_size, resized_image.size)
 
+    def test_get_emoji_url_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+        expected_url = "/user_avatars/{emoji_path}".format(emoji_path=emoji_path)
+        self.assertEqual(expected_url, url)
+
     def tearDown(self) -> None:
         destroy_uploads()
 
