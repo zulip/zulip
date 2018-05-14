@@ -1174,6 +1174,24 @@ class S3Test(ZulipTestCase):
     def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
         self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
 
+    @use_s3_backend
+    def test_upload_realm_icon_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
+        original_key = bucket.get_key(original_path_id)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
+        resized_data = bucket.get_key(resized_path_id).read()
+        self.assertEqual(Image.open(io.BytesIO(resized_data)).size, (100, 100))
+
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
