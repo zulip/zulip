@@ -44,28 +44,20 @@ You can use the command list_realms to find ID of the realms in this server."""
             help=help)
 
     def add_user_list_args(self, parser: ArgumentParser,
-                           help: Optional[str]=None,
-                           all_users_arg: bool=True,
-                           all_users_help: Optional[str]=None) -> None:
-        if help is None:
-            help = 'A comma-separated list of email addresses.'
-
+                           help: str='A comma-separated list of email addresses.',
+                           all_users_help: str="All users in realm.") -> None:
         parser.add_argument(
             '-u', '--users',
             dest='users',
             type=str,
             help=help)
 
-        if all_users_arg:
-            if all_users_help is None:
-                all_users_help = "All users in realm."
-
-            parser.add_argument(
-                '-a', '--all-users',
-                dest='all_users',
-                action="store_true",
-                default=False,
-                help=all_users_help)
+        parser.add_argument(
+            '-a', '--all-users',
+            dest='all_users',
+            action="store_true",
+            default=False,
+            help=all_users_help)
 
     def get_realm(self, options: Dict[str, Any]) -> Optional[Realm]:
         val = options["realm_id"]
