@@ -2123,10 +2123,6 @@ def internal_send_huddle_message(realm: Realm, sender: UserProfile, emails: List
         return
     do_send_messages([message])
 
-def pick_color(user_profile: UserProfile) -> str:
-    subs = get_stream_subscriptions_for_user(user_profile).filter(active=True)
-    return pick_color_helper(user_profile, subs)
-
 def pick_color_helper(user_profile: UserProfile, subs: Iterable[Subscription]) -> str:
     # These colors are shared with the palette in subs.js.
     used_colors = [sub.color for sub in subs if sub.active]
