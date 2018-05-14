@@ -511,6 +511,16 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
+function validate_stream_message_announcement_only(stream_name) {
+    // Only allow realm admins to post to announcement_only streams.
+    var is_announcement_only = stream_data.get_announcement_only(stream_name);
+    if (is_announcement_only && !page_params.is_admin) {
+        compose_error(i18n.t("Only organization admins are allowed to post to this stream."));
+        return false;
+    }
+    return true;
+}
+
 exports.validation_error = function (error_type, stream_name) {
     var response;
 
@@ -555,6 +565,10 @@ function validate_stream_message() {
             compose_error(i18n.t("Please specify a topic"), $("#subject"));
             return false;
         }
+    }
+
+    if (!validate_stream_message_announcement_only(stream_name)) {
+        return false;
     }
 
     // If both `@all` is mentioned and it's in `#announce`, just validate

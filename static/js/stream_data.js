@@ -276,6 +276,14 @@ exports.get_invite_only = function (stream_name) {
     return sub.invite_only;
 };
 
+exports.get_announcement_only = function (stream_name) {
+    var sub = exports.get_sub(stream_name);
+    if (sub === undefined) {
+        return false;
+    }
+    return sub.is_announcement_only;
+};
+
 var default_stream_ids = new Dict();
 
 exports.set_realm_default_streams = function (realm_default_streams) {
