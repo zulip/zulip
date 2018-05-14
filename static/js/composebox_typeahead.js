@@ -351,6 +351,10 @@ exports.compose_content_begins_typeahead = function (query) {
         if (/^:-.?$/.test(current_token) || /^:[^a-z+]?$/.test(current_token)) {
             return false;
         }
+        // Don't autocomplete if there is a space following a ':'
+        if (current_token[1] === " ") {
+            return false;
+        }
         this.completing = 'emoji';
         this.token = current_token.substring(1);
         return emoji.emojis;

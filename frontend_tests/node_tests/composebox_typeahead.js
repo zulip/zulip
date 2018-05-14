@@ -983,10 +983,12 @@ user_pill.get_user_ids = function () {
     assert_typeahead_equals(" :", false);
     assert_typeahead_equals(":)", false);
     assert_typeahead_equals(":4", false);
+    assert_typeahead_equals(": la", false);
     assert_typeahead_equals("test :-P", false);
     assert_typeahead_equals("hi emoji :", false);
     assert_typeahead_equals("hi emoj:i", false);
     assert_typeahead_equals("hi emoji :D", false);
+    assert_typeahead_equals("hi emoji : t", false);
     assert_typeahead_equals("hi emoji :t", emoji_list);
     assert_typeahead_equals("hi emoji :ta", emoji_list);
     assert_typeahead_equals("hi emoji :da", emoji_list);
