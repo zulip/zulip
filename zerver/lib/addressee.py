@@ -50,9 +50,6 @@ class Addressee:
         self._stream_name = stream_name
         self._topic = topic
 
-    def msg_type(self) -> str:
-        return self._msg_type
-
     def is_stream(self) -> bool:
         return self._msg_type == 'stream'
 
