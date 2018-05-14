@@ -860,21 +860,21 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        animated_unequal_img_data = open(get_test_image_file('animated_unequal_img.gif').name, 'rb').read()
+        animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
         with self.assertRaises(JsonableError):
             resize_emoji(animated_unequal_img_data)
 
-        # Test for large image (128x128)
-        animated_large_img_data = open(get_test_image_file('animated_large_img.gif').name, 'rb').read()
+        # Test for large animated image (128x128)
+        animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
         with self.assertRaises(JsonableError):
             resize_emoji(animated_large_img_data)
 
         # Test for no resize case
-        animated_img_data = open(get_test_image_file('animated_img.gif').name, 'rb').read()
+        animated_img_data = get_test_image_file('animated_img.gif').read()
         self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
 
         # Test corrupt image exception
-        corrupted_img_data = open(get_test_image_file('corrupt.gif').name, 'rb').read()
+        corrupted_img_data = get_test_image_file('corrupt.gif').read()
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
