@@ -1215,6 +1215,18 @@ class S3Test(ZulipTestCase):
         resized_image = Image.open(io.BytesIO(resized_data))
         self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 
+    @use_s3_backend
+    def test_get_emoji_url(self) -> None:
+        emoji_name = "emoji.png"
+        realm_id = 1
+        bucket = settings.S3_AVATAR_BUCKET
+        path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
+
+        url = zerver.lib.upload.upload_backend.get_emoji_url('emoji.png', realm_id)
+
+        expected_url = "https://{bucket}.s3.amazonaws.com/{path}".format(bucket=bucket, path=path)
+        self.assertEqual(expected_url, url)
+
 
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
