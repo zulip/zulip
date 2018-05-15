@@ -27,9 +27,11 @@ from zerver.lib.push_notifications import num_push_devices_for_user
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.utils import statsd, generate_random_token
+from zerver.lib.i18n import translation
 
 import calendar
 import datetime
+import json
 import logging
 import os
 import re
@@ -167,9 +169,19 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # Set default language and make it persist
     default_language = register_ret['default_language']
     url_lang = '/{}'.format(request.LANGUAGE_CODE)
+    translation_data = {}
     if not request.path.startswith(url_lang):
         translation.activate(default_language)
         request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
+    language_key = request.LANGUAGE_CODE or request.session[translation.LANGUAGE_SESSION_KEY]
+
+    translation_file = 'static/locale/' + language_key + '/translations.json'
+    try:
+        with open(translation_file) as json_data:
+            translation_data[language_key] = json.load(json_data)
+    except FileNotFoundError:
+        print('Translations file {0} was not found'.format(translation_file))
+        translation_data = ''
 
     # Pass parameters to the client-side JavaScript code.
     # These end up in a global JavaScript Object named 'page_params'.
@@ -205,6 +217,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         furthest_read_time    = sent_time_in_epoch_seconds(latest_read),
         has_mobile_devices    = num_push_devices_for_user(user_profile) > 0,
         bot_types             = get_bot_types(user_profile),
+        translation_data      = translation_data
     )
 
     undesired_register_ret_fields = [

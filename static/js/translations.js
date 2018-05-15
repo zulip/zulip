@@ -16,18 +16,6 @@ var toBeTranslated = [  // eslint-disable-line no-unused-vars
     i18n.t('Plain text'),
 ];
 
-function loadPath(languages) {
-    var language = languages[0];
-    if (language.indexOf('-') >= 0) {
-        language = language.replace('-', '_');  // Change zh-Hans to zh_Hans.
-    }
-
-    return '/static/locale/' + language + '/translations.json';
-}
-
-var backendOptions = {
-    loadPath: loadPath,
-};
 var callbacks = [];
 var initialized = false;
 
@@ -52,26 +40,26 @@ i18next.use(XHR)
             prefix: "__",
             suffix: "__",
         },
-        backend: backendOptions,
         detection: detectionOptions,
         cache: cacheOptions,
         fallbackLng: 'en',
         returnEmptyString: false,  // Empty string is not a valid translation.
     }, function () {
-        var i;
+        let i;
         initialized = true;
-        for (i=0; i<callbacks.length; i += 1) {
+        for (i = 0; i < callbacks.length; i += 1) {
             callbacks[i]();
         }
     });
 
+for (const key of JSON.parse(page_params.translation_data)) {
+    i18next.addResources(key, null, page_params.translation_data[key]);
+}
+
 i18next.ensure_i18n = function (callback) {
-    if (initialized) {
-        callback();
-    } else {
-        callbacks.push(callback);
-    }
+    callback();
 };
+
 
 // garbage collect all old i18n translation maps in localStorage.
 $(function () {
