@@ -36,6 +36,7 @@
     "plotly.js": "1.19.2",
     "sass-loader": "7.0.1",
     "script-loader": "0.7.2",
+    "sorttable": "^1.0.2",
     "source-map-loader": "0.2.3",
     "string.prototype.codepointat": "0.2.0",
     "string.prototype.endswith": "0.2.0",

@@ -6,15 +6,15 @@ const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const assets = require('./webpack.assets.json');
 
 // Adds on css-hot-loader in dev mode
-function getHotCSS(bundle:any[], isProd:boolean) {
-    if(isProd) {
+function getHotCSS(bundle: any[], isProd: boolean) {
+    if (isProd) {
         return bundle;
     }
     return [
         'css-hot-loader',
     ].concat(bundle);
 }
-export default (env?: string) : webpack.Configuration => {
+export default (env?: string): webpack.Configuration => {
     const production: boolean = env === "production";
     let config: webpack.Configuration = {
         mode: production ? "production" : "development",
@@ -36,7 +36,7 @@ export default (env?: string) : webpack.Configuration => {
                 // if debugging is required.
                 {
                     test: /(min|zxcvbn)\.js/,
-                    use: [ 'script-loader' ],
+                    use: ['script-loader'],
                 },
                 // Expose Global variables to webpack
                 // Use the unminified versions of jquery and underscore so that
@@ -44,32 +44,32 @@ export default (env?: string) : webpack.Configuration => {
                 {
                     test: require.resolve('../static/node_modules/jquery/dist/jquery.js'),
                     use: [
-                        {loader: 'expose-loader', options: '$'},
-                        {loader: 'expose-loader', options: 'jQuery'},
+                        { loader: 'expose-loader', options: '$' },
+                        { loader: 'expose-loader', options: 'jQuery' },
                     ],
                 },
                 {
                     test: require.resolve('../node_modules/underscore/underscore.js'),
                     use: [
-                        {loader: 'expose-loader', options: '_'},
+                        { loader: 'expose-loader', options: '_' },
                     ],
                 },
                 {
                     test: require.resolve('../static/js/debug.js'),
                     use: [
-                        {loader: 'expose-loader', options: 'debug'},
+                        { loader: 'expose-loader', options: 'debug' },
                     ],
                 },
                 {
                     test: require.resolve('../static/js/blueslip.js'),
                     use: [
-                        {loader: 'expose-loader', options: 'blueslip'},
+                        { loader: 'expose-loader', options: 'blueslip' },
                     ],
                 },
                 {
                     test: require.resolve('../static/js/common.js'),
                     use: [
-                        {loader: 'expose-loader', options: 'common'},
+                        { loader: 'expose-loader', options: 'common' },
                     ],
                 },
                 // regular css files
@@ -133,14 +133,14 @@ export default (env?: string) : webpack.Configuration => {
     };
     if (production) {
         config.plugins = [
-            new BundleTracker({filename: 'webpack-stats-production.json'}),
+            new BundleTracker({ filename: 'webpack-stats-production.json' }),
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: (data) => {
                     // This is a special case in order to produce
                     // a static CSS file to be consumed by
                     // static/html/5xx.html
-                    if(data.chunk.name === 'error-styles') {
+                    if (data.chunk.name === 'error-styles') {
                         return 'error-styles.css';
                     }
                     return '[name].[contenthash].css';
@@ -154,11 +154,11 @@ export default (env?: string) : webpack.Configuration => {
 
         config.output.publicPath = '/webpack/';
         config.plugins = [
-            new BundleTracker({filename: 'var/webpack-stats-dev.json'}),
+            new BundleTracker({ filename: 'var/webpack-stats-dev.json' }),
             // Better logging from console for hot reload
             new webpack.NamedModulesPlugin(),
             // script-loader should load sourceURL in dev
-            new webpack.LoaderOptionsPlugin({debug: true}),
+            new webpack.LoaderOptionsPlugin({ debug: true }),
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: "[name].css",
@@ -177,9 +177,10 @@ export default (env?: string) : webpack.Configuration => {
         config.devServer = {
             clientLogLevel: "error",
             stats: "errors-only",
-            watchOptions: {
-                poll: 100
-            }
+            watchOptions:
+                {
+                    poll: 100
+                }
         };
     }
     return config;
