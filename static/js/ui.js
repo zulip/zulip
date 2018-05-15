@@ -193,9 +193,6 @@ exports.restore_compose_cursor = function () {
 
 exports.initialize = function () {
     exports.set_compose_textarea_handlers();
-
-    exports.do_stuff_for_desktop_app();
-
     exports.show_error_for_unsupported_platform();
 
     if (page_params.night_mode) {
