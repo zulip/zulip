@@ -225,3 +225,27 @@
 #hotspot_intro_topics_icon {
     z-index: 103;
 }
+
+/* hacked together intro_reply styles */
+#bottom_whitespace .hotspot-message {
+    text-align: center;
+    margin-top: 30px;
+
+    span {
+        vertical-align: middle;
+    }
+
+    button {
+        padding: 3px 9px;
+        min-width: 0px;
+        margin-left: 7px;
+        margin-bottom: 0px;
+        border: none;
+        font-size: .97em;
+        font-weight: 600;
+        color: white;
+        background-color: hsl(164, 44%, 47%);
+        border-radius: 4px;
+        white-space: normal;
+    }
+}

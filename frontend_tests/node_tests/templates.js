@@ -827,6 +827,12 @@ run_test('handlebars_bug', () => {
     assert($(html).hasClass('pill'));
 }());
 
+(function intro_reply_hotspot() {
+    var html = render('intro_reply_hotspot', {});
+
+    assert($(html).hasClass('hotspot-message'));
+}());
+
 (function invite_subscription() {
     var args = {
         streams: [

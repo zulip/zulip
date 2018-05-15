@@ -170,6 +170,11 @@ function place_popover(hotspot) {
 }
 
 function insert_hotspot_into_DOM(hotspot) {
+    if (hotspot.name === "intro_reply") {
+        $('#bottom_whitespace').append(templates.render('intro_reply_hotspot', {}));
+        return;
+    }
+
     var hotspot_overlay_HTML = templates.render('hotspot_overlay', {
         name: hotspot.name,
         title: hotspot.title,
