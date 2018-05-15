@@ -309,9 +309,10 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var bot_id = $(e.currentTarget).attr('data-user-id');
+
         channel.del({
-            url: '/json/bots/' + encodeURIComponent(email),
+            url: '/json/bots/' + encodeURIComponent(bot_id),
             success: function () {
                 var row = $(e.currentTarget).closest("li");
                 row.hide('slow', function () { row.remove(); });
@@ -387,7 +388,6 @@ exports.set_up = function () {
             },
             submitHandler: function () {
                 var bot_id = form.attr('data-user-id');
-                var email = form.attr('data-email');
                 var type = form.attr('data-type');
 
                 var full_name = form.find('.edit_bot_name').val();
@@ -419,7 +419,7 @@ exports.set_up = function () {
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
                 channel.patch({
-                    url: '/json/bots/' + encodeURIComponent(email),
+                    url: '/json/bots/' + encodeURIComponent(bot_id),
                     data: formData,
                     cache: false,
                     processData: false,

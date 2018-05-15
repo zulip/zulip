@@ -280,10 +280,10 @@ exports.on_load_success = function (realm_people_data) {
 
         var row = $(e.target).closest(".user_row");
 
-        var email = get_email_for_user_row(row);
+        var bot_id = row.attr("data-user-id");
 
         channel.del({
-            url: '/json/bots/' + encodeURIComponent(email),
+            url: '/json/bots/' + encodeURIComponent(bot_id),
             error: function (xhr) {
                 ui_report.generic_row_button_error(xhr, $(e.target));
             },
@@ -415,7 +415,7 @@ exports.on_load_success = function (realm_people_data) {
             e.stopPropagation();
 
             if (person.is_bot) {
-                url = "/json/bots/" + encodeURIComponent(person.email);
+                url = "/json/bots/" + encodeURIComponent(person.user_id);
                 data = {
                     full_name: full_name.val(),
                 };

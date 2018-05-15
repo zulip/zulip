@@ -138,7 +138,7 @@ v1_api_and_json_patterns = [
          'POST': 'zerver.views.users.add_bot_backend'}),
     url(r'^bots/(?!me/)(?P<email>[^/]*)/api_key/regenerate$', rest_dispatch,
         {'POST': 'zerver.views.users.regenerate_bot_api_key'}),
-    url(r'^bots/(?!me/)(?P<email>[^/]*)$', rest_dispatch,
+    url(r'^bots/(?P<bot_id>[0-9]+)$', rest_dispatch,
         {'PATCH': 'zerver.views.users.patch_bot_backend',
          'DELETE': 'zerver.views.users.deactivate_bot_backend'}),
 
