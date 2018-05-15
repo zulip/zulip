@@ -276,7 +276,7 @@ function hashchanged(from_reload, e) {
                 settings.setup_page();
                 admin.setup_page();
             } else if (base === "invite") {
-                invite.initialize();
+                invite.launch();
             }
 
             ignore.group = get_hash_group(base);
