@@ -629,15 +629,6 @@ exports.clear_compose_notifications = function () {
     $('#out-of-view-notification').hide();
 };
 
-$(function () {
-    // Shim for Cocoa WebScript exporting top-level JS
-    // objects instead of window.foo objects
-    if (typeof(bridge) !== 'undefined' && window.bridge === undefined) {
-        window.bridge = bridge;
-    }
-
-});
-
 exports.reify_message_id = function (opts) {
     var old_id = opts.old_id;
     var new_id = opts.new_id;
