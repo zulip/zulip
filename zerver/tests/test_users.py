@@ -375,11 +375,14 @@ class ActivateTest(ZulipTestCase):
         self.login(self.example_email("othello"))
 
         # Cannot deactivate a user with the bot api
-        result = self.client_delete('/json/bots/hamlet@zulip.com')
+        result = self.client_delete('/json/bots/{}'.format(self.example_user("hamlet").id))
         self.assert_json_error(result, 'No such bot')
 
         # Cannot deactivate a nonexistent user.
         result = self.client_delete('/json/users/nonexistent@zulip.com')
+        self.assert_json_error(result, 'No such user')
+
+        result = self.client_delete('/json/users/{}'.format(self.example_email("webhook_bot")))
         self.assert_json_error(result, 'No such user')
 
         result = self.client_delete('/json/users/iago@zulip.com')

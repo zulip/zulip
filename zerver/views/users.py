@@ -61,9 +61,9 @@ def check_last_admin(user_profile: UserProfile) -> bool:
     return user_profile.is_realm_admin and len(admins) == 1
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
-                           email: str) -> HttpResponse:
+                           bot_id: int) -> HttpResponse:
     try:
-        target = get_user(email, user_profile.realm)
+        target = get_user_profile_by_id(bot_id)
     except UserProfile.DoesNotExist:
         return json_error(_('No such bot'))
     if not target.is_bot:
@@ -158,7 +158,7 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
 @require_non_guest_human_user
 @has_request_variables
 def patch_bot_backend(
-        request: HttpRequest, user_profile: UserProfile, email: str,
+        request: HttpRequest, user_profile: UserProfile, bot_id: int,
         full_name: Optional[str]=REQ(default=None),
         bot_owner: Optional[str]=REQ(default=None),
         config_data: Optional[Dict[str, str]]=REQ(default=None,
@@ -170,7 +170,7 @@ def patch_bot_backend(
         default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
 ) -> HttpResponse:
     try:
-        bot = get_user(email, user_profile.realm)
+        bot = get_user_profile_by_id(bot_id)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -246,9 +246,9 @@ def patch_bot_backend(
 
 @require_non_guest_human_user
 @has_request_variables
-def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, email: str) -> HttpResponse:
+def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
     try:
-        bot = get_user(email, user_profile.realm)
+        bot = get_user_profile_by_id(bot_id)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
