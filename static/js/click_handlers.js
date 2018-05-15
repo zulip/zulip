@@ -660,6 +660,14 @@ exports.initialize = function () {
         $('#hotspot_' + hotspot_name + '_icon').remove();
     });
 
+    $('body').on('click', '.hotspot-button', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        hotspots.post_hotspot_as_read('intro_reply');
+        hotspots.close_hotspot_icon($('#hotspot_intro_reply_icon'));
+    });
+
     // stop propagation
     $('body').on('click', '.hotspot.overlay .hotspot-popover', function (e) {
         e.stopPropagation();
