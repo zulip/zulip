@@ -2597,6 +2597,48 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_length(result, 1)
         self.assertEqual(result[0]['stream_id'], stream1.id)
 
+    def test_gather_subscriptions_excludes_deactivated_streams(self) -> None:
+        """
+        Check that gather_subscriptions_helper does not include deactivated streams in its
+        results.
+        """
+        realm = get_realm("zulip")
+        admin_user = self.example_user("iago")
+        non_admin_user = self.example_user("cordelia")
+
+        self.login(admin_user.email)
+
+        for stream_name in ["stream1", "stream2", "stream3", ]:
+            self.make_stream(stream_name, realm=realm, invite_only=False)
+            self.subscribe(admin_user, stream_name)
+            self.subscribe(non_admin_user, stream_name)
+            self.subscribe(self.example_user("othello"), stream_name)
+
+        def delete_stream(stream_name: str) -> None:
+            stream_id = get_stream(stream_name, realm).id
+            result = self.client_delete('/json/streams/%d' % (stream_id,))
+            self.assert_json_success(result)
+
+        # Deleted/deactivated stream should not be returned in the helper results
+        admin_before_delete = gather_subscriptions_helper(admin_user)
+        non_admin_before_delete = gather_subscriptions_helper(non_admin_user)
+
+        # Delete our stream
+        delete_stream("stream1")
+
+        # Get subs after delete
+        admin_after_delete = gather_subscriptions_helper(admin_user)
+        non_admin_after_delete = gather_subscriptions_helper(non_admin_user)
+
+        # Compare results - should be 1 stream less
+        self.assertTrue(
+            len(admin_before_delete[0]) == len(admin_after_delete[0]) + 1,
+            'Expected exactly 1 less stream from gather_subscriptions_helper')
+        self.assertTrue(
+            len(non_admin_before_delete[0]) == len(non_admin_after_delete[0]) + 1,
+            'Expected exactly 1 less stream from gather_subscriptions_helper')
+
+
 class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams_api(self) -> None:
