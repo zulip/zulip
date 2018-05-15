@@ -419,7 +419,8 @@ exports.on_load_success = function (realm_people_data) {
                 data = {
                     full_name: full_name.val(),
                 };
-                if (owner_select.val() !== undefined && owner_select.val() !== "") {
+                if (owner_select.val() !== null && owner_select.val() !== undefined &&
+                    owner_select.val() !== "") {
                     data.bot_owner = owner_select.val();
                 }
             } else {
