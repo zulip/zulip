@@ -37,7 +37,7 @@ function test_with_mock_ajax(test_params) {
 }
 
 
-(function test_basics() {
+run_test('basics', () => {
     test_with_mock_ajax({
         run_code: function () {
             channel.post({});
@@ -114,9 +114,9 @@ function test_with_mock_ajax(test_params) {
         },
     });
 
-}());
+});
 
-(function test_normal_post() {
+run_test('normal_post', () => {
     const data = {
         s: 'some_string',
         num: 7,
@@ -159,9 +159,9 @@ function test_with_mock_ajax(test_params) {
             assert(orig_error_called);
         },
     });
-}());
+});
 
-(function test_patch_with_form_data() {
+run_test('patch_with_form_data', () => {
     let appended;
 
     const data = {
@@ -190,9 +190,9 @@ function test_with_mock_ajax(test_params) {
             options.simulate_error();
         },
     });
-}());
+});
 
-(function test_reload_on_403_error() {
+run_test('reload_on_403_error', () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
@@ -219,9 +219,9 @@ function test_with_mock_ajax(test_params) {
             assert(reload_initiated);
         },
     });
-}());
+});
 
-(function test_unexpected_403_response() {
+run_test('unexpected_403_response', () => {
     test_with_mock_ajax({
         xhr: {
             status: 403,
@@ -239,9 +239,9 @@ function test_with_mock_ajax(test_params) {
             blueslip.clear_test_data();
         },
     });
-}());
+});
 
-(function test_retry() {
+run_test('retry', () => {
     test_with_mock_ajax({
         run_code: function () {
             channel.post({
@@ -271,9 +271,9 @@ function test_with_mock_ajax(test_params) {
             blueslip.clear_test_data();
         },
     });
-}());
+});
 
-(function test_too_many_pending() {
+run_test('too_many_pending', () => {
     $.ajax = function () {
         const xhr = 'stub';
         return xhr;
@@ -287,9 +287,9 @@ function test_with_mock_ajax(test_params) {
     });
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_xhr_error_message() {
+run_test('xhr_error_message', () => {
     let xhr = {
         status: '200',
         responseText: 'does not matter',
@@ -303,4 +303,4 @@ function test_with_mock_ajax(test_params) {
     };
     msg = 'some message';
     assert.equal(channel.xhr_error_message(msg, xhr), 'some message: file not found');
-}());
+});

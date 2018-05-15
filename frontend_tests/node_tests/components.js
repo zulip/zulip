@@ -8,7 +8,7 @@ var noop = function () {};
 var LEFT_KEY = { which: 37, preventDefault: noop };
 var RIGHT_KEY = { which: 39, preventDefault: noop };
 
-(function test_basics() {
+run_test('basics', () => {
     var keydown_f;
     var click_f;
     var tabs = [];
@@ -197,4 +197,4 @@ var RIGHT_KEY = { which: 39, preventDefault: noop };
 
     click_f.call(tabs[1]);
     assert.equal(widget.value(), 'translated: Message formatting');
-}());
+});

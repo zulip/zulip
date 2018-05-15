@@ -21,7 +21,7 @@ zrequire('bootstrap', 'third/bootstrap/js/bootstrap');
 subs.stream_name_match_stream_ids = [];
 subs.stream_description_match_stream_ids = [];
 
-(function test_filter_table() {
+run_test('filter_table', () => {
     var denmark = {
         subscribed: false,
         name: 'Denmark',
@@ -152,9 +152,9 @@ subs.stream_description_match_stream_ids = [];
     assert.equal(subs.stream_description_match_stream_ids, 0);
     assert.equal(subs.stream_name_match_stream_ids[0], 1);
     assert.equal(subs.stream_name_match_stream_ids[1], 2);
-}());
+});
 
-(function test_sub_or_unsub() {
+run_test('sub_or_unsub', () => {
     var denmark = {
         subscribed: false,
         name: 'Denmark',
@@ -187,5 +187,5 @@ subs.stream_description_match_stream_ids = [];
     assert.deepEqual(post_params.data,
                      {subscriptions: '["Denmark"]'});
 
-}());
+});
 

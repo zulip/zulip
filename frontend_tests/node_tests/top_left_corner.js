@@ -5,7 +5,7 @@ zrequire('unread_ui');
 
 zrequire('top_left_corner');
 
-(function test_narrowing() {
+run_test('narrowing', () => {
     // activating narrow
 
     var pm_expanded;
@@ -45,9 +45,9 @@ zrequire('top_left_corner');
     assert(!top_left_corner.get_global_filter_li('private').hasClass('active-filter'));
     assert(!top_left_corner.get_global_filter_li('starred').hasClass('active-filter'));
     assert(pm_closed);
-}());
+});
 
-(function test_update_count_in_dom() {
+run_test('update_count_in_dom', () => {
     function make_elem(elem, count_selector, value_selector) {
         var count = $(count_selector);
         var value = $(value_selector);
@@ -86,4 +86,4 @@ zrequire('top_left_corner');
 
     assert(!$('<mentioned-count>').visible());
     assert.equal($('<mentioned-value>').text(), '');
-}());
+});

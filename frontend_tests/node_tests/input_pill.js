@@ -35,7 +35,7 @@ function pill_html(value, data_id) {
     return templates.render('input_pill', opts);
 }
 
-(function test_basics() {
+run_test('basics', () => {
     var config = {};
 
     blueslip.set_test_data('error', 'Pill needs container.');
@@ -79,9 +79,9 @@ function pill_html(value, data_id) {
     assert(inserted_before);
 
     assert.deepEqual(widget.items(), [item]);
-}());
+});
 
-(function test_insert_remove() {
+run_test('insert_remove', () => {
     set_global('$', global.make_zjquery());
     var items = {
         blue: {
@@ -176,4 +176,4 @@ function pill_html(value, data_id) {
         items.blue,
         items.red,
     ]);
-}());
+});

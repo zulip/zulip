@@ -14,7 +14,7 @@ function render(template_name, args) {
     return global.render_template(template_name, args);
 }
 
-(function test_finding_partials() {
+run_test('finding_partials', () => {
     var fns = global.find_included_partials('settings_tab');
     assert.deepEqual(fns, [
         'account-settings',
@@ -25,9 +25,9 @@ function render(template_name, args) {
         'attachments-settings',
         'muted-topics-settings',
     ]);
-}());
+});
 
-(function test_handlebars_bug() {
+run_test('handlebars_bug', () => {
     // There was a bug in 1.0.9 where identically structured
     // blocks get confused, so when foo is false, it still
     // renders the foo-is-true block.
@@ -49,7 +49,7 @@ function render(template_name, args) {
     var output = template({});
 
     assert.equal(output, 'd'); // the buggy version would return 'b'
-}());
+});
 
 (function actions_popover_content() {
     var args = {

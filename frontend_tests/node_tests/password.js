@@ -3,7 +3,7 @@ zrequire('common');
 
 set_global('i18n', global.stub_i18n);
 
-(function test_basics() {
+run_test('basics', () => {
     var accepted;
     var password;
     var warning;
@@ -72,4 +72,4 @@ set_global('i18n', global.stub_i18n);
     assert(accepted === undefined);
     warning = common.password_warning(password, password_field(6));
     assert(warning === undefined);
-}());
+});

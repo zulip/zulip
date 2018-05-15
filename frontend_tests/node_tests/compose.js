@@ -89,7 +89,7 @@ people.initialize_current_user(me.user_id);
 people.add(alice);
 people.add(bob);
 
-(function test_validate_stream_message_address_info() {
+run_test('validate_stream_message_address_info', () => {
     var sub = {
         stream_id: 101,
         name: 'social',
@@ -143,9 +143,9 @@ people.add(bob);
     };
     assert(!compose.validate_stream_message_address_info('social'));
     assert.equal($('#compose-error-msg').html(), i18n.t("Error checking subscription"));
-}());
+});
 
-(function test_validate() {
+run_test('validate', () => {
     function initialize_pm_pill() {
         set_global('$', global.make_zjquery());
 
@@ -238,9 +238,9 @@ people.add(bob);
     $("#subject").select(noop);
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a topic'));
-}());
+});
 
-(function test_get_invalid_recipient_emails() {
+run_test('get_invalid_recipient_emails', () => {
     var feedback_bot = {
         email: 'feedback@example.com',
         user_id: 124,
@@ -251,9 +251,9 @@ people.add(bob);
     people.initialize();
     compose_state.recipient('feedback@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
-}());
+});
 
-(function test_validate_stream_message() {
+run_test('validate_stream_message', () => {
     // This test is in kind of continuation to test_validate but since it is
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
@@ -294,9 +294,9 @@ people.add(bob);
     assert(!$("#compose-send-status").visible());
     assert.equal(compose_content, 'compose_all_everyone_stub');
     assert($("#compose-all-everyone").visible());
-}());
+});
 
-(function test_markdown_shortcuts() {
+run_test('markdown_shortcuts', () => {
     var queryCommandEnabled = true;
     var event = {
         keyCode: 66,
@@ -452,9 +452,9 @@ people.add(bob);
 
     // Reset userAgent
     global.navigator.userAgent = "";
-}());
+});
 
-(function test_send_message_success() {
+run_test('send_message_success', () => {
     $("#compose-textarea").val('foobarfoobar');
     $("#compose-textarea").blur();
     $("#compose-send-status").show();
@@ -477,9 +477,9 @@ people.add(bob);
     assert(!$("#sending-indicator").visible());
 
     assert(reify_message_id_checked);
-}());
+});
 
-(function test_send_message() {
+run_test('send_message', () => {
     // This is the common setup stuff for all of the four tests.
     var stub_state;
     function initialize_state_stub_dict() {
@@ -631,11 +631,11 @@ people.add(bob);
         assert.equal($("#compose-send-button").prop('disabled'), false);
         assert(!$("#sending-indicator").visible());
     }());
-}());
+});
 
 set_global('document', 'document-stub');
 
-(function test_enter_with_preview_open() {
+run_test('enter_with_preview_open', () => {
     // Test sending a message with content.
     compose_state.set_message_type('stream');
     $("#compose-textarea").val('message me');
@@ -670,9 +670,9 @@ set_global('document', 'document-stub');
 
     assert($("#enter_sends").prop("checked"));
     assert.equal($("#compose-error-msg").html(), i18n.t('You have nothing to send!'));
-}());
+});
 
-(function test_finish() {
+run_test('finish', () => {
     (function test_when_compose_validation_fails() {
         $("#compose_invite_users").show();
         $("#compose-send-button").prop('disabled', false);
@@ -717,9 +717,9 @@ set_global('document', 'document-stub');
         assert(send_message_called);
         assert(compose_finished_event_checked);
     }());
-}());
+});
 
-(function test_abort_xhr() {
+run_test('abort_xhr', () => {
     $("#compose-send-button").attr('disabled', 'disabled');
     var compose_removedata_checked = false;
     $('#compose').removeData = function (sel) {
@@ -739,7 +739,7 @@ set_global('document', 'document-stub');
     assert.equal($("#compose-send-button").attr(), undefined);
     assert(xhr_abort_checked);
     assert(compose_removedata_checked);
-}());
+});
 
 function verify_filedrop_payload(payload) {
     assert.equal(payload.url, '/json/user_uploads');
@@ -778,7 +778,7 @@ function test_raw_file_drop(raw_drop_func) {
     assert(compose_ui_autosize_textarea_checked);
 }
 
-(function test_initialize() {
+run_test('initialize', () => {
     // In this test we mostly do the setup stuff in addition to testing the
     // normal workflow of the function. All the tests for the on functions are
     // done in subsequent tests directly below this test.
@@ -861,9 +861,9 @@ function test_raw_file_drop(raw_drop_func) {
 
         assert(compose_actions_start_checked);
     }());
-}());
+});
 
-(function test_update_fade() {
+run_test('update_fade', () => {
     var selector = '#stream,#subject,#private_message_recipient';
     var keyup_handler_func = $(selector).get_on_handler('keyup');
 
@@ -889,9 +889,9 @@ function test_raw_file_drop(raw_drop_func) {
     keyup_handler_func();
     assert(set_focused_recipient_checked);
     assert(update_all_called);
-}());
+});
 
-(function test_trigger_submit_compose_form() {
+run_test('trigger_submit_compose_form', () => {
     var prevent_default_checked = false;
     var compose_finish_checked = false;
     var e = {
@@ -909,9 +909,9 @@ function test_raw_file_drop(raw_drop_func) {
 
     assert(prevent_default_checked);
     assert(compose_finish_checked);
-}());
+});
 
-(function test_on_events() {
+run_test('on_events', () => {
     (function test_usermention_completed_zulip_triggered() {
         var handler = $(document).get_on_handler('usermention_completed.zulip');
 
@@ -1429,9 +1429,9 @@ function test_raw_file_drop(raw_drop_func) {
         assert($("#markdown_preview").visible());
     }());
 
-}());
+});
 
-(function test_create_message_object() {
+run_test('create_message_object', () => {
     var sub = {
         stream_id: 101,
         name: 'social',
@@ -1479,4 +1479,4 @@ function test_raw_file_drop(raw_drop_func) {
     assert.equal(message.to_user_ids, '31,32');
     assert.equal(message.content, 'burrito');
 
-}());
+});

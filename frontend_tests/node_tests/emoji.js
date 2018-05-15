@@ -10,7 +10,7 @@ zrequire('emoji');
 zrequire('markdown');
 zrequire('util');
 
-(function test_build_emoji_upload_widget() {
+run_test('build_emoji_upload_widget', () => {
     var build_widget_stub = false;
     upload_widget.build_widget = function (
         get_file_input,
@@ -28,9 +28,9 @@ zrequire('util');
     };
     emoji.build_emoji_upload_widget();
     assert(build_widget_stub);
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     var image_stub = false;
     class Image {
         set src(data) {
@@ -41,9 +41,9 @@ zrequire('util');
     set_global('Image', Image);
     emoji.initialize();
     assert(image_stub);
-}());
+});
 
-(function test_get_canonical_name() {
+run_test('get_canonical_name', () => {
     emoji.active_realm_emojis = {
         realm_emoji: 'TBD',
     };
@@ -71,9 +71,9 @@ zrequire('util');
     emoji.get_canonical_name('non_existent');
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_translate_emoticons_to_names() {
+run_test('translate_emoticons_to_names', () => {
     // Simple test
     var test_text = 'Testing :)';
     var expected = 'Testing :smiley:';
@@ -107,4 +107,4 @@ zrequire('util');
             assert.equal(result, expected);
         });
     });
-}());
+});

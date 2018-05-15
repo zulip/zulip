@@ -8,7 +8,7 @@ var pills = {
     pill: {},
 };
 
-(function test_pills() {
+run_test('pills', () => {
     var othello = {
         user_id: 1,
         email: 'othello@example.com',
@@ -141,4 +141,4 @@ var pills = {
     assert(pills_cleared);
     assert(appendValue_called);
     assert(text_cleared);
-}());
+});

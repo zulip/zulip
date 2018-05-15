@@ -40,7 +40,7 @@ function test_with_mock_socket(test_params) {
     test_params.check_send_args(send_args);
 }
 
-(function test_transmit_message_sockets() {
+run_test('transmit_message_sockets', () => {
     page_params.use_websockets = true;
     global.navigator.userAgent = 'unittest_transmit_message';
 
@@ -86,11 +86,11 @@ function test_with_mock_socket(test_params) {
             assert(error_func_checked);
         },
     });
-}());
+});
 
 page_params.use_websockets = false;
 
-(function test_transmit_message_ajax() {
+run_test('transmit_message_ajax', () => {
 
     var success_func_called;
     var success = function () {
@@ -128,9 +128,9 @@ page_params.use_websockets = false;
     };
     transmit.send_message(request, success, error);
     assert(error_func_called);
-}());
+});
 
-(function test_transmit_message_ajax_reload_pending() {
+run_test('transmit_message_ajax_reload_pending', () => {
     var success = function () { throw 'unexpected success'; };
 
     reload.is_pending = function () {
@@ -167,4 +167,4 @@ page_params.use_websockets = false;
     transmit.send_message(request, success, error);
     assert(!error_func_called);
     assert(reload_initiated);
-}());
+});

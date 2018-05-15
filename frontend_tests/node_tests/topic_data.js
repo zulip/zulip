@@ -2,7 +2,7 @@ zrequire('topic_data');
 
 set_global('channel', {});
 
-(function test_basics() {
+run_test('basics', () => {
     var stream_id = 55;
 
     topic_data.add_message({
@@ -58,9 +58,9 @@ set_global('channel', {});
     topic_data.remove_message({
         stream_id: 9999999,
     });
-}());
+});
 
-(function test_server_history() {
+run_test('server_history', () => {
     var stream_id = 66;
 
     topic_data.add_message({
@@ -124,11 +124,11 @@ set_global('channel', {});
     ]);
     history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
-}());
+});
 
 
 
-(function test_server_history_end_to_end() {
+run_test('server_history_end_to_end', () => {
     topic_data.reset();
 
     var stream_id = 99;
@@ -158,4 +158,4 @@ set_global('channel', {});
 
     var history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['topic3', 'topic2', 'topic1']);
-}());
+});

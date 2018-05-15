@@ -9,7 +9,7 @@ zrequire('message_edit');
 var get_editability = message_edit.get_editability;
 var editability_types = message_edit.editability_types;
 
-(function test_get_editability() {
+run_test('get_editability', () => {
     // You can't edit a null message
     assert.equal(get_editability(null), editability_types.NO);
     // You can't edit a message you didn't send
@@ -89,4 +89,4 @@ var editability_types = message_edit.editability_types;
     message.sent_by_me = false;
     global.page_params.realm_allow_community_topic_editing = false;
     assert.equal(message_edit.is_topic_editable(message), false);
-}());
+});

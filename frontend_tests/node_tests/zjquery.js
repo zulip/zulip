@@ -27,7 +27,7 @@ The code we are testing lives here:
 set_global('$', global.make_zjquery());
 
 
-(function test_basics() {
+run_test('basics', () => {
     // Let's create a sample piece of code to test:
 
     function show_my_form() {
@@ -56,9 +56,9 @@ set_global('$', global.make_zjquery());
 
     widget.val('42');
     assert.equal(widget.val(), '42');
-}());
+});
 
-(function test_finding_related_objects() {
+run_test('finding_related_objects', () => {
     // Let's say you have a function like the following:
     function update_message_emoji(emoji_src) {
         $('#my-message').find('.emoji').attr('src', emoji_src);
@@ -95,9 +95,9 @@ set_global('$', global.make_zjquery());
     elem.parents('.folder').addClass('active');
     assert(my_parents.hasClass('active'));
 
-}());
+});
 
-(function test_clicks() {
+run_test('clicks', () => {
     // We can support basic handlers like click and keydown.
 
     var state = {};
@@ -125,9 +125,9 @@ set_global('$', global.make_zjquery());
     $('.some-class').keydown();
     assert.equal(state.keydown, true);
 
-}());
+});
 
-(function test_events() {
+run_test('events', () => {
     // Zulip's codebase uses jQuery's event API heavily with anonymous
     // functions that are hard for naive test code to cover.  zjquery
     // will come to our rescue.
@@ -159,9 +159,9 @@ set_global('$', global.make_zjquery());
 
     // And verify it did what it was supposed to do.
     assert.equal(value, 42);
-}());
+});
 
-(function test_create() {
+run_test('create', () => {
     // You can create jQuery objects that aren't tied to any particular
     // selector, and which just have a name.
 
@@ -173,9 +173,9 @@ set_global('$', global.make_zjquery());
 
     obj2.addClass('.striped');
     assert(obj2.hasClass('.striped'));
-}());
+});
 
-(function test_extensions() {
+run_test('extensions', () => {
     // You can extend $.fn so that all subsequent objects
     // we create get a new function.
 
@@ -196,4 +196,4 @@ set_global('$', global.make_zjquery());
 
     // But we also have area available from general extension.
     assert.equal(rect.area(), 35);
-}());
+});

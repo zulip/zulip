@@ -31,7 +31,7 @@ var zero_counts = {
     pm_count: new Dict(),
 };
 
-(function test_empty_counts_while_narrowed() {
+run_test('empty_counts_while_narrowed', () => {
     narrow_state.active = function () {
         return true;
     };
@@ -41,9 +41,9 @@ var zero_counts = {
 
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
-}());
+});
 
-(function test_empty_counts_while_home() {
+run_test('empty_counts_while_home', () => {
     narrow_state.active = function () {
         return false;
     };
@@ -53,9 +53,9 @@ var zero_counts = {
 
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
-}());
+});
 
-(function test_changing_subjects() {
+run_test('changing_subjects', () => {
     // Summary: change the subject of a message from 'lunch'
     // to 'dinner' using update_unread_topics().
     var count = unread.num_unread_for_topic('social', 'lunch');
@@ -188,13 +188,13 @@ var zero_counts = {
 
     // test coverage
     unread.update_unread_topics(sticky_message, {});
-}());
+});
 
 stream_data.get_stream_id = function () {
     return 999;
 };
 
-(function test_muting() {
+run_test('muting', () => {
     stream_data.is_subscribed = function () {
         return true;
     };
@@ -240,9 +240,9 @@ stream_data.get_stream_id = function () {
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
 
     assert.equal(unread.num_unread_for_stream(unknown_stream_id), 0);
-}());
+});
 
-(function test_num_unread_for_topic() {
+run_test('num_unread_for_topic', () => {
     // Test the num_unread_for_topic() function using many
     // messages.
     unread.declare_bankruptcy();
@@ -296,10 +296,10 @@ stream_data.get_stream_id = function () {
 
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
-}());
+});
 
 
-(function test_home_messages() {
+run_test('home_messages', () => {
     narrow_state.active = function () {
         return false;
     };
@@ -353,9 +353,9 @@ stream_data.get_stream_id = function () {
     counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
 
-}());
+});
 
-(function test_phantom_messages() {
+run_test('phantom_messages', () => {
     var message = {
         id: 999,
         type: 'stream',
@@ -368,9 +368,9 @@ stream_data.get_stream_id = function () {
     unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.home_unread_messages, 0);
-}());
+});
 
-(function test_private_messages() {
+run_test('private_messages', () => {
     narrow_state.active = function () {
         return false;
     };
@@ -407,9 +407,9 @@ stream_data.get_stream_id = function () {
     counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
     assert.equal(counts.pm_count.get('999'), 0);
-}());
+});
 
-(function test_private_messages() {
+run_test('private_messages', () => {
     var alice = {
         email: 'alice@example.com',
         user_id: 101,
@@ -450,10 +450,10 @@ stream_data.get_stream_id = function () {
     assert.deepEqual(unread.get_msg_ids_for_person(bob.user_id), []);
     assert.deepEqual(unread.get_msg_ids_for_private(), [message.id]);
     assert.deepEqual(unread.get_all_msg_ids(), [message.id]);
-}());
+});
 
 
-(function test_mentions() {
+run_test('mentions', () => {
     narrow_state.active = function () {
         return false;
     };
@@ -483,15 +483,15 @@ stream_data.get_stream_id = function () {
     unread.mark_as_read(message.id);
     counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
-}());
+});
 
-(function test_starring() {
+run_test('starring', () => {
     // We don't need any setup here, because we just hard code
     // this to [] in the code.
     assert.deepEqual(unread.get_msg_ids_for_starred(), []);
-}());
+});
 
-(function test_declare_bankruptcy() {
+run_test('declare_bankruptcy', () => {
     var message = {
         id: 16,
         type: 'whatever',
@@ -506,16 +506,16 @@ stream_data.get_stream_id = function () {
 
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
-}());
+});
 
-(function test_message_unread() {
+run_test('message_unread', () => {
     // Test some code that might be overly defensive, for line coverage sake.
     assert(!unread.message_unread(undefined));
     assert(unread.message_unread({unread: true}));
     assert(!unread.message_unread({unread: false}));
-}());
+});
 
-(function test_server_counts() {
+run_test('server_counts', () => {
     // note that user_id 30 is "me"
 
     page_params.unread_msgs = {
@@ -568,9 +568,9 @@ stream_data.get_stream_id = function () {
 
     unread.mark_as_read(34);
     assert.equal(unread.num_unread_for_person('4,6,101'), 1);
-}());
+});
 
-(function test_empty_cases() {
+run_test('empty_cases', () => {
     unread.declare_bankruptcy();
 
     const stream_id = 999;
@@ -580,9 +580,9 @@ stream_data.get_stream_id = function () {
     msg_ids = unread.get_msg_ids_for_stream(stream_id);
     assert.deepEqual(msg_ids, []);
     assert.deepEqual(unread.get_all_msg_ids(), []);
-}());
+});
 
-(function test_errors() {
+run_test('errors', () => {
     unread.declare_bankruptcy();
 
     global.blueslip.warn = function () {};
@@ -597,5 +597,5 @@ stream_data.get_stream_id = function () {
     unread.mark_as_read(message.id);
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
-}());
+});
 

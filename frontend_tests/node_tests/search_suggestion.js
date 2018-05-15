@@ -26,7 +26,7 @@ set_global('narrow', {});
 
 topic_data.reset();
 
-(function test_basic_get_suggestions() {
+run_test('basic_get_suggestions', () => {
     var query = 'fred';
 
     global.stream_data.subscribed_streams = function () {
@@ -43,9 +43,9 @@ topic_data.reset();
         'fred',
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_subset_suggestions() {
+run_test('subset_suggestions', () => {
     var query = 'stream:Denmark topic:Hamlet shakespeare';
 
     global.stream_data.subscribed_streams = function () {
@@ -65,9 +65,9 @@ topic_data.reset();
     ];
 
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_private_suggestions() {
+run_test('private_suggestions', () => {
     global.stream_data.subscribed_streams = function () {
         return [];
     };
@@ -236,9 +236,9 @@ topic_data.reset();
         'sender:ted@zulip.com',
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_group_suggestions() {
+run_test('group_suggestions', () => {
     global.stream_data.subscribed_streams = function () {
         return [];
     };
@@ -418,11 +418,11 @@ topic_data.reset();
         "pm-with:jeff@zulip.com,ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
 init();
 
-(function test_empty_query_suggestions() {
+run_test('empty_query_suggestions', () => {
     var query = '';
 
     global.stream_data.subscribed_streams = function () {
@@ -458,9 +458,9 @@ init();
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('is:unread'), 'Unread messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
-}());
+});
 
-(function test_sent_by_me_suggestions() {
+run_test('sent_by_me_suggestions', () => {
     global.stream_data.subscribed_streams = function () {
         return [];
     };
@@ -541,9 +541,9 @@ init();
         "sender:alice@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_topic_suggestions() {
+run_test('topic_suggestions', () => {
     var suggestions;
     var expected;
 
@@ -654,9 +654,9 @@ init();
         'topic:REXX',
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_whitespace_glitch() {
+run_test('whitespace_glitch', () => {
     var query = 'stream:office '; // note trailing space
 
     global.stream_data.subscribed_streams = function () {
@@ -676,9 +676,9 @@ init();
     ];
 
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_stream_completion() {
+run_test('stream_completion', () => {
     global.stream_data.subscribed_streams = function () {
         return ['office', 'dev help'];
     };
@@ -704,9 +704,9 @@ init();
         "stream:dev+help",
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_people_suggestions() {
+run_test('people_suggestions', () => {
     var query = 'te';
 
     global.stream_data.subscribed_streams = function () {
@@ -773,9 +773,9 @@ init();
 
     assert.deepEqual(suggestions.strings, expected);
 
-}());
+});
 
-(function test_contains_suggestions() {
+run_test('contains_suggestions', () => {
     var query = 'has:';
     var suggestions = search.get_suggestions(query);
     var expected = [
@@ -819,9 +819,9 @@ init();
         'stream:Denmark',
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_operator_suggestions() {
+run_test('operator_suggestions', () => {
     // Completed operator should return nothing
     var query = 'stream:';
     var suggestions = search.get_suggestions(query);
@@ -865,9 +865,9 @@ init();
         'stream:Denmark',
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});
 
-(function test_queries_with_spaces() {
+run_test('queries_with_spaces', () => {
     global.stream_data.subscribed_streams = function () {
         return ['office', 'dev help'];
     };
@@ -904,4 +904,4 @@ init();
         "stream:office",
     ];
     assert.deepEqual(suggestions.strings, expected);
-}());
+});

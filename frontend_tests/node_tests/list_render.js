@@ -120,7 +120,7 @@ function div(item) {
     return '<div>' + item + '</div>';
 }
 
-(function test_list_render() {
+run_test('list_render', () => {
     const {container, parent_container} = make_containers();
 
     const search_input = make_search_input();
@@ -183,7 +183,7 @@ function div(item) {
     widget.render();
     expected_html = '<div>greta</div><div>gary</div>';
     assert.deepEqual(container.appended_data.html(), expected_html);
-}());
+});
 
 function sort_button(opts) {
     // The complications here are due to needing to find
@@ -237,7 +237,7 @@ function sort_button(opts) {
     return button;
 }
 
-(function test_sorting() {
+run_test('sorting', () => {
     const {container} = make_containers();
 
     var cleared;
@@ -309,4 +309,4 @@ function sort_button(opts) {
 
     expected_html = html_for([dave, cal, bob, alice]);
     assert.deepEqual(container.appended_data.html(), expected_html);
-}());
+});

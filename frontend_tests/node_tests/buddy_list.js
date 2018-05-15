@@ -1,7 +1,7 @@
 set_global('$', global.make_zjquery());
 zrequire('buddy_list');
 
-(function test_get_items() {
+run_test('get_items', () => {
     const alice_li = $.create('alice stub');
     const sel = 'li.user_sidebar_entry';
 
@@ -11,4 +11,4 @@ zrequire('buddy_list');
     const items = buddy_list.get_items();
 
     assert.deepEqual(items, [alice_li]);
-}());
+});

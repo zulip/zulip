@@ -20,7 +20,7 @@ set_global('feature_flags', {});
 
 var with_overrides = global.with_overrides; // make lint happy
 
-(function test_basics() {
+run_test('basics', () => {
     var table;
     var filter = {};
 
@@ -113,9 +113,9 @@ var with_overrides = global.with_overrides; // make lint happy
 
     list.clear();
     assert.deepEqual(list.all_messages(), []);
-}());
+});
 
-(function test_message_range() {
+run_test('message_range', () => {
     var table;
     var filter = {};
     var list = new MessageList(table, filter);
@@ -127,9 +127,9 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
     assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
-}());
+});
 
-(function test_updates() {
+run_test('updates', () => {
     var table;
     var filter = {};
     var list = new MessageList(table, filter);
@@ -166,9 +166,9 @@ var with_overrides = global.with_overrides; // make lint happy
     list.update_stream_name(64, "Finland");
     assert.equal(list.get(2).stream, "Finland");
     assert.equal(list.get(1).stream, "denmark");
-}());
+});
 
-(function test_nth_most_recent_id() {
+run_test('nth_most_recent_id', () => {
     var table;
     var filter = {};
 
@@ -178,9 +178,9 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.equal(list.nth_most_recent_id(2), 20);
     assert.equal(list.nth_most_recent_id(3), 10);
     assert.equal(list.nth_most_recent_id(4), -1);
-}());
+});
 
-(function test_change_message_id() {
+run_test('change_message_id', () => {
     var table;
     var filter = {};
 
@@ -191,9 +191,9 @@ var with_overrides = global.with_overrides; // make lint happy
 
     list.change_message_id(20.5, 10);
     assert.equal(list.get(10).content, "ok!");
-}());
+});
 
-(function test_last_sent_by_me() {
+run_test('last_sent_by_me', () => {
     var table;
     var filter = {};
 
@@ -217,9 +217,9 @@ var with_overrides = global.with_overrides; // make lint happy
     set_global("page_params", {user_id: 3});
     // Look for the last message where user_id == 3 (our ID)
     assert.equal(list.get_last_message_sent_by_me().id, 2);
-}());
+});
 
-(function test_local_echo() {
+run_test('local_echo', () => {
     var table;
     var filter = {};
 
@@ -269,9 +269,9 @@ var with_overrides = global.with_overrides; // make lint happy
     assert.equal(list.closest_id(51), 50.02);
     assert.equal(list.closest_id(59), 60);
     assert.equal(list.closest_id(50.01), 50.01);
-}());
+});
 
-(function test_bookend() {
+run_test('bookend', () => {
     var table;
     var filter = {};
 
@@ -349,9 +349,9 @@ var with_overrides = global.with_overrides; // make lint happy
             assert.equal(bookend.show_button, true);
         });
     });
-}());
+});
 
-(function test_unmuted_messages() {
+run_test('unmuted_messages', () => {
     var table;
     var filter = {};
 
@@ -387,9 +387,9 @@ var with_overrides = global.with_overrides; // make lint happy
         var test_unmuted = list.unmuted_messages(unmuted.concat(muted));
         assert.deepEqual(unmuted, test_unmuted);
     });
-}());
+});
 
-(function test_add_remove_rerender() {
+run_test('add_remove_rerender', () => {
     var table;
     var filter = {};
 
@@ -414,4 +414,4 @@ var with_overrides = global.with_overrides; // make lint happy
         assert.equal(stub.num_calls, 1);
         assert.equal(list.num_items(), 0);
     });
-}());
+});

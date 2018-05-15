@@ -56,7 +56,7 @@ muting.add_muted_topic(three.name, 'topic_seven');
 // Subscribe to topic
 stream_data.add_sub('stream_two', two);
 
-(function test_message_is_notifiable() {
+run_test('message_is_notifiable', () => {
     // This function tests logic for 4 cases
     // that should override any of the user's notifications settings
     // and a 5th that passes it on the user's notifications settings
@@ -154,10 +154,10 @@ stream_data.add_sub('stream_two', two);
         stream_id: 20,
         subject: 'topic_two',
     }), true);
-}());
+});
 
 
-(function test_basic_notifications() {
+run_test('basic_notifications', () => {
 
     var n; // Object for storing all notification data for assertions.
     var last_closed_message_id = null;
@@ -261,4 +261,4 @@ stream_data.add_sub('stream_two', two);
     assert.equal('undefined to stream_one > topic_two' in n, false);
     assert.equal(Object.keys(n).length, 0);
     assert.equal(last_closed_message_id, message_2.id);
-}());
+});

@@ -60,7 +60,7 @@ people.add_in_realm(cindy);
 
 global.people.initialize_current_user(me.user_id);
 
-(function test_add_message_metadata() {
+run_test('add_message_metadata', () => {
     var message = {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
@@ -128,9 +128,9 @@ global.people.initialize_current_user(me.user_id);
         assert.equal(message.alerted, false);
     });
 
-}());
+});
 
-(function test_errors() {
+run_test('errors', () => {
     // Test a user that doesn't exist
     var message = {
         type: 'private',
@@ -166,9 +166,9 @@ global.people.initialize_current_user(me.user_id);
     });
     message_store.process_message_for_recent_private_messages(message);
     assert.equal(num_partner, 0);
-}());
+});
 
-(function test_update_booleans() {
+run_test('update_booleans', () => {
     var message = {};
 
     // First, test fields that we do actually want to update.
@@ -198,9 +198,9 @@ global.people.initialize_current_user(me.user_id);
     flags = ['read'];
     message_store.update_booleans(message, flags);
     assert.equal(message.unread, true);
-}());
+});
 
-(function test_message_id_change() {
+run_test('message_id_change', () => {
     var message = {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
@@ -240,4 +240,4 @@ global.people.initialize_current_user(me.user_id);
         assert.equal(msg_id.new, 402);
     });
 
-}());
+});

@@ -30,7 +30,7 @@ set_global('blueslip', global.make_zblueslip());
 // set_global('blueslip', global.make_zblueslip({debug: true}));
 // Similarly, you can ignore tests for errors by passing {debug: true, error: false}.
 
-(function test_basics() {
+run_test('basics', () => {
     // Let's create a sample piece of code to test:
     function throw_an_error() {
         blueslip.error('world');
@@ -85,4 +85,4 @@ set_global('blueslip', global.make_zblueslip());
     throw_a_warning();
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
-}());
+});

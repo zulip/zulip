@@ -54,7 +54,7 @@ function make_textbox(s) {
     return widget;
 }
 
-(function test_insert_syntax_and_focus() {
+run_test('insert_syntax_and_focus', () => {
     blueslip.error = noop;
     blueslip.log = noop;
     $('#compose-textarea').val("xyz ");
@@ -70,9 +70,9 @@ function make_textbox(s) {
     assert.equal($('#compose-textarea').val(), 'xyz :octopus: ');
     assert($("#compose-textarea").is_focused());
 
-}());
+});
 
-(function test_smart_insert() {
+run_test('smart_insert', () => {
     var textbox = make_textbox('abc');
     textbox.caret(4);
 
@@ -105,5 +105,5 @@ function make_textbox(s) {
     // Note that we don't have any special logic for strings that are
     // already surrounded by spaces, since we are usually inserting things
     // like emojis and file links.
-}());
+});
 

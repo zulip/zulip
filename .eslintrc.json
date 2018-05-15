@@ -9,6 +9,7 @@
     "globals": {
         "$": false,
         "_": false,
+        "run_test": false,
         "jQuery": false,
         "Spinner": false,
         "Handlebars": false,

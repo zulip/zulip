@@ -1,6 +1,6 @@
 var rs = zrequire('recent_senders');
 
-(function test_process_message_for_senders() {
+run_test('process_message_for_senders', () => {
     var stream1 = 1;
     var stream2 = 2;
     var stream3 = 3;
@@ -111,4 +111,4 @@ var rs = zrequire('recent_senders');
         true);
 
     assert.equal(rs.compare_by_recency({}, {}, _.uniqueId(), ''), 0);
-}());
+});

@@ -174,7 +174,7 @@ user_pill.get_user_ids = function () {
     return [];
 };
 
-(function test_add_topic() {
+run_test('add_topic', () => {
     ct.add_topic('Denmark', 'civil fears');
     ct.add_topic('devel', 'fading');
     ct.add_topic('denmark', 'acceptance');
@@ -185,14 +185,14 @@ user_pill.get_user_ids = function () {
         ct.topics_seen_for('Denmark'),
         ['With Twisted Metal', 'acceptance', 'civil fears']
     );
-}());
+});
 
-(function test_topics_seen_for() {
+run_test('topics_seen_for', () => {
     // Test when the stream doesn't exist (there are no topics)
     assert.deepEqual(ct.topics_seen_for('non-existing-stream'), []);
-}());
+});
 
-(function test_content_typeahead_selected() {
+run_test('content_typeahead_selected', () => {
     var fake_this = {
         query: '',
         $element: {},
@@ -355,9 +355,9 @@ user_pill.get_user_ids = function () {
     assert(document_stub_trigger1_called);
     assert(document_stub_group_trigger_called);
     assert(document_stub_trigger2_called);
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     var stream_typeahead_called = false;
     $('#stream').typeahead = function (options) {
         // options.source()
@@ -908,9 +908,9 @@ user_pill.get_user_ids = function () {
     assert(compose_textarea_typeahead_called);
     assert(focus_handler_called);
     assert(stream_one_called);
-}());
+});
 
-(function test_begins_typeahead() {
+run_test('begins_typeahead', () => {
 
     var begin_typehead_this = {options: {completions: {
         emoji: true, mention: true, stream: true, syntax: true}}};
@@ -1050,9 +1050,9 @@ user_pill.get_user_ids = function () {
         assert_typeahead_equals("```test", symbol, lang_list);
         assert_typeahead_equals("~~~test", symbol, lang_list);
     });
-}());
+});
 
-(function test_tokenizing() {
+run_test('tokenizing', () => {
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
     assert.equal(ct.tokenize_compose_str("foo#@:bar"), "");
     assert.equal(ct.tokenize_compose_str("foo bar [#alic"), "#alic");
@@ -1071,9 +1071,9 @@ user_pill.get_user_ids = function () {
     assert.equal(ct.tokenize_compose_str(
         "foo @toomanycharactersisridiculoustocomplete"), "");
     assert.equal(ct.tokenize_compose_str("foo #streams@foo"), "#streams@foo");
-}());
+});
 
-(function test_content_highlighter() {
+run_test('content_highlighter', () => {
     var fake_this = { completing: 'emoji' };
     var emoji = { emoji_name: 'person shrugging', emoji_url: '¯\_(ツ)_/¯' };
     var th_render_typeahead_item_called = false;
@@ -1123,9 +1123,9 @@ user_pill.get_user_ids = function () {
     assert(th_render_user_group_called);
     assert(th_render_stream_called);
     assert(th_render_typeahead_item_called);
-}());
+});
 
-(function test_typeahead_results() {
+run_test('typeahead_results', () => {
     var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
         return {
             special_item_text: 'translated: ' + mention +" (Notify stream)",
@@ -1198,4 +1198,4 @@ user_pill.get_user_ids = function () {
     assert_stream_matches('cold', [sweden_stream, denmark_stream]);
     assert_stream_matches('the ', [netherland_stream]);
     assert_stream_matches('city', [netherland_stream]);
-}());
+});

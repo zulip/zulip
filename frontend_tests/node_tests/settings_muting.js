@@ -6,7 +6,7 @@ set_global('muting_ui', {});
 
 var noop = function () {};
 
-(function test_settings() {
+run_test('settings', () => {
 
     muting.add_muted_topic('frontend', 'js');
     var set_up_ui_called = false;
@@ -53,4 +53,4 @@ var noop = function () {};
     assert(unmute_called);
     assert(set_up_ui_called);
     assert.equal(data_called, 2);
-}());
+});

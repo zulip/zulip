@@ -92,13 +92,13 @@ function assert_hidden(sel) {
     assert(!$(sel).visible());
 }
 
-(function test_initial_state() {
+run_test('initial_state', () => {
     assert.equal(compose_state.composing(), false);
     assert.equal(compose_state.get_message_type(), false);
     assert.equal(compose_state.has_message_content(), false);
-}());
+});
 
-(function test_start() {
+run_test('start', () => {
     compose_actions.autosize_message_content = noop;
     compose_actions.expand_compose_box = noop;
     compose_actions.set_focus = noop;
@@ -160,9 +160,9 @@ function assert_hidden(sel) {
     assert_visible('#compose_controls');
     assert_hidden('#private-message');
     assert(!compose_state.composing());
-}());
+});
 
-(function test_respond_to_message() {
+run_test('respond_to_message', () => {
     // Test PM
     var person = {
         user_id: 22,
@@ -198,9 +198,9 @@ function assert_hidden(sel) {
 
     respond_to_message(opts);
     assert.equal($('#stream').val(), 'devel');
-}());
+});
 
-(function test_reply_with_mention() {
+run_test('reply_with_mention', () => {
     var msg = {
         type: 'stream',
         stream: 'devel',
@@ -222,9 +222,9 @@ function assert_hidden(sel) {
     assert.equal($('#stream').val(), 'devel');
     assert.equal(syntax_to_insert, '@**Bob Roberts**');
     assert(compose_state.has_message_content());
-}());
+});
 
-(function test_get_focus_area() {
+run_test('get_focus_area', () => {
     assert.equal(get_focus_area('private', {}), 'private_message_recipient');
     assert.equal(get_focus_area('private', {
         private_message_recipient: 'bob@example.com'}), 'compose-textarea');
@@ -238,9 +238,9 @@ function assert_hidden(sel) {
                                            subject: 'more',
                                            trigger: 'new topic button'}),
                  'subject');
-}());
+});
 
-(function test_focus_in_empty_compose() {
+run_test('focus_in_empty_compose', () => {
     $('#compose-textarea').is = function (attr) {
         assert.equal(attr, ':focus');
         return $('#compose-textarea').is_focused;
@@ -259,4 +259,4 @@ function assert_hidden(sel) {
 
     $('#compose-textarea').blur();
     assert(!compose_state.focus_in_empty_compose());
-}());
+});

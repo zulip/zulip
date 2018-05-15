@@ -33,7 +33,7 @@ set_global('blueslip', {
     wrap_function: blueslip_wrap,
 });
 
-(function test_operators_round_trip() {
+run_test('operators_round_trip', () => {
     var operators;
     var hash;
     var narrow;
@@ -79,9 +79,9 @@ set_global('blueslip', {
     assert.deepEqual(narrow, [
         {operator: 'stream', operand: 'Florida, USA', negated: false},
     ]);
-}());
+});
 
-(function test_people_slugs() {
+run_test('people_slugs', () => {
     var operators;
     var hash;
     var narrow;
@@ -108,7 +108,7 @@ set_global('blueslip', {
     ];
     hash = hashchange.operators_to_hash(operators);
     assert.equal(hash, '#narrow/pm-with/42-alice');
-}());
+});
 
 function stub_trigger(f) {
     set_global('$', () => {
@@ -169,7 +169,7 @@ function test_helper() {
     };
 }
 
-(function test_hash_interactions() {
+run_test('hash_interactions', () => {
     var helper = test_helper();
 
     window.location.hash = '#';
@@ -301,9 +301,9 @@ function test_helper() {
     ]);
     assert(called_back);
 
-}());
+});
 
-(function test_save_narrow() {
+run_test('save_narrow', () => {
     var helper = test_helper();
 
     var operators = [
@@ -333,5 +333,5 @@ function test_helper() {
         'favicon.reset',
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');
-}());
+});
 
