@@ -2689,13 +2689,8 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
                  name=stream.name)
     send_event(event, [user_profile.id])
 
-def do_change_password(user_profile: UserProfile, password: str, commit: bool=True,
-                       hashed_password: bool=False) -> None:
-    if hashed_password:
-        # This is a hashed password, not the password itself.
-        user_profile.set_password(password)
-    else:
-        user_profile.set_password(password)
+def do_change_password(user_profile: UserProfile, password: str, commit: bool=True) -> None:
+    user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
     event_time = timezone_now()
