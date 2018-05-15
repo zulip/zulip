@@ -72,7 +72,7 @@ function short_tb(tb) {
     const lines = tb.split('\n');
 
     var i = _.findIndex(lines, (line) => {
-        return line.includes('run_one_module');
+        return line.includes('run_test') || line.includes('run_one_module');
     });
 
     if (i === -1) {
@@ -89,6 +89,13 @@ function run_one_module(file) {
     console.info('running tests for ' + file.name);
     require(file.full_name);
 }
+
+global.run_test = (label, f) => {
+    if (files.length === 1) {
+        console.info('        test: ' + label);
+    }
+    f();
+};
 
 try {
     files.forEach(function (file) {

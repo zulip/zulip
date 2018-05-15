@@ -34,14 +34,14 @@ set_global('templates', {
 set_global('overlays', {
 });
 
-(function test_unloaded() {
+run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes
     // sure things don't explode before set_up is called.
 
     settings_org.reset();
     settings_org.populate_realm_domains();
     settings_org.populate_auth_methods();
-}());
+});
 
 (function stub_rendering() {
     templates.render = function (name, data) {
@@ -495,7 +495,7 @@ function test_parse_time_limit() {
     test_function('501.34', '501.3');
 }
 
-(function test_set_up() {
+run_test('set_up', () => {
     var callbacks = {};
 
     var set_callback = (name) => {
@@ -564,9 +564,9 @@ function test_parse_time_limit() {
     test_parse_time_limit();
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
-}());
+});
 
-(function test_misc() {
+run_test('misc', () => {
     page_params.is_admin = false;
 
     var stub_notification_disable_parent = $.create('<stub notification_disable parent');
@@ -631,4 +631,4 @@ function test_parse_time_limit() {
     assert.equal(elem.text(), 'translated: Disabled');
     assert(elem.hasClass('text-warning'));
 
-}());
+});

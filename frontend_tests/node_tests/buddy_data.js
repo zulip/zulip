@@ -41,7 +41,7 @@ set_global('page_params', {});
     });
 }());
 
-(function test_user_ids() {
+run_test('user_ids', () => {
     var user_ids;
 
     // Even though we have 1000 users, we only get the 400 active
@@ -73,4 +73,4 @@ set_global('page_params', {});
 
     user_ids = buddy_data.get_filtered_and_sorted_user_ids('');
     assert.equal(user_ids.length, 700);
-}());
+});

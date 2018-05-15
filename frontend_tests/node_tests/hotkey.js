@@ -62,7 +62,7 @@ function stubbing(func_name_to_stub, test_function) {
     });
 }
 
-(function test_mappings() {
+run_test('mappings', () => {
     function map_press(which, shiftKey) {
         return hotkey.get_keypress_hotkey({
             which: which,
@@ -130,9 +130,9 @@ function stubbing(func_name_to_stub, test_function) {
 
     // Reset userAgent
     global.navigator.userAgent = '';
-}());
+});
 
-(function test_basic_chars() {
+run_test('basic_chars', () => {
     function process(s) {
         var e = {
             which: s.charCodeAt(0),
@@ -307,9 +307,9 @@ function stubbing(func_name_to_stub, test_function) {
 
     global.current_msg_list.empty = return_false;
 
-}());
+});
 
-(function test_motion_keys() {
+run_test('motion_keys', () => {
     var codes = {
         down_arrow: 40,
         end: 35,
@@ -418,4 +418,4 @@ function stubbing(func_name_to_stub, test_function) {
     assert_mapping('down_arrow', 'drafts.drafts_handle_events');
     overlays.is_active = return_false;
     overlays.drafts_open = return_false;
-}());
+});

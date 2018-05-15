@@ -4,7 +4,7 @@ set_global('window', {});
 
 zrequire('util');
 
-(function test_CachedValue() {
+run_test('CachedValue', () => {
     var x = 5;
 
     var cv = new util.CachedValue({
@@ -20,27 +20,27 @@ zrequire('util');
     cv.reset();
     assert.equal(cv.get(), 12);
 
-}());
+});
 
-(function test_extract_pm_recipients() {
+run_test('extract_pm_recipients', () => {
     assert.equal(util.extract_pm_recipients('bob@foo.com, alice@foo.com').length, 2);
     assert.equal(util.extract_pm_recipients('bob@foo.com, ').length, 1);
-}());
+});
 
-(function test_is_pm_recipient() {
+run_test('is_pm_recipient', () => {
     var message = { reply_to: 'alice@example.com,bOb@exaMple.com,fred@example.com' };
     assert(util.is_pm_recipient('alice@example.com', message));
     assert(util.is_pm_recipient('bob@example.com', message));
     assert(!util.is_pm_recipient('unknown@example.com', message));
-}());
+});
 
-(function test_rtrim() {
+run_test('rtrim', () => {
     assert.equal(util.rtrim('foo'), 'foo');
     assert.equal(util.rtrim('  foo'), '  foo');
     assert.equal(util.rtrim('foo  '), 'foo');
-}());
+});
 
-(function test_lower_bound() {
+run_test('lower_bound', () => {
     var arr = [10, 20, 30, 40, 50];
     assert.equal(util.lower_bound(arr, 5), 0);
     assert.equal(util.lower_bound(arr, 10), 0);
@@ -59,9 +59,9 @@ zrequire('util');
     assert.equal(util.lower_bound(arr, 10, compare), 0);
     assert.equal(util.lower_bound(arr, 15, compare), 1);
 
-}());
+});
 
-(function test_same_recipient() {
+run_test('same_recipient', () => {
     assert(util.same_recipient(
         {type: 'stream', stream_id: 101, subject: 'Bar'},
         {type: 'stream', stream_id: 101, subject: 'bar'}));
@@ -95,9 +95,9 @@ zrequire('util');
         {type: 'private'}));
 
     assert(!util.same_recipient(undefined, undefined));
-}());
+});
 
-(function test_robust_uri_decode() {
+run_test('robust_uri_decode', () => {
     assert.equal(util.robust_uri_decode('xxx%3Ayyy'), 'xxx:yyy');
     assert.equal(util.robust_uri_decode('xxx%3'), 'xxx');
 
@@ -107,39 +107,39 @@ zrequire('util');
     } catch (e) {
         assert(e, 'foo');
     }
-}());
+});
 
-(function test_dumb_strcmp() {
+run_test('dumb_strcmp', () => {
     Intl.Collator = undefined;
     var strcmp = util.make_strcmp();
     assert.equal(strcmp('a', 'b'), -1);
     assert.equal(strcmp('c', 'c'), 0);
     assert.equal(strcmp('z', 'y'), 1);
-}());
+});
 
-(function test_is_mobile() {
+run_test('is_mobile', () => {
     global.window.navigator = { userAgent: "Android" };
     assert(util.is_mobile());
 
     global.window.navigator = { userAgent: "Not mobile" };
     assert(!util.is_mobile());
-}());
+});
 
-(function test_array_compare() {
+run_test('array_compare', () => {
     assert(util.array_compare([], []));
     assert(util.array_compare([1,2,3], [1,2,3]));
     assert(!util.array_compare([1,2], [1,2,3]));
     assert(!util.array_compare([1,2,3], [1,2]));
     assert(!util.array_compare([1,2,3,4], [1,2,3,5]));
-}());
+});
 
-(function test_normalize_recipients() {
+run_test('normalize_recipients', () => {
     assert.equal(
         util.normalize_recipients('ZOE@foo.com, bob@foo.com, alice@foo.com, AARON@foo.com '),
         'aaron@foo.com,alice@foo.com,bob@foo.com,zoe@foo.com');
-}());
+});
 
-(function test_random_int() {
+run_test('random_int', () => {
     var min = 0;
     var max = 100;
 
@@ -149,9 +149,9 @@ zrequire('util');
         assert(val <= max);
         assert.equal(val, Math.floor(val));
     });
-}());
+});
 
-(function test_all_and_everyone_mentions_regexp() {
+run_test('all_and_everyone_mentions_regexp', () => {
     var messages_with_all_mentions = [
         '@**all**',
         'some text before @**all** some text after',
@@ -224,9 +224,9 @@ zrequire('util');
     for (i=0; i<messages_without_stream_mentions.length; i += 1) {
         assert(!util.is_all_or_everyone_mentioned(messages_without_stream_mentions[i]));
     }
-}());
+});
 
-(function test_move_array_elements_to_front() {
+run_test('move_array_elements_to_front', () => {
     var strings = [
         'string1',
         'string3',
@@ -280,4 +280,4 @@ zrequire('util');
     for (i = 0; i < emails_actual.length; i += 1) {
         assert(emails_actual[i] === emails_expected[i]);
     }
-}());
+});

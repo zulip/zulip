@@ -132,7 +132,7 @@ function stub_message_list() {
     };
 }
 
-(function test_basics() {
+run_test('basics', () => {
     stub_message_list();
 
     var helper = test_helper();
@@ -212,4 +212,4 @@ function stub_message_list() {
         'report narrow times',
     ]);
 
-}());
+});

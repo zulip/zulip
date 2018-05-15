@@ -1,7 +1,7 @@
 zrequire('util');
 var rtl = zrequire('rtl');
 
-(function test_get_direction() {
+run_test('get_direction', () => {
     // These characters are strong R or AL:    ا ب پ ج ض و د ؛
     // These characters are not strong:        ۱ ۲ ۳ ۴ ۵ ۶ ۷ ۸ ۹ ۰
 
@@ -45,4 +45,4 @@ var rtl = zrequire('rtl');
     assert.equal(rtl.get_direction(',,' + i_chars.charAt(1) + 'bb' + pdi + '33' + pdi + '..'), 'ltr');
     assert.equal(rtl.get_direction(',,' + i_chars.charAt(2) + 'bb' + pdi + '12' + pdi + 'وو'), 'rtl');
     assert.equal(rtl.get_direction(',,' + i_chars.charAt(1) + 'ضج' + pdi + '12' + pdi + 'ff'), 'ltr');
-}());
+});

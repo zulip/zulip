@@ -24,7 +24,7 @@ var frontend = {
 };
 stream_data.add_sub('Frontend', frontend);
 
-(function test_update_property() {
+run_test('update_property', () => {
     // Invoke error for non-existent stream/property
     with_overrides(function (override) {
         var errors = 0;
@@ -113,9 +113,9 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(checkbox.prop('checked'), true);
     });
 
-}());
+});
 
-(function test_marked_subscribed() {
+run_test('marked_subscribed', () => {
     // Test undefined error
     with_overrides(function (override) {
         var errors = 0;
@@ -241,9 +241,9 @@ stream_data.add_sub('Frontend', frontend);
             assert.deepEqual(frontend, args.sub);
         });
     });
-}());
+});
 
-(function test_mark_unsubscribed() {
+run_test('mark_unsubscribed', () => {
     var removed_sub = false;
     $(document).on('subscription_remove_done.zulip', function () {
         removed_sub = true;
@@ -305,4 +305,4 @@ stream_data.add_sub('Frontend', frontend);
         assert.equal(updated, true);
         assert.equal(event_triggered, true);
     });
-}());
+});

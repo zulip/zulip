@@ -14,7 +14,7 @@ function returns_time(secs) {
     return function () { return make_time(secs); };
 }
 
-(function test_basics() {
+run_test('basics', () => {
 
     // invalid conversation basically does nothing
     var worker = {
@@ -277,4 +277,4 @@ function returns_time(secs) {
     });
     assert(events.idle_callback);
 
-}());
+});

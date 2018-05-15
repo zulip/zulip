@@ -24,7 +24,7 @@ zrequire('upload');
 
 var upload_opts = upload.options({ mode: "compose" });
 
-(function test_upload_started() {
+run_test('upload_started', () => {
     $("#compose-send-button").prop('disabled', false);
     $("#compose-send-status").removeClass("alert-info").hide();
     $(".compose-send-status-close").one = function (ev_name, handler) {
@@ -46,9 +46,9 @@ var upload_opts = upload.options({ mode: "compose" });
     assert($("#compose-send-status").hasClass("alert-info"));
     assert($("#compose-send-status").visible());
     assert.equal($("<p>").text(), 'translated: Uploading…');
-}());
+});
 
-(function test_progress_updated() {
+run_test('progress_updated', () => {
     var width_update_checked = false;
     $("#compose-upload-bar-1549958107000").width = function (width_percent) {
         assert.equal(width_percent, '39%');
@@ -56,9 +56,9 @@ var upload_opts = upload.options({ mode: "compose" });
     };
     upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 39);
     assert(width_update_checked);
-}());
+});
 
-(function test_upload_error() {
+run_test('upload_error', () => {
     function setup_test() {
         $("#compose-send-status").removeClass("alert-error");
         $("#compose-send-status").addClass("alert-info");
@@ -97,9 +97,9 @@ var upload_opts = upload.options({ mode: "compose" });
     test(413, msg_prefix + msg_4);
     test(400, 'ちょっと…', {msg: 'ちょっと…'});
     test('Do-not-match-any-case', msg_prefix + msg_5);
-}());
+});
 
-(function test_upload_finish() {
+run_test('upload_finish', () => {
     function test(i, response, textbox_val) {
         var compose_ui_autosize_textarea_checked = false;
         var compose_actions_start_checked = false;
@@ -172,4 +172,4 @@ var upload_opts = upload.options({ mode: "compose" });
     test(-1, {}, '');
     test(-1, {uri: 'https://foo.com/uploads/122456'}, msg_1);
     test(1, {uri: '/user_uploads/foobar.jpeg'}, msg_2);
-}());
+});

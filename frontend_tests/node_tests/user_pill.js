@@ -32,7 +32,7 @@ var isaac_item = {
     people.add_in_realm(isaac);
 }());
 
-(function test_create_item() {
+run_test('create_item', () => {
 
     function test_create_item(email, current_items, expected_item) {
         var item = user_pill.create_item_from_email(email, current_items);
@@ -52,13 +52,13 @@ var isaac_item = {
     test_create_item('bogus@example.com', [], undefined);
     test_create_item('isaac@example.com', [], isaac_item);
     test_create_item('isaac@example.com', [isaac_item], undefined);
-}());
+});
 
-(function test_get_email() {
+run_test('get_email', () => {
     assert.equal(user_pill.get_email_from_item({email: 'foo@example.com'}), 'foo@example.com');
-}());
+});
 
-(function test_append() {
+run_test('append', () => {
     var appended;
     var cleared;
 
@@ -85,9 +85,9 @@ var isaac_item = {
 
     assert(appended);
     assert(cleared);
-}());
+});
 
-(function test_get_items() {
+run_test('get_items', () => {
     var items = [isaac_item, bogus_item];
 
     var pill_widget = {
@@ -95,9 +95,9 @@ var isaac_item = {
     };
 
     assert.deepEqual(user_pill.get_user_ids(pill_widget), [isaac.user_id]);
-}());
+});
 
-(function test_typeahead() {
+run_test('typeahead', () => {
     var items = [isaac_item, bogus_item];
 
     var pill_widget = {
@@ -109,4 +109,4 @@ var isaac_item = {
     // And then bogus_item is just a red herring to test robustness.
     var result = user_pill.typeahead_source(pill_widget);
     assert.deepEqual(result, [alice]);
-}());
+});

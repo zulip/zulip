@@ -17,7 +17,7 @@ var sub = {
 
 stream_data.add_sub(sub.name, sub);
 
-(function test_hash_util() {
+run_test('hash_util', () => {
     // Test encodeHashComponent
     var str = 'https://www.zulipexample.com';
     var result1 = hash_util.encodeHashComponent(str);
@@ -51,4 +51,4 @@ stream_data.add_sub(sub.name, sub);
     operand = 'testing 123';
 
     encode_decode_operand(operator, operand, 'testing.20123');
-}());
+});

@@ -239,7 +239,7 @@ function test_backfill_idle(idle_config) {
     });
 }
 
-(function test_initialize() {
+run_test('initialize', () => {
     reset_lists();
 
     var step1 = initial_fetch_step();
@@ -254,7 +254,7 @@ function test_backfill_idle(idle_config) {
     var idle_config = step2.finish();
 
     test_backfill_idle(idle_config);
-}());
+});
 
 
 function simulate_narrow() {
@@ -276,7 +276,7 @@ function simulate_narrow() {
     return msg_list;
 }
 
-(function test_loading_newer() {
+run_test('loading_newer', () => {
     function test_dup_new_fetch(msg_list) {
         assert.equal(msg_list.fetch_status.can_load_newer_messages(), false);
         message_fetch.maybe_load_newer_messages({
@@ -376,4 +376,4 @@ function simulate_narrow() {
 
     }());
 
-}());
+});

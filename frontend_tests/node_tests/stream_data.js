@@ -17,7 +17,7 @@ zrequire('stream_color');
 zrequire('stream_data');
 zrequire('marked', 'third/marked/lib/marked');
 
-(function test_basics() {
+run_test('basics', () => {
     var denmark = {
         subscribed: false,
         color: 'blue',
@@ -78,9 +78,9 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(stream_data.get_default_status('Denmark'));
     assert(!stream_data.get_default_status('social'));
     assert(!stream_data.get_default_status('UNKNOWN'));
-}());
+});
 
-(function test_renames() {
+run_test('renames', () => {
     stream_data.clear_subscriptions();
     var id = 42;
     var sub = {
@@ -108,9 +108,9 @@ zrequire('marked', 'third/marked/lib/marked');
 
     var actual_id = stream_data.get_stream_id('Denmark');
     assert.equal(actual_id, 42);
-}());
+});
 
-(function test_unsubscribe() {
+run_test('unsubscribe', () => {
     stream_data.clear_subscriptions();
 
     var sub = {name: 'devel', subscribed: false, stream_id: 1};
@@ -140,9 +140,9 @@ zrequire('marked', 'third/marked/lib/marked');
     // make sure subsequent calls work
     sub = stream_data.get_sub('devel');
     assert(!sub.subscribed);
-}());
+});
 
-(function test_subscribers() {
+run_test('subscribers', () => {
     stream_data.clear_subscriptions();
     var sub = {name: 'Rome', subscribed: true, stream_id: 1};
 
@@ -274,9 +274,9 @@ zrequire('marked', 'third/marked/lib/marked');
     global.blueslip.error = function () {};
     ok = stream_data.add_subscriber('Rome', 9999999);
     assert(!ok);
-}());
+});
 
-(function test_is_active() {
+run_test('is_active', () => {
     stream_data.clear_subscriptions();
 
     var sub = {name: 'pets', subscribed: false, stream_id: 1};
@@ -303,9 +303,9 @@ zrequire('marked', 'third/marked/lib/marked');
     topic_data.add_message(opts);
 
     assert(stream_data.is_active(sub));
-}());
+});
 
-(function test_admin_options() {
+run_test('admin_options', () => {
     function make_sub() {
         var sub = {
             subscribed: false,
@@ -357,9 +357,9 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(sub.is_admin);
     assert(sub.can_make_public);
     assert(!sub.can_make_private);
-}());
+});
 
-(function test_stream_settings() {
+run_test('stream_settings', () => {
     var cinnamon = {
         stream_id: 1,
         name: 'c',
@@ -401,9 +401,9 @@ zrequire('marked', 'third/marked/lib/marked');
     assert.equal(sub_rows[1].invite_only, false);
     assert.equal(sub_rows[2].invite_only, false);
 
-}());
+});
 
-(function test_get_non_default_stream_names() {
+run_test('get_non_default_stream_names', () => {
     var announce = {
         stream_id: 101,
         name: 'announce',
@@ -431,9 +431,9 @@ zrequire('marked', 'third/marked/lib/marked');
 
     var names = stream_data.get_non_default_stream_names();
     assert.deepEqual(names, ['public', 'private']);
-}());
+});
 
-(function test_delete_sub() {
+run_test('delete_sub', () => {
     var canada = {
         stream_id: 101,
         name: 'Canada',
@@ -460,9 +460,9 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.delete_sub('does_not_exist');
     assert(warned);
     blueslip.warn = function () {};
-}());
+});
 
-(function test_get_subscriber_count() {
+run_test('get_subscriber_count', () => {
     var india = {
         stream_id: 102,
         name: 'India',
@@ -493,9 +493,9 @@ zrequire('marked', 'third/marked/lib/marked');
     var sub = stream_data.get_sub_by_name('India');
     delete sub.subscribers;
     assert.deepStrictEqual(stream_data.get_subscriber_count('India'), 0);
-}());
+});
 
-(function test_notifications() {
+run_test('notifications', () => {
     var india = {
         stream_id: 102,
         name: 'India',
@@ -510,9 +510,9 @@ zrequire('marked', 'third/marked/lib/marked');
 
     assert(stream_data.receives_audible_notifications('India'));
     assert(!stream_data.receives_audible_notifications('Indiana'));
-}());
+});
 
-(function test_in_home_view() {
+run_test('in_home_view', () => {
     var tony = {
         stream_id: 999,
         name: 'tony',
@@ -532,17 +532,17 @@ zrequire('marked', 'third/marked/lib/marked');
     assert(stream_data.name_in_home_view('tony'));
     assert(!stream_data.name_in_home_view('jazy'));
     assert(!stream_data.name_in_home_view('EEXISTS'));
-}());
+});
 
-(function test_notifications_in_home_view() {
+run_test('notifications_in_home_view', () => {
     page_params.notifications_stream = 'tony';
     assert(stream_data.notifications_in_home_view());
 
     page_params.notifications_stream = 'jazy';
     assert(!stream_data.notifications_in_home_view());
-}());
+});
 
-(function test_remove_default_stream() {
+run_test('remove_default_stream', () => {
     var remove_me = {
         stream_id: 674,
         name: 'remove_me',
@@ -555,9 +555,9 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.remove_default_stream(remove_me.stream_id);
     assert(!stream_data.get_default_status('remove_me'));
     assert.equal(page_params.realm_default_streams.length, 0);
-}());
+});
 
-(function test_render_stream_description() {
+run_test('render_stream_description', () => {
     var desc = {
         name: 'no_desc',
         stream_id: 1002,
@@ -568,16 +568,16 @@ zrequire('marked', 'third/marked/lib/marked');
     var sub = stream_data.get_sub_by_name('desc');
     stream_data.render_stream_description(sub);
     assert.deepStrictEqual(sub.rendered_description, "rendered desc");
-}());
+});
 
-(function test_canonicalized_name() {
+run_test('canonicalized_name', () => {
     assert.deepStrictEqual(
         stream_data.canonicalized_name('Stream_Bar'),
         "stream_bar"
     );
-}());
+});
 
-(function test_create_sub() {
+run_test('create_sub', () => {
     stream_data.clear_subscriptions();
     var india = {
         stream_id: 102,
@@ -619,9 +619,9 @@ zrequire('marked', 'third/marked/lib/marked');
     var antarctica_sub = stream_data.create_sub_from_server_data('Antarctica', antarctica);
     assert(antarctica_sub);
     assert.equal(antarctica_sub.color, '#76ce90');
-}());
+});
 
-(function test_initialize_from_page_params() {
+run_test('initialize_from_page_params', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
@@ -662,9 +662,9 @@ zrequire('marked', 'third/marked/lib/marked');
     stream_data.initialize_from_page_params();
 
     assert.equal(page_params.notifications_stream, "foo");
-}());
+});
 
-(function test_get_newbie_stream() {
+run_test('get_newbie_stream', () => {
     var newbie = {
         name: 'newbie',
         stream_id: 234,
@@ -692,9 +692,9 @@ zrequire('marked', 'third/marked/lib/marked');
 
     new_members.subscribed = false;
     assert.equal(stream_data.get_newbie_stream(), undefined);
-}());
+});
 
-(function test_invite_streams() {
+run_test('invite_streams', () => {
     // add default stream
     var orie = {
         stream_id: 320,
@@ -721,4 +721,4 @@ zrequire('marked', 'third/marked/lib/marked');
 
     expected_list.push('Inviter');
     assert.deepEqual(stream_data.invite_streams(), expected_list);
-}());
+});

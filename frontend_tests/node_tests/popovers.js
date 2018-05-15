@@ -88,7 +88,7 @@ function make_image_stubber() {
     };
 }
 
-(function test_sender_hover() {
+run_test('sender_hover', () => {
     popovers.register_click_handlers();
 
     var handler = $('#main_div').get_on_handler('click', '.sender_info_hover');
@@ -174,4 +174,4 @@ function make_image_stubber() {
     assert.equal(avatar_img.src, 'avatar/42/medium');
 
     // todo: load image
-}());
+});

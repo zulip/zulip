@@ -20,7 +20,7 @@ i18n.init({
     },
 });
 
-(function test_t_tag() {
+run_test('t_tag', () => {
     var args = {
         message: {
             is_stream: true,
@@ -37,9 +37,9 @@ i18n.init({
 
     var html = global.render_template('actions_popover_content', args);
     assert(html.indexOf("French translation") > 0);
-}());
+});
 
-(function test_tr_tag() {
+run_test('tr_tag', () => {
     var args = {
         page_params: {
             full_name: "John Doe",
@@ -61,4 +61,4 @@ i18n.init({
 
     var html = global.render_template('settings_tab', args);
     assert(html.indexOf('Some French text with Zulip') > 0);
-}());
+});

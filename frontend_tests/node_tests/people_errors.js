@@ -18,7 +18,7 @@ people.init();
 people.add(me);
 people.initialize_current_user(me.user_id);
 
-(function test_report_late_add() {
+run_test('report_late_add', () => {
     blueslip.set_test_data('error', 'Added user late: user_id=55 email=foo@example.com');
     people.report_late_add(55, 'foo@example.com');
     assert.equal(blueslip.get_test_logs('error').length, 1);
@@ -30,9 +30,9 @@ people.initialize_current_user(me.user_id);
     assert.equal(blueslip.get_test_logs('log')[0], 'Added user late: user_id=55 email=foo@example.com');
     assert.equal(blueslip.get_test_logs('error').length, 0);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_blueslip() {
+run_test('blueslip', () => {
     var unknown_email = "alicebobfred@example.com";
 
     blueslip.set_test_data('debug', 'User email operand unknown: ' + unknown_email);
@@ -118,4 +118,4 @@ people.initialize_current_user(me.user_id);
     assert.equal(uri.indexOf('unk'), uri.length - 3);
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+});
