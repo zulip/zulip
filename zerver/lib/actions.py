@@ -3032,9 +3032,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     )
     send_event(event, can_access_stream_user_ids(stream))
 
-def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None,
-                    invite_required: Optional[bool]=None, org_type: Optional[int]=None
-                    ) -> Realm:
+def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None) -> Realm:
     existing_realm = get_realm(string_id)
     if existing_realm is not None:
         raise AssertionError("Realm %s already exists!" % (string_id,))
@@ -3042,10 +3040,6 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     kwargs = {}  # type: Dict[str, Any]
     if restricted_to_domain is not None:
         kwargs['restricted_to_domain'] = restricted_to_domain
-    if invite_required is not None:
-        kwargs['invite_required'] = invite_required
-    if org_type is not None:
-        kwargs['org_type'] = org_type
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -3063,9 +3057,7 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     # Log the event
     log_event({"type": "realm_created",
                "string_id": string_id,
-               "restricted_to_domain": restricted_to_domain,
-               "invite_required": invite_required,
-               "org_type": org_type})
+               "restricted_to_domain": restricted_to_domain})
 
     # Send a notification to the admin realm (if configured)
     if settings.NOTIFICATION_BOT is not None:
