@@ -158,10 +158,6 @@ Copyright: 2011-2012 VMware, Inc.
  2012 Douglas Crockford
 License: Expat and public-domain
 
-Files: static/third/sorttable/sorttable.js
-Copyright: 2007 Stuart Langridge
-License: X11
-
 Files: static/third/sourcesans/*
 Copyright: 2010, 2012, 2014 Adobe Systems Incorporated
 License: SIL-OFL-1.1
