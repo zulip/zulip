@@ -96,6 +96,7 @@ composebox_typeahead.add_topic = noop;
 
 // We can also bring in real code:
 zrequire('recent_senders');
+zrequire('unread');
 zrequire('topic_data');
 
 // And finally require the module that we will test directly:
@@ -124,7 +125,6 @@ run_test('message_store', () => {
 
 // Tracking unread messages is a very fundamental part of the Zulip
 // app, and we use the unread object to track unread messages.
-zrequire('unread');
 
 run_test('unread', () => {
     const stream_id = denmark_stream.stream_id;

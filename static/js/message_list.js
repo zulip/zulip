@@ -4,18 +4,27 @@ var exports = {};
 
 exports.narrowed = undefined;
 
-exports.MessageList = function (table_name, filter, opts) {
-    _.extend(this, {
-        collapse_messages: true,
-        muting_enabled: true,
-    }, opts);
+exports.MessageList = function (opts) {
+    if (opts.data) {
+        this.muting_enabled = opts.data.muting_enabled;
+        this.data = opts.data;
+    } else {
+        var filter = opts.filter;
 
-    this.data = new MessageListData({
-        muting_enabled: this.muting_enabled,
-        filter: filter,
+        this.muting_enabled = opts.muting_enabled;
+        this.data = new MessageListData({
+            muting_enabled: this.muting_enabled,
+            filter: filter,
+        });
+    }
+
+    _.extend(opts, {
+        collapse_messages: true,
     });
 
-    this.view = new MessageListView(this, table_name, this.collapse_messages);
+    var collapse_messages = opts.collapse_messages;
+    var table_name = opts.table_name;
+    this.view = new MessageListView(this, table_name, collapse_messages);
     this.fetch_status = FetchStatus();
     this.table_name = table_name;
     this.narrowed = this.table_name === "zfilt";
@@ -27,21 +36,25 @@ exports.MessageList = function (table_name, filter, opts) {
 exports.MessageList.prototype = {
     add_messages: function MessageList_add_messages(messages, opts) {
         var self = this;
-        var info = this.data.triage_messages(messages);
+
+        // This adds all messages to our data, but only returns
+        // the currently viewable ones.
+        var info = this.data.add_messages(messages);
+
         var top_messages = info.top_messages;
         var bottom_messages = info.bottom_messages;
         var interior_messages = info.interior_messages;
 
         if (interior_messages.length > 0) {
-            self.add_and_rerender(top_messages.concat(interior_messages).concat(bottom_messages));
+            self.view.rerender_the_whole_thing();
             return true;
         }
         if (top_messages.length > 0) {
-            self.prepend(top_messages);
+            self.view.prepend(top_messages);
         }
 
         if (bottom_messages.length > 0) {
-            self.append(bottom_messages, opts);
+            self.append_to_view(bottom_messages, opts);
         }
 
         if ((self === exports.narrowed) && !self.empty()) {
@@ -52,7 +65,7 @@ exports.MessageList.prototype = {
         }
 
         if ((self === exports.narrowed) && !self.empty() &&
-            (self.selected_id() === -1) && !opts.delay_render) {
+            (self.selected_id() === -1)) {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -249,28 +262,15 @@ exports.MessageList.prototype = {
     },
 
     append: function MessageList_append(messages, opts) {
-        opts = _.extend({delay_render: false, messages_are_new: false}, opts);
-
         var viewable_messages = this.data.append(messages);
+        this.append_to_view(viewable_messages, opts);
+    },
+
+    append_to_view: function (messages, opts) {
+        opts = _.extend({messages_are_new: false}, opts);
 
         this.num_appends += 1;
-        if (!opts.delay_render) {
-            this.view.append(viewable_messages, opts.messages_are_new);
-        }
-    },
-
-    prepend: function MessageList_prepend(messages) {
-        var viewable_messages = this.data.prepend(messages);
-        this.view.prepend(viewable_messages);
-    },
-
-    add_and_rerender: function MessageList_add_and_rerender(messages) {
-        // To add messages that might be in the interior of our
-        // existing messages list, we just add the new messages and
-        // then rerender the whole thing.
-
-        this.data.add(messages);
-        this.view.rerender_the_whole_thing();
+        this.view.append(messages, opts.messages_are_new);
     },
 
     remove_and_rerender: function MessageList_remove_and_rerender(messages) {
@@ -408,10 +408,9 @@ exports.MessageList.prototype = {
 
 };
 
-exports.all = new exports.MessageList(
-    undefined, undefined,
-    {muting_enabled: false}
-);
+exports.all = new exports.MessageList({
+    muting_enabled: false,
+});
 
 // We stop autoscrolling when the user is clearly in the middle of
 // doing something.  Be careful, though, if you try to capture

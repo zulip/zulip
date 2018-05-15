@@ -163,7 +163,7 @@ MessageListData.prototype = {
         });
     },
 
-    triage_messages: function (messages) {
+    add_messages: function (messages) {
         var self = this;
         var top_messages = [];
         var bottom_messages = [];
@@ -197,15 +197,37 @@ MessageListData.prototype = {
             });
         }
 
-        return {
+        // We return probably more info than our actual callers
+        // need, but this is useful for tests and not actually
+        // expensive.
+        var info = {
             top_messages: top_messages,
             bottom_messages: bottom_messages,
             interior_messages: interior_messages,
         };
+
+        if (interior_messages.length > 0) {
+            var all_messages = top_messages.concat(interior_messages).concat(bottom_messages);
+            self.add_anywhere(all_messages);
+            return info;
+        }
+
+        if (top_messages.length > 0) {
+            top_messages = self.prepend(top_messages);
+        }
+
+        if (bottom_messages.length > 0) {
+            bottom_messages = self.append(bottom_messages);
+        }
+
+        return info;
     },
 
-    add: function (messages) {
-        // Caller should have already filtered
+    add_anywhere: function (messages) {
+        // Caller should have already filtered messages.
+        // This should be used internally when we have
+        // "interior" messages to add and can't optimize
+        // things by only doing prepend or only doing append.
         var viewable_messages;
         if (this.muting_enabled) {
             this._all_items = messages.concat(this._all_items);

@@ -43,14 +43,16 @@ function stub_message_view(list) {
 function make_home_msg_list() {
     var table_name = 'whatever';
     var filter = new Filter();
-    var opts = {};
 
-    var list = new message_list.MessageList(table_name, filter, opts);
+    var list = new message_list.MessageList({
+        table_name: table_name,
+        filter: filter,
+    });
     return list;
 }
 
 function make_all_list() {
-    return new message_list.MessageList();
+    return new message_list.MessageList({});
 }
 
 function reset_lists() {
@@ -267,10 +269,10 @@ function simulate_narrow() {
         return 'operators-stub';
     };
 
-    var msg_list = new message_list.MessageList(
-        'zfilt',
-        filter
-    );
+    var msg_list = new message_list.MessageList({
+        table_name: 'zfilt',
+        filter: filter,
+    });
     set_global('current_msg_list', msg_list);
 
     return msg_list;
