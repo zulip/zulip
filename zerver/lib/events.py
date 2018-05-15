@@ -82,6 +82,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
             full_name=row['full_name'],
             timezone=row['timezone'],
             is_active = row['is_active'],
+            date_joined = row['date_joined'].isoformat(),
         )
         if not is_bot:
             result['profile_data'] = profiles_by_user_id.get(row['id'], {})

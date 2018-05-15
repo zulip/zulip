@@ -321,7 +321,9 @@ def user_profile_by_api_key_cache_key(api_key: str) -> str:
 realm_user_dict_fields = [
     'id', 'full_name', 'short_name', 'email',
     'avatar_source', 'avatar_version', 'is_active',
-    'is_realm_admin', 'is_bot', 'realm_id', 'timezone']  # type: List[str]
+    'is_realm_admin', 'is_bot', 'realm_id', 'timezone',
+    'date_joined'
+]  # type: List[str]
 
 def realm_user_dicts_cache_key(realm_id: int) -> str:
     return "realm_user_dicts:%s" % (realm_id,)
