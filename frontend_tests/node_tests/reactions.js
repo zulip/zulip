@@ -122,7 +122,7 @@ set_global('current_msg_list', {
     },
 });
 
-(function test_open_reactions_popover() {
+run_test('open_reactions_popover', () => {
     $('.selected-row').set_find_results('.actions_hover', $('.target-action'));
     $('.selected-row').set_find_results('.reaction_button', $('.target-reaction'));
 
@@ -147,9 +147,9 @@ set_global('current_msg_list', {
 
     assert(reactions.open_reactions_popover());
     assert(called);
-}());
+});
 
-(function test_basics() {
+run_test('basics', () => {
     var result = reactions.get_message_reactions(message);
 
     assert(reactions.current_user_has_reacted_to_emoji(message, '1f604', 'unicode_emoji'));
@@ -195,9 +195,9 @@ set_global('current_msg_list', {
         },
     ];
     assert.deepEqual(result, expected_result);
-}());
+});
 
-(function test_sending() {
+run_test('sending', () => {
     var message_id = 1001; // see above for setup
     var emoji_name = 'smile'; // should be a current reaction
 
@@ -278,9 +278,9 @@ set_global('current_msg_list', {
     global.blueslip.warn = orig_func;
     reactions.add_reaction = orig_add_reaction;
     reactions.remove_reaction = orig_remove_reaction;
-}());
+});
 
-(function test_set_reaction_count() {
+run_test('set_reaction_count', () => {
     var count_element = $.create('count-stub');
     var reaction_element = $.create('reaction-stub');
 
@@ -289,9 +289,9 @@ set_global('current_msg_list', {
     reactions.set_reaction_count(reaction_element, 5);
 
     assert.equal(count_element.text(), '5');
-}());
+});
 
-(function test_get_reaction_section() {
+run_test('get_reaction_section', () => {
     var message_table = $.create('.message_table');
     var message_row = $.create('some-message-row');
     var message_reactions = $.create('our-reactions-section');
@@ -302,9 +302,9 @@ set_global('current_msg_list', {
     var section = reactions.get_reaction_section(555);
 
     assert.equal(section, message_reactions);
-}());
+});
 
-(function test_add_and_remove_reaction() {
+run_test('add_and_remove_reaction', () => {
     // Insert 8ball for Alice.
     var alice_event = {
         message_id: 1001,
@@ -485,9 +485,9 @@ set_global('current_msg_list', {
     reactions.remove_reaction(alice_event);
     assert(!reaction_element.hasClass('reacted'));
 
-}());
+});
 
-(function test_with_view_stubs() {
+run_test('with_view_stubs', () => {
     // This function tests reaction events by mocking out calls to
     // the view.
 
@@ -646,9 +646,9 @@ set_global('current_msg_list', {
         ],
     });
 
-}());
+});
 
-(function test_error_handling() {
+run_test('error_handling', () => {
     var error_msg;
 
     global.message_store.get = function () {
@@ -681,9 +681,9 @@ set_global('current_msg_list', {
 
     reactions.remove_reaction(bogus_event);
     assert.equal(error_msg, undefined);
-}());
+});
 
-(function test_local_reaction_id() {
+run_test('local_reaction_id', () => {
     var reaction_info = {
         reaction_type: 'unicode_emoji',
         emoji_name: 'thumbs_up',
@@ -694,9 +694,9 @@ set_global('current_msg_list', {
 
     var reverse_info = reactions.get_reaction_info(local_id);
     assert.deepEqual(reverse_info, reaction_info);
-}());
+});
 
-(function test_process_reaction_click() {
+run_test('process_reaction_click', () => {
     var message_id = 1001;
     var expected_reaction_info = {
         reaction_type: 'unicode_emoji',
@@ -728,4 +728,4 @@ set_global('current_msg_list', {
         assert.equal(args.url, '/json/messages/1001/reactions');
         assert.deepEqual(args.data, expected_reaction_info);
     });
-}());
+});

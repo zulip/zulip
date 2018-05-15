@@ -38,7 +38,7 @@ set_global('ui_report', {
 
 server_events.home_view_loaded();
 
-(function test_message_event() {
+run_test('message_event', () => {
     var event = {
         type: 'message',
         message: {
@@ -57,9 +57,9 @@ server_events.home_view_loaded();
 
     server_events._get_events_success([event]);
     assert(inserted);
-}());
+});
 
-(function test_pointer_event() {
+run_test('pointer_event', () => {
     var event = {
         type: 'pointer',
         pointer: 999,
@@ -70,7 +70,7 @@ server_events.home_view_loaded();
     server_events._get_events_success([event]);
     assert.equal(global.pointer.furthest_read, event.pointer);
     assert.equal(global.pointer.server_furthest_read, event.pointer);
-}());
+});
 
 
 // Start blueslip tests here
@@ -100,7 +100,7 @@ var setup = function (results) {
     };
 };
 
-(function test_event_dispatch_error() {
+run_test('event_dispatch_error', () => {
     var results = {};
     setup(results);
 
@@ -117,10 +117,10 @@ var setup = function (results) {
     assert.equal(results.more_info.event.op , 'update');
     assert.equal(results.more_info.event.id , 1);
     assert.equal(results.more_info.other , undefined);
-}());
+});
 
 
-(function test_event_new_message_error() {
+run_test('event_new_message_error', () => {
     var results = {};
     setup(results);
 
@@ -134,9 +134,9 @@ var setup = function (results) {
     assert.equal(results.msg, 'Failed to insert new messages\n' +
                                'insert error');
     assert.equal(results.more_info, undefined);
-}());
+});
 
-(function test_event_edit_message_error() {
+run_test('event_edit_message_error', () => {
     var results = {};
     setup(results);
 
@@ -150,4 +150,4 @@ var setup = function (results) {
     assert.equal(results.msg, 'Failed to update messages\n' +
                               'update error');
     assert.equal(results.more_info, undefined);
-}());
+});

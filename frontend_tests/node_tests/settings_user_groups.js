@@ -38,7 +38,7 @@ function reset_test_setup(pill_container_stub) {
     });
 }
 
-(function test_can_edit() {
+run_test('can_edit', () => {
     var me = {
         is_admin: false,
     };
@@ -52,7 +52,7 @@ function reset_test_setup(pill_container_stub) {
         return false;
     };
     settings_user_groups.can_edit(1);
-}());
+});
 
 var user_group_selector = "#user-groups #1";
 var cancel_selector = "#user-groups #1 .cancel";
@@ -61,7 +61,7 @@ var name_selector = "#user-groups #1 .name";
 var description_selector = "#user-groups #1 .description";
 var instructions_selector = "#user-groups #1 .save-instructions";
 
-(function test_populate_user_groups() {
+run_test('populate_user_groups', () => {
     var realm_user_group = {
         id: 1,
         name: 'Mobile',
@@ -301,8 +301,8 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     assert.equal(typeof($('.organization form.admin-user-group-form').get_on_handler("submit")), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('click', '.delete')), 'function');
     assert.equal(typeof($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
-}());
-(function test_with_external_user() {
+});
+run_test('with_external_user', () => {
 
     var realm_user_group = {
         id: 1,
@@ -468,9 +468,9 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     assert.equal(turned_off['keydown/.pill'], true);
     assert.equal(turned_off['keydown/.input'], true);
     assert.equal(turned_off['click/whole'], true);
-}());
+});
 
-(function test_reload() {
+run_test('reload', () => {
     $('#user-groups').html('Some text');
     var populate_user_groups_called = false;
     settings_user_groups.populate_user_groups = function () {
@@ -479,15 +479,15 @@ var instructions_selector = "#user-groups #1 .save-instructions";
     settings_user_groups.reload();
     assert(populate_user_groups_called);
     assert.equal($('#user-groups').html(), '');
-}());
+});
 
-(function test_reset() {
+run_test('reset', () => {
     settings_user_groups.reset();
     var result = settings_user_groups.reload();
     assert.equal(result, undefined);
-}());
+});
 
-(function test_on_events() {
+run_test('on_events', () => {
 
     settings_user_groups.can_edit = function () {
         return true;
@@ -828,4 +828,4 @@ var instructions_selector = "#user-groups #1 .save-instructions";
         handler.call(fake_this, event);
         assert(api_endpoint_called);
     }());
-}());
+});

@@ -2,7 +2,7 @@ zrequire('emoji_codes', 'generated/emoji/emoji_codes');
 zrequire('emoji');
 zrequire('emoji_picker');
 
-(function test_initialize() {
+run_test('initialize', () => {
     emoji.update_emojis({});
     emoji_picker.initialize();
 
@@ -33,4 +33,4 @@ zrequire('emoji_picker');
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cutlery', 85);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cog', 1);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-soccer-ball-o', 67);
-}());
+});

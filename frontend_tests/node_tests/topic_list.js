@@ -14,7 +14,7 @@ zrequire('stream_data');
 zrequire('topic_data');
 zrequire('topic_list');
 
-(function test_topic_list_build_widget() {
+run_test('topic_list_build_widget', () => {
     var stream_id = 555;
 
     topic_data.reset();
@@ -100,4 +100,4 @@ zrequire('topic_list');
     assert.equal(list_items[1].html(), '<more topics>');
     assert(attached_to_parent);
 
-}());
+});

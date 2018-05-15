@@ -18,7 +18,7 @@ zrequire('settings_bots');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 
-(function test_generate_zuliprc_uri() {
+run_test('generate_zuliprc_uri', () => {
     var bot = {
         email: "error-bot@zulip.org",
         api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
@@ -31,9 +31,9 @@ zrequire('templates');
     );
 
     assert.equal(uri, expected);
-}());
+});
 
-(function test_generate_zuliprc_content() {
+run_test('generate_zuliprc_content', () => {
     var user = {
         email: "admin12@chatting.net",
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
@@ -44,9 +44,9 @@ zrequire('templates');
                    "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
-}());
+});
 
-(function test_generate_flaskbotrc_content() {
+run_test('generate_flaskbotrc_content', () => {
     var user = {
         email: "vabstest-bot@zulip.com",
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
@@ -57,7 +57,7 @@ zrequire('templates');
                    "site=https://chat.example.com\n";
 
     assert.equal(content, expected);
-}());
+});
 
 function test_create_bot_type_input_box_toggle(f) {
     var create_payload_url = $('#create_payload_url');
@@ -88,7 +88,7 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(!config_inputbox.visible());
 }
 
-(function test_set_up() {
+run_test('set_up', () => {
     // bunch of stubs
 
     $.validator = { addMethod: function () {} };
@@ -117,5 +117,5 @@ function test_create_bot_type_input_box_toggle(f) {
     settings_bots.setup_bot_creation_policy_values();
 
     settings_bots.set_up();
-}());
+});
 

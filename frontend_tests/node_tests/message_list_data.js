@@ -23,7 +23,7 @@ function make_msgs(msg_ids) {
     return _.map(msg_ids, make_msg);
 }
 
-(function test_basics() {
+run_test('basics', () => {
     const mld = new MessageListData({
         muting_enabled: false,
         filter: undefined,
@@ -102,12 +102,12 @@ function make_msgs(msg_ids) {
     });
 
     assert.equal(mld.first_unread_message_id(), 145);
-}());
+});
 
-(function test_errors() {
+run_test('errors', () => {
     const mld = new MessageListData({
         muting_enabled: false,
         filter: undefined,
     });
     assert.equal(mld.get('bogus-id'), undefined);
-}());
+});

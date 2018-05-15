@@ -53,7 +53,7 @@ function initialize() {
 
 initialize();
 
-(function test_updates() {
+run_test('updates', () => {
     var person;
 
     var isaac = {
@@ -141,4 +141,4 @@ initialize();
     user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value'}});
     person = people.get_by_email(me.email);
     assert.equal(person.profile_data[3], 'Value');
-}());
+});

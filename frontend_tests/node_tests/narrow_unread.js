@@ -38,7 +38,7 @@ function candidate_ids() {
     return narrow_state._possible_unread_message_ids();
 }
 
-(function test_get_unread_ids() {
+run_test('get_unread_ids', () => {
     var unread_ids;
     var terms;
 
@@ -194,4 +194,4 @@ function candidate_ids() {
     assert_unread_info({
         flavor: 'cannot_compute',
     });
-}());
+});

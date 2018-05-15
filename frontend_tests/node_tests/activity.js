@@ -140,21 +140,21 @@ presence_info[jill.user_id] = { status: 'active' };
 
 presence.presence_info = presence_info;
 
-(function test_get_status() {
+run_test('get_status', () => {
     assert.equal(presence.get_status(page_params.user_id), "active");
     assert.equal(presence.get_status(alice.user_id), "inactive");
     assert.equal(presence.get_status(fred.user_id), "active");
     assert.equal(presence.get_status(zoe.user_id), "offline");
-}());
+});
 
-(function test_reload_defaults() {
+run_test('reload_defaults', () => {
     blueslip.set_test_data('warn', 'get_filter_text() is called before initialization');
     assert.equal(activity.get_filter_text(), '');
     assert(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_sort_users() {
+run_test('sort_users', () => {
     const user_ids = [alice.user_id, fred.user_id, jill.user_id];
 
     buddy_data.sort_users(user_ids);
@@ -164,9 +164,9 @@ presence.presence_info = presence_info;
         jill.user_id,
         alice.user_id,
     ]);
-}());
+});
 
-(function test_process_loaded_messages() {
+run_test('process_loaded_messages', () => {
 
     const huddle1 = 'jill@zulip.com,norbert@zulip.com';
     const timestamp1 = 1382479029; // older
@@ -206,9 +206,9 @@ presence.presence_info = presence_info;
     const user_ids_string1 = people.emails_strings_to_user_ids_string(huddle1);
     const user_ids_string2 = people.emails_strings_to_user_ids_string(huddle2);
     assert.deepEqual(activity.get_huddles(), [user_ids_string2, user_ids_string1]);
-}());
+});
 
-(function test_full_huddle_name() {
+run_test('full_huddle_name', () => {
     function full_name(emails_string) {
         const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
         return activity.full_huddle_name(user_ids_string);
@@ -221,9 +221,9 @@ presence.presence_info = presence_info;
     assert.equal(
         full_name('alice@zulip.com,fred@zulip.com,jill@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill');
-}());
+});
 
-(function test_short_huddle_name() {
+run_test('short_huddle_name', () => {
     function short_name(emails_string) {
         const user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
         return activity.short_huddle_name(user_ids_string);
@@ -249,9 +249,9 @@ presence.presence_info = presence_info;
         short_name('alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com,norbert@zulip.com'),
         'Alice Smith, Fred Flintstone, Jill Hill, + 2 others');
 
-}());
+});
 
-(function test_huddle_fraction_present() {
+run_test('huddle_fraction_present', () => {
     let huddle = 'alice@zulip.com,fred@zulip.com,jill@zulip.com,mark@zulip.com';
     huddle = people.emails_strings_to_user_ids_string(huddle);
 
@@ -278,7 +278,7 @@ presence.presence_info = presence_info;
     assert.equal(
         activity.huddle_fraction_present(huddle),
         false);
-}());
+});
 
 presence.presence_info = {};
 presence.presence_info[alice.user_id] = { status: activity.IDLE };
@@ -301,7 +301,7 @@ function reset_setup() {
 
 reset_setup();
 
-(function test_presence_list_full_update() {
+run_test('presence_list_full_update', () => {
     $('.user-list-filter').focus();
     compose_state.recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
@@ -363,7 +363,7 @@ reset_setup();
             faded: true,
         },
     ]);
-}());
+});
 
 function simulate_right_column_buddy_list() {
     $('.user-list-filter').closest = function (selector) {
@@ -401,7 +401,7 @@ function buddy_list_add(user_id, stub) {
     $('#user_presences').set_find_results(sel, stub);
 }
 
-(function test_PM_update_dom_counts() {
+run_test('PM_update_dom_counts', () => {
     const value = $.create('alice-value');
     const count = $.create('alice-count');
     const pm_key = alice.user_id.toString();
@@ -424,9 +424,9 @@ function buddy_list_add(user_id, stub) {
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(!li.hasClass('user-with-count'));
     assert.equal(value.text(), '');
-}());
+});
 
-(function test_group_update_dom_counts() {
+run_test('group_update_dom_counts', () => {
     const value = $.create('alice-fred-value');
     const count = $.create('alice-fred-count');
     const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
@@ -449,11 +449,11 @@ function buddy_list_add(user_id, stub) {
     activity.update_dom_with_unread_counts({pm_count: counts});
     assert(!li.hasClass('group-with-count'));
     assert.equal(value.text(), '');
-}());
+});
 
 reset_setup();
 
-(function test_handlers() {
+run_test('handlers', () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
 
@@ -541,7 +541,7 @@ reset_setup();
         const handler = $('.user-list-filter').get_on_handler('blur');
         handler(e);
     }());
-}());
+});
 
 presence.presence_info = {};
 presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
@@ -553,7 +553,7 @@ presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 
 reset_setup();
 
-(function test_filter_user_ids() {
+run_test('filter_user_ids', () => {
     const user_filter = $('.user-list-filter');
     user_filter.val(''); // no search filter
 
@@ -598,9 +598,9 @@ reset_setup();
     presence.presence_info[alice.user_id] = { status: activity.ACTIVE };
     user_ids = get_user_ids();
     assert.deepEqual(user_ids, [alice.user_id, fred.user_id]);
-}());
+});
 
-(function test_insert_one_user_into_empty_list() {
+run_test('insert_one_user_into_empty_list', () => {
     const alice_li = $.create('alice list item');
 
     let appended_html;
@@ -622,11 +622,11 @@ reset_setup();
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
     assert(removed);
-}());
+});
 
 reset_setup();
 
-(function test_insert_fred_after_alice() {
+run_test('insert_fred_after_alice', () => {
     const alice_li = $.create('alice list item');
     const fred_li = $.create('fred list item');
 
@@ -653,11 +653,11 @@ reset_setup();
     assert(appended_html.indexOf('data-user-id="2"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
     assert(removed);
-}());
+});
 
 reset_setup();
 
-(function test_insert_fred_before_jill() {
+run_test('insert_fred_before_jill', () => {
     const fred_li = $.create('fred-li');
     const jill_li = $.create('jill-li');
 
@@ -684,21 +684,21 @@ reset_setup();
     assert(before_html.indexOf('data-user-id="2"') > 0);
     assert(before_html.indexOf('user_active') > 0);
     assert(removed);
-}());
+});
 
 // Reset jquery here.
 reset_setup();
 
-(function test_insert_unfiltered_user_with_filter() {
+run_test('insert_unfiltered_user_with_filter', () => {
     // This test only tests that we do not explode when
     // try to insert Fred into a list where he does not
     // match the search filter.
     const user_filter = $('.user-list-filter');
     user_filter.val('do-not-match-filter');
     activity.insert_user_into_list(fred.user_id);
-}());
+});
 
-(function test_realm_presence_disabled() {
+run_test('realm_presence_disabled', () => {
     page_params.realm_presence_disabled = true;
     unread.suppress_unread_counts = false;
 
@@ -706,7 +706,7 @@ reset_setup();
     activity.build_user_sidebar();
 
     real_update_huddles();
-}());
+});
 
 // Mock the jquery is func
 $('.user-list-filter').is = function (sel) {
@@ -719,21 +719,21 @@ $('.user-list-filter').parent = function () {
     return $('#user-list .input-append');
 };
 
-(function test_clear_search() {
+run_test('clear_search', () => {
     $('.user-list-filter').val('somevalue');
     activity.user_filter.clear_search();
     assert.equal($('.user-list-filter').val(), '');
     activity.user_filter.clear_search();
     assert($('#user-list .input-append').hasClass('notdisplayed'));
-}());
+});
 
-(function test_escape_search() {
+run_test('escape_search', () => {
     $('.user-list-filter').val('somevalue');
     activity.escape_search();
     assert.equal($('.user-list-filter').val(), '');
     activity.escape_search();
     assert($('#user-list .input-append').hasClass('notdisplayed'));
-}());
+});
 
 reset_setup();
 
@@ -742,7 +742,7 @@ reset_setup();
     simulate_list_items([alice_li]);
 }());
 
-(function test_initiate_search() {
+run_test('initiate_search', () => {
     $('.user-list-filter').blur();
     simulate_right_column_buddy_list();
     activity.initiate_search();
@@ -753,9 +753,9 @@ reset_setup();
     activity.initiate_search();
     assert.equal($('.column-left').hasClass('expanded'), true);
     assert.equal($('.user-list-filter').is_focused(), true);
-}());
+});
 
-(function test_toggle_filter_display() {
+run_test('toggle_filter_display', () => {
     activity.user_filter.toggle_filter_displayed();
     assert($('#user-list .input-append').hasClass('notdisplayed'));
     $('.user-list-filter').closest = function (selector) {
@@ -764,16 +764,16 @@ reset_setup();
     };
     activity.user_filter.toggle_filter_displayed();
     assert.equal($('#user-list .input-append').hasClass('notdisplayed'), false);
-}());
+});
 
-(function test_searching() {
+run_test('searching', () => {
     $('.user-list-filter').focus();
     assert.equal(activity.searching(), true);
     $('.user-list-filter').blur();
     assert.equal(activity.searching(), false);
-}());
+});
 
-(function test_update_huddles_and_redraw() {
+run_test('update_huddles_and_redraw', () => {
     const value = $.create('alice-fred-value');
     const count = $.create('alice-fred-count');
     const pm_key = alice.user_id.toString() + "," + fred.user_id.toString();
@@ -796,11 +796,11 @@ reset_setup();
     assert.equal($('#group-pm-list').hasClass('show'), false);
     activity.get_huddles = real_get_huddles;
     activity.update_huddles = function () {};
-}());
+});
 
 reset_setup();
 
-(function test_set_user_status() {
+run_test('set_user_status', () => {
     const server_time = 500;
     const info = {
         website: {
@@ -837,9 +837,9 @@ reset_setup();
     assert(blueslip.get_test_logs('warn').length, 1);
     assert(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
-}());
+});
 
-(function test_initialize() {
+run_test('initialize', () => {
     $.stub_selector('html', {
         on: function (name, func) {
             func();
@@ -880,4 +880,4 @@ reset_setup();
         return true;
     };
     activity.initialize();
-}());
+});

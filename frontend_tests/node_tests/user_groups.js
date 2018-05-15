@@ -4,7 +4,7 @@ set_global('page_params', {});
 zrequire('dict');
 zrequire('user_groups');
 
-(function test_user_groups() {
+run_test('user_groups', () => {
     var students = {
         name: 'Students',
         id: 0,
@@ -92,4 +92,4 @@ zrequire('user_groups');
 
     user_groups.init();
     assert.equal(user_groups.get_realm_user_groups().length, 0);
-}());
+});

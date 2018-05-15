@@ -14,7 +14,7 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
-(function test_stream_topic() {
+run_test('stream_topic', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
 
     set_global('current_msg_list', {
@@ -43,9 +43,9 @@ function set_filter(operators) {
         topic: 'Topic1',
     });
 
-}());
+});
 
-(function test_uris() {
+run_test('uris', () => {
     var ray = {
         email: 'ray@example.com',
         user_id: 22,
@@ -71,9 +71,9 @@ function set_filter(operators) {
 
     var emails = global.hash_util.decode_operand('pm-with', '22,23-group');
     assert.equal(emails, 'alice@example.com,ray@example.com');
-}());
+});
 
-(function test_show_empty_narrow_message() {
+run_test('show_empty_narrow_message', () => {
 
     var hide_id;
     var show_id;
@@ -151,4 +151,4 @@ function set_filter(operators) {
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_search_narrow_message');
-}());
+});
