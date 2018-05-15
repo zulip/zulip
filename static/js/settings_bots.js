@@ -335,9 +335,9 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "button.regenerate_bot_api_key", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var bot_id = $(e.currentTarget).attr('data-user-id');
         channel.post({
-            url: '/json/bots/' + encodeURIComponent(email) + '/api_key/regenerate',
+            url: '/json/bots/' + encodeURIComponent(bot_id) + '/api_key/regenerate',
             idempotent: true,
             success: function (data) {
                 var row = $(e.currentTarget).closest("li");

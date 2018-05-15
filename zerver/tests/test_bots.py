@@ -527,7 +527,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('othello'))
         email = 'hambot-bot@zulip.testserver'
 
-        result = self.client_post("/json/bots/hambot-bot@zulip.testserver/api_key/regenerate")
+        result = self.client_post("/json/bots/{}/api_key/regenerate".format(self.get_bot_user(email).id))
         self.assert_json_error(result, 'Insufficient permission')
 
         bot_info = {
@@ -546,7 +546,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.create_bot()
         bot = self.get_bot()
         old_api_key = bot['api_key']
-        result = self.client_post('/json/bots/hambot-bot@zulip.testserver/api_key/regenerate')
+        email = 'hambot-bot@zulip.testserver'
+        result = self.client_post('/json/bots/{}/api_key/regenerate'.format(self.get_bot_user(email).id))
         self.assert_json_success(result)
         new_api_key = result.json()['api_key']
         self.assertNotEqual(old_api_key, new_api_key)
@@ -555,7 +556,8 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
     def test_update_api_key_for_invalid_user(self) -> None:
         self.login(self.example_email('hamlet'))
-        result = self.client_post('/json/bots/nonexistentuser@zulip.com/api_key/regenerate')
+        invalid_user_id = 1000
+        result = self.client_post('/json/bots/{}/api_key/regenerate'.format(invalid_user_id))
         self.assert_json_error(result, 'No such user')
 
     def test_add_bot_with_bot_type_default(self) -> None:
