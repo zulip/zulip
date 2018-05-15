@@ -173,7 +173,7 @@ exports.switchToFullWidth = function () {
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
 
-$(function () {
+exports.set_compose_textarea_handlers = function () {
     $('#compose-textarea').blur(function () {
         saved_compose_cursor = $(this).caret();
     });
@@ -183,7 +183,7 @@ $(function () {
     $("body").on(animationEnd, ".fade-in-message", function () {
         $(this).removeClass("fade-in-message");
     });
-});
+};
 
 exports.restore_compose_cursor = function () {
     $('#compose-textarea')
@@ -191,7 +191,7 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor);
 };
 
-$(function () {
+exports.do_stuff_for_desktop_app = function () {
     if (window.bridge !== undefined) {
         // Disable "spellchecking" in our desktop app. The "spellchecking"
         // in our Mac app is actually autocorrect, and frustrates our
@@ -203,9 +203,13 @@ $(function () {
         $("#normal-zephyr-mirror-error-text").addClass("notdisplayed");
         $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
     }
-});
+};
 
 exports.initialize = function () {
+    exports.set_compose_textarea_handlers();
+
+    exports.do_stuff_for_desktop_app();
+
     exports.show_error_for_unsupported_platform();
 
     if (page_params.night_mode) {
