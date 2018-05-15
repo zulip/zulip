@@ -2,11 +2,9 @@
 class zulip::postgres_appdb_base {
   include zulip::postgres_common
   include zulip::supervisor
+  include zulip::process_fts_updates
 
   $appdb_packages = [
-    # Needed to run process_fts_updates
-    'python3-psycopg2', # TODO: use a virtualenv instead
-    'python-psycopg2', # TODO: use a virtualenv instead
     # Needed for our full text search system
     "postgresql-${zulip::base::postgres_version}-tsearch-extras",
   ]
@@ -15,24 +13,6 @@ class zulip::postgres_appdb_base {
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':
     ensure => absent,
-  }
-
-  file { '/usr/local/bin/process_fts_updates':
-    ensure => file,
-    owner  => 'root',
-    group  => 'root',
-    mode   => '0755',
-    source => 'puppet:///modules/zulip/postgresql/process_fts_updates',
-  }
-
-  file { '/etc/supervisor/conf.d/zulip_db.conf':
-    ensure  => file,
-    require => Package[supervisor],
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
-    source  => 'puppet:///modules/zulip/supervisor/conf.d/zulip_db.conf',
-    notify  => Service[supervisor],
   }
 
   file { "/usr/share/postgresql/${zulip::base::postgres_version}/tsearch_data/en_us.dict":
