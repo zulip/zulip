@@ -232,21 +232,27 @@ exports.send_message = function send_message(request) {
     var local_id;
     var locally_echoed;
 
-    local_id = echo.try_deliver_locally(request);
-    if (local_id) {
-        // We are rendering this message locally with an id
-        // like 92l99.01 that corresponds to a reasonable
-        // approximation of the id we'll get from the server
-        // in terms of sorting messages.
-        locally_echoed = true;
-    } else {
+    if (request.autosubscribe) {
         // We are not rendering this message locally, but we
         // track the message's life cycle with an id like
         // loc-1, loc-2, loc-3,etc.
         locally_echoed = false;
         local_id = sent_messages.get_new_local_id();
+    } else {
+        local_id = echo.try_deliver_locally(request);
+        if (local_id) {
+            // We are rendering this message locally with an id
+            // like 92l99.01 that corresponds to a reasonable
+            // approximation of the id we'll get from the server
+            // in terms of sorting messages.
+            locally_echoed = true;
+        } else {
+            // Again, we are not rendering the message locally,
+            // but we track its life cycle.
+            locally_echoed = false;
+            local_id = sent_messages.get_new_local_id();
+        }
     }
-
     request.local_id = local_id;
 
     sent_messages.start_tracking_message({
@@ -394,12 +400,14 @@ exports.finish = function () {
     if (! compose.validate()) {
         return false;
     }
+    var request = create_message_object();
+    request.autosubscribe = page_params.narrow_stream !== undefined;
 
     var message_content = compose_state.message_content();
     if (is_deferred_delivery(message_content)) {
-        exports.schedule_message();
+        exports.schedule_message(request);
     } else {
-        exports.send_message();
+        exports.send_message(request);
     }
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
@@ -426,42 +434,6 @@ exports.get_invalid_recipient_emails = function () {
 
     return invalid_recipients;
 };
-
-function check_unsubscribed_stream_for_send(stream_name, autosubscribe) {
-    var stream_obj = stream_data.get_sub(stream_name);
-    var result;
-    if (!stream_obj) {
-        return "does-not-exist";
-    }
-    if (!autosubscribe) {
-        return "not-subscribed";
-    }
-
-    // In the rare circumstance of the autosubscribe option, we
-    // *Synchronously* try to subscribe to the stream before sending
-    // the message.  This is deprecated and we hope to remove it; see
-    // #4650.
-    channel.post({
-        url: "/json/subscriptions/exists",
-        data: {stream: stream_name, autosubscribe: true},
-        async: false,
-        success: function (data) {
-            if (data.subscribed) {
-                result = "subscribed";
-            } else {
-                result = "not-subscribed";
-            }
-        },
-        error: function (xhr) {
-            if (xhr.status === 404) {
-                result = "does-not-exist";
-            } else {
-                result = "error";
-            }
-        },
-    });
-    return result;
-}
 
 function validate_stream_message_mentions(stream_name) {
     var stream_count = stream_data.get_subscriber_count(stream_name) || 0;
@@ -511,7 +483,7 @@ function validate_stream_message_announce(stream_name) {
     return true;
 }
 
-exports.validation_error = function (error_type, stream_name) {
+exports.report_validation_error = function (error_type, stream_name) {
     var response;
 
     var context = {};
@@ -537,9 +509,17 @@ exports.validate_stream_message_address_info = function (stream_name) {
     if (stream_data.is_subscribed(stream_name)) {
         return true;
     }
+    var stream_obj = stream_data.get_sub(stream_name);
+    if (!stream_obj) {
+        exports.report_validation_error("does-not-exist", stream_name);
+        return false;
+    }
     var autosubscribe = page_params.narrow_stream !== undefined;
-    var error_type = check_unsubscribed_stream_for_send(stream_name, autosubscribe);
-    return exports.validation_error(error_type, stream_name);
+    if (!autosubscribe) {
+        exports.report_validation_error("not-subscribed", stream_name);
+        return false;
+    }
+    return true;
 };
 
 function validate_stream_message() {

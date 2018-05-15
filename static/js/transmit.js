@@ -16,6 +16,10 @@ $(function () {
 function send_message_socket(request, success, error) {
     request.socket_user_agent = navigator.userAgent;
     socket.send(request, success, function (type, resp) {
+        if (request.autosubscribe) {
+            exports.report_validation_error(resp.error_type, request.stream);
+            return;
+        }
         var err_msg = "Error sending message";
         if (type === 'response') {
             err_msg += ": " + resp.msg;
@@ -39,7 +43,11 @@ function send_message_ajax(request, success, error) {
                                  send_after_reload: true});
                 return;
             }
-
+            if (request.autosubscribe) {
+                error_type = xhr.responseJSON.error_type;
+                exports.report_validation_error(error_type, request.stream);
+                return;
+            }
             var response = channel.xhr_error_message("Error sending message", xhr);
             error(response);
         },

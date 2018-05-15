@@ -1091,20 +1091,56 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
-        self.assert_json_error(result, "Stream 'nonexistent_stream' does not exist")
+        self.assert_json_error(result, "Invalid stream name 'nonexistent_stream'")
+        self.assertEqual(result.json().get("error_type"), "does-not-exist")
 
     def test_message_to_nonexistent_stream_with_bad_characters(self) -> None:
         """
         Nonexistent stream name with bad characters should be escaped properly.
         """
         self.login(self.example_email("hamlet"))
-        self.assertFalse(Stream.objects.filter(name="""&<"'><non-existent>"""))
+        name = """&<"'><non-existent>"""
+        self.assertFalse(Stream.objects.filter(name=name))
         result = self.client_post("/json/messages", {"type": "stream",
                                                      "to": """&<"'><non-existent>""",
                                                      "client": "test suite",
                                                      "content": "Test message",
                                                      "subject": "Test subject"})
-        self.assert_json_error(result, "Stream '&amp;&lt;&quot;&#39;&gt;&lt;non-existent&gt;' does not exist")
+        self.assert_json_error(result, "Invalid stream name '%s'" % (name,))
+        self.assertEqual(result.json().get("error_type"), "does-not-exist")
+
+    def test_message_user_is_not_subscribed_autosubscribe_is_false(self) -> None:
+        """
+        If user is not subscribed and autosubscribe=false, return an error.
+        """
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        stream_name = "Rome"
+        self.unsubscribe(user_profile, stream_name)
+        result = self.api_post(email, "/json/messages", {"type": "stream",
+                                                         "to": stream_name,
+                                                         "client": "test suite",
+                                                         "subject": "Test message",
+                                                         "content": "Test subject",
+                                                         "autosubscribe": "false"})
+        self.assert_json_error(result, "User not subscribed to this stream")
+        self.assertEqual(result.json().get("error_type"), "not-subscribed")
+
+    def test_message_user_is_not_subscribed_autosubscribe_is_true(self) -> None:
+        """
+        If user is not subscribed and autosubscribe=true, subscribe them.
+        """
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        stream_name = "Rome"
+        self.unsubscribe(user_profile, stream_name)
+        result = self.api_post(email, "/json/messages", {"type": "stream",
+                                                         "to": stream_name,
+                                                         "client": "test suite",
+                                                         "subject": "Test message",
+                                                         "content": "Test subject",
+                                                         "autosubscribe": "true"})
+        self.assert_json_success(result)
 
     def test_personal_message(self) -> None:
         """

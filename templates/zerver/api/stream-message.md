@@ -102,6 +102,6 @@ A typical successful JSON response may look like:
 
 {generate_code_example|stream-message|fixture}
 
-A typical failed JSON response for when the target stream does not exist:
+A typical failed JSON response for when the target stream is invalid:
 
-{generate_code_example|nonexistent-stream-error|fixture}
+{generate_code_example|invalid-stream-error|fixture}
