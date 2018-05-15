@@ -5,7 +5,7 @@ var exports = {};
 
 // You won't find every click handler here, but it's a good place to start!
 
-$(function () {
+exports.initialize = function () {
 
     // MOUSE MOVING VS DRAGGING FOR SELECTION DATA TRACKING
 
@@ -752,7 +752,7 @@ $(function () {
 
         $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
     });
-});
+};
 
 return exports;
 

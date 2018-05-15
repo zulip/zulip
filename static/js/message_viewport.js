@@ -391,7 +391,7 @@ exports.keep_pointer_in_view = function () {
     current_msg_list.select_id(rows.id(next_row), {from_scroll: true});
 };
 
-$(function () {
+exports.initialize = function () {
     jwindow = $(window);
     exports.message_pane = $(".app");
     // This handler must be placed before all resize handlers in our application
@@ -405,7 +405,7 @@ $(function () {
     $(document).on('compose_started compose_canceled compose_finished', function () {
         bottom_of_feed.reset();
     });
-});
+};
 
 return exports;
 }());

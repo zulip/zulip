@@ -137,7 +137,7 @@ exports.sidebar_popover_colorpicker_options_full = {
 };
 
 var lightness_threshold;
-$(function () {
+exports.initialize = function () {
     // sRGB color component for dark label text.
     // 0x33 to match the color #333333 set by Bootstrap.
     var label_color = 0x33;
@@ -146,7 +146,7 @@ $(function () {
 
     // Compute midpoint lightness between that and white (100).
     lightness_threshold = (lightness + 100) / 2;
-});
+};
 
 // From a background color (in format "#fff" or "#ffffff")
 // pick a CSS class (or empty string) to determine the

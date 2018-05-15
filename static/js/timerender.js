@@ -105,9 +105,9 @@ var update_list = [];
 // The time at the beginning of the next day, when the timestamps are updated.
 // Represented as an XDate with hour, minute, second, millisecond 0.
 var next_update;
-$(function () {
+exports.initialize = function () {
     next_update = set_to_start_of_day(new XDate()).addDays(1);
-});
+};
 
 // time_above is an optional argument, to support dates that look like:
 // --- ▲ Yesterday ▲ ------ ▼ Today ▼ ---

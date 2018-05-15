@@ -25,6 +25,8 @@
         "page_params": false,
         "attachments_ui": false,
         "csrf_token": false,
+        "copy_and_paste": false,
+        "click_handlers": false,
         "typeahead_helper": false,
         "pygments_data": false,
         "popovers": false,
