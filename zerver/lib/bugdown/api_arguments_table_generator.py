@@ -102,7 +102,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             table.append(tr.format(
                 argument=argument['argument'],
                 example=argument['example'],
-                required=argument['required'],
+                required='Yes' if argument.get('required') else 'No',
                 description=md_engine.convert(argument['description']),
             ))
 
