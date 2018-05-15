@@ -5,7 +5,6 @@ import XHR from 'i18next-xhr-backend';
 import LngDetector from 'i18next-browser-languagedetector';
 import Cache from 'i18next-localstorage-cache';
 import localstorage from './localstorage';
-import _ from 'underscore';
 
 window.i18n = i18next;
 
@@ -53,9 +52,7 @@ i18next.use(XHR)
         }
     });
 
-_.each(JSON.parse(page_params.translation_data, key => {
-    i18next.addResources(key, null, page_params.translation_data[key]);
-}));
+i18next.addResources(page_params.default_language, 'translation', page_params.translation_data);
 
 i18next.ensure_i18n = function (callback) {
     callback();

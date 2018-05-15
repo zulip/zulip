@@ -169,7 +169,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # Set default language and make it persist
     default_language = register_ret['default_language']
     url_lang = '/{}'.format(request.LANGUAGE_CODE)
-    translation_data = {}
+
     if not request.path.startswith(url_lang):
         translation.activate(default_language)
         request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
@@ -178,7 +178,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     translation_file = 'static/locale/' + language_key + '/translations.json'
     try:
         with open(translation_file) as json_data:
-            translation_data[language_key] = json.load(json_data)
+            translation_data = json.load(json_data)
     except FileNotFoundError:
         print('Translations file {0} was not found'.format(translation_file))
         translation_data = ''
