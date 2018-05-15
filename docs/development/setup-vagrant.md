@@ -597,8 +597,9 @@ which can help you optimize your development workflow).
 ### Troubleshooting and Common Errors
 
 Below you'll find a list of common errors and their solutions.  Most
-issues are resolved by just provisioning again (by running `./tools/provision`
-inside the Vagrant guest or equivalently `vagrant provision` from outside).
+issues are resolved by just provisioning again (by running
+`./tools/provision` (from `/srv/zulip`) inside the Vagrant guest or
+equivalently `vagrant provision` from outside).
 
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
