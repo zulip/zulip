@@ -15,13 +15,13 @@ class AbstractEnum(Enum):
     # Override all the `Enum` methods that use `_value_`.
 
     def __repr__(self) -> str:
-        return str(self)
+        return str(self)  # nocoverage
 
     def value(self) -> None:
-        assert False
+        raise AssertionError("Not implemented")
 
     def __reduce_ex__(self, proto: int) -> None:
-        assert False
+        raise AssertionError("Not implemented")
 
 class ErrorCode(AbstractEnum):
     BAD_REQUEST = ()  # Generic name, from the name of HTTP 400.
