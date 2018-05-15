@@ -386,7 +386,7 @@ exports.set_up = function () {
                 errors.hide();
             },
             submitHandler: function () {
-                var bot_id = form.attr('data-bot_id');
+                var bot_id = form.attr('data-user-id');
                 var email = form.attr('data-email');
                 var type = form.attr('data-type');
 
