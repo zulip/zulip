@@ -2259,10 +2259,6 @@ def get_subscribers_query(stream: Stream, requesting_user: Optional[UserProfile]
     )
     return subscriptions
 
-def get_subscribers(stream: Stream,
-                    requesting_user: Optional[UserProfile]=None) -> List[UserProfile]:
-    subscriptions = get_subscribers_query(stream, requesting_user).select_related()
-    return [subscription.user_profile for subscription in subscriptions]
 
 def get_subscriber_emails(stream: Stream,
                           requesting_user: Optional[UserProfile]=None) -> List[str]:
@@ -2270,15 +2266,6 @@ def get_subscriber_emails(stream: Stream,
     subscriptions = subscriptions_query.values('user_profile__email')
     return [subscription['user_profile__email'] for subscription in subscriptions]
 
-def maybe_get_subscriber_emails(stream: Stream, user_profile: UserProfile) -> List[str]:
-    """ Alternate version of get_subscriber_emails that takes a Stream object only
-    (not a name), and simply returns an empty list if unable to get a real
-    subscriber list (because we're on the MIT realm). """
-    try:
-        subscribers = get_subscriber_emails(stream, requesting_user=user_profile)
-    except JsonableError:
-        subscribers = []
-    return subscribers
 
 def notify_subscriptions_added(user_profile: UserProfile,
                                sub_pairs: Iterable[Tuple[Subscription, Stream]],
@@ -2702,13 +2689,8 @@ def do_change_subscription_property(user_profile: UserProfile, sub: Subscription
                  name=stream.name)
     send_event(event, [user_profile.id])
 
-def do_change_password(user_profile: UserProfile, password: str, commit: bool=True,
-                       hashed_password: bool=False) -> None:
-    if hashed_password:
-        # This is a hashed password, not the password itself.
-        user_profile.set_password(password)
-    else:
-        user_profile.set_password(password)
+def do_change_password(user_profile: UserProfile, password: str, commit: bool=True) -> None:
+    user_profile.set_password(password)
     if commit:
         user_profile.save(update_fields=["password"])
     event_time = timezone_now()
@@ -3045,9 +3027,7 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     )
     send_event(event, can_access_stream_user_ids(stream))
 
-def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None,
-                    invite_required: Optional[bool]=None, org_type: Optional[int]=None
-                    ) -> Realm:
+def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None) -> Realm:
     existing_realm = get_realm(string_id)
     if existing_realm is not None:
         raise AssertionError("Realm %s already exists!" % (string_id,))
@@ -3055,10 +3035,6 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     kwargs = {}  # type: Dict[str, Any]
     if restricted_to_domain is not None:
         kwargs['restricted_to_domain'] = restricted_to_domain
-    if invite_required is not None:
-        kwargs['invite_required'] = invite_required
-    if org_type is not None:
-        kwargs['org_type'] = org_type
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -3076,9 +3052,7 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     # Log the event
     log_event({"type": "realm_created",
                "string_id": string_id,
-               "restricted_to_domain": restricted_to_domain,
-               "invite_required": invite_required,
-               "org_type": org_type})
+               "restricted_to_domain": restricted_to_domain})
 
     # Send a notification to the admin realm (if configured)
     if settings.NOTIFICATION_BOT is not None:
