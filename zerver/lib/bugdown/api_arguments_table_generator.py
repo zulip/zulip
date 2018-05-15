@@ -44,7 +44,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                         json_filename = os.path.normpath(os.path.join(self.base_path, json_filename))
                     try:
                         with open(json_filename, 'r') as fp:
-                            json_obj = ujson.loads(fp.read())
+                            json_obj = ujson.load(fp)
                             arguments = json_obj[doc_filename]
                             text = self.render_table(arguments)
                     except Exception as e:
