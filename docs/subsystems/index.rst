@@ -33,7 +33,7 @@ Subsystems Documentation
    guest-users
    release-checklist
    api-release-checklist
-   swagger-api-docs
+   openapi-api-docs
    documentation
    conversion
    input-pills

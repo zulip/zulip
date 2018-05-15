@@ -4,7 +4,7 @@
 #
 # Our own documentation lives at
 #
-#   https://zulip.readthedocs.io/en/latest/subsystems/swagger-api-docs.html
+#   https://zulip.readthedocs.io/en/latest/subsystems/openapi-api-docs.html
 #
 
 openapi: 3.0.1
