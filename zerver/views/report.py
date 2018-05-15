@@ -23,7 +23,7 @@ import os
 import logging
 import ujson
 
-js_source_map = None
+js_source_map = None  # type: Optional[SourceMap]
 
 # Read the source map information for decoding JavaScript backtraces.
 def get_js_source_map() -> Optional[SourceMap]:
