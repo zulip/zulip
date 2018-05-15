@@ -282,7 +282,7 @@ function process_notification(notification) {
         content += " [...]";
     }
 
-    if (window.bridge === undefined && notice_memory[key] !== undefined) {
+    if (notice_memory[key] !== undefined) {
         msg_count = notice_memory[key].msg_count + 1;
         title = msg_count + " messages from " + title;
         notification_object = notice_memory[key].obj;
@@ -315,7 +315,7 @@ function process_notification(notification) {
         ];
     }
 
-    if (window.bridge === undefined && notification.webkit_notify === true) {
+    if (notification.webkit_notify === true) {
         var icon_url = people.small_avatar_url(message);
         notice_memory[key] = {
             obj: notifications_api.createNotification(icon_url, title, content, message.id),
@@ -588,15 +588,6 @@ exports.clear_compose_notifications = function () {
     $('#out-of-view-notification').stop(true, true);
     $('#out-of-view-notification').hide();
 };
-
-$(function () {
-    // Shim for Cocoa WebScript exporting top-level JS
-    // objects instead of window.foo objects
-    if (typeof(bridge) !== 'undefined' && window.bridge === undefined) {
-        window.bridge = bridge;
-    }
-
-});
 
 exports.reify_message_id = function (opts) {
     var old_id = opts.old_id;
