@@ -81,6 +81,18 @@ run_test('operators_round_trip', () => {
     ]);
 });
 
+run_test('operators_trailing_slash', () => {
+    var hash;
+    var narrow;
+
+    hash = '#narrow/stream/devel/topic/algol/';
+    narrow = hashchange.parse_narrow(hash.split('/'));
+    assert.deepEqual(narrow, [
+        {operator: 'stream', operand: 'devel', negated: false},
+        {operator: 'topic', operand: 'algol', negated: false},
+    ]);
+});
+
 run_test('people_slugs', () => {
     var operators;
     var hash;
