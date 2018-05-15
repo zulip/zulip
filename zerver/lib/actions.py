@@ -2947,7 +2947,7 @@ def do_change_is_admin(user_profile: UserProfile, value: bool,
         user_profile.is_api_super_user = value
         user_profile.save(update_fields=["is_api_super_user"])
     else:
-        raise Exception("Unknown permission")
+        raise AssertionError("Invalid admin permission")
 
     if permission == 'administer':
         event = dict(type="realm_user", op="update",
