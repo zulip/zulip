@@ -212,7 +212,7 @@ set -e
 if [ "$DEPLOYMENT_TYPE" = "dockervoyager" ]; then
     has_camo=1
     has_nginx=1
-    has_appserver=1
+    has_appserver=0
     has_rabbit=1
     has_postgres=1
 fi
