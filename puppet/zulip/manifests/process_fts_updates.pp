@@ -2,7 +2,6 @@ class zulip::process_fts_updates {
   $fts_updates_packages = [
     # Needed to run process_fts_updates
     'python3-psycopg2', # TODO: use a virtualenv instead
-    'python-psycopg2', # TODO: use a virtualenv instead
   ]
   safepackage { $fts_updates_packages: ensure => 'installed' }
 
