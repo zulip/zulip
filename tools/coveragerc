@@ -31,3 +31,5 @@ omit =
     scripts/lib/zulip_tools.py
     # Used only for the legacy Zephyr integration, and unlikely to ever be unit-tested
     zerver/lib/ccache.py
+    # Settings.py files are hard to test
+    zproject/*settings.py
