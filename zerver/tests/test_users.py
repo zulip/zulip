@@ -56,6 +56,24 @@ def find_dict(lst: Iterable[Dict[K, V]], k: K, v: V) -> Dict[K, V]:
     raise AssertionError('Cannot find element in list where key %s == %s' % (k, v))
 
 class PermissionTest(ZulipTestCase):
+
+    def test_do_change_is_admin(self) -> None:
+        """
+        Ensures change_is_admin raises an AssertionError when invalid permissions
+        are provided to it.
+        """
+
+        # this should work fine
+        user_profile = self.example_user('hamlet')
+        do_change_is_admin(user_profile, True)
+
+        # this should work a-ok as well
+        do_change_is_admin(user_profile, True, permission='administer')
+
+        # this should "fail" with an AssertionError
+        with self.assertRaises(AssertionError):
+            do_change_is_admin(user_profile, True, permission='totally-not-valid-perm')
+
     def test_get_admin_users(self) -> None:
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, False)
