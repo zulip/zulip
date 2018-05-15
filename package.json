@@ -56,6 +56,7 @@
   },
   "devDependencies": {
     "casperjs": "casperjs/casperjs",
+    "cheerio": "1.0.0-rc.2",
     "cssstyle": "0.2.29",
     "difflib": "0.2.4",
     "eslint": "4.19.1",

@@ -1,11 +1,9 @@
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 
-set_global('i18n', global.stub_i18n);
+const cheerio = require('cheerio');
 
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
-global.$ = require('jquery')(window);
+set_global('i18n', global.stub_i18n);
 
 // When writing these tests, the following command might be helpful:
 // ./tools/get-handlebar-vars static/templates/*.handlebars
@@ -69,29 +67,8 @@ function render(template_name, args) {
     var html = '<div style="height: 250px">';
     html += render('actions_popover_content', args);
     html += "</div>";
-    var link = $(html).find("a.respond_button");
+    var link = cheerio.load(html)("a.respond_button");
     assert.equal(link.text().trim(), 'translated: Quote and reply');
-
-    var deletedArgs = {
-        message: {
-            is_stream: true,
-            id: "100",
-            stream: "devel",
-            subject: "testing",
-            sender_full_name: "King Lear",
-        },
-        should_display_edit_and_view_source: false,
-        should_display_quote_and_reply: false,
-        narrowed: true,
-    };
-
-    var deletedHtml = '<div style="height: 250px">';
-    deletedHtml += render('actions_popover_content', deletedArgs);
-    deletedHtml += "</div>";
-    var viewSourceLink = $(deletedHtml).find("a.popover_edit_message");
-    assert.equal(viewSourceLink.length, 0);
-    var quoteLink = $(deletedHtml).find("a.respond_button");
-    assert.equal(quoteLink.length, 0);
 }());
 
 (function admin_realm_domains_list() {
@@ -105,8 +82,8 @@ function render(template_name, args) {
     html += render("admin-realm-domains-list", args);
     html += "</table>";
 
-    var button = $(html).find('.button');
-    var domain = $(html).find('.domain');
+    var button = cheerio.load(html)('.button');
+    var domain = cheerio.load(html)('.domain');
     var row = button.closest('tr');
     var subdomains_checkbox = row.find('.allow-subdomains');
 
@@ -129,8 +106,8 @@ function render(template_name, args) {
     html += render("admin-realm-dropdown-stream-list", args);
     html += "</ul>";
 
-    var link = $(html).find("a");
-    var list_item = $(html).find("li");
+    var link = cheerio.load(html)("a");
+    var list_item = cheerio.load(html)("li");
 
     assert.equal(link.text().trim(), "Italy");
     assert(list_item.hasClass("stream_name"));
@@ -150,7 +127,7 @@ function render(template_name, args) {
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
-    var span = $(html).find(".default_stream_name:first");
+    var span = cheerio.load(html)(".default_stream_name").first();
     assert.equal(span.text(), "devel");
 
     // When the logged in user is not admin
@@ -163,7 +140,7 @@ function render(template_name, args) {
         html += render('admin_default_streams_list', args);
     });
     html += "</table>";
-    span = $(html).find(".default_stream_name:first");
+    span = cheerio.load(html)(".default_stream_name").first();
     assert.equal(span.text(), "devel");
 }());
 
@@ -177,12 +154,12 @@ function render(template_name, args) {
     };
 
     var html = '';
-    html += '<tbody id="admin_emoji_table">';
+    html += '<table>'
     html += render('admin_emoji_list', args);
-    html += '</tbody>';
+    html += '</table>';
 
-    var emoji_name = $(html).find('tr.emoji_row:first span.emoji_name');
-    var emoji_url = $(html).find('tr.emoji_row:first span.emoji_image img');
+    var emoji_name = cheerio.load(html)('tr.emoji_row').first().find('span.emoji_name');
+    var emoji_url = cheerio.load(html)('tr.emoji_row').first().find('span.emoji_image img');
 
     assert.equal(emoji_name.text(), 'MouseFace');
     assert.equal(emoji_url.attr('src'), 'http://emojipedia-us.s3.amazonaws.com/cache/46/7f/467fe69069c408e07517621f263ea9b5.png');
@@ -200,13 +177,13 @@ function render(template_name, args) {
     };
 
     var html = '';
-    html += '<tbody id="admin_profile_fields_table">';
+    html += '<table>';
     html += render('admin_profile_field_list', args);
-    html += '</tbody>';
+    html += '</table>';
 
-    var field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
-    var field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
-    var td = $(html).find('tr.profile-field-row:first td');
+    var field_name = cheerio.load(html)('tr.profile-field-row').first().find('span.profile_field_name');
+    var field_type = cheerio.load(html)('tr.profile-field-row').first().find('span.profile_field_type');
+    var td = cheerio.load(html)('tr.profile-field-row').first().find('td');
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long text');
@@ -222,13 +199,13 @@ function render(template_name, args) {
     };
 
     html = '';
-    html += '<tbody id="admin_profile_fields_table">';
+    html += '<table>';
     html += render('admin_profile_field_list', args);
-    html += '</tbody>';
+    html += '</table>';
 
-    field_name = $(html).find('tr.profile-field-row:first span.profile_field_name');
-    field_type = $(html).find('tr.profile-field-row:first span.profile_field_type');
-    td = $(html).find('tr.profile-field-row:first td');
+    field_name = cheerio.load(html)('tr.profile-field-row').first().find('span.profile_field_name');
+    field_type = cheerio.load(html)('tr.profile-field-row').first().find('span.profile_field_type');
+    td = cheerio.load(html)('tr.profile-field-row').first().find('td');
 
     assert.equal(field_name.text(), 'teams');
     assert.equal(field_type.text(), 'Long text');
@@ -247,12 +224,12 @@ function render(template_name, args) {
     };
 
     var html = '';
-    html += '<tbody id="admin_filters_table">';
+    html += '<table>';
     html += render('admin_filter_list', args);
-    html += '</tbody>';
+    html += '</table>';
 
-    var filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
-    var filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+    var filter_pattern = cheerio.load(html)('tr.filter_row').first().find('span.filter_pattern');
+    var filter_format = cheerio.load(html)('tr.filter_row').first().find('span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
@@ -267,12 +244,12 @@ function render(template_name, args) {
     };
 
     html = '';
-    html += '<tbody id="admin_filters_table">';
+    html += '<table>';
     html += render('admin_filter_list', args);
-    html += '</tbody>';
+    html += '</table>';
 
-    filter_pattern = $(html).find('tr.filter_row:first span.filter_pattern');
-    filter_format = $(html).find('tr.filter_row:first span.filter_url_format_string');
+    filter_pattern = cheerio.load(html)('tr.filter_row').first().find('span.filter_pattern');
+    filter_format = cheerio.load(html)('tr.filter_row').first().find('span.filter_url_format_string');
 
     assert.equal(filter_pattern.text(), '#(?P<id>[0-9]+)');
     assert.equal(filter_format.text(), 'https://trac.example.com/ticket/%(id)s');
@@ -296,20 +273,17 @@ function render(template_name, args) {
         invite_id += 1;
     });
     html += "</table>";
-    var buttons = $(html).find('.button');
+    var buttons = cheerio.load(html)('.button');
 
-    assert.equal($(buttons[0]).text().trim(), "translated: Revoke");
-    assert($(buttons[0]).hasClass("revoke"));
-    assert.equal($(buttons[0]).attr("data-invite-id"), 0);
+    var button = buttons.first();
+    assert.equal(button.text().trim(), "translated: Revoke");
+    assert(button.hasClass("revoke"));
+    assert.equal(button.attr("data-invite-id"), 0);
 
-    assert.equal($(buttons[3]).text().trim(), "translated: Resend");
-    assert($(buttons[3]).hasClass("resend"));
-    assert.equal($(buttons[3]).attr("data-invite-id"), 1);
-
-    var span = $(html).find(".email:first");
+    var span = cheerio.load(html)(".email").first();
     assert.equal(span.text(), "alice@zulip.com");
 
-    var icon = $(html).find(".icon-vector-bolt");
+    var icon = cheerio.load(html)(".icon-vector-bolt");
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
 }());
 
@@ -321,7 +295,7 @@ function render(template_name, args) {
         html += render('admin_streams_list', args);
     });
     html += "</table>";
-    var span = $(html).find(".stream_name:first");
+    var span = cheerio.load(html)(".stream_name").first();
     assert.equal(span.text(), "devel");
 }());
 
@@ -333,9 +307,9 @@ function render(template_name, args) {
     var admin_features = ["admin_users_table", "admin_bots_table",
                           "admin_deactivated_users_table", "admin_invites_table"];
     _.each(admin_features, function (admin_feature) {
-        assert.notEqual($(html).find("#" + admin_feature).length, 0);
+        assert.notEqual(cheerio.load(html)("#" + admin_feature).length, 0);
     });
-    assert.equal($(html).find("input.admin-realm-name").val(), 'Zulip');
+    assert.equal(cheerio.load(html)("input.admin-realm-name").val(), 'Zulip');
 }());
 
 (function admin_user_group_list() {
@@ -352,10 +326,10 @@ function render(template_name, args) {
     html += render('admin_user_group_list', args);
     html += '</div>';
 
-    var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
-    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+    var group_id = cheerio.load(html)('.user-group').first().prop('id');
+    var group_name_pills = cheerio.load(html)('.user-group').first().find('.pill-container').attr('data-group-pills');
+    var group_name_display = cheerio.load(html)('.user-group').first().find('.name').text().trim().replace(/\s+/g, ' ');
+    var group_description = cheerio.load(html)('.user-group').first().find('.description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
     assert.equal(group_name_pills, 'uranohoshi');
@@ -382,9 +356,9 @@ function render(template_name, args) {
     });
     html += "</table>";
 
-    var buttons = $(html).find('.button');
+    var buttons = cheerio.load(html).filter('.button');
 
-    assert.equal($(buttons[0]).text().trim(), "translated: Deactivate");
+    assert.equal(buttons[0].text().trim(), "translated: Deactivate");
     assert($(buttons[0]).hasClass("deactivate"));
 
     assert.equal($(buttons[1]).text().trim(), "translated: Make admin");
@@ -409,7 +383,7 @@ function render(template_name, args) {
     });
     html += "</table>";
 
-    buttons = $(html).find('.button');
+    buttons = cheerio.load(html)('.button');
     assert.equal($(buttons).length, 6);
 }());
 
@@ -430,7 +404,7 @@ function render(template_name, args) {
     html += render('alert_word_settings_item', args);
     html += "</ul>";
 
-    var li = $(html).find("li.alert-word-item:first");
+    var li = cheerio.load(html)("li.alert-word-item:first");
     var value = li.find('.value');
     var button = li.find('button');
     assert.equal(li.attr('data-word'),'lunch');
@@ -439,9 +413,9 @@ function render(template_name, args) {
     assert.equal(button.attr('title'), 'translated: Delete alert word');
     assert.equal(button.attr('data-word'),'lunch');
 
-    var title = $(html).find('.new-alert-word-section-title');
-    var textbox = $(html).find('#create_alert_word_name');
-    button = $(html).find('#create_alert_word_button');
+    var title = cheerio.load(html)('.new-alert-word-section-title');
+    var textbox = cheerio.load(html)('#create_alert_word_name');
+    button = cheerio.load(html)('#create_alert_word_button');
     assert.equal(title.length, 1);
     assert.equal(title.text().trim(), 'translated: Add a new alert word');
     assert.equal(textbox.length, 1);
@@ -466,7 +440,7 @@ function render(template_name, args) {
         unread_count: 99,
     };
     var html = render('bankruptcy_modal', args);
-    var count = $(html).find("p b");
+    var count = cheerio.load(html)("p b");
     assert.equal(count.text(), 99);
 }());
 
@@ -483,7 +457,7 @@ function render(template_name, args) {
     html += render('admin_auth_methods_list', args);
     html += '</tbody>';
 
-    var method = $(html).find('tr.method_row:first span.method');
+    var method = cheerio.load(html)('tr.method_row').first().find('span.method');
     assert.equal(method.text(), 'Email');
     assert.equal(method.is("checked"), false);
 }());
@@ -521,7 +495,7 @@ function render(template_name, args) {
     };
     html += render('bot_avatar_row', args);
 
-    var img = $(html).find("img");
+    var img = cheerio.load(html)("img");
     assert.equal(img.attr('src'), '/hamlet/avatar/url');
 }());
 
@@ -537,7 +511,7 @@ function render(template_name, args) {
         ],
     };
     var html = render('bot_owner_select', args);
-    var option = $(html).find("option:last");
+    var option = cheerio.load(html)("option:last");
     assert.equal(option.val(), "hamlet@zulip.com");
     assert.equal(option.text(), "Hamlet");
 }());
@@ -549,7 +523,7 @@ function render(template_name, args) {
         name: 'Hamlet',
     };
     var html = render('compose-invite-users', args);
-    var button = $(html).find("button:first");
+    var button = cheerio.load(html)("button:first");
     assert.equal(button.text(), "translated: Subscribe");
 }());
 
@@ -559,9 +533,9 @@ function render(template_name, args) {
         name: 'all',
     };
     var html = render('compose_all_everyone', args);
-    var button = $(html).find("button:first");
+    var button = cheerio.load(html)("button:first");
     assert.equal(button.text(), "translated: Yes, send");
-    var error_msg = $(html).find('span.compose-all-everyone-msg').text().trim();
+    var error_msg = cheerio.load(html)('span.compose-all-everyone-msg').text().trim();
     assert.equal(error_msg, "translated: Are you sure you want to mention all 101 people in this stream?");
 }());
 
@@ -570,15 +544,15 @@ function render(template_name, args) {
         count: '101',
     };
     var html = render('compose_announce', args);
-    var button = $(html).find("button:first");
+    var button = cheerio.load(html)("button:first");
     assert.equal(button.text(), "translated: Yes, send");
-    var error_msg = $(html).find('span.compose-announce-msg').text().trim();
+    var error_msg = cheerio.load(html)('span.compose-announce-msg').text().trim();
     assert.equal(error_msg, "translated:         This stream is reserved for announcements.\n        \n        Are you sure you want to message all 101 people in this stream?");
 }());
 
 (function compose_not_subscribed() {
     var html = render('compose_not_subscribed');
-    var button = $(html).find("button:first");
+    var button = cheerio.load(html)("button:first");
     assert.equal(button.text(), "translated: Subscribe");
 }());
 
@@ -592,7 +566,7 @@ function render(template_name, args) {
     var html = '<div  id="out-of-view-notification" class="notification-alert">';
     html += render('compose_notification', args);
     html += '</div>';
-    var a = $(html).find("a.compose_notification_narrow_by_subject");
+    var a = cheerio.load(html)("a.compose_notification_narrow_by_subject");
     assert.equal(a.text(), "Narrow to here");
 }());
 
@@ -613,9 +587,9 @@ function render(template_name, args) {
     var args = {field: field, field_value: "@GitHub", field_type: "text"};
     var html = render('custom-user-profile-field', args);
     assert.equal($(html).attr('data-field-id'), 2);
-    assert.equal($(html).find('.custom_user_field_value').val(), "@GitHub");
-    assert.equal($(html).find('.field_hint').text(), "Or link to profile");
-    assert.equal($(html).find('label').text(), "GitHub user name");
+    assert.equal(cheerio.load(html)('.custom_user_field_value').val(), "@GitHub");
+    assert.equal(cheerio.load(html)('.field_hint').text(), "Or link to profile");
+    assert.equal(cheerio.load(html)('label').text(), "GitHub user name");
 }());
 
 (function deactivate_stream_modal() {
@@ -624,10 +598,10 @@ function render(template_name, args) {
     };
     var html = render('deactivation-stream-modal', args);
 
-    var modal_header = $(html).find("#deactivation_stream_modal_label");
+    var modal_header = cheerio.load(html)("#deactivation_stream_modal_label");
     assert.equal(modal_header.text(), "translated: Delete stream " + args.stream_name);
 
-    var button = $(html).find("#do_deactivate_stream_button");
+    var button = cheerio.load(html)("#do_deactivate_stream_button");
     assert.equal(button.text(), "translated: Yes, delete this stream");
 }());
 
@@ -660,7 +634,7 @@ function render(template_name, args) {
     html += render('draft_table_body', args);
     html += '</div>';
 
-    var row_1 = $(html).find(".draft-row[data-draft-id='1']");
+    var row_1 = cheerio.load(html)(".draft-row[data-draft-id='1']");
     assert.equal(row_1.find(".stream_label").text().trim(), "all");
     assert.equal(row_1.find(".stream_label").css("background"), "rgb(255, 0, 0)");
     assert.equal(row_1.find(".stream_topic").text().trim(), "tests");
@@ -669,7 +643,7 @@ function render(template_name, args) {
                  "inset 2px 0px 0px 0px #FF0000, -1px 0px 0px 0px #FF0000");
     assert.equal(row_1.find(".message_content").text().trim(), "Public draft");
 
-    var row_2 = $(html).find(".draft-row[data-draft-id='2']");
+    var row_2 = cheerio.load(html)(".draft-row[data-draft-id='2']");
     assert.equal(row_2.find(".stream_label").text().trim(), "translated: You and Jordan, Michael");
     assert(row_2.find(".message_row").hasClass("private-message"));
     assert.equal(row_2.find(".message_content").text().trim(), "Private draft");
@@ -678,7 +652,7 @@ function render(template_name, args) {
 
 (function email_address_hint() {
     var html = render('email_address_hint');
-    var li = $(html).find("li:first");
+    var li = cheerio.load(html)("li:first");
     assert.equal(li.text(), 'translated: The email will be forwarded to this stream');
 }());
 
@@ -689,7 +663,7 @@ function render(template_name, args) {
     var html = "<div>";
     html += render('emoji_popover', args);
     html += "</div>";
-    var popover = $(html).find(".popover");
+    var popover = cheerio.load(html)(".popover");
     assert(popover.hasClass("emoji-info-popover"));
 }());
 
@@ -727,13 +701,13 @@ function render(template_name, args) {
     html += render('emoji_popover_content', args);
     html += "</div>";
     // test to make sure the first emoji is present in the popover
-    var first_emoji = $(html).find(".emoji-100");
+    var first_emoji = cheerio.load(html)(".emoji-100");
     assert.equal(first_emoji.length, 1);
 
-    var categories = $(html).find(".emoji-popover-tab-item");
+    var categories = cheerio.load(html)(".emoji-popover-tab-item");
     assert.equal(categories.length, 2);
 
-    var category_1 = $(html).find(".emoji-popover-tab-item[data-tab-name = 'Test']");
+    var category_1 = cheerio.load(html)(".emoji-popover-tab-item[data-tab-name = 'Test']");
     assert(category_1.hasClass("active"));
 }());
 
@@ -758,7 +732,7 @@ function render(template_name, args) {
     var html = "<div>";
     html += render("emoji_popover_search_results", args);
     html += "</div>";
-    var used_emoji = $(html).find(".emoji-test-2").parent();
+    var used_emoji = cheerio.load(html)(".emoji-test-2").parent();
     assert(used_emoji.hasClass("reaction"));
     assert(used_emoji.hasClass("reacted"));
 }());
@@ -773,8 +747,8 @@ function render(template_name, args) {
         },
     };
     var html = render("emoji_showcase", args);
-    var emoji_div = $(html).find(".emoji");
-    var canonical_name = $(html).find(".emoji-canonical-name");
+    var emoji_div = cheerio.load(html)(".emoji");
+    var canonical_name = cheerio.load(html)(".emoji-canonical-name");
 
     assert.equal(emoji_div.length, 1);
     assert(emoji_div.hasClass("emoji-1f44d"));
@@ -795,7 +769,7 @@ function render(template_name, args) {
     };
     var html = render('group_pms', args);
 
-    var a = $(html).find("a:first");
+    var a = cheerio.load(html)("a:first");
     assert.equal(a.text(), 'Alice and Bob');
 }());
 
@@ -809,9 +783,9 @@ function render(template_name, args) {
     var html = render('hotspot_overlay', args);
 
     assert.equal($(html).attr('id'), 'hotspot_intro_compose_overlay');
-    assert.equal($(html).find('.hotspot-title').text(), 'Start a new conversation');
+    assert.equal(cheerio.load(html)('.hotspot-title').text(), 'Start a new conversation');
     assert.equal(
-        $(html).find('.hotspot-description').text(),
+        cheerio.load(html)('.hotspot-description').text(),
         'Click the "New topic" button to start a new conversation.'
     );
 }());
@@ -840,7 +814,7 @@ function render(template_name, args) {
     };
     var html = render('invite_subscription', args);
 
-    var input = $(html).find("label:first");
+    var input = cheerio.load(html)("label:first");
     assert.equal(input.text().trim(), "devel");
 }());
 
@@ -861,7 +835,7 @@ function render(template_name, args) {
     var html = render('single_message', message);
     html = '<div class="message_table focused_table" id="zfilt">' + html + '</div>';
 
-    var first_message = $(html).find("div.messagebox:first");
+    var first_message = cheerio.load(html)("div.messagebox:first");
 
     var first_message_text = first_message.find(".message_content").text().trim();
     assert.equal(first_message_text, "This is message one.");
@@ -878,7 +852,7 @@ function render(template_name, args) {
     };
     var html = render('message_edit_form', args);
 
-    var textarea = $(html).find("textarea.message_edit_content");
+    var textarea = cheerio.load(html)("textarea.message_edit_content");
     assert.equal(textarea.text(), "Let's go to lunch!");
 }());
 
@@ -923,13 +897,13 @@ function render(template_name, args) {
     render('loader');
     var html = render('message_group', {message_groups: groups, use_match_properties: true});
 
-    var first_message_text = $(html).next('.recipient_row').find('div.messagebox:first .message_content').text().trim();
+    var first_message_text = $(html).next('.recipient_row').find('div.messagebox').first().find('.message_content').text().trim();
     assert.equal(first_message_text, "This is message one.");
 
     var last_message_html = $(html).next('.recipient_row').find('div.messagebox:last .message_content').html().trim();
     assert.equal(last_message_html, 'This is message <span class="highlight">two</span>.');
 
-    var highlighted_subject_word = $(html).find('a.narrows_by_subject .highlight').text();
+    var highlighted_subject_word = cheerio.load(html)('a.narrows_by_subject .highlight').text();
     assert.equal(highlighted_subject_word, 'two');
 }());
 
@@ -951,7 +925,7 @@ function render(template_name, args) {
     var html = render('message_edit_history', {
         edited_messages: message.edit_history,
     });
-    var edited_message = $(html).find("div.messagebox-content");
+    var edited_message = cheerio.load(html)("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
                  "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
 }());
@@ -970,7 +944,7 @@ function render(template_name, args) {
     html += render('message_reaction', args);
     html += '</div>';
 
-    var reaction = $(html).find(".message_reaction");
+    var reaction = cheerio.load(html)(".message_reaction");
     assert.equal(reaction.data("reaction-id"), "unicode_emoji,smile,1f604");
     assert(reaction.find(".emoji").hasClass("emoji-1f604"));
 }());
@@ -997,7 +971,7 @@ function render(template_name, args) {
 
     var html = render('new_stream_users', args);
 
-    var label = $(html).find("label:first");
+    var label = cheerio.load(html)("label:first");
     assert.equal(label.text().trim(), 'King Lear (lear@zulip.com)');
 }());
 
@@ -1015,10 +989,10 @@ function render(template_name, args) {
     html += render('non_editable_user_group', args);
     html += '</div>';
 
-    var group_id = $(html).find('.user-group:first').prop('id');
-    var group_name_pills = $(html).find('.user-group:first .pill-container').attr('data-group-pills');
-    var group_name_display = $(html).find('.user-group:first .name').text().trim().replace(/\s+/g, ' ');
-    var group_description = $(html).find('.user-group:first .description').text().trim().replace(/\s+/g, ' ');
+    var group_id = cheerio.load(html)('.user-group:first').prop('id');
+    var group_name_pills = cheerio.load(html)('.user-group').first().find('.pill-container').attr('data-group-pills');
+    var group_name_display = cheerio.load(html)('.user-group').first().find('.name').text().trim().replace(/\s+/g, ' ');
+    var group_description = cheerio.load(html)('.user-group').first().find('.description').text().trim().replace(/\s+/g, ' ');
 
     assert.equal(group_id, '9');
     assert.equal(group_name_pills, 'uranohoshi');
@@ -1035,14 +1009,14 @@ function render(template_name, args) {
 
     var html = render('notification', args);
 
-    var title = $(html).find(".title");
+    var title = cheerio.load(html)(".title");
     assert.equal(title.text().trim(), 'You have a notification');
 }());
 
 (function propagate_notification_change() {
     var html = render('propagate_notification_change');
 
-    var button_area = $(html).find(".propagate-notifications-controls");
+    var button_area = cheerio.load(html)(".propagate-notifications-controls");
     assert.equal(button_area.find(".yes_propagate_notifications").text().trim(), 'translated: Yes');
     assert.equal(button_area.find(".no_propagate_notifications").text().trim(), 'translated: No');
 }());
@@ -1064,7 +1038,7 @@ function render(template_name, args) {
     var html = '<div style="height: 250px">';
     html += render('remind_me_popover_content', args);
     html += "</div>";
-    var link = $(html).find("a.remind.custom");
+    var link = cheerio.load(html)("a.remind.custom");
     assert.equal(link.text().trim(), 'translated: Select date and time');
 }());
 
@@ -1096,7 +1070,7 @@ function render(template_name, args) {
 
     // All checkboxes should be checked.
     _.each(checkbox_ids, function (checkbox) {
-        assert.equal($(html).find("#" + checkbox).is(":checked"), true);
+        assert.equal(cheerio.load(html)("#" + checkbox).is(":checked"), true);
     });
 
     // Re-render with checkbox booleans set to false.
@@ -1108,7 +1082,7 @@ function render(template_name, args) {
 
     // All checkboxes should be unchecked.
     _.each(checkbox_ids, function (checkbox) {
-        assert.equal($(html).find("#" + checkbox).is(":checked"), false);
+        assert.equal(cheerio.load(html)("#" + checkbox).is(":checked"), false);
     });
 
     // Check if enable_desktop_notifications setting disables subsetting too.
@@ -1141,7 +1115,7 @@ function render(template_name, args) {
     var html = '';
     html += render('sidebar_private_message_list', args);
 
-    var conversations = $(html).find('a').text().trim().split('\n');
+    var conversations = cheerio.load(html)('a').text().trim().split('\n');
     assert.equal(conversations[0], 'alice,bob');
     assert.equal(conversations[1].trim(), '(translated: more conversations)');
 }());
@@ -1154,10 +1128,10 @@ function render(template_name, args) {
     var html = render('stream_member_list_entry',
                       {name: "King Hamlet", email: "hamlet@zulip.com"});
     _.each(everyone_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
+        assert.equal(cheerio.load(html)("." + item).length, 1);
     });
     _.each(admin_items, function (item) {
-        assert.equal($(html).find("." + item).length, 0);
+        assert.equal(cheerio.load(html)("." + item).length, 0);
     });
 
     // Now, as admin.
@@ -1165,10 +1139,10 @@ function render(template_name, args) {
                   {name: "King Hamlet", email: "hamlet@zulip.com",
                    displaying_for_admin: true});
     _.each(everyone_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
+        assert.equal(cheerio.load(html)("." + item).length, 1);
     });
     _.each(admin_items, function (item) {
-        assert.equal($(html).find("." + item).length, 1);
+        assert.equal(cheerio.load(html)("." + item).length, 1);
     });
 }());
 
@@ -1184,7 +1158,7 @@ function render(template_name, args) {
 
     var html = render('stream_sidebar_actions', args);
 
-    var li = $(html).find("li:first");
+    var li = cheerio.load(html)("li:first");
     assert.equal(li.text().trim(), 'translated: Stream settings');
 }());
 
@@ -1201,17 +1175,17 @@ function render(template_name, args) {
     html += render('stream_sidebar_row', args);
     html += '</ul>';
 
-    var swatch = $(html).find(".stream-privacy");
+    var swatch = cheerio.load(html)(".stream-privacy");
     assert.equal(swatch.attr('id'), 'stream_sidebar_privacy_swatch_999');
 
     // test to ensure that the hashtag element from stream_privacy exists.
-    assert.equal($(html).find(".stream-privacy").children("*").attr("class"), "hashtag");
+    assert.equal(cheerio.load(html)(".stream-privacy").children("*").attr("class"), "hashtag");
 }());
 
 (function subscription_invites_warning_modal() {
     var html = render('subscription_invites_warning_modal');
 
-    var button = $(html).find(".close-invites-warning-modal").last();
+    var button = cheerio.load(html)(".close-invites-warning-modal").last();
     assert.equal(button.text(), 'translated: Go back');
 }());
 
@@ -1235,10 +1209,10 @@ function render(template_name, args) {
     var html = '';
     html += render('subscription_settings', sub);
 
-    var div = $(html).find(".subscription-type");
+    var div = cheerio.load(html)(".subscription-type");
     assert(div.text().indexOf('invite-only stream') > 0);
 
-    var anchor = $(html).find(".change-stream-privacy:first");
+    var anchor = cheerio.load(html)(".change-stream-privacy:first");
     assert.equal(anchor.data("is-private"), true);
     assert.equal(anchor.text(), "[translated: Change]");
 }());
@@ -1251,10 +1225,10 @@ function render(template_name, args) {
     };
     var html = render('subscription_stream_privacy_modal', args);
 
-    var stream_desc = $(html).find(".modal-body b");
+    var stream_desc = cheerio.load(html)(".modal-body b");
     assert.equal(stream_desc.text(), 'an invite-only stream');
 
-    var button = $(html).find("#change-stream-privacy-button");
+    var button = cheerio.load(html)("#change-stream-privacy-button");
     assert(button.hasClass("btn-primary"));
     assert.equal(button.text().trim(), "translated: Make stream public");
 }());
@@ -1290,7 +1264,7 @@ function render(template_name, args) {
     html += render('subscription_table_body', args);
     html += '</div>';
 
-    var span = $(html).find(".stream-name:first");
+    var span = cheerio.load(html)(".stream-name:first");
     assert.equal(span.text(), 'devel');
 }());
 
@@ -1315,14 +1289,14 @@ function render(template_name, args) {
 
     var html = render('tab_bar', args);
 
-    var a = $(html).find("li:first");
+    var a = cheerio.load(html)("li:first");
     assert.equal(a.text().trim(), 'Home');
 }());
 
 (function topic_edit_form() {
     var html = render('topic_edit_form');
 
-    var button = $(html).find("button:first");
+    var button = cheerio.load(html)("button:first");
     assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
 }());
 
@@ -1348,7 +1322,7 @@ function render(template_name, args) {
     };
     var html = render('topic_sidebar_actions', args);
 
-    var a = $(html).find("a.narrow_to_topic");
+    var a = cheerio.load(html)("a.narrow_to_topic");
     assert.equal(a.text().trim(), 'translated: Narrow to topic lunch');
 
 }());
@@ -1365,9 +1339,9 @@ function render(template_name, args) {
 
     var html = '<div>' + render('typeahead_list_item', args) + '</div>';
 
-    assert.equal($(html).find('.emoji').attr('src'), 'https://zulip.org');
-    assert.equal($(html).find('strong').text().trim(), 'primary-text');
-    assert.equal($(html).find('small').text().trim(), 'secondary-text');
+    assert.equal(cheerio.load(html)('.emoji').attr('src'), 'https://zulip.org');
+    assert.equal(cheerio.load(html)('strong').text().trim(), 'primary-text');
+    assert.equal(cheerio.load(html)('small').text().trim(), 'secondary-text');
 }());
 
 (function typing_notifications() {
@@ -1383,7 +1357,7 @@ function render(template_name, args) {
     html += render('typing_notifications', args);
     html += '</ul>';
 
-    var li = $(html).find('li:first');
+    var li = cheerio.load(html)('li:first');
     assert.equal(li.text(), 'Hamlet is typing...');
 
 }());
@@ -1422,15 +1396,15 @@ function render(template_name, args) {
 
     var html = render('user_group_info_popover_content', args);
 
-    var allUsers = $(html).find("li");
+    var allUsers = cheerio.load(html)("li");
     assert.equal(allUsers[0].classList.contains("user_active"), true);
     assert.equal(allUsers[2].classList.contains("user_offline"), true);
     assert.equal($(allUsers[0]).text().trim(), 'Active Alice');
     assert.equal($(allUsers[1]).text().trim(), 'Bot Bob');
     assert.equal($(allUsers[2]).text().trim(), 'Inactive Imogen');
 
-    assert.equal($(html).find('.group-name').text().trim(), 'groupName');
-    assert.equal($(html).find('.group-description').text().trim(), 'groupDescription');
+    assert.equal(cheerio.load(html)('.group-name').text().trim(), 'groupName');
+    assert.equal(cheerio.load(html)('.group-description').text().trim(), 'groupDescription');
 }());
 
 (function user_info_popover() {
@@ -1454,7 +1428,7 @@ function render(template_name, args) {
 
     var html = render('user_info_popover_content', args);
 
-    var a = $(html).find("a.narrow_to_private_messages");
+    var a = cheerio.load(html)("a.narrow_to_private_messages");
     assert.equal(a.text().trim(), 'translated: View private messages');
 }());
 
@@ -1462,7 +1436,7 @@ function render(template_name, args) {
     var html = render('user_info_popover_title', {user_avatar: 'avatar/hamlet@zulip.com'});
 
     html = '<div>' + html + '</div>';
-    assert.equal($(html).find('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
+    assert.equal(cheerio.load(html)('.popover-avatar').css('background-image'), "url(avatar/hamlet@zulip.com)");
 }());
 
 (function uploaded_files_list_popover() {
@@ -1484,8 +1458,8 @@ function render(template_name, args) {
     };
 
     var html = render('uploaded_files_list', args);
-    assert.equal($(html).find('.ind-message').attr("href"), "/#narrow/id/1");
-    assert.equal($(html).find('#download_attachment').attr("href"),
+    assert.equal(cheerio.load(html)('.ind-message').attr("href"), "/#narrow/id/1");
+    assert.equal(cheerio.load(html)('#download_attachment').attr("href"),
                  "/user_uploads/2/65/6wITdgsd63hdskjuFqEeEy7_r/file_name.txt");
 
 }());
@@ -1515,7 +1489,7 @@ function render(template_name, args) {
     html += render('user_presence_rows', args);
     html += '</ul>';
 
-    var a = $(html).find("a:first");
+    var a = cheerio.load(html)("a:first");
     assert.equal(a.text(), 'King Lear');
 }());
 
@@ -1530,7 +1504,7 @@ function render(template_name, args) {
     };
 
     var html = render('user_profile_modal', args);
-    var div = $(html).find(".user-profile-modal-email-section");
+    var div = cheerio.load(html)(".user-profile-modal-email-section");
     assert.equal(div.text().trim(), 'iago@zulip.com');
 }());
 
@@ -1546,8 +1520,8 @@ function render(template_name, args) {
     html += '</tbody>';
     html += '</table>';
 
-    assert.equal($(html).find("tr").data("stream"), "Verona");
-    assert.equal($(html).find("tr").data("topic"), "Verona2");
+    assert.equal(cheerio.load(html)("tr").data("stream"), "Verona");
+    assert.equal(cheerio.load(html)("tr").data("topic"), "Verona2");
 }());
 
 (function embedded_bot_config_item() {
@@ -1559,8 +1533,8 @@ function render(template_name, args) {
     var html = render('embedded_bot_config_item', args);
     assert.equal($(html).attr('name'), args.botname);
     assert.equal($(html).attr('id'), args.botname+'_'+args.key);
-    assert.equal($(html).find('label').text(), args.key);
-    assert.equal($(html).find('input').attr('placeholder'), args.value);
+    assert.equal(cheerio.load(html)('label').text(), args.key);
+    assert.equal(cheerio.load(html)('input').attr('placeholder'), args.value);
 }());
 
 (function edit_bot() {
@@ -1573,8 +1547,8 @@ function render(template_name, args) {
                   interface: "1"},
     };
     var html = render('edit-outgoing-webhook-service', args);
-    assert.equal($(html).find('#edit_service_base_url').attr('value'), args.service.base_url);
-    assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
+    assert.equal(cheerio.load(html)('#edit_service_base_url').attr('value'), args.service.base_url);
+    assert.equal(cheerio.load(html)('#edit_service_interface').attr('value'), args.service.interface);
 }());
 
 (function edit_embedded_bot_service() {
@@ -1583,8 +1557,8 @@ function render(template_name, args) {
                   config_data: {key: "abcd1234"}},
     };
     var html = render('edit-embedded-bot-service', args);
-    assert.equal($(html).find('#embedded_bot_key_edit').attr('name'), 'key');
-    assert.equal($(html).find('#embedded_bot_key_edit').val(), 'abcd1234');
+    assert.equal(cheerio.load(html)('#embedded_bot_key_edit').attr('name'), 'key');
+    assert.equal(cheerio.load(html)('#embedded_bot_key_edit').val(), 'abcd1234');
 }());
 
 (function archive_message_group() {
