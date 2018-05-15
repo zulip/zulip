@@ -81,6 +81,18 @@ set_global('blueslip', {
     ]);
 }());
 
+(function test_operators_trailing_slash() {
+    var hash;
+    var narrow;
+
+    hash = '#narrow/stream/devel/topic/algol/';
+    narrow = hashchange.parse_narrow(hash.split('/'));
+    assert.deepEqual(narrow, [
+        {operator: 'stream', operand: 'devel', negated: false},
+        {operator: 'topic', operand: 'algol', negated: false},
+    ]);
+}());
+
 (function test_people_slugs() {
     var operators;
     var hash;

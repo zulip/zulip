@@ -77,6 +77,11 @@ exports.parse_narrow = function (hash) {
         // but the user might write one.
         try {
             var operator = hash_util.decodeHashComponent(hash[i]);
+            // Do not parse further if empty operator encountered.
+            if (operator === '') {
+                break;
+            }
+
             var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
             var negated = false;
             if (operator[0] === '-') {
