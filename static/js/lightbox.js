@@ -209,7 +209,7 @@ exports.next = function () {
 };
 
 // this is a block of events that are required for the lightbox to work.
-$(function () {
+exports.initialize = function () {
     $("#main_div").on("click", ".message_inline_image a", function (e) {
         var $img = $(this).find("img");
 
@@ -292,7 +292,7 @@ $(function () {
             overlays.close_overlay("lightbox");
         }
     });
-});
+};
 
 return exports;
 }());

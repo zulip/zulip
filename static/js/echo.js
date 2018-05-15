@@ -279,7 +279,7 @@ function abort_message(message) {
     });
 }
 
-$(function () {
+exports.initialize = function () {
     function on_failed_action(action, callback) {
         $("#main_div").on("click", "." + action + "-failed-message", function (e) {
             e.stopPropagation();
@@ -299,7 +299,7 @@ $(function () {
 
     on_failed_action('remove', abort_message);
     on_failed_action('refresh', resend_message);
-});
+};
 
 return exports;
 

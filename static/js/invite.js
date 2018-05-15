@@ -123,7 +123,7 @@ exports.launch = function () {
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $(document).on('click', '.invite_check_all_button', function (e) {
         $('#streams_to_add :checkbox').prop('checked', true);
         e.preventDefault();
@@ -133,7 +133,7 @@ $(function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
-});
+};
 
 return exports;
 

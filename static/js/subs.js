@@ -763,7 +763,7 @@ exports.sub_or_unsub = function (sub) {
 };
 
 
-$(function () {
+exports.initialize = function () {
     stream_data.initialize_from_page_params();
     stream_list.create_initial_sidebar_rows();
 
@@ -850,7 +850,7 @@ $(function () {
         sub_arrow.removeClass('icon-vector-chevron-up');
         sub_arrow.addClass('icon-vector-chevron-down');
     });
-});
+};
 
 function focus_on_narrowed_stream() {
     var stream_name = narrow_state.stream();
