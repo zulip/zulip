@@ -46,9 +46,7 @@ from zerver.models import (
 )
 
 from zerver.lib.request import JsonableError
-
-if False:
-    from zerver.lib.test_case import ZulipTestCase
+from zerver.lib.test_classes import ZulipTestCase
 
 import collections
 import base64
@@ -291,7 +289,7 @@ def instrument_url(f: UrlFuncT) -> UrlFuncT:
     if not INSTRUMENTING:  # nocoverage -- option is always enabled; should we remove?
         return f
     else:
-        def wrapper(self: 'ZulipTestCase', url: str, info: Dict[str, Any]={},
+        def wrapper(self: ZulipTestCase, url: str, info: Dict[str, Any]={},
                     **kwargs: Any) -> HttpResponse:
             start = time.time()
             result = f(self, url, info, **kwargs)
