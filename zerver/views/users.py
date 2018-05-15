@@ -246,9 +246,9 @@ def patch_bot_backend(
 
 @require_non_guest_human_user
 @has_request_variables
-def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, email: str) -> HttpResponse:
+def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
     try:
-        bot = get_user(email, user_profile.realm)
+        bot = get_user_profile_by_id(bot_id)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
