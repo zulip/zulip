@@ -114,7 +114,7 @@ def get_zulips():
     # type: () -> List[Dict[str, Any]]
     global queue_id, last_event_id
     res = zulip_recipient.get_events(queue_id=queue_id, last_event_id=last_event_id)
-    if 'error' in res.get('result'):
+    if 'error' in res.get('result', {}):
         report("CRITICAL", msg="Error receiving Zulips, error was: %s" % (res["msg"]))
     for event in res['events']:
         last_event_id = max(last_event_id, int(event['id']))
@@ -154,7 +154,7 @@ zulip_recipient = zulip.Client(
 
 try:
     res = zulip_recipient.register(event_types=["message"])
-    if 'error' in res.get('result'):
+    if 'error' in res.get('result', {}):
         report("CRITICAL", msg="Error subscribing to Zulips: %s" % (res['msg']))
     queue_id, last_event_id = (res['queue_id'], res['last_event_id'])
 except Exception:
