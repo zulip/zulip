@@ -183,19 +183,6 @@ exports.options = function (config) {
     };
 };
 
-// Expose the internal file upload functions to the desktop app,
-// since the linux/windows QtWebkit based apps upload images
-// directly to the server
-if (window.bridge) {
-    var opts = exports.options({ mode: "compose" });
-
-    exports.drop = opts.drop;
-    exports.uploadStarted = opts.uploadStarted;
-    exports.progressUpdated = opts.progressUpdated;
-    exports.uploadError = opts.error;
-    exports.uploadFinished = opts.uploadFinished;
-}
-
 return exports;
 }());
 

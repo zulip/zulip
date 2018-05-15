@@ -134,13 +134,6 @@ function copy_handler() {
         construct_copy_div(div, start_id, end_id);
     }
 
-    if (window.bridge !== undefined) {
-        // If the user is running the desktop app,
-        // convert emoji images to plain text for
-        // copy-paste purposes.
-        ui.replace_emoji_with_text(div);
-    }
-
     // Select div so that the browser will copy it
     // instead of copying the original selection
     div.css({position: 'absolute', left: '-99999px'})

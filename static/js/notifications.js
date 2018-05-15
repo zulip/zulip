@@ -50,9 +50,7 @@ function browser_desktop_notifications_on() {
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             /webkit/i.test(navigator.userAgent) &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0) ||
-        // window.bridge is the desktop client
-        (window.bridge !== undefined);
+            notifications_api.checkPermission() === 0);
 }
 
 function cancel_notification_object(notification_object) {
@@ -83,12 +81,6 @@ exports.initialize = function () {
         window_has_focus = false;
     });
 
-    if (window.bridge !== undefined) {
-        supports_sound = true;
-
-        return;
-    }
-
     var audio = $("<audio>");
     if (audio[0].canPlayType === undefined) {
         supports_sound = false;
@@ -117,20 +109,6 @@ exports.permission_state = function () {
     }
     return window.Notification.permission;
 };
-
-// For web pages, the initial favicon is the same as the favicon we
-// set for no unread messages and the initial page title is the same
-// as the page title we set for no unread messages.  However, for the
-// macOS app, the dock icon does not get its badge updated on initial
-// page load.  If the badge icon was wrong right before a reload and
-// we actually have no unread messages then we will never execute
-// bridge.updateCount() until the unread count changes.  Therefore,
-// we ensure that bridge.updateCount is always run at least once to
-// synchronize it with the page title.  This can be done before the
-// DOM is loaded.
-if (window.bridge !== undefined) {
-    window.bridge.updateCount(0);
-}
 
 var new_message_count = 0;
 
@@ -173,14 +151,6 @@ exports.redraw_title = function () {
         favicon.set(current_favicon);
     }
 
-    // window.bridge is for the legacy QT desktop app; we'll likely
-    // remove this code soon.
-    if (window.bridge !== undefined) {
-        // We don't use 'n' because we want the exact count. The bridge handles
-        // which icon to show.
-        window.bridge.updateCount(new_message_count);
-    }
-
     // Notify the current desktop app's UI about the new unread count.
     if (window.electron_bridge !== undefined) {
         window.electron_bridge.send_event('total_unread_count', new_message_count);
@@ -210,10 +180,8 @@ function flash_pms() {
     }
 }
 
-exports.update_pm_count = function (new_pm_count) {
-    if (window.bridge !== undefined && window.bridge.updatePMCount !== undefined) {
-        window.bridge.updatePMCount(new_pm_count);
-    }
+exports.update_pm_count = function () {
+    // TODO: Add a `window.electron_bridge.updatePMCount(new_pm_count);` call?
     if (!flashing) {
         flashing = true;
         flash_pms();
@@ -301,6 +269,7 @@ function process_notification(notification) {
             notification_source = 'stream';
         }
     }
+    blueslip.debug("Desktop notification from source " + notification_source);
 
     if (content.length > 150) {
         // Truncate content at a word boundary
@@ -387,9 +356,6 @@ function process_notification(notification) {
         });
     } else if (notification.webkit_notify === false) {
         in_browser_notify(message, title, content, raw_operators, opts);
-    } else {
-        // Shunt the message along to the desktop client
-        window.bridge.desktopNotification(title, content, notification_source);
     }
 }
 
@@ -499,9 +465,7 @@ function should_send_audible_notification(message) {
 exports.granted_desktop_notifications_permission = function () {
     return (notifications_api &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0) ||
-        // window.bridge is the legacy desktop app
-        (window.bridge !== undefined);
+            notifications_api.checkPermission() === 0);
 };
 
 
@@ -531,11 +495,7 @@ exports.received_messages = function (messages) {
             }
         }
         if (should_send_audible_notification(message) && supports_sound) {
-            if (window.bridge !== undefined) {
-                window.bridge.bell();
-            } else {
-                $("#notifications-area").find("audio")[0].play();
-            }
+            $("#notifications-area").find("audio")[0].play();
         }
     });
 };

@@ -191,20 +191,6 @@ exports.restore_compose_cursor = function () {
         .caret(saved_compose_cursor);
 };
 
-exports.do_stuff_for_desktop_app = function () {
-    if (window.bridge !== undefined) {
-        // Disable "spellchecking" in our desktop app. The "spellchecking"
-        // in our Mac app is actually autocorrect, and frustrates our
-        // users.
-        $("#compose-textarea").attr('spellcheck', 'false');
-        // Modify the zephyr mirroring error message in our desktop
-        // app, since it doesn't work from the desktop version.
-        $("#webathena_login_menu").hide();
-        $("#normal-zephyr-mirror-error-text").addClass("notdisplayed");
-        $("#desktop-zephyr-mirror-error-text").removeClass("notdisplayed");
-    }
-};
-
 exports.initialize = function () {
     exports.set_compose_textarea_handlers();
 
