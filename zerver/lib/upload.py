@@ -515,7 +515,7 @@ class LocalUploadBackend(ZulipUploadBackend):
 if settings.LOCAL_UPLOADS_DIR is not None:
     upload_backend = LocalUploadBackend()  # type: ZulipUploadBackend
 else:
-    upload_backend = S3UploadBackend()
+    upload_backend = S3UploadBackend()  # nocoverage
 
 def delete_message_image(path_id: str) -> bool:
     return upload_backend.delete_message_image(path_id)

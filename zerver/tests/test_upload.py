@@ -19,13 +19,14 @@ from zerver.lib.test_helpers import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
-    upload_message_file, delete_message_image, LocalUploadBackend, \
+    upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
-    resize_emoji, BadImageError, get_realm_for_filename
+    resize_emoji, BadImageError, get_realm_for_filename, \
+    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
-    RealmDomain, get_realm, get_system_bot
+    RealmDomain, RealmEmoji, get_realm, get_system_bot
 from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
@@ -624,6 +625,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
     def tearDown(self) -> None:
         destroy_uploads()
 
+
 class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 
     def test_get_avatar_field(self) -> None:
@@ -803,6 +805,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             medium_avatar_disk_path = avatar_disk_path(user_profile, medium=True)
             self.assertTrue(os.path.exists(medium_avatar_disk_path))
 
+            # Verify that ensure_medium_avatar_url does not overwrite this file if it exists
+            with mock.patch('zerver.lib.upload.write_local_file') as mock_write_local_file:
+                zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
+                self.assertFalse(mock_write_local_file.called)
+
             # Confirm that ensure_medium_avatar_url works to recreate
             # medium size avatars from the original if needed
             os.remove(medium_avatar_disk_path)
@@ -860,21 +867,27 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
-        animated_unequal_img_data = open(get_test_image_file('animated_unequal_img.gif').name, 'rb').read()
+        animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
         with self.assertRaises(JsonableError):
             resize_emoji(animated_unequal_img_data)
 
-        # Test for large image (128x128)
-        animated_large_img_data = open(get_test_image_file('animated_large_img.gif').name, 'rb').read()
+        # Test for large animated image (128x128)
+        animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
         with self.assertRaises(JsonableError):
             resize_emoji(animated_large_img_data)
 
         # Test for no resize case
-        animated_img_data = open(get_test_image_file('animated_img.gif').name, 'rb').read()
+        animated_img_data = get_test_image_file('animated_img.gif').read()
         self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
 
+        # Test for resize case
+        img_data = get_test_image_file('img.gif').read()
+        resized_img_data = resize_emoji(img_data, size=80)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((80, 80), im.size)
+
         # Test corrupt image exception
-        corrupted_img_data = open(get_test_image_file('corrupt.gif').name, 'rb').read()
+        corrupted_img_data = get_test_image_file('corrupt.gif').read()
         with self.assertRaises(BadImageError):
             resize_emoji(corrupted_img_data)
 
@@ -1039,8 +1052,44 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', result.json()['uri'])
         self.assertTrue(delete_message_image(path_id))
 
+    def test_emoji_upload_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), open(file_path + ".original", "rb").read())
+
+        resized_image = Image.open(open(file_path, "rb"))
+        expected_size = (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE)
+        self.assertEqual(expected_size, resized_image.size)
+
+    def test_get_emoji_url_local(self) -> None:
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+        url = zerver.lib.upload.upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=file_name,
+        )
+        expected_url = "/user_avatars/{emoji_path}".format(emoji_path=emoji_path)
+        self.assertEqual(expected_url, url)
+
     def tearDown(self) -> None:
         destroy_uploads()
+
 
 class S3Test(ZulipTestCase):
 
@@ -1067,6 +1116,19 @@ class S3Test(ZulipTestCase):
         self.assertIn('title="dummy.txt"', self.get_last_message().rendered_content)
 
     @use_s3_backend
+    def test_file_upload_s3_with_undefined_content_type(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        user_profile = self.example_user('hamlet')
+        uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
+
+        path_id = re.sub('/user_uploads/', '', uri)
+        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(len(b"zulip!"), uploaded_file.size)
+
+    @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
@@ -1076,6 +1138,10 @@ class S3Test(ZulipTestCase):
 
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertTrue(delete_message_image(path_id))
+
+    @use_s3_backend
+    def test_message_image_delete_when_file_doesnt_exist(self) -> None:
+        self.assertEqual(False, delete_message_image('non-existant-file'))
 
     @use_s3_backend
     def test_file_upload_authed(self) -> None:
@@ -1146,6 +1212,64 @@ class S3Test(ZulipTestCase):
         path_id = re.sub('/user_uploads/', '', uri)
         self.assertEqual(user_profile.realm_id, get_realm_for_filename(path_id))
 
+    @use_s3_backend
+    def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
+        self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
+
+    @use_s3_backend
+    def test_upload_realm_icon_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
+
+        original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
+        original_key = bucket.get_key(original_path_id)
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
+        resized_data = bucket.get_key(resized_path_id).read()
+        resized_image = Image.open(io.BytesIO(resized_data)).size
+        self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
+
+    @use_s3_backend
+    def test_upload_emoji_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        emoji_name = "emoji.png"
+        zerver.lib.upload.upload_backend.upload_emoji_image(image_file, emoji_name, user_profile)
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=user_profile.realm_id,
+            emoji_file_name=emoji_name,
+        )
+        original_key = bucket.get_key(emoji_path + ".original")
+        image_file.seek(0)
+        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+
+        resized_data = bucket.get_key(emoji_path).read()
+        resized_image = Image.open(io.BytesIO(resized_data))
+        self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
+
+    @use_s3_backend
+    def test_get_emoji_url(self) -> None:
+        emoji_name = "emoji.png"
+        realm_id = 1
+        bucket = settings.S3_AVATAR_BUCKET
+        path = RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm_id, emoji_file_name=emoji_name)
+
+        url = zerver.lib.upload.upload_backend.get_emoji_url('emoji.png', realm_id)
+
+        expected_url = "https://{bucket}.s3.amazonaws.com/{path}".format(bucket=bucket, path=path)
+        self.assertEqual(expected_url, url)
+
+
 class UploadTitleTests(TestCase):
     def test_upload_titles(self) -> None:
         self.assertEqual(url_filename("http://localhost:9991/user_uploads/1/LUeQZUG5jxkagzVzp1Ox_amr/dummy.txt"), "dummy.txt")
@@ -1166,3 +1290,24 @@ class SanitizeNameTests(TestCase):
         self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
         self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
         self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+
+
+class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
+    def setUp(self) -> None:
+        self.realm = get_realm("zulip")
+        self.user_profile = self.example_user('hamlet')
+
+    def test_currently_used_upload_space_for_realm_with_no_uploads(self) -> None:
+        self.assertEqual(0, currently_used_upload_space(self.realm))
+
+    def test_currently_used_upload_space_for_realm_with_one_upload(self) -> None:
+        data = b'zulip!'
+        upload_message_file(u'dummy.txt', len(data), u'text/plain', data, self.user_profile)
+        self.assertEqual(len(data), currently_used_upload_space(self.realm))
+
+    def test_currently_used_upload_space_for_realm_with_many_uploads(self) -> None:
+        data1 = b'zulip!'
+        data2 = b'more-data!'
+        upload_message_file(u'dummy1.txt', len(data1), u'text/plain', data1, self.user_profile)
+        upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
+        self.assertEqual(len(data1) + len(data2), currently_used_upload_space(self.realm))
