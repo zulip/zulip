@@ -1,16 +1,23 @@
+<% if @nginx_http_only != '' -%>
+<% else -%>
 server {
     listen 80;
     return 301 https://$host$request_uri;
 }
+<% end -%>
 
 include /etc/nginx/zulip-include/upstreams;
 
 server {
+<% if @nginx_http_only != '' -%>
+    listen 80;
+<% else -%>
     listen 443;
 
     ssl on;
     ssl_certificate /etc/ssl/certs/zulip.combined-chain.crt;
     ssl_certificate_key /etc/ssl/private/zulip.key;
+<% end -%>
 
     location /user_avatars {
         add_header X-Content-Type-Options nosniff;
