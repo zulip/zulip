@@ -179,8 +179,7 @@ export default (env?: string): webpack.Configuration => {
             stats: "errors-only",
             watchOptions:
                 {
-                    poll: false,
-                    ignored: /node_modules/
+                    poll: 100
                 }
         };
     }
