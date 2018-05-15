@@ -1061,6 +1061,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
                 ('timezone', check_string),
+                ('date_joined', check_string),
             ])),
         ])
 
