@@ -184,7 +184,7 @@ exports.condense_and_collapse = function (elems) {
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $("#home").on("click", ".message_expander", function () {
         // Expanding a message can mean either uncollapsing or
         // uncondensing it.
@@ -208,7 +208,7 @@ $(function () {
         current_msg_list.get(rows.id(row)).condensed = true;
         condense_row(row);
     });
-});
+};
 
 return exports;
 }());

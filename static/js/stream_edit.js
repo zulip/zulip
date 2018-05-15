@@ -471,7 +471,7 @@ exports.delete_stream = function (stream_id, alert_element, stream_row) {
     });
 };
 
-$(function () {
+exports.initialize = function () {
     $("#zfilt").on("click", ".stream_sub_unsub_button", function (e) {
         e.preventDefault();
         e.stopPropagation();
@@ -658,7 +658,7 @@ $(function () {
         subs.rerender_subscriptions_settings(sub);
     });
 
-});
+};
 
 return exports;
 

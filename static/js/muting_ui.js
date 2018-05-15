@@ -184,9 +184,9 @@ exports.toggle_mute = function (msg) {
     }
 };
 
-$(function () {
+exports.initialize = function () {
     exports.update_muted_topics(page_params.muted_topics);
-});
+};
 
 return exports;
 }());

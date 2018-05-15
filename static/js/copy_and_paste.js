@@ -234,10 +234,10 @@ exports.paste_handler = function (event) {
     }
 };
 
-$(function () {
+exports.initialize = function () {
     $(document).on('copy', copy_handler);
     $("#compose-textarea").bind('paste', exports.paste_handler);
-});
+};
 
 return exports;
 }());

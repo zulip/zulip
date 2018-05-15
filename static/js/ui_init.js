@@ -48,7 +48,13 @@ function message_hover(message_row) {
     }
 }
 
-$(function () {
+function initialize_kitchen_sink_stuff() {
+    // TODO:
+    //      This function is a historical dumping ground
+    //      for lots of miscellaneous setup.  Almost all of
+    //      the code here can probably be moved to more
+    //      specific-purpose modules like message_viewport.js.
+
     var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
@@ -251,8 +257,25 @@ $(function () {
     if (feature_flags.full_width) {
         ui.switchToFullWidth();
     }
+}
 
+$(function () {
     // initialize other stuff
+    muting_ui.initialize();
+    message_viewport.initialize();
+    initialize_kitchen_sink_stuff();
+    echo.initialize();
+    stream_color.initialize();
+    stream_edit.initialize();
+    subs.initialize();
+    condense.initialize();
+    lightbox.initialize();
+    click_handlers.initialize();
+    copy_and_paste.initialize();
+    overlays.initialize();
+    invite.initialize();
+    timerender.initialize();
+    tab_bar.initialize();
     server_events.initialize();
     people.initialize();
     compose_pm_pill.initialize();

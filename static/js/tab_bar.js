@@ -165,7 +165,7 @@ function build_tab_bar() {
     tab_bar.removeClass('notdisplayed');
 }
 
-$(function () {
+exports.initialize = function () {
     $(document).on('narrow_activated.zulip', function () {
         build_tab_bar();
     });
@@ -174,7 +174,7 @@ $(function () {
     });
 
     build_tab_bar();
-});
+};
 
 return exports;
 

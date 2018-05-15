@@ -18,6 +18,8 @@ zrequire('scroll_util');
 zrequire('list_cursor');
 zrequire('stream_list');
 
+stream_color.initialize();
+
 var noop = function () {};
 var return_false = function () { return false; };
 var return_true = function () { return true; };
