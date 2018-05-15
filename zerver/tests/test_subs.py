@@ -62,6 +62,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
+    validate_user_access_to_subscribers_helper,
 )
 
 from zerver.views.streams import (
@@ -74,6 +75,7 @@ from zerver.lib.message import (
 )
 
 from django.http import HttpResponse
+from django.core.exceptions import ValidationError
 import mock
 import random
 import ujson
@@ -3199,3 +3201,33 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
+
+class TestValidateUserAccess(ZulipTestCase):
+    def test_validate_user_access_to_subscribers_helper(self) -> None:
+        user_profile = self.example_user("hamlet")
+        stream_obj = self.make_stream("example_stream")
+        stream_dict = stream_obj.__dict__
+        check_user_subscribed = lambda: True
+
+        validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed)
+
+    def test_validate_user_access_to_subscribers_helper_user_is_none(self) -> None:
+        user_profile = None
+        stream_obj = self.make_stream("example_stream")
+        stream_dict = stream_obj.__dict__
+        check_user_subscribed = lambda: True
+
+        with self.assertRaisesRegex( ValidationError, "Missing user to validate access for"):
+            validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed)
+
+    def test_validate_user_access_to_subscribers_helper_with_alternate_realm_id(self) -> None:
+        user_profile = self.example_user("hamlet")
+        user_profile.realm_id = "alternate_realm"
+
+        stream_obj = self.make_stream("example_stream")
+        stream_dict = stream_obj.__dict__
+        check_user_subscribed = lambda: True
+
+        with self.assertRaisesRegex( ValidationError, "Requesting user not in given realm"):
+            validate_user_access_to_subscribers_helper(user_profile, stream_dict, check_user_subscribed)
