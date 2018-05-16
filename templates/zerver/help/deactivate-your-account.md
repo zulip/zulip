@@ -1,33 +1,31 @@
 # Deactivate your account
 
-We'd be sorry to see you go, but you can follow the following steps to
-deactivate your Zulip account.
-
 {settings_tab|your-account}
 
-2. Click the **Deactivate account** button on the bottom of the
-   **Your account** section.
+1. Under **Deactivate account**, click **Deactivate account**.
 
-4. After clicking the **Deactivate account** button, a modal window titled
-**Deactivate your account** will appear. To confirm the deletion of your
-account, click the **Deactivate now** button.
+1. Confirm by clicking **Deactivate now**.
 
-    !!! warn ""
-        **Note:** Any bots that you maintain will be disabled when you
-        deactivate your account.
+## What happens when you deactivate an account
 
-6. After clicking the **Deactivate now** button, you will be logged
-   out and returned to the Zulip login page.
+* Any bots that you maintain will be disabled.
 
-Please note that you cannot register a Zulip account using the email address of
-a deactivated account.
+* Deactivating your account won't delete messages you've sent or files
+  you've shared. If permitted in your organization, delete content you'd
+  like to remove before deactivating your account.
 
-In addition, if you're the only administrator in the organization, you cannot
-deactivate your account; you need to make another user an administrator first
-before you can deactivate your account.
+* You cannot register a Zulip account using the email
+  address of a deactivated account. If you change your mind about deactivating
+  an account, an organization administrator can
+  [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user)
+  your account at any time.
 
-!!! tip ""
-    If you regret deactivating your account, you can ask a Zulip organization
-    administrator to
-    [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user) your
-    account.
+!!! warn ""
+    If you are the only administrator in the organization, you cannot
+    deactivate your account. You'll need to
+    [add another administrator](make-a-user-an-administrator) first.
+
+## Related articles
+
+You may also be interested in
+[deactivating an organization](/help/deactivate-your-organization).
