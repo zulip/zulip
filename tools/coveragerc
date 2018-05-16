@@ -21,8 +21,9 @@ omit =
     tools/test-backend
     zerver/lib/test_fixtures.py
     zerver/lib/test_runner.py
-    # For API tests
+    # Has its own independent test suite
     zerver/lib/api_test_helpers.py
+    zerver/lib/parallel.py
     # Part of provisioning/populate_db
     zerver/lib/generate_test_data.py
     # Excluded because its coverage state is flaky.
