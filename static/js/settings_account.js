@@ -70,6 +70,7 @@ exports.add_custom_profile_fields_to_settings = function () {
         var is_long_text = field_type === "Long text";
         var is_choice_field = field_type === "Choice";
         var is_user_field = field_type === "User";
+        var is_date_field = field_type === "Date";
         var field_choices = [];
 
         if (field_type === "Long text" || field_type === "Short text") {
@@ -107,6 +108,7 @@ exports.add_custom_profile_fields_to_settings = function () {
             is_long_text_field: is_long_text,
             is_choice_field: is_choice_field,
             is_user_field: is_user_field,
+            is_date_field: is_date_field,
             field_choices: field_choices,
         });
         $("#account-settings .custom-profile-fields-form").append(html);
@@ -137,6 +139,9 @@ exports.add_custom_profile_fields_to_settings = function () {
             });
         }
     });
+    $(".custom_user_field .datepicker").flatpickr({
+        altInput: true,
+        altFormat: "F j, Y"});
 };
 
 exports.set_up = function () {

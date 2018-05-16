@@ -15,6 +15,9 @@
     <div class="pill-container">
         <div class="input" contenteditable="true"></div>
     </div>
+    {{else if is_date_field }}
+    <input class="custom_user_field_value datepicker" data-field-id="{{ field.id }}" type="text"
+      value="{{ field_value }}" />
     {{else}}
     <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value }}" maxlength="50" />
     {{/if}}
