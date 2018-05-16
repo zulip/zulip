@@ -63,7 +63,8 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
-    validate_user_access_to_subscribers_helper
+    validate_user_access_to_subscribers_helper,
+    get_subscribers
 )
 
 from zerver.views.streams import (
@@ -2664,6 +2665,23 @@ class SubscriptionAPITest(ZulipTestCase):
         # This should result in user not in realm
         with self.assertRaises(ValidationError):
             validate_user_access_to_subscribers_helper(user_profile, stream_dict, None)
+
+    def test_get_subscribers(self) -> None:
+        """
+        Ensures get_subscribers returns a list of subscribers for a given stream.
+        """
+        realm = get_realm('zulip')
+        iago = self.example_user('iago')
+        hamlet = self.example_user('hamlet')
+
+        stream, created = create_stream_if_needed(realm, 'private_stream', invite_only=True)
+        self.assertTrue(created)
+
+        self.subscribe(iago, 'private_stream')
+
+        subs = get_subscribers(stream, iago)
+        self.assertIn(iago, subs)
+        self.assertNotIn(hamlet, subs)
 
 class GetPublicStreamsTest(ZulipTestCase):
 
