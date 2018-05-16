@@ -188,6 +188,8 @@ function show_user_profile(element, user) {
         profile_data.Timezone = time_preferance.timezone;
     }
 
+    profile_data[i18n.t("Date joined")] = moment(user.date_joined).format("MMMM DD YYYY");
+
     var args = {
         full_name: user.full_name,
         email: user.email,
