@@ -7,14 +7,13 @@ import json
 from zerver.models import SubMessage
 
 
-def get_fixed_content_for_widget(content: str) -> str:
+def do_widget_pre_save_actions(message: MutableMapping[str, Any]) -> None:
     if not settings.ALLOW_SUB_MESSAGES:
-        return content
+        return
 
+    content = message['message'].content
     if content == '/stats':
-        return 'We are running **1 server**.'
-
-    return content
+        message['message'].content = 'We are running **1 server**.'
 
 def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
     '''
