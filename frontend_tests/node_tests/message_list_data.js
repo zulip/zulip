@@ -6,6 +6,7 @@ zrequire('MessageListData', 'js/message_list_data');
 
 set_global('page_params', {});
 set_global('blueslip', global.make_zblueslip());
+set_global('muting', {});
 
 global.patch_builtin('setTimeout', (f, delay) => {
     assert.equal(delay, 0);
@@ -23,6 +24,11 @@ function make_msgs(msg_ids) {
     return _.map(msg_ids, make_msg);
 }
 
+function assert_contents(mld, msg_ids) {
+    const msgs = mld.all_messages();
+    assert.deepEqual(msgs, make_msgs(msg_ids));
+}
+
 run_test('basics', () => {
     const mld = new MessageListData({
         muting_enabled: false,
@@ -33,11 +39,7 @@ run_test('basics', () => {
 
     mld.add_anywhere(make_msgs([35, 25, 15, 45]));
 
-    function assert_contents(msg_ids) {
-        const msgs = mld.all_messages();
-        assert.deepEqual(msgs, make_msgs(msg_ids));
-    }
-    assert_contents([15, 25, 35, 45]);
+    assert_contents(mld, [15, 25, 35, 45]);
 
     const new_msgs = make_msgs([10, 20, 30, 40, 50, 60, 70]);
     const info = mld.add_messages(new_msgs);
@@ -48,7 +50,7 @@ run_test('basics', () => {
         bottom_messages: make_msgs([50, 60, 70]),
     });
 
-    assert_contents([10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70]);
+    assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 50, 60, 70]);
 
     assert.equal(mld.selected_id(), -1);
     assert.equal(mld.closest_id(8), 10);
@@ -60,10 +62,10 @@ run_test('basics', () => {
     assert.equal(mld.selected_idx(), 8);
 
     mld.remove([mld.get(50)]);
-    assert_contents([10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
+    assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.update_items_for_muting();
-    assert_contents([10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
+    assert_contents(mld, [10, 15, 20, 25, 30, 35, 40, 45, 60, 70]);
 
     mld.reset_select_to_closest();
     assert.equal(mld.selected_id(), 45);
@@ -75,12 +77,12 @@ run_test('basics', () => {
 
 
     mld.clear();
-    assert_contents([]);
+    assert_contents(mld, []);
     assert.equal(mld.closest_id(99), -1);
     assert.equal(mld.get_last_message_sent_by_me(), undefined);
 
     mld.add_messages(make_msgs([120, 125.01, 130, 140]));
-    assert_contents([120, 125.01, 130, 140]);
+    assert_contents(mld, [120, 125.01, 130, 140]);
     mld.set_selected_id(125.01);
     assert.equal(mld.selected_id(), 125.01);
 
@@ -88,7 +90,7 @@ run_test('basics', () => {
     mld.change_message_id(125.01, 145, {
         re_render: () => {},
     });
-    assert_contents([120, 130, 140, 145]);
+    assert_contents(mld, [120, 130, 140, 145]);
 
     _.each(mld.all_messages(), (msg) => {
         msg.unread = false;
@@ -97,10 +99,47 @@ run_test('basics', () => {
     assert.equal(mld.first_unread_message_id(), 145);
 });
 
+run_test('muting enabled', () => {
+    const mld = new MessageListData({
+        muting_enabled: true,
+        filter: undefined,
+    });
+
+    muting.is_topic_muted = function () { return true; };
+    mld.add_anywhere(make_msgs([35, 25, 15, 45]));
+    assert_contents(mld, []);
+
+    mld.get(35).mentioned = true;
+    mld.update_items_for_muting();
+    assert.deepEqual(mld._items, [mld.get(35)]);
+
+    mld.remove(make_msgs([35, 15]));
+    assert_contents(mld, []);
+    assert.deepEqual(mld._all_items, make_msgs([25, 45]));
+
+    const msgs = make_msgs([10, 20]);
+    msgs[0].mentioned = true;
+    mld.prepend(msgs);
+    assert.deepEqual(mld._items, [mld.get(10)]);
+    assert.deepEqual(mld._all_items, msgs.concat(make_msgs([25, 45])));
+
+    mld.clear();
+    assert.deepEqual(mld._all_items, []);
+});
+
 run_test('errors', () => {
     const mld = new MessageListData({
         muting_enabled: false,
         filter: undefined,
     });
     assert.equal(mld.get('bogus-id'), undefined);
+
+    blueslip.set_test_data('fatal', 'Bad message id');
+    mld._add_to_hash(['asdf']);
+    assert.equal(blueslip.get_test_logs('fatal').length, 1);
+
+    blueslip.set_test_data('error', 'Duplicate message added to MessageListData');
+    mld._hash[1] = 'taken';
+    mld._add_to_hash(make_msgs([1]));
+    assert.equal(blueslip.get_test_logs('error').length, 1);
 });
