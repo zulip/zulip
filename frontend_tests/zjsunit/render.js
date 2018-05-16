@@ -18,6 +18,9 @@ exports.make_sure_all_templates_have_been_compiled = function () {
     var files = exports.template_finder.get_all();
 
     _.each(files, function (file) {
+        if (file.name.indexOf('widget') >= 0) {
+            return;
+        }
         if (!Handlebars.templates[file.name]) {
             throw "The file " + file.url + " has no test coverage.";
         }
