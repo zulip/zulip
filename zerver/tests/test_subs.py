@@ -3,6 +3,7 @@
 from typing import Any, Dict, List, Mapping, Optional, Sequence, Set
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.http import HttpRequest, HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -62,6 +63,7 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
+    validate_user_access_to_subscribers_helper
 )
 
 from zerver.views.streams import (
@@ -2638,6 +2640,30 @@ class SubscriptionAPITest(ZulipTestCase):
             len(non_admin_before_delete[0]) == len(non_admin_after_delete[0]) + 1,
             'Expected exactly 1 less stream from gather_subscriptions_helper')
 
+    def test_validate_user_access_to_subscribers_helper(self) -> None:
+        """
+        Ensure the validate_user_access_to_subscribers_helper is properly raising
+        ValidationError on missing user, user not-in-realm.
+        """
+        user_profile = self.example_user('othello')
+        realm_name = 'no_othello_allowed'
+        realm = do_create_realm(realm_name, 'Everyone but Othello is allowed')
+        stream_dict = {
+            'name': 'publicstream',
+            'description': 'Public stream with public history',
+            'realm_id': realm.id
+        }
+
+        # For this test to work, othello can't be in the no_othello_here realm
+        self.assertNotEqual(user_profile.realm.id, realm.id, 'Expected othello user to not be in this realm.')
+
+        # This should result in missing user
+        with self.assertRaises(ValidationError):
+            validate_user_access_to_subscribers_helper(None, stream_dict, None)
+
+        # This should result in user not in realm
+        with self.assertRaises(ValidationError):
+            validate_user_access_to_subscribers_helper(user_profile, stream_dict, None)
 
 class GetPublicStreamsTest(ZulipTestCase):
 
@@ -3241,3 +3267,4 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
