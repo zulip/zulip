@@ -219,16 +219,11 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
-                "Verona": {"description": "A city in Italy",
-                           "invite_only": False, "is_web_public": False},
-                "Denmark": {"description": "A Scandinavian country",
-                            "invite_only": False, "is_web_public": False},
-                "Scotland": {"description": "Located in the United Kingdom",
-                             "invite_only": False, "is_web_public": False},
-                "Venice": {"description": "A northeastern Italian city",
-                           "invite_only": False, "is_web_public": False},
-                "Rome": {"description": "Yet another Italian city",
-                         "invite_only": False, "is_web_public": True}
+                "Verona": {"description": "A city in Italy", "is_web_public": False},
+                "Denmark": {"description": "A Scandinavian country", "is_web_public": False},
+                "Scotland": {"description": "Located in the United Kingdom", "is_web_public": False},
+                "Venice": {"description": "A northeastern Italian city", "is_web_public": False},
+                "Rome": {"description": "Yet another Italian city", "is_web_public": True}
             }  # type: Dict[str, Dict[str, Any]]
 
             bulk_create_streams(zulip_realm, stream_dict)
@@ -396,24 +391,16 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_dict = {
-                    "devel": {"description": "For developing",
-                              "invite_only": False, "is_web_public": False},
-                    "all": {"description": "For everything",
-                            "invite_only": False, "is_web_public": False},
+                    "devel": {"description": "For developing", "is_web_public": False},
+                    "all": {"description": "For everything", "is_web_public": False},
                     "announce": {"description": "For announcements",
-                                 "invite_only": False, 'is_announcement_only': True, "is_web_public": False},
-                    "design": {"description": "For design",
-                               "invite_only": False, "is_web_public": False},
-                    "support": {"description": "For support",
-                                "invite_only": False, "is_web_public": False},
-                    "social": {"description": "For socializing",
-                               "invite_only": False, "is_web_public": False},
-                    "test": {"description": "For testing",
-                             "invite_only": False, "is_web_public": False},
-                    "errors": {"description": "For errors",
-                               "invite_only": False, "is_web_public": False},
-                    "sales": {"description": "For sales discussion",
-                              "invite_only": False, "is_web_public": False}
+                                 'is_announcement_only': True, "is_web_public": False},
+                    "design": {"description": "For design", "is_web_public": False},
+                    "support": {"description": "For support", "is_web_public": False},
+                    "social": {"description": "For socializing", "is_web_public": False},
+                    "test": {"description": "For testing", "is_web_public": False},
+                    "errors": {"description": "For errors", "is_web_public": False},
+                    "sales": {"description": "For sales discussion", "is_web_public": False}
                 }  # type: Dict[str, Dict[str, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
@@ -430,7 +417,6 @@ class Command(BaseCommand):
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
-                        "invite_only": False,
                         "is_web_public": False,
                     }
 
