@@ -894,7 +894,6 @@ JS_SPECS = {
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',
             'node_modules/xdate/src/xdate.js',
-            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'third/jquery-idle/jquery.idle.js',
             'third/jquery-autosize/jquery.autosize.js',
             'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
@@ -1103,7 +1102,6 @@ JS_SPECS = {
             'js/scroll_bar.js',
             'node_modules/xdate/src/xdate.js',
             'node_modules/perfect-scrollbar/dist/perfect-scrollbar.js',
-            'third/jquery-throttle-debounce/jquery.ba-throttle-debounce.js',
             'templates/compiled.js',
         ],
         'output_filename': 'min/archive.js'
