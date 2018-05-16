@@ -23,6 +23,8 @@ class zulip::base {
     'moreutils',
     # Required for using HTTPS in apt repositories.
     'apt-transport-https',
+    # Needed for the cron jobs installed by puppet
+    'cron',
   ]
   package { $base_packages: ensure => 'installed' }
 
