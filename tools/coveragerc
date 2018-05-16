@@ -24,6 +24,8 @@ omit =
     # Has its own independent test suite
     zerver/lib/api_test_helpers.py
     zerver/lib/parallel.py
+    # Debugging tools that don't lend themselves well to unit tests
+    zerver/lib/debug.py
     # Part of provisioning/populate_db
     zerver/lib/generate_test_data.py
     # Excluded because its coverage state is flaky.
