@@ -15,5 +15,6 @@ Zulip in Production
    security-model
    authentication-methods
    postgres
+   upload-backends
    ssl-certificates
    email
