@@ -43,15 +43,6 @@ def force_text(s: Union[str, bytes], encoding: str='utf-8') -> str:
     else:
         raise TypeError("force_text expects a string type")
 
-def force_bytes(s: Union[str, bytes], encoding: str='utf-8') -> bytes:
-    """converts a string to binary string"""
-    if isinstance(s, bytes):
-        return s
-    elif isinstance(s, str):
-        return s.encode(encoding)
-    else:
-        raise TypeError("force_bytes expects a string type")
-
 def force_str(s: Union[str, bytes], encoding: str='utf-8') -> str:
     """converts a string to a native string"""
     if isinstance(s, str):
