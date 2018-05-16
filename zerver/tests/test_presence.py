@@ -33,7 +33,8 @@ import datetime
 
 class ActivityTest(ZulipTestCase):
     def test_activity(self) -> None:
-        self.login(self.example_email("hamlet"))
+        user_profile = self.example_user("hamlet")
+        self.login(user_profile.email)
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
         last_visit = timezone_now()
@@ -46,11 +47,34 @@ class ActivityTest(ZulipTestCase):
                 count=count,
                 last_visit=last_visit
             )
+
+        # Fails when not staff
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile.is_staff = True
+        user_profile.save()
+
         flush_per_request_caches()
         with queries_captured() as queries:
-            self.client_get('/activity')
+            result = self.client_get('/activity')
+            self.assertEqual(result.status_code, 200)
 
-        self.assert_length(queries, 4)
+        self.assert_length(queries, 13)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            result = self.client_get('/realm_activity/zulip/')
+            self.assertEqual(result.status_code, 200)
+
+        self.assert_length(queries, 9)
+
+        flush_per_request_caches()
+        with queries_captured() as queries:
+            result = self.client_get('/user_activity/iago@zulip.com/')
+            self.assertEqual(result.status_code, 200)
+
+        self.assert_length(queries, 5)
 
 class TestClientModel(ZulipTestCase):
     def test_client_stringification(self) -> None:
@@ -239,6 +263,12 @@ class UserPresenceTests(ZulipTestCase):
                 user_profile, time_zero + timedelta(seconds=1200),
                 third_time - timedelta(seconds=100)).total_seconds(),
             300)
+
+        # Now test /activity with actual data
+        user_profile.is_staff = True
+        user_profile.save()
+        result = self.client_get('/activity')
+        self.assertEqual(result.status_code, 200)
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")
