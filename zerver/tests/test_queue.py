@@ -1,6 +1,6 @@
 import mock
 import os
-from typing import Any
+from typing import Any, Dict
 import ujson
 
 from django.test import override_settings
@@ -38,6 +38,53 @@ class TestQueueImplementation(ZulipTestCase):
         result = queue_client.drain_queue("test_suite", json=True)
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0]['event'], 'my_event')
+
+    @override_settings(USING_RABBITMQ=True)
+    def test_register_consumer(self) -> None:
+        output = []
+
+        queue_client = get_queue_client()
+
+        def collect(event: Dict[str, Any]) -> None:
+            output.append(event)
+            queue_client.stop_consuming()
+
+        queue_client.register_json_consumer("test_suite", collect)
+        queue_json_publish("test_suite", {"event": "my_event"})
+
+        queue_client.start_consuming()
+
+        self.assertEqual(len(output), 1)
+        self.assertEqual(output[0]['event'], 'my_event')
+
+    @override_settings(USING_RABBITMQ=True)
+    def test_register_consumer_nack(self) -> None:
+        output = []
+        count = 0
+
+        queue_client = get_queue_client()
+
+        def collect(event: Dict[str, Any]) -> None:
+            queue_client.stop_consuming()
+            nonlocal count
+            count += 1
+            if count == 1:
+                raise Exception("Make me nack!")
+            output.append(event)
+
+        queue_client.register_json_consumer("test_suite", collect)
+        queue_json_publish("test_suite", {"event": "my_event"})
+
+        try:
+            queue_client.start_consuming()
+        except Exception as e:
+            queue_client.register_json_consumer("test_suite", collect)
+            queue_client.start_consuming()
+
+        # Confirm that we processed the event fully once
+        self.assertEqual(count, 2)
+        self.assertEqual(len(output), 1)
+        self.assertEqual(output[0]['event'], 'my_event')
 
     @override_settings(USING_RABBITMQ=True)
     def test_queue_error_json(self) -> None:
