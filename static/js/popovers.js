@@ -189,6 +189,7 @@ function show_user_profile(element, user) {
     }
 
     profile_data[i18n.t("Date joined")] = moment(user.date_joined).format("MMMM DD YYYY");
+    profile_data[i18n.t("Last seen")] = user_last_seen_time_status(user.user_id);
 
     var args = {
         full_name: user.full_name,
