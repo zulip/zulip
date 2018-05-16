@@ -47,12 +47,12 @@
 
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../third/fontawesome/fontawesome-webfont.eot?v=4.7.0');
-  src: url('../third/fontawesome/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
-       url('../third/fontawesome/fontawesome-webfont.woff?v=4.7.0') format('woff'),
-       url('../third/fontawesome/fontawesome-webfont.woff2?v=4.7.0') format('woff2'),
-       url('../third/fontawesome/fontawesome-webfont.ttf?v=4.7.0') format('truetype'),
-       url('../third/fontawesome/fontawesome-webfont.svg#fontawesomeregular?v=4.7.0') format('svg');
+  src: url('../../node_modules/font-awesome/fonts/fontawesome-webfont.eot?v=4.7.0');
+  src: url('../../node_modules/font-awesome/fonts/fontawesome-webfont.eot?#iefix&v=4.7.0') format('embedded-opentype'),
+       url('../../node_modules/font-awesome/fonts/fontawesome-webfont.woff?v=4.7.0') format('woff'),
+       url('../../node_modules/font-awesome/fonts/fontawesome-webfont.woff2?v=4.7.0') format('woff2'),
+       url('../../node_modules/font-awesome/fonts/fontawesome-webfont.ttf?v=4.7.0') format('truetype'),
+       url('../../node_modules/font-awesome/fonts/fontawesome-webfont.svg#fontawesomeregular?v=4.7.0') format('svg');
   font-weight: normal;
   font-style: normal;
 }
