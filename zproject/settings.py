@@ -214,6 +214,10 @@ DEFAULT_SETTINGS = {
     # This is used to send all hotspots for convenient manual testing
     # in development mode.
     'ALWAYS_SEND_ALL_HOTSPOTS': False,
+
+    # We use SubMessage for now-experimental features like
+    # slash commands.
+    'ALLOW_SUB_MESSAGES': DEVELOPMENT,
 }
 
 # These settings are not documented in prod_settings_template.py.
