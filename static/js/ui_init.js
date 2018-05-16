@@ -55,7 +55,7 @@ function initialize_kitchen_sink_stuff() {
     //      the code here can probably be moved to more
     //      specific-purpose modules like message_viewport.js.
 
-    var throttled_mousewheelhandler = $.throttle(50, function (e, delta) {
+    var throttled_mousewheelhandler = _.throttle(function (e, delta) {
         // Most of the mouse wheel's work will be handled by the
         // scroll handler, but when we're at the top or bottom of the
         // page, the pointer may still need to move.
@@ -71,7 +71,7 @@ function initialize_kitchen_sink_stuff() {
         }
 
         message_viewport.last_movement_direction = delta;
-    });
+    }, 50);
 
     message_viewport.message_pane.on('wheel', function (e) {
         var delta = e.originalEvent.deltaY;
@@ -83,7 +83,7 @@ function initialize_kitchen_sink_stuff() {
         // preventDefault, allowing the modal to scroll normally.
     });
 
-    $(window).resize($.throttle(50, resize.handler));
+    $(window).resize(_.throttle(resize.handler, 50));
 
     // Scrolling in overlays. input boxes, and other elements that
     // explicitly scroll should not scroll the main view.  Stop

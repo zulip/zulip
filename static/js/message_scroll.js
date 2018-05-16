@@ -73,10 +73,10 @@ function scroll_finish() {
 }
 
 exports.initialize = function () {
-    message_viewport.message_pane.scroll($.throttle(50, function () {
+    message_viewport.message_pane.scroll(_.throttle(function () {
         unread_ops.process_visible();
         scroll_finish();
-    }));
+    }, 50));
 };
 
 
