@@ -297,8 +297,9 @@ exports.sort_languages = function (matches, query) {
 };
 
 exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
-    var users_name_results =  util.prefix_sort(
-        query, users, function (x) { return x.full_name; });
+    var users_name_results = util.prefix_sort(
+        query, users, function (x) { return x.full_name; }, true);
+
     var result = exports.sort_for_at_mentioning(
         users_name_results.matches,
         current_stream,

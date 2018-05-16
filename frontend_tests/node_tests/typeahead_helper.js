@@ -173,10 +173,10 @@ run_test('sort_recipients', () => {
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
         'b_user_3@zulip.net',
+        'a_bot@zulip.com',
         'b_bot@example.com',
         'a_user@zulip.org',
         'zman@test.net',
-        'a_bot@zulip.com',
     ]);
 
     // Typeahead for private message [query, "", ""]
@@ -233,10 +233,10 @@ run_test('sort_recipients', () => {
         subscriber_email_3,
         subscriber_email_2,
         subscriber_email_1,
+        'a_bot@zulip.com',
         'b_user_1@zulip.net',
         'zman@test.net',
         'a_user@zulip.org',
-        'a_bot@zulip.com',
     ]);
 
     global.recent_senders.process_message_for_senders({
@@ -297,11 +297,11 @@ run_test('sort_recipients', () => {
     assert.deepEqual(get_typeahead_result("b", "Linux", "Linux Topic"), [
         'b_user_3@zulip.net',
         'b_bot@example.com',
+        'a_bot@zulip.com',
         'b_user_1@zulip.net',
         'b_user_2@zulip.net',
         'zman@test.net',
         'a_user@zulip.org',
-        'a_bot@zulip.com',
     ]);
 
     // Test sort_recipients with duplicate people
@@ -314,12 +314,12 @@ run_test('sort_recipients', () => {
     var expected = [
         'b_bot@example.com',
         'b_user_3@zulip.net',
+        'a_bot@zulip.com',
+        'a_bot@zulip.com',
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
         'a_user@zulip.org',
         'zman@test.net',
-        'a_bot@zulip.com',
-        'a_bot@zulip.com',
     ];
     assert.deepEqual(recipients_email, expected);
 
@@ -581,10 +581,10 @@ run_test('sort_recipientbox_typeahead', () => {
     assert.deepEqual(recipients_email, [
         'b_bot@example.com',
         'b_user_3@zulip.net',
+        'a_bot@zulip.com',
         'b_user_2@zulip.net',
         'b_user_1@zulip.net',
         'a_user@zulip.org',
         'zman@test.net',
-        'a_bot@zulip.com',
     ]);
 });

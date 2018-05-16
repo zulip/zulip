@@ -731,7 +731,7 @@ run_test('initialize', () => {
 
         fake_this = { completing: 'mention', token: 'ham' };
         actual_value = options.sorter.call(fake_this, [hamletcharacters, hamlet]);
-        expected_value = [hamletcharacters, hamlet];
+        expected_value = [hamlet, hamletcharacters];
         assert.deepEqual(actual_value, expected_value);
 
         fake_this = { completing: 'mention', token: 'ham' };
