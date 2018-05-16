@@ -214,6 +214,9 @@ DEFAULT_SETTINGS = {
     # This is used to send all hotspots for convenient manual testing
     # in development mode.
     'ALWAYS_SEND_ALL_HOTSPOTS': False,
+    # This is used in development environment to set the presence info
+    # of the users in the database and have that persist
+    'DONT_UPDATE_PRESENCE': False,
 }
 
 # These settings are not documented in prod_settings_template.py.

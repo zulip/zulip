@@ -192,6 +192,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         password_min_length = settings.PASSWORD_MIN_LENGTH,
         password_min_guesses  = settings.PASSWORD_MIN_GUESSES,
         jitsi_server_url      = settings.JITSI_SERVER_URL,
+        dont_update_presence = settings.DONT_UPDATE_PRESENCE,
 
         # Misc. extra data.
         have_initial_messages = user_has_messages,

@@ -57,6 +57,7 @@ class HomeTest(ZulipTestCase):
             "default_language",
             "default_language_name",
             "development_environment",
+            "dont_update_presence",
             "email",
             "emojiset",
             "emojiset_choices",
