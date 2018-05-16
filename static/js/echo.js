@@ -93,12 +93,21 @@ function insert_local_message(message_request, local_id) {
     return message.local_id;
 }
 
+exports.is_slash_command = function (content) {
+    return !content.startsWith('/me') && content.startsWith('/');
+};
+
+
 exports.try_deliver_locally = function try_deliver_locally(message_request) {
     if (markdown.contains_backend_only_syntax(message_request.content)) {
         return;
     }
 
     if (narrow_state.active() && !narrow_state.filter().can_apply_locally()) {
+        return;
+    }
+
+    if (exports.is_slash_command(message_request.content)) {
         return;
     }
 
