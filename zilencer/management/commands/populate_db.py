@@ -219,10 +219,10 @@ class Command(BaseCommand):
             # Create public streams.
             stream_list = ["Verona", "Denmark", "Scotland", "Venice", "Rome"]
             stream_dict = {
-                "Verona": {"description": "A city in Italy", "is_web_public": False},
-                "Denmark": {"description": "A Scandinavian country", "is_web_public": False},
-                "Scotland": {"description": "Located in the United Kingdom", "is_web_public": False},
-                "Venice": {"description": "A northeastern Italian city", "is_web_public": False},
+                "Verona": {"description": "A city in Italy"},
+                "Denmark": {"description": "A Scandinavian country"},
+                "Scotland": {"description": "Located in the United Kingdom"},
+                "Venice": {"description": "A northeastern Italian city"},
                 "Rome": {"description": "Yet another Italian city", "is_web_public": True}
             }  # type: Dict[str, Dict[str, Any]]
 
@@ -391,16 +391,15 @@ class Command(BaseCommand):
                 # when running populate_db for the test suite
 
                 zulip_stream_dict = {
-                    "devel": {"description": "For developing", "is_web_public": False},
-                    "all": {"description": "For everything", "is_web_public": False},
-                    "announce": {"description": "For announcements",
-                                 'is_announcement_only': True, "is_web_public": False},
-                    "design": {"description": "For design", "is_web_public": False},
-                    "support": {"description": "For support", "is_web_public": False},
-                    "social": {"description": "For socializing", "is_web_public": False},
-                    "test": {"description": "For testing", "is_web_public": False},
-                    "errors": {"description": "For errors", "is_web_public": False},
-                    "sales": {"description": "For sales discussion", "is_web_public": False}
+                    "devel": {"description": "For developing"},
+                    "all": {"description": "For everything"},
+                    "announce": {"description": "For announcements", 'is_announcement_only': True},
+                    "design": {"description": "For design"},
+                    "support": {"description": "For support"},
+                    "social": {"description": "For socializing"},
+                    "test": {"description": "For testing"},
+                    "errors": {"description": "For errors"},
+                    "sales": {"description": "For sales discussion"}
                 }  # type: Dict[str, Dict[str, Any]]
 
                 # Calculate the maximum number of digits in any extra stream's
@@ -417,7 +416,6 @@ class Command(BaseCommand):
 
                     zulip_stream_dict[extra_stream_name] = {
                         "description": "Auto-generated extra stream.",
-                        "is_web_public": False,
                     }
 
                 bulk_create_streams(zulip_realm, zulip_stream_dict)

@@ -78,7 +78,7 @@ def bulk_create_streams(realm: Realm,
                     invite_only=options.get("invite_only", False),
                     is_announcement_only=options.get("is_announcement_only", False),
                     history_public_to_subscribers=options["history_public_to_subscribers"],
-                    is_web_public=options["is_web_public"],
+                    is_web_public=options.get("is_web_public", False),
                     is_in_zephyr_realm=realm.is_zephyr_mirror_realm,
                 )
             )
