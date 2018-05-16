@@ -136,8 +136,6 @@ $(function () {
     $.fn.safeOuterWidth = function () {
         return $(this).outerWidth.apply(this, arguments) || 0;
     };
-    $('.app').scroll($.throttle(50, function () {
-        scroll_finish();
-    }));
+    $('.app').scroll(_.throttle(scroll_finish(), 50));
     archive.initialize();
 });
