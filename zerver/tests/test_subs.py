@@ -3267,4 +3267,3 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
-

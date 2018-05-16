@@ -528,8 +528,8 @@ class RecipientInfoTest(ZulipTestCase):
 
         # Make sure get_recipient_info asserts on invalid recipient types
         with self.assertRaisesRegex(ValueError, 'Bad recipient type'):
-            invalid_recipient = Recipient(type=999) # 999 is not a valid type
-            info = get_recipient_info(
+            invalid_recipient = Recipient(type=999)  # 999 is not a valid type
+            get_recipient_info(
                 recipient=invalid_recipient,
                 sender_id=hamlet.id,
                 stream_topic=stream_topic,

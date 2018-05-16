@@ -929,7 +929,7 @@ class EventsRegisterTest(ZulipTestCase):
 
         # Test some other recipient type
         with self.assertRaisesRegex(ValueError, 'Bad recipient type'):
-            recipient = Recipient(type=999) # invalid type
+            recipient = Recipient(type=999)  # invalid type
             get_typing_user_profiles(recipient, sender_profile.id)
 
     def test_custom_profile_fields_events(self) -> None:
