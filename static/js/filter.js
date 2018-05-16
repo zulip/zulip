@@ -35,6 +35,10 @@ function zephyr_topic_name_match(message, operand) {
 }
 
 function message_in_home(message) {
+    if (message.zgram) {
+        return true;
+    }
+
     if (message.type === "private" || message.mentioned ||
         (page_params.narrow_stream !== undefined &&
          message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())) {
@@ -480,6 +484,10 @@ Filter.prototype = {
         // build JavaScript code in a string and then eval() it.
 
         return function (message) {
+            if (message.zgram) {
+                return true;
+            }
+
             return _.all(operators, function (term) {
                 var ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {

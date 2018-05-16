@@ -253,6 +253,15 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         break;
 
+    case 'submessage':
+        submessage.handle_event({
+            sender_id: event.sender_id,
+            msg_type: event.msg_type,
+            message_id: event.message_id,
+            data: event.data,
+        });
+        break;
+
     case 'subscription':
         if (event.op === 'add') {
             _.each(event.subscriptions, function (rec) {
