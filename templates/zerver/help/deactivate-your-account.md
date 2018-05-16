@@ -1,33 +1,27 @@
 # Deactivate your account
 
-We'd be sorry to see you go, but you can follow the following steps to
-deactivate your Zulip account.
-
 {settings_tab|your-account}
 
-2. Click the **Deactivate account** button on the bottom of the
-   **Your account** section.
+2. Under **Deactive account**, click **Deactivate account**.
 
-4. After clicking the **Deactivate account** button, a modal window titled
-**Deactivate your account** will appear. To confirm the deletion of your
-account, click the **Deactivate now** button.
+4. Confirm the deletion of your account by clicking **Deactivate now**.
 
-    !!! warn ""
-        **Note:** Any bots that you maintain will be disabled when you
-        deactivate your account.
+## What happens when you deactive an account
 
-6. After clicking the **Deactivate now** button, you will be logged
-   out and returned to the Zulip login page.
+ * Any bots that you maintain will be disabled.
 
-Please note that you cannot register a Zulip account using the email address of
-a deactivated account.
+ * Deactivating your account won't delete messages or files you've shared. If
+   permitted, delete content you'd like to remove before deactivating your
+   account.
 
-In addition, if you're the only administrator in the organization, you cannot
-deactivate your account; you need to make another user an administrator first
-before you can deactivate your account.
+ * You cannot register a Zulip account using the email
+    address of a deactivated account. If you change your mind about deactivating an account,
+    you ask your Zulip organization administrator to
+    [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user)
+    your account.
 
-!!! tip ""
-    If you regret deactivating your account, you can ask a Zulip organization
-    administrator to
-    [reactivate](/help/deactivate-or-reactivate-a-user#reactivate-a-user) your
-    account.
+!!! warn ""
+    If you're the only administrator in the organization, you cannot
+    deactivate your account; you need to make another user an administrator first
+    before you can deactivate your account.
+
