@@ -1,0 +1,20 @@
+<h3>Tic Tac Toe</h3>
+
+{{ move_status }}
+<br />
+
+<table class="tictactoe">
+    {{#each squares}}
+    <tr>
+        {{#each this}}
+        <td class="tictactoe">
+            <div>
+                <button {{#if this.disabled}}disabled{{/if}} class="tictactoe-square" data-idx="{{ idx }}">
+                    {{ this.val }}
+                </button>
+            </div>
+        </td>
+        {{/each}}
+    </tr>
+    {{/each}}
+</table>

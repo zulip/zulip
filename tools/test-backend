@@ -93,6 +93,8 @@ not_yet_fully_covered = {
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/lib/api_test_helpers.py',
+    # Experimenatal
+    'zerver/lib/widget.py',
     # Webhook integrations with incomplete coverage
     'zerver/webhooks/basecamp/view.py',
     'zerver/webhooks/beanstalk/view.py',

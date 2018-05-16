@@ -22,7 +22,7 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     display_recipient_cache_key, cache_delete, active_user_ids_cache_key, \
     get_stream_cache_key, realm_user_dicts_cache_key, \
     bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
-    bot_dict_fields, flush_message, bot_profile_cache_key
+    bot_dict_fields, flush_message, flush_submessage, bot_profile_cache_key
 from zerver.lib.utils import make_safe_digest, generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
@@ -1299,6 +1299,26 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
     ).order_by('-id')[:10]
 
 post_save.connect(flush_message, sender=Message)
+
+class SubMessage(models.Model):
+    # We can send little text messages that are associated with a regular
+    # Zulip message.  These can be used for experimental widgets like embedded
+    # games, surveys, mini threads, etc.  These are designed to be pretty
+    # generic in purpose.
+
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+    sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    msg_type = models.TextField()
+    content = models.TextField()
+
+    @staticmethod
+    def get_raw_db_rows(needed_ids: List[int]) -> List[Dict[str, Any]]:
+        fields = ['id', 'message_id', 'sender_id', 'msg_type', 'content']
+        query = SubMessage.objects.filter(message_id__in=needed_ids).values(*fields)
+        query = query.order_by('message_id', 'id')
+        return list(query)
+
+post_save.connect(flush_submessage, sender=SubMessage)
 
 class Reaction(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

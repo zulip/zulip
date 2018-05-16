@@ -214,6 +214,10 @@ DEFAULT_SETTINGS = {
     # This is used to send all hotspots for convenient manual testing
     # in development mode.
     'ALWAYS_SEND_ALL_HOTSPOTS': False,
+
+    # We use SubMessage for now-experimental features like
+    # slash commands.
+    'ALLOW_SUB_MESSAGES': DEVELOPMENT,
 }
 
 # These settings are not documented in prod_settings_template.py.
@@ -943,6 +947,10 @@ JS_SPECS = {
             'js/top_left_corner.js',
             'js/stream_list.js',
             'js/filter.js',
+            'js/voting_widget.js',
+            'js/tictactoe_widget.js',
+            'js/widgetize.js',
+            'js/submessage.js',
             'js/fetch_status.js',
             'js/message_list_data.js',
             'js/message_list_view.js',

@@ -64,7 +64,7 @@ from zerver.lib.topic_mutes import (
 from zerver.lib.users import bulk_get_users, check_full_name, user_ids_to_users
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, Service, \
+    RealmDomain, Service, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, PushDeviceToken, \
@@ -88,6 +88,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
+from zerver.lib.widget import do_widget_post_save_actions, \
+    get_fixed_content_for_widget
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q, Max, Sum
@@ -1137,6 +1139,10 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
 
+        # Some widgets just overwrite content.
+        fixed_content = get_fixed_content_for_widget(message['message'].content)
+        message['message'].content = fixed_content
+
         mention_data = bugdown.MentionData(
             realm_id=message['realm'].id,
             content=message['message'].content,
@@ -1237,6 +1243,9 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         for message in messages:
             if Message.content_has_attachment(message['message'].content):
                 do_claim_attachments(message['message'])
+
+        for message in messages:
+            do_widget_post_save_actions(message)
 
     for message in messages:
         # Deliver events to the real-time push system, as well as
@@ -1423,6 +1432,32 @@ def bulk_insert_ums(ums: List[UserMessageLite]) -> None:
 
     with connection.cursor() as cursor:
         cursor.execute(query)
+
+def do_add_submessage(sender_id: int,
+                      message_id: int,
+                      msg_type: str,
+                      content: str,
+                      data: Any,
+                      ) -> None:
+    submessage = SubMessage(
+        sender_id=sender_id,
+        message_id=message_id,
+        msg_type=msg_type,
+        content=content,
+    )
+    submessage.save()
+
+    event = dict(
+        type="submessage",
+        msg_type=msg_type,
+        message_id=message_id,
+        sender_id=sender_id,
+        data=data,
+    )
+    ums = UserMessage.objects.filter(message_id=message_id)
+    target_user_ids = [um.user_profile_id for um in ums]
+
+    send_event(event, target_user_ids)
 
 def notify_reaction_update(user_profile: UserProfile, message: Message,
                            reaction: Reaction, op: str) -> None:
