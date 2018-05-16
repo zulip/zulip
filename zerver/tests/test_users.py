@@ -516,6 +516,25 @@ class RecipientInfoTest(ZulipTestCase):
         )
         self.assertEqual(info['default_bot_user_ids'], {normal_bot.id})
 
+    def test_get_recipient_info_invalid_recipient_type(self) -> None:
+        hamlet = self.example_user('hamlet')
+        realm = hamlet.realm
+
+        stream = get_stream('Rome', realm)
+        stream_topic = StreamTopicTarget(
+            stream_id=stream.id,
+            topic_name='test topic',
+        )
+
+        # Make sure get_recipient_info asserts on invalid recipient types
+        with self.assertRaisesRegex(ValueError, 'Bad recipient type'):
+            invalid_recipient = Recipient(type=999) # 999 is not a valid type
+            info = get_recipient_info(
+                recipient=invalid_recipient,
+                sender_id=hamlet.id,
+                stream_topic=stream_topic,
+            )
+
 class BulkUsersTest(ZulipTestCase):
     def test_client_gravatar_option(self) -> None:
         self.login(self.example_email('cordelia'))
