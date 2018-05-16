@@ -890,7 +890,7 @@ JS_SPECS = {
             'node_modules/jquery-validation/dist/jquery.validate.js',
             'node_modules/blueimp-md5/js/md5.js',
             'node_modules/clipboard/dist/clipboard.js',
-            'third/jquery-form/jquery.form.js',
+            'node_modules/jquery-form/src/jquery.form.js',
             'third/jquery-filedrop/jquery.filedrop.js',
             'third/jquery-caret/jquery.caret.1.5.2.js',
             'node_modules/xdate/src/xdate.js',
