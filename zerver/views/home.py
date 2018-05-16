@@ -31,7 +31,7 @@ from zerver.lib.i18n import translation
 
 import calendar
 import datetime
-import json
+import ujson
 import logging
 import os
 import re
@@ -178,7 +178,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
     translation_file = 'static/locale/' + language_key + '/translations.json'
     try:
         with open(translation_file) as json_data:
-            translation_data = json.load(json_data)
+            translation_data = ujson.load(json_data)
     except FileNotFoundError:
         print('Translations file {0} was not found'.format(translation_file))
         translation_data = ''

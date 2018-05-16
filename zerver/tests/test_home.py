@@ -6,6 +6,7 @@ import ujson
 
 from django.http import HttpResponse
 from django.test import override_settings
+from django.utils import translation
 from mock import MagicMock, patch
 import urllib
 from typing import Any, Dict, List
@@ -286,6 +287,13 @@ class HomeTest(ZulipTestCase):
                 patch('zerver.lib.events.request_event_queue', return_value=42), \
                 patch('zerver.lib.events.get_user_events', return_value=[]):
             result = self.client_get('/', dict(**kwargs))
+        return result
+
+    def _get_page(self, page: str, **kwargs: Any) -> HttpResponse:
+        with \
+                patch('zerver.lib.events.request_event_queue', return_value=42), \
+                patch('zerver.lib.events.get_user_events', return_value=[]):
+            result = self.client_get('/{}/'.format(page), dict(**kwargs))
         return result
 
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
@@ -725,4 +733,26 @@ class HomeTest(ZulipTestCase):
         self.assertGreaterEqual(query_count - len(queries), 5)
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
+        self.logout()
+
+    def test_translation_data(self) -> None:
+        translation_lang = 'ja'
+        translation_key = 'Manage organization'
+        translation_value = '組織を管理'
+
+        translation.activate(translation_lang)
+
+        email = self.example_email("hamlet")
+        self.login(email)
+
+        result = self._get_page(translation_lang)
+        params = self._get_page_params(result)
+
+        assert 'translation_data' in params
+        translation_data = params.get('translation_data')
+
+        assert translation_key in translation_data
+
+        assert translation_data[translation_key] == translation_value
+
         self.logout()
