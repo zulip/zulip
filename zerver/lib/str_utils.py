@@ -53,22 +53,3 @@ def force_str(s: Union[str, bytes], encoding: str='utf-8') -> str:
         return s.decode(encoding)
     else:
         raise TypeError("force_str expects a string type")
-
-class ModelReprMixin:
-    """
-    This mixin provides a python 2 and 3 compatible way of handling string representation of a model.
-    When declaring a model, inherit this mixin before django.db.models.Model.
-    Define __unicode__ on your model which returns a str object.
-    This mixin will automatically define __str__ and __repr__.
-    """
-
-    def __unicode__(self) -> str:
-        # Originally raised an exception, but Django (e.g. the ./manage.py shell)
-        # was catching the exception and not displaying any sort of error
-        return "Implement __unicode__ in your subclass of ModelReprMixin!"
-
-    def __str__(self) -> str:
-        return force_str(self.__unicode__())
-
-    def __repr__(self) -> str:
-        return force_str(self.__unicode__())

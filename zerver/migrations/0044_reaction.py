@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
                 ('message', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='zerver.Message')),
                 ('emoji_name', models.TextField()),
             ],
-            bases=(zerver.lib.str_utils.ModelReprMixin, models.Model),
+            bases=(models.Model,),
         ),
         migrations.AlterUniqueTogether(
             name='reaction',
