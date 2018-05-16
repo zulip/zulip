@@ -185,7 +185,7 @@ function show_user_profile(element, user) {
     var time_preferance = people.get_user_time_preferences(user.user_id);
 
     if (time_preferance) {
-        profile_data.Timezone = time_preferance.timezone;
+        profile_data[i18n.t("User timezone")] = time_preferance.timezone;
     }
 
     profile_data[i18n.t("Date joined")] = moment(user.date_joined).format("MMMM DD YYYY");
