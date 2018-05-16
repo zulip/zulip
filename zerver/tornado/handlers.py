@@ -74,7 +74,8 @@ def finish_handler(handler_id: int, event_queue_id: str,
 
 
 # Modified version of the base Tornado handler for Django
-class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
+# We mark this for nocoverage, since we only change 1 line of actual code.
+class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # nocoverage
     initLock = Lock()
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -323,6 +324,7 @@ class AsyncDjangoHandler(tornado.web.RequestHandler, base.BaseHandler):
 
         return response
 
+class AsyncDjangoHandler(AsyncDjangoHandlerBase):
     def zulip_finish(self, response: Dict[str, Any], request: HttpRequest,
                      apply_markdown: bool) -> None:
         # Make sure that Markdown rendering really happened, if requested.
