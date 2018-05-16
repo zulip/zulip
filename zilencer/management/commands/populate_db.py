@@ -401,7 +401,7 @@ class Command(BaseCommand):
                     "all": {"description": "For everything",
                             "invite_only": False, "is_web_public": False},
                     "announce": {"description": "For announcements",
-                                 "invite_only": False, "is_web_public": False},
+                                 "invite_only": False, 'is_announcement_only': True, "is_web_public": False},
                     "design": {"description": "For design",
                                "invite_only": False, "is_web_public": False},
                     "support": {"description": "For support",
