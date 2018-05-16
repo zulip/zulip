@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from datetime import timedelta
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
@@ -7,6 +8,7 @@ from mock import mock
 
 from typing import Any, Dict
 from zerver.lib.actions import do_deactivate_user
+from zerver.lib.statistics import seconds_usage_between
 from zerver.lib.test_helpers import (
     make_client,
     queries_captured,
@@ -177,8 +179,6 @@ class UserPresenceTests(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         self.login(self.example_email("hamlet"))
         self.assertEqual(UserActivityInterval.objects.filter(user_profile=user_profile).count(), 0)
-        from django.utils.timezone import now as timezone_now
-        from datetime import timedelta
         time_zero = timezone_now().replace(microsecond=0)
         with mock.patch('zerver.views.presence.timezone_now', return_value=time_zero):
             result = self.client_post("/json/users/me/presence", {'status': 'active',
@@ -212,6 +212,33 @@ class UserPresenceTests(ZulipTestCase):
         interval = UserActivityInterval.objects.filter(user_profile=user_profile).order_by('start')[1]
         self.assertEqual(interval.start, third_time)
         self.assertEqual(interval.end, third_time + UserActivityInterval.MIN_INTERVAL_LENGTH)
+
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time).total_seconds(),
+            1500)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time+timedelta(seconds=10)).total_seconds(),
+            1510)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time+timedelta(seconds=1000)).total_seconds(),
+            2400)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero, third_time - timedelta(seconds=100)).total_seconds(),
+            1500)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero + timedelta(seconds=100),
+                third_time - timedelta(seconds=100)).total_seconds(),
+            1400)
+        self.assertEqual(
+            seconds_usage_between(
+                user_profile, time_zero + timedelta(seconds=1200),
+                third_time - timedelta(seconds=100)).total_seconds(),
+            300)
 
     def test_filter_presence_idle_user_ids(self) -> None:
         user_profile = self.example_user("hamlet")

@@ -90,7 +90,6 @@ not_yet_fully_covered = {
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',
-    'zerver/lib/statistics.py',
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/lib/api_test_helpers.py',
