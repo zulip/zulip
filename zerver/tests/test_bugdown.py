@@ -188,9 +188,22 @@ class BugdownMiscTest(ZulipTestCase):
                 short_name='whatever',
             )
 
+        def make_user_with_id(email: str, full_name: str) -> UserProfile:
+            return create_user(
+                email=email,
+                password='whatever',
+                realm=realm,
+                full_name=full_name,
+                short_name='whatever',
+                user_profile_id = 1234
+            )
+
         fred1 = make_user('fred1@example.com', 'Fred Flintstone')
         fred1.is_active = False
         fred1.save()
+
+        sv1 = make_user_with_id('shikhar@example.com', 'shikhar vaish')
+        sv1.save()
 
         fred2 = make_user('fred2@example.com', 'Fred Flintstone')
 
@@ -198,12 +211,17 @@ class BugdownMiscTest(ZulipTestCase):
         fred3.is_active = False
         fred3.save()
 
-        dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
-        self.assertEqual(set(dct.keys()), {'fred flintstone', 'cordelia lear'})
+        dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'shikhar vaish', 'Not A User'})
+        self.assertEqual(set(dct.keys()), {'fred flintstone', 'cordelia lear', 'shikhar vaish'})
         self.assertEqual(dct['fred flintstone'], dict(
             email='fred2@example.com',
             full_name='Fred Flintstone',
             id=fred2.id
+        ))
+        self.assertEqual(dct['shikhar vaish'], dict(
+            email='shikhar@example.com',
+            full_name='shikhar vaish',
+            id=sv1.id
         ))
 
     def test_mention_data(self) -> None:
