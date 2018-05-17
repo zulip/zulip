@@ -30,6 +30,9 @@ class Command(BaseCommand):
                             help='The number of extra users to create')
 
     def handle(self, *args: Any, **options: Any) -> None:
+        if Realm.objects.count() > 0:
+            print("Database already initialized; doing nothing.")
+            return
         realm = Realm.objects.create(string_id=settings.INTERNAL_BOT_DOMAIN.split('.')[0])
 
         names = [(settings.FEEDBACK_BOT_NAME, settings.FEEDBACK_BOT)]
