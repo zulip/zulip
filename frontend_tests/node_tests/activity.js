@@ -708,17 +708,6 @@ run_test('realm_presence_disabled', () => {
     real_update_huddles();
 });
 
-// Mock the jquery is func
-$('.user-list-filter').is = function (sel) {
-    if (sel === ':focus') {
-        return $('.user-list-filter').is_focused();
-    }
-};
-
-$('.user-list-filter').parent = function () {
-    return $('#user-list .input-append');
-};
-
 run_test('clear_search', () => {
     $('.user-list-filter').val('somevalue');
     activity.user_filter.clear_search();
