@@ -395,10 +395,7 @@ def on_shutdown():
 def shutdown_handler(*args, **kwargs):
     # type: (*Any, **Any) -> None
     io_loop = IOLoop.current()
-    if io_loop._callbacks:
-        io_loop.call_later(1, shutdown_handler)
-    else:
-        io_loop.stop()
+    io_loop.stop()
 
 # log which services/ports will be started
 print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),

@@ -9,15 +9,7 @@ from django.core.management.base import BaseCommand, \
 from tornado import ioloop
 from tornado.log import app_log
 
-# We must call zerver.tornado.ioloop_logging.instrument_tornado_ioloop
-# before we import anything else from our project in order for our
-# Tornado load logging to work; otherwise we might accidentally import
-# zerver.lib.queue (which will instantiate the Tornado ioloop) before
-# this.
-from zerver.tornado.ioloop_logging import instrument_tornado_ioloop
-
 settings.RUNNING_INSIDE_TORNADO = True
-instrument_tornado_ioloop()
 
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, \
@@ -112,7 +104,6 @@ class Command(BaseCommand):
                 instance = ioloop.IOLoop.current()
 
                 if django.conf.settings.DEBUG:
-                    instance.set_blocking_log_threshold(5)
                     instance.handle_callback_exception = handle_callback_exception
                 instance.start()
             except KeyboardInterrupt:
