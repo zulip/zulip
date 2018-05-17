@@ -13,10 +13,6 @@ set_global('page_params', {
     is_admin: false,
     realm_users: [],
 });
-// For people.js
-set_global('md5', function (s) {
-    return 'md5-' + s;
-});
 
 zrequire('muting');
 zrequire('stream_data');
@@ -166,15 +162,6 @@ run_test('basic_notifications', () => {
 
     // Notifications API stub
     notifications.set_notification_api({
-        checkPermission: function checkPermission() {
-            if (window.Notification.permission === 'granted') {
-                return 0;
-            }
-            return 2;
-        },
-        requestPermission: function () {
-            return;
-        },
         createNotification: function createNotification(icon, title, content, tag) {
             var notification_object = {icon: icon, body: content, tag: tag};
             // properties for testing.
