@@ -88,7 +88,8 @@ class PermissionTest(ZulipTestCase):
         admin = self.example_user('hamlet')
         do_change_is_admin(admin, True)
 
-        result = self.client_patch('/json/users/nonexistentuser@zulip.com', {})
+        invalid_user_id = 1000
+        result = self.client_patch('/json/users/{}'.format(invalid_user_id), {})
         self.assert_json_error(result, 'No such user')
 
     def test_admin_api(self) -> None:
@@ -112,7 +113,7 @@ class PermissionTest(ZulipTestCase):
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/othello@zulip.com', req)
+            result = self.client_patch('/json/users/{}'.format(self.example_user("othello").id), req)
         self.assert_json_success(result)
         admin_users = realm.get_admin_users()
         self.assertTrue(user in admin_users)
@@ -124,7 +125,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(is_admin=ujson.dumps(False))
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/othello@zulip.com', req)
+            result = self.client_patch('/json/users/{}'.format(self.example_user("othello").id), req)
         self.assert_json_success(result)
         admin_users = realm.get_admin_users()
         self.assertFalse(user in admin_users)
@@ -137,7 +138,7 @@ class PermissionTest(ZulipTestCase):
         req = dict(is_admin=ujson.dumps(False))
         events = []
         with tornado_redirected_to_list(events):
-            result = self.client_patch('/json/users/hamlet@zulip.com', req)
+            result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assert_json_success(result)
         admin_users = realm.get_admin_users()
         self.assertFalse(admin in admin_users)
@@ -145,25 +146,26 @@ class PermissionTest(ZulipTestCase):
         self.assertEqual(person['email'], self.example_email("hamlet"))
         self.assertEqual(person['is_admin'], False)
         with tornado_redirected_to_list([]):
-            result = self.client_patch('/json/users/iago@zulip.com', req)
+            result = self.client_patch('/json/users/{}'.format(self.example_user("iago").id), req)
         self.assert_json_error(result, 'Cannot remove the only organization administrator')
 
         # Make sure only admins can patch other user's info.
         self.login(self.example_email("othello"))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_user_cannot_promote_to_admin(self) -> None:
         self.login(self.example_email("hamlet"))
         req = dict(is_admin=ujson.dumps(True))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_admin_user_can_change_full_name(self) -> None:
         new_name = 'new name'
         self.login(self.example_email("iago"))
+        hamlet = self.example_user('hamlet')
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
         self.assertTrue(result.status_code == 200)
         hamlet = self.example_user('hamlet')
         self.assertEqual(hamlet.full_name, new_name)
@@ -171,28 +173,28 @@ class PermissionTest(ZulipTestCase):
     def test_non_admin_cannot_change_full_name(self) -> None:
         self.login(self.example_email("hamlet"))
         req = dict(full_name=ujson.dumps('new name'))
-        result = self.client_patch('/json/users/othello@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user('othello').id), req)
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_admin_cannot_set_long_full_name(self) -> None:
         new_name = 'a' * (UserProfile.MAX_NAME_LENGTH + 1)
         self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Name too long!')
 
     def test_admin_cannot_set_short_full_name(self) -> None:
         new_name = 'a'
         self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Name too short!')
 
     def test_admin_cannot_set_full_name_with_invalid_characters(self) -> None:
         new_name = 'Opheli*'
         self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Invalid characters in name!')
 
 class AdminCreateUserTest(ZulipTestCase):
@@ -343,7 +345,7 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
 
-        result = self.client_delete('/json/users/hamlet@zulip.com')
+        result = self.client_delete('/json/users/{}'.format(user.id))
         self.assert_json_success(result)
         user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
@@ -351,22 +353,6 @@ class ActivateTest(ZulipTestCase):
         result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
         self.assert_json_success(result)
         user = self.example_user('hamlet')
-        self.assertTrue(user.is_active)
-
-    def test_api_me_user(self) -> None:
-        """This test helps ensure that our URL patterns for /users/me URLs
-        handle email addresses starting with "me" correctly."""
-        self.register(self.nonreg_email('me'), "testpassword")
-        self.login(self.example_email("iago"))
-
-        result = self.client_delete('/json/users/me@zulip.com')
-        self.assert_json_success(result)
-        user = self.nonreg_user('me')
-        self.assertFalse(user.is_active)
-
-        result = self.client_post('/json/users/{email}/reactivate'.format(email=self.nonreg_email('me')))
-        self.assert_json_success(result)
-        user = self.nonreg_user('me')
         self.assertTrue(user.is_active)
 
     def test_api_with_nonexistent_user(self) -> None:
@@ -379,16 +365,17 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_error(result, 'No such bot')
 
         # Cannot deactivate a nonexistent user.
-        result = self.client_delete('/json/users/nonexistent@zulip.com')
+        invalid_user_id = 1000
+        result = self.client_delete('/json/users/{}'.format(invalid_user_id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/{}'.format(self.example_email("webhook_bot")))
+        result = self.client_delete('/json/users/{}'.format(self.example_user("webhook_bot").id))
         self.assert_json_error(result, 'No such user')
 
-        result = self.client_delete('/json/users/iago@zulip.com')
+        result = self.client_delete('/json/users/{}'.format(self.example_user("iago").id))
         self.assert_json_success(result)
 
-        result = self.client_delete('/json/users/othello@zulip.com')
+        result = self.client_delete('/json/users/{}'.format(admin.id))
         self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
 
         # Cannot reactivate a nonexistent user.
@@ -401,7 +388,7 @@ class ActivateTest(ZulipTestCase):
         self.login(self.example_email("othello"))
 
         # Cannot deactivate a user with the users api
-        result = self.client_delete('/json/users/hamlet@zulip.com')
+        result = self.client_delete('/json/users/{}'.format(self.example_user("hamlet").id))
         self.assert_json_error(result, 'Insufficient permission')
 
         # Cannot reactivate a user
