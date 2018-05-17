@@ -34,10 +34,6 @@ run_test('basics', () => {
             self.class = _.without(tokens, c).join(' ');
         };
 
-        self.click = function () {
-            click_f.call(this);
-        };
-
         self.data = function (name) {
             assert.equal(name, 'tab-id');
             return i;
