@@ -31,6 +31,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
 
 MESSAGE_URL_REGEX = ("(%s[a-z0-9-:.]+)/(#narrow/stream/([^/]+)/subject/[^/]+/near/([0-9]+))" %
                      settings.EXTERNAL_URI_SCHEME)
+PM_URL_REGEX = ("(%s[a-z0-9-:.]+)/(#narrow/pm-with/[a-zA-Z0-9-:.]+/near/([0-9]+))" %
+                settings.EXTERNAL_URI_SCHEME)
 
 # Code from here is the realm import code path
 
@@ -119,23 +121,45 @@ def fix_message_urls(data: TableData, message_table: TableName,
             old_message_id = int(match.group(4))
 
             if old_message_id in id_maps['message']:
-                new_message_id = id_maps['message'][old_message_id]
+                message['content'], message['rendered_content'] = update_message(
+                    old_message_id, message_url, realm_uri, rendered_message_url, stream_name,
+                    message, updated_realm_uri)
 
-                # strip the id of the stream from the stream name
-                stream_name_strip = '-'.join(stream_name.split('-')[1:])
+        # For Private messages
+        for match in re.finditer(PM_URL_REGEX, message['content']):
+            message_url = match.group()
+            realm_uri = match.group(1)
+            rendered_message_url = match.group(2)
+            old_message_id = int(match.group(3))
+            stream_name = ''
 
-                # Update the message url with the realm uri, message_id and stream name
-                updated_message_url = message_url.replace(str(old_message_id), str(new_message_id))
-                updated_message_url = updated_message_url.replace(stream_name, stream_name_strip)
-                updated_message_url = updated_message_url.replace(realm_uri, updated_realm_uri)
-                message['content'] = message['content'].replace(message_url, updated_message_url)
+            if old_message_id in id_maps['message']:
+                message['content'], message['rendered_content'] = update_message(
+                    old_message_id, message_url, realm_uri, rendered_message_url, stream_name,
+                    message, updated_realm_uri)
 
-                if message['rendered_content']:
-                    updated_rendered_message_url = updated_message_url.replace(updated_realm_uri, '')
-                    message['rendered_content'] = message['rendered_content'].replace(
-                        message_url, updated_message_url)
-                    message['rendered_content'] = message['rendered_content'].replace(
-                        rendered_message_url, updated_rendered_message_url)
+def update_message(old_message_id: int, message_url: str, realm_uri: str,
+                   rendered_message_url: str, stream_name: str,
+                   message: Dict[str, Any], updated_realm_uri: str) -> Tuple[str, str]:
+    new_message_id = id_maps['message'][old_message_id]
+    updated_message_url = message_url.replace(str(old_message_id), str(new_message_id))
+
+    if stream_name:
+        # strip the id of the stream from the stream name
+        stream_name_strip = '-'.join(stream_name.split('-')[1:])
+        updated_message_url = updated_message_url.replace(stream_name, stream_name_strip)
+
+    updated_message_url = updated_message_url.replace(realm_uri, updated_realm_uri)
+    message['content'] = message['content'].replace(message_url, updated_message_url)
+
+    if message['rendered_content']:
+        updated_rendered_message_url = updated_message_url.replace(updated_realm_uri, '')
+        message['rendered_content'] = message['rendered_content'].replace(
+            message_url, updated_message_url)
+        message['rendered_content'] = message['rendered_content'].replace(
+            rendered_message_url, updated_rendered_message_url)
+
+    return message['content'], message['rendered_content']
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
