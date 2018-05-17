@@ -1,37 +1,25 @@
-{!create-stream.md!}
+Get Mention notifications within Zulip via Zapier!
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Next, go to your Mention feed and click on your profile in the
-top right corner, click on **Settings** in the drop down menu:
+1. {!create-bot-construct-url-indented.md!}
 
-![](/static/images/integrations/mention/001.png)
+1. Go to your Mention feed, and click on your profile in the top-right
+   corner. Select **Settings**. Click on **Integrations**. Select the
+   **Zapier** integration.
 
-From there, select **Integrations**:
+1. Click **Explore Mention on Zapier**. Search for "webhooks" in
+   the search bar, and click on **Webhooks by Zapier**. Scroll down
+   and look for **Add Webhook posts for new Mentions**, and click on
+   **Use this Zap**. Click on **Create this Zap**.
 
-![](/static/images/integrations/mention/002.png)
-
-Select the **Zapier** integration, and click
-**Explore Mention on Zapier!**:
-
-![](/static/images/integrations/mention/003.png)
-
-Search for "webhooks" in the search bar, and click on
-**Webhooks by Zapier**. Scroll down and look for
-**Add Webhooks posts for new Mentions** and click on
-**Use this Zap**:
-
-![](/static/images/integrations/mention/004.png)
-
-Select your Mention account ID and the alert that should trigger
-mentions from the respective drop down menus, and click **Continue**.
-
-Select **POST** on the page that says **Webhooks by Zapier Action**,
-and click **Continue**.
-
-In the **URL** field, enter the URL constructed above. Select `JSON`
-for **Payload Type** and click **Continue**:
+1. Follow the on-screen steps to link your
+   Mention account to Zapier and select your Mention **Account ID** and
+   **Alert** when prompted. Follow the on-screen steps to set up **Webhooks
+   by Zapier POST**. When prompted, set **URL** to the URL constructed
+   above, and set **Payload Type** to **JSON**. After **Test this Step**,
+   click **Finish**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/mention/005.png)
+![](/static/images/integrations/mention/001.png)
