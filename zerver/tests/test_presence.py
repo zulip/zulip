@@ -58,6 +58,12 @@ class ActivityTest(ZulipTestCase):
         flush_per_request_caches()
         with queries_captured() as queries:
             result = self.client_get('/activity')
+            if result.status_code == 302:  # nocoverage
+                # Debug data for a request we're trying to track down
+                print(result)
+                print(result.url)
+                print(self.example_user("hamlet").is_staff)
+                print(self.client.session._auth_user_id)
             self.assertEqual(result.status_code, 200)
 
         self.assert_length(queries, 13)
