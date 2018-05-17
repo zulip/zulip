@@ -37,22 +37,20 @@ from zerver.lib.timestamp import ceiling_to_day, \
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
-def render_stats(request: HttpRequest, realm: Realm) -> HttpRequest:
+def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str) -> HttpRequest:
     page_params = dict(
-        is_staff        = request.user.is_staff,
-        stats_realm     = realm.string_id,
-        debug_mode      = False,
+        data_url_suffix=data_url_suffix,
+        debug_mode=False,
     )
-
     return render(request,
                   'analytics/stats.html',
-                  context=dict(target_realm_name=realm.name,
+                  context=dict(target_realm_name=target_name,
                                page_params=JSONEncoderForHTML().encode(page_params)))
 
 @zulip_login_required
 def stats(request: HttpRequest) -> HttpResponse:
     realm = request.user.realm
-    return render_stats(request, realm)
+    return render_stats(request, '', realm.name or realm.string_id)
 
 @require_server_admin
 @has_request_variables
@@ -61,7 +59,7 @@ def stats_for_realm(request: HttpRequest, realm_str: str) -> HttpResponse:
     if realm is None:
         return HttpResponseNotFound("Realm %s does not exist" % (realm_str,))
 
-    return render_stats(request, realm)
+    return render_stats(request, '/realm/%s' % (realm_str,), realm.name or realm.string_id)
 
 @require_server_admin_api
 @has_request_variables
