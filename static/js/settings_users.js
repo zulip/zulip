@@ -300,10 +300,10 @@ exports.on_load_success = function (realm_people_data) {
 
         // Go up the tree until we find the user row, then grab the email element
         var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
+        var user_id = row.attr("data-user-id");
 
         channel.post({
-            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
             error: function (xhr) {
                 ui_report.generic_row_button_error(xhr, $(e.target));
             },

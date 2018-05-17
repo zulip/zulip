@@ -79,9 +79,9 @@ def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserPro
     return json_success()
 
 def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
-                            email: str) -> HttpResponse:
+                            user_id: int) -> HttpResponse:
     try:
-        target = get_user(email, user_profile.realm)
+        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 

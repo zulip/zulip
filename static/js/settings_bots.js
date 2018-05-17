@@ -324,10 +324,10 @@ exports.set_up = function () {
     });
 
     $("#inactive_bots_list").on("click", "button.reactivate_bot", function (e) {
-        var email = $(e.currentTarget).data('email');
+        var user_id = $(e.currentTarget).attr('data-user-id');
 
         channel.post({
-            url: '/json/users/' + encodeURIComponent(email) + "/reactivate",
+            url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
             error: function (xhr) {
                 $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
             },

@@ -126,7 +126,7 @@ v1_api_and_json_patterns = [
     url(r'^users$', rest_dispatch,
         {'GET': 'zerver.views.users.get_members_backend',
          'POST': 'zerver.views.users.create_user_backend'}),
-    url(r'^users/(?!me/)(?P<email>[^/]*)/reactivate$', rest_dispatch,
+    url(r'^users/(?P<user_id>[0-9]+)/reactivate$', rest_dispatch,
         {'POST': 'zerver.views.users.reactivate_user_backend'}),
     url(r'^users/(?!me/)(?P<email>[^/]*)/presence$', rest_dispatch,
         {'GET': 'zerver.views.presence.get_presence_backend'}),
