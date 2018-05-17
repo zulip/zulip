@@ -17,7 +17,6 @@ The CSS files are:
 * `pygments.css` - CSS for Python syntax highlighting
 * `activity.css` - CSS for the `activity` app
 * `fonts.css` - Fonts for text in the Zulip app
-* `static/third/thirdparty-fonts.css` - Font Awesome (used for icons)
 
 The CSS for the Zulip web application UI is primarily here:
 

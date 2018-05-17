@@ -192,13 +192,12 @@ a new line to be formatted this way.
 
 ### Icons
 
-You can refer to features in the Zulip UI by referencing their names and
-their [FontAwesome](http://fontawesome.io) (version 4.7.0) text icons within
-parentheses. The source for the text icons is located in
-`static/third/thirdparty-fonts.css`. **Note:** It is strongly recommended to use
-the new base class `fa` instead of the older base class `icon-vector` when
-specifying icons. In future we will be removing support for the icons with base
-class `icon-vector`.
+You can refer to features in the Zulip UI by referencing their names
+and their [FontAwesome](http://fontawesome.io) (version 4.7.0) text
+icons within parentheses. **Note:** We are migrating to the modern
+font awesome base class `fa` instead of the older base class
+`icon-vector` when specifying icons. In future we will be removing
+support for the icons with base class `icon-vector`.
 
 * cog (<i class="fa fa-cog"></i>) icon — `cog (<i
 class="fa fa-cog"></i>) icon`

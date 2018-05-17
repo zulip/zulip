@@ -1,3 +1,4 @@
+/* Legacy fontawesome names; we should migrate to the fa- style */
 
 /* Our custom narrowing symbol */
 .icon-vector-narrow:before               { content: "\f054"; }
