@@ -350,7 +350,7 @@ class ActivateTest(ZulipTestCase):
         user = self.example_user('hamlet')
         self.assertFalse(user.is_active)
 
-        result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
+        result = self.client_post('/json/users/{}/reactivate'.format(user.id))
         self.assert_json_success(result)
         user = self.example_user('hamlet')
         self.assertTrue(user.is_active)
@@ -379,7 +379,8 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_error(result, 'Cannot deactivate the only organization administrator')
 
         # Cannot reactivate a nonexistent user.
-        result = self.client_post('/json/users/nonexistent@zulip.com/reactivate')
+        invalid_user_id = 1000
+        result = self.client_post('/json/users/{}/reactivate'.format(invalid_user_id))
         self.assert_json_error(result, 'No such user')
 
     def test_api_with_insufficient_permissions(self) -> None:
@@ -392,7 +393,7 @@ class ActivateTest(ZulipTestCase):
         self.assert_json_error(result, 'Insufficient permission')
 
         # Cannot reactivate a user
-        result = self.client_post('/json/users/hamlet@zulip.com/reactivate')
+        result = self.client_post('/json/users/{}/reactivate'.format(self.example_user("hamlet").id))
         self.assert_json_error(result, 'Insufficient permission')
 
     def test_clear_scheduled_jobs(self) -> None:
