@@ -97,6 +97,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     * Create the UserMessage rows.
 
     """
+    assert user_profile.last_active_message_id is not None
     all_stream_subs = list(Subscription.objects.select_related('recipient').filter(
         user_profile=user_profile,
         recipient__type=Recipient.STREAM).values('recipient', 'recipient__type_id'))
@@ -118,11 +119,12 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     recipient_ids = []
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub['recipient__type_id']]
-        if (stream_subscription_logs[-1].event_type == 'subscription_deactivated' and
-                stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id):
-            # We are going to short circuit this iteration as its no use
-            # iterating since user unsubscribed before soft-deactivation
-            continue
+        if stream_subscription_logs[-1].event_type == 'subscription_deactivated':
+            assert stream_subscription_logs[-1].event_last_message_id is not None
+            if stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id:
+                # We are going to short circuit this iteration as its no use
+                # iterating since user unsubscribed before soft-deactivation
+                continue
         recipient_ids.append(sub['recipient'])
 
     all_stream_msgs = list(Message.objects.select_related(
