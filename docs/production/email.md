@@ -32,12 +32,13 @@ email addresses and send notifications.
 
 For sending outgoing email from your Zulip server, we highly recommend
 using a "transactional email" service like
-[SendGrid](https://sendgrid.com/docs/API_Reference/SMTP_API/integrating_with_the_smtp_api.html),
 [Mailgun](https://documentation.mailgun.com/en/latest/quickstart-sending.html#send-via-smtp),
+[SendGrid](https://sendgrid.com/docs/API_Reference/SMTP_API/integrating_with_the_smtp_api.html),
 or, for AWS users,
 [Amazon SES](http://docs.aws.amazon.com/ses/latest/DeveloperGuide/send-email-smtp.html).
 These services are designed to send email from servers, and are by far
-the easiest way to get outgoing email working reliably.
+the easiest way to get outgoing email working reliably (Mailgun has
+the best documentation).
 
 If you don't have an existing outgoing SMTP provider, don't worry!
 Each of the options we recommend above (as well as dozens of other
