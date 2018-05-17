@@ -643,61 +643,6 @@ persists, please come chat with us (see instructions above) for help.
 After you provision successfully, you'll need to exit your `vagrant ssh`
 shell and run `vagrant ssh` again to get the virtualenv setup properly.
 
-#### The box 'ubuntu/trusty64' could not be found
-
-If you see the following error when you run `vagrant up`:
-
-```
-The box 'ubuntu/trusty64' could not be found or
-could not be accessed in the remote catalog. If this is a private
-box on HashiCorp's Atlas, please verify you're logged in via
-`vagrant login`. Also, please double-check the name. The expanded
-URL and error message are shown below:
-URL: ["https://atlas.hashicorp.com/ubuntu/trusty64"]
-```
-
-Then the version of `curl` that ships with Vagrant is not working on your
-machine. You are most likely to encounter this error on Windows/Cygwin and
-macOS.
-
-On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
-is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
-
-The solution is to upgrade Vagrant to a newer version, e..g 2.0.2 ([available
-here](https://releases.hashicorp.com/vagrant/2.0.2/)), or to use your system's
-version of `curl` instead of the one that ships with Vagrant:
-
-```
-sudo ln -nsf /usr/bin/curl /opt/vagrant/embedded/bin/curl
-```
-
-On **Windows/Cygwin,** the fix is simple: replace it with the version from
-Cygwin.
-
-First, determine the location of Cygwin's curl with `which curl`:
-
-```
-christie@win10 ~/zulip
-$ which curl
-/usr/bin/curl
-```
-Now determine the location of Vagrant with `which vagrant`:
-```
-christie@win10 ~/zulip
-$ which vagrant
-/cygdrive/c/HashiCorp/Vagrant/bin/vagrant
-```
-The path **up until `/bin/vagrant`** is what you need to know. In the example above it's `/cygdrive/c/HashiCorp/Vagrant`.
-
-Finally, copy Cygwin's curl to Vagrant `embedded/bin` directory:
-```
-christie@win10 ~/zulip
-$ cp /usr/bin/curl.exe /cygdrive/c/HashiCorp/Vagrant/embedded/bin/
-```
-
-Now re-run `vagrant up` and vagrant should be able to fetch the required
-box file.
-
 #### Vagrant was unable to mount VirtualBox shared folders
 
 For the following error:
