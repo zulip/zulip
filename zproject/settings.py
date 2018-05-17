@@ -1088,6 +1088,13 @@ JS_SPECS = {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
+    'widget_docs': {
+        'source_filenames': [
+            'js/zform.js',
+        ],
+        'output_filename': 'min/widget_docs.js'
+    },
+
     # Even though we've moved the main KaTeX copy into Webpack, we
     # also need KaTeX to be runnable directly via Node (Called from
     # zerver/lib/tex.py which calls static/third/katex/cli.js.  Since

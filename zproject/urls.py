@@ -609,6 +609,9 @@ urls += [url(r'^', include('social_django.urls', namespace='social'))]
 urls += [url(r'^help/(?P<article>.*)$',
              MarkdownDirectoryView.as_view(template_name='zerver/help/main.html',
                                            path_template='/zerver/help/%s.md'))]
+urls += [url(r'^widgets/(?P<article>.*)$',
+             MarkdownDirectoryView.as_view(template_name='zerver/widgets/main.html',
+                                           path_template='/zerver/widgets/%s.md'))]
 urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
              MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
                                            path_template='/zerver/api/%s.md'))]

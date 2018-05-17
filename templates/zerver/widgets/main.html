@@ -1,0 +1,16 @@
+{% extends "zerver/portico-help.html" %}
+
+{# Widgets information page #}
+
+{% block portico_content %}
+<div class="app help api-docs terms-page inline-block">
+    <div class="markdown">
+        <div class="content">
+            {{ render_markdown_path(article, api_uri_context) }}
+        </div>
+    </div>
+</div>
+
+{{ render_bundle("help") }}
+{{ minified_js('widget_docs', csp_nonce)|safe }}
+{% endblock %}
