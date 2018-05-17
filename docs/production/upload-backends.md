@@ -29,11 +29,25 @@ user file uploads and user avatars, respectively.
 1. Comment out the `LOCAL_UPLOADS_DIR` setting in
 `/etc/zulip/settings.py` (add a `#` at the start of the line).
 
-1. Edit /etc/nginx/sites-available/zulip-enterprise to comment out the
-nginx configuration for `/user_avatars` and the `include
+1. You will need to configure `nginx` to direct requests for uploaded
+files to the Zulip server (which will then serve a redirect to the
+appropriate place in S3), rather than serving them directly.
+
+With Zulip 1.9.0 and newer, you can do this automatically with the
+following commands run as root:
+
+```
+crudini --set /etc/zulip/zulip.conf application_server no_serve_uploads true
+/home/zulip/deployments/current/scripts/zulip-puppet-apply
+```
+
+(The first line will update your `/etc/zulip/zulip.conf`).
+
+With older Zulip, you need to edit
+`/etc/nginx/sites-available/zulip-enterprise` to comment out the
+`nginx` configuration block for `/user_avatars` and the `include
 /etc/nginx/zulip-include/uploads.route` line and then reload the
-`nginx` service (`service nginx reload`).  This will cause `nginx` to
-direct requests to the Zulip server.
+`nginx` service (`service nginx reload`).
 
 1. Finally, restart the Zulip server so that your settings changes
    take effect
