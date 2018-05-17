@@ -32,25 +32,11 @@ var zero_counts = {
 };
 
 run_test('empty_counts_while_narrowed', () => {
-    narrow_state.active = function () {
-        return true;
-    };
-    current_msg_list.all_messages = function () {
-        return [];
-    };
-
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
 });
 
 run_test('empty_counts_while_home', () => {
-    narrow_state.active = function () {
-        return false;
-    };
-    current_msg_list.all_messages = function () {
-        return [];
-    };
-
     var counts = unread.get_counts();
     assert.deepEqual(counts, zero_counts);
 });
@@ -190,10 +176,6 @@ run_test('changing_subjects', () => {
     unread.update_unread_topics(sticky_message, {});
 });
 
-stream_data.get_stream_id = function () {
-    return 999;
-};
-
 run_test('muting', () => {
     stream_data.is_subscribed = function () {
         return true;
@@ -320,9 +302,6 @@ run_test('num_unread_for_topic', () => {
 
 
 run_test('home_messages', () => {
-    narrow_state.active = function () {
-        return false;
-    };
     stream_data.is_subscribed = function () {
         return true;
     };
@@ -344,10 +323,6 @@ run_test('home_messages', () => {
         stream_id: stream_id,
         subject: 'lunch',
         unread: true,
-    };
-
-    home_msg_list.get = function (msg_id) {
-        return (msg_id === '15') ? message : undefined;
     };
 
     var counts = unread.get_counts();
@@ -391,13 +366,6 @@ run_test('phantom_messages', () => {
 });
 
 run_test('private_messages', () => {
-    narrow_state.active = function () {
-        return false;
-    };
-    stream_data.is_subscribed = function () {
-        return true;
-    };
-
     var counts = unread.get_counts();
     assert.equal(counts.private_message_count, 0);
 
@@ -474,13 +442,6 @@ run_test('private_messages', () => {
 
 
 run_test('mentions', () => {
-    narrow_state.active = function () {
-        return false;
-    };
-    stream_data.is_subscribed = function () {
-        return true;
-    };
-
     var counts = unread.get_counts();
     assert.equal(counts.mentioned_message_count, 0);
     assert.deepEqual(unread.get_msg_ids_for_mentions(), []);
@@ -611,8 +572,6 @@ run_test('empty_cases', () => {
 
 run_test('errors', () => {
     unread.declare_bankruptcy();
-
-    global.blueslip.warn = function () {};
 
     // Test unknown message leads to zero count
     var message = {
