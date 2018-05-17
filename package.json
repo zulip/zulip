@@ -18,6 +18,7 @@
     "expose-loader": "0.7.5",
     "file-loader": "1.1.11",
     "flatpickr": "4.2.3",
+    "font-awesome": "4.7.0",
     "fuzzysearch": "1.0.3",
     "handlebars": "4.0.10",
     "i18next": "3.4.4",
