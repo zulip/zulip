@@ -11,7 +11,9 @@ REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+?)\s*\}
 
 
 class MarkdownArgumentsTableGenerator(Extension):
-    def __init__(self, configs: Optional[Dict[str, Any]]={}) -> None:
+    def __init__(self, configs: Optional[Dict[str, Any]]=None) -> None:
+        if configs is None:
+            configs = {}
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
         }
