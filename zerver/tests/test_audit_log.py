@@ -67,7 +67,7 @@ class TestRealmAuditLog(ZulipTestCase):
         new_name = 'George Hamletovich'
         self.login(self.example_email("iago"))
         req = dict(full_name=ujson.dumps(new_name))
-        result = self.client_patch('/json/users/hamlet@zulip.com', req)
+        result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)
         query = RealmAuditLog.objects.filter(event_type='user_full_name_changed',
                                              event_time__gte=start)

@@ -1504,6 +1504,9 @@ def get_user_profile_by_api_key(api_key: str) -> UserProfile:
 def get_user(email: str, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
+def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
+    return UserProfile.objects.select_related().get(id=uid, realm=realm)
+
 def get_user_including_cross_realm(email: str, realm: Optional[Realm]=None) -> UserProfile:
     if is_cross_realm_bot_email(email):
         return get_system_bot(email)

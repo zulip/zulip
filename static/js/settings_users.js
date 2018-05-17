@@ -245,7 +245,8 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $("#do_deactivate_user_button").expectOne().click(function () {
-        var email = meta.current_deactivate_user_modal_row.find(".email").text();
+        var email = meta.current_deactivate_user_modal_row.attr("data-email");
+        var user_id = meta.current_deactivate_user_modal_row.attr("data-user-id");
 
         if ($("#deactivation_user_modal .email").html() !== email) {
             blueslip.error("User deactivation canceled due to non-matching fields.");
@@ -255,7 +256,7 @@ exports.on_load_success = function (realm_people_data) {
         $("#deactivation_user_modal").modal("hide");
         meta.current_deactivate_user_modal_row.find("button").eq(0).prop("disabled", true).text(i18n.t("Working…"));
         channel.del({
-            url: '/json/users/' + encodeURIComponent(email),
+            url: '/json/users/' + encodeURIComponent(user_id),
             error: function (xhr) {
                 var status = $("#organization-status").expectOne();
                 ui_report.error(i18n.t("Failed"), xhr, status);
@@ -316,11 +317,11 @@ exports.on_load_success = function (realm_people_data) {
         e.preventDefault();
         e.stopPropagation();
 
-        // Go up the tree until we find the user row, then grab the email element
+        // Go up the tree until we find the user row, then grab the user_id data
         var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
+        var user_id = row.attr("data-user-id");
 
-        var url = "/json/users/" + encodeURIComponent(email);
+        var url = "/json/users/" + encodeURIComponent(user_id);
         var data = {
             is_admin: JSON.stringify(true),
         };
@@ -347,11 +348,11 @@ exports.on_load_success = function (realm_people_data) {
         e.preventDefault();
         e.stopPropagation();
 
-        // Go up the tree until we find the user row, then grab the email element
+        // Go up the tree until we find the user row, then grab the user_id data
         var row = $(e.target).closest(".user_row");
-        var email = get_email_for_user_row(row);
+        var user_id = row.attr("data-user-id");
 
-        var url = "/json/users/" + encodeURIComponent(email);
+        var url = "/json/users/" + encodeURIComponent(user_id);
         var data = {
             is_admin: JSON.stringify(false),
         };
@@ -424,7 +425,7 @@ exports.on_load_success = function (realm_people_data) {
                     data.bot_owner = owner_select.val();
                 }
             } else {
-                url = "/json/users/" + encodeURIComponent(person.email);
+                url = "/json/users/" + encodeURIComponent(person.user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                 };

@@ -33,14 +33,14 @@ from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
-    DomainNotAllowedForRealmError, DisposableEmailError
+    DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm
 from zerver.lib.create_user import random_api_key
 
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
-                            email: str) -> HttpResponse:
+                            user_id: int) -> HttpResponse:
     try:
-        target = get_user(email, user_profile.realm)
+        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
     if target.is_bot:
@@ -92,11 +92,11 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @has_request_variables
-def update_user_backend(request: HttpRequest, user_profile: UserProfile, email: str,
+def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
     try:
-        target = get_user(email, user_profile.realm)
+        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
