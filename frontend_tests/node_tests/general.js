@@ -611,7 +611,6 @@ function jquery_elem() {
 
 function make_jquery_helper() {
     const stream_list_filter = jquery_elem();
-    stream_list_filter.is = () => true;
     stream_list_filter.val = () => '';
 
     const stream_filters = jquery_elem();
@@ -623,15 +622,9 @@ function make_jquery_helper() {
 
     function fake_jquery(selector) {
         switch (selector) {
-        case '#stream_filters li.highlighted_stream':
-            return jquery_elem();
         case '.stream-list-filter':
             return stream_list_filter;
-        case '#stream_filters li.narrow-filter':
-            return jquery_elem();
         case 'ul#stream_filters li':
-            return jquery_elem();
-        case '.stream-filters-label':
             return jquery_elem();
         case '#stream_filters':
             return stream_filters;
