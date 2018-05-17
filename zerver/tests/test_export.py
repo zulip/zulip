@@ -12,6 +12,7 @@ from typing import Any, Dict, List, Set, Optional
 
 from zerver.lib.export import (
     do_export_realm,
+    export_files_from_s3,
     export_usermessages_batch,
 )
 from zerver.lib.import_realm import (
@@ -36,7 +37,6 @@ from zerver.lib.test_runner import slow
 from zerver.models import (
     Message,
     Realm,
-    Recipient,
     UserMessage,
 )
 
@@ -300,5 +300,15 @@ class ExportTest(ZulipTestCase):
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
-        # import_uploads_s3 finds and uses the records.json fixture
+        # import_uploads_s3 finds and overwrites the records.json fixture
         import_uploads_s3(settings.S3_AUTH_UPLOADS_BUCKET, 'zerver/tests/fixtures/', False)
+
+    @use_s3_backend
+    def test_export_files_from_s3(self) -> None:
+        realm = Realm.objects.get(string_id='zulip')
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        # export_files_from_s3 finds and overwrites the records.json fixture
+        # currently most of export_files_from_s3 is untested, because there are no bkeys in the bucket_list
+        export_files_from_s3(realm, settings.S3_AUTH_UPLOADS_BUCKET, 'zerver/tests/fixtures/', True)
