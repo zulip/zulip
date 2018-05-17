@@ -18,11 +18,6 @@ function get_user_info(user_id) {
     return self;
 }
 
-function get_email_for_user_row(row) {
-    var email = row.find('.email').text();
-    return email;
-}
-
 function update_view_on_deactivate(row) {
     var button = row.find("button.deactivate");
     row.find('button.open-user-form').hide();
@@ -235,7 +230,7 @@ exports.on_load_success = function (realm_people_data) {
         var row = $(e.target).closest(".user_row");
 
         var user_name = row.find('.user_name').text();
-        var email = get_email_for_user_row(row);
+        var email = row.attr("data-email");
 
         $("#deactivation_user_modal .email").text(email);
         $("#deactivation_user_modal .user_name").text(user_name);
