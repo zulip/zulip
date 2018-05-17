@@ -17,7 +17,6 @@ var toBeTranslated = [  // eslint-disable-line no-unused-vars
 ];
 
 var callbacks = [];
-var initialized = false;
 
 var detectionOptions = {
     order: ['htmlTag'],
@@ -46,7 +45,6 @@ i18next.use(XHR)
         returnEmptyString: false,  // Empty string is not a valid translation.
     }, function () {
         var i;
-        initialized = true;
         for (i = 0; i < callbacks.length; i += 1) {
             callbacks[i]();
         }
