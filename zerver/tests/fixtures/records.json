@@ -1,0 +1,12 @@
+[
+    {
+        "s3_path":"images/img.jpg",
+        "last_modified":"1526507564.4723451138",
+        "user_profile_id":"2",
+        "size":"6",
+        "path":"records.json",
+        "content_type":"image.jpg",
+        "user_profile_email":"ZOE@zulip.com",
+        "realm_id":"1"
+    }
+]

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.test import TestCase
 
 import os
 import shutil
@@ -10,13 +9,16 @@ import ujson
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set, Optional
 
-from zerver.lib.actions import (
-    do_claim_attachments,
-)
 
 from zerver.lib.export import (
     do_export_realm,
     export_usermessages_batch,
+)
+from zerver.lib.import_realm import (
+    import_uploads_s3
+)
+from zerver.lib.test_helpers import (
+    use_s3_backend
 )
 from zerver.lib.upload import (
     claim_attachment,
@@ -37,6 +39,9 @@ from zerver.models import (
     Recipient,
     UserMessage,
 )
+
+from boto.s3.connection import Location, S3Connection
+
 
 def rm_tree(path: str) -> None:
     if os.path.exists(path):
@@ -289,3 +294,11 @@ class ExportTest(ZulipTestCase):
         dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
         self.assertIn(self.example_email('iago'), dummy_user_emails)
         self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)
+
+    @use_s3_backend
+    def test_import_files_from_s3(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+
+        # import_uploads_s3 finds and uses the records.json fixture
+        import_uploads_s3(settings.S3_AUTH_UPLOADS_BUCKET, 'zerver/tests/fixtures/', False)
