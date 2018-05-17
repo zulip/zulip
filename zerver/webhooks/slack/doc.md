@@ -1,64 +1,27 @@
-Get notifications from Slack for messages on your team's public channels!
+Get Zulip notifications from Slack for messages on your team's
+public channels!
 
-There are two ways in which you may want to receive a notification:
+1. {!create-stream.md!}
 
-- Slack Channel to a single Zulip stream with different topics
-- Multiple Zulip streams for multiple Slack channels
+1. {!create-bot-construct-url-indented.md!}
 
-### Single stream with different topics
+    If you'd like to map Slack channels to different topics within the same
+    stream, add `&channels_map_to_topics=1` to the end of the URL. The `topic`
+    parameter will be ignored.
 
-{!create-stream.md!}
+    If you'd like to map Slack channels to different streams, add
+    `&channels_map_to_topics=0` to the end of the URL. The `stream`
+    parameter will be ignored. Make sure you create
+    streams for all your public Slack channels, and that the name of each
+    stream is the same as the name of the Slack channel it maps to.
 
-{!create-bot-construct-url.md!}
+1. Go to <https://my.slack.com/services/new/outgoing-webhook>
+   and click **Add Outgoing WebHooks integration**.
 
-If you'd like to receive notifications to a single stream with
-different topics for different Slack channels, append
-`&channels_map_to_topics=1` to the above URL.
-
-### Multiple Zulip streams for multiple Slack channels
-
-First, create streams for all of your Slack channels. Make sure that
-the name of a given stream is the same as the name of the Slack channel
-it maps to.
-
-{!create-bot-construct-url.md!}
-
-If you'd like your Slack channels to be mapped to multiple Zulip
-streams, append `&channels_map_to_topics=0` to the above URL.
-
-### Configuring the webhook
-
-Go to the following URL: <https://api.slack.com>
-
-Next, under the category of App features click on
-**Legacy custom integrations**.
-
-![](/static/images/integrations/slack/001.png)
-
-Now, click on **Outgoing Webhooks** under **Custom Integrations**.
-
-![](/static/images/integrations/slack/002.png)
-
-Then click the hyperlink **outgoing webhook integration** which can be
-found in the page.
-
-![](/static/images/integrations/slack/003.png)
-
-Next, click the **Add Outgoing Webhook integration** button.
-
-![](/static/images/integrations/slack/004.png)
-
-Now, under `Integration Settings`, fill in the channel you'd like
-to get your notifications from.
-
-Then fill in the URL created above as your URL. Finally, save your
-settings.
-
-![](/static/images/integrations/slack/005.png)
+1. Scroll down and configure the **Channel** and/or **Trigger Word(s)**
+   options as appropriate. Set **URL(s)** to the URL constructed above,
+   and click **Save Settings**.
 
 {!congrats.md!}
 
-![](/static/images/integrations/slack/006.png)
-
-**This integration is not created by, affiliated with, or supported by Slack
-Technologies, Inc.**
+![](/static/images/integrations/slack/001.png)
