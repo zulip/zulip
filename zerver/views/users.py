@@ -63,7 +63,7 @@ def check_last_admin(user_profile: UserProfile) -> bool:
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
     try:
-        target = get_user_profile_by_id(bot_id)
+        target = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such bot'))
     if not target.is_bot:
@@ -170,7 +170,7 @@ def patch_bot_backend(
         default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
 ) -> HttpResponse:
     try:
-        bot = get_user_profile_by_id(bot_id)
+        bot = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 
@@ -248,7 +248,7 @@ def patch_bot_backend(
 @has_request_variables
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
     try:
-        bot = get_user_profile_by_id(bot_id)
+        bot = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
     except UserProfile.DoesNotExist:
         return json_error(_('No such user'))
 

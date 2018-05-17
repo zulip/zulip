@@ -487,7 +487,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         bot = get_user(bot_email, realm)
         self.login(self.example_email("iago"))
         result = self.client_delete("/json/bots/{}".format(bot.id))
-        self.assert_json_error(result, 'Insufficient permission')
+        self.assert_json_error(result, 'No such bot')
 
     def test_bot_deactivation_attacks(self) -> None:
         """You cannot deactivate somebody else's bot."""
