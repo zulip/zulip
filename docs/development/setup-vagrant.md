@@ -203,7 +203,7 @@ finishing those steps, you will be ready for
 
 1. Install [Git for Windows][git-bash], which installs *Git BASH*.
 2. Install [VirtualBox][vbox-dl] (version == 5.2.6).
-3. Install [Vagrant][vagrant-dl-win] (version 2.0.2, do not use 1.8.7).
+3. Install [Vagrant][vagrant-dl-win] (version 2.0.2 is best tested).
 
 (Note: While *Git BASH* is recommended, you may also use [Cygwin][cygwin-dl].
 If you do, make sure to **install default required packages** along with
@@ -663,7 +663,7 @@ macOS.
 On **macOS** this error is most likely to occur with Vagrant version 1.8.7 and
 is a [known issue](https://github.com/mitchellh/vagrant/issues/7997).
 
-The solution is to downgrade Vagrant to version 2.0.2 ([available
+The solution is to upgrade Vagrant to a newer version, e..g 2.0.2 ([available
 here](https://releases.hashicorp.com/vagrant/2.0.2/)), or to use your system's
 version of `curl` instead of the one that ships with Vagrant:
 
