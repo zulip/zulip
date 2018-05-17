@@ -728,12 +728,12 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         with self.settings(ENABLE_GRAVATAR=True):
             response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
-            self.assertEqual(redirect_url, avatar_url(cordelia) + '&foo=bar')
+            self.assertEqual(redirect_url, str(avatar_url(cordelia)) + '&foo=bar')
 
         with self.settings(ENABLE_GRAVATAR=False):
             response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
             redirect_url = response['Location']
-            self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+            self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
     def test_get_user_avatar(self) -> None:
         self.login(self.example_email("hamlet"))
@@ -743,11 +743,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
         response = self.client_get("/avatar/%s?foo=bar" % (cordelia.id))
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
         response = self.client_get("/avatar/")
         self.assertEqual(response.status_code, 404)
@@ -760,11 +760,11 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         cordelia.save()
         response = self.client_get("/avatar/cordelia@zulip.com/medium?foo=bar")
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia, True) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
         response = self.client_get("/avatar/%s/medium?foo=bar" % (cordelia.id,))
         redirect_url = response['Location']
-        self.assertTrue(redirect_url.endswith(avatar_url(cordelia, True) + '&foo=bar'))
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
 
     def test_non_valid_user_avatar(self) -> None:
 
