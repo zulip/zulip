@@ -67,6 +67,10 @@ class MissingEventHeaderTestCase(WebhookTestCase):
             integration_name='Groove',
             support_email=FromAddress.SUPPORT
         ).rstrip()
+        if msg.sender.email != notification_bot.email:  # nocoverage
+            # This block seems to fire occasionally; debug output:
+            print(msg)
+            print(msg.content)
         self.assertEqual(msg.sender.email, notification_bot.email)
         self.assertEqual(msg.content, expected_message)
 
