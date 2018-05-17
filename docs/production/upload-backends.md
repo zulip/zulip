@@ -19,12 +19,18 @@ possible to use any other storage provider compatible with `boto`).
 Here, we document the process for configuring Zulip's S3 file upload
 backend.  To enable this backend, you need to do the following:
 
+1. In the AWS management console, create a new IAM account (aka API
+user) for your Zulip server, and two buckets in S3, one for uploaded
+files included in messages, and another for user avatars.  You need
+two buckets because the "user avatars" bucket is generally configured
+as world-readable, whereas the "uploaded files" one is not.
+
 1. Set `s3_key` and `s3_secret_key` in /etc/zulip/zulip-secrets.conf
-to be the S3 access and secret keys that you want to use.
+to be the S3 access and secret keys for the IAM account.
 
 1. Set the `S3_AUTH_UPLOADS_BUCKET` and `S3_AVATAR_BUCKET` settings in
-`/etc/zulip/settings.py` to be the S3 buckets you've created to store
-user file uploads and user avatars, respectively.
+`/etc/zulip/settings.py` to be the names of the S3 buckets you
+created (e.g. `exampleinc-zulip-uploads`).
 
 1. Comment out the `LOCAL_UPLOADS_DIR` setting in
 `/etc/zulip/settings.py` (add a `#` at the start of the line).
