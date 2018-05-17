@@ -893,6 +893,8 @@ def maybe_update_first_visible_message_id(realm: Realm, lookback_hours: int) -> 
 
 def update_first_visible_message_id(realm: Realm) -> None:
     try:
+        # We have verified that the limit is not none before calling this function.
+        assert realm.message_visibility_limit is not None
         first_visible_message_id = Message.objects.filter(sender__realm=realm).values('id').\
             order_by('-id')[realm.message_visibility_limit - 1]["id"]
     except IndexError:

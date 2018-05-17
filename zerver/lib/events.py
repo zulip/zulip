@@ -181,8 +181,8 @@ def fetch_initial_state_data(user_profile: UserProfile,
         else:
             state['realm_notifications_stream_id'] = -1
 
-        if realm.get_signup_notifications_stream():
-            signup_notifications_stream = realm.get_signup_notifications_stream()
+        signup_notifications_stream = realm.get_signup_notifications_stream()
+        if signup_notifications_stream:
             state['realm_signup_notifications_stream_id'] = signup_notifications_stream.id
         else:
             state['realm_signup_notifications_stream_id'] = -1

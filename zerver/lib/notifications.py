@@ -25,6 +25,7 @@ from zerver.models import (
 
 from datetime import timedelta, datetime
 from email.utils import formataddr
+from lxml.cssselect import CSSSelector
 import lxml.html
 import re
 import subprocess
@@ -115,10 +116,14 @@ def relative_to_full_url(base_url: str, content: str) -> str:
     return content
 
 def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
-    def make_emoji_img_elem(emoji_span_elem: Any) -> Dict[str, Any]:
+    def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get('class')
         match = re.search('emoji-(?P<emoji_code>\S+)', classes)
+        # re.search is capable of returning None,
+        # but since the parent function should only be called with a valid css element
+        # we assert that it does not.
+        assert match is not None
         emoji_code = match.group('emoji_code')
         emoji_name = emoji_span_elem.get('title')
         alt_code = emoji_span_elem.text
