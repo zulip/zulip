@@ -748,10 +748,10 @@ class HomeTest(ZulipTestCase):
         result = self._get_page(translation_lang)
         params = self._get_page_params(result)
 
-        assert 'translation_data' in params
-        translation_data = params.get('translation_data')
+        assert params['translation_data'] is not None
+        translation_data = params['translation_data']
 
-        assert translation_key in translation_data
+        assert translation_data[translation_key] is not None
 
         assert translation_data[translation_key] == translation_value
 
