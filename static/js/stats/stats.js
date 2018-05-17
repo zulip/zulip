@@ -686,15 +686,8 @@ function populate_number_of_users(data) {
 
 
 function get_chart_data(data, callback) {
-    var url;
-    if (page_params.is_staff) {
-        url = '/json/analytics/chart_data/realm/' + page_params.stats_realm;
-    } else {
-        url = '/json/analytics/chart_data';
-    }
-
     $.get({
-        url: url,
+        url: '/json/analytics/chart_data' + page_params.data_url_suffix,
         data: data,
         idempotent: true,
         success: function (data) {
