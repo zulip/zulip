@@ -9,8 +9,9 @@ In order to use them, you need to configure them with your API key and other
 settings. There are two ways to achieve that:
 
  - With a file called `.zuliprc`, located in your home directory.
- - With [environment variables](https://en.wikipedia.org/wiki/
-Environment_variable) set up in your host machine.
+ - With
+   [environment variables](https://en.wikipedia.org/wiki/Environment_variable)
+   set up in your host machine.
 
 A `.zuliprc` file is a plain text document that has the same format as
 Microsft Windows INI files. It looks like this:
