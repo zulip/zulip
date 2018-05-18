@@ -938,6 +938,49 @@ run_test('trigger_submit_compose_form', () => {
     assert(compose_finish_checked);
 });
 
+run_test('needs_subscribe_warning', () => {
+    people.get_active_user_for_email = function () {
+        return;
+    };
+
+    assert.equal(compose.needs_subscribe_warning(), false);
+
+    compose_state.stream_name('random');
+    assert.equal(compose.needs_subscribe_warning(), false);
+
+    var sub = {
+        stream_id: 111,
+        name: 'random',
+        subscribed: true,
+    };
+    stream_data.add_sub('random', sub);
+    assert.equal(compose.needs_subscribe_warning(), false);
+
+    people.get_active_user_for_email = function () {
+        return {
+            user_id: 99,
+            is_bot: true,
+        };
+    };
+    assert.equal(compose.needs_subscribe_warning(), false);
+
+    people.get_active_user_for_email = function () {
+        return {
+            user_id: 99,
+            is_bot: false,
+        };
+    };
+    stream_data.is_user_subscribed = function () {
+        return true;
+    };
+    assert.equal(compose.needs_subscribe_warning(), false);
+
+    stream_data.is_user_subscribed = function () {
+        return false;
+    };
+    assert.equal(compose.needs_subscribe_warning(), true);
+});
+
 run_test('on_events', () => {
     (function test_usermention_completed_zulip_triggered() {
         var handler = $(document).get_on_handler('usermention_completed.zulip');

@@ -711,7 +711,7 @@ exports.needs_subscribe_warning = function (email) {
     //  * the stream in the compose box is valid
     //  * the user is not already subscribed to the stream
     //  * the user has no back-door way to see stream messages
-    //    (i.e. bots on public streams)
+    //    (i.e. bots on public/private streams)
     //
     //  You can think of this as roughly answering "is there an
     //  actionable way to subscribe the user and do they actually
@@ -733,8 +733,8 @@ exports.needs_subscribe_warning = function (email) {
         return false;
     }
 
-    if (user.is_bot && !sub.invite_only) {
-        // Bots may receive messages on public streams even if they are
+    if (user.is_bot) {
+        // Bots may receive messages on public/private streams even if they are
         // not subscribed.
         return false;
     }
