@@ -8,7 +8,6 @@ testing as well in a production server environment.
 On this page you'll find:
 
 * A step-by-step [tutorial](#running-a-bot) on how to run a bot.
-* A [guide](#zulip-botserver) on running a Zulip botserver.
 * Common [problems](#common-problems) when developing/running bots and their solutions.
 
 ## Installing the Zulip bots package
