@@ -780,7 +780,6 @@ run_test('contains_suggestions', () => {
     var query = 'has:';
     var suggestions = search.get_suggestions(query);
     var expected = [
-        'has:',
         'has:link',
         'has:image',
         'has:attachment',
@@ -790,7 +789,6 @@ run_test('contains_suggestions', () => {
     query = 'has:im';
     suggestions = search.get_suggestions(query);
     expected = [
-        'has:im',
         'has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -798,7 +796,6 @@ run_test('contains_suggestions', () => {
     query = '-has:im';
     suggestions = search.get_suggestions(query);
     expected = [
-        '-has:im',
         '-has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -814,7 +811,6 @@ run_test('contains_suggestions', () => {
     query = 'stream:Denmark is:alerted has:lin';
     suggestions = search.get_suggestions(query);
     expected = [
-        'stream:Denmark is:alerted has:lin',
         'stream:Denmark is:alerted has:link',
         'stream:Denmark is:alerted',
         'stream:Denmark',
