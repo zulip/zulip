@@ -42,6 +42,21 @@ class TestStatsEndpoint(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Zulip analytics for", result)
 
+    def test_stats_for_installation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/stats/installation')
+        self.assertEqual(result.status_code, 302)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+
+        result = self.client_get('/stats/installation')
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Zulip analytics for", result)
+
 class TestGetChartData(ZulipTestCase):
     def setUp(self) -> None:
         self.realm = get_realm('zulip')
@@ -270,6 +285,24 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_error(result, 'Invalid organization', 400)
 
         result = self.client_get('/json/analytics/chart_data/realm/zulip',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_success(result)
+
+    def test_get_chart_data_for_installation(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+
+        result = self.client_get('/json/analytics/chart_data/installation',
+                                 {'chart_name': 'number_of_humans'})
+        self.assert_json_error(result, "Must be an server administrator", 400)
+
+        user_profile = self.example_user('hamlet')
+        user_profile.is_staff = True
+        user_profile.save(update_fields=['is_staff'])
+        stat = COUNT_STATS['realm_active_humans::day']
+        self.insert_data(stat, [None], [])
+
+        result = self.client_get('/json/analytics/chart_data/installation',
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
 

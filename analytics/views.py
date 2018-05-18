@@ -25,7 +25,7 @@ from jinja2 import Markup as mark_safe
 from analytics.lib.counts import COUNT_STATS, CountStat, process_count_stat
 from analytics.lib.time_utils import time_range
 from analytics.models import BaseCount, InstallationCount, \
-    RealmCount, StreamCount, UserCount, last_successful_fill
+    RealmCount, StreamCount, UserCount, last_successful_fill, installation_epoch
 from zerver.decorator import require_server_admin, require_server_admin_api, \
     to_non_negative_int, to_utc_datetime, zulip_login_required
 from zerver.lib.exceptions import JsonableError
@@ -37,9 +37,11 @@ from zerver.lib.timestamp import ceiling_to_day, \
 from zerver.models import Client, get_realm, Realm, \
     UserActivity, UserActivityInterval, UserProfile
 
-def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str) -> HttpRequest:
+def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str,
+                 for_installation: bool=False) -> HttpRequest:
     page_params = dict(
         data_url_suffix=data_url_suffix,
+        for_installation=for_installation,
         debug_mode=False,
     )
     return render(request,
@@ -71,27 +73,41 @@ def get_chart_data_for_realm(request: HttpRequest, user_profile: UserProfile,
 
     return get_chart_data(request=request, user_profile=user_profile, realm=realm, **kwargs)
 
+@require_server_admin
+def stats_for_installation(request: HttpRequest) -> HttpResponse:
+    return render_stats(request, '/installation', 'Installation', True)
+
+@require_server_admin_api
+@has_request_variables
+def get_chart_data_for_installation(request: HttpRequest, user_profile: UserProfile,
+                                    chart_name: str=REQ(), **kwargs: Any) -> HttpResponse:
+    return get_chart_data(request=request, user_profile=user_profile, for_installation=True, **kwargs)
+
 @has_request_variables
 def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: str=REQ(),
                    min_length: Optional[int]=REQ(converter=to_non_negative_int, default=None),
                    start: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
                    end: Optional[datetime]=REQ(converter=to_utc_datetime, default=None),
-                   realm: Optional[Realm]=None) -> HttpResponse:
+                   realm: Optional[Realm]=None, for_installation: bool=False) -> HttpResponse:
+    aggregate_table = RealmCount
+    if for_installation:
+        aggregate_table = InstallationCount
+
     if chart_name == 'number_of_humans':
         stat = COUNT_STATS['realm_active_humans::day']
-        tables = [RealmCount]
+        tables = [aggregate_table]
         subgroup_to_label = {None: 'human'}  # type: Dict[Optional[str], str]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
         stat = COUNT_STATS['messages_sent:is_bot:hour']
-        tables = [RealmCount, UserCount]
+        tables = [aggregate_table, UserCount]
         subgroup_to_label = {'false': 'human', 'true': 'bot'}
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_message_type':
         stat = COUNT_STATS['messages_sent:message_type:day']
-        tables = [RealmCount, UserCount]
+        tables = [aggregate_table, UserCount]
         subgroup_to_label = {'public_stream': _('Public streams'),
                              'private_stream': _('Private streams'),
                              'private_message': _('Private messages'),
@@ -100,7 +116,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
-        tables = [RealmCount, UserCount]
+        tables = [aggregate_table, UserCount]
         # Note that the labels are further re-written by client_label_map
         subgroup_to_label = {str(id): name for id, name in Client.objects.values_list('id', 'name')}
         labels_sort_function = sort_client_labels
@@ -121,12 +137,15 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     if realm is None:
         realm = user_profile.realm
     if start is None:
-        start = realm.date_created
+        if for_installation:
+            start = installation_epoch()
+        else:
+            start = realm.date_created
     if end is None:
         end = last_successful_fill(stat.property)
     if end is None or start > end:
         logging.warning("User from realm %s attempted to access /stats, but the computed "
-                        "start time: %s (creation time of realm) is later than the computed "
+                        "start time: %s (creation of realm or installation) is later than the computed "
                         "end time: %s (last successful analytics update). Is the "
                         "analytics cron job running?" % (realm.string_id, start, end))
         raise JsonableError(_("No analytics data available. Please contact your server administrator."))
@@ -134,6 +153,9 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency}
     for table in tables:
+        if table == InstallationCount:
+            data['everyone'] = get_time_series_by_subgroup(
+                stat, InstallationCount, -1, end_times, subgroup_to_label, include_empty_subgroups)
         if table == RealmCount:
             data['everyone'] = get_time_series_by_subgroup(
                 stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
