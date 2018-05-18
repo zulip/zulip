@@ -188,7 +188,7 @@ function populate_messages_sent_over_time(data) {
         var current = {human: 0, bot: 0, me: 0};
         var i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {human: data.realm.human[0], bot: data.realm.bot[0], me: data.user.human[0]};
+            current = {human: data.everyone.human[0], bot: data.everyone.bot[0], me: data.user.human[0]};
             i_init = 1;
         }
         for (var i = i_init; i < start_dates.length; i += 1) {
@@ -199,8 +199,8 @@ function populate_messages_sent_over_time(data) {
                 values.me.push(current.me);
                 current = {human: 0, bot: 0, me: 0};
             }
-            current.human += data.realm.human[i];
-            current.bot += data.realm.bot[i];
+            current.human += data.everyone.human[i];
+            current.bot += data.everyone.bot[i];
             current.me += data.user.human[i];
         }
         values.human.push(current.human);
@@ -216,7 +216,7 @@ function populate_messages_sent_over_time(data) {
     var date_formatter = function (date) {
         return format_date(date, true);
     };
-    var values = {me: data.user.human, human: data.realm.human, bot: data.realm.bot};
+    var values = {me: data.user.human, human: data.everyone.human, bot: data.everyone.bot};
 
     var info = aggregate_data('day');
     date_formatter = function (date) {
@@ -235,7 +235,7 @@ function populate_messages_sent_over_time(data) {
     var dates = data.end_times.map(function (timestamp) {
         return new Date(timestamp*1000);
     });
-    values = {human: partial_sums(data.realm.human), bot: partial_sums(data.realm.bot),
+    values = {human: partial_sums(data.everyone.human), bot: partial_sums(data.everyone.bot),
               me: partial_sums(data.user.human)};
     date_formatter = function (date) {
         return format_date(date, true);
@@ -382,12 +382,12 @@ function populate_messages_sent_by_client(data) {
     };
 
     // sort labels so that values are descending in the default view
-    var realm_month = compute_summary_chart_data(data.realm, 30, data.display_order.slice(0, 12));
+    var everyone_month = compute_summary_chart_data(data.everyone, 30, data.display_order.slice(0, 12));
     var label_values = [];
-    for (var i=0; i<realm_month.values.length; i+=1) {
+    for (var i=0; i<everyone_month.values.length; i+=1) {
         label_values.push({
-            label: realm_month.labels[i],
-            value: realm_month.labels[i] === "Other" ? -1 : realm_month.values[i],
+            label: everyone_month.labels[i],
+            value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i],
         });
     }
     label_values.sort(function (a, b) { return b.value - a.value; });
@@ -431,11 +431,11 @@ function populate_messages_sent_by_client(data) {
     }
 
     var plot_data = {
-        realm: {
-            cumulative: make_plot_data(data.realm, data.end_times.length),
-            year: make_plot_data(data.realm, 365),
-            month: make_plot_data(data.realm, 30),
-            week: make_plot_data(data.realm, 7),
+        everyone: {
+            cumulative: make_plot_data(data.everyone, data.end_times.length),
+            year: make_plot_data(data.everyone, 365),
+            month: make_plot_data(data.everyone, 30),
+            week: make_plot_data(data.everyone, 7),
         },
         user: {
             cumulative: make_plot_data(data.user, data.end_times.length),
@@ -445,7 +445,7 @@ function populate_messages_sent_by_client(data) {
         },
     };
 
-    var user_button = 'realm';
+    var user_button = 'everyone';
     var time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
@@ -553,11 +553,11 @@ function populate_messages_sent_by_message_type(data) {
     }
 
     var plot_data = {
-        realm: {
-            cumulative: make_plot_data(data.realm, data.end_times.length),
-            year: make_plot_data(data.realm, 365),
-            month: make_plot_data(data.realm, 30),
-            week: make_plot_data(data.realm, 7),
+        everyone: {
+            cumulative: make_plot_data(data.everyone, data.end_times.length),
+            year: make_plot_data(data.everyone, 365),
+            month: make_plot_data(data.everyone, 30),
+            week: make_plot_data(data.everyone, 7),
         },
         user: {
             cumulative: make_plot_data(data.user, data.end_times.length),
@@ -567,7 +567,7 @@ function populate_messages_sent_by_message_type(data) {
         },
     };
 
-    var user_button = 'realm';
+    var user_button = 'everyone';
     var time_button;
     if (data.end_times.length >= 30) {
         time_button = 'month';
@@ -664,7 +664,7 @@ function populate_number_of_users(data) {
 
     var trace = {
         x: end_dates,
-        y: data.realm.human,
+        y: data.everyone.human,
         type: 'scatter',
         name: "Active users",
         hoverinfo: 'none',

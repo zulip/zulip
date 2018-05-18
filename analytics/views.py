@@ -96,7 +96,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                              'private_stream': _('Private streams'),
                              'private_message': _('Private messages'),
                              'huddle_message': _('Group private messages')}
-        labels_sort_function = lambda data: sort_by_totals(data['realm'])
+        labels_sort_function = lambda data: sort_by_totals(data['everyone'])
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
         stat = COUNT_STATS['messages_sent:client:day']
@@ -135,7 +135,7 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
     data = {'end_times': end_times, 'frequency': stat.frequency}
     for table in tables:
         if table == RealmCount:
-            data['realm'] = get_time_series_by_subgroup(
+            data['everyone'] = get_time_series_by_subgroup(
                 stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
         if table == UserCount:
             data['user'] = get_time_series_by_subgroup(
@@ -158,7 +158,7 @@ def sort_by_totals(value_arrays: Dict[str, List[int]]) -> List[str]:
 # tries to rank the clients so that taking the first N elements of the
 # sorted list has a reasonable chance of doing so.
 def sort_client_labels(data: Dict[str, Dict[str, List[int]]]) -> List[str]:
-    realm_order = sort_by_totals(data['realm'])
+    realm_order = sort_by_totals(data['everyone'])
     user_order = sort_by_totals(data['user'])
     label_sort_values = {}  # type: Dict[str, float]
     for i, label in enumerate(realm_order):
