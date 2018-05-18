@@ -53,7 +53,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
         self.event = {
-            u'command': '@**test**',
+            u'command': '@**slack-bot** test',
             u'user_profile_id': 12,
             u'service_name': 'test-service',
             u'trigger': 'mention',
@@ -80,24 +80,13 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
 
         self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
         self.assertEqual(rest_operation['method'], 'POST')
-        self.assertEqual(request_data[0][1], "abcdef")  # token
-        self.assertEqual(request_data[1][1], "zulip")  # team_id
-        self.assertEqual(request_data[2][1], "zulip.com")  # team_domain
-        self.assertEqual(request_data[3][1], "123")  # channel_id
-        self.assertEqual(request_data[4][1], "integrations")  # channel_name
-        self.assertEqual(request_data[5][1], 123456)  # timestamp
-        self.assertEqual(request_data[6][1], 21)  # user_id
-        self.assertEqual(request_data[7][1], "Sample User")  # user_name
-        self.assertEqual(request_data[8][1], "@**test**")  # text
-        self.assertEqual(request_data[9][1], "mention")  # trigger_word
-        self.assertEqual(request_data[10][1], mock_service.id)  # service_id
+        request_data = json.loads(request_data)
+        self.assertEqual(request_data['text'], "test")
+        self.assertEqual(request_data['username'], "Sample User")
+        self.assertEqual(request_data['icon_url'], "https://secure.gravatar.com/avatar/9980b70febda3d87f51a8a0bc18e9378?d=identicon&version=1")
 
     def test_process_success(self) -> None:
         response = mock.Mock(spec=Response)
-        response.text = json.dumps({"response_not_required": True})
+        response.text = "Ok"
         success_response, _ = self.handler.process_success(response, self.event)
-        self.assertEqual(success_response, None)
-
-        response.text = json.dumps({"text": 'test_content'})
-        success_response, _ = self.handler.process_success(response, self.event)
-        self.assertEqual(success_response, 'test_content')
+        self.assertEqual(success_response, response.text)

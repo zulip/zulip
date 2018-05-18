@@ -15,6 +15,7 @@ from django.utils.translation import ugettext as _
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
+from zerver.lib.avatar import avatar_url
 from zerver.lib.notifications import encode_stream
 from zerver.lib.queue import retry_event
 from zerver.lib.validator import check_dict, check_string
@@ -80,30 +81,31 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'base_url': self.base_url,
                           'request_kwargs': {}}
 
-        if event['message']['type'] == 'private':
-            raise NotImplementedError("Private messaging service not supported.")
+        message = event['command']
+        # To remove the slack outgoing webhook bot mention
+        # eg: Change the message sent from '@**slack-bot** message' to 'message'
+        if event['trigger'] == 'mention':
+            message = ' '.join(message.split(' ')[1:])
 
-        service = get_service_profile(event['user_profile_id'], str(self.service_name))
-        request_data = [("token", self.token),
-                        ("team_id", event['message']['sender_realm_str']),
-                        ("team_domain", email_to_domain(event['message']['sender_email'])),
-                        ("channel_id", event['message']['stream_id']),
-                        ("channel_name", event['message']['display_recipient']),
-                        ("timestamp", event['message']['timestamp']),
-                        ("user_id", event['message']['sender_id']),
-                        ("user_name", event['message']['sender_full_name']),
-                        ("text", event['command']),
-                        ("trigger_word", event['trigger']),
-                        ("service_id", service.id),
-                        ]
+        # For the slack incoming webhook icon avatar
+        sender = get_user_profile_by_id(event['message']['sender_id'])
+        sender_avatar_url = avatar_url(sender)
+        if sender.avatar_source != 'G':
+            realm_uri = Realm.objects.get(id=event['message']['sender_realm_id']).uri
+            sender_avatar_url = realm_uri + sender_avatar_url
 
-        return rest_operation, request_data
+        # Body of the request sent to the slack incoming webhook
+        # See https://api.slack.com/incoming-webhooks for details
+        request_data = {"text": message,
+                        "username": event['message']['sender_full_name'],
+                        "icon_url": sender_avatar_url}
 
-    def process_success(self, response: Response,
+        return rest_operation, json.dumps(request_data)
+
+    def process_success(self, response_json: Response,
                         event: Dict[str, Any]) -> Tuple[Optional[str], Optional[str]]:
-        response_json = json.loads(response.text)
-        if "text" in response_json:
-            return response_json["text"], None
+        if hasattr(response_json, 'text'):
+            return response_json.text, None
         else:
             return None, None
 
@@ -144,7 +146,7 @@ def send_response_message(bot_id: str, message: Dict[str, Any], response_message
         raise JsonableError(_("Invalid message type"))
 
 def succeed_with_message(event: Dict[str, Any], success_message: str) -> None:
-    success_message = "Success! " + success_message
+    success_message = ("Success! Third party responded with '%s'" % (success_message))
     send_response_message(event['user_profile_id'], event['message'], success_message)
 
 def fail_with_message(event: Dict[str, Any], failure_message: str) -> None:
