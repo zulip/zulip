@@ -665,6 +665,20 @@ run_test('describe', () => {
     string = 'stream devel, exclude messages with one or more image';
     assert.equal(Filter.describe(narrow), string);
 
+    narrow = [
+        {operator: 'has', operand: 'abc', negated: true},
+        {operator: 'stream', operand: 'devel'},
+    ];
+    string = 'invalid abc operand for has operator, stream devel';
+    assert.equal(Filter.describe(narrow), string);
+
+    narrow = [
+        {operator: 'has', operand: 'image', negated: true},
+        {operator: 'stream', operand: 'devel'},
+    ];
+    string = 'exclude messages with one or more image, stream devel';
+    assert.equal(Filter.describe(narrow), string);
+
     narrow = [];
     string = 'all messages';
     assert.equal(Filter.describe(narrow), string);
