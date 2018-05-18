@@ -1555,6 +1555,17 @@ def get_membership_realms(email: str) -> List[Realm]:
     profiles = UserProfile.objects.select_related('realm').filter(email__iexact=email.strip())
     return [profile.realm for profile in profiles]
 
+def get_source_profile(email: str, string_id: str) -> Optional[UserProfile]:
+    realm = get_realm(string_id)
+
+    if realm is None:
+        return None
+
+    try:
+        return get_user(email, realm)
+    except UserProfile.DoesNotExist:
+        return None
+
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)

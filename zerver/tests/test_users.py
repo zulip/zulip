@@ -21,7 +21,7 @@ from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     Message, get_context_for_message, ScheduledEmail, \
-    get_membership_realms
+    get_membership_realms, get_source_profile
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -350,6 +350,24 @@ class UserProfileTest(ZulipTestCase):
         realms = get_membership_realms(email)
         self.assert_length(realms, 1)
         self.assertIn(zulip_realm, realms)
+
+    def test_get_source_profile(self) -> None:
+        iago = get_source_profile("iago@zulip.com", "zulip")
+        assert iago is not None
+        self.assertEqual(iago.email, "iago@zulip.com")
+        self.assertEqual(iago.realm, get_realm("zulip"))
+
+        iago = get_source_profile("IAGO@ZULIP.com", "zulip")
+        assert iago is not None
+        self.assertEqual(iago.email, "iago@zulip.com")
+
+        cordelia = get_source_profile("cordelia@zulip.com", "lear")
+        assert cordelia is not None
+        self.assertEqual(cordelia.email, "cordelia@zulip.com")
+
+        self.assertIsNone(get_source_profile("iagod@zulip.com", "zulip"))
+        self.assertIsNone(get_source_profile("iago@zulip.com", "ZULIP"))
+        self.assertIsNone(get_source_profile("iago@zulip.com", "lear"))
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
