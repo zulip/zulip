@@ -12,6 +12,7 @@
 ## Interactive bots (beta)
 
 * [Running bots](/api/running-bots)
+* [Deploying bots](/api/deploying-bots)
 * [Writing bots](/api/writing-bots)
 
 ## REST API
