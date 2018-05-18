@@ -373,6 +373,7 @@ exports.set_up = function () {
         if (bot.bot_type.toString() === OUTGOING_WEBHOOK_BOT_TYPE) {
             $("#service_data").append(templates.render("edit-outgoing-webhook-service",
                                                        {service: service}));
+            $("#edit_service_interface").val(service.interface);
         }
         if (bot.bot_type.toString() === EMBEDDED_BOT_TYPE) {
             $("#service_data").append(templates.render("edit-embedded-bot-service",
