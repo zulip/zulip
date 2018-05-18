@@ -372,7 +372,28 @@ function get_operator_subset_suggestions(operators) {
 }
 
 
-function get_special_filter_suggestions(last, operators) {
+function get_special_filter_suggestions(last, operators, suggestions) {
+
+    var last_string = Filter.unparse([last]).toLowerCase();
+    suggestions = _.filter(suggestions, function (s) {
+        if (match_criteria(operators, s.invalid)) {
+            return false;
+        }
+        if (last_string === '') {
+            return true;
+        }
+        return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
+               (s.description.toLowerCase().indexOf(last_string) === 0);
+    });
+
+    // Only show home if there's an empty bar
+    if (operators.length === 0 && last_string === '') {
+        suggestions.unshift({search_string: '', description: 'All messages'});
+    }
+    return suggestions;
+}
+
+function get_is_filter_suggestions(last, operators) {
     var suggestions = [
         {
             search_string: 'is:private',
@@ -414,25 +435,36 @@ function get_special_filter_suggestions(last, operators) {
             ],
         },
     ];
-
-    var last_string = Filter.unparse([last]).toLowerCase();
-    suggestions = _.filter(suggestions, function (s) {
-        if (match_criteria(operators, s.invalid)) {
-            return false;
-        }
-        if (last_string === '') {
-            return true;
-        }
-        return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
-               (s.description.toLowerCase().indexOf(last_string) === 0);
-    });
-
-    // Only show home if there's an empty bar
-    if (operators.length === 0 && last_string === '') {
-        suggestions.unshift({search_string: '', description: 'All messages'});
-    }
-    return suggestions;
+    return get_special_filter_suggestions(last, operators, suggestions);
 }
+
+function get_has_filter_suggestions(last, operators) {
+    var suggestions = [
+        {
+            search_string: 'has:link',
+            description: 'messages with one or more link',
+            invalid: [
+                {operator: 'has', operand: 'link'},
+            ],
+        },
+        {
+            search_string: 'has:image',
+            description: 'messages with one or more image',
+            invalid: [
+                {operator: 'has', operand: 'image'},
+            ],
+        },
+        {
+            search_string: 'has:attachment',
+            description: 'messages with one or more attachment',
+            invalid: [
+                {operator: 'has', operand: 'attachment'},
+            ],
+        },
+    ];
+    return get_special_filter_suggestions(last, operators, suggestions);
+}
+
 
 function get_sent_by_me_suggestions(last, operators) {
     var last_string = Filter.unparse([last]).toLowerCase();
@@ -496,7 +528,7 @@ function get_operator_suggestions(last) {
         last.operand = last.operand.slice(1);
     }
 
-    var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'has', 'from', 'group-pm-with'];
+    var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
     choices = _.filter(choices, function (choice) {
         return phrase_match(choice, last.operand);
     });
@@ -554,7 +586,7 @@ exports.get_suggestions = function (query) {
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion
-    suggestions = get_special_filter_suggestions(last, base_operators);
+    suggestions = get_is_filter_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_sent_by_me_suggestions(last, base_operators);
@@ -584,6 +616,9 @@ exports.get_suggestions = function (query) {
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_operator_suggestions(last);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_has_filter_suggestions(last, base_operators);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_containing_suggestions(last);
