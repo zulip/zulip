@@ -188,7 +188,9 @@ function populate_messages_sent_over_time(data) {
         var current = {human: 0, bot: 0, me: 0};
         var i_init = 0;
         if (is_boundary(start_dates[0])) {
-            current = {human: data.everyone.human[0], bot: data.everyone.bot[0], me: data.user.human[0]};
+            current = {human: data.everyone.human[0],
+                       bot: data.everyone.bot[0],
+                       me: data.user.human[0]};
             i_init = 1;
         }
         for (var i = i_init; i < start_dates.length; i += 1) {
@@ -382,7 +384,8 @@ function populate_messages_sent_by_client(data) {
     };
 
     // sort labels so that values are descending in the default view
-    var everyone_month = compute_summary_chart_data(data.everyone, 30, data.display_order.slice(0, 12));
+    var everyone_month = compute_summary_chart_data(
+        data.everyone, 30, data.display_order.slice(0, 12));
     var label_values = [];
     for (var i=0; i<everyone_month.values.length; i+=1) {
         label_values.push({
