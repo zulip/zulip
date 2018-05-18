@@ -152,16 +152,14 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
 
     end_times = time_range(start, end, stat.frequency, min_length)
     data = {'end_times': end_times, 'frequency': stat.frequency}
+
+    aggregation_level = {InstallationCount: 'everyone', RealmCount: 'everyone', UserCount: 'user'}
+    # -1 is a placeholder value, since there is no relevant filtering on InstallationCount
+    id_value = {InstallationCount: -1, RealmCount: realm.id, UserCount: user_profile.id}
     for table in tables:
-        if table == InstallationCount:
-            data['everyone'] = get_time_series_by_subgroup(
-                stat, InstallationCount, -1, end_times, subgroup_to_label, include_empty_subgroups)
-        if table == RealmCount:
-            data['everyone'] = get_time_series_by_subgroup(
-                stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
-        if table == UserCount:
-            data['user'] = get_time_series_by_subgroup(
-                stat, UserCount, user_profile.id, end_times, subgroup_to_label, include_empty_subgroups)
+        data[aggregation_level[table]] = get_time_series_by_subgroup(
+            stat, table, id_value[table], end_times, subgroup_to_label, include_empty_subgroups)
+
     if labels_sort_function is not None:
         data['display_order'] = labels_sort_function(data)
     else:
