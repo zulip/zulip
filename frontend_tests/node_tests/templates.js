@@ -1573,8 +1573,8 @@ run_test('handlebars_bug', () => {
                   interface: "1"},
     };
     var html = render('edit-outgoing-webhook-service', args);
-    assert.equal($(html).find('#edit_service_base_url').attr('value'), args.service.base_url);
-    assert.equal($(html).find('#edit_service_interface').attr('value'), args.service.interface);
+    assert.equal($(html).find('#edit_service_base_url').val(), args.service.base_url);
+    assert.equal($(html).find('#edit_service_interface').val(), args.service.interface);
 }());
 
 (function edit_embedded_bot_service() {
