@@ -20,7 +20,8 @@ from zerver.lib.test_runner import slow
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
-    Message, get_context_for_message, ScheduledEmail
+    Message, get_context_for_message, ScheduledEmail, \
+    get_membership_realms
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -328,6 +329,27 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(result[hamlet].email, hamlet)
         self.assertEqual(result[cordelia].email, cordelia)
         self.assertEqual(result[webhook_bot].email, webhook_bot)
+
+    def test_get_membership_realms(self) -> None:
+        zulip_realm = get_realm("zulip")
+        lear_realm = get_realm("lear")
+
+        email = "cordelia@zulip.com"
+        realms = get_membership_realms(email)
+        self.assert_length(realms, 2)
+        self.assertIn(zulip_realm, realms)
+        self.assertIn(lear_realm, realms)
+
+        email = "CORDelia@zulip.com"
+        realms = get_membership_realms(email)
+        self.assert_length(realms, 2)
+        self.assertIn(zulip_realm, realms)
+        self.assertIn(lear_realm, realms)
+
+        email = "IAGO@ZULIP.COM"
+        realms = get_membership_realms(email)
+        self.assert_length(realms, 1)
+        self.assertIn(zulip_realm, realms)
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:

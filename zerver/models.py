@@ -1551,6 +1551,10 @@ def active_user_ids(realm_id: int) -> List[int]:
     ).values_list('id', flat=True)
     return list(query)
 
+def get_membership_realms(email: str) -> List[Realm]:
+    profiles = UserProfile.objects.select_related('realm').filter(email__iexact=email.strip())
+    return [profile.realm for profile in profiles]
+
 @cache_with_key(bot_dicts_in_realm_cache_key, timeout=3600*24*7)
 def get_bot_dicts_in_realm(realm: Realm) -> List[Dict[str, Any]]:
     return UserProfile.objects.filter(realm=realm, is_bot=True).values(*bot_dict_fields)
