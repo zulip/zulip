@@ -446,6 +446,9 @@ run_test('empty_query_suggestions', () => {
         "sender:bob@zulip.com",
         "stream:devel",
         "stream:office",
+        'has:link',
+        'has:image',
+        'has:attachment',
     ];
 
     assert.deepEqual(suggestions.strings, expected);
@@ -459,6 +462,39 @@ run_test('empty_query_suggestions', () => {
     assert.equal(describe('is:alerted'), 'Alerted messages');
     assert.equal(describe('is:unread'), 'Unread messages');
     assert.equal(describe('sender:bob@zulip.com'), 'Sent by me');
+    assert.equal(describe('has:link'), 'Messages with one or more link');
+    assert.equal(describe('has:image'), 'Messages with one or more image');
+    assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
+});
+
+run_test('has_operator_suggestions', () => {
+    // Checks that category wise suggestions are displayed instead of a single
+    // default suggestion when suggesting `has` operator.
+    var query = 'h';
+    global.stream_data.subscribed_streams = function () {
+        return ['devel', 'office'];
+    };
+    global.narrow_state.stream = function () {
+        return;
+    };
+
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        "h",
+        'has:link',
+        'has:image',
+        'has:attachment',
+    ];
+
+    assert.deepEqual(suggestions.strings, expected);
+
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+
+    assert.equal(describe('has:link'), 'Messages with one or more link');
+    assert.equal(describe('has:image'), 'Messages with one or more image');
+    assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
 });
 
 run_test('sent_by_me_suggestions', () => {
@@ -780,7 +816,6 @@ run_test('contains_suggestions', () => {
     var query = 'has:';
     var suggestions = search.get_suggestions(query);
     var expected = [
-        'has:',
         'has:link',
         'has:image',
         'has:attachment',
@@ -790,7 +825,6 @@ run_test('contains_suggestions', () => {
     query = 'has:im';
     suggestions = search.get_suggestions(query);
     expected = [
-        'has:im',
         'has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -798,7 +832,6 @@ run_test('contains_suggestions', () => {
     query = '-has:im';
     suggestions = search.get_suggestions(query);
     expected = [
-        '-has:im',
         '-has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
@@ -814,7 +847,6 @@ run_test('contains_suggestions', () => {
     query = 'stream:Denmark is:alerted has:lin';
     suggestions = search.get_suggestions(query);
     expected = [
-        'stream:Denmark is:alerted has:lin',
         'stream:Denmark is:alerted has:link',
         'stream:Denmark is:alerted',
         'stream:Denmark',
