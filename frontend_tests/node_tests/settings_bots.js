@@ -93,8 +93,6 @@ run_test('set_up', () => {
 
     $.validator = { addMethod: function () {} };
 
-    $("#get_api_key_box form").ajaxForm = function () {};
-
     $("#create_bot_form").validate = function () {};
 
     $('#create_bot_type').on = function (action, f) {
