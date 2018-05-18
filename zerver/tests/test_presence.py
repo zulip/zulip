@@ -63,7 +63,6 @@ class ActivityTest(ZulipTestCase):
                 print(result)
                 print(result.url)
                 print(self.example_user("hamlet").is_staff)
-                print(self.client.session._auth_user_id)
             self.assertEqual(result.status_code, 200)
 
         self.assert_length(queries, 13)
