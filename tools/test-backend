@@ -234,7 +234,7 @@ if __name__ == "__main__":
                         default=False,
                         help=("Run the tests which failed the last time "
                               "test-backend was run.  Implies --nonfatal-errors."))
-    parser.add_argument('args', nargs=argparse.REMAINDER)
+    parser.add_argument('args', nargs='*')
 
     options = parser.parse_args()
     args = options.args
