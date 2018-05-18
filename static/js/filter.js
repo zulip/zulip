@@ -553,6 +553,7 @@ Filter.operator_to_prefix = function (operator, negated) {
     case 'near':
         return verb + 'messages around';
 
+    // Note: We hack around using this in "describe" below.
     case 'has':
         return verb + 'messages with one or more';
 
@@ -622,6 +623,14 @@ function describe_unescaped(operators) {
                 return verb + 'unread messages';
             }
             return operand + ' messages';
+        }
+        if (canonicalized_operator ==='has') {
+            // search_suggestion.get_suggestions takes care that this message will
+            // only be shown if the `has` operator is not at the last.
+            var valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];
+            if (valid_has_operands.indexOf(operand) === -1) {
+                return 'invalid ' + operand + ' operand for has operator';
+            }
         }
         var prefix_for_operator = Filter.operator_to_prefix(canonicalized_operator,
                                                             elem.negated);
