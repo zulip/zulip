@@ -44,7 +44,7 @@ def render_stats(request: HttpRequest, data_url_suffix: str, target_name: str) -
     )
     return render(request,
                   'analytics/stats.html',
-                  context=dict(target_realm_name=target_name,
+                  context=dict(target_name=target_name,
                                page_params=JSONEncoderForHTML().encode(page_params)))
 
 @zulip_login_required
