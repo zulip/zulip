@@ -85,7 +85,7 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'human': self.data(100)},
+            'everyone': {'human': self.data(100)},
             'display_order': None,
             'result': 'success',
         })
@@ -101,7 +101,7 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_hour],
             'frequency': CountStat.HOUR,
-            'realm': {'bot': self.data(100), 'human': self.data(101)},
+            'everyone': {'bot': self.data(100), 'human': self.data(101)},
             'user': {'bot': self.data(0), 'human': self.data(200)},
             'display_order': None,
             'result': 'success',
@@ -119,8 +119,8 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'Public streams': self.data(100), 'Private streams': self.data(0),
-                      'Private messages': self.data(101), 'Group private messages': self.data(0)},
+            'everyone': {'Public streams': self.data(100), 'Private streams': self.data(0),
+                         'Private messages': self.data(101), 'Group private messages': self.data(0)},
             'user': {'Public streams': self.data(200), 'Private streams': self.data(201),
                      'Private messages': self.data(0), 'Group private messages': self.data(0)},
             'display_order': ['Private messages', 'Public streams', 'Private streams', 'Group private messages'],
@@ -143,8 +143,8 @@ class TestGetChartData(ZulipTestCase):
             'msg': '',
             'end_times': [datetime_to_timestamp(dt) for dt in self.end_times_day],
             'frequency': CountStat.DAY,
-            'realm': {'client 4': self.data(100), 'client 3': self.data(101),
-                      'client 2': self.data(102)},
+            'everyone': {'client 4': self.data(100), 'client 3': self.data(101),
+                         'client 2': self.data(102)},
             'user': {'client 3': self.data(200), 'client 1': self.data(201)},
             'display_order': ['client 1', 'client 2', 'client 3', 'client 4'],
             'result': 'success',
@@ -158,7 +158,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'number_of_humans'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {'human': [0]})
+        self.assertEqual(data['everyone'], {'human': [0]})
         self.assertFalse('user' in data)
 
         FillState.objects.create(
@@ -168,7 +168,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_over_time'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {'human': [0], 'bot': [0]})
+        self.assertEqual(data['everyone'], {'human': [0], 'bot': [0]})
         self.assertEqual(data['user'], {'human': [0], 'bot': [0]})
 
         FillState.objects.create(
@@ -178,7 +178,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_by_message_type'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {
+        self.assertEqual(data['everyone'], {
             'Public streams': [0], 'Private streams': [0],
             'Private messages': [0], 'Group private messages': [0]})
         self.assertEqual(data['user'], {
@@ -192,7 +192,7 @@ class TestGetChartData(ZulipTestCase):
                                  {'chart_name': 'messages_sent_by_client'})
         self.assert_json_success(result)
         data = result.json()
-        self.assertEqual(data['realm'], {})
+        self.assertEqual(data['everyone'], {})
         self.assertEqual(data['user'], {})
 
     def test_start_and_end(self) -> None:
@@ -208,7 +208,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], end_time_timestamps[1:3])
-        self.assertEqual(data['realm'], {'human': [0, 100]})
+        self.assertEqual(data['everyone'], {'human': [0, 100]})
 
         # start later then end
         result = self.client_get('/json/analytics/chart_data',
@@ -227,7 +227,7 @@ class TestGetChartData(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in self.end_times_day])
-        self.assertEqual(data['realm'], {'human': self.data(100)})
+        self.assertEqual(data['everyone'], {'human': self.data(100)})
         # test min_length larger than filled data
         result = self.client_get('/json/analytics/chart_data',
                                  {'chart_name': 'number_of_humans',
@@ -236,7 +236,7 @@ class TestGetChartData(ZulipTestCase):
         data = result.json()
         end_times = [ceiling_to_day(self.realm.date_created) + timedelta(days=i) for i in range(-1, 4)]
         self.assertEqual(data['end_times'], [datetime_to_timestamp(dt) for dt in end_times])
-        self.assertEqual(data['realm'], {'human': [0]+self.data(100)})
+        self.assertEqual(data['everyone'], {'human': [0]+self.data(100)})
 
     def test_non_existent_chart(self) -> None:
         result = self.client_get('/json/analytics/chart_data',
@@ -293,7 +293,7 @@ class TestGetChartDataHelpers(ZulipTestCase):
         self.assertEqual(sort_by_totals(value_arrays), ['a', 'b', 'c', 'd'])
 
     def test_sort_client_labels(self) -> None:
-        data = {'realm': {'a': [16], 'c': [15], 'b': [14], 'e': [13], 'd': [12], 'h': [11]},
+        data = {'everyone': {'a': [16], 'c': [15], 'b': [14], 'e': [13], 'd': [12], 'h': [11]},
                 'user': {'a': [6], 'b': [5], 'd': [4], 'e': [3], 'f': [2], 'g': [1]}}
         self.assertEqual(sort_client_labels(data), ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'])
 
