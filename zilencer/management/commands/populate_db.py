@@ -124,6 +124,10 @@ class Command(BaseCommand):
             self.stderr.write("Error!  More than 100% of messages allocated.\n")
             return
 
+        # Get consistent data for backend tests.
+        if options["test_suite"]:
+            random.seed(0)
+
         if options["delete"]:
             # Start by clearing all the data in our database
             clear_database()
@@ -229,34 +233,66 @@ class Command(BaseCommand):
             bulk_create_streams(zulip_realm, stream_dict)
             recipient_streams = [Stream.objects.get(name=name, realm=zulip_realm).id
                                  for name in stream_list]  # type: List[int]
+
             # Create subscriptions to streams.  The following
             # algorithm will give each of the users a different but
             # deterministic subset of the streams (given a fixed list
-            # of users).
+            # of users). For the test suite, we have a fixed list of
+            # subscriptions to make sure test data is consistent
+            # across platforms.
+
+            subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient, str]]
+            profiles = UserProfile.objects.select_related().filter(
+                is_bot=False, is_guest=False).order_by("email")  # type: Sequence[UserProfile]
+
+            if options["test_suite"]:
+                subscriptions_map = {
+                    'AARON@zulip.com': ['Verona'],
+                    'cordelia@zulip.com': ['Verona'],
+                    'hamlet@zulip.com': ['Verona', 'Denmark'],
+                    'iago@zulip.com': ['Verona', 'Denmark', 'Scotland'],
+                    'othello@zulip.com': ['Verona', 'Denmark', 'Scotland'],
+                    'prospero@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice'],
+                    'ZOE@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice', 'Rome']
+                }
+
+                for i, profile in enumerate(profiles):
+                    if profile.email not in subscriptions_map:
+                        raise Exception('Subscriptions not listed for user %s' % (profile.email,))
+
+                    for stream_name in subscriptions_map[profile.email]:
+                        stream = Stream.objects.get(name=stream_name)
+                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
+                        color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+                        subscriptions_list.append((profile, r, color))
+            else:
+                for i, profile in enumerate(profiles):
+                    # Subscribe to some streams.
+                    for type_id in recipient_streams[:int(len(recipient_streams) *
+                                                          float(i)/len(profiles)) + 1]:
+                        r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
+                        color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
+                        subscriptions_list.append((profile, r, color))
+
             subscriptions_to_add = []  # type: List[Subscription]
             event_time = timezone_now()
             all_subscription_logs = []  # type: (List[RealmAuditLog])
-            profiles = UserProfile.objects.select_related().filter(
-                is_bot=False, is_guest=False).order_by("email")  # type: Sequence[UserProfile]
-            for i, profile in enumerate(profiles):
-                # Subscribe to some streams.
-                for type_id in recipient_streams[:int(len(recipient_streams) *
-                                                      float(i)/len(profiles)) + 1]:
-                    r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                    s = Subscription(
-                        recipient=r,
-                        user_profile=profile,
-                        color=STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)])
 
-                    subscriptions_to_add.append(s)
+            for profile, recipient, color in subscriptions_list:
+                s = Subscription(
+                    recipient=recipient,
+                    user_profile=profile,
+                    color=color)
 
-                    log = RealmAuditLog(realm=profile.realm,
-                                        modified_user=profile,
-                                        modified_stream_id=type_id,
-                                        event_last_message_id=0,
-                                        event_type='subscription_created',
-                                        event_time=event_time)
-                    all_subscription_logs.append(log)
+                subscriptions_to_add.append(s)
+
+                log = RealmAuditLog(realm=profile.realm,
+                                    modified_user=profile,
+                                    modified_stream_id=recipient.type_id,
+                                    event_last_message_id=0,
+                                    event_type='subscription_created',
+                                    event_time=event_time)
+                all_subscription_logs.append(log)
 
             Subscription.objects.bulk_create(subscriptions_to_add)
             RealmAuditLog.objects.bulk_create(all_subscription_logs)
