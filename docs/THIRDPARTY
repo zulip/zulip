@@ -128,10 +128,6 @@ Files: static/third/jquery-filedrop/jquery.filedrop.js
 Copyright: Resopollution
 License: Expat
 
-Files: static/third/jquery-form/jquery.form.js
-Copyright: M. Alsup
-License: Expat or GPL-2.0
-
 Files: static/third/jquery-idle/jquery.idle.js
 Copyright: 2011-2013 Henrique Boaventura
 License: Expat
