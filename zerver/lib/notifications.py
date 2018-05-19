@@ -443,9 +443,17 @@ def handle_missedmessage_emails(user_profile_id: int,
         if msg.is_stream_message():
             msg_list.extend(get_context_for_message(msg))
 
-    # Send an email per recipient subject pair
+    # Sort emails by least recently-active discussion.
+    recipient_subjects = []  # type: List[Tuple[Tuple[int, str], int]]
     for recipient_subject, msg_list in messages_by_recipient_subject.items():
-        unique_messages = {m.id: m for m in msg_list}
+        max_message_id = max(msg_list, key=lambda msg: msg.id).id
+        recipient_subjects.append((recipient_subject, max_message_id))
+
+    recipient_subjects = sorted(recipient_subjects, key=lambda x: x[1])
+
+    # Send an email per recipient subject pair
+    for recipient_subject, _ in recipient_subjects:
+        unique_messages = {m.id: m for m in messages_by_recipient_subject[recipient_subject]}
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),

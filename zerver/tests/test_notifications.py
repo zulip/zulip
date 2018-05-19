@@ -475,9 +475,9 @@ class TestMissedMessages(ZulipTestCase):
             {'message_id': msg_id_2},
         ])
         self.assertEqual(len(mail.outbox), 2)
-        subject = 'Iago sent you a message'
-        self.assertEqual(mail.outbox[0].subject, subject)
         subject = 'Othello, the Moor of Venice sent you a message'
+        self.assertEqual(mail.outbox[0].subject, subject)
+        subject = 'Iago sent you a message'
         self.assertEqual(mail.outbox[1].subject, subject)
 
     def test_relative_to_full_url(self) -> None:
