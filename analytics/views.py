@@ -94,9 +94,15 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         aggregate_table = InstallationCount
 
     if chart_name == 'number_of_humans':
-        stats = [COUNT_STATS['realm_active_humans::day']]
+        stats = [
+            COUNT_STATS['1day_actives::day'],
+            COUNT_STATS['realm_active_humans::day'],
+            COUNT_STATS['active_users_audit:is_bot:day']]
         tables = [aggregate_table]
-        subgroup_to_label = {stats[0]: {None: 'human'}}  # type: Dict[CountStat, Dict[Optional[str], str]]
+        subgroup_to_label = {
+            stats[0]: {None: '_1day'},
+            stats[1]: {None: '_15day'},
+            stats[2]: {'false': 'all_time'}}  # type: Dict[CountStat, Dict[Optional[str], str]]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
