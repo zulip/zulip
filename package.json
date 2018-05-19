@@ -34,7 +34,7 @@
     "moment-timezone": "0.5.14",
     "node-sass": "4.8.3",
     "perfect-scrollbar": "1.3.0",
-    "plotly.js": "1.19.2",
+    "plotly.js": "1.37.1",
     "sass-loader": "7.0.1",
     "script-loader": "0.7.2",
     "sorttable": "1.0.2",
