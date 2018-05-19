@@ -262,13 +262,13 @@ class NarrowBuilderTest(ZulipTestCase):
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_pgroonga(self) -> None:
         term = dict(operator='search', operand='"french fries"')
-        self._do_add_term_test(term, 'WHERE search_pgroonga @@ :search_pgroonga_1')
+        self._do_add_term_test(term, 'WHERE search_pgroonga @@ escape_html(:escape_html_1)')
 
     @override_settings(USING_PGROONGA=True)
     def test_add_term_using_search_operator_and_negated_pgroonga(
             self) -> None:  # NEGATED
         term = dict(operator='search', operand='"french fries"', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ :search_pgroonga_1)')
+        self._do_add_term_test(term, 'WHERE NOT (search_pgroonga @@ escape_html(:escape_html_1))')
 
     def test_add_term_using_has_operator_and_attachment_operand(self) -> None:
         term = dict(operator='has', operand='attachment')
@@ -1377,6 +1377,7 @@ class GetOldMessagesTest(ZulipTestCase):
             ('english', u'I want to go to 日本!'),
             ('english', 'Can you speak https://en.wikipedia.org/wiki/Japanese?'),
             ('english', 'https://google.com'),
+            ('bread & butter', 'chalk & cheese'),
         ]
 
         for topic, content in messages_to_search:
@@ -1394,7 +1395,7 @@ class GetOldMessagesTest(ZulipTestCase):
         with connection.cursor() as cursor:
             cursor.execute("""
                 UPDATE zerver_message SET
-                search_pgroonga = subject || ' ' || rendered_content
+                search_pgroonga = escape_html(subject) || ' ' || rendered_content
                 """)
 
         narrow = [
@@ -1471,6 +1472,35 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertEqual(len(link_search_result['messages']), 1)
         self.assertEqual(link_search_result['messages'][0]['match_content'],
                          '<p><a href="https://google.com" target="_blank" title="https://google.com"><span class="highlight">https://google.com</span></a></p>')
+
+        # Search operands with HTML Special Characters
+        special_search_narrow = [
+            dict(operator='search', operand='butter'),
+        ]
+        special_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(special_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))  # type: Dict[str, Any]
+        self.assertEqual(len(special_search_result['messages']), 1)
+        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+                         'bread &amp; <span class="highlight">butter</span>')
+
+        special_search_narrow = [
+            dict(operator='search', operand='&'),
+        ]
+        special_search_result = self.get_and_check_messages(dict(
+            narrow=ujson.dumps(special_search_narrow),
+            anchor=next_message_id,
+            num_after=10,
+            num_before=0,
+        ))
+        self.assertEqual(len(special_search_result['messages']), 1)
+        self.assertEqual(special_search_result['messages'][0]['match_subject'],
+                         'bread <span class="highlight">&amp;</span> butter')
+        self.assertEqual(special_search_result['messages'][0]['match_content'],
+                         '<p>chalk <span class="highlight">&amp;</span> cheese</p>')
 
     def test_messages_in_narrow_for_non_search(self) -> None:
         email = self.example_email("cordelia")
