@@ -1832,8 +1832,9 @@ class GetOldMessagesTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
 
         # Have Othello send messages to Hamlet that he hasn't read.
+        # Here, Hamlet isn't subscribed to the stream Scotland
         self.send_stream_message(self.example_email("othello"), "Scotland")
-        last_message_id_to_hamlet = self.send_personal_message(
+        first_unread_message_id = self.send_personal_message(
             self.example_email("othello"),
             self.example_email("hamlet"),
         )
@@ -1863,11 +1864,11 @@ class GetOldMessagesTest(ZulipTestCase):
         self.assertIn('ORDER BY message_id ASC', sql)
 
         cond = 'WHERE user_profile_id = %d AND message_id >= %d' % (
-            user_profile.id, last_message_id_to_hamlet,
+            user_profile.id, first_unread_message_id,
         )
         self.assertIn(cond, sql)
         cond = 'WHERE user_profile_id = %d AND message_id <= %d' % (
-            user_profile.id, last_message_id_to_hamlet - 1,
+            user_profile.id, first_unread_message_id - 1,
         )
         self.assertIn(cond, sql)
         self.assertIn('UNION', sql)
