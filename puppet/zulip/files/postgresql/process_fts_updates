@@ -37,7 +37,7 @@ def update_fts_columns(cursor):
         if USING_PGROONGA:
             cursor.execute("UPDATE zerver_message SET "
                            "search_pgroonga = "
-                           "subject || ' ' || rendered_content "
+                           "escape_html(subject) || ' ' || rendered_content "
                            "WHERE id = %s", (message_id,))
         cursor.execute("UPDATE zerver_message SET "
                        "search_tsvector = to_tsvector('zulip.english_us_search', "
