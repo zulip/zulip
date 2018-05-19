@@ -1169,7 +1169,7 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-.settings-header.mobile .icon-vector-chevron-left {
+.settings-header.mobile .fa-chevron-left {
     float: left;
     position: relative;
     top: 14px;
@@ -1470,7 +1470,7 @@ input[type=text]#settings_search {
 #settings_page .sidebar li .text,
 #settings_page .sidebar li .icon {
     display: inline-block;
-    vertical-align: top;
+    vertical-align: 25%;
 }
 
 #settings_page .sidebar li .text {
@@ -1482,8 +1482,7 @@ input[type=text]#settings_search {
     width: 18px;
     height: 18px;
     margin: 10px 10px;
-
-    font-size: 1.4em;
+    font-size: 1.22em;
     color: hsl(0, 0%, 53%);
 
     background-size: cover;

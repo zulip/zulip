@@ -718,7 +718,7 @@ exports.initialize = function () {
         settings.set_settings_header($(this).attr("data-section"));
     });
 
-    $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
+    $(".settings-header.mobile .fa-chevron-left").on("click", function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
     });
