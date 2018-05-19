@@ -331,6 +331,9 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
         for query in slow_queries:
             logging.info("Slow query: %s" % (query))
 
+        if not settings.SLOW_QUERY_MESSAGES_ENABLED:
+            return
+
         if settings.ERROR_BOT is None:
             return
 

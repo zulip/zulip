@@ -159,3 +159,6 @@ SOCIAL_AUTH_GITHUB_SECRET = "secret"
 # Explicitly set this to True within tests that must have this on.
 TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL = None
+
+# Disable messages from slow queries as they affect backend tests.
+SLOW_QUERY_MESSAGES_ENABLED = False
