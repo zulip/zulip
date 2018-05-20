@@ -110,8 +110,11 @@ strength allowed is controlled by two settings in
     organization administrators cannot join a private stream without
     being added by an existing member).
   * When a new user joins a private stream, they can see future
-    messages sent to the stream, but they do not receive access to the
-    stream's message history.
+    messages sent to the stream.
+  * The person creating the stream can configure whether new
+    subscribers will receive access to the stream's message history
+    from before that user joined.  Organization administrators can
+    edit this configuration if they are a subscriber to the stream.
   * Organization administrators can do some basic management of
     private streams that they are not subscribed to: Changing the
     stream name and description, viewing the current subscribers, and
