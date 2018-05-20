@@ -22,6 +22,7 @@ instrument_tornado_ioloop()
 from zerver.lib.debug import interactive_debug_listen
 from zerver.tornado.application import create_tornado_application, \
     setup_tornado_rabbitmq
+from zerver.tornado.autoreload import start as zulip_autoreload_start
 from zerver.tornado.event_queue import add_client_gc_hook, \
     missedmessage_hook, process_notification, setup_event_queue
 from zerver.tornado.socket import respond_send_message
@@ -95,6 +96,8 @@ class Command(BaseCommand):
             try:
                 # Application is an instance of Django's standard wsgi handler.
                 application = create_tornado_application()
+                if settings.AUTORELOAD:
+                    zulip_autoreload_start()
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application,

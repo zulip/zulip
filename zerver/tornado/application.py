@@ -1,9 +1,10 @@
 
 import atexit
 
-import tornado.autoreload
 import tornado.web
 from django.conf import settings
+from tornado import ioloop
+from zerver.tornado import autoreload
 
 from zerver.lib.queue import get_queue_client
 from zerver.tornado.handlers import AsyncDjangoHandler
@@ -14,7 +15,7 @@ def setup_tornado_rabbitmq() -> None:  # nocoverage
     if settings.USING_RABBITMQ:
         queue_client = get_queue_client()
         atexit.register(lambda: queue_client.close())
-        tornado.autoreload.add_reload_hook(lambda: queue_client.close())
+        autoreload.add_reload_hook(lambda: queue_client.close())
 
 def create_tornado_application() -> tornado.web.Application:
     urls = (r"/notify_tornado",
@@ -26,6 +27,6 @@ def create_tornado_application() -> tornado.web.Application:
     return tornado.web.Application(([(url, AsyncDjangoHandler) for url in urls] +
                                     get_sockjs_router().urls),
                                    debug=settings.DEBUG,
-                                   autoreload=settings.AUTORELOAD,
+                                   autoreload=False,
                                    # Disable Tornado's own request logging, since we have our own
                                    log_function=lambda x: None)
