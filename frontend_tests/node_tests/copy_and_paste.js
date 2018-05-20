@@ -4,9 +4,10 @@ set_global('page_params', {
     development: true,
 });
 
-var jsdom = require("jsdom");
-global.document = jsdom.jsdom('<!DOCTYPE html><p>Hello world</p>');
-var window = jsdom.jsdom().defaultView;
+const { JSDOM } = require("jsdom");
+const { window } = new JSDOM('<!DOCTYPE html><p>Hello world</p>');
+const { document } = window;
+global.document = document;
 global.$ = require('jquery')(window);
 
 zrequire('toMarkdown', 'node_modules/to-markdown/dist/to-markdown.js');
