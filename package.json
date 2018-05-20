@@ -6,7 +6,7 @@
   "main": "",
   "dependencies": {
     "@types/node": "8.0.34",
-    "@types/webpack": "4.1.3",
+    "@types/webpack": "4.4.0",
     "blueimp-md5": "2.10.0",
     "clipboard": "2.0.0",
     "css-hot-loader": "1.3.9",
