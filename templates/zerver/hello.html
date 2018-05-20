@@ -481,7 +481,7 @@
                     vibrant community of hundreds of developers from
                     all around the world.  With 120,000 words of
                     developer documentation, a high quality code base,
-                    and a welcoming community, it’s easy to extend or
+                    and a welcoming community, it&rsquo;s easy to extend or
                     tweak Zulip.
                 </p>
                 <p>
@@ -565,7 +565,7 @@
             </a>
         </div>
         <div class="content">
-            <p>Or build your own integrations with <a href="/api/integration-guide">Zulip's powerful API</a>.</p>
+            <p>Or build your own integrations with <a href="/api/integration-guide">Zulip&rsquo;s powerful API</a>.</p>
         </div>
     </div>
 
@@ -588,7 +588,7 @@
                         </div>
                         <div class="item quote-container">
                             <blockquote>
-                                Zulip’s unique threading saves me well
+                                Zulip&rsquo;s unique threading saves me well
                                 over an hour a day in working with our
                                 distributed team of engineers and PMs
                                 across 7+ time zones.  We tried Slack,
@@ -628,18 +628,150 @@
             </div>
         </div>
     </div>
+
+    <!-- Bootstrap 2.3.2--->
+    <script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+    <div class="tour">
+        <div class="tour-inner">
+            <div id="myCarousel" class="carousel slide carousel-fade">
+                <!-- Carousel items -->
+                <div class="carousel-inner">
+                    <div class="item-container">
+                        <div class="item active">
+                            <div class="item-inner">
+
+                                <button href="#myCarousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
+                                <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">In Zulip, you subscribe to <b>streams.</b> Streams are like channels in Slack or IRC.</p>
+                                <div class="zulip-slack-comparison">
+                                    <div class="comparison-zulip">
+                                        <div class="caption">Zulip</div>
+                                        <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}">
+                                    </div>
+                                    <div class="comparison-slack">
+                                        <div class="caption">Other team chat</div>
+                                        <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">Each stream message also has a <b>topic.</b> Topics are unique to Zulip.</p>
+                                <div class="zulip-slack-comparison">
+                                    <div class="comparison-zulip">
+                                        <div class="caption">Zulip</div>
+                                        <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}">
+                                    </div>
+                                    <div class="comparison-slack">
+                                        <div class="caption">Other team chat</div>
+                                        <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">Topics make it easy to catch up after a day of meetings.</p>
+                                <div class="zulip-slack-comparison">
+                                    <div class="comparison-zulip">
+                                        <div class="caption comparison-2-caption-zulip mobile-hide">Zulip</div>
+                                        <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows">
+                                    </div>
+                                    <div class="comparison-slack mobile-hide">
+                                        <div class="caption comparison-2-caption-slack">Other team chat</div>
+                                        <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">Let&rsquo;s click on &ldquo;Tuesday night catering.&rdquo;</p>
+                                <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-hide">
+                                <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show">
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">Messages in Zulip retain their context even if they&rsquo;re sent hours after the conversation started:</p>
+                                <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-easy mobile-hide">
+                                <div class="mobile-show">
+                                    <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}">
+                                    <p class="tour-explanation">Messages sent hours apart are linked in the same topic.</p>
+                                    <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header">Without topics, it&rsquo;s hard to catch up efficiently, and hard to participate in conversations that started while you were away.</p>
+                                <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming centered-image mobile-hide">
+                                <div class="mobile-show">
+                                    <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}">
+                                    <p class="tour-explanation">The last message about Tuesday night catering is hidden 56 messages ago. Meanwhile, you just see a mix of unrelated messages.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="item">
+                            <div class="item-inner">
+                                <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
+                                {% if register_link_disabled %}
+                                {% elif only_sso %}
+                                <a href="{{ url('login-sso') }}">
+                                    <button href="" type="button"
+                                      name="button" class="call-to-action">{{ _('Log in now') }}</button>
+                                </a>
+                                {% else %}
+                                <a href="{{ url('register') }}">
+                                    <button href="" type="button"
+                                      name="button" class="call-to-action">{{ _('Try it free') }}</button>
+                                </a>
+                                {% endif %}
+                                <div class="other-resources">
+                                    <h3>Other resources:</h3>
+                                    <ul>
+                                        <li><a href="/plans/">Plans and pricing</a></li>
+                                        <li><a href="/features">Features</a></li>
+                                        <li><a href="/why-zulip">Why Zulip</a> (10 min read)</li>
+                                        <li>First time users&rsquo; guide: <a href="https://zulipchat.com/help/getting-your-organization-started-with-zulip">admin</a>, <a href="https://zulipchat.com/help/getting-started-with-zulip">user</a></li>
+                                        <li><a href="https://zulip.readthedocs.io/en/stable/production/install.html">Installing Zulip on-premise</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <a class="carousel-control left" href="#myCarousel" data-slide="prev"><i class="fa fa-chevron-left"></i></a>
+                <a class="carousel-control right" href="#myCarousel" data-slide="next"><i class="fa fa-chevron-right"></i></a>
+                <ol class="carousel-indicators">
+                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
+                    <li data-target="#myCarousel" data-slide-to="1"></li>
+                    <li data-target="#myCarousel" data-slide-to="2"></li>
+                    <li data-target="#myCarousel" data-slide-to="3"></li>
+                    <li data-target="#myCarousel" data-slide-to="4"></li>
+                    <li data-target="#myCarousel" data-slide-to="5"></li>
+                    <li data-target="#myCarousel" data-slide-to="6"></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
     <div class="padded-content call-to-action-bottom">
         <h1>Experience Zulip today!</h1>
         {% if register_link_disabled %}
         {% elif only_sso %}
         <a href="{{ url('login-sso') }}">
-            <button href="" type="button"
-              name="button">{{ _('Log in now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Log in now!') }}</button>
         </a>
         {% else %}
         <a href="{{ url('register') }}">
-            <button href="" type="button"
-              name="button">{{ _('Sign up now!') }}</button>
+            <button href="" type="button" name="button">{{ _('Sign up now!') }}</button>
         </a>
         {% endif %}
         <div class="zulip-octopus"></div>
