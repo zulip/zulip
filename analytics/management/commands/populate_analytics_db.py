@@ -80,14 +80,38 @@ class Command(BaseCommand):
                           value=value, **id_args)
                     for end_time, value in zip(end_times, values) if value != 0])
 
-        stat = COUNT_STATS['realm_active_humans::day']
+        stat = COUNT_STATS['1day_actives::day']
         realm_data = {
-            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
+            None: self.generate_fixture_data(stat, .08, .02, 3, .3, 6, partial_sum=True),
         }  # type: Mapping[Optional[str], List[int]]
         insert_fixture_data(stat, realm_data, RealmCount)
         installation_data = {
-            None: self.generate_fixture_data(stat, 1, .3, 4, .5, 3, partial_sum=True),
+            None: self.generate_fixture_data(stat, .8, .2, 4, .3, 6, partial_sum=True),
         }  # type: Mapping[Optional[str], List[int]]
+        insert_fixture_data(stat, installation_data, InstallationCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
+        stat = COUNT_STATS['realm_active_humans::day']
+        realm_data = {
+            None: self.generate_fixture_data(stat, .1, .03, 3, .5, 3, partial_sum=True),
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            None: self.generate_fixture_data(stat, 1, .3, 4, .5, 3, partial_sum=True),
+        }
+        insert_fixture_data(stat, installation_data, InstallationCount)
+        FillState.objects.create(property=stat.property, end_time=last_end_time,
+                                 state=FillState.DONE)
+
+        stat = COUNT_STATS['active_users_audit:is_bot:day']
+        realm_data = {
+            'false': self.generate_fixture_data(stat, .1, .03, 3.5, .8, 2, partial_sum=True),
+        }
+        insert_fixture_data(stat, realm_data, RealmCount)
+        installation_data = {
+            'false': self.generate_fixture_data(stat, 1, .3, 6, .8, 2, partial_sum=True),
+        }
         insert_fixture_data(stat, installation_data, InstallationCount)
         FillState.objects.create(property=stat.property, end_time=last_end_time,
                                  state=FillState.DONE)

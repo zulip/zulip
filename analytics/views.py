@@ -94,31 +94,38 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         aggregate_table = InstallationCount
 
     if chart_name == 'number_of_humans':
-        stat = COUNT_STATS['realm_active_humans::day']
+        stats = [
+            COUNT_STATS['1day_actives::day'],
+            COUNT_STATS['realm_active_humans::day'],
+            COUNT_STATS['active_users_audit:is_bot:day']]
         tables = [aggregate_table]
-        subgroup_to_label = {None: 'human'}  # type: Dict[Optional[str], str]
+        subgroup_to_label = {
+            stats[0]: {None: '_1day'},
+            stats[1]: {None: '_15day'},
+            stats[2]: {'false': 'all_time'}}  # type: Dict[CountStat, Dict[Optional[str], str]]
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_over_time':
-        stat = COUNT_STATS['messages_sent:is_bot:hour']
+        stats = [COUNT_STATS['messages_sent:is_bot:hour']]
         tables = [aggregate_table, UserCount]
-        subgroup_to_label = {'false': 'human', 'true': 'bot'}
+        subgroup_to_label = {stats[0]: {'false': 'human', 'true': 'bot'}}
         labels_sort_function = None
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_message_type':
-        stat = COUNT_STATS['messages_sent:message_type:day']
+        stats = [COUNT_STATS['messages_sent:message_type:day']]
         tables = [aggregate_table, UserCount]
-        subgroup_to_label = {'public_stream': _('Public streams'),
-                             'private_stream': _('Private streams'),
-                             'private_message': _('Private messages'),
-                             'huddle_message': _('Group private messages')}
+        subgroup_to_label = {stats[0]: {'public_stream': _('Public streams'),
+                                        'private_stream': _('Private streams'),
+                                        'private_message': _('Private messages'),
+                                        'huddle_message': _('Group private messages')}}
         labels_sort_function = lambda data: sort_by_totals(data['everyone'])
         include_empty_subgroups = True
     elif chart_name == 'messages_sent_by_client':
-        stat = COUNT_STATS['messages_sent:client:day']
+        stats = [COUNT_STATS['messages_sent:client:day']]
         tables = [aggregate_table, UserCount]
         # Note that the labels are further re-written by client_label_map
-        subgroup_to_label = {str(id): name for id, name in Client.objects.values_list('id', 'name')}
+        subgroup_to_label = {stats[0]:
+                             {str(id): name for id, name in Client.objects.values_list('id', 'name')}}
         labels_sort_function = sort_client_labels
         include_empty_subgroups = False
     else:
@@ -142,7 +149,8 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
         else:
             start = realm.date_created
     if end is None:
-        end = last_successful_fill(stat.property)
+        end = max(last_successful_fill(stat.property) or
+                  datetime.min.replace(tzinfo=timezone_utc) for stat in stats)
     if end is None or start > end:
         logging.warning("User from realm %s attempted to access /stats, but the computed "
                         "start time: %s (creation of realm or installation) is later than the computed "
@@ -150,18 +158,19 @@ def get_chart_data(request: HttpRequest, user_profile: UserProfile, chart_name: 
                         "analytics cron job running?" % (realm.string_id, start, end))
         raise JsonableError(_("No analytics data available. Please contact your server administrator."))
 
-    end_times = time_range(start, end, stat.frequency, min_length)
-    data = {'end_times': end_times, 'frequency': stat.frequency}
+    assert len(set([stat.frequency for stat in stats])) == 1
+    end_times = time_range(start, end, stats[0].frequency, min_length)
+    data = {'end_times': end_times, 'frequency': stats[0].frequency}  # type: Dict[str, Any]
+
+    aggregation_level = {InstallationCount: 'everyone', RealmCount: 'everyone', UserCount: 'user'}
+    # -1 is a placeholder value, since there is no relevant filtering on InstallationCount
+    id_value = {InstallationCount: -1, RealmCount: realm.id, UserCount: user_profile.id}
     for table in tables:
-        if table == InstallationCount:
-            data['everyone'] = get_time_series_by_subgroup(
-                stat, InstallationCount, -1, end_times, subgroup_to_label, include_empty_subgroups)
-        if table == RealmCount:
-            data['everyone'] = get_time_series_by_subgroup(
-                stat, RealmCount, realm.id, end_times, subgroup_to_label, include_empty_subgroups)
-        if table == UserCount:
-            data['user'] = get_time_series_by_subgroup(
-                stat, UserCount, user_profile.id, end_times, subgroup_to_label, include_empty_subgroups)
+        data[aggregation_level[table]] = {}
+        for stat in stats:
+            data[aggregation_level[table]].update(get_time_series_by_subgroup(
+                stat, table, id_value[table], end_times, subgroup_to_label[stat], include_empty_subgroups))
+
     if labels_sort_function is not None:
         data['display_order'] = labels_sort_function(data)
     else:

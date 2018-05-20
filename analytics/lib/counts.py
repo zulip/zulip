@@ -513,6 +513,9 @@ count_stats_ = [
     # User Activity stats
     # Stats that measure user activity in the UserActivityInterval sense.
 
+    CountStat('1day_actives::day',
+              sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
+              CountStat.DAY, interval=timedelta(days=1)-UserActivityInterval.MIN_INTERVAL_LENGTH),
     CountStat('15day_actives::day',
               sql_data_collector(UserCount, check_useractivityinterval_by_user_query, None),
               CountStat.DAY, interval=timedelta(days=15)-UserActivityInterval.MIN_INTERVAL_LENGTH),

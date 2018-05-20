@@ -630,32 +630,15 @@ function populate_number_of_users(data) {
     var layout = {
         width: 750,
         height: 370,
-        margin: {
-            l: 40, r: 0, b: 100, t: 20,
-        },
+        margin: { l: 40, r: 0, b: 100, t: 20 },
         xaxis: {
             fixedrange: true,
-            rangeselector: {
-                x: 0.808,
-                y: -0.33,
+            rangeselector: { x: 0.808, y: -0.33,
                 buttons: [
-                    {
-                        count: 30,
-                        label: i18n.t('Last 30 days'),
-                        step: 'day',
-                        stepmode: 'backward',
-                    },
-                    {
-                        step: 'all',
-                        label: i18n.t('All time'),
-                    },
-                ],
-            },
-        },
-        yaxis: {
-            fixedrange: true,
-            rangemode: 'tozero',
-        },
+                    { count: 30, label: i18n.t('Last 30 days'), step: 'day', stepmode: 'backward' },
+                    { step: 'all', label: i18n.t('All time') },
+                ]}},
+        yaxis: { fixedrange: true, rangemode: 'tozero' },
         font: font_14pt,
     };
 
@@ -665,19 +648,49 @@ function populate_number_of_users(data) {
 
     var text = end_dates.map(format_date);
 
-    var trace = {
-        x: end_dates,
-        y: data.everyone.human,
-        type: 'scatter',
-        name: "Active users",
-        hoverinfo: 'none',
-        text: text,
-        visible: true,
-    };
+    function make_traces(values, type) {
+        return {
+            x: end_dates,
+            y: values,
+            type: type,
+            name: i18n.t("Active users"),
+            hoverinfo: 'none',
+            text: text,
+            visible: true,
+        };
+    }
+
+    var _1day_trace = make_traces(data.everyone._1day, 'bar');
+    var _15day_trace = make_traces(data.everyone._15day, 'scatter');
+    var all_time_trace = make_traces(data.everyone.all_time, 'scatter');
 
     $('#id_number_of_users > div').removeClass("spinner");
 
-    Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
+    // Redraw the plot every time for simplicity. If we have perf problems with this in the
+    // future, we can copy the update behavior from populate_messages_sent_over_time
+    function draw_or_update_plot(trace) {
+        $('#1day_actives_button, #15day_actives_button, #all_time_actives_button').removeClass("selected");
+        Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
+    }
+
+    $('#1day_actives_button').click(function () {
+        draw_or_update_plot(_1day_trace);
+        $(this).addClass("selected");
+    });
+
+    $('#15day_actives_button').click(function () {
+        draw_or_update_plot(_15day_trace);
+        $(this).addClass("selected");
+    });
+
+    $('#all_time_actives_button').click(function () {
+        draw_or_update_plot(all_time_trace);
+        $(this).addClass("selected");
+    });
+
+    // Initial drawing of plot
+    draw_or_update_plot(_15day_trace, true);
+    $('#15day_actives_button').addClass("selected");
 
     document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
         $("#users_hover_info").show();

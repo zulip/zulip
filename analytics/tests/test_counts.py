@@ -540,6 +540,49 @@ class TestCountStats(AnalyticsTestCase):
             user_profile=user, start=self.TIME_ZERO-start_offset,
             end=self.TIME_ZERO-end_offset)
 
+    def test_1day_actives(self) -> None:
+        stat = COUNT_STATS['1day_actives::day']
+        self.current_property = stat.property
+
+        _1day = 1*self.DAY - UserActivityInterval.MIN_INTERVAL_LENGTH
+
+        # Outside time range, should not appear. Also tests upper boundary.
+        user1 = self.create_user()
+        self.create_interval(user1, _1day + self.DAY, _1day + timedelta(seconds=1))
+        self.create_interval(user1, timedelta(0), -self.HOUR)
+
+        # On lower boundary, should appear
+        user2 = self.create_user()
+        self.create_interval(user2, _1day + self.DAY, _1day)
+
+        # Multiple intervals, including one outside boundary
+        user3 = self.create_user()
+        self.create_interval(user3, 2*self.DAY, 1*self.DAY)
+        self.create_interval(user3, 20*self.HOUR, 19*self.HOUR)
+        self.create_interval(user3, 20*self.MINUTE, 19*self.MINUTE)
+
+        # Intervals crossing boundary
+        user4 = self.create_user()
+        self.create_interval(user4, 1.5*self.DAY, 0.5*self.DAY)
+        user5 = self.create_user()
+        self.create_interval(user5, self.MINUTE, -self.MINUTE)
+
+        # Interval subsuming time range
+        user6 = self.create_user()
+        self.create_interval(user6, 2*self.DAY, -2*self.DAY)
+
+        # Second realm
+        user7 = self.create_user(realm=self.second_realm)
+        self.create_interval(user7, 20*self.MINUTE, 19*self.MINUTE)
+
+        do_fill_count_stat_at_hour(stat, self.TIME_ZERO)
+        self.assertTableState(UserCount, ['value', 'user'],
+                              [[1, user2], [1, user3], [1, user4], [1, user5], [1, user6], [1, user7]])
+        self.assertTableState(RealmCount, ['value', 'realm'],
+                              [[5, self.default_realm], [1, self.second_realm]])
+        self.assertTableState(InstallationCount, ['value'], [[6]])
+        self.assertTableState(StreamCount, [], [])
+
     def test_15day_actives(self) -> None:
         stat = COUNT_STATS['15day_actives::day']
         self.current_property = stat.property
