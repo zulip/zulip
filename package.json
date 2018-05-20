@@ -72,7 +72,7 @@
     "swagger-parser": "3.4.1",
     "tslint": "5.10.0",
     "webpack-dev-server": "3.1.4",
-    "xmlhttprequest": "1.5.0"
+    "xmlhttprequest": "1.8.0"
   },
   "scripts": {
     "lint": "eslint --quiet --cache",
