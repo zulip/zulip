@@ -485,7 +485,6 @@ run_test('has_operator_suggestions', () => {
         'has:image',
         'has:attachment',
     ];
-
     assert.deepEqual(suggestions.strings, expected);
 
     function describe(q) {
@@ -495,6 +494,19 @@ run_test('has_operator_suggestions', () => {
     assert.equal(describe('has:link'), 'Messages with one or more link');
     assert.equal(describe('has:image'), 'Messages with one or more image');
     assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
+
+    query = '-h';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-h",
+        '-has:link',
+        '-has:image',
+        '-has:attachment',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+    assert.equal(describe('-has:link'), 'Exclude messages with one or more link');
+    assert.equal(describe('-has:image'), 'Exclude messages with one or more image');
+    assert.equal(describe('-has:attachment'), 'Exclude messages with one or more attachment');
 });
 
 run_test('sent_by_me_suggestions', () => {

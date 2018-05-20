@@ -373,6 +373,18 @@ function get_operator_subset_suggestions(operators) {
 
 
 function get_special_filter_suggestions(last, operators, suggestions) {
+    var is_search_operand_negated = last.operator === 'search' && last.operand[0] === '-';
+    // Negating suggestions on is_search_operand_negated is required for
+    // suggesting negated operators.
+    if (last.negated || is_search_operand_negated) {
+        suggestions = _.map(suggestions, function (suggestion) {
+            return {
+                search_string: '-' + suggestion.search_string,
+                description: 'exclude ' + suggestion.description,
+                invalid: suggestion.invalid,
+            };
+        });
+    }
 
     var last_string = Filter.unparse([last]).toLowerCase();
     suggestions = _.filter(suggestions, function (s) {
@@ -382,7 +394,13 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         if (last_string === '') {
             return true;
         }
+
+        // returns the substring after the ":" symbol.
+        var suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
+        // e.g for `att` search query, `has:attachment` should be suggested.
+        var show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
         return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
+               (show_operator_suggestions) ||
                (s.description.toLowerCase().indexOf(last_string) === 0);
     });
 
@@ -521,16 +539,17 @@ function get_operator_suggestions(last) {
     if (!(last.operator === 'search')) {
         return [];
     }
+    var last_operand = last.operand;
 
     var negated = false;
-    if (last.operand.indexOf("-") === 0) {
+    if (last_operand.indexOf("-") === 0) {
         negated = true;
-        last.operand = last.operand.slice(1);
+        last_operand = last_operand.slice(1);
     }
 
     var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
     choices = _.filter(choices, function (choice) {
-        return phrase_match(choice, last.operand);
+        return phrase_match(choice, last_operand);
     });
 
     return _.map(choices, function (choice) {
