@@ -48,7 +48,7 @@
     "ts-loader": "4.3.0",
     "ts-node": "3.3.0",
     "typescript": "2.8.3",
-    "underscore": "1.8.3",
+    "underscore": "1.9.0",
     "webfonts-generator": "0.4.0",
     "webpack": "4.8.3",
     "webpack-bundle-tracker": "0.3.0",
