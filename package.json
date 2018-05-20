@@ -70,7 +70,7 @@
     "phantomjs-prebuilt": "2.1.16",
     "svgo": "1.0.5",
     "swagger-parser": "3.4.1",
-    "tslint": "5.3.2",
+    "tslint": "5.10.0",
     "webpack-dev-server": "3.1.4",
     "xmlhttprequest": "1.5.0"
   },
