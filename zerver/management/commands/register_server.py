@@ -64,7 +64,7 @@ class Command(ZulipBaseCommand):
             raise CommandError(
                 "You must first agree to the Zulipchat Terms of Service: "
                 "https://zulipchat.com/terms/. Run as:\n"
-                "  python manage.py %s --agree_to_terms_of_service\n" % (os.path.basename(__file__)[:-3],))
+                "  ./manage.py %s --agree_to_terms_of_service\n" % (os.path.basename(__file__)[:-3],))
 
         registration_url = settings.PUSH_NOTIFICATION_BOUNCER_URL + "/api/v1/remotes/server/register"
         try:
