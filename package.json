@@ -45,7 +45,7 @@
     "string.prototype.startswith": "0.2.0",
     "style-loader": "0.21.0",
     "to-markdown": "3.1.0",
-    "ts-loader": "4.2.0",
+    "ts-loader": "4.3.0",
     "ts-node": "3.3.0",
     "typescript": "2.7.2",
     "underscore": "1.8.3",
