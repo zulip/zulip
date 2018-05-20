@@ -20,7 +20,7 @@
  * HTML.  This makes it easier to spot relevant differences.
  */
 
-const jsdom = require('jsdom');
+const { JSDOM } = require('jsdom');
 const _ = require('underscore');
 
 const mdiff = require('./mdiff.js');
@@ -38,7 +38,7 @@ class MarkdownComparer {
                 expected,
             ].join('\n');
         };
-        this._document = jsdom.jsdom();
+        this._document = new JSDOM().window.document;
     }
 
     setFormatter(output_formatter) {

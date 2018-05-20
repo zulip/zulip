@@ -3,8 +3,8 @@ zrequire('templates');
 
 set_global('i18n', global.stub_i18n);
 
-var jsdom = require("jsdom");
-var window = jsdom.jsdom().defaultView;
+const { JSDOM } = require("jsdom");
+const { window } = new JSDOM();
 global.$ = require('jquery')(window);
 
 // When writing these tests, the following command might be helpful:
