@@ -95,6 +95,8 @@ class Command(BaseCommand):
             try:
                 # Application is an instance of Django's standard wsgi handler.
                 application = create_tornado_application()
+                import zerver.tornado.autoreload
+                zerver.tornado.autoreload.start()
 
                 # start tornado web server in single-threaded mode
                 http_server = httpserver.HTTPServer(application,
