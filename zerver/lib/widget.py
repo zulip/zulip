@@ -7,14 +7,28 @@ import json
 from zerver.models import SubMessage
 
 
-def get_fixed_content_for_widget(content: str) -> str:
+def do_widget_pre_save_actions(message: MutableMapping[str, Any]) -> None:
     if not settings.ALLOW_SUB_MESSAGES:
-        return content
+        return
+
+    # this prevents errors of cyclical imports
+    from zerver.lib.actions import do_set_user_display_setting
+    content = message['message'].content
+    user_profile = message['message'].sender
 
     if content == '/stats':
-        return 'We are running **1 server**.'
+        message['message'].content = 'We are running **1 server**.'
+        return
 
-    return content
+    if content == '/night':
+        message['message'].content = 'Changed to night mode! To revert night mode, type `/day`.'
+        do_set_user_display_setting(user_profile, 'night_mode', True)
+        return
+
+    if content == '/day':
+        message['message'].content = 'Changed to day mode! To revert day mode, type `/night`.'
+        do_set_user_display_setting(user_profile, 'night_mode', False)
+        return
 
 def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
     '''
