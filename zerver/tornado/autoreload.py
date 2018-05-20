@@ -43,12 +43,18 @@ incorrectly.
 
 """
 
+# Further patched by Zulip check whether the code we're about to
+# reload actually imports before reloading into it.  This fixes a
+# major development workflow problem, where if one did a `git rebase`,
+# Tornado would crash itself by auto-reloading into a version of the
+# code that didn't work.
 
 from __future__ import absolute_import, division, print_function
 
 import os
 import sys
 import functools
+import importlib
 import logging
 import os
 import pkgutil  # type: ignore # upstream
@@ -77,7 +83,7 @@ _watched_files = set()
 _reload_hooks = []
 _reload_attempted = False
 _io_loops = weakref.WeakKeyDictionary()  # type: ignore # upstream
-
+needs_to_reload = False
 
 def start(io_loop=None, check_time=500):
     """Begins watching source files for changes.
@@ -129,6 +135,7 @@ def add_reload_hook(fn):
 
 
 def _reload_on_update(modify_times):
+    global needs_to_reload
     if _reload_attempted:
         # We already tried to reload and it didn't work, so don't try again.
         return
@@ -149,12 +156,22 @@ def _reload_on_update(modify_times):
             continue
         if path.endswith(".pyc") or path.endswith(".pyo"):
             path = path[:-1]
-        _check_file(modify_times, path)
-    for path in _watched_files:
-        _check_file(modify_times, path)
+
+        result = _check_file(modify_times, module, path)
+        if result is False:
+            # If any files errored, we abort this attempt at reloading.
+            return
+        if result is True:
+            # If any files had actual changes that import properly,
+            # we'll plan to reload the next time we run with no files
+            # erroring.
+            needs_to_reload = True
+
+    if needs_to_reload:
+        _reload()
 
 
-def _check_file(modify_times, path):
+def _check_file(modify_times, module, path):
     try:
         modified = os.stat(path).st_mtime
     except Exception:
@@ -164,8 +181,17 @@ def _check_file(modify_times, path):
         return
     if modify_times[path] != modified:
         gen_log.info("%s modified; restarting server", path)
-        _reload()
+        modify_times[path] = modified
+    else:
+        return
 
+    try:
+        importlib.reload(module)
+    except Exception as e:
+        gen_log.error("Error importing %s, not reloading" % (path,))
+        traceback.print_exc()
+        return False
+    return True
 
 def _reload():
     global _reload_attempted
