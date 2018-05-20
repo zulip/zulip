@@ -27,7 +27,7 @@
     "i18next-parser": "0.11.1",
     "i18next-xhr-backend": "1.5.1",
     "jquery": "3.3.1",
-    "jquery-validation": "1.16.0",
+    "jquery-validation": "1.17.0",
     "katex": "0.8.3",
     "mini-css-extract-plugin": "0.4.0",
     "moment": "2.22.1",
