@@ -1224,7 +1224,7 @@ run_test('handlebars_bug', () => {
         render_subscribers: true,
         color: 'purple',
         invite_only: true,
-        can_change_subscription_type: true,
+        can_change_stream_permissions: true,
         email_address: 'xxxxxxxxxxxxxxx@zulip.com',
         stream_id: 888,
         in_home_view: true,

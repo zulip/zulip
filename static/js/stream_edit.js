@@ -383,7 +383,7 @@ function change_stream_privacy(e) {
 
             // For auto update, without rendering whole template
             stream_data.update_calculated_fields(sub);
-            if (!sub.can_change_subscription_type) {
+            if (!sub.can_change_stream_permissions) {
                 $(".change-stream-privacy").hide();
             }
         },

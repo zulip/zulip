@@ -206,7 +206,7 @@ exports.update_calculated_fields = function (sub) {
     sub.should_display_subscription_button = !sub.invite_only || sub.subscribed;
     sub.should_display_preview_button = sub.subscribed || !sub.invite_only ||
                                         sub.previously_subscribed;
-    sub.can_change_subscription_type = page_params.is_admin && (
+    sub.can_change_stream_permissions = page_params.is_admin && (
         !sub.invite_only || sub.subscribed);
     // User can add other users to stream if stream is public or user is subscribed to stream.
     sub.can_access_subscribers = !sub.invite_only || sub.subscribed || page_params.is_admin;

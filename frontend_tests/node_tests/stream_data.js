@@ -328,7 +328,7 @@ run_test('admin_options', () => {
     var sub = make_sub();
     stream_data.update_calculated_fields(sub);
     assert(!sub.is_admin);
-    assert(!sub.can_change_subscription_type);
+    assert(!sub.can_change_stream_permissions);
 
     // just a sanity check that we leave "normal" fields alone
     assert.equal(sub.color, 'blue');
@@ -340,7 +340,7 @@ run_test('admin_options', () => {
     sub = make_sub();
     stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
-    assert(sub.can_change_subscription_type);
+    assert(sub.can_change_stream_permissions);
 
     // admins can only make private streams become public
     // if they are subscribed
@@ -349,14 +349,14 @@ run_test('admin_options', () => {
     sub.subscribed = false;
     stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
-    assert(!sub.can_change_subscription_type);
+    assert(!sub.can_change_stream_permissions);
 
     sub = make_sub();
     sub.invite_only = true;
     sub.subscribed = true;
     stream_data.update_calculated_fields(sub);
     assert(sub.is_admin);
-    assert(sub.can_change_subscription_type);
+    assert(sub.can_change_stream_permissions);
 });
 
 run_test('stream_settings', () => {
