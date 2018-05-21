@@ -109,8 +109,8 @@ run_test('private_suggestions', () => {
     expected = [
         "is:private al",
         "is:private is:alerted",
-        "is:private pm-with:alice@zulip.com",
         "is:private sender:alice@zulip.com",
+        "is:private pm-with:alice@zulip.com",
         "is:private group-pm-with:alice@zulip.com",
         "is:private",
     ];
@@ -212,8 +212,8 @@ run_test('private_suggestions', () => {
     expected = [
         "is:starred has:link is:private al",
         "is:starred has:link is:private is:alerted",
-        "is:starred has:link is:private pm-with:alice@zulip.com",
         "is:starred has:link is:private sender:alice@zulip.com",
+        "is:starred has:link is:private pm-with:alice@zulip.com",
         "is:starred has:link is:private group-pm-with:alice@zulip.com",
         "is:starred has:link is:private",
         "is:starred has:link",
@@ -870,10 +870,10 @@ run_test('people_suggestions', () => {
 
     var expected = [
         "te",
-        "pm-with:bob@zulip.com", // bob térry
-        "pm-with:ted@zulip.com",
         "sender:bob@zulip.com",
         "sender:ted@zulip.com",
+        "pm-with:bob@zulip.com", // bob térry
+        "pm-with:ted@zulip.com",
         "group-pm-with:bob@zulip.com",
         "group-pm-with:ted@zulip.com",
     ];
@@ -891,8 +891,8 @@ run_test('people_suggestions', () => {
 
     expected = [
         "Ted",
-        "pm-with:ted@zulip.com",
         "sender:ted@zulip.com",
+        "pm-with:ted@zulip.com",
         "group-pm-with:ted@zulip.com",
     ];
 
