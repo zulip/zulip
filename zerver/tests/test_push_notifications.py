@@ -390,6 +390,15 @@ class HandlePushNotificationTest(PushNotificationTest):
                 mock_info.assert_any_call(
                     "GCM: Sent %s as %s" % (token, message.id))
 
+            # Now test the unregistered case
+            mock_apns.get_notification_result.return_value = 'Unregistered'
+            apn.handle_push_notification(self.user_profile.id, missed_message)
+            for _, _, token in apns_devices:
+                mock_info.assert_any_call(
+                    "APNs: Removing invalid/expired token %s (%s)" %
+                    (token, "Unregistered"))
+            self.assertEqual(RemotePushDeviceToken.objects.filter(kind=PushDeviceToken.APNS).count(), 0)
+
     def test_end_to_end_connection_error(self) -> None:
         remote_gcm_tokens = [u'dddd']
         for token in remote_gcm_tokens:

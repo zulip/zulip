@@ -102,12 +102,18 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
-                                 payload_data: Dict[str, Any]) -> None:
+                                 payload_data: Dict[str, Any], remote=False) -> None:
     client = get_apns_client()
     if client is None:
         logging.warning("APNs: Dropping a notification because nothing configured.  "
                         "Set PUSH_NOTIFICATION_BOUNCER_URL (or APNS_CERT_FILE).")
         return
+
+    if remote:
+        DeviceTokenClass = RemotePushDeviceToken
+    else:
+        DeviceTokenClass = PushDeviceToken
+
     logging.info("APNs: Sending notification for user %d to %d devices",
                  user_id, len(devices))
     payload = APNsPayload(**modernize_apns_payload(payload_data))
@@ -137,11 +143,14 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         if result == 'Success':
             logging.info("APNs: Success sending for user %d to device %s",
                          user_id, device.token)
+        elif result in ["Unregistered", "BadDeviceToken", "DeviceTokenNotForTopic"]:
+            logging.info("APNs: Removing invalid/expired token %s (%s)" % (device.token, result))
+            # We remove all entries for this token (There
+            # could be multiple for different Zulip servers).
+            DeviceTokenClass.objects.filter(token=device.token, kind=DeviceTokenClass.APNS).delete()
         else:
             logging.warning("APNs: Failed to send for user %d to device %s: %s",
                             user_id, device.token, result)
-            # TODO delete token if status 410 (and timestamp isn't before
-            #      the token we have)
 
 #
 # Sending to GCM, for Android

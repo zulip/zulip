@@ -147,7 +147,7 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
         send_android_push_notification(android_devices, gcm_payload, remote=True)
 
     if apple_devices:
-        send_apple_push_notification(user_id, apple_devices, apns_payload)
+        send_apple_push_notification(user_id, apple_devices, apns_payload, remote=True)
 
     return json_success()
 
