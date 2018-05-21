@@ -1224,8 +1224,6 @@ run_test('handlebars_bug', () => {
         render_subscribers: true,
         color: 'purple',
         invite_only: true,
-        can_make_public: true,
-        can_make_private: true, /* not logical, but that's ok */
         can_change_subscription_type: true,
         email_address: 'xxxxxxxxxxxxxxx@zulip.com',
         stream_id: 888,
@@ -1239,7 +1237,6 @@ run_test('handlebars_bug', () => {
     assert(div.text().indexOf('invite-only stream') > 0);
 
     var anchor = $(html).find(".change-stream-privacy:first");
-    assert.equal(anchor.data("is-private"), true);
     assert.equal(anchor.text(), "[translated: Change]");
 }());
 
@@ -1273,8 +1270,6 @@ run_test('handlebars_bug', () => {
                 render_subscribers: true,
                 color: 'purple',
                 invite_only: true,
-                can_make_public: true,
-                can_make_private: true, /* not logical, but that's ok */
                 email_address: 'xxxxxxxxxxxxxxx@zulip.com',
                 stream_id: 888,
                 in_home_view: true,

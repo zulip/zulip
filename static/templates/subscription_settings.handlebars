@@ -38,7 +38,7 @@
                 {{partial "subscription_type"}}
             </div>
             {{#if can_change_subscription_type}}
-            <a class="change-stream-privacy" data-is-private="{{#if can_make_public }}true{{else}}false{{/if}}">[{{t "Change" }}]</a>
+            <a class="change-stream-privacy">[{{t "Change" }}]</a>
             {{/if}}
         </div>
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
