@@ -788,6 +788,14 @@ run_test('stream_completion', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = '-stream:of';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-stream:of",
+        "-stream:office",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = 'hel';
     suggestions = search.get_suggestions(query);
     expected = [

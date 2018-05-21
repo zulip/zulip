@@ -98,10 +98,12 @@ function get_stream_suggestions(last, operators) {
     var objs = _.map(streams, function (stream) {
         var prefix = 'stream';
         var highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
-        var description = prefix + ' ' + highlighted_stream;
+        var verb = last.negated ? 'exclude ' : '';
+        var description = verb + prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
             operand: stream,
+            negated: last.negated,
         };
         var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
