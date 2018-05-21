@@ -119,7 +119,7 @@ messages or other messages written in a similar third-person voice.
 For example, if your username is **Cordelia Lear** and you send the message
 `/me is now away`, your message will be displayed as:
 
-![Status message](/static/images/help/status-message.png).
+![Status message](/static/images/help/status-message.png)
 
 ## Code
 
