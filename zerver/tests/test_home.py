@@ -355,7 +355,8 @@ class HomeTest(ZulipTestCase):
         self.login(email)
         with patch('logging.exception') as mock:
             result = self._get_home_page(stream='Invalid Stream')
-        mock.assert_called_once_with('Narrow parsing')
+        mock.assert_called_once()
+        self.assertEqual(mock.call_args_list[0][0][0], "Narrow parsing exception")
         self._sanity_check(result)
 
     def test_bad_pointer(self) -> None:
