@@ -9,6 +9,7 @@ import sys
 import subprocess
 import ujson
 import httplib2
+import httpretty
 import requests
 
 # check for the venv
@@ -146,14 +147,26 @@ def block_internet():
     # type: () -> None
     # We are blocking internet currently by assuming mostly any test would use
     # httplib2 to access internet.
-    def internet_guard(*args, **kwargs):
-        # type: (*Any, **Any) -> NoReturn
+    requests_orig = requests.request
+
+    def internet_guard_requests(*args: Any, **kwargs: Any) -> Any:
+        if httpretty.is_enabled():
+            return requests_orig(*args, **kwargs)
         raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
                         "More details and advice are available here:"
                         "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
 
-    httplib2.Http.request = internet_guard
-    requests.request = internet_guard
+    requests.request = internet_guard_requests
+
+    http2lib_request_orig = httplib2.Http.request
+
+    def internet_guard_httplib2(*args: Any, **kwargs: Any) -> Any:
+        if httpretty.is_enabled():
+            return http2lib_request_orig(*args, **kwargs)
+        raise Exception("Outgoing network requests are not allowed in the Zulip tests. "
+                        "More details and advice are available here:"
+                        "https://zulip.readthedocs.io/en/latest/testing/testing.html#internet-access-inside-test-suites")
+    httplib2.Http.request = internet_guard_httplib2
 
 if __name__ == "__main__":
     block_internet()
