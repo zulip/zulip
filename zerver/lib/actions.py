@@ -1555,13 +1555,12 @@ def check_typing_notification(sender: UserProfile, notification_to: Sequence[str
         raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
         raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
-    else:
-        try:
-            recipient = recipient_for_emails(notification_to, False,
-                                             sender, sender)
-        except ValidationError as e:
-            assert isinstance(e.messages[0], str)
-            raise JsonableError(e.messages[0])
+    try:
+        recipient = recipient_for_emails(notification_to, False,
+                                         sender, sender)
+    except ValidationError as e:
+        assert isinstance(e.messages[0], str)
+        raise JsonableError(e.messages[0])
     if recipient.type == Recipient.STREAM:
         raise ValueError('Forbidden recipient type')
     return {'sender': sender, 'recipient': recipient, 'op': operator}
