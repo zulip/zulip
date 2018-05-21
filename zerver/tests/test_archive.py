@@ -7,7 +7,6 @@ from zerver.lib.actions import get_web_public_streams, get_web_public_subs, \
 from zerver.models import get_realm
 
 class GlobalPublicStreamTest(ZulipTestCase):
-
     def test_non_existant_stream_id(self) -> None:
         # Here we use a relatively big number as stream id assumming such an id
         # won't exist in the test DB.

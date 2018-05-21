@@ -19,6 +19,7 @@ from zerver.lib.message import (
 )
 from zerver.lib.narrow import (
     build_narrow_filter,
+    is_web_public_compatible,
 )
 from zerver.lib.request import JsonableError
 from zerver.lib.sqlalchemy_utils import get_sqlalchemy_connection
@@ -344,7 +345,7 @@ class NarrowBuilderTest(ZulipTestCase):
     def _build_query(self, term: Dict[str, Any]) -> Query:
         return self.builder.add_term(self.raw_query, term)
 
-class BuildNarrowFilterTest(TestCase):
+class NarrowLibraryTest(TestCase):
     def test_build_narrow_filter(self) -> None:
         fixtures_path = os.path.join(os.path.dirname(__file__),
                                      'fixtures/narrow.json')
@@ -363,6 +364,39 @@ class BuildNarrowFilterTest(TestCase):
     def test_build_narrow_filter_invalid(self) -> None:
         with self.assertRaises(JsonableError):
             build_narrow_filter(["invalid_operator", "operand"])
+
+    def test_is_web_public_compatible(self) -> None:
+        self.assertTrue(is_web_public_compatible([]))
+        self.assertTrue(is_web_public_compatible([{"operator": "has",
+                                                   "operand": "attachment"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "has",
+                                                   "operand": "image"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "search",
+                                                   "operand": "magic"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "near",
+                                                   "operand": "15"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "id",
+                                                   "operand": "15"},
+                                                  {"operator": "has",
+                                                   "operand": "attachment"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "sender",
+                                                   "operand": "hamlet@zulip.com"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "pm-with",
+                                                    "operand": "hamlet@zulip.com"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "group-pm-with",
+                                                    "operand": "hamlet@zulip.com"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "stream",
+                                                   "operand": "Denmark"}]))
+        self.assertTrue(is_web_public_compatible([{"operator": "stream",
+                                                   "operand": "Denmark"},
+                                                  {"operator": "topic",
+                                                   "operand": "logic"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "is",
+                                                    "operand": "starred"}]))
+        self.assertFalse(is_web_public_compatible([{"operator": "is",
+                                                    "operand": "private"}]))
+        # Malformed input not allowed
+        self.assertFalse(is_web_public_compatible([{"operator": "has"}]))
 
 class IncludeHistoryTest(ZulipTestCase):
     def test_ok_to_include_history(self) -> None:
