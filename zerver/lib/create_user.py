@@ -14,6 +14,19 @@ def random_api_key() -> str:
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
 
+def copy_user_settings(source_profile: UserProfile,
+                       target_profile: UserProfile) -> UserProfile:
+    """Warning: Does not save, to avoid extra database queries"""
+    for settings_name in UserProfile.property_types:
+        value = getattr(source_profile, settings_name)
+        setattr(target_profile, settings_name, value)
+
+    for settings_name in UserProfile.notification_setting_types:
+        value = getattr(source_profile, settings_name)
+        setattr(target_profile, settings_name, value)
+
+    return target_profile
+
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates
