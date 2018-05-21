@@ -27,6 +27,8 @@ parser.add_argument('--quick', action='store_true',
                     help="pass --quick to mypy")
 parser.add_argument('-m', '--modified', action='store_true',
                     help="check only modified files")
+parser.add_argument('-d', '--daemon', action='store_true',
+                    help="Start and run the mypy fine-grained incremental daemon")
 parser.add_argument('--scripts-only', action='store_true',
                     help="only check extensionless python scripts")
 parser.add_argument('-a', '--all', action='store_true',
@@ -44,13 +46,15 @@ if not args.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
+command_name = "mypy" if not args.daemon else "dmypy"
+
 # Use zulip-py3-venv's mypy if it's available.
 VENV_DIR = "/srv/zulip-py3-venv"
-MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", "mypy")
+MYPY_VENV_PATH = os.path.join(VENV_DIR, "bin", command_name)
 if os.path.exists(MYPY_VENV_PATH):
     mypy_command = MYPY_VENV_PATH
 else:
-    mypy_command = "mypy"
+    mypy_command = command_name
 
 if args.version:
     print("mypy command:", mypy_command)
@@ -79,7 +83,11 @@ if args.linecoverage_report:
 if args.quick:
     extra_args.append("--quick")
 
-rc = subprocess.call([mypy_command] + extra_args + python_files + pyi_files)
+mypy_args = extra_args + python_files + pyi_files
+if args.daemon:
+    rc = subprocess.call([mypy_command, 'run', '--'] + mypy_args)
+else:
+    rc = subprocess.call([mypy_command] + mypy_args)
 
 if args.linecoverage_report:
     # Move the coverage report to where codecov will look for it.
