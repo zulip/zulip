@@ -7,6 +7,51 @@ All notable changes to the Zulip server are documented in this file.
 This section lists notable unreleased changes; it is generally updated
 in bursts.
 
+**Highlights:**
+- Added support for custom profile fields.
+- Added support for Debian stretch and Ubuntu bionic.
+- Added support for using Google Hangouts as the video chat provider.
+- Added support for configuring a private stream so subscribers can
+  access full history, even before they joined the stream.
+- Added support for announcement-only streams.
+
+**Full feature changelog:**
+- Added an organization setting for message deletion time limits.
+- Added an organization setting to control who can edit topics.
+- Added ctrl+K keyboard shortcut for getting to search (same as /, but
+  works even when you're inside compose).
+- Optimized the performance of loading Zulip in an organization with
+  thousands of users and hundreds of bot users.
+- Removed the "Delete streams" administration page; one can delete
+  streams directly on "Manage streams".
+- Removed support code for the (long-deprecated) legacy desktop app.
+- Fixed several bugs with progress bars when uploading files.
+- Fixed several bugs in `manage.py register_server`.
+- Fixed several minor real-time sync issues with stream settings.
+- Fixed some tricky corner cases with the webapp's caching model and
+narrowing to the first unread message.
+- Fixed confusing intermediate states of group PMs online indicators.
+- Fixed several subtle unread count corner case bugs.
+- Fixed several installer issues to make it easier to Dockerize Zulip.
+- Fixed several minor bugs with search typeahead.
+- Rewrote user documentation for dozens of integrations.
+- Upgraded to modern versions of most of our stale dependencies.
+- Updated our CSS toolchain to support hot module reloading.
+- Updated numerous pages within the /help/ site.
+- We no longer require re-authing to signup after trying to login with
+  an OAuth authentication backend (GitHub or Google).
+- Improved system for configuring the S3 file uploads backend.
+- Improved emoji typeahead sorting.
+- Improved Zulip's layout for windows with a width around 1024px.
+- Improved Zulip's generic error handling behavior for webhooks.
+- Converted several layered-checkbox settings to clearer dropdowns.
+- Cleaned up some legacy APIs still using email addresses.
+- Made arrow-key navigation work within right and left sidebar search.
+- Fixed performance issues of the right sidebar user list with 5000+
+  user accounts on a server.
+- Emails and other onboarding strings are now tagged for translation.
+- Backend test coverage is now 97%.
+
 ### 1.8.1 -- 2018-05-07
 
 - Added an automated tool (`manage.py register_server`) to sign up for
