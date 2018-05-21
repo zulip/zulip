@@ -1561,8 +1561,7 @@ def check_typing_notification(sender: UserProfile, notification_to: Sequence[str
     except ValidationError as e:
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
-    if recipient.type == Recipient.STREAM:
-        raise ValueError('Forbidden recipient type')
+    assert recipient.type != Recipient.STREAM
     return {'sender': sender, 'recipient': recipient, 'op': operator}
 
 def stream_welcome_message(stream: Stream) -> str:
