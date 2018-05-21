@@ -102,7 +102,7 @@ APNS_MAX_RETRIES = 3
 
 @statsd_increment("apple_push_notification")
 def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
-                                 payload_data: Dict[str, Any], remote=False) -> None:
+                                 payload_data: Dict[str, Any], remote: bool=False) -> None:
     client = get_apns_client()
     if client is None:
         logging.warning("APNs: Dropping a notification because nothing configured.  "
