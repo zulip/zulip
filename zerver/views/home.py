@@ -116,7 +116,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                 user_profile, narrow_stream_name)
             narrow = [["stream", narrow_stream.name]]
         except Exception:
-            logging.exception("Narrow parsing")
+            logging.exception("Narrow parsing exception", extra=dict(request=request))
         if narrow_stream is not None and narrow_topic is not None:
             narrow.append(["topic", narrow_topic])
 
