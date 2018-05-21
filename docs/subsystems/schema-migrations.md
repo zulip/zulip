@@ -103,4 +103,24 @@ few properties:
     tables are done in large-scale systems, since it ensures that the
     system can continue running happily during the migration.
 
+## Automated testing for migrations
+
+Zulip has support for writing automated tests for your database
+migrations, using the `MigrationsTestCase` test class.  This system is
+inspired by [a great blog post][django-migration-test-blog-post] on
+the subject.
+
+We have integrated this system with our test framework so that if you
+use the `use_db_models` decorator, you can use some helper methods
+from `test_classes.py` and friends from inside the tests (which is
+normally not possible in Django's migrations framework).
+
+If you find yourself writing logic in a `RunPython` migration, we
+highly recommend adding a test using this framework.  We may end up
+deleting the test later (they can get slow once they are many
+migrations away from current), but it can help prevent disaster where
+an incorrect migration messes up a database in a way that's impossible
+to undo without going to backups.
+
+[django-migration-test-blog-post]: https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
 [migrations-non-atomic]: https://docs.djangoproject.com/en/1.10/howto/writing-migrations/#non-atomic-migrations

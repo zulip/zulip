@@ -714,7 +714,11 @@ class WebhookTestCase(ZulipTestCase):
             self.assertEqual(msg.content, expected_message)
 
 class MigrationsTestCase(ZulipTestCase):
-
+    """
+    Test class for database migrations inspired by this blog post:
+       https://www.caktusgroup.com/blog/2016/02/02/writing-unit-tests-django-migrations/
+    Documented at https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html
+    """
     @property
     def app(self) -> str:
         return apps.get_containing_app_config(type(self).__module__).name
