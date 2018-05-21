@@ -11,6 +11,7 @@ from zerver.decorator import authenticated_json_post_view, require_post, \
     process_client, do_login, log_view_func
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect, \
     HttpResponseNotFound
+from django.template.response import SimpleTemplateResponse
 from django.middleware.csrf import get_token
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -578,12 +579,14 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         assert len(e.args) > 1
         return redirect_to_misconfigured_ldap_notice(e.args[1])
 
-    if isinstance(template_response, HttpResponseRedirect):
-        # We return immediately; redirect responses don't have a
-        # `.context_data` to update with update_login_page_context.
-        return template_response
+    if isinstance(template_response, SimpleTemplateResponse):
+        # Only those responses that are rendered using a template have
+        # context_data attribute. This attribute doesn't exist otherwise. It is
+        # added in SimpleTemplateResponse class, which is a derived class of
+        # HttpResponse. See django.template.response.SimpleTemplateResponse,
+        # https://github.com/django/django/blob/master/django/template/response.py#L19.
+        update_login_page_context(request, template_response.context_data)
 
-    update_login_page_context(request, template_response.context_data)
     return template_response
 
 @csrf_exempt
