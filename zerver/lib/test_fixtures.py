@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 import os
 import re
 import hashlib
@@ -72,15 +73,12 @@ def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     filename = '_'.join(FILENAME_SPLITTER.split(basename)).lower()
     return os.path.join(status_dir, filename)
 
-def _check_hash(target_hash_file: str, status_dir: str) -> bool:
+def _check_hash(source_hash_file: str, target_content: str) -> bool:
     """
     This function has a side effect of creating a new hash file or
     updating the old hash file.
     """
-    source_hash_file = _get_hash_file_path(target_hash_file, status_dir)
-
-    with open(target_hash_file) as f:
-        target_hash_content = hashlib.sha1(f.read().encode('utf8')).hexdigest()
+    target_hash_content = hashlib.sha1(target_content.encode('utf8')).hexdigest()
 
     if not os.path.exists(source_hash_file):
         source_hash_content = None
@@ -93,12 +91,29 @@ def _check_hash(target_hash_file: str, status_dir: str) -> bool:
 
     return source_hash_content == target_hash_content
 
+def check_file_hash(target_file_path: str, status_dir: str) -> bool:
+    source_hash_file = _get_hash_file_path(target_file_path, status_dir)
+
+    with open(target_file_path) as f:
+        target_content = f.read()
+
+    return _check_hash(source_hash_file, target_content)
+
+def check_setting_hash(setting_name: str, status_dir: str) -> bool:
+    hash_filename = '_'.join(['settings', setting_name])
+    source_hash_file = os.path.join(status_dir, hash_filename)
+
+    target_content = json.dumps(getattr(settings, setting_name), sort_keys=True)
+
+    return _check_hash(source_hash_file, target_content)
+
 def is_template_database_current(
         database_name: str='zulip_test_template',
         migration_status: Optional[str]=None,
         settings: str='zproject.test_settings',
         status_dir: Optional[str]=None,
-        check_files: Optional[List[str]]=None) -> bool:
+        check_files: Optional[List[str]]=None,
+        check_settings: Optional[List[str]]=None) -> bool:
     # Using str type for check_files because re.split doesn't accept unicode
     if check_files is None:
         check_files = [
@@ -107,6 +122,10 @@ def is_template_database_current(
             'zerver/lib/generate_test_data.py',
             'tools/setup/postgres-init-test-db',
             'tools/setup/postgres-init-dev-db',
+        ]
+    if check_settings is None:
+        check_settings = [
+            'REALM_INTERNAL_BOTS',
         ]
     if status_dir is None:
         status_dir = os.path.join(UUID_VAR_DIR, 'test_db_status')
@@ -120,7 +139,11 @@ def is_template_database_current(
         # To ensure Python evaluates all the hash tests (and thus creates the
         # hash files about the current state), we evaluate them in a
         # list and then process the result
-        hash_status = all([_check_hash(fn, status_dir) for fn in check_files])
+        files_hash_status = all([check_file_hash(fn, status_dir) for fn in check_files])
+        settings_hash_status = all([check_setting_hash(setting_name, status_dir)
+                                    for setting_name in check_settings])
+        hash_status = files_hash_status and settings_hash_status
+
         return are_migrations_the_same(migration_status, settings=settings) and hash_status
 
     return False
