@@ -641,6 +641,34 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assert_in_response('hamlet@zulip.com already has an account',
                                     result)
 
+    def test_github_backend_existing_deactivated_user(self) -> None:
+        rf = RequestFactory()
+        request = rf.get('/complete')
+        request.session = {}
+        request.user = self.user_profile
+        self.backend.strategy.request = request
+        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
+        self.backend.strategy.session_get = lambda k: session_data.get(k)
+
+        def do_auth(*args: Any, **kwargs: Any) -> None:
+            return_data = kwargs['return_data']
+            return_data['valid_attestation'] = True
+            return None
+
+        do_deactivate_user(self.example_user("hamlet"))
+        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
+                        side_effect=do_auth):
+            email = self.example_email("hamlet")
+            response = dict(email=email, name='Hamlet')
+            result = self.backend.do_auth(response=response)
+            self.assertEqual(result.status_code, 302)
+            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+            result = self.client_get(result.url)
+            self.assert_in_response('action="/register/"', result)
+            self.assert_in_response('The account for hamlet@zulip.com has been deactivated',
+                                    result)
+
     def test_github_backend_new_user_when_is_signup_is_false(self) -> None:
         rf = RequestFactory()
         request = rf.get('/complete')
