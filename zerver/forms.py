@@ -24,7 +24,7 @@ from zerver.lib.request import JsonableError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root_domain_available
 from zerver.lib.users import check_full_name
-from zerver.models import Realm, get_user, UserProfile, get_realm, email_to_domain, \
+from zerver.models import Realm, get_active_user, UserProfile, get_realm, email_to_domain, \
     email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError
 from zproject.backends import email_auth_enabled
 
@@ -209,10 +209,13 @@ class ZulipPasswordResetForm(PasswordResetForm):
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
             return
+        if realm.deactivated:
+            logging.info("Realm is deactivated")
+            return
 
         user = None  # type: Optional[UserProfile]
         try:
-            user = get_user(email, realm)
+            user = get_active_user(email, realm)
         except UserProfile.DoesNotExist:
             pass
 

@@ -225,6 +225,55 @@ class PasswordResetTest(ZulipTestCase):
         self.assertNotIn('does have an active account in the zulip.testserver',
                          outbox[0].body)
 
+    def test_password_reset_for_deactivated_user(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        do_deactivate_user(user_profile)
+
+        # start the password reset process by supplying an email address
+        result = self.client_post('/accounts/password/reset/', {'email': email})
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        # Check that the password reset email is from a noreply address.
+        from django.core.mail import outbox
+        from_email = outbox[0].from_email
+        self.assertIn("Zulip Account Security", from_email)
+        self.assertIn(FromAddress.NOREPLY, from_email)
+
+        self.assertIn('Someone (possibly you) requested a password',
+                      outbox[0].body)
+        self.assertNotIn('does have an active account in the zulip.testserver',
+                         outbox[0].body)
+
+    def test_password_reset_with_deactivated_realm(self) -> None:
+        user_profile = self.example_user("hamlet")
+        email = user_profile.email
+        do_deactivate_realm(user_profile.realm)
+
+        # start the password reset process by supplying an email address
+        with patch('logging.info') as mock_logging:
+            result = self.client_post('/accounts/password/reset/', {'email': email})
+            mock_logging.assert_called_once()
+
+        # check the redirect link telling you to check mail for password reset link
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/password/reset/done/"))
+        result = self.client_get(result["Location"])
+
+        self.assert_in_response("Check your email to finish the process.", result)
+
+        # Check that the password reset email is from a noreply address.
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+
     def test_wrong_subdomain(self) -> None:
         email = self.example_email("hamlet")
 
