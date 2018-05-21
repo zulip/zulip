@@ -33,15 +33,14 @@ import datetime
 
 class ActivityTest(ZulipTestCase):
     def test_activity(self) -> None:
-        user_profile = self.example_user("hamlet")
-        self.login(user_profile.email)
+        self.login(self.example_email("hamlet"))
         client, _ = Client.objects.get_or_create(name='website')
         query = '/json/users/me/pointer'
         last_visit = timezone_now()
         count = 150
-        for user_profile in UserProfile.objects.all():
+        for activity_user_profile in UserProfile.objects.all():
             UserActivity.objects.get_or_create(
-                user_profile=user_profile,
+                user_profile=activity_user_profile,
                 client=client,
                 query=query,
                 count=count,
@@ -52,17 +51,13 @@ class ActivityTest(ZulipTestCase):
         result = self.client_get('/activity')
         self.assertEqual(result.status_code, 302)
 
+        user_profile = self.example_user("hamlet")
         user_profile.is_staff = True
         user_profile.save()
 
         flush_per_request_caches()
         with queries_captured() as queries:
             result = self.client_get('/activity')
-            if result.status_code == 302:  # nocoverage
-                # Debug data for a request we're trying to track down
-                print(result)
-                print(result.url)
-                print(self.example_user("hamlet").is_staff)
             self.assertEqual(result.status_code, 200)
 
         self.assert_length(queries, 13)
