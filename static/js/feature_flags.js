@@ -2,7 +2,7 @@ var feature_flags = (function () {
 
 var exports = {};
 
-exports.load_server_counts = false;
+exports.load_server_counts = true;
 
 // The features below have all settled into their final states and can
 // be removed when we get a chance
