@@ -164,6 +164,26 @@ run_test('server_history', () => {
     assert.deepEqual(history, ['toPic1', 'unread1', 'topic2', 'UNREAD2']);
 }());
 
+(function test_stream_has_topics() {
+    var stream_id = 88;
+
+    assert.equal(topic_data.stream_has_topics(stream_id), false);
+
+    topic_data.find_or_create(stream_id);
+
+    // This was a bug before--just creating a bucket does not
+    // mean we have actual topics.
+    assert.equal(topic_data.stream_has_topics(stream_id), false);
+
+    topic_data.add_message({
+        stream_id: stream_id,
+        message_id: 888,
+        topic_name: 'whatever',
+    });
+
+    assert.equal(topic_data.stream_has_topics(stream_id), true);
+}());
+
 run_test('server_history_end_to_end', () => {
     topic_data.reset();
 

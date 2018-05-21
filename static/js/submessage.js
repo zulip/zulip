@@ -43,8 +43,6 @@ exports.process_submessages = function (in_opts) {
         return;
     }
 
-    blueslip.info('submessages found for message id: ' + message_id);
-
     var row = in_opts.row;
 
     // Right now, our only use of submessages is widgets.
