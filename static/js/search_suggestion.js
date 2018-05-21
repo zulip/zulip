@@ -608,10 +608,10 @@ exports.get_suggestions = function (query) {
 
     var persons = people.get_all_persons();
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
+    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
+    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'from');
