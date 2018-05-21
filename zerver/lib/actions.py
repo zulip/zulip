@@ -88,6 +88,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
+from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions, \
     do_widget_pre_save_actions
 
@@ -1814,7 +1815,8 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
                        forged: bool=False, forged_timestamp: Optional[float]=None,
                        forwarder_user_profile: Optional[UserProfile]=None,
                        local_id: Optional[str]=None,
-                       sender_queue_id: Optional[str]=None) -> int:
+                       sender_queue_id: Optional[str]=None,
+                       widget_content: Optional[str]=None) -> int:
 
     addressee = Addressee.legacy_build(
         sender,
@@ -1824,7 +1826,8 @@ def check_send_message(sender: UserProfile, client: Client, message_type_name: s
 
     message = check_message(sender, client, addressee,
                             message_content, realm, forged, forged_timestamp,
-                            forwarder_user_profile, local_id, sender_queue_id)
+                            forwarder_user_profile, local_id, sender_queue_id,
+                            widget_content)
     return do_send_messages([message])[0]
 
 def check_schedule_message(sender: UserProfile, client: Client,
@@ -1937,7 +1940,8 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
                   forged_timestamp: Optional[float]=None,
                   forwarder_user_profile: Optional[UserProfile]=None,
                   local_id: Optional[str]=None,
-                  sender_queue_id: Optional[str]=None) -> Dict[str, Any]:
+                  sender_queue_id: Optional[str]=None,
+                  widget_content: Optional[str]=None) -> Dict[str, Any]:
     stream = None
 
     message_content = message_content_raw.rstrip()
@@ -2035,8 +2039,19 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
         if id is not None:
             return {'message': id}
 
+    if widget_content is not None:
+        try:
+            widget_content = ujson.loads(widget_content)
+        except Exception:
+            raise JsonableError(_('Widgets: API programmer sent invalid JSON content'))
+
+        error_msg = check_widget_content(widget_content)
+        if error_msg:
+            raise JsonableError(_('Widgets: %s') % (error_msg,))
+
     return {'message': message, 'stream': stream, 'local_id': local_id,
-            'sender_queue_id': sender_queue_id, 'realm': realm}
+            'sender_queue_id': sender_queue_id, 'realm': realm,
+            'widget_content': widget_content}
 
 def _internal_prep_message(realm: Realm,
                            sender: UserProfile,
