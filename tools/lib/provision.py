@@ -29,6 +29,7 @@ SUPPORTED_PLATFORMS = {
     "Ubuntu": [
         "trusty",
         "xenial",
+        "bionic",
     ],
     "Debian": [
         "stretch",
