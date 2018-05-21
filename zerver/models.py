@@ -1524,6 +1524,12 @@ def get_user_profile_by_api_key(api_key: str) -> UserProfile:
 def get_user(email: str, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(email__iexact=email.strip(), realm=realm)
 
+def get_active_user(email: str, realm: Realm) -> UserProfile:
+    user_profile = get_user(email, realm)
+    if not user_profile.is_active:
+        raise UserProfile.DoesNotExist()
+    return user_profile
+
 def get_user_profile_by_id_in_realm(uid: int, realm: Realm) -> UserProfile:
     return UserProfile.objects.select_related().get(id=uid, realm=realm)
 
