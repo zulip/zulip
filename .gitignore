@@ -29,6 +29,8 @@ package-lock.json
 /.vagrant
 /var
 
+/.dmypy.json
+
 # Dockerfiles generated for CircleCI
 /tools/circleci/images
 
