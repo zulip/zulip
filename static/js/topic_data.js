@@ -5,13 +5,23 @@ var exports = {};
 var stream_dict = new Dict(); // stream_id -> array of objects
 
 exports.stream_has_topics = function (stream_id) {
-    return stream_dict.has(stream_id);
+    if (!stream_dict.has(stream_id)) {
+        return false;
+    }
+
+    var history = stream_dict.get(stream_id);
+
+    return history.has_topics();
 };
 
 exports.topic_history = function (stream_id) {
     var topics = new Dict({fold_case: true});
 
     var self = {};
+
+    self.has_topics = function () {
+        return !topics.is_empty();
+    };
 
     self.add_or_update = function (opts) {
         var name = opts.name;
