@@ -35,6 +35,7 @@ from zerver.lib.actions import (
     do_change_is_admin,
     do_create_user,
 )
+from zerver.lib.create_user import copy_user_settings
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
 from zerver.lib.users import user_ids_to_users
@@ -368,6 +369,38 @@ class UserProfileTest(ZulipTestCase):
         self.assertIsNone(get_source_profile("iagod@zulip.com", "zulip"))
         self.assertIsNone(get_source_profile("iago@zulip.com", "ZULIP"))
         self.assertIsNone(get_source_profile("iago@zulip.com", "lear"))
+
+    def test_copy_user_settings(self) -> None:
+        iago = self.example_user("iago")
+        cordelia = get_user("cordelia@zulip.com", get_realm("lear"))
+
+        cordelia.default_language = "de"
+        cordelia.emojiset = "apple"
+        cordelia.timezone = "America/Phoenix"
+        cordelia.night_mode = True
+        cordelia.enable_offline_email_notifications = False
+        cordelia.enable_stream_push_notifications = True
+        cordelia.save()
+
+        cordelia = copy_user_settings(iago, cordelia)
+
+        self.assertEqual(iago.default_language, "en")
+        self.assertEqual(cordelia.default_language, "en")
+
+        self.assertEqual(iago.emojiset, "google")
+        self.assertEqual(cordelia.emojiset, "google")
+
+        self.assertEqual(iago.timezone, "")
+        self.assertEqual(cordelia.timezone, "")
+
+        self.assertEqual(iago.night_mode, False)
+        self.assertEqual(cordelia.night_mode, False)
+
+        self.assertEqual(iago.enable_offline_email_notifications, True)
+        self.assertEqual(cordelia.enable_offline_email_notifications, True)
+
+        self.assertEqual(iago.enable_stream_push_notifications, False)
+        self.assertEqual(cordelia.enable_stream_push_notifications, False)
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
