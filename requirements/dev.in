@@ -19,6 +19,9 @@ coverage==4.5.1
 # fake for LDAP testing
 fakeldap==0.6.1
 
+# For testing mock http requests
+httpretty==0.9.4
+
 # For sorting imports
 isort==4.3.4
 
