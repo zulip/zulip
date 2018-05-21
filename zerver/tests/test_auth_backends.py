@@ -340,6 +340,18 @@ class AuthBackendTest(ZulipTestCase):
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
 
+class ResponseMock:
+    def __init__(self, status_code: int, data: Any) -> None:
+        self.status_code = status_code
+        self.data = data
+
+    def json(self) -> str:
+        return self.data
+
+    @property
+    def text(self) -> str:
+        return "Response text"
+
 class SocialAuthMixinTest(ZulipTestCase):
     def test_social_auth_mixing(self) -> None:
         mixin = SocialAuthMixin()
@@ -786,18 +798,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assertIn('login', result.url)
 
         utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
-
-class ResponseMock:
-    def __init__(self, status_code: int, data: Any) -> None:
-        self.status_code = status_code
-        self.data = data
-
-    def json(self) -> str:
-        return self.data
-
-    @property
-    def text(self) -> str:
-        return "Response text"
 
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
