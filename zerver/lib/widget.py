@@ -46,6 +46,13 @@ def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
     if content in ['/poll', '/tictactoe']:
         widget_type = content[1:]
 
+    widget_content = message.get('widget_content')
+    if widget_content is not None:
+        # Note that we validate this data in check_message,
+        # so we can trust it here.
+        widget_type = widget_content['widget_type']
+        extra_data = widget_content['extra_data']
+
     if widget_type:
         content = dict(
             widget_type=widget_type,
