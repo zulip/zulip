@@ -916,6 +916,7 @@ JS_SPECS = {
             'node_modules/to-markdown/dist/to-markdown.js',
             'node_modules/flatpickr/dist/flatpickr.js',
             'node_modules/flatpickr/dist/plugins/confirmDate/confirmDate.js',
+            'node_modules/error-stack-parser/dist/error-stack-parser.min.js',
             'third/marked/lib/marked.js',
             'generated/emoji/emoji_codes.js',
             'generated/pygments_data.js',

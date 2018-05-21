@@ -96,8 +96,23 @@ exports.get_log = function blueslip_get_log() {
     return logger.get_log();
 };
 
+// Format error stacks using the ErrorStackParser
+// external library
+function getErrorStack(stack) {
+    var ex = new Error();
+    ex.stack = stack;
+    return ErrorStackParser
+        .parse(ex)
+        .map(function (stackFrame) {
+            return stackFrame.lineNumber
+            + ': ' + stackFrame.fileName
+            + ' | ' + stackFrame.functionName;
+        }).join('\n');
+}
+
 var reported_errors = {};
 var last_report_attempt = {};
+
 function report_error(msg, stack, opts) {
     opts = _.extend({show_ui_msg: false}, opts);
 
@@ -108,6 +123,7 @@ function report_error(msg, stack, opts) {
     if (page_params.debug_mode) {
         // In development, we display blueslip errors in the web UI,
         // to make them hard to miss.
+        stack = getErrorStack(stack);
         exports.display_errors_on_screen(msg, stack);
     }
 
