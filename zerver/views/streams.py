@@ -30,7 +30,7 @@ from zerver.lib.validator import check_string, check_int, check_list, check_dict
     check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
     Recipient, get_recipient, get_stream, \
-    get_system_bot, get_user
+    get_system_bot, get_active_user
 
 from collections import defaultdict
 import ujson
@@ -49,7 +49,7 @@ class PrincipalError(JsonableError):
 
 def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile:
     try:
-        return get_user(principal, agent.realm)
+        return get_active_user(principal, agent.realm)
     except UserProfile.DoesNotExist:
         # We have to make sure we don't leak information about which users
         # are registered for Zulip in a different realm.  We could do

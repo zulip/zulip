@@ -55,6 +55,7 @@ from zerver.lib.actions import (
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
+    do_deactivate_user,
     stream_welcome_message,
     do_create_default_stream_group,
     do_add_streams_to_default_stream_group, do_remove_streams_from_default_stream_group,
@@ -2302,6 +2303,21 @@ class SubscriptionAPITest(ZulipTestCase):
         current_streams = self.get_streams(invitee_email, invitee_realm)
         invite_streams = self.make_random_stream_names(current_streams)
         self.assert_adding_subscriptions_for_principal(invitee_email, invitee_realm, invite_streams)
+
+    def test_subscriptions_add_for_principal_deactivated(self) -> None:
+        """
+        You can't subscribe deactivated people to streams.
+        """
+        target_profile = self.example_user("cordelia")
+        result = self.common_subscribe_to_streams(self.test_email, "Verona",
+                                                  {"principals": ujson.dumps([target_profile.email])})
+        self.assert_json_success(result)
+
+        do_deactivate_user(target_profile)
+        result = self.common_subscribe_to_streams(self.test_email, "Denmark",
+                                                  {"principals": ujson.dumps([target_profile.email])})
+        self.assert_json_error(result, "User not authorized to execute queries on behalf of 'cordelia@zulip.com'",
+                               status_code=403)
 
     def test_subscriptions_add_for_principal_invite_only(self) -> None:
         """
