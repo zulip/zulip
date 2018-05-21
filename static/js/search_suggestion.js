@@ -488,9 +488,17 @@ function get_has_filter_suggestions(last, operators) {
 
 function get_sent_by_me_suggestions(last, operators) {
     var last_string = Filter.unparse([last]).toLowerCase();
-    var sender_query = 'sender:' + people.my_current_email();
-    var from_query = 'from:' + people.my_current_email();
-    var description = 'sent by me';
+    var negated = last.negated || (last.operator === 'search' && last.operand[0] === '-');
+    var negated_symbol = negated ? '-' : '';
+    var verb = negated ? 'exclude ' : '';
+
+    var sender_query = negated_symbol + 'sender:' + people.my_current_email();
+    var from_query = negated_symbol + 'from:' + people.my_current_email();
+    var sender_me_query = negated_symbol + 'sender:me';
+    var from_me_query = negated_symbol + 'from:me';
+    var sent_string = negated_symbol + 'sent';
+    var description = verb + 'sent by me';
+
     var invalid = [
         {operator: 'sender'},
         {operator: 'from'},
@@ -501,14 +509,14 @@ function get_sent_by_me_suggestions(last, operators) {
     }
 
     if (last.operator === '' || sender_query.indexOf(last_string) === 0 ||
-        'sender:me'.indexOf(last_string) === 0 || last_string === 'sent') {
+        sender_me_query.indexOf(last_string) === 0 || last_string === sent_string) {
         return [
             {
                 search_string: sender_query,
                 description: description,
             },
         ];
-    } else if (from_query.indexOf(last_string) === 0 || 'sender:me'.indexOf(last_string) === 0) {
+    } else if (from_query.indexOf(last_string) === 0 || from_me_query.indexOf(last_string) === 0) {
         return [
             {
                 search_string: from_query,

@@ -575,12 +575,30 @@ run_test('sent_by_me_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
+    query = '-sender';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-sender",
+        "-sender:bob@zulip.com",
+        "-sender:",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     query = 'from';
     suggestions = search.get_suggestions(query);
     expected = [
         "from",
         "from:bob@zulip.com",
         "from:",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-from';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-from",
+        "-from:bob@zulip.com",
+        "-from:",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -603,6 +621,14 @@ run_test('sent_by_me_suggestions', () => {
     expected = [
         "sent",
         "sender:bob@zulip.com",
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-sent';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        "-sent",
+        "-sender:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
@@ -904,6 +930,7 @@ run_test('operator_suggestions', () => {
     suggestions = search.get_suggestions(query);
     expected = [
         '-s',
+        '-sender:bob@zulip.com',
         '-stream:',
         '-sender:',
     ];
@@ -913,6 +940,7 @@ run_test('operator_suggestions', () => {
     suggestions = search.get_suggestions(query);
     expected = [
         'stream:Denmark is:alerted -f',
+        'stream:Denmark is:alerted -from:bob@zulip.com',
         'stream:Denmark is:alerted -from:',
         'stream:Denmark is:alerted',
         'stream:Denmark',
