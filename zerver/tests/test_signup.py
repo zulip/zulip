@@ -503,6 +503,10 @@ class LoginTest(ZulipTestCase):
         response = self.client_get("/login/")
         self.assertEqual(response["Location"], "http://zulip.testserver")
 
+    def test_options_request_to_login_page(self) -> None:
+        response = self.client_options('/login/')
+        self.assertEqual(response.status_code, 200)
+
 class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients: List[str],
                           custom_from_name: Optional[str]=None) -> None:
