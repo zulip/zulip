@@ -411,6 +411,8 @@ INTEGRATIONS = {
         stream_name='jira',
         legacy=True
     ),
+    'matrix': Integration('matrix', 'matrix', ['communication'],
+                          doc='zerver/integrations/matrix.md'),
     'mercurial': Integration(
         'mercurial',
         'mercurial',
