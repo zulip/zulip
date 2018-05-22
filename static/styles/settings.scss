@@ -329,6 +329,10 @@ td .button {
     margin: 10px 0px;
 }
 
+.input-group label.checkbox + label {
+    cursor: pointer;
+}
+
 .no-margin {
     margin: 0px;
 }
