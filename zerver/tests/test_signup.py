@@ -413,7 +413,7 @@ class LoginTest(ZulipTestCase):
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
         # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 71)
+        self.assert_length(queries, 72)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
@@ -1938,6 +1938,60 @@ class UserSignUpTest(ZulipTestCase):
                                                default_stream_groups=["group 1", "group 2"])
         self.check_user_subscribed_only_to_streams(
             "newguy", list(set(default_streams + group1_streams + group2_streams)))
+
+    def test_signup_without_user_settings_from_another_realm(self) -> None:
+        email = self.example_email('hamlet')
+        password = "newpassword"
+        subdomain = "lear"
+        realm = get_realm("lear")
+
+        result = self.client_post('/accounts/home/', {'email': email}, subdomain=subdomain)
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"], subdomain=subdomain)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url, subdomain=subdomain)
+        self.assertEqual(result.status_code, 200)
+        result = self.submit_reg_form_for_user(email, password,
+                                               HTTP_HOST=subdomain + ".testserver")
+
+        hamlet = get_user(self.example_email("hamlet"), realm)
+        self.assertEqual(hamlet.left_side_userlist, False)
+        self.assertEqual(hamlet.default_language, "en")
+        self.assertEqual(hamlet.emojiset, "google")
+        self.assertEqual(hamlet.high_contrast_mode, False)
+        self.assertEqual(hamlet.enable_stream_sounds, False)
+
+    def test_signup_with_user_settings_from_another_realm(self) -> None:
+        email = self.example_email('hamlet')
+        password = "newpassword"
+        subdomain = "lear"
+        lear_realm = get_realm("lear")
+        zulip_realm = get_realm("zulip")
+
+        hamlet_in_zulip = get_user(self.example_email("hamlet"), zulip_realm)
+        hamlet_in_zulip.left_side_userlist = True
+        hamlet_in_zulip.default_language = "de"
+        hamlet_in_zulip.emojiset = "twitter"
+        hamlet_in_zulip.high_contrast_mode = True
+        hamlet_in_zulip.save()
+
+        result = self.client_post('/accounts/home/', {'email': email}, subdomain=subdomain)
+        self.assertEqual(result.status_code, 302)
+        result = self.client_get(result["Location"], subdomain=subdomain)
+
+        confirmation_url = self.get_confirmation_url_from_outbox(email)
+        result = self.client_get(confirmation_url, subdomain=subdomain)
+        self.assertEqual(result.status_code, 200)
+        result = self.submit_reg_form_for_user(email, password, source_realm="zulip",
+                                               HTTP_HOST=subdomain + ".testserver")
+
+        hamlet_in_lear = get_user(self.example_email("hamlet"), lear_realm)
+        self.assertEqual(hamlet_in_lear.left_side_userlist, True)
+        self.assertEqual(hamlet_in_lear.default_language, "de")
+        self.assertEqual(hamlet_in_lear.emojiset, "twitter")
+        self.assertEqual(hamlet_in_lear.high_contrast_mode, True)
+        self.assertEqual(hamlet_in_lear.enable_stream_sounds, False)
 
     def test_signup_invalid_subdomain(self) -> None:
         """

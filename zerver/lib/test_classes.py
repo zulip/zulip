@@ -299,7 +299,8 @@ class ZulipTestCase(TestCase):
             realm_subdomain: Optional[str]="zuliptest",
             from_confirmation: Optional[str]='', full_name: Optional[str]=None,
             timezone: Optional[str]='', realm_in_root_domain: Optional[str]=None,
-            default_stream_groups: Optional[List[str]]=[], **kwargs: Any) -> HttpResponse:
+            default_stream_groups: Optional[List[str]]=[],
+            source_realm: Optional[str]='', **kwargs: Any) -> HttpResponse:
         """
         Stage two of the two-step registration process.
 
@@ -320,6 +321,7 @@ class ZulipTestCase(TestCase):
             'terms': True,
             'from_confirmation': from_confirmation,
             'default_stream_group': default_stream_groups,
+            'source_realm': source_realm,
         }
         if realm_in_root_domain is not None:
             payload['realm_in_root_domain'] = realm_in_root_domain

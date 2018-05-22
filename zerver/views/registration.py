@@ -15,7 +15,7 @@ from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_user, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError
+    DomainNotAllowedForRealmError, get_membership_realms, get_source_profile
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -198,6 +198,11 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         if 'timezone' in request.POST and request.POST['timezone'] in get_all_timezones():
             timezone = request.POST['timezone']
 
+        if 'source_realm' in request.POST and request.POST["source_realm"] != "on":
+            source_profile = get_source_profile(email, request.POST["source_realm"])
+        else:
+            source_profile = None
+
         if not realm_creation:
             try:
                 existing_user_profile = get_user(email, realm)  # type: Optional[UserProfile]
@@ -249,7 +254,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           tos_version=settings.TOS_VERSION,
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
-                                          default_stream_groups=default_stream_groups)
+                                          default_stream_groups=default_stream_groups,
+                                          source_profile=source_profile)
 
         if realm_creation:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
@@ -290,6 +296,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
                  'default_stream_groups': get_default_stream_groups(realm),
+                 'membership_realms': get_membership_realms(email),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
