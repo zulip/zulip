@@ -18,3 +18,4 @@ Zulip in Production
    upload-backends
    ssl-certificates
    email
+   deployment

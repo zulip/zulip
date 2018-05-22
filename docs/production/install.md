@@ -125,6 +125,9 @@ symbolic link to it.
 Postgres, RabbitMQ, Memcached and Redis.
 * Initializes Zulip's database.
 
+If you'd like to deploy Zulip with these services on different
+machines, check out our [deployment options documentation](deployment.html).
+
 ## Troubleshooting
 
 **Install script.**
