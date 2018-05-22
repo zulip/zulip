@@ -581,10 +581,10 @@ exports.get_suggestions = function (query) {
     }
 
     // Display the default first
-    // `has` operator works only on predefined categories. Default suggestion
+    // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
-    if (last.operator !== '' && last.operator !== 'has') {
+    if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
         suggestion = get_default_suggestion(operators);
         result = [suggestion];
     }
