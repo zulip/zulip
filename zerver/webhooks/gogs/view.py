@@ -9,7 +9,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, get_create_branch_event_message, \
     get_pull_request_event_message, get_push_commits_event_message
@@ -92,7 +92,7 @@ def api_gogs_webhook(request: HttpRequest, user_profile: UserProfile,
             title=payload['pull_request']['title']
         )
     else:
-        return json_error(_('Invalid event "{}" in request headers').format(event))
+        raise UnexpectedWebhookEventType('Gogs', event)
 
     check_send_webhook_message(request, user_profile, topic, body)
     return json_success()

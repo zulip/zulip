@@ -10,7 +10,7 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import SUBJECT_WITH_BRANCH_TEMPLATE, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_force_push_commits_event_message, \
@@ -40,10 +40,6 @@ PULL_REQUEST_SUPPORTED_ACTIONS = [
     'comment_updated',
     'comment_deleted',
 ]
-
-class UnknownTriggerType(Exception):
-    pass
-
 
 @api_key_only_webhook_view('Bitbucket2')
 @has_request_variables
@@ -142,7 +138,7 @@ def get_type(request: HttpRequest, payload: Dict[str, Any]) -> str:
         if event_key == 'repo:updated':
             return event_key
 
-    raise UnknownTriggerType("We don't support {} event type".format(event_key))
+    raise UnexpectedWebhookEventType('BitBucket2', event_key)
 
 def get_body_based_on_type(type: str) -> Callable[[Dict[str, Any]], str]:
     fn = GET_SINGLE_MESSAGE_BODY_DEPENDING_ON_TYPE_MAPPER.get(type)

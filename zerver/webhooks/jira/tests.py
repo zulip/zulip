@@ -6,23 +6,6 @@ class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
     URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}&stream={stream}"
 
-    def test_unknown(self) -> None:
-        url = self.build_webhook_url()
-
-        result = self.client_post(url,
-                                  self.get_body('unknown_v1'),
-                                  stream_name="jira",
-                                  content_type="application/json")
-
-        self.assert_json_success(result)
-
-        result = self.client_post(url,
-                                  self.get_body('unknown_v2'),
-                                  stream_name="jira",
-                                  content_type="application/json")
-
-        self.assert_json_success(result)
-
     def test_custom_stream(self) -> None:
         api_key = self.test_user.api_key
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
