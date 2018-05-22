@@ -15,6 +15,7 @@
     "emoji-datasource-emojione": "3.0.0",
     "emoji-datasource-google": "3.0.0",
     "emoji-datasource-twitter": "3.0.0",
+    "error-stack-parser": "2.0.1",
     "expose-loader": "0.7.5",
     "file-loader": "1.1.11",
     "flatpickr": "4.5.0",

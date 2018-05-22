@@ -124,12 +124,12 @@ export default (env?: string) : webpack.Configuration => {
         resolve: {
             extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
         },
-        // We prefer cheap-module-eval-source-map over eval because
-        // currently eval has trouble setting breakpoints per line
-        // in Google Chrome. There's almost no difference
-        // between the compilation time for the two and could be
-        // re-evaluated as the size of files grows
-        devtool: production ? 'source-map' : 'cheap-module-eval-source-map',
+        // We prefer cheap-module-source-map over any eval-** options
+        // because the eval-options currently don't support being
+        // source mapped in error stack traces
+        // We prefer it over eval since eval has trouble setting
+        // breakpoints in chrome.
+        devtool: production ? 'source-map' : 'cheap-module-source-map',
     };
     if (production) {
         config.plugins = [
@@ -164,14 +164,6 @@ export default (env?: string) : webpack.Configuration => {
                 filename: "[name].css",
                 chunkFilename: "[id].css"
             }),
-            // We use SourceMapDevToolPlugin in order to enable SourceMaps
-            // in combination with mini-css-extract-plugin and
-            // the devtool setting of cheap-module-eval-source-map.
-            // Without this plugin source maps won't work with that combo.
-            // See https://github.com/webpack-contrib/mini-css-extract-plugin/issues/29
-            new webpack.SourceMapDevToolPlugin({
-                filename: "[file].map"
-            })
         ];
 
         config.devServer = {
