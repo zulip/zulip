@@ -243,7 +243,7 @@ class Command(BaseCommand):
 
             subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient, str]]
             profiles = UserProfile.objects.select_related().filter(
-                is_bot=False, is_guest=False).order_by("email")  # type: Sequence[UserProfile]
+                is_bot=False).order_by("email")  # type: Sequence[UserProfile]
 
             if options["test_suite"]:
                 subscriptions_map = {
@@ -253,7 +253,8 @@ class Command(BaseCommand):
                     'iago@zulip.com': ['Verona', 'Denmark', 'Scotland'],
                     'othello@zulip.com': ['Verona', 'Denmark', 'Scotland'],
                     'prospero@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice'],
-                    'ZOE@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice', 'Rome']
+                    'ZOE@zulip.com': ['Verona', 'Denmark', 'Scotland', 'Venice', 'Rome'],
+                    'polonius@zulip.com': ['Verona'],
                 }
 
                 for i, profile in enumerate(profiles):
