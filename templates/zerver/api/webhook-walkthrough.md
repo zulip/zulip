@@ -535,3 +535,18 @@ be running an older version of the integration that doesn't set that header.
 
 If the requisite header is missing, this function sends a PM to the owner of the
 webhook bot, notifying them of the missing header.
+
+### Handling unexpected webhook event types
+
+Many third-party services have dozens of different event types. In some cases, we
+may choose to explicitly ignore specific events. In other cases, there may be
+events that are new or events that we don't know about. In such cases, we
+recommend raising `UnexpectedWebhookEventType` (found in
+`zerver/lib/webhooks/common.py`), like so:
+
+```
+raise UnexpectedWebhookEventType(webhook_name, event_type)
+```
+
+`webhook_name` is the name of the webhook that raises the exception. `event_type`
+is the name of the unexpected webhook event.
