@@ -93,6 +93,39 @@ exports.activate = function (opts) {
         return;
     }
 
+    function make_plain_token(token) {
+        var span = $('<span>');
+        span.text(token.name);
+        return {
+            input: span,
+            output: function () {
+                return span.text();
+            },
+        };
+    }
+
+    function make_input_token(token) {
+        var span = $('<input type="text">');
+        span.text(token.field);
+        return {
+            input: span,
+            output: function () {
+                return span.val();
+            },
+        };
+    }
+
+    function make_token(token) {
+        var type = token.type || 'plain';
+
+        switch (type) {
+            case 'plain':
+                return make_plain_token(token);
+            case 'input':
+                return make_input_token(token);
+        }
+    }
+
     function make_choice_item(choice) {
         var button = make_button({
             text: choice.short_name,
@@ -115,9 +148,42 @@ exports.activate = function (opts) {
         });
     }
 
+    function make_token_form(choice) {
+        var form = $('<div>');
+
+        var token_widgets = _.map(choice.tokens, make_token);
+
+        _.each(token_widgets, function (w) {
+            form.append(w.input);
+            form.append('&nbsp;');
+        });
+
+        var button = $('<button>');
+        button.text(i18n.t('send'));
+        form.append(button);
+
+        button.on('click', function (e) {
+            e.stopPropagation();
+            var content = _.map(token_widgets, function (w) {
+                return w.output();
+            }).join(' ');
+
+            transmit.reply_message({
+                message: opts.message,
+                content: content,
+            });
+        });
+
+        return form;
+    }
+
     function make_form(choice) {
         if (choice.type === 'multiple_choice') {
             return make_choice_item(choice);
+        }
+
+        if (choice.tokens) {
+            return make_token_form(choice);
         }
     }
 
