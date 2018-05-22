@@ -766,6 +766,23 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = self.get_bot_user(email)
         self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
 
+    def test_patch_bot_owner_noop(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot()
+        self.assert_num_bots_equal(1)
+
+        bot_info = {
+            'bot_owner': self.example_email('hamlet'),
+        }
+
+        email = 'hambot-bot@zulip.testserver'
+        result = self.client_patch("/json/bots/{}".format(self.get_bot_user(email).id), bot_info)
+
+        # Check that we're still the owner
+        self.assert_json_success(result)
+        profile = self.get_bot_user(email)
+        self.assertEqual(profile.bot_owner, self.example_user("hamlet"))
+
     def test_patch_bot_owner_a_bot(self) -> None:
         self.login(self.example_email('hamlet'))
         self.create_bot()
