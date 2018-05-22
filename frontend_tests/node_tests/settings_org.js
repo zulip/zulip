@@ -512,6 +512,7 @@ run_test('set_up', () => {
     $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
+    $('#admin_auth_methods_table').change = set_callback('admin_auth_methods_table');
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 

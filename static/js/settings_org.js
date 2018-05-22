@@ -799,48 +799,17 @@ function _set_up() {
         e.stopPropagation();
     });
 
-    $(".organization form.org-authentications-form").off('submit').on('submit', function (e) {
-        var authentication_methods_status = $("#admin-realm-authentication-methods-status").expectOne();
 
+    $('#admin_auth_methods_table').change(function () {
         var new_auth_methods = {};
         _.each($("#admin_auth_methods_table").find('tr.method_row'), function (method_row) {
             new_auth_methods[$(method_row).data('method')] = $(method_row).find('input').prop('checked');
         });
 
-        authentication_methods_status.hide();
-
-        e.preventDefault();
-        e.stopPropagation();
-
-        var url = "/json/realm";
-        var data = {
-            authentication_methods: JSON.stringify(new_auth_methods),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-            success: function (response_data) {
-                if (response_data.authentication_methods !== undefined) {
-                    if (response_data.authentication_methods) {
-                        ui_report.success(i18n.t("Authentication methods saved!"), authentication_methods_status);
-                    }
-                }
-                // Check if no changes made
-                var no_changes_made = true;
-                for (var key in response_data) {
-                    if (['msg', 'result'].indexOf(key) < 0) {
-                        no_changes_made = false;
-                    }
-                }
-                if (no_changes_made) {
-                    ui_report.success(i18n.t("No changes to save!"), authentication_methods_status);
-                }
-            },
-            error: function (xhr) {
-                ui_report.error(i18n.t("Failed"), xhr, authentication_methods_status);
-            },
-        });
+        settings_ui.do_settings_change(channel.patch, '/json/realm',
+                                       {authentication_methods: JSON.stringify(new_auth_methods)},
+                                       $('#admin-realm-authentication-methods-status').expectOne()
+        );
     });
 
     function fade_status_element(elem) {

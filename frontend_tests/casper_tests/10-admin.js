@@ -391,29 +391,11 @@ casper.then(function () {
     });
 });
 
-function submit_org_authentication_change() {
-    casper.click('form.org-authentications-form button.button');
-}
-
 // Test authentication methods setting
 casper.then(function () {
     casper.click("li[data-section='auth-methods']");
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
-        casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
-        submit_org_authentication_change();
-    });
-});
-
-// Test setting was activated--default is checked
-casper.then(function () {
-    // Scroll to bottom so that casper snapshots show the auth methods table
-    this.scrollToBottom();
-    // Test setting was activated
-    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
-        casper.test.assertEval(function () {
-            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
-        });
+    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
+        casper.click(".method_row[data-method='Google'] input[type='checkbox'] + span");
     });
 });
 
@@ -423,23 +405,12 @@ casper.then(function () {
     casper.click('a[href^="#streams"]');
     casper.click('#settings-dropdown');
     casper.click('a[href^="#organization"]');
+    casper.click("li[data-section='auth-methods']");
 
-    casper.waitUntilVisible(".method_row[data-method='Email'] input[type='checkbox'] + span", function () {
+    casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
         // Test Setting was saved
         casper.test.assertEval(function () {
-            return !(document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked);
-        });
-    });
-});
-
-// Deactivate setting--default is checked
-casper.then(function () {
-    casper.click(".method_row[data-method='Email'] input[type='checkbox'] + span");
-    submit_org_authentication_change();
-    casper.waitUntilVisible('#admin-realm-authentication-methods-status', function () {
-        casper.test.assertSelectorHasText('#admin-realm-authentication-methods-status', 'Authentication methods saved!');
-        casper.test.assertEval(function () {
-            return document.querySelector(".method_row[data-method='Email'] input[type='checkbox']").checked;
+            return !(document.querySelector(".method_row[data-method='Google'] input[type='checkbox']").checked);
         });
     });
 });
