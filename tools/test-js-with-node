@@ -54,6 +54,7 @@ enforce_fully_covered = {
     'static/js/reactions.js',
     'static/js/recent_senders.js',
     'static/js/rtl.js',
+    'static/js/schema.js',
     'static/js/scroll_util.js',
     'static/js/search_suggestion.js',
     # Removed because we're migrating code from uncovered other settings pages to here.
