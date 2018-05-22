@@ -10,6 +10,7 @@
         "$": false,
         "_": false,
         "run_test": false,
+        "schema": false,
         "jQuery": false,
         "Spinner": false,
         "Handlebars": false,
