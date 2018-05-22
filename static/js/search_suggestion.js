@@ -98,10 +98,12 @@ function get_stream_suggestions(last, operators) {
     var objs = _.map(streams, function (stream) {
         var prefix = 'stream';
         var highlighted_stream = typeahead_helper.highlight_with_escaping(query, stream);
-        var description = prefix + ' ' + highlighted_stream;
+        var verb = last.negated ? 'exclude ' : '';
+        var description = verb + prefix + ' ' + highlighted_stream;
         var term = {
             operator: 'stream',
             operand: stream,
+            negated: last.negated,
         };
         var search_string = Filter.unparse([term]);
         return {description: description, search_string: search_string};
@@ -373,6 +375,18 @@ function get_operator_subset_suggestions(operators) {
 
 
 function get_special_filter_suggestions(last, operators, suggestions) {
+    var is_search_operand_negated = last.operator === 'search' && last.operand[0] === '-';
+    // Negating suggestions on is_search_operand_negated is required for
+    // suggesting negated operators.
+    if (last.negated || is_search_operand_negated) {
+        suggestions = _.map(suggestions, function (suggestion) {
+            return {
+                search_string: '-' + suggestion.search_string,
+                description: 'exclude ' + suggestion.description,
+                invalid: suggestion.invalid,
+            };
+        });
+    }
 
     var last_string = Filter.unparse([last]).toLowerCase();
     suggestions = _.filter(suggestions, function (s) {
@@ -382,7 +396,13 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         if (last_string === '') {
             return true;
         }
+
+        // returns the substring after the ":" symbol.
+        var suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
+        // e.g for `att` search query, `has:attachment` should be suggested.
+        var show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
         return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
+               (show_operator_suggestions) ||
                (s.description.toLowerCase().indexOf(last_string) === 0);
     });
 
@@ -468,9 +488,17 @@ function get_has_filter_suggestions(last, operators) {
 
 function get_sent_by_me_suggestions(last, operators) {
     var last_string = Filter.unparse([last]).toLowerCase();
-    var sender_query = 'sender:' + people.my_current_email();
-    var from_query = 'from:' + people.my_current_email();
-    var description = 'sent by me';
+    var negated = last.negated || (last.operator === 'search' && last.operand[0] === '-');
+    var negated_symbol = negated ? '-' : '';
+    var verb = negated ? 'exclude ' : '';
+
+    var sender_query = negated_symbol + 'sender:' + people.my_current_email();
+    var from_query = negated_symbol + 'from:' + people.my_current_email();
+    var sender_me_query = negated_symbol + 'sender:me';
+    var from_me_query = negated_symbol + 'from:me';
+    var sent_string = negated_symbol + 'sent';
+    var description = verb + 'sent by me';
+
     var invalid = [
         {operator: 'sender'},
         {operator: 'from'},
@@ -481,14 +509,14 @@ function get_sent_by_me_suggestions(last, operators) {
     }
 
     if (last.operator === '' || sender_query.indexOf(last_string) === 0 ||
-        'sender:me'.indexOf(last_string) === 0 || last_string === 'sent') {
+        sender_me_query.indexOf(last_string) === 0 || last_string === sent_string) {
         return [
             {
                 search_string: sender_query,
                 description: description,
             },
         ];
-    } else if (from_query.indexOf(last_string) === 0 || 'sender:me'.indexOf(last_string) === 0) {
+    } else if (from_query.indexOf(last_string) === 0 || from_me_query.indexOf(last_string) === 0) {
         return [
             {
                 search_string: from_query,
@@ -499,38 +527,21 @@ function get_sent_by_me_suggestions(last, operators) {
     return [];
 }
 
-function get_containing_suggestions(last) {
-    if (!(last.operator === 'search' || last.operator === 'has')) {
-        return [];
-    }
-
-    var choices = ['link', 'image', 'attachment'];
-    choices = _.filter(choices, function (choice) {
-        return phrase_match(choice, last.operand);
-    });
-
-    return _.map(choices, function (choice) {
-        var op = [{operator: 'has', operand: choice, negated: last.negated}];
-        var search_string = Filter.unparse(op);
-        var description = Filter.describe(op);
-        return {description: description, search_string: search_string};
-    });
-}
-
 function get_operator_suggestions(last) {
     if (!(last.operator === 'search')) {
         return [];
     }
+    var last_operand = last.operand;
 
     var negated = false;
-    if (last.operand.indexOf("-") === 0) {
+    if (last_operand.indexOf("-") === 0) {
         negated = true;
-        last.operand = last.operand.slice(1);
+        last_operand = last_operand.slice(1);
     }
 
     var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
     choices = _.filter(choices, function (choice) {
-        return phrase_match(choice, last.operand);
+        return phrase_match(choice, last_operand);
     });
 
     return _.map(choices, function (choice) {
@@ -597,10 +608,10 @@ exports.get_suggestions = function (query) {
 
     var persons = people.get_all_persons();
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
+    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
     attach_suggestions(result, base, suggestions);
 
-    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
+    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_person_suggestions(persons, last, base_operators, 'from');
@@ -619,9 +630,6 @@ exports.get_suggestions = function (query) {
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_has_filter_suggestions(last, base_operators);
-    attach_suggestions(result, base, suggestions);
-
-    suggestions = get_containing_suggestions(last);
     attach_suggestions(result, base, suggestions);
 
     suggestions = get_operator_subset_suggestions(operators);
