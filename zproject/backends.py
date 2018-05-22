@@ -423,7 +423,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
         except ZulipLDAPException:
             return None  # nocoverage # TODO: this may no longer be possible
 
-    def get_or_create_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+    def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
 
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
