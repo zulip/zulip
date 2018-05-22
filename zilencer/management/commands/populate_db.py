@@ -241,7 +241,7 @@ class Command(BaseCommand):
             # subscriptions to make sure test data is consistent
             # across platforms.
 
-            subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient, str]]
+            subscriptions_list = []  # type: List[Tuple[UserProfile, Recipient]]
             profiles = UserProfile.objects.select_related().filter(
                 is_bot=False).order_by("email")  # type: Sequence[UserProfile]
 
