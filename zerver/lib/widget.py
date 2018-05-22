@@ -70,6 +70,71 @@ def do_widget_post_save_actions(message: MutableMapping[str, Any]) -> None:
             logging.warning('in widget: ' + error_msg)
             return
 
+    m = re.match('/(zform) (.*)', content)
+    if m:
+        widget_type = m.group(1)
+        flavor = m.group(2).strip()
+        print('flavor', flavor)
+
+        if flavor == 'convert':
+            extra_data = dict(
+                type='choices',
+                heading='Let the bot do the math!',
+                choices=[
+                    dict(
+                        tokens=[
+                            dict(name='convert'),
+                            dict(field='n', type='input'),
+                            dict(name='feet to meters')
+                        ],
+                    ),
+                    dict(
+                        tokens=[
+                            dict(name='convert'),
+                            dict(field='n', type='input'),
+                            dict(name='meters to feet')
+                        ],
+                    ),
+                ],
+            )
+        elif flavor == 'quiz':
+            extra_data = dict(
+                type='choices',
+                heading='What is the capitol of Maryland?',
+                choices=[
+                    dict(
+                        type='multiple_choice',
+                        shortcut='A',
+                        answer='Annapolis',
+                        reply='answer q123456 A',
+                    ),
+                    dict(
+                        type='multiple_choice',
+                        shortcut='B',
+                        answer='Baltimore',
+                        reply='answer q123456 B',
+                    ),
+                ],
+            )
+        else:
+            extra_data = dict(
+                type='choices',
+                choices=[
+                    dict(
+                        tokens=[
+                            dict(name='help')
+                        ],
+                    ),
+                    dict(
+                        tokens=[
+                            dict(name='hello'),
+                            dict(field='name', type='input'),
+                            dict(name='how are you doing?')
+                        ],
+                    ),
+                ],
+            )
+
     if widget_type:
         content = dict(
             widget_type=widget_type,
