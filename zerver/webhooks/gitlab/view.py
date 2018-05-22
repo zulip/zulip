@@ -8,16 +8,13 @@ from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_success
 from zerver.lib.webhooks.common import check_send_webhook_message, \
-    validate_extract_webhook_http_header
+    validate_extract_webhook_http_header, UnexpectedWebhookEventType
 from zerver.lib.webhooks.git import EMPTY_SHA, \
     SUBJECT_WITH_PR_OR_ISSUE_INFO_TEMPLATE, \
     get_commits_comment_action_message, get_issue_event_message, \
     get_pull_request_event_message, get_push_commits_event_message, \
     get_push_tag_event_message, get_remove_branch_event_message
 from zerver.models import UserProfile
-
-class UnknownEventType(Exception):
-    pass
 
 
 def get_push_event_body(payload: Dict[str, Any]) -> str:
@@ -350,4 +347,5 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: Optional[
 
     if event in list(EVENT_FUNCTION_MAPPER.keys()):
         return event
-    raise UnknownEventType(u'Event {} is unknown and cannot be handled'.format(event))
+
+    raise UnexpectedWebhookEventType('GitLab', event)

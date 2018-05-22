@@ -12,7 +12,8 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import api_key_only_webhook_view
 from zerver.lib.request import REQ, has_request_variables
 from zerver.lib.response import json_error, json_success
-from zerver.lib.webhooks.common import check_send_webhook_message
+from zerver.lib.webhooks.common import check_send_webhook_message, \
+    UnexpectedWebhookEventType
 from zerver.models import Realm, UserProfile, get_user
 
 IGNORED_EVENTS = [
@@ -238,15 +239,7 @@ def api_jira_webhook(request: HttpRequest, user_profile: UserProfile,
     elif event in IGNORED_EVENTS:
         return json_success()
     else:
-        if event is None:
-            if not settings.TEST_SUITE:
-                message = u"Got JIRA event with None event type: {}".format(payload)
-                logging.warning(message)
-            return json_error(_("Event is not given by JIRA"))
-        else:
-            if not settings.TEST_SUITE:
-                logging.warning("Got JIRA event type we don't support: {}".format(event))
-            return json_success()
+        raise UnexpectedWebhookEventType('Jira', event)
 
     check_send_webhook_message(request, user_profile, subject, content)
     return json_success()
