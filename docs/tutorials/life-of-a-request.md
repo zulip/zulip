@@ -18,14 +18,6 @@ itself for static content).
 In development, `tools/run-dev.py` fills the role of nginx. Static files
 are in your git checkout under `static`, and are served unminified.
 
-## Nginx secures traffic with [SSL](../production/install.html)
-
-If you visit your Zulip server in your browser and discover that your
-traffic isn't being properly encrypted, an [nginx misconfiguration][nginx-config] is the
-likely culprit.
-
-[nginx-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/sites-available/zulip-enterprise
-
 ## Static files are [served directly][served-directly] by Nginx
 
 [served-directly]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-frontend/app
