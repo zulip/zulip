@@ -67,9 +67,9 @@ exports.activate = function (in_opts) {
 exports.handle_event = function (widget_event) {
     var message = message_store.get(widget_event.message_id);
 
-    if (!message) {
+    if (!message || !message.widget) {
         // It is common for submessage events to arrive on
-        // messages that we don't yet have in storage. We
+        // messages that we don't yet have in view. We
         // just ignore them completely here.
         return;
     }
