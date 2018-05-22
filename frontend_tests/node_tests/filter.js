@@ -627,7 +627,7 @@ run_test('describe', () => {
     narrow = [
         {operator: 'is', operand: 'something_we_do_not_support'},
     ];
-    string = 'something_we_do_not_support messages';
+    string = 'invalid something_we_do_not_support operand for is operator';
     assert.equal(Filter.describe(narrow), string);
 
     // this should be unreachable, but just in case

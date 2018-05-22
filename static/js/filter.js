@@ -622,7 +622,7 @@ function describe_unescaped(operators) {
             } else if (operand === 'unread') {
                 return verb + 'unread messages';
             }
-            return operand + ' messages';
+            return 'invalid ' + operand + ' operand for is operator';
         }
         if (canonicalized_operator ==='has') {
             // search_suggestion.get_suggestions takes care that this message will

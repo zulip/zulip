@@ -551,6 +551,101 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 });
 
+run_test('check_is_suggestions', () => {
+    var query = 'i';
+    global.stream_data.subscribed_streams = function () {
+        return ['devel', 'office'];
+    };
+    global.narrow_state.stream = function () {
+        return;
+    };
+
+    var suggestions = search.get_suggestions(query);
+    var expected = [
+        'i',
+        'is:private',
+        'is:starred',
+        'is:mentioned',
+        'is:alerted',
+        'is:unread',
+        'has:image',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    function describe(q) {
+        return suggestions.lookup_table[q].description;
+    }
+
+    assert.equal(describe('is:private'), 'Private messages');
+    assert.equal(describe('is:starred'), 'Starred messages');
+    assert.equal(describe('is:mentioned'), '@-mentions');
+    assert.equal(describe('is:alerted'), 'Alerted messages');
+    assert.equal(describe('is:unread'), 'Unread messages');
+
+    query = '-i';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        '-i',
+        '-is:private',
+        '-is:starred',
+        '-is:mentioned',
+        '-is:alerted',
+        '-is:unread',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    assert.equal(describe('-is:private'), 'Exclude private messages');
+    assert.equal(describe('-is:starred'), 'Exclude starred messages');
+    assert.equal(describe('-is:mentioned'), 'Exclude @-mentions');
+    assert.equal(describe('-is:alerted'), 'Exclude alerted messages');
+    assert.equal(describe('-is:unread'), 'Exclude unread messages');
+
+    // operand suggestions follow.
+
+    query = 'is:';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'is:private',
+        'is:starred',
+        'is:mentioned',
+        'is:alerted',
+        'is:unread',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'is:st';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'is:starred',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '-is:st';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        '-is:starred',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'st';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'st',
+        'is:starred',
+        'stream:',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'stream:Denmark has:link is:sta';
+    suggestions = search.get_suggestions(query);
+    expected = [
+        'stream:Denmark has:link is:starred',
+        'stream:Denmark has:link',
+        'stream:Denmark',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+});
+
 run_test('sent_by_me_suggestions', () => {
     global.stream_data.subscribed_streams = function () {
         return [];
