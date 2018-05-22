@@ -68,7 +68,7 @@ def tracemalloc_listen_sock(sock: socket.socket) -> None:
         sock.recv(1)
         tracemalloc_dump()
 
-listener_pid = None  # Optional[int]
+listener_pid = None  # type: Optional[int]
 
 def tracemalloc_listen() -> None:
     global listener_pid
