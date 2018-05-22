@@ -14,8 +14,7 @@ def random_api_key() -> str:
     altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
     return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
 
-def copy_user_settings(source_profile: UserProfile,
-                       target_profile: UserProfile) -> UserProfile:
+def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
     """Warning: Does not save, to avoid extra database queries"""
     for settings_name in UserProfile.property_types:
         value = getattr(source_profile, settings_name)
@@ -73,7 +72,8 @@ def create_user(email: str, password: Optional[str], realm: Realm,
                 is_mirror_dummy: bool = False,
                 default_sending_stream: Optional[Stream] = None,
                 default_events_register_stream: Optional[Stream] = None,
-                default_all_public_streams: Optional[bool] = None) -> UserProfile:
+                default_all_public_streams: Optional[bool] = None,
+                source_profile: Optional[UserProfile] = None) -> UserProfile:
     user_profile = create_user_profile(realm, email, password, active, bot_type,
                                        full_name, short_name, bot_owner,
                                        is_mirror_dummy, tos_version, timezone)
@@ -85,8 +85,17 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     # Allow the ORM default to be used if not provided
     if default_all_public_streams is not None:
         user_profile.default_all_public_streams = default_all_public_streams
+    # If a source profile was specified, we copy settings from that
+    # user.  Note that this is positioned in a way that overrides
+    # other arguments passed in, which is correct for most defaults
+    # like timezone where the source profile likely has a better value
+    # than the guess. As we decide on details like avatars and full
+    # names for this feature, we may want to move it.
+    if source_profile is not None:
+        copy_user_settings(source_profile, user_profile)
 
     user_profile.save()
+
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)

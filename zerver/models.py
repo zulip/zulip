@@ -1558,6 +1558,8 @@ def active_user_ids(realm_id: int) -> List[int]:
     return list(query)
 
 def get_membership_realms(email: str) -> List[Realm]:
+    if settings.PRODUCTION:  # nocoverage
+        return []
     profiles = UserProfile.objects.select_related('realm').filter(email__iexact=email.strip())
     return [profile.realm for profile in profiles]
 

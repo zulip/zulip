@@ -81,6 +81,25 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </div>
                 </div>
                 {% endif %}
+                {% if membership_realms %}
+                <div class="input-box">
+                    <label for="source_realm" class="inline-block">{{ _('Do you want to import your user settings from another organization?') }}</label>
+                </div>
+                <div id="source_realm_radio" class="input-group m-10 inline-block">
+                    <div class="input-group radio">
+                        <input class="inline-block" type="radio" name="source_realm"
+                          {% if ("source_realm" in form.data and form.data["source_realm"] == "on") or "source_realm" not in form.data %} checked {% endif %} />
+                        <label for="id_radio_none" class="inline-block">None</label>
+                    </div>
+                    {% for membership_realm in membership_realms %}
+                    <div class="input-group radio">
+                        <input class="inline-block" type="radio" name="source_realm" value="{{ membership_realm.string_id }}"
+                          {% if "source_realm" in form.data and membership_realm.string_id == form.data["source_realm"] %} checked {% endif %} />
+                        <label for="id_radio_{{ membership_realm.string_id }}" class="inline-block">{{ membership_realm.name }}</label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
             </section>
 
             {% if default_stream_groups %}
