@@ -257,29 +257,30 @@ class Command(BaseCommand):
                     'polonius@zulip.com': ['Verona'],
                 }
 
-                for i, profile in enumerate(profiles):
+                for profile in profiles:
                     if profile.email not in subscriptions_map:
                         raise Exception('Subscriptions not listed for user %s' % (profile.email,))
 
                     for stream_name in subscriptions_map[profile.email]:
                         stream = Stream.objects.get(name=stream_name)
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=stream.id)
-                        color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                        subscriptions_list.append((profile, r, color))
+                        subscriptions_list.append((profile, r))
             else:
                 for i, profile in enumerate(profiles):
                     # Subscribe to some streams.
                     for type_id in recipient_streams[:int(len(recipient_streams) *
                                                           float(i)/len(profiles)) + 1]:
                         r = Recipient.objects.get(type=Recipient.STREAM, type_id=type_id)
-                        color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
-                        subscriptions_list.append((profile, r, color))
+                        subscriptions_list.append((profile, r))
 
             subscriptions_to_add = []  # type: List[Subscription]
             event_time = timezone_now()
             all_subscription_logs = []  # type: (List[RealmAuditLog])
 
-            for profile, recipient, color in subscriptions_list:
+            i = 0
+            for profile, recipient in subscriptions_list:
+                i += 1
+                color = STREAM_ASSIGNMENT_COLORS[i % len(STREAM_ASSIGNMENT_COLORS)]
                 s = Subscription(
                     recipient=recipient,
                     user_profile=profile,
