@@ -333,6 +333,15 @@ td .button {
     cursor: pointer;
 }
 
+.dependent-block {
+    margin: -5px 0 15px 35px;
+}
+
+.dependent-inline-block {
+    display: inline-block;
+    margin: 0 0 0 10px !important;
+}
+
 .no-margin {
     margin: 0px;
 }
@@ -602,9 +611,13 @@ input[type=checkbox].inline-block {
     margin-top: -10px;
 }
 
-.admin-realm-message-content-edit-limit-minutes {
+#settings_page .admin-realm-time-limit-input {
     width: 5ch;
     text-align: right;
+}
+
+#settings_page .realm-time-limit-label {
+    vertical-align: middle;
 }
 
 .admin-realm-message-content-delete-limit-minutes {
@@ -1259,10 +1272,15 @@ input[type=checkbox].inline-block {
     width: calc(100% - 10px - 4px);
 }
 
+#settings_page .propagate-notifications-controls button,
 #settings_page .form-sidebar input[type=submit],
 #settings_page .form-sidebar button {
     border-radius: 4px;
     outline: none;
+}
+
+#settings_page .propagate_stream_notifications_change {
+    margin-top: 8px;
 }
 
 #settings_page .form-sidebar select {
@@ -1371,8 +1389,7 @@ input[type=checkbox].inline-block {
 #id_realm_create_stream_permission,
 #id_realm_org_join_restrictions,
 #id_realm_bot_creation_policy,
-#id_realm_user_invite_restriction,
-#id_realm_msg_edit_limit_setting {
+#id_realm_user_invite_restriction {
     width: 100%;
 }
 
