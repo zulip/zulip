@@ -53,6 +53,11 @@ $("body").ready(function () {
         }
         e.preventDefault();
         e.stopPropagation();
+        // Whenever opening a modal(over settings overlay) in an event handler
+        // attached to a click event, make sure to stop the propagation of the
+        // event to the parent container otherwise the modal will not open. This
+        // is so because this event handler will get fired on any click in settings
+        // overlay and subsequently close any open modal.
         overlays.close_active_modal();
     });
 });
