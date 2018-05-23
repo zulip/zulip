@@ -173,7 +173,13 @@ Zulip is 1.7 or newer), you can do deployments by running as root:
 and Zulip will automatically fetch the relevant branch from the
 specified repository to a directory under `/home/zulip/deployments`
 (where release tarball are unpacked), build the compiled static assets
-from source, and switches to the new version.
+from source, and switch to the new version.
+
+If you're just looking to take advantage of the latest features, we suggest
+keeping the default `zulip` repository above, and using `weekly` for the
+branch. Known caveats include: the `weekly` branch will typically have fewer
+translated strings than a stable release, and the upgrade path will not have
+been tested.
 
 ### Upgrading using Git from Zulip 1.6 and older
 
