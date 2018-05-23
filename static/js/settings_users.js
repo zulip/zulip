@@ -224,6 +224,8 @@ exports.on_load_success = function (realm_people_data) {
 
     // Setup click handlers
     $(".admin_user_table").on("click", ".deactivate", function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 

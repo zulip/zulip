@@ -323,6 +323,8 @@ exports.set_up = function () {
     });
 
     $("#user_deactivate_account_button").on('click', function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
         $("#deactivate_self_modal").modal("show");

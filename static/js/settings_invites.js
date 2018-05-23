@@ -68,6 +68,8 @@ exports.on_load_success = function (invites_data) {
     populate_invites(invites_data);
 
     $(".admin_invites_table").on("click", ".revoke", function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
@@ -82,6 +84,8 @@ exports.on_load_success = function (invites_data) {
     });
 
     $(".admin_invites_table").on("click", ".resend", function (e) {
+        // This click event must not get propagated to parent container otherwise the modal
+        // will not show up because of a call to `close_active_modal` in `settings.js`.
         e.preventDefault();
         e.stopPropagation();
 
