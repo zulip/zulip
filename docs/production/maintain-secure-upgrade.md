@@ -153,27 +153,29 @@ precise configuration.
 
 ## Upgrading from a git repository
 
-Starting with version 1.4, the Zulip server supports upgrading to a
-commit in Git.  You can configure the `git` repository that you'd like
-to use by adding a section like this to `/etc/zulip/zulip.conf`; by
-default it uses the main `zulip` repository (shown below).
+Zulip supports upgrading a production installation to any commit in
+Git, which is great for running pre-release versions or maintaining a
+small fork.  If you're using Zulip 1.7 or newer, you can just run the
+command:
+
+```
+# Upgrade to a tagged release
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git 1.8.1
+# Upgrade to a branch or other Git ref
+/home/zulip/deployments/current/scripts/upgrade-zulip-from-git master
+```
+
+and Zulip will automatically fetch the relevant Git commit and upgrade
+to the that version of Zulip.
+
+By default, this uses the main upstream Zulip server repository
+(example below), but you can configure any other Git repository by
+adding a section like this to `/etc/zulip/zulip.conf`:
 
 ```
 [deployment]
 git_repo_url = https://github.com/zulip/zulip.git
 ```
-
-Once that is done (and assuming the currently installed version of
-Zulip is 1.7 or newer), you can do deployments by running as root:
-
-```
-/home/zulip/deployments/current/scripts/upgrade-zulip-from-git <branch>
-```
-
-and Zulip will automatically fetch the relevant branch from the
-specified repository to a directory under `/home/zulip/deployments`
-(where release tarball are unpacked), build the compiled static assets
-from source, and switches to the new version.
 
 ### Upgrading using Git from Zulip 1.6 and older
 
