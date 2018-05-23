@@ -108,7 +108,36 @@ sometimes this happens with IPv6 configuration).
 You can look at our
 [nginx reverse proxy configuration][nginx-loadbalancer] to see an
 example of how to do this properly (the various include files are
-available via the `zulip::nginx` puppet module).
+available via the `zulip::nginx` puppet module).  Or modify this example:
+
+```
+map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+}
+server {
+        listen                  443 ssl;
+        server_name             zulip.example.net;
+
+        ssl                     on;
+        ssl_certificate         /path/to/fullchain-cert.pem;
+        ssl_certificate_key     /path/to/private-key.pem;
+
+        location / {
+                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header        Host $http_host;
+                proxy_set_header        Upgrade $http_upgrade;
+                proxy_set_header        Connection $connection_upgrade;
+                proxy_http_version      1.1;
+                proxy_buffering         off;
+                proxy_read_timeout      20m;
+                proxy_pass              https://zulip-upstream-host;
+        }
+}
+```
+
+Don't forget to update `server_name`, `ssl_certificate`,
+`ssl_certificate_key` and `proxy_pass` with propper values.
 
 [nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
 [nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
