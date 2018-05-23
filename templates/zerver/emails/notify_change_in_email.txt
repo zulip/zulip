@@ -7,4 +7,4 @@ please contact us immediately at <{{ support_email }}>.
 {% endtrans %}
 
 {{ _("Best,") }}
-{{ _("Team Zulip") }}
+{{ _("The Zulip Team") }}
