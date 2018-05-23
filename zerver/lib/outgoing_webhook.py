@@ -58,7 +58,9 @@ class GenericOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'request_kwargs': {}}
         request_data = {"data": event['command'],
                         "message": event['message'],
-                        "token": self.token}
+                        "bot_email": self.user_profile.email,
+                        "token": self.token,
+                        "trigger": event['trigger']}
         return rest_operation, json.dumps(request_data)
 
     def process_success(self, response: Response,

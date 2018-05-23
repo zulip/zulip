@@ -8,7 +8,7 @@ from requests.models import Response
 from zerver.lib.outgoing_webhook import GenericOutgoingWebhookService, \
     SlackOutgoingWebhookService
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import Service
+from zerver.models import Service, get_realm, get_user
 
 class TestGenericOutgoingWebhookService(ZulipTestCase):
 
@@ -16,13 +16,15 @@ class TestGenericOutgoingWebhookService(ZulipTestCase):
         self.event = {
             u'command': '@**test**',
             u'message': {
-                'content': 'test_content',
-            }
+                'content': '@**test**',
+            },
+            u'trigger': 'mention',
         }
+        self.bot_user = get_user("outgoing-webhook@zulip.com", get_realm("zulip"))
         self.handler = GenericOutgoingWebhookService(service_name='test-service',
                                                      base_url='http://example.domain.com',
                                                      token='abcdef',
-                                                     user_profile=None)
+                                                     user_profile=self.bot_user)
 
     def test_process_event(self) -> None:
         rest_operation, request_data = self.handler.process_event(self.event)
