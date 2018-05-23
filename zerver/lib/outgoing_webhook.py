@@ -25,7 +25,7 @@ class OutgoingWebhookServiceInterface:
     def __init__(self, base_url: str, token: str, user_profile: UserProfile, service_name: str) -> None:
         self.base_url = base_url  # type: str
         self.token = token  # type: str
-        self.user_profile = user_profile  # type: str
+        self.user_profile = user_profile  # type: UserProfile
         self.service_name = service_name  # type: str
 
     # Given an event that triggers an outgoing webhook operation, returns:
