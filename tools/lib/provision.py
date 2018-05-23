@@ -134,6 +134,7 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "curl",                 # Used for fetching PhantomJS as wget occasionally fails on redirects
     "netcat",               # Used for flushing memcached
     "moreutils",            # Used for sponge command
+    "libfontconfig1",       # Required by phantomjs
 ] + VENV_DEPENDENCIES + THUMBOR_VENV_DEPENDENCIES
 
 APT_DEPENDENCIES = {
