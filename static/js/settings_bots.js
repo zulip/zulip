@@ -110,12 +110,8 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-function bot_name_from_email(email) {
-    return email.substring(0, email.indexOf("-bot@"));
-}
-
 exports.generate_flaskbotrc_content = function (email, api_key) {
-    return "[" + bot_name_from_email(email) + "]" +
+    return "[]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +

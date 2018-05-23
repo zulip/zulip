@@ -62,7 +62,7 @@ pip install zulip_botserver
 
 1. Open the `flaskbotrc`. It should contain one or more sections that look like this:
    ```
-   [foo]
+   []
    email=foo-bot@hostname
    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
    site=http://hostname
