@@ -1,118 +1,45 @@
-var path = require('path');
-var fs = require('fs');
+const os = require('os');
+const path = require('path');
+const { spawn } = require('child_process');
 
-global.assert = require('assert');
-require('node_modules/string.prototype.codepointat/codepointat.js');
-
-global.Dict = require('js/dict');
-global._ = require('node_modules/underscore/underscore.js');
-var _ = global._;
-
-// Create a helper function to avoid sneaky delays in tests.
-function immediate(f) {
-    return () => {
-        return f();
-    };
-}
-
-// Find the files we need to run.
-var finder = require('./finder.js');
-var files = finder.find_files_to_run(); // may write to console
-if (_.isEmpty(files)) {
+const { split_array } = require('./utils');
+const finder = require('./finder');
+const test_files = finder.find_files_to_run();
+if (test_files.length === 0) {
     throw "No tests found";
 }
 
-// Set up our namespace helpers.
-var namespace = require('./namespace.js');
-global.set_global = namespace.set_global;
-global.patch_builtin = namespace.patch_builtin;
-global.zrequire = namespace.zrequire;
-global.stub_out_jquery = namespace.stub_out_jquery;
-global.with_overrides = namespace.with_overrides;
-
-// Set up stub helpers.
-var stub = require('./stub.js');
-global.with_stub = stub.with_stub;
-
-// Set up helpers to render templates.
-var render = require('./render.js');
-global.make_sure_all_templates_have_been_compiled =
-    render.make_sure_all_templates_have_been_compiled;
-global.find_included_partials = render.find_included_partials;
-global.compile_template = render.compile_template;
-global.render_template = render.render_template;
-global.walk = render.walk;
-
-// Set up fake jQuery
-global.make_zjquery = require('./zjquery.js').make_zjquery;
-
-// Set up fake blueslip
-global.make_zblueslip = require('./zblueslip.js').make_zblueslip;
-
-// Set up fake translation
-global.stub_i18n = require('./i18n.js');
-
-var noop = function () {};
-
-// Set up fake module.hot
-// eslint-disable-next-line no-native-reassign
-module = require('module');
-module.prototype.hot = {
-    accept: noop,
-};
-
-// Set up fixtures.
-global.read_fixture_data = (fn) => {
-    var full_fn = path.join(__dirname, '../../zerver/tests/fixtures/', fn);
-    var data = JSON.parse(fs.readFileSync(full_fn, 'utf8', 'r'));
-    return data;
-};
-
-function short_tb(tb) {
-    const lines = tb.split('\n');
-
-    var i = _.findIndex(lines, (line) => {
-        return line.includes('run_test') || line.includes('run_one_module');
+let parallelism = 2 || os.cpus().length;
+let test_files_array;
+if (test_files.length <= parallelism) {
+    test_files.forEach(file => {
+       test_files_array.push([file]);
     });
-
-    if (i === -1) {
-        return tb;
-    }
-
-    return lines.splice(0, i+1).join('\n') + '\n(...)\n';
+} else {
+    test_files_array = split_array(test_files, parallelism);
 }
 
-// Set up bugdown comparison helper
-global.bugdown_assert = require('./bugdown_assert.js');
-
-function run_one_module(file) {
-    console.info('running tests for ' + file.name);
-    require(file.full_name);
+if (test_files.length < parallelism) {
+    parallelism = test_files.length;
 }
 
-global.run_test = (label, f) => {
-    if (files.length === 1) {
-        console.info('        test: ' + label);
-    }
-    f();
-};
-
-try {
-    files.forEach(function (file) {
-        global.patch_builtin('setTimeout', noop);
-        global.patch_builtin('setInterval', noop);
-        _.throttle = immediate;
-        _.debounce = immediate;
-
-        render.init();
-        run_one_module(file);
-        namespace.restore();
+const exit_codes = [];
+const test_runner_path = path.join(__dirname, 'test_runner.js');
+for (let i = 0; i < parallelism; i++) {
+    const test_runner = spawn(process.execPath, [test_runner_path], {
+       stdio: 'inherit',
+       env: {
+           ...process.env,
+           ZTEST_FILES: JSON.stringify(test_files_array[i])
+       }
     });
-} catch (e) {
-    if (e.stack) {
-        console.info(short_tb(e.stack));
-    } else {
-        console.info(e);
-    }
-    process.exit(1);
+
+    test_runner.on('exit', (code) => {
+        exit_codes.push(code);
+
+        if (exit_codes.length === parallelism) {
+            const exit_code = exit_codes.includes(1) ? 1 : 0;
+            process.exit(exit_code);
+        }
+    });
 }
