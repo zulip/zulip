@@ -383,7 +383,7 @@ class UserProfileTest(ZulipTestCase):
         cordelia.enable_stream_push_notifications = True
         cordelia.save()
 
-        cordelia = copy_user_settings(cordelia, iago)
+        copy_user_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
         self.assertEqual(iago.default_language, "de")
