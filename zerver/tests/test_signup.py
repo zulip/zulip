@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 import datetime
+import django_otp
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.test import TestCase, override_settings
 from django.utils.timezone import now as timezone_now
 from django.core.exceptions import ValidationError
+from two_factor.utils import default_device
 
 from mock import patch, MagicMock
 from zerver.lib.test_helpers import MockLDAP
@@ -17,8 +19,9 @@ from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
 from zerver.lib.actions import do_change_password
+from zerver.decorator import do_two_factor_login
 from zerver.views.auth import login_or_register_remote_user, \
-    redirect_and_log_into_subdomain
+    redirect_and_log_into_subdomain, start_two_factor_auth
 from zerver.views.invite import get_invitee_emails_set
 from zerver.views.registration import confirmation_key, \
     send_confirm_registration_email
@@ -495,6 +498,7 @@ class LoginTest(ZulipTestCase):
         self.login(email, password)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    @override_settings(TWO_FACTOR_AUTHENTICATION_ENABLED=False)
     def test_login_page_redirects_logged_in_user(self) -> None:
         """You will be redirected to the app's main page if you land on the
         login page when already logged in.
@@ -506,6 +510,35 @@ class LoginTest(ZulipTestCase):
     def test_options_request_to_login_page(self) -> None:
         response = self.client_options('/login/')
         self.assertEqual(response.status_code, 200)
+
+    @override_settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True)
+    def test_login_page_redirects_logged_in_user_under_2fa(self) -> None:
+        """You will be redirected to the app's main page if you land on the
+        login page when already logged in.
+        """
+        user_profile = self.example_user("cordelia")
+        self.create_default_device(user_profile)
+
+        self.login(self.example_email("cordelia"))
+        self.login_2fa(user_profile)
+
+        response = self.client_get("/login/")
+        self.assertEqual(response["Location"], "http://zulip.testserver")
+
+    def test_start_two_factor_auth(self) -> None:
+        request = MagicMock(POST=dict())
+        with patch('zerver.views.auth.TwoFactorLoginView') as mock_view:
+            mock_view.as_view.return_value = lambda *a, **k: HttpResponse()
+            response = start_two_factor_auth(request)
+            self.assertTrue(isinstance(response, HttpResponse))
+
+    def test_do_two_factor_login(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.create_default_device(user_profile)
+        request = MagicMock()
+        with patch('zerver.decorator.django_otp.login') as mock_login:
+            do_two_factor_login(request, user_profile)
+            mock_login.assert_called_once()
 
 class InviteUserBase(ZulipTestCase):
     def check_sent_emails(self, correct_recipients: List[str],
@@ -2756,3 +2789,44 @@ class FollowupEmailTest(ZulipTestCase):
         # Test date_joined == Friday in UTC, but Thursday in the user's timezone
         user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
         self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))
+
+class TwoFactorAuthTest(ZulipTestCase):
+    @patch('two_factor.models.totp')
+    def test_two_factor_login(self, mock_totp):
+        # type: (MagicMock) -> None
+        token = 123456
+        email = self.example_email('hamlet')
+        password = 'testing'
+
+        user_profile = self.example_user('hamlet')
+        user_profile.set_password(password)
+        user_profile.save()
+        self.create_default_device(user_profile)
+
+        def totp(*args, **kwargs):
+            # type: (*Any, **Any) -> int
+            return token
+
+        mock_totp.side_effect = totp
+
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.EmailAuthBackend',),
+                           TWO_FACTOR_CALL_GATEWAY='two_factor.gateways.fake.Fake',
+                           TWO_FACTOR_SMS_GATEWAY='two_factor.gateways.fake.Fake',
+                           TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+
+            first_step_data = {"username": email,
+                               "password": password,
+                               "two_factor_login_view-current_step": "auth"}
+            result = self.client_post("/accounts/login/", first_step_data)
+            self.assertEqual(result.status_code, 200)
+
+            second_step_data = {"token-otp_token": str(token),
+                                "two_factor_login_view-current_step": "token"}
+            result = self.client_post("/accounts/login/", second_step_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result["Location"], "http://zulip.testserver")
+
+            # Going to login page should redirect to '/' if user is already
+            # logged in.
+            result = self.client_get('/accounts/login/')
+            self.assertEqual(result["Location"], "http://zulip.testserver")

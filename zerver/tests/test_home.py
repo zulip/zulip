@@ -4,6 +4,7 @@ import os
 import re
 import ujson
 
+from django.conf import settings
 from django.http import HttpResponse
 from django.test import override_settings
 from mock import MagicMock, patch
@@ -169,6 +170,8 @@ class HomeTest(ZulipTestCase):
             "timezone",
             "translate_emoticons",
             "twenty_four_hour_time",
+            "two_fa_enabled",
+            "two_fa_enabled_user",
             "unread_msgs",
             "unsubscribed",
             "use_websockets",
@@ -232,6 +235,28 @@ class HomeTest(ZulipTestCase):
 
         realm_bots_actual_keys = sorted([str(key) for key in page_params['realm_bots'][0].keys()])
         self.assertEqual(realm_bots_actual_keys, realm_bots_expected_keys)
+
+    def test_home_under_2fa_without_otp_device(self) -> None:
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            self.login(self.example_email("iago"))
+            result = self._get_home_page()
+            # Should be successfull because otp device is not configured.
+            self.assertEqual(result.status_code, 200)
+
+    def test_home_under_2fa_with_otp_device(self) -> None:
+        with self.settings(TWO_FACTOR_AUTHENTICATION_ENABLED=True):
+            user_profile = self.example_user('iago')
+            self.create_default_device(user_profile)
+            self.login(user_profile.email)
+            result = self._get_home_page()
+            # User should not log in because otp device is configured but
+            # 2fa login function was not called.
+            self.assertEqual(result.status_code, 302)
+
+            self.login_2fa(user_profile)
+            result = self._get_home_page()
+            # Should be successfull after calling 2fa login function.
+            self.assertEqual(result.status_code, 200)
 
     def test_num_queries_for_realm_admin(self) -> None:
         # Verify number of queries for Realm admin isn't much higher than for normal users.
