@@ -15,8 +15,8 @@ from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
-    UserPresence, UserActivity, UserActivityInterval, \
-    get_display_recipient, Attachment, get_system_bot
+    UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
+    CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable
@@ -57,6 +57,8 @@ ALL_ZERVER_TABLES = [
     'zerver_attachment',
     'zerver_attachment_messages',
     'zerver_client',
+    'zerver_customprofilefield',
+    'zerver_customprofilefield_value',
     'zerver_defaultstream',
     'zerver_huddle',
     'zerver_message',
@@ -388,6 +390,13 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table='zerver_customprofilefield',
+        model=CustomProfileField,
+        normal_parent=realm_config,
+        parent_key='realm_id__in',
+    )
+
+    Config(
         table='zerver_realmemoji',
         model=RealmEmoji,
         normal_parent=realm_config,
@@ -437,6 +446,13 @@ def get_realm_config() -> Config:
     Config(
         table='zerver_userpresence',
         model=UserPresence,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_customprofilefield_value',
+        model=CustomProfileFieldValue,
         normal_parent=user_profile_config,
         parent_key='user_profile__in',
     )
