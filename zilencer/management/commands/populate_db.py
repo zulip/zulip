@@ -17,6 +17,7 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, 
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
+from zerver.lib.onboarding import create_if_missing_realm_internal_bots
 from zerver.lib.upload import upload_backend
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
@@ -212,6 +213,10 @@ class Command(BaseCommand):
             ]
             create_users(zulip_realm, zulip_outgoing_bots,
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
+
+            # Add the realm internl bots to each realm.
+            create_if_missing_realm_internal_bots()
+
             # TODO: Clean up this initial bot creation code
             Service.objects.create(
                 name="test",
