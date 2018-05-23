@@ -79,3 +79,34 @@ available via the `zulip::nginx` puppet module).
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
 
+### Reverse proxy basic config example
+
+```
+map $http_upgrade $connection_upgrade {
+        default upgrade;
+        ''      close;
+}
+server {
+        listen                  443 ssl;
+        server_name             zulip.example.net;
+
+        ssl                     on;
+        ssl_certificate         /path/to/fullchain-cert.pem;
+        ssl_certificate_key     /path/to/private-key.pem;
+
+        add_header              X-Robots-Tag none;
+
+        location / {
+                proxy_set_header        X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header        Host $http_host;
+                proxy_set_header        Upgrade $http_upgrade;
+                proxy_set_header        Connection $connection_upgrade;
+                proxy_http_version      1.1;
+                proxy_buffering         off;
+                proxy_read_timeout      20m;
+                proxy_pass              https://zulip-upstream-host;
+        }
+}
+```
+
+Please **do not forget** to correct `server_name`, `ssl_certificate`, `ssl_certificate_key` and `proxy_pass` with propper values.
