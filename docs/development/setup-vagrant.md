@@ -23,7 +23,7 @@ Contents:
 environment,** check
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors). If
 that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 real-time help, send a note to the
 [Zulip-devel Google group](https://groups.google.com/forum/#!forum/zulip-devel)
@@ -341,7 +341,7 @@ without provisioning after the first time).  Other common issues are
 documented in the
 [Troubleshooting and Common Errors](#troubleshooting-and-common-errors)
 section.  If that doesn't help, please visit
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 real-time help.
 
@@ -507,7 +507,7 @@ After provisioning, you'll want to
 [(re)start the Zulip development server](#step-3-start-the-development-environment).
 
 If you run into any trouble, the
-[#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+[#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 is a great place to ask for help.
 
@@ -604,7 +604,7 @@ equivalently `vagrant provision` from outside).
 If these solutions aren't working for you or you encounter an issue not
 documented below, there are a few ways to get further help:
 
-* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/provision.20help)
+* Ask in [#provision help](https://chat.zulip.org/#narrow/stream/21-provision-help)
   in the [Zulip development community server](../contributing/chat-zulip-org.html),
 * send a note to the [Zulip-devel Google
   group](https://groups.google.com/forum/#!forum/zulip-devel), or

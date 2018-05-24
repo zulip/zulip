@@ -13,7 +13,7 @@ minutes to a few hours, depending on the time of day.
 ## Community norms
 
 * Send test messages to
-  [#test here](https://chat.zulip.org/#narrow/stream/test.20here) or
+  [#test here](https://chat.zulip.org/#narrow/stream/7-test-here) or
   as a PM to yourself to avoid disturbing others.
 * When asking for help, provide the details needed for others to help
   you.  E.g. include the full traceback in a code block (not a
@@ -37,7 +37,7 @@ minutes to a few hours, depending on the time of day.
   love meeting new people, hearing about what brought them to Zulip,
   and getting their feedback.  If you're not sure where to start,
   introduce yourself and your interests in
-  [#new members](https://chat.zulip.org/#narrow/stream/new.20members),
+  [#new members](https://chat.zulip.org/#narrow/stream/95-new-members),
   using your name as the topic.
 
 ## High traffic community
@@ -67,19 +67,19 @@ secret/embarrassing, etc.
 There are a few streams worth highlighting that are relevant for
 everyone, even non-developers:
 
-* [#announce](https://chat.zulip.org/#narrow/stream/announce) is for
+* [#announce](https://chat.zulip.org/#narrow/stream/1-announce) is for
   announcements and discussions thereof; we try to keep traffic there
   to a minimum.
-* [#feedback](https://chat.zulip.org/#narrow/stream/feedback) is for
+* [#feedback](https://chat.zulip.org/#narrow/stream/137-feedback) is for
   posting feedback on Zulip.
-* [#design](https://chat.zulip.org/#narrow/stream/design) is where we
+* [#design](https://chat.zulip.org/#narrow/stream/101-design) is where we
   discuss UI and feature design and collect feedback on potential design
   changes.  We love feedback, so don't hesitate to speak up!
-* [#user community](https://chat.zulip.org/#narrow/stream/user.20community) is
+* [#user community](https://chat.zulip.org/#narrow/stream/138-user-community) is
   for Zulip users to discuss their experiences using and adopting Zulip.
-* [#production help](https://chat.zulip.org/#narrow/stream/production.20help)
+* [#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
   is for production environment related discussions.
-* [#test here](https://chat.zulip.org/#narrow/stream/test.20here) is
+* [#test here](https://chat.zulip.org/#narrow/stream/7-test-here) is
   for sending test messages without inconveniencing other users :).
   We recommend muting this stream when not using it.
 
@@ -88,25 +88,25 @@ community (e.g. one for each app, etc.); check out the
 [Streams page](https://chat.zulip.org/#streams/all) to see the
 descriptions for all of them.  Relevant to almost everyone are these:
 
-* [#checkins](https://chat.zulip.org/#narrow/stream/checkins) is for
+* [#checkins](https://chat.zulip.org/#narrow/stream/65-checkins) is for
   progress updates on what you're working on and its status; usually
   folks post with their name as the topic.  Everyone is welcome to
   participate!
-* [#development help](https://chat.zulip.org/#narrow/stream/development.20help)
+* [#development help](https://chat.zulip.org/#narrow/stream/49-development-help)
   is for asking for help with any Zulip server/webapp development work
   (use the app streams for help working on one of the apps).
-* [#code review](https://chat.zulip.org/#narrow/stream/code.20review)
+* [#code review](https://chat.zulip.org/#narrow/stream/91-code-review)
   is for getting feedback on your work.  We encourage all developers
   to comment on work posted here, even if you're new to the Zulip
   project; reviewing other PRs is a great way to develop experience,
   and even just manually testing a proposed new feature and posting
   feedback is super helpful.
-* [#documentation](https://chat.zulip.org/#narrow/stream/documentation)
+* [#documentation](https://chat.zulip.org/#narrow/stream/19-documentation)
   is where we discuss improving Zulip's user, sysadmin, and developer
   documentation.
-* [#translation](https://chat.zulip.org/#narrow/stream/translation) is
+* [#translation](https://chat.zulip.org/#narrow/stream/58-translation) is
   for discussing Zulip's translations.
-* [#learning](https://chat.zulip.org/#narrow/stream/learning) is for
+* [#learning](https://chat.zulip.org/#narrow/stream/92-learning) is for
   posting great learning resources one comes across.
 
 ## Chat meetings
@@ -127,13 +127,13 @@ Here are the regular meetings that exist today along with their usual
 times:
 
 * Mobile team on
-[#mobile](https://chat.zulip.org/#narrow/stream/mobile), generally
+[#mobile](https://chat.zulip.org/#narrow/stream/48-mobile), generally
 Wednesdays at 10AM Pacific time.
 
 * Backend/infrastructure team on
-[#backend](https://chat.zulip.org/#narrow/stream/backend), generally
+[#backend](https://chat.zulip.org/#narrow/stream/3-backend), generally
 Fridays at 10AM Pacific time.
 
 * Bots and integrations team on
-[#integrations](https://chat.zulip.org/#narrow/stream/integrations),
+[#integrations](https://chat.zulip.org/#narrow/stream/127-integrations),
 generally Fridays at 9AM Pacific time.
