@@ -63,6 +63,75 @@ exports.send_message = function (request, on_success, error) {
     }
 };
 
+exports.reply_message = function (opts) {
+    // This code does an application-triggered reply to a message (as
+    // opposed to the user themselves doing it).  Its only use case
+    // for now is experimental widget-aware bots, so treat this as
+    // somewhat beta code.  To understand the use case, think of a
+    // bot that wants to give users 3 or 4 canned replies to some
+    // choice, but it wants to front-end each of these options
+    // with a one-click button.  This function is part of that architecture.
+    var message = opts.message;
+    var content = opts.content;
+
+    function success() {
+        // TODO: If server response comes back before the message event,
+        //       we could show it earlier, although that creates some
+        //       complexity.  For now do nothing.  (Note that send_message
+        //       already handles things like reporting times to the server.)
+    }
+
+    function error() {
+        // TODO: In our current use case, which is widgets, to meaningfully
+        //       handle errors, we would want the widget to provide some
+        //       kind of callback to us so it can do some appropriate UI.
+        //       For now do nothing.
+    }
+
+    var locally_echoed = false;
+    var local_id = sent_messages.get_new_local_id();
+
+    var reply = {
+        sender_id: page_params.user_id,
+        queue_id: page_params.queue_id,
+        local_id: local_id,
+    };
+
+    sent_messages.start_tracking_message({
+        local_id: local_id,
+        locally_echoed: locally_echoed,
+    });
+
+    if (message.type === 'stream') {
+        var stream = message.stream;
+
+        var mention = '@**' + message.sender_full_name + '**';
+
+        content = mention + ' ' + content;
+
+        reply.type = 'stream';
+        reply.to  = stream;
+        reply.content = content;
+        reply.subject = message.subject;
+
+        transmit.send_message(reply, success, error);
+        return;
+    }
+
+    if (message.type === 'private') {
+        var pm_recipient = people.pm_reply_to(message);
+
+        reply.type = 'private';
+        reply.to = JSON.stringify(pm_recipient.split(','));
+        reply.content = content;
+
+        transmit.send_message(reply, success, error);
+        return;
+    }
+
+    blueslip.error('unknown message type: ' + message.type);
+};
+
 return exports;
 }());
 

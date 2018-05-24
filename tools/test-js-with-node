@@ -54,6 +54,7 @@ enforce_fully_covered = {
     'static/js/reactions.js',
     'static/js/recent_senders.js',
     'static/js/rtl.js',
+    'static/js/schema.js',
     'static/js/scroll_util.js',
     'static/js/search_suggestion.js',
     # Removed because we're migrating code from uncovered other settings pages to here.
@@ -141,7 +142,7 @@ except OSError:
     print('Bad command: %s' % (command,))
     raise
 except subprocess.CalledProcessError as e:
-    print('Tests failed, please fix!')
+    print('\n** Tests failed, PLEASE FIX! **\n')
     sys.exit(1)
 
 def check_line_coverage(fn, line_coverage, line_mapping, log=True):

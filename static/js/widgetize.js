@@ -6,6 +6,7 @@ var widgets = {};
 
 widgets.poll = voting_widget;
 widgets.tictactoe = tictactoe_widget;
+widgets.zform = zform;
 
 exports.activate = function (in_opts) {
     var widget_type = in_opts.widget_type;

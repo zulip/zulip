@@ -1620,7 +1620,3 @@ run_test('handlebars_bug', () => {
     assert.equal(last_message_text, 'This is message two.');
 
 }());
-// By the end of this test, we should have compiled all our templates.  Ideally,
-// we will also have exercised them to some degree, but that's a little trickier
-// to enforce.
-global.make_sure_all_templates_have_been_compiled();
