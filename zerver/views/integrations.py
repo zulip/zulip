@@ -79,6 +79,8 @@ class MarkdownDirectoryView(ApiURLView):
         context["not_index_page"] = not path.endswith("/index.md")
         if self.template_name == "zerver/help/main.html":
             context["page_is_help_center"] = True
+        elif self.template_name == "zerver/widgets/main.html":
+            context["page_is_widgets_center"] = True
         else:
             context["page_is_api_center"] = True
         # An "article" might require the api_uri_context to be rendered

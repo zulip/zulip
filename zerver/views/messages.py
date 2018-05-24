@@ -1153,6 +1153,7 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                          topic_name: Optional[str]=REQ('subject',
                                                        converter=lambda x: x.strip(), default=None),
                          message_content: str=REQ('content'),
+                         widget_content: Optional[str]=REQ(default=None),
                          realm_str: Optional[str]=REQ('realm_str', default=None),
                          local_id: Optional[str]=REQ(default=None),
                          queue_id: Optional[str]=REQ(default=None),
@@ -1217,7 +1218,8 @@ def send_message_backend(request: HttpRequest, user_profile: UserProfile,
                              topic_name, message_content, forged=forged,
                              forged_timestamp = request.POST.get('time'),
                              forwarder_user_profile=user_profile, realm=realm,
-                             local_id=local_id, sender_queue_id=queue_id)
+                             local_id=local_id, sender_queue_id=queue_id,
+                             widget_content=widget_content)
     return json_success({"id": ret})
 
 def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Message) -> None:

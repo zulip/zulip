@@ -929,6 +929,7 @@ JS_SPECS = {
             'templates/compiled.js',
             'js/feature_flags.js',
             'js/loading.js',
+            'js/schema.js',
             'js/util.js',
             'js/keydown_util.js',
             'js/lightbox_canvas.js',
@@ -963,6 +964,7 @@ JS_SPECS = {
             'js/filter.js',
             'js/voting_widget.js',
             'js/tictactoe_widget.js',
+            'js/zform.js',
             'js/widgetize.js',
             'js/submessage.js',
             'js/fetch_status.js',
@@ -978,6 +980,7 @@ JS_SPECS = {
             'js/markdown.js',
             'js/local_message.js',
             'js/echo.js',
+            'js/zgram.js',
             'js/socket.js',
             'js/sent_messages.js',
             'js/compose_state.js',
@@ -1091,6 +1094,13 @@ JS_SPECS = {
         'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
         'output_filename': 'min/sockjs-0.3.4.min.js'
     },
+    'widget_docs': {
+        'source_filenames': [
+            'js/zform.js',
+        ],
+        'output_filename': 'min/widget_docs.js'
+    },
+
     # Even though we've moved the main KaTeX copy into Webpack, we
     # also need KaTeX to be runnable directly via Node (Called from
     # zerver/lib/tex.py which calls static/third/katex/cli.js.  Since

@@ -30,6 +30,16 @@ exports.get_message_events = function (message) {
 };
 
 exports.process_submessages = function (in_opts) {
+    // This happens in our rendering path, so we try to limit any
+    // damage that may be triggered by one rogue message.
+    try {
+        return exports.do_process_submessages(in_opts);
+    } catch (err) {
+        blueslip.error('in process_submessages: ' + err.message);
+    }
+};
+
+exports.do_process_submessages = function (in_opts) {
     var message_id = in_opts.message_id;
     var message = message_store.get(message_id);
 
