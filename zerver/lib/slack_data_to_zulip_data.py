@@ -829,6 +829,10 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
         realm, realm['zerver_realmemoji'], domain_name)
 
+    # Move zerver_reactions to realm.json file
+    realm['zerver_reaction'] = message_json['zerver_reaction']
+    del message_json['zerver_reaction']
+
     emoji_folder = os.path.join(output_dir, 'emoji')
     os.makedirs(emoji_folder, exist_ok=True)
     emoji_records = process_emojis(realm['zerver_realmemoji'], emoji_folder, emoji_url_map, threads)
