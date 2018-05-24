@@ -68,7 +68,7 @@
 }
 
 #stream_filters li ul.topic-list li {
-    padding: 0px 0px 0px 29px;
+    padding: 2px 0px 2px 29px;
 }
 
 #stream-filters-container {
@@ -208,7 +208,7 @@ li.active-sub-filter {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 3px 2px 2px 0px;
+    padding-right: 2px;
 }
 
 .topic-name {
@@ -383,6 +383,7 @@ li.expanded_private_message a {
 .topic-box {
     display: flex;
     justify-content: center;
+    padding-top: 1px;
     cursor: pointer;
 }
 
