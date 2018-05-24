@@ -157,7 +157,7 @@ how to debug.
 
 **Community.**
 If the tips above don't help, please visit
-[#production help](https://chat.zulip.org/#narrow/stream/production.20help)
+[#production help](https://chat.zulip.org/#narrow/stream/31-production-help)
 in the [Zulip development community server](../contributing/chat-zulip-org.html) for
 realtime help or email zulip-help@googlegroups.com with the full
 traceback, and we'll try to help you out!  Please provide details like

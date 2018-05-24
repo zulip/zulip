@@ -7,7 +7,7 @@ progress. If you speak a language other than English, your help with
 translating Zulip would be greatly appreciated!
 
 If you're interested in contributing translations to Zulip, please
-join [#translation](https://chat.zulip.org/#narrow/stream/translation)
+join [#translation](https://chat.zulip.org/#narrow/stream/58-translation)
 in the [Zulip development community server](../contributing/chat-zulip-org.html), and
 say hello. And please join the
 [Zulip project on Transifex](https://www.transifex.com/zulip/zulip/)
@@ -132,7 +132,7 @@ Some useful tips for your translating journey:
   HTML tags `<...>`).
 
 - When in doubt, ask for context in
-  [#translation](https://chat.zulip.org/#narrow/stream/translation) in
+  [#translation](https://chat.zulip.org/#narrow/stream/58-translation) in
   the [Zulip development community server](../contributing/chat-zulip-org.html).
 
 - If there are multiple possible translations for a term, search for it in
