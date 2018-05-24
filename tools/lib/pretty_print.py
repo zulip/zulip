@@ -194,7 +194,7 @@ def validate_indent_html(fn):
         temp_file.write(phtml)
         temp_file.close()
         print('Invalid Indentation detected in file: '
-              '%s\nDiff for the file against expected indented file:' % (fn))
+              '%s\nDiff for the file against expected indented file:' % (fn), flush=True)
         subprocess.call(['diff', fn, '/var/tmp/pretty_html.txt'], stderr=subprocess.STDOUT)
         return 0
     return 1
