@@ -223,7 +223,7 @@ html {
 
 .register-account .terms-of-service .input-group {
     width: 330px;
-    margin-bottom: 0 auto 10px;
+    margin: 0 auto 10px;
 }
 
 .register-account .terms-of-service .text-error {
@@ -401,11 +401,10 @@ html {
     font-size: 0.7em;
     font-weight: 600;
     text-align: left;
-    height: 0;
 
     position: relative;
     top: -4px;
-    left: 1px;
+    margin-left: 1px;
 }
 
 .new-style .input-box label.text-error {
@@ -689,16 +688,15 @@ button.login-google-button {
 
 #registration .input-box label {
     position: absolute;
-    margin: 0;
+    margin: 0 0 2px 0;
     top: 0;
-    left: 2px;
 }
 
 #registration .input-box label.static {
-    width: 100%;
+    width: 330px;
+    margin: 0 auto;
     text-align: left;
     position: static !important;
-    margin-left: 2px;
 }
 
 #registration [for="realm_in_root_domain"] {
@@ -716,6 +714,7 @@ button.login-google-button {
 }
 
 #registration #id_team_subdomain.subdomain {
+    display: inline-block;
     text-align: right;
     position: relative;
     padding-right: 10px;
@@ -725,20 +724,14 @@ button.login-google-button {
 
 #registration #id_team_subdomain.subdomain + .realm_subdomain_label {
     margin-top: 12px;
-    margin-left: 180px;
     display: inline-block;
+    position: relative;
 
     font-weight: normal;
-    font-size: inherit;
 }
 
 #registration #id_team_subdomain.subdomain {
     margin-top: 0px;
-}
-
-#registration #subdomain_section .inline-block {
-    width: 100%;
-    overflow-x: auto;
 }
 
 #registration #subdomain_section .or {
@@ -751,6 +744,17 @@ button.login-google-button {
 
 .static.org-url + #subdomain_section .or {
     display: none;
+}
+
+#org-url-input-box {
+    width: unset !important;
+}
+
+#subdomain-container {
+    max-width: calc(100vw - 60px);    
+    width: 100%;
+    white-space: nowrap;
+    overflow-x: auto;
 }
 
 #registration .input-box.full-width {

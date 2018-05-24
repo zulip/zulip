@@ -47,7 +47,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     </div>
                 </div>
 
-                <div class="input-box">
+                <div id="org-url-input-box" class="input-box">
                     <label class="static org-url">
                         {{ _('Organization URL') }}
                     </label>
@@ -63,7 +63,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                     <div id="subdomain_section" {% if root_domain_available and
                       not form.realm_subdomain.errors and not form.realm_subdomain.value() %}style="display: none;"{% endif %}>
                         <div class="or"><span>{{ _('OR') }}</span></div>
-                        <div class="inline-block relative">
+                        <div id="subdomain-container" class="relative">
                             <input id="id_team_subdomain"
                               class="{% if root_domain_landing_page %}required{% endif %} subdomain" type="text"
                               placeholder="acme"
