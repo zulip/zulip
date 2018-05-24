@@ -2116,6 +2116,12 @@ class EditMessageTest(ZulipTestCase):
         self.login(self.example_email("cordelia"))
         do_edit_message_assert_error(id_, 'F', "The time limit for editing this message has passed")
 
+        # anyone should be able to edit "no topic" indefinitely
+        message.subject = "(no topic)"
+        message.save()
+        self.login(self.example_email("cordelia"))
+        do_edit_message_assert_success(id_, 'D')
+
     def test_propagate_topic_forward(self) -> None:
         self.login(self.example_email("hamlet"))
         id1 = self.send_stream_message(self.example_email("hamlet"), "Scotland",
