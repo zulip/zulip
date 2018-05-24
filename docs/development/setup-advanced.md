@@ -40,28 +40,16 @@ ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing manually on Linux
 
+We recommend one of the other installation models, since we test those
+continuously.  But if you know what you're doing and really want to
+install everything manually, these instructions should work.
+
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
 * [CentOS 7 Core (experimental)](#on-centos-7-core-experimental)
 * [OpenBSD 5.8 (experimental)](#on-openbsd-5-8-experimental)
 * [Fedora/CentOS common steps](#common-to-fedora-centos-instructions)
 * [Steps for all systems](#all-systems)
-
-If you really want to install everything manually, the below instructions
-should work.
-
-Install the following non-Python dependencies:
- * libffi-dev — needed for some Python extensions
- * postgresql 9.1 or later — our database (client, server, headers)
- * memcached (and headers)
- * rabbitmq-server
- * libldap2-dev
- * python3-dev
- * python-dev
- * python-virtualenv
- * redis-server — rate limiting
- * tsearch-extras — better text search
- * libfreetype6-dev — needed before you pip install Pillow to properly generate emoji PNGs
 
 ### On Debian or Ubuntu systems:
 
