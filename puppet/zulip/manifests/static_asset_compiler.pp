@@ -7,8 +7,6 @@ class zulip::static_asset_compiler {
   $static_asset_compiler_packages = [
     # Needed for minify-js
     $closure_compiler_package,
-    'nodejs',
-    'nodejs-legacy',
     'yui-compressor',
     # Used by makemessages i18n
     'gettext',
