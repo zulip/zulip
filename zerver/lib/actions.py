@@ -1603,10 +1603,8 @@ def get_default_value_for_history_public_to_subscribers(
 ) -> bool:
     if invite_only:
         if history_public_to_subscribers is None:
-            # TODO: Once we have a UI for this feature, we'll remove
-            # settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS and set
-            # this to be False here
-            history_public_to_subscribers = settings.PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS
+            # A private stream's history is non-public by default
+            history_public_to_subscribers = False
     else:
         # If we later decide to support public streams without
         # history, we can remove this code path.
