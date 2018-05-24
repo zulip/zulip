@@ -77,7 +77,7 @@ tasks that are great for first-time contributors. Use
 [our first-time Zulip developer guide](../overview/contributing.html#your-first-codebase-contribution)
 to get your Zulip development environment set up and to find your first issue. If you have any
 trouble, please speak up in
-[#GSoC](https://chat.zulip.org/#narrow/stream/GSoC) on
+[#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
 [the Zulip development community server](../contributing/chat-zulip-org.html)
 (use your name as the topic).
 
@@ -166,7 +166,7 @@ We have more than a dozen Zulip contributors who are interested in
 mentoring projects.  We usually decide which contributors are
 mentoring which projects based in part on who is a good fit for the
 needs of each student as well as technical expertise.  You can reach
-us via [#GSoC](https://chat.zulip.org/#narrow/stream/GSoC) on
+us via [#GSoC](https://chat.zulip.org/#narrow/stream/14-GSoC) on
 [the Zulip development community server](../contributing/chat-zulip-org.html),
 (compose a new stream message with your name as the topic).
 
