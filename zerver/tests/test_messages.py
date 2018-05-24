@@ -2521,6 +2521,76 @@ class StarTests(ZulipTestCase):
         self.assertEqual(sent_message.message.content, content)
         self.assertFalse(sent_message.flags.starred)
 
+    def test_change_star_public_stream_security_for_guest_user(self) -> None:
+        # Guest user can't access(star) unsubscribed public stream messages
+        normal_user = self.example_user("hamlet")
+        stream_name = "public_stream"
+        self.make_stream(stream_name)
+        self.subscribe(normal_user, stream_name)
+        self.login(normal_user.email)
+
+        message_id = [
+            self.send_stream_message(normal_user.email, stream_name, "test 1")
+        ]
+
+        guest_user = self.example_user('polonius')
+        self.login(guest_user.email)
+        result = self.change_star(message_id)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Subscribed guest users can access public stream messages sent before they join
+        self.subscribe(guest_user, stream_name)
+        result = self.change_star(message_id)
+        self.assert_json_success(result)
+
+        # And messages sent after they join
+        self.login(normal_user.email)
+        message_id = [
+            self.send_stream_message(normal_user.email, stream_name, "test 2")
+        ]
+        self.login(guest_user.email)
+        result = self.change_star(message_id)
+        self.assert_json_success(result)
+
+    def test_change_star_private_stream_security_for_guest_user(self) -> None:
+        # Guest users can't access(star) unsubscribed private stream messages
+        normal_user = self.example_user("hamlet")
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True)
+        self.subscribe(normal_user, stream_name)
+        self.login(normal_user.email)
+
+        message_id = [
+            self.send_stream_message(normal_user.email, stream_name, "test 1")
+        ]
+
+        guest_user = self.example_user('polonius')
+        self.login(guest_user.email)
+        result = self.change_star(message_id)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Guest user can't access messages of subscribed private streams if
+        # history is not public to subscribers
+        self.subscribe(guest_user, stream_name)
+        result = self.change_star(message_id)
+        self.assert_json_error(result, 'Invalid message(s)')
+
+        # Guest user can access messages of subscribed private streams if
+        # history is public to subscribers
+        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+        result = self.change_star(message_id)
+        self.assert_json_success(result)
+
+        # With history not public to subscribers, they can still see new messages
+        do_change_stream_invite_only(stream, True, history_public_to_subscribers=False)
+        self.login(normal_user.email)
+        message_id = [
+            self.send_stream_message(normal_user.email, stream_name, "test 2")
+        ]
+        self.login(guest_user.email)
+        result = self.change_star(message_id)
+        self.assert_json_success(result)
+
 class AttachmentTest(ZulipTestCase):
     def test_basics(self) -> None:
         self.assertFalse(Message.content_has_attachment('whatever'))
