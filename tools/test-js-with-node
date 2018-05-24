@@ -141,7 +141,7 @@ except OSError:
     print('Bad command: %s' % (command,))
     raise
 except subprocess.CalledProcessError as e:
-    print('Tests failed, please fix!')
+    print('\n** Tests failed, PLEASE FIX! **\n')
     sys.exit(1)
 
 def check_line_coverage(fn, line_coverage, line_mapping, log=True):
