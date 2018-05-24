@@ -30,7 +30,7 @@ want to or can't use Vagrant, Zulip supports a wide range of ways to install
 the Zulip development environment on **macOS and Linux (Ubuntu
 recommended)**:
 
-* On **Ubuntu** 16.04 Xenial and 14.04 Trusty and **Debian** 9
+* On **Ubuntu** 18.04 Bionic, 16.04 Xenial and 14.04 Trusty and **Debian** 9
   Stretch, you can easily
   **[install without using Vagrant][install-direct]**.
 * On **other Linux** distributions, you'll need to follow slightly different
