@@ -192,4 +192,4 @@ stripe==1.80.0
 django-sendfile==0.3.11
 
 # For checking whether email of the user is from a disposable email provider.
-disposable-email-domains==0.0.26
+disposable-email-domains==0.0.28
