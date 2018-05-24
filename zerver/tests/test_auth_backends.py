@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.core import mail
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpRequest
 from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.contrib.auth import authenticate
@@ -68,6 +68,8 @@ import urllib
 from http.cookies import SimpleCookie
 import ujson
 from zerver.lib.test_helpers import MockLDAP, load_subdomain_token
+from zerver.social_django.strategy import ZulipStrategy
+from zerver.social_django.github import get_user as get_user_pipeline
 
 class AuthBackendTest(ZulipTestCase):
     def get_username(self, email_to_username: Optional[Callable[[str], str]]=None) -> str:
@@ -2709,3 +2711,91 @@ class LDAPBackendTest(ZulipTestCase):
             self.assert_in_response('You are trying to login using LDAP '
                                     'without creating an',
                                     response)
+
+class ZulipStrategyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.strategy = ZulipStrategy(storage=BaseDjangoStorage())
+        self.return_data = {}  # type: Dict[str, Any]
+        self.details = {}  # type: Dict[str, Any]
+        self.strategy.data = {'return_data': self.return_data,
+                              'details': self.details}
+        self.user_profile = self.example_user('hamlet')
+
+    def test_invalid_realm(self) -> None:
+        self.return_data['invalid_realm'] = True
+        response = self.strategy.complete(None)
+        self.assertEqual(response.status_code, 302)
+        url = reverse('django.contrib.auth.views.login')
+        url = url + "?subdomain=1"
+        self.assertEqual(response.url, url)
+
+    def test_mobile_flow_otp_invalid_organization(self) -> None:
+        self.details['fullname'] = self.user_profile.full_name
+        self.details['email'] = self.user_profile.email
+        self.return_data['invalid_subdomain'] = True
+        self.strategy.session_set('mobile_flow_otp', True)
+        self.strategy.data['realm'] = get_realm('zulip')
+        request = self.strategy.request = HttpRequest()
+        request.get_host = lambda: 'one'
+        request.session = self.client.session
+        response = self.strategy.complete(None)
+        self.assert_in_response('The organization you are trying '
+                                'to join '
+                                'using hamlet@zulip.com does not '
+                                'exist', response)
+
+    def test_log_into_subdomain(self) -> None:
+        self.details['fullname'] = self.user_profile.full_name
+        self.details['email'] = self.user_profile.email
+        self.return_data['invalid_subdomain'] = True
+        self.strategy.session_set('is_signup', '1')
+        self.strategy.data['realm'] = get_realm('zulip')
+        response = self.strategy.complete(None)
+        self.assertEqual(response.status_code, 302)
+        data = {'name': self.user_profile.full_name,
+                'email': self.user_profile.email,
+                'subdomain': 'zulip',
+                'is_signup': True,
+                'next': None}
+        token = signing.dumps(data, salt=_subdomain_token_salt)
+        url = reverse('zerver.views.auth.log_into_subdomain', args=[token])
+        self.assertIn(url, response.url)
+
+class SocialDjangoPipelineTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.details = {}  # type: Dict[str, Any]
+        self.response = HttpResponse()
+        self.strategy = ZulipStrategy(storage=BaseDjangoStorage())
+        self.strategy.data = {}
+        self.backend = GitHubAuthBackend()
+        self.backend.strategy = self.strategy
+
+    def test_get_user_with_invalid_email(self) -> None:
+        user = get_user_pipeline(self.backend, self.details, self.response)
+        self.assertIs(user, None)
+        self.assertTrue(self.strategy.data['return_data']['invalid_email'])
+
+    def test_get_user_with_auth_backend_disabled(self) -> None:
+        self.details['email'] = self.user_profile.email
+        user = get_user_pipeline(self.backend, self.details, self.response)
+        self.assertIs(user, None)
+        self.assertTrue(self.strategy.data['return_data']['invalid_realm'])
+
+    def test_get_user_with_invalid_realm(self) -> None:
+        self.details['email'] = self.user_profile.email
+        self.strategy.session_set('subdomain', 'zulip')
+        with mock.patch('zerver.social_django.github.auth_enabled_helper',
+                        return_value=False):
+            user = get_user_pipeline(self.backend, self.details, self.response)
+
+        self.assertIs(user, None)
+        return_data = self.strategy.data['return_data']
+        self.assertTrue(return_data['auth_backend_disabled'])
+
+    def test_get_user(self) -> None:
+        self.details['email'] = self.user_profile.email
+        self.strategy.session_set('subdomain', 'zulip')
+        user = get_user_pipeline(self.backend, self.details, self.response)
+        self.assertIsNot(user, None)
+        self.assertEqual(user.email, self.user_profile.email)
