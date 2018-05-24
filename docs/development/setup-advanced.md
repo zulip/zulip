@@ -67,8 +67,10 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev \
-    python-dev python-virtualenv hunspell-en-us git yui-compressor \
-    puppet gettext postgresql
+    python-dev python-virtualenv hunspell-en-us git \
+    yui-compressor puppet gettext postgresql \
+    libssl-dev libxml2-dev libxslt1-dev libjpeg8-dev zlib1g-dev \
+    libcurl4-openssl-dev
 
 # If using Ubuntu, install PGroonga from its PPA
 sudo add-apt-repository -ys ppa:groonga/ppa
