@@ -29,32 +29,7 @@
                     {{/tr}}
                 </div>
 
-                <ul class="grey-box">
-                    <li>
-                        <label class="radio">
-                            <input type="radio" name="privacy" value="public" checked />
-                            {{#tr this}}
-                            <b>Public:</b> anyone can join; anyone can view complete message history without joining
-                            {{/tr}}
-                        </label>
-                    </li>
-                    <li>
-                        <label class="radio">
-                            <input type="radio" name="privacy" value="invite-only" />
-                            {{#tr this}}
-                            <b>Private:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users
-                            {{/tr}}
-                        </label>
-                    </li>
-                    <li>
-                        <label class="radio">
-                            <input type="radio" name="privacy" value="invite-only-public-history" />
-                            {{#tr this}}
-                            <b>Private with history:</b> must be invited by a member; new members can view complete message history; hidden from non-administrator users
-                            {{/tr}}
-                        </label>
-                    </li>
-                </ul>
+                {{ partial "stream_types" "is_public" true }}
 
                 <div id="announce-new-stream">
                     <label class="checkbox">
