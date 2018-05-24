@@ -148,7 +148,7 @@ django-pipeline==1.6.14
 django-webpack-loader==0.6.0
 
 # Needed for iOS push notifications
-apns2==0.3.0
+apns2==0.4.1
 
 python-twitter==3.4.1
 
