@@ -146,45 +146,55 @@ ul.remind_me_popover .remind_icon {
 }
 
 .user-profile-modal-avatar {
-    height: 90px;
-    width: 90px;
+    display: inline-block;
+    height: 180px;
+    width: 180px;
     background-size: cover;
     background-position: center;
+    border: 1px solid #f2f2f2;
     border-radius: 5px;
+    margin-right: 10px;
 }
 
-.user-profile-modal-name-section {
+.user-profile-modal-name-email-section {
+    display: inline-block;
+    vertical-align: top;
+}
+
+.user-profile-modal-name {
     font-size: 26px;
     font-weight: 700;
-    position: relative;
-    top: -75px;
-    left: 100px;
-    max-width: 70%;
+    margin-bottom: 5px;
 }
 
-.user-profile-modal-email-section {
+.user-profile-modal-email {
     font-size: 15px;
     font-weight: 500;
-    position: relative;
-    top: -70px;
-    left: 100px;
-    max-width: 80%;
+}
+
+.user-profile-modal-hr {
+    border: 1px solid #ededed;
+    margin: 5px 0;
+}
+
+.user-profile-key-value-section {
+    margin: 8px 0;
+}
+
+.user-profile-modal-content {
+    margin-top: 10px;
 }
 
 .user-profile-modal-field-name {
-    margin-bottom: -2px;
-    font-weight: bold;
-    max-width: 95%;
+    color: #8b8b8b;
 }
 
 .user-profile-modal-field-value {
     font-size: 15px;
-    margin-bottom: 5px;
-    max-width: 95%;
 }
 
-#user-profile-modal-hr {
-    margin-top: -15px;
+#user-profile-modal {
+    border-radius: 4px;
 }
 
 #user-profile-modal-body {
@@ -192,11 +202,12 @@ ul.remind_me_popover .remind_icon {
     padding-top: 10px;
     margin-bottom: 10px;
     margin-top: 10px;
+    background: #f9f9f9;
 }
 
 .user-profile-modal-edit-button {
-    color: black;
     font-size: 18px;
+    margin-left: 10px;
 }
 
 .message-info-popover {
