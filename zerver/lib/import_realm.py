@@ -539,6 +539,19 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     # Import zerver_message and zerver_usermessage
     import_message_data(import_dir)
 
+    # As the export of Reactions is not supported, Zulip exported
+    # data would not contain this field.
+    # However this is supported in slack importer script
+    if 'zerver_reaction' in data:
+        re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
+        re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
+        for reaction in data['zerver_reaction']:
+            if reaction['reaction_type'] == Reaction.REALM_EMOJI:
+                re_map_foreign_keys(data, 'zerver_reaction', 'emoji_code',
+                                    related_table="realmemoji", id_field=True)
+        update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
+        bulk_import_model(data, Reaction, 'zerver_reaction')
+
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
     fn = os.path.join(import_dir, "attachment.json")
@@ -614,20 +627,6 @@ def import_message_data(import_dir: Path) -> None:
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         update_model_ids(UserMessage, data, 'zerver_usermessage', 'usermessage')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
-
-        # As the export of Reactions is not supported, Zulip exported
-        # data would not contain this field.
-        # However this is supported in slack importer script
-        if 'zerver_reaction' in data:
-            re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
-            re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
-            for reaction in data['zerver_reaction']:
-                if reaction['reaction_type'] == Reaction.REALM_EMOJI:
-                    re_map_foreign_keys(data, 'zerver_reaction', 'emoji_code',
-                                        related_table="realmemoji", id_field=True)
-            update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
-            bulk_import_model(data, Reaction, 'zerver_reaction')
-
         dump_file_id += 1
 
 def import_attachments(data: TableData) -> None:
