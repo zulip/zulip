@@ -1285,6 +1285,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
         return json_error(_("Your organization has turned off message editing"))
 
     message, ignored_user_message = access_message(user_profile, message_id)
+    is_no_topic_msg = (message.topic_name() == "(no topic)")
 
     # You only have permission to edit a message if:
     # you change this value also change those two parameters in message_edit.js.
@@ -1294,7 +1295,7 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # 4. This is a topic-only edit and your realm allows users to edit topics.
     if message.sender == user_profile:
         pass
-    elif (content is None) and ((message.topic_name() == "(no topic)") or
+    elif (content is None) and (is_no_topic_msg or
                                 user_profile.is_realm_admin or
                                 user_profile.realm.allow_community_topic_editing):
         pass
@@ -1316,7 +1317,8 @@ def update_message_backend(request: HttpRequest, user_profile: UserMessage,
     # edit it and that it has not been too long. If this is not the user who
     # sent the message, they are not the admin, and the time limit for editing
     # topics is passed, raise an error.
-    if content is None and message.sender != user_profile and not user_profile.is_realm_admin:
+    if content is None and message.sender != user_profile and not user_profile.is_realm_admin and \
+            not is_no_topic_msg:
         deadline_seconds = Realm.DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS + edit_limit_buffer
         if (timezone_now() - message.pub_date) > datetime.timedelta(seconds=deadline_seconds):
             raise JsonableError(_("The time limit for editing this message has passed"))
