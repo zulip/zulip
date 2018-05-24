@@ -95,7 +95,7 @@ python-gcm==0.4
 python-ldap==3.0.0        # via django-auth-ldap
 python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
-pytz==2018.3
+pytz==2018.4
 qrcode==4.0.4             # via django-two-factor-auth
 redis==2.10.6
 regex==2017.11.9
