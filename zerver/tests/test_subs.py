@@ -185,30 +185,6 @@ class TestCreateStreams(ZulipTestCase):
             if stream.name == 'publictrywithouthistory':
                 self.assertTrue(stream.history_public_to_subscribers)
 
-    @override_settings(PRIVATE_STREAM_HISTORY_FOR_SUBSCRIBERS=True)
-    def test_history_public_to_subscribers_on_stream_creation_with_setting(self) -> None:
-        realm = get_realm('zulip')
-
-        stream, created = create_stream_if_needed(realm, "private_stream", invite_only=True)
-        self.assertTrue(created)
-        self.assertTrue(stream.invite_only)
-        self.assertTrue(stream.history_public_to_subscribers)
-
-        stream, created = create_stream_if_needed(realm, "history_stream",
-                                                  invite_only=True,
-                                                  history_public_to_subscribers=False)
-        self.assertTrue(created)
-        self.assertTrue(stream.invite_only)
-        self.assertFalse(stream.history_public_to_subscribers)
-
-        # You can't make a public stream limited in this way
-        stream, created = create_stream_if_needed(realm, "public_history_stream",
-                                                  invite_only=False,
-                                                  history_public_to_subscribers=False)
-        self.assertTrue(created)
-        self.assertFalse(stream.invite_only)
-        self.assertTrue(stream.history_public_to_subscribers)
-
     def test_history_public_to_subscribers_zephyr_realm(self) -> None:
         realm = get_realm('zephyr')
 
