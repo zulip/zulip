@@ -48,7 +48,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                 raise StripeError(
                     _("Something went wrong. Please try again or email us at %s.")
                     % (settings.ZULIP_ADMINISTRATOR,))
-        except Exception as e:
+        except Exception:
             billing_logger.exception("Uncaught error in Stripe integration")
             raise
     return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927

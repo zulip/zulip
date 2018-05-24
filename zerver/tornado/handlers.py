@@ -294,7 +294,7 @@ class AsyncDjangoHandlerBase(tornado.web.RequestHandler, base.BaseHandler):  # n
             except SystemExit:
                 # See https://code.djangoproject.com/ticket/4701
                 raise
-            except Exception as e:
+            except Exception:
                 exc_info = sys.exc_info()
                 signals.got_request_exception.send(sender=self.__class__, request=request)
                 return self.handle_uncaught_exception(request, resolver, exc_info)

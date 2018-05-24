@@ -205,7 +205,7 @@ def check_url(var_name: str, val: object) -> Optional[str]:
     try:
         validate(val)
         return None
-    except ValidationError as err:
+    except ValidationError:
         return _('%s is not a URL') % (var_name,)
 
 def validate_field_data(field_data: ProfileFieldData) -> Optional[str]:

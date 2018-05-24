@@ -29,7 +29,7 @@ isort==4.3.4
 pycodestyle==2.4.0
 
 # Needed to run pyflakes linter
-pyflakes==1.6.0
+pyflakes==2.0.0
 
 # Needed to run tests in parallel
 tblib==1.3.2

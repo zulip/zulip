@@ -118,7 +118,7 @@ pycodestyle==2.4.0
 pycparser==2.18           # via cffi
 pycrypto==2.6.1
 pydispatcher==2.0.5       # via scrapy
-pyflakes==1.6.0
+pyflakes==2.0.0
 pygments==2.2.0
 pyjwt==1.6.1
 pyldap==3.0.0.post1       # via fakeldap

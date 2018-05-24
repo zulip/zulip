@@ -77,7 +77,7 @@ class TestQueueImplementation(ZulipTestCase):
 
         try:
             queue_client.start_consuming()
-        except Exception as e:
+        except Exception:
             queue_client.register_json_consumer("test_suite", collect)
             queue_client.start_consuming()
 

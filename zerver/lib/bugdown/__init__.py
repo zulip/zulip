@@ -297,7 +297,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             logging.error('Unable to load twitter api, you may have the wrong '
                           'library installed, see https://github.com/zulip/zulip/issues/86')
             return None
-        except TimeoutExpired as e:
+        except TimeoutExpired:
             # We'd like to try again later and not cache the bad result,
             # so we need to re-raise the exception (just as though
             # we were being rate-limited)

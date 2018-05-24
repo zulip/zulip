@@ -141,7 +141,7 @@ try:
 except OSError:
     print('Bad command: %s' % (command,))
     raise
-except subprocess.CalledProcessError as e:
+except subprocess.CalledProcessError:
     print('\n** Tests failed, PLEASE FIX! **\n')
     sys.exit(1)
 

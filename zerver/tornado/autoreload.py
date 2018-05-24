@@ -187,7 +187,7 @@ def _check_file(modify_times, module, path):
 
     try:
         importlib.reload(module)
-    except Exception as e:
+    except Exception:
         gen_log.error("Error importing %s, not reloading" % (path,))
         traceback.print_exc()
         return False
