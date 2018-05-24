@@ -53,7 +53,6 @@ should work.
 Install the following non-Python dependencies:
  * libffi-dev — needed for some Python extensions
  * postgresql 9.1 or later — our database (client, server, headers)
- * nodejs 0.10 (and yarn)
  * memcached (and headers)
  * rabbitmq-server
  * libldap2-dev
@@ -80,8 +79,8 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev \
-    python-dev python-virtualenv hunspell-en-us nodejs \
-    nodejs-legacy git yui-compressor puppet gettext postgresql
+    python-dev python-virtualenv hunspell-en-us git yui-compressor \
+    puppet gettext postgresql
 
 # If using Ubuntu, install PGroonga from its PPA
 sudo add-apt-repository -ys ppa:groonga/ppa
@@ -156,7 +155,7 @@ sudo apt-get update
 sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
-    hunspell-en-us nodejs nodejs-legacy git yui-compressor \
+    hunspell-en-us git yui-compressor \
     puppet gettext tsearch-extras
 ```
 
@@ -179,7 +178,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
     postgresql-devel postgresql libmemcached-devel freetype-devel \
-    nodejs yuicompressor closure-compiler gettext
+    yuicompressor closure-compiler gettext
 ```
 
 Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
@@ -221,7 +220,7 @@ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noa
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
     libmemcached-devel wget python-pip openssl-devel freetype-devel \
-    libjpeg-turbo-devel zlib-devel nodejs yuicompressor \
+    libjpeg-turbo-devel zlib-devel yuicompressor \
     closure-compiler gettext
 
 # We need these packages to compile tsearch-extras
@@ -262,7 +261,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 
 ```
 doas pkg_add sudo bash gcc postgresql-server redis rabbitmq \
-    memcached node libmemcached py-Pillow py-cryptography py-cffi
+    memcached libmemcached py-Pillow py-cryptography py-cffi
 
 # Get tsearch_extras and build it (using a modified version which
 # aliases int4 on OpenBSD):
