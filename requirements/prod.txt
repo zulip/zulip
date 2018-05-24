@@ -55,7 +55,7 @@ hyperframe==3.2.0         # via h2, hyper
 idna==2.6                 # via cryptography, requests
 ijson==2.3
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.3.1
+ipython==6.4.0
 jedi==0.11.0              # via ipython
 jinja2==2.10
 lxml==4.2.1
