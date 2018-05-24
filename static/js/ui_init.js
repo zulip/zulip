@@ -125,6 +125,12 @@ function initialize_kitchen_sink_stuff() {
         $("body").addClass("high-contrast");
     }
 
+    if (!page_params.dense_mode) {
+        $("body").addClass("less_dense_mode");
+    } else {
+        $("body").addClass("more_dense_mode");
+    }
+
     $("#main_div").on("mouseover", ".message_row", function () {
         var row = $(this).closest(".message_row");
         message_hover(row);

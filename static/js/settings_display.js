@@ -70,6 +70,13 @@ exports.set_up = function () {
         change_display_setting(data, '#display-settings-status');
     });
 
+    $("#dense_mode").change(function () {
+        var dense_mode = this.checked;
+        var data = {};
+        data.dense_mode = JSON.stringify(dense_mode);
+        change_display_setting(data, '#display-settings-status');
+    });
+
     $("#night_mode").change(function () {
         exports.set_night_mode(this.checked);
     });

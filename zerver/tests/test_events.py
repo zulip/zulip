@@ -1483,7 +1483,6 @@ class EventsRegisterTest(ZulipTestCase):
     def do_set_user_display_settings_test(self, setting_name: str) -> None:
         """Test updating each setting in UserProfile.property_types dict."""
 
-        bool_change = [True, False, True]  # type: List[bool]
         test_changes = dict(
             emojiset = [u'apple', u'twitter'],
             default_language = [u'es', u'de', u'en'],
@@ -1503,7 +1502,10 @@ class EventsRegisterTest(ZulipTestCase):
             num_events = 2
         values = test_changes.get(setting_name)
         if property_type is bool:
-            values = bool_change
+            if getattr(self.user_profile, setting_name) is False:
+                values = [True, False, True]
+            else:
+                values = [False, True, False]
         if values is None:
             raise AssertionError('No test created for %s' % (setting_name))
 

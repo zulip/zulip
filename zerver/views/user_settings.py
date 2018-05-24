@@ -111,6 +111,7 @@ def json_change_settings(request: HttpRequest, user_profile: UserProfile,
 def update_display_settings_backend(
         request: HttpRequest, user_profile: UserProfile,
         twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
+        dense_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         high_contrast_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         night_mode: Optional[bool]=REQ(validator=check_bool, default=None),
         translate_emoticons: Optional[bool]=REQ(validator=check_bool, default=None),

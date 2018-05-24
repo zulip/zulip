@@ -320,6 +320,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     case 'update_display_settings':
         var user_display_settings = [
             'default_language',
+            'dense_mode',
             'emojiset',
             'high_contrast_mode',
             'night_mode',
@@ -344,6 +345,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         if (event.setting_name === 'high_contrast_mode') {
             $("body").toggleClass("high-contrast");
+        }
+        if (event.setting_name === 'dense_mode') {
+            $("body").toggleClass("less_dense_mode");
+            $("body").toggleClass("more_dense_mode");
         }
         if (event.setting_name === 'night_mode') {
             $("body").fadeOut(300);

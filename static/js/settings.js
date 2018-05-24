@@ -84,9 +84,10 @@ function setup_settings_label() {
         realm_name_in_notifications: i18n.t("Include organization name in subject of missed message emails"),
 
         // display settings
-        night_mode: i18n.t("Night mode"),
+        dense_mode: i18n.t("Dense mode"),
         high_contrast_mode: i18n.t("High contrast mode"),
         left_side_userlist: i18n.t("User list on left sidebar in narrow windows"),
+        night_mode: i18n.t("Night mode"),
         twenty_four_hour_time: i18n.t("24-hour time (17:00 instead of 5:00 PM)"),
         translate_emoticons: i18n.t("Translate emoticons (convert <code>:)</code> to 😃 in messages)"),
     };

@@ -663,6 +663,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     high_contrast_mode = models.BooleanField(default=False)  # type: bool
     night_mode = models.BooleanField(default=False)  # type: bool
     translate_emoticons = models.BooleanField(default=False)  # type: bool
+    dense_mode = models.BooleanField(default=True)  # type: bool
 
     # Hours to wait before sending another email to a user
     EMAIL_REMINDER_WAITPERIOD = 24
@@ -719,6 +720,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Define the types of the various automatically managed properties
     property_types = dict(
         default_language=str,
+        dense_mode=bool,
         emojiset=str,
         left_side_userlist=bool,
         timezone=str,

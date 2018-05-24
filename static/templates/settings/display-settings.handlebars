@@ -23,6 +23,13 @@
             <h3 class="inline-block">{{t "Display settings" }}</h3>
             <div class="alert-notification" id="display-settings-status"></div>
 
+            {{#if page_params.development_environment}}
+            {{partial "settings_checkbox"
+              "setting_name" "dense_mode"
+              "is_checked" page_params.dense_mode
+              "label" settings_label.dense_mode}}
+            {{/if}}
+
             {{partial "settings_checkbox"
               "setting_name" "night_mode"
               "is_checked" page_params.night_mode
