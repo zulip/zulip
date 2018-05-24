@@ -53,6 +53,10 @@
     "app-styles": [
         "./static/third/bootstrap-notify/css/bootstrap-notify.css",
         "./static/third/spectrum/spectrum.css",
+        "./node_modules/@fortawesome/fontawesome-free-webfonts/css/fontawesome.css",
+        "./node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-solid.css",
+        "./node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-regular.css",
+        "./node_modules/@fortawesome/fontawesome-free-webfonts/css/fa-brands.css",
         "./node_modules/font-awesome/css/font-awesome.css",
         "./static/third/fontawesome-legacy.css",
         "./static/generated/icons/style.css",

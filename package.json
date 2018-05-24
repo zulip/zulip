@@ -5,6 +5,7 @@
   "description": "",
   "main": "",
   "dependencies": {
+    "@fortawesome/fontawesome-free-webfonts": "1.0.9",
     "@types/node": "8.0.34",
     "@types/webpack": "4.4.0",
     "blueimp-md5": "2.10.0",
