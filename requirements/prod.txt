@@ -111,7 +111,7 @@ sockjs-tornado==1.0.3
 sourcemap==0.2.1
 sqlalchemy==1.2.7
 statsd==3.2.1             # via django-statsd-mozilla
-stripe==1.80.0
+stripe==1.82.1
 tornado==4.5.3
 traitlets==4.3.2          # via ipython
 twilio==6.14.0

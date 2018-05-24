@@ -162,7 +162,7 @@ sphinx==1.7.4
 sphinxcontrib-websupport==1.0.1  # via sphinx
 sqlalchemy==1.2.7
 statsd==3.2.1             # via django-statsd-mozilla
-stripe==1.80.0
+stripe==1.82.1
 tblib==1.3.2
 tornado==4.5.3
 traitlets==4.3.2          # via ipython

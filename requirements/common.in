@@ -186,7 +186,7 @@ django-two-factor-auth==1.7.0
 twilio==6.14.0
 
 # Needed for processing payments (in zilencer)
-stripe==1.80.0
+stripe==1.82.1
 
 # Needed for serving uploaded files from nginx but perform auth checks in django.
 django-sendfile==0.3.11
