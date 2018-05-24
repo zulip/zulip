@@ -89,7 +89,7 @@ on.
   [bots](https://github.com/zulip/python-zulip-api/issues?q=is%3Aopen+is%3Aissue)
   development, check the respective links for open issues, or post in
   [#mobile](https://chat.zulip.org/#narrow/stream/mobile),
-  [#electron](https://chat.zulip.org/#narrow/stream/electron), or
+  [#desktop](https://chat.zulip.org/#narrow/stream/desktop), or
   [#bots](https://chat.zulip.org/#narrow/stream/bots).
 * For the main server and web repository, start by looking through issues
   with the label
@@ -188,7 +188,7 @@ If you have a feature request or are not yet sure what the underlying bug
 is, the best place to post issues is
 [#issues](https://chat.zulip.org/#narrow/stream/issues) (or
 [#mobile](https://chat.zulip.org/#narrow/stream/mobile) or
-[#electron](https://chat.zulip.org/#narrow/stream/electron)) on the
+[#desktop](https://chat.zulip.org/#narrow/stream/desktop)) on the
 [Zulip community server](https://zulip.readthedocs.io/en/latest/contributing/chat-zulip-org.html).
 This allows us to interactively figure out what is going on, let you know if
 a similar issue has already been opened, and collect any other information
