@@ -963,7 +963,14 @@ button.login-google-button {
     top: 5px;
 }
 
-#source_realm_radio {
+#source_realm_select_section {
     position: relative;
-    top: 30px;
+    top: 40px;
+    font-size: 22px;
+}
+
+#source_realm_select {
+    font-size: 1.2rem;
+    height: 45px;
+    width: 325px;
 }
