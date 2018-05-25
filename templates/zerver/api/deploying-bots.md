@@ -37,7 +37,7 @@ Install the `zulip_botserver` PyPI package using `pip`:
 pip install zulip_botserver
 ```
 
-### Running bots using the Zulip Botserver
+### Running a bot using the Zulip Botserver
 
 
 1. Construct the URL for your bot, which will be of the form:
@@ -58,37 +58,55 @@ pip install zulip_botserver
       the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-1. Download the `flaskbotrc` from the `your-bots` settings page.
+1. Download the `zuliprc` file for your bot from the *Active Bots*
+   panel, using the download button.
+
+1. Run the bot server, where `helloworld` is the name of the bot you
+   want to run:
+   `zulip-bot-server --config-file <path_to_zuliprc> --bot-name=helloworld`
+
+    You can specify the port number and various other options; run
+    `zulip-bot-server --help` to see how to do this.
+
+1.  Congrats, everything is set up! Test your botserver like you would
+    test a normal bot.
+
+### Running multiple bots using the Zulip botserver
+
+The Zulip botserver also supports running multiple bots from a single
+botserver process.  You can do this with the following procedure.
+
+1. Download the `flaskbotrc` from the `your-bots` settings page, using
+   the "Download config of all active outgoing webhook bots in Zulip
+   Botserver format." option at the top.
 
 1. Open the `flaskbotrc`. It should contain one or more sections that look like this:
-   ```
-   []
-   email=foo-bot@hostname
-   key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-   site=http://hostname
-   ```
+```
+[]
+email=foo-bot@hostname
+key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+site=http://hostname
+```
    Each section contains the configuration for an outgoing webhook bot. For each
    bot, enter the name of the bot you want to run in the square brackets `[]`.
    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
    new section would look like this:
-   ```
-   [helloworld]
-   email=foo-bot@hostname
-   key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-   site=http://hostname
-   ```
 
-1.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
+```
+[helloworld]
+email=foo-bot@hostname
+key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+site=http://hostname
+```
+
+3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:
 
     ```
-    zulip-bot-server  --config-file <path_to_flaskbotrc> --hostname <address> --port <port>
+    zulip-bot-server  --config-file <path_to_flaskbotrc>
     ```
 
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
-
-1.  Congrats, everything is set up! Test your botserver like you would
-    test a normal bot.
 
 ### Running Zulip Botserver with supervisord
 
