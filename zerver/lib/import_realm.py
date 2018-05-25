@@ -8,6 +8,7 @@ import subprocess
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from django.conf import settings
+from django.core.exceptions import MultipleObjectsReturned
 from django.db import connection
 from django.utils.timezone import utc as timezone_utc
 from typing import Any, Dict, List, Optional, Set, Tuple, \
@@ -435,6 +436,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
 
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
+    realm_id = realm.id
 
     re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
     re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
@@ -551,10 +553,30 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
 
     logging.info("Importing attachment data from %s" % (fn,))
     with open(fn) as f:
-        data = ujson.load(f)
+        attachment_data = ujson.load(f)
 
-    import_attachments(data)
+    import_attachments(attachment_data)
+    check_system_bots(data, 'zerver_userprofile', realm_id)
     return realm
+
+def check_system_bots(data: TableData, table: TableName, realm_id: int) -> None:
+    """
+    Don't allow any existing system bot to be imported twice
+    """
+    internal_bots = [bot['email_template'] % (settings.INTERNAL_BOT_DOMAIN,)
+                     for bot in settings.INTERNAL_BOTS]
+    bots = [settings.FEEDBACK_BOT, settings.ERROR_BOT, settings.NAGIOS_STAGING_SEND_BOT,
+            settings.NAGIOS_STAGING_RECEIVE_BOT]
+    all_bots = bots + internal_bots
+    for user in data[table]:
+        if user['email'] in all_bots:
+            try:
+                user = UserProfile.objects.get(email__iexact=user['email'])
+            except MultipleObjectsReturned:
+                # as multiple system bots exist, the one created by the import
+                # must be deleted
+                user = UserProfile.objects.get(email__iexact=user['email'],
+                                               realm=realm_id).delete()
 
 # create_users and do_import_system_bots differ from their equivalent in
 # zerver/management/commands/initialize_voyager_db.py because here we check if the bots
