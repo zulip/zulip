@@ -916,17 +916,16 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         record['user_profile_email'] = user_profile.email
 
         if processing_avatars:
-            dirname = output_dir
-            filename = os.path.join(dirname, key.name)
+            filename = os.path.join(output_dir, key.name)
             record['path'] = key.name
         else:
             fields = key.name.split('/')
             if len(fields) != 3:
                 raise AssertionError("Suspicious key with invalid format %s" % (key.name))
-            dirname = os.path.join(output_dir, fields[1])
-            filename = os.path.join(dirname, fields[2])
+            filename = os.path.join(output_dir, fields[1], fields[2])
             record['path'] = os.path.join(fields[1], fields[2])
 
+        dirname = os.path.dirname(filename)
         if not os.path.exists(dirname):
             os.makedirs(dirname)
         key.get_contents_to_filename(filename)
