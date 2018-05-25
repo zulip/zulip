@@ -9,6 +9,7 @@ Subsystems Documentation
    settings
    events-system
    queuing
+   outgoing-webhooks
    custom-apps
    pointer
    markdown
