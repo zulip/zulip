@@ -99,7 +99,7 @@ if not options.force:
         sys.exit(1)
 
 os.environ['NODE_PATH'] = 'static'
-os.environ['TZ'] = 'UTC +5:30'
+os.environ['TZ'] = 'UTC'
 
 INDEX_JS = 'frontend_tests/zjsunit/index.js'
 
