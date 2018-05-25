@@ -50,7 +50,7 @@ exports.save_pre_narrow_offset_for_reload = function () {
             blueslip.debug("narrow.activate missing selected row", {
                 selected_id: current_msg_list.selected_id(),
                 selected_idx: current_msg_list.selected_idx(),
-                selected_idx_exact: current_msg_list._items.indexOf(
+                selected_idx_exact: current_msg_list.all_messages().indexOf(
                     current_msg_list.get(current_msg_list.selected_id())),
                 render_start: current_msg_list.view._render_win_start,
                 render_end: current_msg_list.view._render_win_end,
