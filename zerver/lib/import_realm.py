@@ -26,7 +26,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username
+    Attachment, get_system_bot, email_to_username, get_huddle_hash
 
 # Code from here is the realm import code path
 
@@ -42,6 +42,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
 id_maps = {
     'client': {},
     'user_profile': {},
+    'huddle': {},
     'realm': {},
     'stream': {},
     'recipient': {},
@@ -60,7 +61,12 @@ id_maps = {
     'customprofilefieldvalue': {},
     'attachment': {},
     'realmauditlog': {},
+    'recipient_to_huddle_map': {},
 }  # type: Dict[str, Dict[int, int]]
+
+id_map_to_list = {
+    'huddle_to_user_list': {},
+}  # type: Dict[str, Dict[int, List[int]]]
 
 path_maps = {
     'attachment_path': {},
@@ -131,6 +137,27 @@ def create_subscription_events(data: TableData, table: TableName) -> None:
                                                    event_time=event_time,
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED))
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
+def process_huddle_hash(data: TableData, table: TableName) -> None:
+    """
+    Build new huddle hashes with the updated ids of the users
+    """
+    for huddle in data[table]:
+        user_id_list = id_map_to_list['huddle_to_user_list'][huddle['id']]
+        huddle['huddle_hash'] = get_huddle_hash(user_id_list)
+
+def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
+    """
+    Extract the IDs of the user_profiles involved in a huddle from the subscription object
+    This helps to generate a unique huddle hash from the updated user_profile ids
+    """
+    id_map_to_list['huddle_to_user_list'] = {
+        value: [] for value in id_maps['recipient_to_huddle_map'].values()}
+
+    for subscription in data[table]:
+        if subscription['recipient'] in id_maps['recipient_to_huddle_map']:
+            huddle_id = id_maps['recipient_to_huddle_map'][subscription['recipient']]
+            id_map_to_list['huddle_to_user_list'][huddle_id].append(subscription['user_profile_id'])
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -209,10 +236,18 @@ def re_map_foreign_keys_internal(data_table: List[Record],
     '''
     lookup_table = id_maps[related_table]
     for item in data_table:
+        old_id = item[field_name]
         if recipient_field:
             if related_table == "stream" and item['type'] == 2:
                 pass
             elif related_table == "user_profile" and item['type'] == 1:
+                pass
+            elif related_table == "huddle" and item['type'] == 3:
+                # save the recipient id with the huddle id, so that we can extract
+                # the user_profile ids involved in a huddle with the help of the
+                # subscription object
+                # check function 'get_huddles_from_subscription'
+                id_maps['recipient_to_huddle_map'][item['id']] = lookup_table[old_id]
                 pass
             else:
                 continue
@@ -535,16 +570,19 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         bulk_import_model(data, model, table)
 
     if 'zerver_huddle' in data:
-        bulk_import_model(data, Huddle, 'zerver_huddle')
+        update_model_ids(Huddle, data, 'zerver_huddle', 'huddle')
 
     re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="stream",
                         recipient_field=True, id_field=True)
     re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="user_profile",
                         recipient_field=True, id_field=True)
+    re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="huddle",
+                        recipient_field=True, id_field=True)
     update_model_ids(Recipient, data, 'zerver_recipient', 'recipient')
     bulk_import_model(data, Recipient, 'zerver_recipient')
 
     re_map_foreign_keys(data, 'zerver_subscription', 'user_profile', related_table="user_profile")
+    get_huddles_from_subscription(data, 'zerver_subscription')
     re_map_foreign_keys(data, 'zerver_subscription', 'recipient', related_table="recipient")
     update_model_ids(Subscription, data, 'zerver_subscription', 'subscription')
     bulk_import_model(data, Subscription, 'zerver_subscription')
@@ -563,6 +601,10 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         bulk_import_model(data, RealmAuditLog, 'zerver_realmauditlog')
     else:
         create_subscription_events(data, 'zerver_subscription')
+
+    if 'zerver_huddle' in data:
+        process_huddle_hash(data, 'zerver_huddle')
+        bulk_import_model(data, Huddle, 'zerver_huddle')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
