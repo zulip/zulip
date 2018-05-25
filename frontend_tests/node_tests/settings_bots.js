@@ -52,7 +52,7 @@ run_test('generate_flaskbotrc_content', () => {
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
     };
     var content = settings_bots.generate_flaskbotrc_content(user.email, user.api_key);
-    var expected = "[vabstest]\nemail=vabstest-bot@zulip.com\n" +
+    var expected = "[]\nemail=vabstest-bot@zulip.com\n" +
                    "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
                    "site=https://chat.example.com\n";
 

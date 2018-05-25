@@ -43,13 +43,12 @@ pip install zulip_botserver
 1. Construct the URL for your bot, which will be of the form:
 
     ```
-    http://<hostname>:<port>/bots/<bot_name>
+    http://<hostname>:<port>
     ```
 
     where the `hostname` is the hostname you'll be running the bot
     server on, and `port` is the port for it (the recommended default
-    is `5002`).  `bot_name` is the name of the Python module for the
-    bot you'd like to run.
+    is `5002`).
 
 1. Register new bot users on the Zulip server's web interface.
 
@@ -59,9 +58,25 @@ pip install zulip_botserver
       the URL from above) and click on *Create bot*.
     * A new bot user should appear in the *Active bots* panel.
 
-1.  Download the `flaskbotrc` from the `your-bots` settings page. It
-    contains the configuration details for all the active outgoing
-    webhook bots. It's structure is very similar to that of zuliprc.
+1. Download the `flaskbotrc` from the `your-bots` settings page.
+
+1. Open the `flaskbotrc`. It should contain one or more sections that look like this:
+   ```
+   []
+   email=foo-bot@hostname
+   key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+   site=http://hostname
+   ```
+   Each section contains the configuration for an outgoing webhook bot. For each
+   bot, enter the name of the bot you want to run in the square brackets `[]`.
+   For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
+   new section would look like this:
+   ```
+   [helloworld]
+   email=foo-bot@hostname
+   key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+   site=http://hostname
+   ```
 
 1.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
     command format is:

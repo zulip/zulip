@@ -8,7 +8,7 @@ common.start_and_log_in();
 
 // var form_sel = 'form[action^="/json/settings"]';
 var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
-var regex_flaskbotrc = /^data:application\/octet-stream;charset=utf-8,\[.\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+var regex_flaskbotrc = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 casper.then(function () {
     var menu_selector = '#settings-dropdown';
