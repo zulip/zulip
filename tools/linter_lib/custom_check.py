@@ -767,7 +767,9 @@ def build_custom_checkers(by_lang):
     help_markdown_rules = markdown_rules + [
         {'pattern': '[a-z][.][A-Z]',
          'description': "Likely missing space after end of sentence"},
-        {'pattern': '[rR]ealm',
+        {'pattern': r'\b[rR]ealm[s]?\b',
+         'good_lines': ['Organization', 'deactivate_realm', 'realm_filter'],
+         'bad_lines': ['Users are in a realm', 'Realm is the best model'],
          'description': "Realms are referred to as Organizations in user-facing docs."},
     ]
     txt_rules = whitespace_rules
