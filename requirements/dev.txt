@@ -134,7 +134,7 @@ python-ldap==3.0.0        # via django-auth-ldap, pyldap
 python-twitter==3.4.1
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.4
-pyyaml==3.12              # via pyaml
+pyyaml==3.12              # via pyaml, yamole
 qrcode==4.0.4             # via django-two-factor-auth
 queuelib==1.4.2           # via scrapy
 recommonmark==0.4.0
@@ -180,4 +180,5 @@ websocket-client==0.44.0  # via docker
 werkzeug==0.12.2          # via moto
 wrapt==1.10.11            # via aws-xray-sdk
 xmltodict==0.11.0         # via moto
+yamole==2.1.1
 zope.interface==4.4.3     # via twisted
