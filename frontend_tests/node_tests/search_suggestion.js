@@ -993,6 +993,28 @@ run_test('people_suggestions', () => {
 
     assert.deepEqual(suggestions.strings, expected);
 
+    query = 'sender:ted sm';
+    expected = [
+        'sender:ted+sm',
+        'sender:ted@zulip.com',
+    ];
+    suggestions = search.get_suggestions(query);
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:ted@zulip.com new';
+    expected = [
+        'sender:ted@zulip.com new',
+        'sender:ted@zulip.com',
+    ];
+    suggestions = search.get_suggestions(query);
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = 'sender:ted@tulip.com new';
+    expected = [
+        'sender:ted@tulip.com+new',
+    ];
+    suggestions = search.get_suggestions(query);
+    assert.deepEqual(suggestions.strings, expected);
 });
 
 run_test('operator_suggestions', () => {
