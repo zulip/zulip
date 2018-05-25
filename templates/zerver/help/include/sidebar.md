@@ -70,11 +70,7 @@
 * [Create a stream](/help/create-a-stream)
 * [View your stream subscriptions](/help/browse-and-subscribe-to-streams#browse-streams)
 * [Add someone to a stream](/help/add-or-remove-users-from-a-stream)
-* [Change the stream description](/help/change-the-stream-description)
-* [Rename a stream](/help/rename-a-stream)
 * [Unsubscribe from a stream](/help/unsubscribe-from-a-stream)
-* [Make a private stream public](/help/change-the-privacy-of-a-stream#make-a-private-stream-public)
-* [Make a public stream private](/help/change-the-privacy-of-a-stream)
 * [Organize the Streams sidebar](/help/organize-the-streams-sidebar)
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
@@ -147,6 +143,7 @@
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
 
 ## Stream management
+* [Stream permissions](/help/stream-permissions)
 * [Delete or archive a stream](/help/delete-a-stream)
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)

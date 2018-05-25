@@ -2171,3 +2171,14 @@ input.new-organization-button {
     margin-top: 20px;
     padding-right: 10px;
 }
+
+
+.permissions-table th {
+    transform: rotate(-45deg);
+    -webkit-transform: rotate(-45deg); /* Safari/Chrome */
+    -moz-transform: rotate(-45deg); /* Firefox */
+    -o-transform: rotate(-45deg); /* Opera */
+    -ms-transform: rotate(-45deg); /* IE 9 */
+
+    transform-origin: left bottom 0;
+}
