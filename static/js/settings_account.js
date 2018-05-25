@@ -53,6 +53,13 @@ function settings_change_success(message) {
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
+function update_user_custom_profile_fields(fields) {
+    var spinner = $("#custom-field-status").expectOne();
+    loading.make_indicator(spinner, {text: 'Saving ...'});
+    settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
+                                   {data: JSON.stringify(fields)}, spinner);
+}
+
 exports.add_custom_profile_fields_to_settings = function () {
     var all_custom_fields = page_params.custom_profile_fields;
 
@@ -335,10 +342,7 @@ exports.set_up = function () {
         var value = $(this).val();
         fields.push({id: parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10),
                      value: value});
-        var spinner = $("#custom-field-status").expectOne();
-        loading.make_indicator(spinner, {text: 'Saving ...'});
-        settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
-                                       {data: JSON.stringify(fields)}, spinner);
+        update_user_custom_profile_fields(fields);
     });
 
     $("#do_deactivate_self_button").on('click',function () {
