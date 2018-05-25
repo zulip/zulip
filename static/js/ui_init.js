@@ -183,17 +183,18 @@ function initialize_kitchen_sink_stuff() {
         if (event.then_scroll) {
             if (row.length === 0) {
                 var row_from_dom = current_msg_list.get_row(event.id);
+                var messages = event.msg_list.all_messages();
                 blueslip.debug("message_selected missing selected row", {
                     previously_selected: event.previously_selected,
                     selected_id: event.id,
                     selected_idx: event.msg_list.selected_idx(),
-                    selected_idx_exact: event.msg_list._items.indexOf(event.msg_list.get(event.id)),
+                    selected_idx_exact: messages.indexOf(event.msg_list.get(event.id)),
                     render_start: event.msg_list.view._render_win_start,
                     render_end: event.msg_list.view._render_win_end,
-                    selected_id_from_idx: event.msg_list._items[event.msg_list.selected_idx()].id,
+                    selected_id_from_idx: messages[event.msg_list.selected_idx()].id,
                     msg_list_sorted: _.isEqual(
-                        _.pluck(event.msg_list._items, 'id'),
-                        _.chain(current_msg_list._items).pluck('id').clone().value().sort()
+                        _.pluck(messages, 'id'),
+                        _.chain(current_msg_list.all_messages()).pluck('id').clone().value().sort()
                     ),
                     found_in_dom: row_from_dom.length,
                 });
