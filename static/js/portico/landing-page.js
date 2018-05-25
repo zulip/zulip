@@ -241,6 +241,14 @@ var load = function () {
         interval: false,
     });
 
+    // Move to the next slide on clicking inside the carousel container
+    $(".carousel-inner .item-container").click(function (e) {
+        // We don't want to trigger this event if user clicks on a link
+        if (e.target.tagName.toLowerCase() !== "a") {
+            $("#myCarousel").carousel("next");
+        }
+    });
+
     // Set up events / categories / search
     events();
 };
