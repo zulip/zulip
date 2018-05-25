@@ -580,6 +580,30 @@ exports.get_suggestions = function (query) {
         last = operators.slice(-1)[0];
     }
 
+    var person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
+    var operators_len = operators.length;
+
+    // Handle spaces in person name in new suggestions only. Checks if the last operator is
+    // 'search' and the second last operator is one out of person_suggestion_ops.
+    // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
+    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
+    // is an email of a user, both of these operators remain unchanged. Otherwise search operator
+    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
+    if (operators_len > 1 &&
+        last.operator === 'search' &&
+        person_suggestion_ops.includes(operators[operators_len - 2].operator)) {
+        var person_op = operators[operators_len - 2];
+        if (!people.get_by_email(person_op.operand)) {
+            last = {
+                operator: person_op.operator,
+                operand: person_op.operand + ' ' + last.operand,
+                negated: person_op.negated,
+            };
+            operators[operators_len - 2] = last;
+            operators.splice(-1, 1);
+        }
+    }
+
     // Display the default first
     // `has` and `is` operators work only on predefined categories. Default suggestion
     // is not displayed in that case. e.g. `messages with one or more abc` as
