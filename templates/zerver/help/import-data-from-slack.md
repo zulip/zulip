@@ -30,8 +30,9 @@ First, you need to do some things in Slack to setup the export:
     using [upgrade-zulip-from-git][upgrade-zulip-from-git] to avoid
     bugs in the earliest versions of the Slack import tool.
 
-Log in to your Zulip server as the `zulip` user. Run the following
-commands, replacing `<token>` with the value generated above:
+Log in to a shell on your Zulip server as the `zulip` user. Run the
+following commands, replacing `<token>` with the value generated
+above:
 
 ```
 cd /home/zulip/deployments/current
