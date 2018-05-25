@@ -121,6 +121,7 @@
 * [Allow joining without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
+* [GDPR Compliance](/help/gdpr-compliance)
 
 ## Organization settings
 * [Restrict stream creation](/help/only-allow-admins-to-create-new-streams-feature)
