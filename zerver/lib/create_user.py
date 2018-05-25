@@ -24,6 +24,8 @@ def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile)
         value = getattr(source_profile, settings_name)
         setattr(target_profile, settings_name, value)
 
+    setattr(target_profile, "full_name", source_profile.full_name)
+
 # create_user_profile is based on Django's User.objects.create_user,
 # except that we don't save to the database so it can used in
 # bulk_creates

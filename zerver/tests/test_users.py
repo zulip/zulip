@@ -386,6 +386,10 @@ class UserProfileTest(ZulipTestCase):
         copy_user_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
+        self.assertEqual(iago.full_name, "Cordelia Lear")
+        self.assertEqual(cordelia.full_name, "Cordelia Lear")
+        self.assertEqual(hamlet.full_name, "King Hamlet")
+
         self.assertEqual(iago.default_language, "de")
         self.assertEqual(cordelia.default_language, "de")
         self.assertEqual(hamlet.default_language, "en")
