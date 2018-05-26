@@ -7,6 +7,7 @@ var noop = function () {};
 set_global('Filter', noop);
 global.stub_out_jquery();
 set_global('document', null);
+set_global('blueslip', global.make_zblueslip());
 
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('util');
@@ -136,6 +137,8 @@ run_test('message_range', () => {
     assert.deepEqual(list.message_range(30, 40), [{id: 30}, {id: 40}]);
     assert.deepEqual(list.message_range(31, 39), [{id: 40}]);
     assert.deepEqual(list.message_range(31, 1000), [{id: 40}, {id: 50}, {id: 60}]);
+    blueslip.set_test_data('error', 'message_range given a start of -1');
+    assert.deepEqual(list.message_range(-1, 40), [{id: 30}, {id: 40}]);
 });
 
 run_test('updates', () => {
@@ -186,12 +189,20 @@ run_test('nth_most_recent_id', () => {
 
 run_test('change_message_id', () => {
     var list = new MessageList({});
-    list.append([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
-    list.change_message_id(10.5, 11);
+    list.data._add_to_hash([{id: 10.5, content: "good job"}, {id: 20.5, content: "ok!"}]);
+
+    // local to local
+    list.change_message_id(10.5, 11.5);
+    assert.equal(list.get(11.5).content, "good job");
+
+    list.change_message_id(11.5, 11);
     assert.equal(list.get(11).content, "good job");
 
     list.change_message_id(20.5, 10);
     assert.equal(list.get(10).content, "ok!");
+
+    // test nonexistent id
+    assert.equal(list.change_message_id(13, 15), undefined);
 });
 
 run_test('last_sent_by_me', () => {
