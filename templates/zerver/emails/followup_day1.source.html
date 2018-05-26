@@ -24,13 +24,8 @@
     <b>c</b>: Start a new topic
 </p>
 <p>
-    &bull; Give our
-    {% if is_realm_admin %}
-    <a href="{{ organization_setup_advice_link }}">guide for new admins</a>
-    {% else %}
-    <a href="{{ getting_started_with_zulip_link }}">guide for new users</a>
-    a spin.
-    {% endif %}
+    &bull; Give our <a href="{{ getting_started_link }}">guide for new
+    {{ user_role_group }}</a> a spin.
 </p>
 <p>
     <br/>

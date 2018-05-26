@@ -73,6 +73,8 @@ IGNORED_PHRASES = [
     r"enabled",
     r"disabled",
     r"zulip_org_id",
+    r"admins",
+    r"members",
     # Placeholders
     r"keyword",
     r"streamname",

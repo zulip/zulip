@@ -5,6 +5,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from django.conf import settings
 from django.template import loader
 from django.utils.timezone import now as timezone_now
+from django.utils.translation import ugettext as _
 from zerver.decorator import statsd_increment
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.queue import queue_json_publish
@@ -452,7 +453,7 @@ def handle_missedmessage_emails(user_profile_id: int,
     recipient_subjects = sorted(recipient_subjects, key=lambda x: x[1])
 
     # Send an email per recipient subject pair
-    for recipient_subject, _ in recipient_subjects:
+    for recipient_subject, ignored_max_id in recipient_subjects:
         unique_messages = {m.id: m for m in messages_by_recipient_subject[recipient_subject]}
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
@@ -511,13 +512,16 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     context = common_context(user)
     context.update({
         'unsubscribe_link': unsubscribe_link,
-        'organization_setup_advice_link':
-        user.realm.uri + '/help/getting-your-organization-started-with-zulip',
-        'getting_started_with_zulip_link':
-        user.realm.uri + '/help/getting-started-with-zulip',
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
-        'is_realm_admin': user.is_realm_admin,
     })
+    if user.is_realm_admin:
+        context['user_role_group'] = _('admins')
+        context['getting_started_link'] = (user.realm.uri +
+                                           '/help/getting-your-organization-started-with-zulip')
+    else:
+        context['user_role_group'] = _('members')
+        context['getting_started_link'] = user.realm.uri + '/help/getting-started-with-zulip'
+
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,
         from_address=from_address, context=context)
