@@ -647,7 +647,9 @@ function populate_number_of_users(data) {
         return new Date(timestamp*1000);
     });
 
-    var text = end_dates.map(format_date);
+    var text = end_dates.map(function (date) {
+        return format_date(date, false);
+    });
 
     function make_traces(values, type) {
         return {
