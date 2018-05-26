@@ -73,7 +73,10 @@ IGNORED_PHRASES = [
     r"enabled",
     r"disabled",
     r"zulip_org_id",
-
+    # Placeholders
+    r"keyword",
+    r"streamname",
+    r"user@example.com",
     # Fragments of larger strings
     (r'your subscriptions on your Streams page'),
     (r'Change notification settings for individual streams on your '
