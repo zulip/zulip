@@ -1,20 +1,23 @@
-*If you are running JIRA version 5.2 or greater, or if you are
-using the hosted JIRA provided by Atlassian, you can use the built-in
-web-hook support to connect to Zulip — read on. For older,
-self-hosted JIRA installs, you can use our [JIRA Plugin](./jira-plugin).*
+Get Zulip notifications for your JIRA projects!
 
-{!create-stream.md!}
+These instructions apply to Atlassian Cloud's hosted JIRA, and JIRA Server version
+5.2 or greater. For older installs, you'll need our [JIRA Plugin](./jira-plugin).
 
-{!create-bot-construct-url.md!}
+1. {!create-stream.md!}
 
-Next, in your JIRA administration control panel, go to the **Webhooks**
-page. If you are using the OnDemand hosted JIRA, follow the instructions
-[on the Atlassian wiki][1] for locating the Webhook UI.
+1. {!create-bot-construct-url-indented.md!}
 
-[1]: https://developer.atlassian.com/jiradev/jira-apis/webhooks#Webhooks-jiraadmin
+1. Go to your JIRA **Site administration** page. Click **Jira** on the left.
+   On the left sidebar, scroll down, and under **Advanced**, click **WebHooks**.
+   Click **+ Create a WebHook**.
 
-Give your new webhook a name, and for the URL provide the URL we
-created above.
+1. Set **Name** to a name of your choice, such as `Zulip`. Set **Status** to
+   **Enabled**, and set **URL** to the URL constructed above. Select the events
+   you'd like to be notified about, and click **Create**. We
+   support the following events:
+    * when an issue is created
+    * when an issue is deleted
+    * when an issue is updated
 
 {!congrats.md!}
 
