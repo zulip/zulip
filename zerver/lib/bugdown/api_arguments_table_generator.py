@@ -16,6 +16,8 @@ class MarkdownArgumentsTableGenerator(Extension):
             configs = {}
         self.config = {
             'base_path': ['.', 'Default location from which to evaluate relative paths for the JSON files.'],
+            'openapi_path': ['../../../zerver/openapi',
+                             'Default location from which to evaluate relative paths for the YAML files.']
         }
         for key, value in configs.items():
             self.setConfig(key, value)

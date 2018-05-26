@@ -96,7 +96,8 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
             ),
             zerver.lib.bugdown.fenced_code.makeExtension(),
             zerver.lib.bugdown.api_arguments_table_generator.makeExtension(
-                base_path='templates/zerver/api/'),
+                base_path='templates/zerver/api/',
+                openapi_path='zerver/openapi'),
             zerver.lib.bugdown.api_code_examples.makeExtension(),
             zerver.lib.bugdown.help_settings_links.makeExtension(),
         ]
