@@ -13,12 +13,8 @@ You'll need an Organization URL when installing the apps. That's
   r: Reply to message under the blue box
   c: Start a new topic
 
-* Check out our guide for new users:
-{% if is_realm_admin %}
-{{ organization_setup_advice_link }}.
-{% else %}
-{{ getting_started_with_zulip_link }}.
-{% endif %}
+* Give our guide for new {{ user_role_group }} ({{ getting_started_link }})
+  a spin.
 
 * Zulip combines the real-time ease of chat with the threaded organization
   of email. Zulip is about productivity---making communication fun and
