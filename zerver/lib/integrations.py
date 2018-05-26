@@ -393,6 +393,8 @@ INTEGRATIONS = {
         doc='zerver/integrations/google-calendar.md'
     ),
     'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
+    'irc': Integration('irc', 'irc', ['communication'],
+                       doc='zerver/integrations/irc.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
