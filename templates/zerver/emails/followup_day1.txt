@@ -10,7 +10,8 @@
 {% trans %}
 To access your account from the apps, enter this Organization URL:
 {% endtrans %}
-{{ realm_uri }}
+
+  {{ realm_uri }}
 
 * {{ _('Become a Zulip pro with a few keyboard shortcuts:') }}
   n: {{ _('Next unread thread') }}
