@@ -143,8 +143,8 @@ function scrollToHash(container) {
 
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
-            markdownPS.update();
             render_code_sections();
+            markdownPS.update();
             scrollToHash(container);
         } else {
             loading.name = path;
