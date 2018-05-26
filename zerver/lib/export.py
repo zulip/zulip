@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
+    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot
@@ -640,6 +640,10 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
         row for row in response['zerver_attachment']
         if row['messages']]
 
+def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
+    query = Reaction.objects.filter(message_id__in=list(message_ids))
+    response['zerver_reaction'] = make_raw(list(query))
+
 def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
 
     realm = context['realm']
@@ -1062,9 +1066,6 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     )
     logging.info('...DONE with get_realm_config() data')
 
-    export_file = os.path.join(output_dir, "realm.json")
-    write_data_to_file(output_file=export_file, data=response)
-
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
@@ -1078,6 +1079,16 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     logging.info("Exporting .partial files messages")
     message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
     logging.info('%d messages were exported' % (len(message_ids)))
+
+    # zerver_reaction
+    zerver_reaction = {}  # type: TableData
+    fetch_reaction_data(response=zerver_reaction, message_ids=message_ids)
+    response.update(zerver_reaction)
+
+    # Write realm data
+    export_file = os.path.join(output_dir, "realm.json")
+    write_data_to_file(output_file=export_file, data=response)
+    logging.info('Writing realm data to %s' % (export_file,))
 
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
