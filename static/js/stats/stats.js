@@ -661,6 +661,28 @@ function populate_number_of_users(data) {
         };
     }
 
+    function add_hover_handler() {
+        document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
+            $("#users_hover_info").show();
+            document.getElementById('users_hover_date').innerText =
+                data.points[0].data.text[data.points[0].pointNumber];
+            var values = [null, null, null];
+            data.points.forEach(function (trace) {
+                values[trace.curveNumber] = trace.y;
+            });
+            var hover_value_ids = [
+                'users_hover_1day_value', 'users_hover_15day_value', 'users_hover_all_time_value'];
+            for (var i = 0; i < values.length; i += 1) {
+                if (values[i] !== null) {
+                    document.getElementById(hover_value_ids[i]).style.display = 'inline';
+                    document.getElementById(hover_value_ids[i]).innerText = values[i];
+                } else {
+                    document.getElementById(hover_value_ids[i]).style.display = 'none';
+                }
+            }
+        });
+    }
+
     var _1day_trace = make_traces(data.everyone._1day, 'bar');
     var _15day_trace = make_traces(data.everyone._15day, 'scatter');
     var all_time_trace = make_traces(data.everyone.all_time, 'scatter');
@@ -672,6 +694,7 @@ function populate_number_of_users(data) {
     function draw_or_update_plot(trace) {
         $('#1day_actives_button, #15day_actives_button, #all_time_actives_button').removeClass("selected");
         Plotly.newPlot('id_number_of_users', [trace], layout, {displayModeBar: false});
+        add_hover_handler();
     }
 
     $('#1day_actives_button').click(function () {
@@ -692,13 +715,6 @@ function populate_number_of_users(data) {
     // Initial drawing of plot
     draw_or_update_plot(_15day_trace, true);
     $('#15day_actives_button').addClass("selected");
-
-    document.getElementById('id_number_of_users').on('plotly_hover', function (data) {
-        $("#users_hover_info").show();
-        $("#users_hover_date").text(data.points[0].data.text[data.points[0].pointNumber]);
-        $("#users_hover_humans").css("display", "inline");
-        $("#users_hover_humans_value").text(data.points[0].y);
-    });
 }
 
 
