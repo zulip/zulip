@@ -8,4 +8,4 @@
 {% trans %}Feel free to give us a shout at <{{ support_email }}> if you have any questions.{% endtrans %}
 
 {{ _("Cheers,") }}
-{{ _("Team Zulip") }}
+{{ _("The Zulip Team") }}

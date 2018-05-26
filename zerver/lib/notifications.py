@@ -511,12 +511,13 @@ def enqueue_welcome_emails(user: UserProfile) -> None:
     context = common_context(user)
     context.update({
         'unsubscribe_link': unsubscribe_link,
-        'organization_setup_advice_link':
-        user.realm.uri + '/help/getting-your-organization-started-with-zulip',
-        'getting_started_with_zulip_link':
-        user.realm.uri + '/help/getting-started-with-zulip',
+        'user_role_group': 'admins' if user.is_realm_admin else 'users',
+        'getting_started_link':
+            user.realm.uri +
+            ('/help/getting-your-organization-started-with-zulip'
+             if user.is_realm_admin else
+             '/help/getting-started-with-zulip'),
         'keyboard_shortcuts_link': user.realm.uri + '/help/keyboard-shortcuts',
-        'is_realm_admin': user.is_realm_admin,
     })
     send_future_email(
         "zerver/emails/followup_day1", user.realm, to_user_id=user.id, from_name=from_name,

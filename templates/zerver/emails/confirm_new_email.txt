@@ -13,4 +13,4 @@ If you did not request this change, please contact us immediately at
 {% endtrans %}
 
 {{ _("Cheers,") }}
-{{ _("Team Zulip") }}
+{{ _("The Zulip Team") }}
