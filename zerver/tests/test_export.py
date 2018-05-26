@@ -21,6 +21,7 @@ from zerver.lib.export import (
 from zerver.lib.upload import (
     claim_attachment,
     upload_message_file,
+    upload_emoji_image,
 )
 from zerver.lib.utils import (
     query_chunker,
@@ -34,8 +35,13 @@ from zerver.lib.test_runner import slow
 from zerver.models import (
     Message,
     Realm,
+    RealmEmoji,
     Recipient,
     UserMessage,
+)
+
+from zerver.lib.test_helpers import (
+    get_test_image_file,
 )
 
 def rm_tree(path: str) -> None:
@@ -207,9 +213,10 @@ class ExportTest(ZulipTestCase):
         result['attachment'] = read_file('attachment.json')
         result['message'] = read_file('message.json')
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
+        result['emoji_dir'] = os.path.join(output_dir, 'emoji')
         return result
 
-    def test_attachment(self) -> None:
+    def test_attachment_and_emoji(self) -> None:
         message = Message.objects.all()[0]
         user_profile = message.sender
         url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -222,6 +229,9 @@ class ExportTest(ZulipTestCase):
         )
 
         realm = Realm.objects.get(string_id='zulip')
+        with get_test_image_file('img.png') as img_file:
+            upload_emoji_image(img_file, '1.png', user_profile)
+
         full_data = self._export_realm(realm)
 
         data = full_data['attachment']
@@ -233,9 +243,17 @@ class ExportTest(ZulipTestCase):
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
 
+        fn = os.path.join(full_data['emoji_dir'],
+                          RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm.id, emoji_file_name='1.png'))
+        fn = fn.replace('1.png', '')
+        self.assertEqual('1.png', os.listdir(fn)[0])
+
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
+        realm_emoji = RealmEmoji.objects.get(realm=realm)
+        realm_emoji.delete()
         full_data = self._export_realm(realm)
+        realm_emoji.save()
 
         data = full_data['realm']
         self.assertEqual(len(data['zerver_userprofile_crossrealm']), 0)
@@ -278,7 +296,11 @@ class ExportTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         user_ids = set([cordelia.id, hamlet.id])
 
+        realm_emoji = RealmEmoji.objects.get(realm=realm)
+        realm_emoji.delete()
         full_data = self._export_realm(realm, exportable_user_ids=user_ids)
+        realm_emoji.save()
+
         data = full_data['realm']
         exported_user_emails = get_set('zerver_userprofile', 'email')
         self.assertIn(self.example_email('cordelia'), exported_user_emails)

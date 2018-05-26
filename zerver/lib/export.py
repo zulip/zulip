@@ -840,8 +840,9 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
 def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     uploads_output_dir = os.path.join(output_dir, 'uploads')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
+    emoji_output_dir = os.path.join(output_dir, 'emoji')
 
-    for output_dir in (uploads_output_dir, avatars_output_dir):
+    for output_dir in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
@@ -853,6 +854,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_avatars_from_local(realm,
                                   local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                                   output_dir=avatars_output_dir)
+        export_emoji_from_local(realm,
+                                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+                                output_dir=emoji_output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(realm,
@@ -862,9 +866,14 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_files_from_s3(realm,
                              settings.S3_AUTH_UPLOADS_BUCKET,
                              output_dir=uploads_output_dir)
+        export_files_from_s3(realm,
+                             settings.S3_AVATAR_BUCKET,
+                             output_dir=emoji_output_dir,
+                             processing_emoji=True)
 
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
-                         processing_avatars: bool=False) -> None:
+                         processing_avatars: bool=False,
+                         processing_emoji: bool=False) -> None:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
@@ -880,6 +889,8 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
+    if processing_emoji:
+        bucket_list = bucket.list(prefix="%s/emoji/images/" % (realm.id,))
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
@@ -919,7 +930,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             record['realm_id'] = user_profile.realm_id
         record['user_profile_email'] = user_profile.email
 
-        if processing_avatars:
+        if processing_avatars or processing_emoji:
             filename = os.path.join(output_dir, key.name)
             record['path'] = key.name
         else:
@@ -1011,6 +1022,34 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             if (count % 100 == 0):
                 logging.info("Finished %s" % (count,))
 
+    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
+        ujson.dump(records, records_file, indent=4)
+
+def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+
+    count = 0
+    records = []
+    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm.id,
+            emoji_file_name=realm_emoji.file_name
+        )
+        local_path = os.path.join(local_dir, emoji_path)
+        output_path = os.path.join(output_dir, emoji_path)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        subprocess.check_call(["cp", "-a", local_path, output_path])
+        record = dict(realm_id=realm.id,
+                      author=realm_emoji.author.id,
+                      path=emoji_path,
+                      s3_path=emoji_path,
+                      file_name=realm_emoji.file_name,
+                      name=realm_emoji.name,
+                      deactivated=realm_emoji.deactivated)
+        records.append(record)
+
+        count += 1
+        if (count % 100 == 0):
+            logging.info("Finished %s" % (count,))
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
