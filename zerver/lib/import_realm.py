@@ -446,13 +446,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
 
-    re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
-    re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
-    for (table, model, related_table) in realm_tables:
-        re_map_foreign_keys(data, table, 'realm', related_table="realm")
-        update_model_ids(model, data, table, related_table)
-        bulk_import_model(data, model, table)
-
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
@@ -489,6 +482,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     for user_profile in user_profiles:
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
+
+    re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
+    re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
+    for (table, model, related_table) in realm_tables:
+        re_map_foreign_keys(data, table, 'realm', related_table="realm")
+        update_model_ids(model, data, table, related_table)
+        bulk_import_model(data, model, table)
 
     if 'zerver_huddle' in data:
         bulk_import_model(data, Huddle, 'zerver_huddle')
