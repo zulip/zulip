@@ -68,6 +68,10 @@ function render_code_sections() {
     if (/Mac/i.test(navigator.userAgent)) {
         adjust_mac_shortcuts();
     }
+
+    $("table").each(function () {
+        $(this).addClass("table table-striped");
+    });
 }
 
 function scrollToHash(container) {
