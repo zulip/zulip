@@ -2,6 +2,11 @@ body {
     background-color: #fafafa;
 }
 
+.noscroll {
+    overflow: hidden;
+    position: fixed;
+}
+
 .container-fluid {
     padding: 0px;
     min-height: 100%;
@@ -117,6 +122,7 @@ body {
     position: fixed;
     width: 100vw;
     height: calc(100vh - 59px);
+    margin-top: 59px;
     left: 0px;
 
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
@@ -1930,6 +1936,7 @@ input.new-organization-button {
     .app.help {
         position: absolute;
         height: calc(100vh - 40px);
+        margin-top: 39px;
     }
 
     .app.help .sidebar {

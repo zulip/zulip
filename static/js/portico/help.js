@@ -207,4 +207,5 @@ function scrollToHash(container) {
         update_page(html_map, path, container);
     });
 
+    $('body').addClass('noscroll');
 }());
