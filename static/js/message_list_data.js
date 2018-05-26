@@ -37,6 +37,47 @@ MessageListData.prototype = {
         return this._items[this._items.length - 1];
     },
 
+    select_idx: function () {
+        if (this._selected_id === -1) {
+            return;
+        }
+        var ids = _.pluck(this._items, 'id');
+
+        var i = ids.indexOf(this._selected_id);
+        if (i === -1) {
+            return;
+        }
+        return i;
+    },
+
+    prev: function () {
+        var i = this.select_idx();
+
+        if (i === undefined) {
+            return;
+        }
+
+        if (i === 0) {
+            return;
+        }
+
+        return this._items[i - 1].id;
+    },
+
+    next: function () {
+        var i = this.select_idx();
+
+        if (i === undefined) {
+            return;
+        }
+
+        if (i + 1 >= this._items.length) {
+            return;
+        }
+
+        return this._items[i + 1].id;
+    },
+
     nth_most_recent_id: function (n) {
         var i = this._items.length - n;
         if (i < 0) {

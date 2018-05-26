@@ -126,6 +126,32 @@ run_test('basics', () => {
     assert.deepEqual(list.all_messages(), []);
 });
 
+run_test('prev_next', () => {
+    var list = new MessageList({});
+
+    var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
+    list.append(messages, true);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+
+    // The next case is for defensive code.
+    list.data.set_selected_id(45);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+
+    list.data.set_selected_id(30);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), 40);
+
+    list.data.set_selected_id(50);
+    assert.equal(list.prev(), 40);
+    assert.equal(list.next(), 60);
+
+    list.data.set_selected_id(60);
+    assert.equal(list.prev(), 50);
+    assert.equal(list.next(), undefined);
+});
+
 run_test('message_range', () => {
     var list = new MessageList({});
 
