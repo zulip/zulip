@@ -4,10 +4,11 @@ import ujson
 
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from zerver.lib.openapi import get_openapi_parameters
 from typing import Any, Dict, Optional, List
 import markdown
 
-REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+?)\s*\}')
+REGEXP = re.compile(r'\{generate_api_arguments_table\|\s*(.+?)\s*\|\s*(.+)\s*\}')
 
 
 class MarkdownArgumentsTableGenerator(Extension):
@@ -39,19 +40,29 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 match = REGEXP.search(line)
 
                 if match:
-                    json_filename = match.group(1)
-                    doc_filename = match.group(2)
-                    json_filename = os.path.expanduser(json_filename)
-                    if not os.path.isabs(json_filename):
-                        json_filename = os.path.normpath(os.path.join(self.base_path, json_filename))
+                    filename = match.group(1)
+                    doc_name = match.group(2)
+                    filename = os.path.expanduser(filename)
+
+                    is_openapi_format = filename.endswith('.yaml')
+
+                    if not os.path.isabs(filename):
+                        parent_dir = self.base_path
+                        filename = os.path.normpath(os.path.join(parent_dir, filename))
+
                     try:
-                        with open(json_filename, 'r') as fp:
-                            json_obj = ujson.load(fp)
-                            arguments = json_obj[doc_filename]
-                            text = self.render_table(arguments)
+                        if is_openapi_format:
+                            endpoint, method = doc_name.rsplit(':', 1)
+                            arguments = get_openapi_parameters(endpoint, method)
+                        else:
+                            with open(filename, 'r') as fp:
+                                json_obj = ujson.load(fp)
+                                arguments = json_obj[doc_name]
+
+                        text = self.render_table(arguments)
                     except Exception as e:
                         print('Warning: could not find file {}. Ignoring '
-                              'statement. Error: {}'.format(json_filename, e))
+                              'statement. Error: {}'.format(filename, e))
                         # If the file cannot be opened, just substitute an empty line
                         # in place of the macro include line
                         lines[loc] = REGEXP.sub('', line)
@@ -99,11 +110,19 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         md_engine = markdown.Markdown(extensions=[])
 
         for argument in arguments:
+            oneof = ['`' + item + '`'
+                     for item in argument.get('schema', {}).get('enum', [])]
+            description = argument['description']
+            if oneof:
+                description += '\nMust be one of: {}.'.format(', '.join(oneof))
+            # TODO: Swagger allows indicating where the argument goes
+            # (path, querystring, form data...). A column in the table should
+            # be added for this.
             table.append(tr.format(
-                argument=argument['argument'],
+                argument=argument.get('argument') or argument.get('name'),
                 example=argument['example'],
                 required='Yes' if argument.get('required') else 'No',
-                description=md_engine.convert(argument['description']),
+                description=md_engine.convert(description),
             ))
 
         table.append("</tbody>")

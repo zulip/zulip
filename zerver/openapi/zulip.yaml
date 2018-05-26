@@ -60,7 +60,8 @@ paths:
         example: change_all
       - name: content
         in: query
-        description: Message's new body.
+        description: |
+          The content of the message. Maximum message size of 10000 bytes.
         schema:
           type: string
         example: Hello
@@ -68,7 +69,11 @@ paths:
       - basicAuth: []
       responses:
         '200':
-          $ref: '#/components/responses/SimpleSuccess'
+          description: Success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
         '400':
           description: Bad request.
           content:
@@ -84,6 +89,12 @@ paths:
                       - The time limit for editing this message has past
                       - Nothing to change
                       - Topic can't be empty
+                - example:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "You don't have permission to edit this message",
+                      "result": "error"
+                    }
 components:
   #######################
   # Security definitions
@@ -96,13 +107,13 @@ components:
         Basic authentication, with the user's email as the username, and the
         API key as the password. The API key can be fetched using the
         `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+
   schemas:
     JsonResponse:
       type: object
       properties:
         result:
           type: string
-
     JsonSuccess:
       allOf:
       - $ref: '#/components/schemas/JsonResponse'
@@ -115,7 +126,11 @@ components:
             - success
           msg:
             type: string
-
+      - example:
+          {
+            "msg": "",
+            "result": "success"
+          }
     JsonError:
       allOf:
       - $ref: '#/components/schemas/JsonResponse'

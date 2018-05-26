@@ -1,10 +1,12 @@
 from typing import Dict, Any, Optional, Iterable
 from io import StringIO
+from yamole import YamoleParser
 
 import json
 import os
 
 from zerver.lib import mdiff
+from zerver.lib.openapi import get_openapi_fixture
 
 if False:
     from zulip import Client
@@ -383,7 +385,8 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['update-message']
+    fixture = get_openapi_fixture('/messages/{message_id}', 'patch', '200')
+
     test_against_fixture(result, fixture)
 
     # test it was actually updated
@@ -491,7 +494,7 @@ TEST_FUNCTIONS = {
     'render-message': render_message,
     'stream-message': stream_message,
     'private-message': private_message,
-    'update-message': update_message,
+    '/messages/{message_id}:patch': update_message,
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     'get-all-streams': get_streams,
