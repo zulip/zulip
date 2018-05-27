@@ -179,7 +179,12 @@ function show_user_profile(element, user) {
     var profile_data = {};
 
     page_params.custom_profile_fields.forEach(function (field) {
-        profile_data[field.name] = people.get_custom_profile_data(user.user_id, field.id);
+        var field_value = people.get_custom_profile_data(user.user_id, field.id);
+        if (settings_profile_fields.field_type_id_to_string(field.type) === "Date") {
+            profile_data[field.name] = moment(field_value).format("MMMM DD YYYY");
+        } else {
+            profile_data[field.name] = field_value;
+        }
     });
 
     var time_preferance = people.get_user_time_preferences(user.user_id);
