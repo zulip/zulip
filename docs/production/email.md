@@ -104,13 +104,18 @@ su zulip
 ```
 
 If it doesn't throw an error, it probably worked; you can confirm by
-checking your email.
+checking your email.  You should get two emails: One sent by a the
+default From address for your Zulip server, and one sent by the
+"noreply" From address.
 
 If it doesn't work, check these common failure causes:
 
 * Your hosting provider may block outgoing SMTP traffic in its default
   firewall rules.  Check whether the port `EMAIL_PORT` is blocked in
   your hosting provider's firewall.
+
+* Your SMTP server's permissions might not allow the email account
+  you're using to send email from the `noreply` email address.
 
 * Make sure you set the password in `/etc/zulip/zulip-secrets.conf`.
 
