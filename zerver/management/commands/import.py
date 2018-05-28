@@ -2,6 +2,7 @@
 import argparse
 import os
 import subprocess
+import tarfile
 from typing import Any
 
 from django.conf import settings
@@ -43,25 +44,17 @@ import a database dump from one or more JSON files."""
                             help="list of JSON exports to import")
         parser.formatter_class = argparse.RawTextHelpFormatter
 
-    def new_instance_check(self, model: Model) -> None:
-        count = model.objects.count()
-        if count:
-            print("Zulip instance is not empty, found %d rows in %s table. "
-                  % (count, model._meta.db_table))
-            print("You may use --destroy-rebuild-database to destroy and "
-                  "rebuild the database prior to import.")
-            exit(1)
-
     def do_destroy_and_rebuild_database(self, db_name: str) -> None:
         call_command('flush', verbosity=0, interactive=False)
         subprocess.check_call([os.path.join(settings.DEPLOY_ROOT, "scripts/setup/flush-memcached")])
 
     def handle(self, *args: Any, **options: Any) -> None:
-        models_to_import = [Realm, Stream, UserProfile, Recipient, Subscription,
-                            Client, Message, UserMessage, Huddle, DefaultStream, RealmDomain,
-                            RealmFilter]
-
         subdomain = options['subdomain']
+        export_file = options['export_files']
+
+        if export_file is None:
+            print("Add the export file path!")
+            exit(1)
         if subdomain is None:
             print("Enter subdomain!")
             exit(1)
@@ -70,9 +63,10 @@ import a database dump from one or more JSON files."""
             print("Rebuilding the database!")
             db_name = settings.DATABASES['default']['NAME']
             self.do_destroy_and_rebuild_database(db_name)
-        elif not options["import_into_nonempty"]:
-            for model in models_to_import:
-                self.new_instance_check(model)
+        elif options["import_into_nonempty"]:
+            print("WARNING: The argument 'import_into_nonempty' is depreciated.")
+        else:
+            print("Importing into the existing database!")
 
         check_subdomain_available(subdomain, from_management_command=True)
 
@@ -80,6 +74,13 @@ import a database dump from one or more JSON files."""
             if not os.path.exists(path):
                 print("Directory not found: '%s'" % (path,))
                 exit(1)
+
+            try:
+                tarfile.is_tarfile(path)
+                print("Export file should be folder, not a tarfile!")
+                exit(1)
+            except IsADirectoryError:
+                pass
 
             print("Processing dump: %s ..." % (path,))
             realm = do_import_realm(path, subdomain)
