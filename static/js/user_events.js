@@ -79,3 +79,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = user_events;
 }
+window.user_events = user_events;

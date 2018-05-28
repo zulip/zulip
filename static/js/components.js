@@ -131,3 +131,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = components;
 }
+window.components = components;

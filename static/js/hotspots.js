@@ -244,3 +244,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hotspots;
 }
+window.hotspots = hotspots;

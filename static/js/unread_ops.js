@@ -128,3 +128,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = unread_ops;
 }
+window.unread_ops = unread_ops;

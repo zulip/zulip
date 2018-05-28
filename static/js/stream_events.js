@@ -151,3 +151,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_events;
 }
+window.stream_events = stream_events;

@@ -61,3 +61,4 @@ if (typeof module !== 'undefined') {
     module.exports = stream_muting;
 }
 
+window.stream_muting = stream_muting;

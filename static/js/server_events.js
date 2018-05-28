@@ -296,3 +296,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = server_events;
 }
+window.server_events = server_events;

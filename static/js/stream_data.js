@@ -575,3 +575,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_data;
 }
+window.stream_data = stream_data;

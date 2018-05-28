@@ -162,3 +162,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = reminder;
 }
+
+window.reminder = reminder;

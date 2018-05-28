@@ -183,3 +183,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = tab_bar;
 }
+window.tab_bar = tab_bar;

@@ -120,3 +120,4 @@ if (typeof module !== 'undefined') {
     module.exports = buddy_list;
 }
 
+window.buddy_list = buddy_list;

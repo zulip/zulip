@@ -104,3 +104,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_flags;
 }
+window.message_flags = message_flags;

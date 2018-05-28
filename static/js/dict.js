@@ -141,3 +141,4 @@ Dict.prototype = {
 if (typeof module !== 'undefined') {
     module.exports = Dict;
 }
+window.Dict = Dict;

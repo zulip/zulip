@@ -104,3 +104,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = zcommand;
 }
+
+window.zcommand = zcommand;

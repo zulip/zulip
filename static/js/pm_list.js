@@ -218,3 +218,4 @@ if (typeof module !== 'undefined') {
     module.exports = pm_list;
 }
 
+window.pm_list = pm_list;

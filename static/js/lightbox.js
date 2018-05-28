@@ -300,3 +300,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = lightbox;
 }
+window.lightbox = lightbox;

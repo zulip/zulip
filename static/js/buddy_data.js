@@ -185,3 +185,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = buddy_data;
 }
+window.buddy_data = buddy_data;

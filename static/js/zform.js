@@ -113,3 +113,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = zform;
 }
+
+window.zform = zform;

@@ -452,3 +452,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_create;
 }
+window.stream_create = stream_create;

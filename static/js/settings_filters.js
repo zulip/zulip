@@ -114,3 +114,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_filters;
 }
+window.settings_filters = settings_filters;

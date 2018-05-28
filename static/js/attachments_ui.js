@@ -138,3 +138,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = attachments_ui;
 }
+window.attachments_ui = attachments_ui;

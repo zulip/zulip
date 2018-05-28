@@ -380,3 +380,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_popover;
 }
+window.stream_popover = stream_popover;

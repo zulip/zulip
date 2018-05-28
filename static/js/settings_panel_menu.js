@@ -141,3 +141,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_panel_menu;
 }
+
+window.settings_panel_menu = settings_panel_menu;

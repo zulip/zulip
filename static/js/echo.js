@@ -274,3 +274,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = echo;
 }
+window.echo = echo;

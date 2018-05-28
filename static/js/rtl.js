@@ -117,3 +117,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = rtl;
 }
+window.rtl = rtl;

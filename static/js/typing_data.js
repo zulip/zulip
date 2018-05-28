@@ -79,3 +79,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing_data;
 }
+window.typing_data = typing_data;

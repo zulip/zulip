@@ -44,3 +44,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_sections;
 }
+window.settings_sections = settings_sections;

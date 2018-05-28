@@ -114,3 +114,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = rows;
 }
+window.rows = rows;

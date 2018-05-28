@@ -146,3 +146,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_emoji;
 }
+window.settings_emoji = settings_emoji;

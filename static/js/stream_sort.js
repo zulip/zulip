@@ -142,3 +142,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_sort;
 }
+window.stream_sort = stream_sort;

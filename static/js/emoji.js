@@ -164,3 +164,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = emoji;
 }
+window.emoji = emoji;

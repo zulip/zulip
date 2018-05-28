@@ -179,3 +179,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = presence;
 }
+window.presence = presence;

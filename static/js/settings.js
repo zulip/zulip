@@ -175,3 +175,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings;
 }
+window.settings = settings;

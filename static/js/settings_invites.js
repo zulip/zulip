@@ -153,3 +153,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_invites;
 }
+window.settings_invites = settings_invites;

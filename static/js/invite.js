@@ -157,3 +157,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = invite;
 }
+window.invite = invite;

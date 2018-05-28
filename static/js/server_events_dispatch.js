@@ -444,3 +444,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = server_events_dispatch;
 }
+window.server_events_dispatch = server_events_dispatch;

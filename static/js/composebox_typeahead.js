@@ -673,3 +673,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = composebox_typeahead;
 }
+window.composebox_typeahead = composebox_typeahead;

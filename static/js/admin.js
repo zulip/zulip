@@ -130,3 +130,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = admin;
 }
+window.admin = admin;

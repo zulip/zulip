@@ -316,3 +316,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = topic_list;
 }
+window.topic_list = topic_list;

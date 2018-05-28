@@ -93,3 +93,4 @@ var bot_data = (function () {
 if (typeof module !== 'undefined') {
     module.exports = bot_data;
 }
+window.bot_data = bot_data;

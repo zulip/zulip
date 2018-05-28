@@ -66,3 +66,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = pm_conversations;
 }
+window.pm_conversations = pm_conversations;

@@ -1003,3 +1003,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = popovers;
 }
+window.popovers = popovers;

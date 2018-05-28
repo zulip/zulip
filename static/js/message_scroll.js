@@ -86,3 +86,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_scroll;
 }
+window.message_scroll = message_scroll;

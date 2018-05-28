@@ -931,3 +931,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = people;
 }
+window.people = people;

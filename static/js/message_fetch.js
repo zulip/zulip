@@ -348,3 +348,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_fetch;
 }
+window.message_fetch = message_fetch;

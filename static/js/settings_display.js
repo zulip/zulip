@@ -181,3 +181,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_display;
 }
+window.settings_display = settings_display;

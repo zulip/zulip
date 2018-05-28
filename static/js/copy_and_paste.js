@@ -238,3 +238,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = copy_and_paste;
 }
+window.copy_and_paste = copy_and_paste;

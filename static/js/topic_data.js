@@ -204,3 +204,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = topic_data;
 }
+window.topic_data = topic_data;

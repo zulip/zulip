@@ -198,3 +198,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_color;
 }
+window.stream_color = stream_color;

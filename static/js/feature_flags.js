@@ -22,3 +22,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = feature_flags;
 }
+window.feature_flags = feature_flags;

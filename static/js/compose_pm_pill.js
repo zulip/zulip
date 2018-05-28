@@ -60,3 +60,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_pm_pill;
 }
+window.compose_pm_pill = compose_pm_pill;

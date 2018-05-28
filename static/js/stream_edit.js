@@ -694,3 +694,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_edit;
 }
+window.stream_edit = stream_edit;

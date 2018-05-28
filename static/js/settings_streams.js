@@ -147,3 +147,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_streams;
 }
+window.settings_streams = settings_streams;

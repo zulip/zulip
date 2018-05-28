@@ -1035,3 +1035,4 @@ MessageListView.prototype = {
 if (typeof module !== 'undefined') {
     module.exports = MessageListView;
 }
+window.MessageListView = MessageListView;

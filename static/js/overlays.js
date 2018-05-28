@@ -218,3 +218,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = overlays;
 }
+window.overlays = overlays;

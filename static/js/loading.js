@@ -72,3 +72,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = loading;
 }
+window.loading = loading;

@@ -137,3 +137,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = user_pill;
 }
+window.user_pill = user_pill;

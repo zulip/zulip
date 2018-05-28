@@ -413,3 +413,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_viewport;
 }
+window.message_viewport = message_viewport;
