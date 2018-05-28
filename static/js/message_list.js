@@ -99,6 +99,10 @@ exports.MessageList.prototype = {
         return this.data.next();
     },
 
+    is_at_end: function () {
+        return this.data.is_at_end();
+    },
+
     nth_most_recent_id: function (n) {
         return this.data.nth_most_recent_id(n);
     },

@@ -78,6 +78,22 @@ MessageListData.prototype = {
         return this._items[i + 1].id;
     },
 
+    is_at_end: function () {
+        if (this._selected_id === -1) {
+            return false;
+        }
+
+        var n = this._items.length;
+
+        if (n === 0) {
+            return false;
+        }
+
+        var last_msg = this._items[n-1];
+
+        return (last_msg.id === this._selected_id);
+    },
+
     nth_most_recent_id: function (n) {
         var i = this._items.length - n;
         if (i < 0) {
