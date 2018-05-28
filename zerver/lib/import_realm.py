@@ -141,7 +141,8 @@ def re_map_foreign_keys(data: TableData,
                         related_table: TableName,
                         verbose: bool=False,
                         id_field: bool=False,
-                        recipient_field: bool=False) -> None:
+                        recipient_field: bool=False,
+                        reaction_field: bool=False) -> None:
     """
     This is a wrapper function for all the realm data tables
     and only avatar and attachment records need to be passed through the internal function
@@ -149,7 +150,7 @@ def re_map_foreign_keys(data: TableData,
     and List[Record] corresponding to the avatar and attachment records)
     """
     re_map_foreign_keys_internal(data[table], table, field_name, related_table, verbose, id_field,
-                                 recipient_field)
+                                 recipient_field, reaction_field)
 
 def re_map_foreign_keys_internal(data_table: List[Record],
                                  table: TableName,
@@ -157,7 +158,8 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                                  related_table: TableName,
                                  verbose: bool=False,
                                  id_field: bool=False,
-                                 recipient_field: bool=False) -> None:
+                                 recipient_field: bool=False,
+                                 reaction_field: bool=False) -> None:
     '''
     We occasionally need to assign new ids to rows during the
     import/export process, to accommodate things like existing rows
@@ -177,6 +179,11 @@ def re_map_foreign_keys_internal(data_table: List[Record],
             else:
                 continue
         old_id = item[field_name]
+        if reaction_field:
+            if item['reaction_type'] == Reaction.REALM_EMOJI:
+                old_id = int(old_id)
+            else:
+                continue
         if old_id in lookup_table:
             new_id = lookup_table[old_id]
             if verbose:
@@ -190,7 +197,10 @@ def re_map_foreign_keys_internal(data_table: List[Record],
             item[field_name + "_id"] = new_id
             del item[field_name]
         else:
-            item[field_name] = new_id
+            if reaction_field:
+                item[field_name] = str(new_id)
+            else:
+                item[field_name] = new_id
 
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
@@ -436,13 +446,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
 
-    re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
-    re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
-    for (table, model, related_table) in realm_tables:
-        re_map_foreign_keys(data, table, 'realm', related_table="realm")
-        update_model_ids(model, data, table, related_table)
-        bulk_import_model(data, model, table)
-
     # Remap the user IDs for notification_bot and friends to their
     # appropriate IDs on this server
     for item in data['zerver_userprofile_crossrealm']:
@@ -479,6 +482,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     for user_profile in user_profiles:
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
+
+    re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
+    re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
+    for (table, model, related_table) in realm_tables:
+        re_map_foreign_keys(data, table, 'realm', related_table="realm")
+        update_model_ids(model, data, table, related_table)
+        bulk_import_model(data, model, table)
 
     if 'zerver_huddle' in data:
         bulk_import_model(data, Huddle, 'zerver_huddle')
@@ -538,6 +548,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
 
     # Import zerver_message and zerver_usermessage
     import_message_data(import_dir)
+
+    re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
+    re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
+    re_map_foreign_keys(data, 'zerver_reaction', 'emoji_code', related_table="realmemoji", id_field=True,
+                        reaction_field=True)
+    update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
+    bulk_import_model(data, Reaction, 'zerver_reaction')
 
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
@@ -614,20 +631,6 @@ def import_message_data(import_dir: Path) -> None:
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
         update_model_ids(UserMessage, data, 'zerver_usermessage', 'usermessage')
         bulk_import_model(data, UserMessage, 'zerver_usermessage')
-
-        # As the export of Reactions is not supported, Zulip exported
-        # data would not contain this field.
-        # However this is supported in slack importer script
-        if 'zerver_reaction' in data:
-            re_map_foreign_keys(data, 'zerver_reaction', 'message', related_table="message")
-            re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
-            for reaction in data['zerver_reaction']:
-                if reaction['reaction_type'] == Reaction.REALM_EMOJI:
-                    re_map_foreign_keys(data, 'zerver_reaction', 'emoji_code',
-                                        related_table="realmemoji", id_field=True)
-            update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
-            bulk_import_model(data, Reaction, 'zerver_reaction')
-
         dump_file_id += 1
 
 def import_attachments(data: TableData) -> None:

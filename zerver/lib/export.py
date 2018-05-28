@@ -13,7 +13,7 @@ import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, \
+    UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot
@@ -640,6 +640,10 @@ def fetch_attachment_data(response: TableData, realm_id: int, message_ids: Set[i
         row for row in response['zerver_attachment']
         if row['messages']]
 
+def fetch_reaction_data(response: TableData, message_ids: Set[int]) -> None:
+    query = Reaction.objects.filter(message_id__in=list(message_ids))
+    response['zerver_reaction'] = make_raw(list(query))
+
 def fetch_huddle_objects(response: TableData, config: Config, context: Context) -> None:
 
     realm = context['realm']
@@ -836,8 +840,9 @@ def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_
 def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
     uploads_output_dir = os.path.join(output_dir, 'uploads')
     avatars_output_dir = os.path.join(output_dir, 'avatars')
+    emoji_output_dir = os.path.join(output_dir, 'emoji')
 
-    for output_dir in (uploads_output_dir, avatars_output_dir):
+    for output_dir in (uploads_output_dir, avatars_output_dir, emoji_output_dir):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
@@ -849,6 +854,9 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_avatars_from_local(realm,
                                   local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
                                   output_dir=avatars_output_dir)
+        export_emoji_from_local(realm,
+                                local_dir=os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars"),
+                                output_dir=emoji_output_dir)
     else:
         # Some bigger installations will have their data stored on S3.
         export_files_from_s3(realm,
@@ -858,9 +866,14 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
         export_files_from_s3(realm,
                              settings.S3_AUTH_UPLOADS_BUCKET,
                              output_dir=uploads_output_dir)
+        export_files_from_s3(realm,
+                             settings.S3_AVATAR_BUCKET,
+                             output_dir=emoji_output_dir,
+                             processing_emoji=True)
 
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
-                         processing_avatars: bool=False) -> None:
+                         processing_avatars: bool=False,
+                         processing_emoji: bool=False) -> None:
     conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
     bucket = conn.get_bucket(bucket_name, validate=True)
     records = []
@@ -876,6 +889,8 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             avatar_hash_values.add(avatar_path)
             avatar_hash_values.add(avatar_path + ".original")
             user_ids.add(user_profile.id)
+    if processing_emoji:
+        bucket_list = bucket.list(prefix="%s/emoji/images/" % (realm.id,))
     else:
         bucket_list = bucket.list(prefix="%s/" % (realm.id,))
 
@@ -915,7 +930,7 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
             record['realm_id'] = user_profile.realm_id
         record['user_profile_email'] = user_profile.email
 
-        if processing_avatars:
+        if processing_avatars or processing_emoji:
             filename = os.path.join(output_dir, key.name)
             record['path'] = key.name
         else:
@@ -1010,6 +1025,34 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
 
+def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
+
+    count = 0
+    records = []
+    for realm_emoji in RealmEmoji.objects.filter(realm_id=realm.id):
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm.id,
+            emoji_file_name=realm_emoji.file_name
+        )
+        local_path = os.path.join(local_dir, emoji_path)
+        output_path = os.path.join(output_dir, emoji_path)
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        subprocess.check_call(["cp", "-a", local_path, output_path])
+        record = dict(realm_id=realm.id,
+                      author=realm_emoji.author.id,
+                      path=emoji_path,
+                      s3_path=emoji_path,
+                      file_name=realm_emoji.file_name,
+                      name=realm_emoji.name,
+                      deactivated=realm_emoji.deactivated)
+        records.append(record)
+
+        count += 1
+        if (count % 100 == 0):
+            logging.info("Finished %s" % (count,))
+    with open(os.path.join(output_dir, "records.json"), "w") as records_file:
+        ujson.dump(records, records_file, indent=4)
+
 def do_write_stats_file_for_realm_export(output_dir: Path) -> None:
     stats_file = os.path.join(output_dir, 'stats.txt')
     realm_file = os.path.join(output_dir, 'realm.json')
@@ -1062,9 +1105,6 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     )
     logging.info('...DONE with get_realm_config() data')
 
-    export_file = os.path.join(output_dir, "realm.json")
-    write_data_to_file(output_file=export_file, data=response)
-
     sanity_check_output(response)
 
     logging.info("Exporting uploaded files and avatars")
@@ -1078,6 +1118,16 @@ def do_export_realm(realm: Realm, output_dir: Path, threads: int,
     logging.info("Exporting .partial files messages")
     message_ids = export_partial_message_files(realm, response, output_dir=output_dir)
     logging.info('%d messages were exported' % (len(message_ids)))
+
+    # zerver_reaction
+    zerver_reaction = {}  # type: TableData
+    fetch_reaction_data(response=zerver_reaction, message_ids=message_ids)
+    response.update(zerver_reaction)
+
+    # Write realm data
+    export_file = os.path.join(output_dir, "realm.json")
+    write_data_to_file(output_file=export_file, data=response)
+    logging.info('Writing realm data to %s' % (export_file,))
 
     # zerver_attachment
     export_attachment_table(realm=realm, output_dir=output_dir, message_ids=message_ids)
