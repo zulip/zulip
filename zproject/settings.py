@@ -1127,7 +1127,6 @@ JS_SPECS = {
     },
 }
 
-app_srcs = JS_SPECS['app']['source_filenames']
 if DEVELOPMENT:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:

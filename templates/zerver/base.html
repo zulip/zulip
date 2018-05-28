@@ -24,7 +24,12 @@
         var page_params = {debug_mode: false};
         </script>
         {% endblock %}
+        <!-- This is a temporary block to enable webpack transition
+        This allows pages requiring common files via webpack to override
+        this block -->
+        {% block commonjs %}
         {{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce)) }}
+        {% endblock %}
         {% block customhead %}
         {% endblock %}
 
