@@ -3,27 +3,30 @@ var navigate = (function () {
 var exports = {};
 
 
-function go_to_row(row) {
-    current_msg_list.select_id(rows.id(row),
+function go_to_row(msg_id) {
+    current_msg_list.select_id(msg_id,
                                {then_scroll: true,
                                 from_scroll: true});
 }
 
 exports.up = function () {
     message_viewport.last_movement_direction = -1;
-    var next_row = rows.prev_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
+    var msg_id = current_msg_list.prev();
+    if (msg_id === undefined) {
+        return;
     }
+    go_to_row(msg_id);
 };
 
 exports.down = function (with_centering) {
     message_viewport.last_movement_direction = 1;
-    var next_row = rows.next_visible(current_msg_list.selected_row());
-    if (next_row.length !== 0) {
-        go_to_row(next_row);
+    var msg_id = current_msg_list.next();
+    if (msg_id === undefined) {
+        return;
     }
-    if (with_centering && (next_row.length === 0)) {
+    go_to_row(msg_id);
+
+    if (with_centering) {
         // At the last message, scroll to the bottom so we have
         // lots of nice whitespace for new messages coming in.
         //

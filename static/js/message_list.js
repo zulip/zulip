@@ -91,6 +91,14 @@ exports.MessageList.prototype = {
         return this.data.last();
     },
 
+    prev: function () {
+        return this.data.prev();
+    },
+
+    next: function () {
+        return this.data.next();
+    },
+
     nth_most_recent_id: function (n) {
         return this.data.nth_most_recent_id(n);
     },
