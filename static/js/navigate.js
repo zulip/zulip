@@ -20,23 +20,26 @@ exports.up = function () {
 
 exports.down = function (with_centering) {
     message_viewport.last_movement_direction = 1;
+
+    if (current_msg_list.is_at_end()) {
+        if (with_centering) {
+            // At the last message, scroll to the bottom so we have
+            // lots of nice whitespace for new messages coming in.
+            var current_msg_table = rows.get_table(current_msg_list.table_name);
+            message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
+                                       message_viewport.height() * 0.1);
+            unread_ops.mark_current_list_as_read();
+        }
+
+        return;
+    }
+
+    // Normal path starts here.
     var msg_id = current_msg_list.next();
     if (msg_id === undefined) {
         return;
     }
     go_to_row(msg_id);
-
-    if (with_centering) {
-        // At the last message, scroll to the bottom so we have
-        // lots of nice whitespace for new messages coming in.
-        //
-        // FIXME: this doesn't work for End because rows.last_visible()
-        // always returns a message.
-        var current_msg_table = rows.get_table(current_msg_list.table_name);
-        message_viewport.scrollTop(current_msg_table.safeOuterHeight(true) -
-                                   message_viewport.height() * 0.1);
-        unread_ops.mark_current_list_as_read();
-    }
 };
 
 exports.to_home = function () {
