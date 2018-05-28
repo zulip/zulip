@@ -103,8 +103,11 @@ else:
 if not os.path.exists("/usr/bin/lsb_release"):
     subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 
-vendor = subprocess_text_output(["lsb_release", "-is"])
-codename = subprocess_text_output(["lsb_release", "-cs"])
+import lsb_release
+
+distro_info = lsb_release.get_distro_information()
+vendor = distro_info['ID']
+codename = distro_info['CODENAME']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
