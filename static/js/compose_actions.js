@@ -422,6 +422,12 @@ exports.on_narrow = function (opts) {
     }
 
     if (narrow_state.narrowed_by_pm_reply()) {
+        opts = fill_in_opts_from_current_narrowed_view('private', opts);
+        // Do not open compose box if triggered by search and invalid recipient
+        // is present.
+        if (opts.trigger === "search" && !opts.private_message_recipient) {
+            return;
+        }
         exports.start('private');
         return;
     }

@@ -89,7 +89,16 @@ exports.set_compose_defaults = function () {
     }
 
     if (single.has('pm-with')) {
-        opts.private_message_recipient = single.get('pm-with');
+        var private_message_recipient = single.get('pm-with');
+        var is_valid_op = _.every(private_message_recipient.split(','), function (op) {
+            if (!people.is_valid_email_for_compose(op)) {
+                return false;
+            }
+            return true;
+        });
+        if (is_valid_op) {
+            opts.private_message_recipient = private_message_recipient;
+        }
     }
     return opts;
 };

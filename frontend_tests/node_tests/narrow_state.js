@@ -140,7 +140,19 @@ run_test('set_compose_defaults', () => {
 
     set_filter([['pm-with', 'foo@bar.com']]);
     var pm_test = narrow_state.set_compose_defaults();
-    assert.equal(pm_test.private_message_recipient, 'foo@bar.com');
+    assert.equal(pm_test.private_message_recipient, undefined);
+
+    var john = {
+        email: 'john@doe.com',
+        user_id: 57,
+        full_name: 'John Doe',
+    };
+    people.add(john);
+    people.add_in_realm(john);
+
+    set_filter([['pm-with', 'john@doe.com']]);
+    pm_test = narrow_state.set_compose_defaults();
+    assert.equal(pm_test.private_message_recipient, 'john@doe.com');
 
     set_filter([['topic', 'duplicate'], ['topic', 'duplicate']]);
     assert.deepEqual(narrow_state.set_compose_defaults(), {});
