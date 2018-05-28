@@ -571,6 +571,16 @@ exports.is_valid_email_for_compose = function (email) {
     return active_user_dict.has(person.user_id);
 };
 
+exports.is_valid_bulk_emails_for_compose = function (emails) {
+    // Returns false if at least one of the emails is invalid.
+    return _.every(emails, function (email) {
+        if (!people.is_valid_email_for_compose(email)) {
+            return false;
+        }
+        return true;
+    });
+};
+
 exports.get_active_user_for_email = function (email) {
     var person = people.get_by_email(email);
     if (!person) {

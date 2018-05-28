@@ -14,6 +14,18 @@ function set_filter(operators) {
     narrow_state.set_current_filter(new Filter(operators));
 }
 
+var alice = {
+    email: 'alice@example.com',
+    user_id: 23,
+    full_name: 'Alice Smith',
+};
+
+var ray = {
+    email: 'ray@example.com',
+    user_id: 22,
+    full_name: 'Raymond',
+};
+
 run_test('stream_topic', () => {
     set_filter([['stream', 'Foo'], ['topic', 'Bar'], ['search', 'Yo']]);
 
@@ -46,18 +58,7 @@ run_test('stream_topic', () => {
 });
 
 run_test('uris', () => {
-    var ray = {
-        email: 'ray@example.com',
-        user_id: 22,
-        full_name: 'Raymond',
-    };
     people.add(ray);
-
-    var alice = {
-        email: 'alice@example.com',
-        user_id: 23,
-        full_name: 'Alice Smith',
-    };
     people.add(alice);
 
     var uri = narrow.pm_with_uri(ray.email);
@@ -122,10 +123,16 @@ run_test('show_empty_narrow_message', () => {
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#no_unread_narrow_message');
 
+    set_filter([['pm-with', ['Yo']]]);
+    narrow.show_empty_narrow_message();
+    assert.equal(hide_id,'.empty_feed_notice');
+    assert.equal(show_id, '#non_existing_user');
+
+    people.add_in_realm(alice);
     set_filter([['pm-with', ['alice@example.com', 'Yo']]]);
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
-    assert.equal(show_id, '#empty_narrow_multi_private_message');
+    assert.equal(show_id, '#non_existing_users');
 
     set_filter([['pm-with', 'alice@example.com']]);
     narrow.show_empty_narrow_message();

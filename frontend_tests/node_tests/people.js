@@ -700,6 +700,8 @@ run_test('initialize', () => {
     assert(people.is_valid_email_for_compose('alice@example.com'));
     assert(!people.is_valid_email_for_compose('retiree@example.com'));
     assert(!people.is_valid_email_for_compose('totally-bogus-username@example.com'));
+    assert(people.is_valid_bulk_emails_for_compose(['bot@example.com', 'alice@example.com']));
+    assert(!people.is_valid_bulk_emails_for_compose(['not@valid.com', 'alice@example.com']));
     assert(people.is_my_user_id(42));
 
     var fetched_retiree = people.get_person_from_user_id(15);

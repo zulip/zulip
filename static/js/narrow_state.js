@@ -90,13 +90,7 @@ exports.set_compose_defaults = function () {
 
     if (single.has('pm-with')) {
         var private_message_recipient = single.get('pm-with');
-        var is_valid_op = _.every(private_message_recipient.split(','), function (op) {
-            if (!people.is_valid_email_for_compose(op)) {
-                return false;
-            }
-            return true;
-        });
-        if (is_valid_op) {
+        if (people.is_valid_bulk_emails_for_compose(private_message_recipient.split(','))) {
             opts.private_message_recipient = private_message_recipient;
         }
     }
