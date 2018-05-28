@@ -7,7 +7,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_i
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.models import UserProfile, Service, Realm, \
-    get_user_profile_by_id, query_for_ids
+    get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm
 
 from zulip_bots.custom_exceptions import ConfigValidationError
 
@@ -130,3 +130,14 @@ def user_ids_to_users(user_ids: List[int], realm: Realm) -> List[UserProfile]:
         if user_profile.realm != realm:
             raise JsonableError(_("Invalid user ID: %s" % (user_profile.id,)))
     return user_profiles
+
+def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
+    try:
+        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such bot"))
+    if not target.is_bot:
+        raise JsonableError(_("No such bot"))
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
+    return target

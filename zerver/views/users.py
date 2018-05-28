@@ -29,13 +29,13 @@ from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
-    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config
+    check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
+    access_bot_by_id
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm
 from zerver.lib.create_user import random_api_key
-
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -62,12 +62,7 @@ def check_last_admin(user_profile: UserProfile) -> bool:
 
 def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
                            bot_id: int) -> HttpResponse:
-    try:
-        target = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such bot'))
-    if not target.is_bot:
-        return json_error(_('No such bot'))
+    target = access_bot_by_id(user_profile, bot_id)
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserProfile,
@@ -169,15 +164,7 @@ def patch_bot_backend(
         default_events_register_stream: Optional[str]=REQ(default=None),
         default_all_public_streams: Optional[bool]=REQ(default=None, validator=check_bool)
 ) -> HttpResponse:
-    try:
-        bot = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not bot.is_bot:
-        return json_error(_('No such bot'))
-    if not user_profile.can_admin_user(bot):
-        return json_error(_('Insufficient permission'))
+    bot = access_bot_by_id(user_profile, bot_id)
 
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
@@ -247,13 +234,7 @@ def patch_bot_backend(
 @require_non_guest_human_user
 @has_request_variables
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
-    try:
-        bot = get_user_profile_by_id_in_realm(bot_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(bot):
-        return json_error(_('Insufficient permission'))
+    bot = access_bot_by_id(user_profile, bot_id)
 
     do_regenerate_api_key(bot, user_profile)
     json_result = dict(

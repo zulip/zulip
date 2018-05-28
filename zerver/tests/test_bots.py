@@ -558,7 +558,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.login(self.example_email('hamlet'))
         invalid_user_id = 1000
         result = self.client_post('/json/bots/{}/api_key/regenerate'.format(invalid_user_id))
-        self.assert_json_error(result, 'No such user')
+        self.assert_json_error(result, 'No such bot')
 
     def test_add_bot_with_bot_type_default(self) -> None:
         bot_email = 'hambot-bot@zulip.testserver'
@@ -1145,7 +1145,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         }
         invalid_user_id = 1000
         result = self.client_patch("/json/bots/{}".format(invalid_user_id), bot_info)
-        self.assert_json_error(result, 'No such user')
+        self.assert_json_error(result, 'No such bot')
         self.assert_num_bots_equal(1)
 
     def test_patch_outgoing_webhook_bot(self) -> None:
