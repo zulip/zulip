@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL
+    get_dev_uuid_var_path, FAIL, parse_lsb_release
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -103,8 +103,9 @@ else:
 if not os.path.exists("/usr/bin/lsb_release"):
     subprocess.check_call(["sudo", "apt-get", "install", "-y", "lsb-release"])
 
-vendor = subprocess_text_output(["lsb_release", "-is"])
-codename = subprocess_text_output(["lsb_release", "-cs"])
+distro_info = parse_lsb_release()
+vendor = distro_info['DISTRIB_ID']
+codename = distro_info['DISTRIB_CODENAME']
 if not (vendor in SUPPORTED_PLATFORMS and codename in SUPPORTED_PLATFORMS[vendor]):
     logging.critical("Unsupported platform: {} {}".format(vendor, codename))
     sys.exit(1)
