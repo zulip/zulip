@@ -518,6 +518,9 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
                 raise JsonableError(_("Invalid message(s)"))
 
             # You are subscribed, so let this fall through to the public stream case.
+        elif user_profile.is_guest:
+            # Guest user shouldn't be able to access public stream messages
+            raise JsonableError(_("Invalid message(s)"))
         else:
             # Otherwise, the message was sent to a public stream in
             # your realm, so return the message, user_message pair
