@@ -5,6 +5,7 @@ import sys
 import subprocess
 import configparser
 import re
+import lsb_release
 
 force = False
 extra_args = sys.argv[1:]
@@ -17,7 +18,7 @@ config = configparser.RawConfigParser()
 config.read("/etc/zulip/zulip.conf")
 
 if not os.path.exists("/etc/puppet/hiera.yaml"):
-    codename = subprocess.check_output(["lsb_release", "-cs"]).strip().decode("utf-8")
+    codename = lsb_release.get_distro_information()['CODENAME']
     if codename in ["trusty", "stretch", "xenial"]:
         # Suppress warnings in old puppet about hiera.yaml not existing.
         subprocess.check_call(["touch", "/etc/puppet/hiera.yaml"])
