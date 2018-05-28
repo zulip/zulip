@@ -221,7 +221,7 @@ class Command(BaseCommand):
             Service.objects.create(
                 name="test",
                 user_profile=get_user("outgoing-webhook@zulip.com", zulip_realm),
-                base_url="http://127.0.0.1:5002/bots/followup",
+                base_url="http://127.0.0.1:5002",
                 token="abcd1234",
                 interface=1)
 
