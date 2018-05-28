@@ -2,6 +2,7 @@ set_global('$', global.make_zjquery());
 
 zrequire('Filter', 'js/filter');
 zrequire('unread_ui');
+zrequire('people');
 
 zrequire('top_left_corner');
 
@@ -22,6 +23,27 @@ run_test('narrowing', () => {
     ]);
     top_left_corner.handle_narrow_activated(filter);
     assert(pm_expanded);
+
+    const alice = {
+        email: 'alice@example.com',
+        user_id: 1,
+        full_name: 'Alice Smith',
+    };
+    people.add(alice);
+    people.add_in_realm(alice);
+    pm_expanded = false;
+    filter = new Filter([
+        {operator: 'pm-with', operand: 'alice@example.com'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(pm_expanded);
+
+    pm_expanded = false;
+    filter = new Filter([
+        {operator: 'pm-with', operand: 'not@valid.com'},
+    ]);
+    top_left_corner.handle_narrow_activated(filter);
+    assert(!pm_expanded);
 
     filter = new Filter([
         {operator: 'is', operand: 'mentioned'},

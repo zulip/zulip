@@ -76,6 +76,10 @@ exports.handle_narrow_activated = function (filter) {
     var op_is = filter.operands('is');
     var op_pm = filter.operands('pm-with');
     if (((op_is.length >= 1) && _.contains(op_is, "private")) || op_pm.length >= 1) {
+        if (!people.is_valid_bulk_emails_for_compose(op_pm)) {
+            // Don't go into the else statement and close the pm_list.
+            return;
+        }
         pm_list.expand(op_pm);
     } else {
         pm_list.close();
