@@ -260,3 +260,75 @@ run_test('focus_in_empty_compose', () => {
     $('#compose-textarea').blur();
     assert(!compose_state.focus_in_empty_compose());
 });
+
+run_test('on_narrow', () => {
+    var cancel_called = false;
+    compose_actions.cancel = function () {
+        cancel_called = true;
+    };
+    compose_actions.on_narrow({
+        force_close: true,
+    });
+    assert(cancel_called);
+
+    var on_topic_narrow_called = false;
+    compose_actions.on_topic_narrow = function () {
+        on_topic_narrow_called = true;
+    };
+    narrow_state.narrowed_by_topic_reply = function () {
+        return true;
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert(on_topic_narrow_called);
+
+    var update_message_list_called = false;
+    narrow_state.narrowed_by_topic_reply = function () {
+        return false;
+    };
+    compose_fade.update_message_list = function () {
+        update_message_list_called = true;
+    };
+    compose_state.has_message_content = function () {
+        return true;
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert(update_message_list_called);
+
+    compose_state.has_message_content = function () {
+        return false;
+    };
+    var start_called = false;
+    compose_actions.start = function () {
+        start_called = true;
+    };
+    narrow_state.narrowed_by_pm_reply = function () {
+        return true;
+    };
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: 'not-search',
+        private_message_recipient: 'not@empty.com',
+    });
+    assert(start_called);
+
+    start_called = false;
+    compose_actions.on_narrow({
+        force_close: false,
+        trigger: 'search',
+        private_message_recipient: '',
+    });
+    assert(!start_called);
+
+    narrow_state.narrowed_by_pm_reply = function () {
+        return false;
+    };
+    cancel_called = false;
+    compose_actions.on_narrow({
+        force_close: false,
+    });
+    assert(cancel_called);
+});
