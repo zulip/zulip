@@ -130,6 +130,16 @@ run_test('basics', () => {
 run_test('prev_next', () => {
     var list = new MessageList({});
 
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
+
+    // try to confuse things with bogus selected id
+    list.data.set_selected_id(33);
+    assert.equal(list.prev(), undefined);
+    assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
+
     var messages = [{id: 30}, {id: 40}, {id: 50}, {id: 60}];
     list.append(messages, true);
     assert.equal(list.prev(), undefined);
@@ -139,6 +149,7 @@ run_test('prev_next', () => {
     list.data.set_selected_id(45);
     assert.equal(list.prev(), undefined);
     assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), false);
 
     list.data.set_selected_id(30);
     assert.equal(list.prev(), undefined);
@@ -147,10 +158,12 @@ run_test('prev_next', () => {
     list.data.set_selected_id(50);
     assert.equal(list.prev(), 40);
     assert.equal(list.next(), 60);
+    assert.equal(list.is_at_end(), false);
 
     list.data.set_selected_id(60);
     assert.equal(list.prev(), 50);
     assert.equal(list.next(), undefined);
+    assert.equal(list.is_at_end(), true);
 });
 
 run_test('message_range', () => {
