@@ -504,12 +504,12 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
             # You can't access public stream messages in other realms
             raise JsonableError(_("Invalid message(s)"))
 
-        if not stream.is_public():
-            if not stream.is_history_public_to_subscribers():
-                # You can't access messages sent to invite-only streams
-                # that you didn't receive
-                raise JsonableError(_("Invalid message(s)"))
+        if not stream.is_history_public_to_subscribers():
+            # You can't access messages you didn't directly receive
+            # unless history is public to subscribers.
+            raise JsonableError(_("Invalid message(s)"))
 
+        if not stream.is_public():
             # This stream is an invite-only stream where message
             # history is available to subscribers.  So we check if
             # you're subscribed.
