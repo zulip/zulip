@@ -291,3 +291,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_events;
 }
+window.message_events = message_events;

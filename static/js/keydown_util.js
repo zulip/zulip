@@ -43,3 +43,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = keydown_util;
 }
+window.keydown_util = keydown_util;

@@ -99,3 +99,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = top_left_corner;
 }
+window.top_left_corner = top_left_corner;

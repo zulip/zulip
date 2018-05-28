@@ -736,3 +736,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = emoji_picker;
 }
+window.emoji_picker = emoji_picker;

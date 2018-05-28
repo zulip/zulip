@@ -98,3 +98,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = night_mode;
 }
+window.night_mode = night_mode;

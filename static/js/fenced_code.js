@@ -195,3 +195,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = fenced_code;
 }
+window.fenced_code = fenced_code;

@@ -333,3 +333,4 @@ var LightboxCanvas = (function () {
 if (typeof module !== 'undefined') {
     module.exports = LightboxCanvas;
 }
+window.lightbox_canvas = LightboxCanvas;

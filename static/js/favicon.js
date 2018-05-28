@@ -33,3 +33,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = favicon;
 }
+window.favicon = favicon;

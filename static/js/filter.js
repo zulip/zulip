@@ -652,3 +652,5 @@ return Filter;
 if (typeof module !== 'undefined') {
     module.exports = Filter;
 }
+
+window.Filter = Filter;

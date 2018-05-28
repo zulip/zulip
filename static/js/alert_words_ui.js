@@ -109,3 +109,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = alert_words_ui;
 }
+window.alert_words_ui = alert_words_ui;

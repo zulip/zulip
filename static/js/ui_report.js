@@ -87,3 +87,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = ui_report;
 }
+window.ui_report = ui_report;

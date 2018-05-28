@@ -449,3 +449,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_users;
 }
+window.settings_users = settings_users;

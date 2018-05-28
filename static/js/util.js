@@ -294,3 +294,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = util;
 }
+window.util = util;

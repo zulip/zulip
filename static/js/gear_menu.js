@@ -67,3 +67,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = gear_menu;
 }
+window.gear_menu = gear_menu;

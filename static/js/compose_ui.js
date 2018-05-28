@@ -55,3 +55,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_ui;
 }
+window.compose_ui = compose_ui;

@@ -192,3 +192,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_store;
 }
+window.message_store = message_store;

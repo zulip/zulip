@@ -182,3 +182,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = sent_messages;
 }
+window.sent_messages = sent_messages;

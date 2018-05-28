@@ -81,3 +81,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = integration_bot_widget;
 }
+window.integration_bot_widget = integration_bot_widget;

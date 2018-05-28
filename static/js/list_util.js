@@ -27,3 +27,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = list_util;
 }
+window.list_util = list_util;

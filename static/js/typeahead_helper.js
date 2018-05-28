@@ -370,3 +370,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typeahead_helper;
 }
+window.typeahead_helper = typeahead_helper;

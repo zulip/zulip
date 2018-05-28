@@ -84,3 +84,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_ui;
 }
+window.settings_ui = settings_ui;

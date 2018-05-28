@@ -62,3 +62,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = alert_words;
 }
+window.alert_words = alert_words;

@@ -496,3 +496,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = activity;
 }
+window.activity = activity;

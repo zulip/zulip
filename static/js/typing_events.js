@@ -99,3 +99,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing_events;
 }
+window.typing_events = typing_events;

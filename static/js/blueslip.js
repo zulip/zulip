@@ -455,3 +455,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = blueslip;
 }
+window.blueslip = blueslip;

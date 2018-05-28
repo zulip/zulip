@@ -57,3 +57,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = scroll_util;
 }
+window.scroll_util = scroll_util;

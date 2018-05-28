@@ -111,3 +111,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = floating_recipient_bar;
 }
+window.floating_recipient_bar = floating_recipient_bar;

@@ -61,3 +61,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hash_util;
 }
+window.hash_util = hash_util;

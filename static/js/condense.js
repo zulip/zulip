@@ -216,3 +216,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = condense;
 }
+window.condense = condense;

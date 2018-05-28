@@ -392,3 +392,5 @@ var list_render = (function () {
 if (typeof module !== 'undefined') {
     module.exports = list_render;
 }
+
+window.list_render = list_render;

@@ -636,3 +636,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = stream_list;
 }
+window.stream_list = stream_list;

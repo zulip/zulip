@@ -88,3 +88,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = avatar;
 }
+window.avatar = avatar;

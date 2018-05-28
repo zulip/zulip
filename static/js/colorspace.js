@@ -59,3 +59,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = colorspace;
 }
+window.colorspace = colorspace;

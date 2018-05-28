@@ -444,3 +444,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_actions;
 }
+window.compose_actions = compose_actions;

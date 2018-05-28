@@ -139,3 +139,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing_status;
 }
+window.typing_status = typing_status;

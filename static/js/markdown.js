@@ -432,3 +432,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = markdown;
 }
+window.markdown = markdown;

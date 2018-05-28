@@ -289,3 +289,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = timerender;
 }
+window.timerender = timerender;

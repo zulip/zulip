@@ -324,3 +324,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = hashchange;
 }
+window.hashchange = hashchange;

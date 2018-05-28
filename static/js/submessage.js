@@ -159,3 +159,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = submessage;
 }
+
+window.submessage = submessage;

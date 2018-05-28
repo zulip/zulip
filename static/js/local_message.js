@@ -63,3 +63,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = local_message;
 }
+
+window.local_message = local_message;

@@ -175,3 +175,4 @@ var upload_widget = (function () {
 if (typeof module !== 'undefined') {
     module.exports = upload_widget;
 }
+window.upload_widget = upload_widget;

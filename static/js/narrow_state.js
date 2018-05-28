@@ -361,3 +361,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = narrow_state;
 }
+window.narrow_state = narrow_state;

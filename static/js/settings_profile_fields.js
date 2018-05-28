@@ -264,3 +264,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_profile_fields;
 }
+window.settings_profile_fields = settings_profile_fields;

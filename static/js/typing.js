@@ -101,3 +101,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = typing;
 }
+window.typing = typing;

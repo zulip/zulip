@@ -42,3 +42,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = search_pill;
 }
+
+window.search_pill = search_pill;

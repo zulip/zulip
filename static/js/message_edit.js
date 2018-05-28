@@ -594,3 +594,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_edit;
 }
+window.message_edit = message_edit;

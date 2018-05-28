@@ -429,3 +429,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = input_pill;
 }
+window.input_pill = input_pill;

@@ -325,3 +325,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = reload;
 }
+window.reload = reload;

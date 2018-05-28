@@ -108,3 +108,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = info_overlay;
 }
+window.info_overlay = info_overlay;

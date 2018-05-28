@@ -312,3 +312,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_user_groups;
 }
+window.settings_user_groups = settings_user_groups;

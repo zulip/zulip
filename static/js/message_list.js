@@ -438,3 +438,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_list;
 }
+window.message_list = message_list;

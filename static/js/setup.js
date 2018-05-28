@@ -19,9 +19,9 @@ $(function () {
     } else if (!page_params.needs_tutorial) {
         $('#first_run_message').show();
     }
-
     // This requires that we used Django's {% csrf_token %} somewhere on the page.
     csrf_token = $('input[name="csrfmiddlewaretoken"]').attr('value');
+    window.csrf_token = csrf_token;
 
 
     // This is an issue fix where in jQuery v3 the result of outerHeight on a node

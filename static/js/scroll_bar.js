@@ -66,3 +66,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = scroll_bar;
 }
+
+window.scroll_bar = scroll_bar;

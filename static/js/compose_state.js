@@ -63,3 +63,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_state;
 }
+window.compose_state = compose_state;

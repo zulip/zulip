@@ -119,3 +119,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = channel;
 }
+window.channel = channel;

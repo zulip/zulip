@@ -138,3 +138,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = transmit;
 }
+window.transmit = transmit;

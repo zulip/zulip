@@ -261,3 +261,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = compose_fade;
 }
+window.compose_fade = compose_fade;

@@ -297,3 +297,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = resize;
 }
+window.resize = resize;

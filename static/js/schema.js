@@ -63,3 +63,5 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = schema;
 }
+
+window.schema = schema;

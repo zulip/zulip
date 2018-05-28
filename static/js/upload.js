@@ -189,3 +189,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = upload;
 }
+window.upload = upload;

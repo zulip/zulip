@@ -102,3 +102,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_notifications;
 }
+window.settings_notifications = settings_notifications;

@@ -39,3 +39,4 @@ if (typeof module !== 'undefined') {
     module.exports = message_live_update;
 }
 
+window.message_live_update = message_live_update;

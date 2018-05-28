@@ -642,3 +642,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = notifications;
 }
+window.notifications = notifications;

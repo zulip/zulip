@@ -28,3 +28,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = message_util;
 }
+window.message_util = message_util;

@@ -496,3 +496,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = settings_account;
 }
+window.settings_account = settings_account;

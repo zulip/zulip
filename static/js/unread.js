@@ -623,3 +623,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = unread;
 }
+window.unread = unread;

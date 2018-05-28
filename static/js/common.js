@@ -95,3 +95,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = common;
 }
+window.common = common;

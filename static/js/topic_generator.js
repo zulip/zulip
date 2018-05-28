@@ -273,3 +273,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = topic_generator;
 }
+window.topic_generator = topic_generator;

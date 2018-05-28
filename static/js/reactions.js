@@ -434,3 +434,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = reactions;
 }
+window.reactions = reactions;

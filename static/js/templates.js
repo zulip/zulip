@@ -112,3 +112,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = templates;
 }
+window.templates = templates;

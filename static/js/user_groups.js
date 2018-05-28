@@ -96,3 +96,4 @@ return exports;
 if (typeof module !== 'undefined') {
     module.exports = user_groups;
 }
+window.user_groups = user_groups;
