@@ -20,8 +20,8 @@ from zerver.lib.test_runner import slow
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
-    Message, get_context_for_message, ScheduledEmail, \
-    get_membership_realms, get_source_profile
+    get_membership_realms, get_source_profile, \
+    Message, get_context_for_message, ScheduledEmail, check_valid_user_id
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -287,6 +287,40 @@ class UserProfileTest(ZulipTestCase):
         dct = get_emails_from_user_ids([hamlet.id, othello.id])
         self.assertEqual(dct[hamlet.id], self.example_email("hamlet"))
         self.assertEqual(dct[othello.id], self.example_email("othello"))
+
+    def test_valid_user_id(self) -> None:
+        realm = get_realm("zulip")
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        bot = self.example_user("welcome_bot")
+
+        # Invalid user ID
+        invalid_uid = 1000
+        self.assertEqual(check_valid_user_id(realm.id, invalid_uid),
+                         "Invalid user ID: %d" % (invalid_uid))
+        self.assertEqual(check_valid_user_id(realm.id, "abc"),
+                         "User id is not an integer")
+        self.assertEqual(check_valid_user_id(realm.id, str(othello.id)),
+                         "User id is not an integer")
+
+        # User is in different realm
+        self.assertEqual(check_valid_user_id(get_realm("zephyr").id, hamlet.id),
+                         "Invalid user ID: %d" % (hamlet.id))
+
+        # User is not active
+        hamlet.is_active = False
+        hamlet.save()
+        self.assertEqual(check_valid_user_id(realm.id, hamlet.id),
+                         "User is deactivated")
+        self.assertEqual(check_valid_user_id(realm.id, hamlet.id, allow_deactivated=True),
+                         None)
+
+        # User is bot
+        self.assertEqual(check_valid_user_id(realm.id, bot.id),
+                         "User with id %d is bot" % (bot.id))
+
+        # Succesfully get non-bot, active user belong to your realm
+        self.assertEqual(check_valid_user_id(realm.id, othello.id), None)
 
     def test_cache_invalidation(self) -> None:
         hamlet = self.example_user('hamlet')

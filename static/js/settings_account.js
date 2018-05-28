@@ -69,6 +69,8 @@ exports.add_custom_profile_fields_to_settings = function () {
         var value = people.my_custom_profile_data(field.id);
         var is_long_text = field_type === "Long text";
         var is_choice_field = field_type === "Choice";
+        var is_user_field = field_type === "User";
+        var is_date_field = field_type === "Date";
         var field_choices = [];
 
         if (field_type === "Long text" || field_type === "Short text") {
@@ -89,6 +91,8 @@ exports.add_custom_profile_fields_to_settings = function () {
             type = "date";
         } else if (field_type === "URL") {
             type = "url";
+        } else if (field_type === "User") {
+            type = "user";
         } else {
             blueslip.error("Undefined field type.");
         }
@@ -103,10 +107,41 @@ exports.add_custom_profile_fields_to_settings = function () {
             field_value: value,
             is_long_text_field: is_long_text,
             is_choice_field: is_choice_field,
+            is_user_field: is_user_field,
+            is_date_field: is_date_field,
             field_choices: field_choices,
         });
         $("#account-settings .custom-profile-fields-form").append(html);
+
+        if (is_user_field) {
+            var pill_container = $('.custom_user_field[data-field-id="' + field.id + '"] .pill-container').expectOne();
+            var pills = user_pill.create_pills(pill_container);
+
+            function update_custom_user_field() {
+                var fields = [];
+                var user_id = user_pill.get_user_ids(pills);
+                if (user_id.length !== 1) {
+                    ui_report.message(i18n.t("Only one user allowed"), $("#custom-field-status"), 'alert-error');
+                    return;
+                }
+                fields.push({id: field.id, value: user_id[0]});
+                update_user_custom_profile_fields(fields);
+            }
+
+            if (value) {
+                var user = people.get_person_from_user_id(value);
+                user_pill.append_user(user, pills);
+            }
+            var input = pill_container.children('.input');
+            user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);
+            pills.onPillRemove(function () {
+                update_custom_user_field();
+            });
+        }
     });
+    $(".custom_user_field .datepicker").flatpickr({
+        altInput: true,
+        altFormat: "F j, Y"});
 };
 
 exports.set_up = function () {
