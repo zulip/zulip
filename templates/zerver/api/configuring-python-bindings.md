@@ -3,7 +3,7 @@
 Zulip provides a set of tools that allows interacting with its API more
 easily, called the [Python bindings](https://pypi.python.org/pypi/zulip/).
 One of the most notable use cases for these bindings are bots developed
-using Zulip's [bot framework](/#writing-bots).
+using Zulip's [bot framework](/api/writing-bots).
 
 In order to use them, you need to configure them with your API key and other
 settings. There are two ways to achieve that:
