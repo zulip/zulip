@@ -1194,7 +1194,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             'full_name': 'Outgoing Webhook test bot',
             'short_name': 'outgoingservicebot',
             'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
-            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+            'payload_url': ujson.dumps('http://127.0.0.1:5002'),
             'interface_type': -1,
         }
         result = self.client_post("/json/bots", bot_info)
@@ -1210,7 +1210,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             'full_name': 'Outgoing Webhook test bot',
             'short_name': 'outgoingservicebot',
             'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
-            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+            'payload_url': ujson.dumps('http://127.0.0.1:5002'),
         }
         bot_info.update(extras)
         result = self.client_post("/json/bots", bot_info)
@@ -1224,11 +1224,11 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
 
         self.assertEqual(len(services), 1)
         self.assertEqual(service.name, "outgoingservicebot")
-        self.assertEqual(service.base_url, "http://127.0.0.1:5002/bots/followup")
+        self.assertEqual(service.base_url, "http://127.0.0.1:5002")
         self.assertEqual(service.user_profile, bot)
 
         # invalid URL test case.
-        bot_info['payload_url'] = ujson.dumps('http://127.0.0.:5002/bots/followup')
+        bot_info['payload_url'] = ujson.dumps('http://127.0.0.:5002')
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_error(result, "payload_url is not a URL")
 
@@ -1253,7 +1253,7 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
             'full_name': 'Outgoing Webhook test bot',
             'short_name': 'outgoingservicebot',
             'bot_type': UserProfile.OUTGOING_WEBHOOK_BOT,
-            'payload_url': ujson.dumps('http://127.0.0.1:5002/bots/followup'),
+            'payload_url': ujson.dumps('http://127.0.0.1:5002'),
             'interface_type': -1,
         }
         result = self.client_post("/json/bots", bot_info)
