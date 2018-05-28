@@ -11,6 +11,11 @@
 </script>
 {% endblock %}
 
+{% block commonjs %}
+{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce)) }}
+{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
+{% endblock %}
+
 {% block customhead %}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
@@ -28,10 +33,7 @@
 
 </style>
 
-{{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ minified_js('app', csp_nonce)|safe }}
-{{ render_bundle('app-styles', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
+
 {% include "zerver/app/topic_is_muted.html" %}
 {% endblock %}
 

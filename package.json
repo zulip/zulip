@@ -22,6 +22,7 @@
     "font-awesome": "4.7.0",
     "handlebars": "4.0.11",
     "i18next": "3.4.4",
+    "imports-loader": "0.8.0",
     "jquery": "3.3.1",
     "jquery-validation": "1.17.0",
     "katex": "0.8.3",

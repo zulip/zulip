@@ -39,7 +39,7 @@ class HomeTest(ZulipTestCase):
             'Search streams',
             'Welcome to Zulip',
             # Verify that the app styles get included
-            'app-styles-stubentry.js',
+            'app-stubentry.js',
             'var page_params',
         ]
 
