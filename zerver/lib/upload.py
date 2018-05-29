@@ -26,7 +26,7 @@ import urllib
 import base64
 import os
 import re
-from PIL import Image, ImageOps
+from PIL import Image, ImageOps, ExifTags
 import io
 import random
 import logging
@@ -81,9 +81,28 @@ def random_name(bytes: int=60) -> str:
 class BadImageError(JsonableError):
     code = ErrorCode.BAD_IMAGE
 
+name_to_tag_num = dict((name, num) for num, name in ExifTags.TAGS.items())
+
+# https://stackoverflow.com/a/6218425
+def exif_rotate(image: Image) -> Image:
+    if hasattr(image, '_getexif') is False:
+        return image
+    exif_dict = dict(image._getexif().items())
+    orientation = exif_dict.get(name_to_tag_num['Orientation'])
+
+    if orientation == 3:
+        return image.rotate(180, expand=True)
+    elif orientation == 6:
+        return image.rotate(270, expand=True)
+    elif orientation == 8:
+        return image.rotate(90, expand=True)
+
+    return image
+
 def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
+        im = exif_rotate(im)
         im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
@@ -98,6 +117,7 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
+        im = exif_rotate(im)
         if image_format == 'GIF' and im.is_animated:
             if im.size[0] != im.size[1]:
                 raise JsonableError(

@@ -22,7 +22,8 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
     upload_message_file, upload_emoji_image, delete_message_image, LocalUploadBackend, \
     ZulipUploadBackend, MEDIUM_AVATAR_SIZE, resize_avatar, \
     resize_emoji, BadImageError, get_realm_for_filename, \
-    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE
+    currently_used_upload_space, DEFAULT_AVATAR_SIZE, DEFAULT_EMOJI_SIZE, \
+    exif_rotate
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
@@ -1307,3 +1308,34 @@ class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):
         data2 = b'more-data!'
         upload_message_file(u'dummy2.txt', len(data2), u'text/plain', data2, self.user_profile)
         self.assertEqual(len(data) + len(data2), currently_used_upload_space(self.realm))
+
+class ExifRotateTests(TestCase):
+    def test_image_do_not_rotate(self) -> None:
+        # Image does not have _getexif method.
+        img_data = get_test_image_file('img.png').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
+        # Orientation of the image is 1.
+        img_data = get_test_image_file('img.jpg').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
+    def test_image_rotate(self) -> None:
+        with mock.patch('PIL.Image.Image.rotate') as rotate:
+            img_data = get_test_image_file('img_orientation_3.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(180, expand=True)
+
+            img_data = get_test_image_file('img_orientation_6.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(270, expand=True)
+
+            img_data = get_test_image_file('img_orientation_8.jpg').read()
+            img = Image.open(io.BytesIO(img_data))
+            exif_rotate(img)
+            rotate.assert_called_with(90, expand=True)
