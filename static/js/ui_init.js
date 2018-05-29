@@ -240,8 +240,6 @@ function initialize_kitchen_sink_stuff() {
 
     $('.copy_message[data-toggle="tooltip"]').tooltip();
 
-    $('#keyboard-icon').tooltip();
-
     $("body").on("mouseover", ".message_edit_content", function () {
         $(this).closest(".message_row").find(".copy_message").show();
     });
