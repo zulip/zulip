@@ -527,11 +527,20 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             return None
         return match.group(2)
 
-    def youtube_image(self, url: str) -> Optional[str]:
-        yt_id = self.youtube_id(url)
+    def youtube_image(self, extracted_data: Dict[str, Any]) -> Optional[str]:
+        yt_image = extracted_data.get("image")
 
-        if yt_id is not None:
-            return "https://i.ytimg.com/vi/%s/default.jpg" % (yt_id,)
+        if yt_image is None:
+            # not all videos have images, so exiting early is fine
+            return None
+
+        return yt_image
+
+    def get_youtube_title(self, extracted_data: Dict[str, Any]) -> Optional[str]:
+        title = extracted_data.get("title")
+
+        if title is not None:
+            return 'Youtube - {}'.format(title)
         return None
 
     def vimeo_id(self, url: str) -> Optional[str]:
@@ -854,11 +863,6 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 div.set("class", "inline-preview-twitter")
                 div.insert(0, twitter_data)
                 continue
-            youtube = self.youtube_image(url)
-            if youtube is not None:
-                yt_id = self.youtube_id(url)
-                add_a(root, youtube, url, None, None, "youtube-video message_inline_image", yt_id)
-                continue
 
             global db_data
 
@@ -873,6 +877,17 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 current_message.links_for_preview.add(url)
                 continue
             if extracted_data:
+                yt_id = self.youtube_id(url)
+                if yt_id is not None:
+                    youtube = self.youtube_image(extracted_data)
+                    yt_title = self.get_youtube_title(extracted_data)
+                    if yt_title is not None:
+                        found_url.family.child.text = yt_title
+                    else:
+                        yt_title = url
+                    add_a(root, youtube, url, yt_title, None,
+                          "youtube-video message_inline_image", yt_id)
+                    continue
                 vm_id = self.vimeo_id(url)
                 if vm_id is not None:
                     vimeo_image = extracted_data.get('image')
