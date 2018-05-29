@@ -61,20 +61,20 @@ pip install zulip_botserver
 1. Download the `zuliprc` file for your bot from the *Active Bots*
    panel, using the download button.
 
-1. Run the bot server, where `helloworld` is the name of the bot you
+1. Run the Botserver, where `helloworld` is the name of the bot you
    want to run:
    `zulip-bot-server --config-file <path_to_zuliprc> --bot-name=helloworld`
 
     You can specify the port number and various other options; run
     `zulip-bot-server --help` to see how to do this.
 
-1.  Congrats, everything is set up! Test your botserver like you would
+1.  Congrats, everything is set up! Test your Botserver like you would
     test a normal bot.
 
-### Running multiple bots using the Zulip botserver
+### Running multiple bots using the Zulip Botserver
 
-The Zulip botserver also supports running multiple bots from a single
-botserver process.  You can do this with the following procedure.
+The Zulip Botserver also supports running multiple bots from a single
+Botserver process.  You can do this with the following procedure.
 
 1. Download the `botserverrc` from the `your-bots` settings page, using
    the "Download config of all active outgoing webhook bots in Zulip
@@ -134,7 +134,7 @@ running it manually.
             command=zulip-bot-server --config-file=<path/to/your/botserverrc>
             --hostname <address> --port <port>
             startsecs=3
-            stdout_logfile=/var/log/zulip-botserver.log ; all output of your botserver will be logged here
+            stdout_logfile=/var/log/zulip-botserver.log ; all output of your Botserver will be logged here
             redirect_stderr=true
 
     * Edit the `<>` sections according to your preferences.
@@ -156,6 +156,6 @@ running it manually.
    The output should include a line similar to this:
    > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
 
-   The standard output of the bot server will be logged to the path in
+   The standard output of the Botserver will be logged to the path in
    your *supervisord* configuration.
 
