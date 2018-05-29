@@ -363,7 +363,6 @@ class PasswordResetTest(ZulipTestCase):
                     "/accounts/password/reset/done/"))
                 result = self.client_get(result["Location"])
 
-        from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
         self.assertIn(FromAddress.NOREPLY, message.from_email)
@@ -2427,6 +2426,97 @@ class UserSignUpTest(ZulipTestCase):
             user_profile = UserProfile.objects.get(email=email)
             # Name comes from LDAP session.
             self.assertEqual(user_profile.full_name, 'New LDAP fullname')
+
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_signup_with_ldap_and_email_enabled_using_email(self) -> None:
+        password = "mynewpassword"
+        email = "newuser@zulip.com"
+        subdomain = "zulip"
+
+        ldap_user_attr_map = {'full_name': 'fn', 'short_name': 'sn'}
+
+        ldap_patcher = patch('django_auth_ldap.config.ldap.initialize')
+        mock_initialize = ldap_patcher.start()
+        mock_ldap = MockLDAP()
+        mock_initialize.return_value = mock_ldap
+
+        mock_ldap.directory = {
+            'uid=newuser,ou=users,dc=zulip,dc=com': {
+                'userPassword': 'testing',
+                'fn': ['New LDAP fullname'],
+                'sn': ['New LDAP shortname'],
+            }
+        }
+        with patch('zerver.views.registration.get_subdomain', return_value=subdomain):
+            result = self.client_post('/register/', {'email': email})
+
+        self.assertEqual(result.status_code, 302)
+        self.assertTrue(result["Location"].endswith(
+            "/accounts/send_confirm/%s" % (email,)))
+        result = self.client_get(result["Location"])
+        self.assert_in_response("Check your email so we can get started.", result)
+
+        # If the user's email is inside the LDAP domain and we just
+        # have a wrong password, then we refuse to create an account
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                # Important: This doesn't match the new user
+                LDAP_APPEND_DOMAIN='zulip.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            result = self.submit_reg_form_for_user(
+                email,
+                password,
+                from_confirmation="1",
+                # Pass HTTP_HOST for the target subdomain
+                HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 200)
+
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Non-LDAP Full Name",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 302)
+            # We get redirected back to the login page because password was wrong
+            self.assertEqual(result.url, "/accounts/login/?email=newuser%40zulip.com")
+            self.assertFalse(UserProfile.objects.filter(email=email).exists())
+
+        # If the user's email is outside the LDAP domain, though, we
+        # successfully create an account with a password in the Zulip
+        # database.
+        with self.settings(
+                POPULATE_PROFILE_VIA_LDAP=True,
+                # Important: This doesn't match the new user
+                LDAP_APPEND_DOMAIN='example.com',
+                AUTH_LDAP_BIND_PASSWORD='',
+                AUTH_LDAP_USER_ATTR_MAP=ldap_user_attr_map,
+                AUTH_LDAP_USER_DN_TEMPLATE='uid=%(user)s,ou=users,dc=zulip,dc=com'):
+
+            with patch('zerver.views.registration.logging.warning') as mock_warning:
+                result = self.submit_reg_form_for_user(
+                    email,
+                    password,
+                    from_confirmation="1",
+                    # Pass HTTP_HOST for the target subdomain
+                    HTTP_HOST=subdomain + ".testserver")
+                self.assertEqual(result.status_code, 200)
+                mock_warning.assert_called_once_with("New account email newuser@zulip.com could not be found in LDAP")
+
+            result = self.submit_reg_form_for_user(email,
+                                                   password,
+                                                   full_name="Non-LDAP Full Name",
+                                                   # Pass HTTP_HOST for the target subdomain
+                                                   HTTP_HOST=subdomain + ".testserver")
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "http://zulip.testserver/")
+            user_profile = UserProfile.objects.get(email=email)
+            # Name comes from the POST request, not LDAP
+            self.assertEqual(user_profile.full_name, 'Non-LDAP Full Name')
 
     def test_registration_when_name_changes_are_disabled(self) -> None:
         """

@@ -382,6 +382,9 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
 
+class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
+    pass
+
 class ZulipLDAPConfigurationError(Exception):
     pass
 
@@ -408,7 +411,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                raise ZulipLDAPException("Username does not match LDAP domain.")
+                raise ZulipLDAPExceptionOutsideDomain("Username does not match LDAP domain.")
             return email_to_username(username)
         return username
 
@@ -433,8 +436,10 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return ZulipLDAPAuthBackendBase.authenticate(self,
                                                          username=username,
                                                          password=password)
-        except ZulipLDAPException:
-            return None  # nocoverage # TODO: this may no longer be possible
+        except ZulipLDAPException as e:
+            if isinstance(e, ZulipLDAPExceptionOutsideDomain):
+                return_data['outside_ldap_domain'] = True
+            return None
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
 

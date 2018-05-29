@@ -35,7 +35,8 @@ from zerver.lib.timezone import get_all_timezones
 from zerver.views.auth import create_preregistration_user, \
     redirect_and_log_into_subdomain, \
     redirect_to_deactivation_notice
-from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend
+from zproject.backends import ldap_auth_enabled, password_auth_enabled, ZulipLDAPAuthBackend, \
+    ZulipLDAPException, email_auth_enabled
 
 from confirmation.models import Confirmation, RealmCreationKey, ConfirmationKeyException, \
     validate_key, create_confirmation_link, get_object_from_key, \
@@ -133,7 +134,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         elif settings.POPULATE_PROFILE_VIA_LDAP:
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
-                    ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+                    try:
+                        ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+                    except ZulipLDAPException:
+                        logging.warning("New account email %s could not be found in LDAP" % (email,))
+                        form = RegistrationForm(realm_creation=realm_creation)
+                        break
+
                     try:
                         ldap_full_name = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
                         request.session['authenticated_full_name'] = ldap_full_name
@@ -230,7 +237,24 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                        password=password,
                                        realm=realm,
                                        return_data=return_data)
-            if auth_result is None:
+            if auth_result is not None:
+                # Since we'll have created a user, we now just log them in.
+                return login_and_go_to_home(request, auth_result)
+
+            if return_data.get("outside_ldap_domain") and email_auth_enabled(realm):
+                # If both the LDAP and Email auth backends are
+                # enabled, and the user's email is outside the LDAP
+                # domain, then the intent is to create a user in the
+                # realm with their email outside the LDAP organization
+                # (with e.g. a password stored in the Zulip database,
+                # not LDAP).  So we fall through and create the new
+                # account.
+                #
+                # It's likely that we can extend this block to the
+                # Google and GitHub auth backends with no code changes
+                # other than here.
+                pass
+            else:
                 # TODO: This probably isn't going to give a
                 # user-friendly error message, but it doesn't
                 # particularly matter, because the registration form
@@ -238,9 +262,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                 return HttpResponseRedirect(reverse('django.contrib.auth.views.login') + '?email=' +
                                             urllib.parse.quote_plus(email))
 
-            # Since we'll have created a user, we now just log them in.
-            return login_and_go_to_home(request, auth_result)
-        elif existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
+        if existing_user_profile is not None and existing_user_profile.is_mirror_dummy:
             user_profile = existing_user_profile
             do_activate_user(user_profile)
             do_change_password(user_profile, password)
