@@ -153,7 +153,7 @@
   "Download .zuliprc": ".zuliprcをダウンロード",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "Zulip Botserver形式の有効な外部向けwebhookボット全ての設定をダウンロードします。",
   "Download file": "ファイルをダウンロード",
-  "Download flaskbotrc": "flaskbotrcをダウンロード",
+  "Download botserverrc": "botserverrcをダウンロード",
   "Download zuliprc": "",
   "Drafts": "下書き",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "",

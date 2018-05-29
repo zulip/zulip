@@ -153,7 +153,7 @@
   "Download .zuliprc": "Stáhnout .zuliprc",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "Stáhnout nastavení všech činných robotů měnících činnost internetových stránek (odchozí zpětné volání HTTP) ve formátu robotického serveru Zulipu.",
   "Download file": "Stáhnout soubor",
-  "Download flaskbotrc": "Stáhnout flaskbotrc",
+  "Download botserverrc": "Stáhnout botserverrc",
   "Download zuliprc": "Stáhnout zuliprc",
   "Drafts": "Návrhy",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "Návrhy starší než <strong>__draft_lifetime__</strong> dnů jsou automaticky odstraněny",

@@ -153,7 +153,7 @@
   "Download .zuliprc": "Скачать .zuliprc",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "Загрузить конфигурацию всех исходящих вебхук ботов в формате Zulip Botserver",
   "Download file": "Скачать файл",
-  "Download flaskbotrc": "Скачать flaskbotrc",
+  "Download botserverrc": "Скачать botserverrc",
   "Download zuliprc": "Скачать zuliprc",
   "Drafts": "Черновики",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "Черновики старше <strong>__draft_lifetime__</strong> дней автоматически удаляются",
