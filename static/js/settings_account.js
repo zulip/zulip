@@ -165,23 +165,32 @@ exports.set_up = function () {
 
     $("#get_api_key_box").hide();
     $("#show_api_key_box").hide();
-    $("#get_api_key_box form").ajaxForm({
-        dataType: 'json', // This seems to be ignored. We still get back an xhr.
-        success: function (resp, statusText, xhr) {
-            var result = JSON.parse(xhr.responseText);
-            var settings_status = $('#account-settings-status').expectOne();
 
-            $("#get_api_key_password").val("");
-            $("#api_key_value").text(result.api_key);
-            $("#show_api_key_box").show();
-            $("#get_api_key_box").hide();
-            settings_status.hide();
-        },
-        error: function (xhr) {
-            ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
-            $("#show_api_key_box").hide();
-            $("#get_api_key_box").show();
-        },
+    $("#get_api_key_button").on("click", function (e) {
+        var data = {};
+        e.preventDefault();
+        e.stopPropagation();
+
+        data.password = $("#get_api_key_password").val();
+        channel.post({
+            url: '/json/fetch_api_key',
+            dataType: 'json',
+            data: data,
+            success: function (data) {
+                var settings_status = $('#account-settings-status').expectOne();
+
+                $("#get_api_key_password").val("");
+                $("#api_key_value").text(data.api_key);
+                $("#show_api_key_box").show();
+                $("#get_api_key_box").hide();
+                settings_status.hide();
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error getting API key"), xhr, $('#account-settings-status').expectOne());
+                $("#show_api_key_box").hide();
+                $("#get_api_key_box").show();
+            },
+        });
     });
 
     $("#show_api_key_box").on("click", "button.regenerate_api_key", function () {
