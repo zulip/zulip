@@ -139,7 +139,7 @@ function _setup_page() {
         full_name: people.my_full_name(),
         page_params: page_params,
         zuliprc: 'zuliprc',
-        flaskbotrc: 'flaskbotrc',
+        botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
         admin_only_bot_creation: page_params.is_admin ||
             page_params.realm_bot_creation_policy !==

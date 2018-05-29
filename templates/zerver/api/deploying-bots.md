@@ -76,11 +76,11 @@ pip install zulip_botserver
 The Zulip botserver also supports running multiple bots from a single
 botserver process.  You can do this with the following procedure.
 
-1. Download the `flaskbotrc` from the `your-bots` settings page, using
+1. Download the `botserverrc` from the `your-bots` settings page, using
    the "Download config of all active outgoing webhook bots in Zulip
    Botserver format." option at the top.
 
-1. Open the `flaskbotrc`. It should contain one or more sections that look like this:
+1. Open the `botserverrc`. It should contain one or more sections that look like this:
 ```
 []
 email=foo-bot@hostname
@@ -99,11 +99,11 @@ key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
 site=http://hostname
 ```
 
-3.  Run the Zulip Botserver by passing the `flaskbotrc` to it. The
+3.  Run the Zulip Botserver by passing the `botserverrc` to it. The
     command format is:
 
     ```
-    zulip-bot-server  --config-file <path_to_flaskbotrc>
+    zulip-bot-server  --config-file <path_to_botserverrc>
     ```
 
     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
@@ -131,7 +131,7 @@ running it manually.
       * Copy the following section into your existing supervisord config file.
 
             [program:zulip-bot-server]
-            command=zulip-bot-server --config-file=<path/to/your/flaskbotrc>
+            command=zulip-bot-server --config-file=<path/to/your/botserverrc>
             --hostname <address> --port <port>
             startsecs=3
             stdout_logfile=/var/log/zulip-botserver.log ; all output of your botserver will be logged here
