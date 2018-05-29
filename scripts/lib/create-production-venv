@@ -15,11 +15,6 @@ parser = argparse.ArgumentParser(description="Create a production virtualenv wit
 parser.add_argument("deploy_path")
 args = parser.parse_args()
 
-codename = subprocess_text_output(["lsb_release", "-cs"])
-if codename != "trusty":
-    # Workaround for the fact that trusty has a different package name here.
-    VENV_DEPENDENCIES.append("virtualenv")
-
 # install dependencies for setting up the virtualenv
 run(["apt-get", "-y", "install"] + VENV_DEPENDENCIES)
 

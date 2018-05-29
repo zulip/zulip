@@ -1,7 +1,7 @@
 
 import os
 import subprocess
-from scripts.lib.zulip_tools import run, ENDC, WARNING
+from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
 
 ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -36,6 +36,12 @@ VENV_DEPENDENCIES = [
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
 ]
+
+codename = parse_lsb_release()["DISTRIB_CODENAME"]
+
+if codename != "trusty":
+    # Workaround for the fact that trusty has a different package name here.
+    VENV_DEPENDENCIES.append("virtualenv")
 
 THUMBOR_VENV_DEPENDENCIES = [
     "libcurl4-openssl-dev",
