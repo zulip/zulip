@@ -595,6 +595,8 @@ def build_custom_checkers(by_lang):
          'description': "!!! warning is invalid; it's spelled '!!! warn'"},
         {'pattern': 'Terms of service',
          'description': "The S in Terms of Service is capitalized"},
+        {'pattern': '[^-_]botserver(?!rc)|bot server',
+         'description': "Use Botserver instead of botserver or bot server."},
     ]) + comma_whitespace_rule
     html_rules = whitespace_rules + prose_style_rules + [
         {'pattern': 'placeholder="[^{#](?:(?!\.com).)+$',
