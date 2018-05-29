@@ -1,23 +1,32 @@
-A bridge for exchanging messages between Matrix and Zulip!
+A bridge for exchanging messages between [matrix.org](https://matrix.org) and Zulip!
 
-### Setup the bridge:
+### Install the bridge software
 
-1. `git clone https://github.com/zulip/python-zulip-api.git` - clone the [python-zulip-api](
-  https://github.com/zulip/python-zulip-api) repository.
+You can install the bridge software as follows:
 
-2. `cd python-zulip-api` - navigate into your cloned repository and use
-  `python3 ./tools/provision` to install all requirements in a Python virtualenv.
+1.  First, clone the Zulip API and install its dependencies:
 
-3. The output of `provision` will end with a command of the form `source .../activate`;
-  run that command to enter the new virtualenv.
+    ```
+    git clone https://github.com/zulip/python-zulip-api.git
+    cd python-zulip-api
+    python3 ./tools/provision
+    ```
 
-4. Navigate to the
-  [matrix integration](https://github.com/zulip/python-zulip-api/tree/master/zulip/integrations/matrix)
-   and use `pip install -r requirements.txt` to install the dependencies.
+1. Next, enter the virtualenv, by running the `source` command printed
+   at the end of the `provision` output.
 
-Now you can start the next configuration step.
+1.  Then, run this to install the Matrix bridge software in your virtualenv.
 
-### Configure the bridge:
+    ```
+    pip install -r zulip/integrations/matrix/requirements.txt
+    ```
+
+This will create a new Python virtual environment, with all the
+dependences for this bridge installed.  You'll want to run the bridge
+service inside this virtualenv.  If you later need to enter the
+virtualenv (from e.g. a new shell), you can use the `source` command.
+
+### Configure the bridge
 
 {!create-stream.md!}
 
