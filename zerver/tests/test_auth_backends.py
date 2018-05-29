@@ -49,7 +49,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     GoogleMobileOauth2Backend, ZulipRemoteUserBackend, ZulipLDAPAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
-    require_email_format_usernames, SocialAuthMixin, AUTH_BACKEND_NAME_MAP, \
+    require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
     ZulipLDAPConfigurationError
 
 from zerver.views.auth import (maybe_send_to_registration,
@@ -58,7 +58,6 @@ from zerver.views.auth import (maybe_send_to_registration,
 from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed, AuthStateForbidden
-from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
     GithubOAuth2
@@ -334,15 +333,29 @@ class AuthBackendTest(ZulipTestCase):
     def test_github_backend(self) -> None:
         user = self.example_user('hamlet')
         email = user.email
+        backend = GitHubAuthBackend()
+        strategy = ZulipStrategy(storage=BaseDjangoStorage())
+        strategy.session_set('subdomain', 'zulip')
+        strategy.request = HttpRequest()
+        backend.strategy = strategy
+
+        bad_backend = GitHubAuthBackend()
+        bad_strategy = ZulipStrategy(storage=BaseDjangoStorage())
+        strategy.request = HttpRequest()
+        bad_backend.strategy = bad_strategy
+
         good_kwargs = dict(response=dict(email=email), return_data=dict(),
-                           realm=get_realm('zulip'))
+                           realm=get_realm('zulip'),
+                           backend=backend,
+                           strategy=strategy)
         bad_kwargs = dict(response=dict(email=email), return_data=dict(),
-                          realm=None)
-        self.verify_backend(GitHubAuthBackend(),
+                          realm=None, backend=bad_backend,
+                          strategy=bad_strategy)
+        self.verify_backend(backend,
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
         bad_kwargs['realm'] = get_realm("zephyr")
-        self.verify_backend(GitHubAuthBackend(),
+        self.verify_backend(backend,
                             good_kwargs=good_kwargs,
                             bad_kwargs=bad_kwargs)
 
@@ -358,21 +371,13 @@ class ResponseMock:
     def text(self) -> str:
         return "Response text"
 
-class SocialAuthMixinTest(ZulipTestCase):
-    def test_social_auth_mixing(self) -> None:
-        mixin = SocialAuthMixin()
-        with self.assertRaises(NotImplementedError):
-            mixin.get_email_address()
-        with self.assertRaises(NotImplementedError):
-            mixin.get_full_name()
-
 class GitHubAuthBackendTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
         self.email = self.user_profile.email
         self.name = 'Hamlet'
         self.backend = GitHubAuthBackend()
-        self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
+        self.backend.strategy = ZulipStrategy(storage=BaseDjangoStorage())
         self.user_profile.backend = self.backend
 
         rf = RequestFactory()
@@ -577,445 +582,6 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302)
         user_profile = get_user(email, realm)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
-class GitHubAuthBackendLegacyTest(ZulipTestCase):
-    def setUp(self) -> None:
-        self.user_profile = self.example_user('hamlet')
-        self.email = self.user_profile.email
-        self.name = 'Hamlet'
-        self.backend = GitHubAuthBackend()
-        self.backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
-        self.user_profile.backend = self.backend
-
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.get_host = lambda: 'zulip.testserver'
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-
-    def do_auth(self, *args: Any, **kwargs: Any) -> UserProfile:
-        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
-            return authenticate(**kwargs)
-
-    def test_github_auth_enabled(self) -> None:
-        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
-            self.assertTrue(github_auth_enabled())
-
-    def test_full_name_with_missing_key(self) -> None:
-        self.assertEqual(self.backend.get_full_name(), '')
-        self.assertEqual(self.backend.get_full_name(response={'name': None}), '')
-
-    def test_full_name_with_none(self) -> None:
-        self.assertEqual(self.backend.get_full_name(response={'email': None}), '')
-
-    def test_github_backend_do_auth_with_non_existing_subdomain(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=self.do_auth):
-            self.backend.strategy.session_set('subdomain', 'test')
-            response = dict(email=self.email, name=self.name)
-            result = self.backend.do_auth(response=response)
-            assert(result is not None)
-            self.assertIn('subdomain=1', result.url)
-
-    def test_github_backend_do_auth_with_subdomains(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=self.do_auth):
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            result = self.backend.do_auth(response=response)
-            assert(result is not None)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-    @override_settings(SEND_LOGIN_EMAILS=True)
-    def test_github_backend_do_auth_mobile_otp_flow(self) -> None:
-        self.backend.strategy.request.META['HTTP_USER_AGENT'] = "ZulipAndroid"
-        mobile_flow_otp = '1234abcd' * 8
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=self.do_auth):
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            self.backend.strategy.session_set('mobile_flow_otp', mobile_flow_otp)
-            response = dict(email=self.email, name=self.name)
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-
-            redirect_url = result['Location']
-            parsed_url = urllib.parse.urlparse(redirect_url)
-            query_params = urllib.parse.parse_qs(parsed_url.query)
-            self.assertEqual(parsed_url.scheme, 'zulip')
-            self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-            self.assertEqual(query_params["email"], [self.example_email("hamlet")])
-            encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-            self.assertEqual(self.example_user('hamlet').api_key,
-                             otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
-
-        self.assertEqual(len(mail.outbox), 1)
-        self.assertIn('Zulip on Android', mail.outbox[0].body)
-
-    def test_github_backend_do_auth_for_default(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=self.do_auth), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            self.backend.do_auth('fake-access-token', response=response)
-
-            kwargs = {'realm': get_realm('zulip'),
-                      'response': response,
-                      'return_data': {'valid_attestation': True}}
-            result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
-
-    def test_github_backend_do_auth_for_default_auth_failed(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=AuthFailed('Not found')), \
-                mock.patch('logging.info'), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-
-            self.backend.do_auth('fake-access-token', response=response)
-            kwargs = {'realm': get_realm('zulip'),
-                      'response': response,
-                      'return_data': {}}
-            result.assert_called_with(None, 'fake-access-token', **kwargs)
-
-    def test_github_backend_do_auth_for_team(self) -> None:
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
-                        side_effect=self.do_auth), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
-                self.backend.do_auth('fake-access-token', response=response)
-
-                kwargs = {'realm': get_realm('zulip'),
-                          'response': response,
-                          'return_data': {'valid_attestation': True}}
-                result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
-
-    def test_github_backend_do_auth_for_team_auth_failed(self) -> None:
-        with mock.patch('social_core.backends.github.GithubTeamOAuth2.do_auth',
-                        side_effect=AuthFailed('Not found')), \
-                mock.patch('logging.info'), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            with self.settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp'):
-                self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm': get_realm('zulip'),
-                          'response': response,
-                          'return_data': {}}
-                result.assert_called_with(None, 'fake-access-token', **kwargs)
-
-    def test_github_backend_do_auth_for_org(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
-                        side_effect=self.do_auth), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
-                self.backend.do_auth('fake-access-token', response=response)
-
-                kwargs = {'realm': get_realm('zulip'),
-                          'response': response,
-                          'return_data': {'valid_attestation': True}}
-                result.assert_called_with(self.user_profile, 'fake-access-token', **kwargs)
-
-    def test_github_backend_do_auth_for_org_auth_failed(self) -> None:
-        with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.do_auth',
-                        side_effect=AuthFailed('Not found')), \
-                mock.patch('logging.info'), \
-                mock.patch('zproject.backends.SocialAuthMixin.process_do_auth') as result:
-            self.backend.strategy.session_set('subdomain', 'zulip')
-            response = dict(email=self.email, name=self.name)
-            with self.settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip'):
-                self.backend.do_auth('fake-access-token', response=response)
-                kwargs = {'realm': get_realm('zulip'),
-                          'response': response,
-                          'return_data': {}}
-                result.assert_called_with(None, 'fake-access-token', **kwargs)
-
-    def test_github_backend_authenticate_nonexisting_user(self) -> None:
-        self.backend.strategy.session_set('subdomain', 'zulip')
-        response = dict(email="invalid@zulip.com", name=self.name)
-        return_data = dict()  # type: Dict[str, Any]
-        user = self.backend.authenticate(return_data=return_data, response=response,
-                                         realm=get_realm("zulip"))
-        self.assertIs(user, None)
-        self.assertTrue(return_data['valid_attestation'])
-
-    def test_github_backend_authenticate_invalid_email(self) -> None:
-        response = dict(email=None, name=self.name)
-        return_data = dict()  # type: Dict[str, Any]
-        user = self.backend.authenticate(return_data=return_data, response=response,
-                                         realm=get_realm("zulip"))
-        self.assertIs(user, None)
-        self.assertTrue(return_data['invalid_email'])
-        result = self.backend.process_do_auth(user, return_data=return_data, response=response)
-        self.assertIs(result, None)
-
-    def test_github_backend_inactive_user(self) -> None:
-        def do_auth_inactive(*args: Any, **kwargs: Any) -> UserProfile:
-            return_data = kwargs['return_data']
-            return_data['inactive_user'] = True
-            return self.user_profile
-
-        with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
-                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                           side_effect=do_auth_inactive):
-            response = dict(email=self.email, name=self.name)
-            user = self.backend.do_auth(response=response)
-            result.assert_not_called()
-            self.assertIs(user, None)
-
-    def test_github_backend_new_user_wrong_domain(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = 'nonexisting@phantom.com'
-            response = dict(email=email, name='Ghost')
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('Your email address, {}, is not '
-                                    'in one of the domains that are allowed to register '
-                                    'for accounts in this organization.'.format(email), result)
-
-    def test_github_backend_new_user(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete', HTTP_HOST=self.user_profile.realm.host)
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = self.nonreg_email('newuser')
-            name = "Ghost"
-            response = dict(email=email, name=name)
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            confirmation = Confirmation.objects.all().first()
-            confirmation_key = confirmation.confirmation_key
-            self.assertIn('do_confirm/' + confirmation_key, result.url)
-            result = self.client_get(result.url)
-            self.assert_in_response('action="/accounts/register/"', result)
-            data = {"from_confirmation": "1",
-                    "full_name": name,
-                    "key": confirmation_key}
-            result = self.client_post('/accounts/register/', data)
-            self.assert_in_response("You're almost there", result)
-            # Verify that the user is asked for name but not password
-            self.assert_not_in_success_response(['id_password'], result)
-            self.assert_in_success_response(['id_full_name'], result)
-
-            result = self.client_post(
-                '/accounts/register/',
-                {'full_name': name,
-                 'key': confirmation_key,
-                 'terms': True})
-
-        self.assertEqual(result.status_code, 302)
-        user_profile = self.nonreg_user('newuser')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
-    def test_github_backend_existing_user(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = self.example_email("hamlet")
-            response = dict(email=email, name='Hamlet')
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('hamlet@zulip.com already has an account',
-                                    result)
-
-    def test_github_backend_existing_deactivated_user(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        do_deactivate_user(self.example_user("hamlet"))
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = self.example_email("hamlet")
-            response = dict(email=email, name='Hamlet')
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            self.assert_in_response('action="/register/"', result)
-            self.assert_in_response('The account for hamlet@zulip.com has been deactivated',
-                                    result)
-
-    def test_github_backend_new_user_when_is_signup_is_false(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '0'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-        name = 'New User Name'
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = 'new-user@zulip.com'
-            response = dict(email=email, name=name)
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-
-            result = self.client_get(result.url)
-            self.assert_in_response('No account found for', result)
-            self.assert_in_response('new-user@zulip.com.', result)
-            self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
-
-            url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]
-
-            confirmation = Confirmation.objects.all().first()
-            confirmation_key = confirmation.confirmation_key
-            self.assertIn('do_confirm/' + confirmation_key, url)
-            result = self.client_get(url)
-            self.assert_in_response('action="/accounts/register/"', result)
-            data = {"from_confirmation": "1",
-                    "full_name": name,
-                    "key": confirmation_key}
-            result = self.client_post('/accounts/register/', data)
-            self.assert_in_response("You're almost there", result)
-            # Verify that the user is asked for name but not password
-            self.assert_not_in_success_response(['id_password'], result)
-            self.assert_in_success_response(['id_full_name'], result)
-
-    def test_github_backend_realm_invalid_user_when_is_signup_is_false(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '0'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = 'nonexisting@phantom.com'
-            response = dict(email=email, name='Ghost')
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            self.assertEqual(result.status_code, 200)
-            self.assert_in_response('Your email address, nonexisting@phantom.com, is not in one of the domains '
-                                    'that are allowed to register for accounts in this organization.',
-                                    result)
-
-    def test_login_url(self) -> None:
-        result = self.client_get('/accounts/login/social/github')
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-
-    def test_login_url_with_next_param(self) -> None:
-        result = self.client_get('/accounts/login/social/github',
-                                 {'next': "/image_path"})
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-        self.assertIn('image_path', result.url)
-
-        result = self.client_get('/accounts/login/social/github',
-                                 {'next': '/#narrow/stream/7-test-here'})
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-        self.assertIn('narrow', result.url)
-
-    def test_signup_url(self) -> None:
-        result = self.client_get('/accounts/register/social/github')
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=1', result.url)
-
-    def test_github_complete(self) -> None:
-        from social_django import utils
-        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
-        with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
-                        side_effect=AuthFailed('Not found')):
-            result = self.client_get(reverse('social:complete', args=['github']))
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
-
-        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
-
-    def test_github_complete_when_base_exc_is_raised(self) -> None:
-        from social_django import utils
-        utils.BACKENDS = ('zproject.backends.GitHubAuthBackend',)
-        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
-                        side_effect=AuthStateForbidden('State forbidden')), \
-                mock.patch('zproject.backends.logging.warning'):
-            result = self.client_get(reverse('social:complete', args=['github']))
-            self.assertEqual(result.status_code, 302)
-            self.assertIn('login', result.url)
-
-        utils.BACKENDS = settings.AUTHENTICATION_BACKENDS
 
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,
