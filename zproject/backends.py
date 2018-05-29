@@ -366,6 +366,19 @@ class ZulipRemoteUserBackend(RemoteUserBackend):
         email = remote_user_to_email(remote_user)
         return common_get_active_user(email, realm, return_data=return_data)
 
+def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
+    if not ldap_auth_enabled(realm):
+        return False
+
+    # If we don't have an LDAP domain, it's impossible to tell which
+    # accounts are LDAP accounts, so treat all of them as LDAP
+    # accounts
+    if not settings.LDAP_APPEND_DOMAIN:
+        return True
+
+    # Otherwise, check if the email ends with LDAP_APPEND_DOMAIN
+    return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
+
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
     pass
 
