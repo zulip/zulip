@@ -338,6 +338,38 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 0)
 
+    @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',
+                                                'zproject.backends.EmailAuthBackend',
+                                                'zproject.backends.ZulipDummyBackend'))
+    def test_ldap_and_email_auth(self) -> None:
+        """If both email and ldap auth backends are enabled, limit password
+           reset to users outside the LDAP domain"""
+        # If the domain matches, we don't generate an email
+        with self.settings(LDAP_APPEND_DOMAIN="zulip.com"):
+            email = self.example_email("hamlet")
+            with patch('logging.info') as mock_logging:
+                result = self.client_post('/accounts/password/reset/', {'email': email})
+                mock_logging.assert_called_once_with("Password reset not allowed for user in LDAP domain")
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 0)
+
+        # If the domain doesn't match, we do generate an email
+        with self.settings(LDAP_APPEND_DOMAIN="example.com"):
+            email = self.example_email("hamlet")
+            with patch('logging.info') as mock_logging:
+                result = self.client_post('/accounts/password/reset/', {'email': email})
+                self.assertEqual(result.status_code, 302)
+                self.assertTrue(result["Location"].endswith(
+                    "/accounts/password/reset/done/"))
+                result = self.client_get(result["Location"])
+
+        from django.core.mail import outbox
+        self.assertEqual(len(outbox), 1)
+        message = outbox.pop()
+        self.assertIn(FromAddress.NOREPLY, message.from_email)
+        self.assertIn('Psst. Word on the street is that you need a new password',
+                      message.body)
+
     def test_redirect_endpoints(self) -> None:
         '''
         These tests are mostly designed to give us 100% URL coverage

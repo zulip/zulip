@@ -26,7 +26,7 @@ from zerver.lib.subdomains import get_subdomain, user_matches_subdomain, is_root
 from zerver.lib.users import check_full_name
 from zerver.models import Realm, get_active_user, UserProfile, get_realm, email_to_domain, \
     email_allowed_for_realm, DisposableEmailError, DomainNotAllowedForRealmError
-from zproject.backends import email_auth_enabled
+from zproject.backends import email_auth_enabled, email_belongs_to_ldap
 
 import logging
 import re
@@ -210,6 +210,12 @@ class ZulipPasswordResetForm(PasswordResetForm):
 
         if not email_auth_enabled(realm):
             logging.info("Password reset attempted for %s even though password auth is disabled." % (email,))
+            return
+        if email_belongs_to_ldap(realm, email):
+            # TODO: Ideally, we'd provide a user-facing error here
+            # about the fact that they aren't allowed to have a
+            # password in the Zulip server and should change it in LDAP.
+            logging.info("Password reset not allowed for user in LDAP domain")
             return
         if realm.deactivated:
             logging.info("Realm is deactivated")
