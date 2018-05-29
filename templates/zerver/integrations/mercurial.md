@@ -14,13 +14,18 @@ your Mercurial bot and setting the appropriate path to the integration
 hook if it installs in a different location on this system:
 
         [hooks]
-        changegroup = python:/usr/local/share/zulip/integrations/hg/zulip-changegroup.py:hook
+        changegroup = python:zulip_changegroup.hook
 
         [zulip]
         email = "hg-bot@example.com"
         api_key = "0123456789abcdefg"
         stream = "commits"
         site = {{ api_url }}
+
+3.  Add directory with the `zulip_changegroup.py` script
+to the environment variable `PYTHONPATH`:
+
+        export PYTHONPATH = /usr/local/share/zulip/integrations/hg:$PYTHONPATH
 
 That’s all it takes for the basic setup! On the next `hg push`, you’ll
 get a Zulip update for the changeset.
