@@ -393,6 +393,8 @@ INTEGRATIONS = {
         doc='zerver/integrations/google-calendar.md'
     ),
     'hubot': Integration('hubot', 'hubot', ['meta-integration', 'bots'], doc='zerver/integrations/hubot.md'),
+    'irc': Integration('irc', 'irc', ['communication'],
+                       doc='zerver/integrations/irc.md'),
     'jenkins': Integration(
         'jenkins',
         'jenkins',
@@ -411,6 +413,8 @@ INTEGRATIONS = {
         stream_name='jira',
         legacy=True
     ),
+    'matrix': Integration('matrix', 'matrix', ['communication'],
+                          doc='zerver/integrations/matrix.md'),
     'mercurial': Integration(
         'mercurial',
         'mercurial',
