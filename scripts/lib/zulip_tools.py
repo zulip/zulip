@@ -15,7 +15,7 @@ import json
 import uuid
 
 if False:
-    from typing import Sequence, Set, Any
+    from typing import Sequence, Set, Any, Dict
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -303,3 +303,12 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
     for directory in dirs_to_keep:
         if verbose:
             print("Keeping used %s: %s" % (dir_type, directory))
+
+def parse_lsb_release():
+    # type: () -> Dict[str, str]
+    distro_info = {}
+    with open('/etc/lsb-release', 'r') as fp:
+        data = [line.strip().split('=') for line in fp]
+    for k, v in data:
+        distro_info[k] = v
+    return distro_info
