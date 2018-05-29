@@ -5,7 +5,7 @@ which are notified when certain types of messages are sent in
 Zulip. When one of those events is triggered, we'll send a HTTP POST
 payload to the webhook's configured URL.  Webhooks can be used to
 power a wide range of Zulip integrations.  For example, the
-[Zulip botserver][zulip-botserver] is built on top of this API.
+[Zulip Botserver][zulip-botserver] is built on top of this API.
 
 Zulip supports outgoing webhooks both in a clean native Zulip format,
 as well as a format that's compatible with

@@ -8,7 +8,7 @@ common.start_and_log_in();
 
 // var form_sel = 'form[action^="/json/settings"]';
 var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
-var regex_flaskbotrc = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+var regex_botserverrc = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\n$/;
 
 casper.then(function () {
     var menu_selector = '#settings-dropdown';
@@ -142,14 +142,14 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#download_flaskbotrc', function () {
-        casper.click("#download_flaskbotrc");
+    casper.waitUntilVisible('#download_botserverrc', function () {
+        casper.click("#download_botserverrc");
 
-        casper.waitUntilVisible('#download_flaskbotrc[href^="data:application"]', function () {
+        casper.waitUntilVisible('#download_botserverrc[href^="data:application"]', function () {
             casper.test.assertMatch(
-                decodeURIComponent(casper.getElementsAttribute('#download_flaskbotrc', 'href')),
-                regex_flaskbotrc,
-                'Looks like a flaskbotrc file');
+                decodeURIComponent(casper.getElementsAttribute('#download_botserverrc', 'href')),
+                regex_botserverrc,
+                'Looks like a botserverrc file');
         });
     });
 });

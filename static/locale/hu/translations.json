@@ -153,7 +153,7 @@
   "Download .zuliprc": ".zuliprc letöltése",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "",
   "Download file": "",
-  "Download flaskbotrc": "",
+  "Download botserverrc": "",
   "Download zuliprc": "",
   "Drafts": "Piszkozatok",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "",

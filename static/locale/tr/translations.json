@@ -154,7 +154,7 @@
   "Download .zuliprc": ".zuliprc indir",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "Tüm faal dış yönlü webhook botlarının ayarlarını Zulip Botserver formatında indir.",
   "Download file": "Dosya indir",
-  "Download flaskbotrc": "flaskbotrc indir",
+  "Download botserverrc": "botserverrc indir",
   "Download zuliprc": "zuliprc indir",
   "Drafts": "Taslak",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "<strong>__draft_lifetime__</strong> günden daha eski taslaklar otomatik olarak silinecektir",

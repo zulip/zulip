@@ -110,7 +110,7 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-exports.generate_flaskbotrc_content = function (email, api_key) {
+exports.generate_botserverrc_content = function (email, api_key) {
     return "[]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
@@ -177,12 +177,12 @@ exports.set_up = function () {
     $('#config_inputbox').children().hide();
     $("[name*='"+selected_embedded_bot+"']").show();
 
-    $('#download_flaskbotrc').click(function () {
+    $('#download_botserverrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
         var content = "";
         _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                content += exports.generate_flaskbotrc_content(bot.email, bot.api_key);
+                content += exports.generate_botserverrc_content(bot.email, bot.api_key);
             }
         });
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));

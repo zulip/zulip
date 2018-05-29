@@ -153,7 +153,7 @@
   "Download .zuliprc": "Descargar .zuliprc",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "Descargar la configuración de todos los bots con webhooks de salida activos en formato Zulip Botserver.",
   "Download file": "Descargar archivo",
-  "Download flaskbotrc": "Descargar flaskbotrc",
+  "Download botserverrc": "Descargar botserverrc",
   "Download zuliprc": "Descargar zuliprc",
   "Drafts": "Borradores",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "Los borradores de hace más de <strong>__draft_lifetime__</strong> días serán eliminados automáticamente",

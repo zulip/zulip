@@ -153,7 +153,7 @@
   "Download .zuliprc": "下载 .zuliprc",
   "Download config of all active outgoing webhook bots in Zulip Botserver format.": "以Zulip Botserver格式下载所有活动的外发webhook机器人的配置。",
   "Download file": "下载文件",
-  "Download flaskbotrc": "下载 flaskbotrc",
+  "Download botserverrc": "下载 botserverrc",
   "Download zuliprc": "下载 zuliprc",
   "Drafts": "草稿",
   "Drafts older than <strong>__draft_lifetime__</strong> days are automatically removed": "",
