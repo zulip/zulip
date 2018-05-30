@@ -478,7 +478,7 @@ exports.setup_page = function (callback) {
         $(".display-type #stream_settings_title").show();
     }
 
-    function _populate_and_fill() {
+    function populate_and_fill() {
         var sub_rows = stream_data.get_streams_for_settings_page();
 
         $('#subscriptions_table').empty();
@@ -509,12 +509,6 @@ exports.setup_page = function (callback) {
             callback();
             exports.onlaunchtrigger();
         }
-    }
-
-    function populate_and_fill() {
-        i18n.ensure_i18n(function () {
-            _populate_and_fill();
-        });
     }
 
     populate_and_fill();
