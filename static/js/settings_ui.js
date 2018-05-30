@@ -9,20 +9,17 @@ exports.display_checkmark = function ($elem) {
     $(check_mark).css("width", "13px");
 };
 
-exports.strings = {};
-function _initialize() {
-    exports.strings = {
-        success: i18n.t("Saved"),
-        failure: i18n.t("Save failed"),
-        saving: i18n.t("Saving"),
-    };
-
-    settings_bots.setup_bot_creation_policy_values();
-    settings_org.setup_time_limit_dropdown_values();
-}
+exports.strings = {
+    success: i18n.t("Saved"),
+    failure: i18n.t("Save failed"),
+    saving: i18n.t("Saving"),
+};
 
 exports.initialize = function () {
-    i18n.ensure_i18n(_initialize);
+    // TODO: Probably both of the functions this calls should just be
+    // run at module initialization time now that ensure_i18n is dead.
+    settings_bots.setup_bot_creation_policy_values();
+    settings_org.setup_time_limit_dropdown_values();
 };
 
 // Generic function for informing users about changes to the settings
