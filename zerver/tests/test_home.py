@@ -754,6 +754,22 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
 
+    def test_url_language(self) -> None:
+        user = self.example_user("hamlet")
+        user.default_language = 'es'
+        user.save()
+        self.login(user.email)
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+        with \
+                patch('zerver.lib.events.request_event_queue', return_value=42), \
+                patch('zerver.lib.events.get_user_events', return_value=[]):
+            result = self.client_get('/de/')
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['default_language'], 'es')
+        # TODO: Verify that the actual language we're using in the
+        # translation data is German.
+
     def test_translation_data(self) -> None:
         user = self.example_user("hamlet")
         user.default_language = 'es'
@@ -762,6 +778,5 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         self.assertEqual(result.status_code, 200)
 
-        # TODO: Ideally, this should validate something about the translation
-        # data, but that requires parsing page_param from the HTML or doing
-        # more complex interception, which we haven't found worth doing.
+        page_params = self._get_page_params(result)
+        self.assertEqual(page_params['default_language'], 'es')

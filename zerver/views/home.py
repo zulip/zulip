@@ -165,12 +165,16 @@ def home_real(request: HttpRequest) -> HttpResponse:
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
             latest_read = None
 
-    # Set default language and make it persist
-    default_language = register_ret['default_language']
-    url_lang = '/{}'.format(request.LANGUAGE_CODE)
-    if not request.path.startswith(url_lang):
-        translation.activate(default_language)
-        request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
+    # We pick a language for the user as follows:
+    # * First priority is the language in the URL, for debugging.
+    # * If not in the URL, we use the language from the user's settings.
+    request_language = translation.get_language_from_path(request.path_info)
+    if request_language is None:
+        request_language = register_ret['default_language']
+    translation.activate(request_language)
+    # We also save the language to the user's session, so that
+    # something reasonable will happen in logged-in portico pages.
+    request.session[translation.LANGUAGE_SESSION_KEY] = translation.get_language()
 
     two_fa_enabled = settings.TWO_FACTOR_AUTHENTICATION_ENABLED
     # Pass parameters to the client-side JavaScript code.
@@ -245,8 +249,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
 
     page_params['translation_data'] = {}
-    if not default_language == 'en':
-        page_params['translation_data'] = get_language_translation_data(translation.get_language())
+    if request_language != 'en':
+        page_params['translation_data'] = get_language_translation_data(request_language)
 
     csp_nonce = generate_random_token(48)
     response = render(request, 'zerver/app/index.html',
