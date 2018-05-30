@@ -1,7 +1,28 @@
 var settings = (function () {
 
 var exports = {};
-var map;
+var header_map = {
+    "your-account": i18n.t("Your account"),
+    "display-settings": i18n.t("Display settings"),
+    notifications: i18n.t("Notifications"),
+    "your-bots": i18n.t("Your bots"),
+    "alert-words": i18n.t("Alert words"),
+    "uploaded-files": i18n.t("Uploaded files"),
+    "muted-topics": i18n.t("Muted topics"),
+    "organization-profile": i18n.t("Organization profile"),
+    "organization-settings": i18n.t("Organization settings"),
+    "organization-permissions": i18n.t("Organization permissions"),
+    "emoji-settings": i18n.t("Emoji settings"),
+    "auth-methods": i18n.t("Authorization methods"),
+    "user-list-admin": i18n.t("Active users"),
+    "deactivated-users-admin": i18n.t("Deactivated users"),
+    "bot-list-admin": i18n.t("Bot list"),
+    "default-streams-list": i18n.t("Default streams"),
+    "filter-settings": i18n.t("Filter settings"),
+    "invites-list-admin": i18n.t("Invitations"),
+    "user-groups-admin": i18n.t("User groups"),
+    "profile-field-settings": i18n.t("Profile field settings"),
+};
 
 $("body").ready(function () {
     var $sidebar = $(".form-sidebar");
@@ -93,35 +114,9 @@ function setup_settings_label() {
     };
 }
 
-function _setup_page() {
+exports.setup_page = function () {
     ui.set_up_scrollbar($("#settings_page .sidebar.left"));
     ui.set_up_scrollbar($("#settings_content"));
-
-    // only run once -- if the map has not already been initialized.
-    if (map === undefined) {
-        map = {
-            "your-account": i18n.t("Your account"),
-            "display-settings": i18n.t("Display settings"),
-            notifications: i18n.t("Notifications"),
-            "your-bots": i18n.t("Your bots"),
-            "alert-words": i18n.t("Alert words"),
-            "uploaded-files": i18n.t("Uploaded files"),
-            "muted-topics": i18n.t("Muted topics"),
-            "organization-profile": i18n.t("Organization profile"),
-            "organization-settings": i18n.t("Organization settings"),
-            "organization-permissions": i18n.t("Organization permissions"),
-            "emoji-settings": i18n.t("Emoji settings"),
-            "auth-methods": i18n.t("Authorization methods"),
-            "user-list-admin": i18n.t("Active users"),
-            "deactivated-users-admin": i18n.t("Deactivated users"),
-            "bot-list-admin": i18n.t("Bot list"),
-            "default-streams-list": i18n.t("Default streams"),
-            "filter-settings": i18n.t("Filter settings"),
-            "invites-list-admin": i18n.t("Invitations"),
-            "user-groups-admin": i18n.t("User groups"),
-            "profile-field-settings": i18n.t("Profile field settings"),
-        };
-    }
 
     var tab = (function () {
         var tab = false;
@@ -156,10 +151,6 @@ function _setup_page() {
     if (tab) {
         exports.launch_page(tab);
     }
-}
-
-exports.setup_page = function () {
-    _setup_page();
 };
 
 exports.launch_page = function (tab) {
@@ -175,8 +166,8 @@ exports.launch_page = function (tab) {
 };
 
 exports.set_settings_header = function (key) {
-    if (map[key]) {
-        $(".settings-header h1 .section").text(" / " + map[key]);
+    if (header_map[key]) {
+        $(".settings-header h1 .section").text(" / " + header_map[key]);
     } else {
         blueslip.warn("Error: the key '" + key + "' does not exist in the settings" +
             " header mapping file. Please add it.");
