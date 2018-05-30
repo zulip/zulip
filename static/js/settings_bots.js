@@ -119,23 +119,19 @@ exports.generate_botserverrc_content = function (email, api_key, token) {
            "\n";
 };
 
-exports.bot_creation_policy_values = {};
-
-exports.setup_bot_creation_policy_values = function () {
-    exports.bot_creation_policy_values = {
-        everyone: {
-            code: 1,
-            description: i18n.t("Everyone"),
-        },
-        admins_only: {
-            code: 3,
-            description: i18n.t("Admins only"),
-        },
-        restricted: {
-            code: 2,
-            description: i18n.t("Everyone, but only admins can add generic bots"),
-        },
-    };
+exports.bot_creation_policy_values = {
+    everyone: {
+        code: 1,
+        description: i18n.t("Everyone"),
+    },
+    admins_only: {
+        code: 3,
+        description: i18n.t("Admins only"),
+    },
+    restricted: {
+        code: 2,
+        description: i18n.t("Everyone, but only admins can add generic bots"),
+    },
 };
 
 exports.update_bot_settings_tip = function () {

@@ -118,7 +118,6 @@ run_test('set_up', () => {
     global.compile_template('embedded_bot_config_item');
     avatar.build_bot_create_widget = function () {};
     avatar.build_bot_edit_widget = function () {};
-    settings_bots.setup_bot_creation_policy_values();
 
     settings_bots.set_up();
 });
