@@ -491,7 +491,7 @@ exports.change_save_button_state = function ($element, state) {
     }
 };
 
-function _set_up() {
+exports.set_up = function () {
     meta.loaded = true;
 
     loading.make_indicator($('#admin_page_auth_methods_loading_indicator'));
@@ -1032,10 +1032,6 @@ function _set_up() {
             },
         });
     });
-
-}
-exports.set_up = function () {
-    i18n.ensure_i18n(_set_up);
 };
 
 return exports;
