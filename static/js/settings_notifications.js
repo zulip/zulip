@@ -90,14 +90,10 @@ exports.set_up = function () {
     });
 };
 
-function _update_page() {
+exports.update_page = function () {
     _.each(exports.notification_settings, function (setting) {
         $("#" + setting).prop('checked', page_params[setting]);
     });
-}
-
-exports.update_page = function () {
-    i18n.ensure_i18n(_update_page);
 };
 
 return exports;
