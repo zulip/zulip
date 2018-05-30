@@ -115,7 +115,8 @@ class TestCreateStreams(ZulipTestCase):
             realm,
             [{"name": stream_name,
               "description": stream_description,
-              "invite_only": True}
+              "invite_only": True,
+              "is_announcement_only": True}
              for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 3)
@@ -127,6 +128,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
+            self.assertTrue(stream.is_announcement_only)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,
@@ -144,6 +146,30 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in existing_streams:
             self.assertTrue(stream.invite_only)
+
+    def test_create_stream_announcement_only(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        do_change_is_admin(user_profile, True)
+
+        result = self.client_post('/json/users/me/subscriptions', {
+            "subscriptions": ujson.dumps([{"name": 'stream_name1'}]),
+            'is_announcement_only': ujson.dumps(True)})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', user_profile.realm)
+        self.assertEqual(True, stream.is_announcement_only)
+
+    def test_create_stream_announcement_only_requires_realm_admin(self) -> None:
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        do_change_is_admin(user_profile, False)
+
+        result = self.client_post('/json/users/me/subscriptions', {
+            "subscriptions": ujson.dumps([{"name": 'stream_name1'}]),
+            'is_announcement_only': ujson.dumps(True)})
+        self.assert_json_success(result)
+        stream = get_stream('stream_name1', user_profile.realm)
+        self.assertEqual(False, stream.is_announcement_only)
 
     def test_history_public_to_subscribers_on_stream_creation(self) -> None:
         realm = get_realm('zulip')

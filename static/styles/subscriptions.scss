@@ -589,6 +589,10 @@ form#add_new_subscription {
     margin: 5px;
 }
 
+.stream-creation-body #make-invite-only .grey-box .checkbox {
+    margin: 5px;
+}
+
 #announce-new-stream {
     margin-top: 10px;
 }
@@ -962,7 +966,10 @@ form#add_new_subscription {
     padding: 5px 0px;
 }
 
-#stream_privacy_modal ul.grey-box li input[type=checkbox],
+#stream_privacy_modal ul.grey-box li input[type=checkbox] {
+    margin-top: 4px;
+}
+
 #subscription_overlay ul.grey-box li input[type=checkbox] {
     margin-top: 0px;
 }

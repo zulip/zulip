@@ -98,7 +98,7 @@ var stream_name_error = (function () {
 }());
 
 function ajaxSubscribeForCreation(stream_name, description, principals, invite_only,
-                                  announce, history_public_to_subscribers) {
+                                  is_announcement_only, announce, history_public_to_subscribers) {
     // Subscribe yourself and possible other people to a new stream.
     return channel.post({
         url: "/json/users/me/subscriptions",
@@ -106,6 +106,7 @@ function ajaxSubscribeForCreation(stream_name, description, principals, invite_o
                                                description: description}]),
                principals: JSON.stringify(principals),
                invite_only: JSON.stringify(invite_only),
+               is_announcement_only: JSON.stringify(is_announcement_only),
                announce: JSON.stringify(announce),
                history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
         },
@@ -171,6 +172,7 @@ function create_stream() {
     var stream_name = $.trim($("#create_stream_name").val());
     var description = $.trim($("#create_stream_description").val());
     var privacy_setting = $('#stream_creation_form input[name=privacy]:checked').val();
+    var is_announcement_only = $('#stream_creation_form input[name=is-announcement-only]').prop('checked');
     var principals = get_principals();
 
     var invite_only;
@@ -199,6 +201,7 @@ function create_stream() {
         description,
         principals,
         invite_only,
+        is_announcement_only,
         announce,
         history_public_to_subscribers
     );

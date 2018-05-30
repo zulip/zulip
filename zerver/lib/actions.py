@@ -1620,6 +1620,7 @@ def create_stream_if_needed(realm: Realm,
                             stream_name: str,
                             *,
                             invite_only: bool=False,
+                            is_announcement_only: Optional[bool]=False,
                             history_public_to_subscribers: Optional[bool]=None,
                             stream_description: str="") -> Tuple[Stream, bool]:
 
@@ -1633,6 +1634,7 @@ def create_stream_if_needed(realm: Realm,
             name=stream_name,
             description=stream_description,
             invite_only=invite_only,
+            is_announcement_only=is_announcement_only,
             history_public_to_subscribers=history_public_to_subscribers,
             is_in_zephyr_realm=realm.is_zephyr_mirror_realm
         )
@@ -1666,6 +1668,7 @@ def create_streams_if_needed(realm: Realm,
             realm,
             stream_dict["name"],
             invite_only=stream_dict.get("invite_only", False),
+            is_announcement_only=stream_dict.get("is_announcement_only", False),
             history_public_to_subscribers=stream_dict.get("history_public_to_subscribers"),
             stream_description=stream_dict.get("description", "")
         )

@@ -1251,6 +1251,7 @@ run_test('handlebars_bug', () => {
     var args = {
         stream_id: 999,
         is_private: true,
+        is_admin: true,
     };
     var html = render('subscription_stream_privacy_modal', args);
 
@@ -1259,9 +1260,12 @@ run_test('handlebars_bug', () => {
     assert.equal(other_options[1].value, 'invite-only');
     assert.equal(other_options[2].value, 'invite-only-public-history');
 
+    var is_announcement_only = $(html).find("input[name=is-announcement-only]");
+    assert.equal(is_announcement_only.prop('checked'), false);
+
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));
-    assert.equal(button.text().trim(), "translated: Change privacy");
+    assert.equal(button.text().trim(), "translated: Save changes");
 }());
 
 

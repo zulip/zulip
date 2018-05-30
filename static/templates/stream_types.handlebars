@@ -23,4 +23,14 @@
             {{/tr}}
         </label>
     </li>
+    {{#if is_admin}}
+    <li>
+        <label class="checkbox">
+            <input type="checkbox" name="is-announcement-only" value="is-announcement-only" {{#if is_announcement_only}}checked{{/if}}/>
+            <span></span>
+            <b>{{t "Make stream announcement only:"}}</b>
+            {{t "Only organization admins can post." }}
+        </label>
+    </li>
+    {{/if}}
 </ul>
