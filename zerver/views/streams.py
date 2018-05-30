@@ -308,7 +308,10 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
-        stream_dict_copy["is_announcement_only"] = is_announcement_only
+        if user_profile.is_realm_admin:
+            stream_dict_copy["is_announcement_only"] = is_announcement_only
+        else:
+            stream_dict_copy["is_announcement_only"] = False
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 

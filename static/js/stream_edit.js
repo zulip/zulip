@@ -509,6 +509,7 @@ exports.initialize = function () {
         var stream_id = get_stream_id(e.target);
         var stream = stream_data.get_sub_by_id(stream_id);
         var template_data = {
+            is_admin: page_params.is_admin,
             stream_id: stream_id,
             stream_name: stream.name,
             is_announcement_only: stream.is_announcement_only,

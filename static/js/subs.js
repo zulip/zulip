@@ -484,6 +484,7 @@ exports.setup_page = function (callback) {
         $('#subscriptions_table').empty();
 
         var template_data = {
+            is_admin: page_params.is_admin,
             can_create_streams: page_params.can_create_streams,
             subscriptions: sub_rows,
             hide_all_streams: !should_list_all_streams(),
