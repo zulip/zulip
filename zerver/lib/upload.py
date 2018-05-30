@@ -441,12 +441,7 @@ class LocalUploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file: File,
-                            acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
-        file_path = user_avatar_path(target_user_profile)
-
-        image_data = user_file.read()
+    def write_avatar_images(self, file_path: str, image_data: bytes) -> None:
         write_local_file('avatars', file_path + '.original', image_data)
 
         resized_data = resize_avatar(image_data)
@@ -454,6 +449,14 @@ class LocalUploadBackend(ZulipUploadBackend):
 
         resized_medium = resize_avatar(image_data, MEDIUM_AVATAR_SIZE)
         write_local_file('avatars', file_path + '-medium.png', resized_medium)
+
+    def upload_avatar_image(self, user_file: File,
+                            acting_user_profile: UserProfile,
+                            target_user_profile: UserProfile) -> None:
+        file_path = user_avatar_path(target_user_profile)
+
+        image_data = user_file.read()
+        self.write_avatar_images(file_path, image_data)
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         # ?x=x allows templates to append additional parameters with &s
