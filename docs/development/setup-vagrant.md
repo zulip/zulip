@@ -39,26 +39,23 @@ When reporting your issue, please include the following information:
 
 ### Requirements
 
-Installing the Zulip development environment requires downloading several
-hundred megabytes of dependencies. You will need an active internet
-connection throughout the entire installation processes. (See [Specifying a
-proxy](#specifying-a-proxy) if you need a proxy to access the internet.)
-
+Installing the Zulip development environment with Vagrant requires
+downloading several hundred megabytes of dependencies. You will need
+an active internet connection throughout the entire installation
+processes. (See [Specifying a proxy](#specifying-a-proxy) if you need
+a proxy to access the internet.)
 
 - **All**: 2GB available RAM, Active broadband internet connection, [GitHub account][set-up-git].
-- **macOS**: macOS (10.11 El Capitan or newer recommended), Git,
-  VirtualBox (version [5.2.6][vbox-dl-macos] recommended -- we find
-  it's more stable than more recent versions),
-  [Vagrant][vagrant-dl-macos].
-- **Ubuntu**: 14.04 64-bit or 16.04 64-bit, Git, [Vagrant][vagrant-dl-deb], lxc.
+- **macOS**: macOS (10.11 El Capitan or newer recommended)
+- **Ubuntu LTS**: 18.04, 16.04, or 14.04 64-bit
   - or **Debian**: 9.0 "stretch" 64-bit
 - **Windows**: Windows 64-bit (Win 10 recommended), hardware
-  virtualization enabled (VT-X or AMD-V), administrator access,
-  [Git for Windows][git-bash] (which installs Git BASH), [VirtualBox][vbox-dl],
-  [Vagrant][vagrant-dl-win].
+  virtualization enabled (VT-X or AMD-V), administrator access.
 
-Don't see your system listed above? See [Advanced setup][install-advanced] for
-details about installing for other Linux and UNIX platforms.
+Other Linux distributions work great too, but we don't maintain
+documentation for installing Vagrant and LXC on those systems, so
+you'll need to find a separate guide and crib from the Debian/Ubuntu
+docs.
 
 ### Step 0: Set up Git & GitHub
 
@@ -97,8 +94,6 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code).
 
 #### Ubuntu
 
-The setup for Ubuntu 14.04 Trusty and Ubuntu 16.04 Xenial are the same.
-
 If you're in a hurry, you can copy and paste the following into your terminal
 after which you can jump to [Step 2: Get Zulip Code](#step-2-get-zulip-code):
 
@@ -115,8 +110,15 @@ For a step-by-step explanation, read on.
 
 ##### 1. Install Vagrant
 
-For both 14.04 Trusty and 16.04 Xenial, you'll need a more recent version of
-Vagrant than what's available in the official Ubuntu repositories.
+For Ubuntu 18.04 Bionic, you can just install from `apt`:
+
+```
+sudo apt install vagrant
+```
+
+For Ubuntu 16.04 Xenial and 14.04 Trusty, you'll need a more recent
+version of Vagrant than what's available in the official Ubuntu
+repositories.
 
 First uninstall any vagrant package you may have installed from the Ubuntu
 repository:
@@ -175,8 +177,8 @@ Now you are ready for [Step 2: Get Zulip Code.](#step-2-get-zulip-code)
 #### Debian
 
 The setup for Debian 9.0 "stretch" is very similar to that
-[for Ubuntu 16.04 above](#ubuntu).  Follow those instructions,
-except with the following differences:
+[for Ubuntu above](#ubuntu).  Follow those instructions, except with
+the following differences:
 
 **Apt package list**.  In "2. Install remaining dependencies", the
 command to install the dependencies is a bit shorter:

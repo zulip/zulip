@@ -9,6 +9,18 @@ Contents:
 
 ## Installing directly on Ubuntu or Debian
 
+If you'd like to install a Zulip development environment on a computer
+that's running one of:
+
+* Ubuntu 18.04 Bionic, 16.04 Xenial, 14.04 Trusty, or
+* Debian 9 Stretch
+
+You can just run the Zulip provision script on your machine.
+
+**Warning**: there is no supported uninstallation process with this
+method.  If you want that, use the Vagrant environment, where you can
+just do `vagrant destroy` to clean up the development environment.
+
 Start by [cloning your fork of the Zulip repository][zulip-rtd-git-cloning]
 and [connecting the Zulip upstream repository][zulip-rtd-git-connect]:
 
@@ -18,20 +30,12 @@ cd zulip
 git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
-If you'd like to install a Zulip development environment on a computer
-that's already running Ubuntu 16.04 Xenial, Ubuntu 14.04 Trusty, or
-Debian 9 Stretch, you can do that by just running:
-
 ```
 # From a clone of zulip.git
 ./tools/provision
 source /srv/zulip-py3-venv/bin/activate
 ./tools/run-dev.py  # starts the development server
 ```
-
-Note that there is no supported uninstallation process without Vagrant
-(with Vagrant, you can just do `vagrant destroy` to clean up the
-development environment).
 
 Once you've done the above setup, you can pick up the [documentation
 on using the Zulip development
@@ -40,9 +44,9 @@ ignoring the parts about `vagrant` (since you're not using it).
 
 ## Installing manually on Linux
 
-We recommend one of the other installation models, since we test those
-continuously.  But if you know what you're doing and really want to
-install everything manually, these instructions should work.
+We recommend one of the other installation methods, since we test
+those continuously.  But if you know what you're doing and really want
+to install everything manually, these instructions should work.
 
 * [Debian or Ubuntu systems](#on-debian-or-ubuntu-systems)
 * [Fedora 22 (experimental)](#on-fedora-22-experimental)
@@ -116,6 +120,10 @@ sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
 wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.4_amd64.deb
 sudo dpkg -i postgresql-9.5-tsearch-extras_0.4_amd64.deb
 
+# If on 18.04
+wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-10-tsearch-extras_0.4bionic2_amd64.deb
+sudo dpkg -i postgresql-10-tsearch-extras_0.4bionic2_amd64.deb
+
 # If on Stretch
 wget --content-disposition \
   https://packagecloud.io/zulip/server/packages/debian/stretch/postgresql-9.6-tsearch-extras_0.4_amd64.deb/download.deb
@@ -127,7 +135,8 @@ git](https://github.com/zulip/tsearch_extras).
 
 Now continue with the [All Systems](#all-systems) instructions below.
 
-#### Using the [official Zulip PPA][zulip-ppa] (for 14.04 Trusty or 16.04 Xenial):
+#### Using the [official Zulip PPA][zulip-ppa] (for 14.04
+     Trusty, 16.04 Xenial, or 18.04 Bionic):
 
 [zulip-ppa]: https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+packages
 
