@@ -26,7 +26,7 @@ exports.show_or_hide_menu_item = function () {
     }
 };
 
-function _setup_page() {
+exports.setup_page = function () {
     var options = {
         custom_profile_field_types: page_params.custom_profile_field_types,
         realm_name: page_params.realm_name,
@@ -110,7 +110,7 @@ function _setup_page() {
     // Do this after calling the setup_up methods, so that we can
     // disable any dynamically rendered elements.
     exports.show_or_hide_menu_item();
-}
+};
 
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
@@ -121,10 +121,6 @@ exports.launch_page = function (tab) {
 
     overlays.open_settings();
     $active_tab.click();
-};
-
-exports.setup_page = function () {
-    i18n.ensure_i18n(_setup_page);
 };
 
 return exports;
