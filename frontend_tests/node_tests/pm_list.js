@@ -44,12 +44,8 @@ global.people.add_in_realm(me);
 global.people.initialize_current_user(me.user_id);
 
 run_test('get_conversation_li', () => {
-    var test_conversation = 'foo@example.com,bar@example.com';
-    blueslip.set_test_data('warn', 'Unknown conversation: ' + test_conversation);
-    blueslip.set_test_data('warn', 'Unknown emails: ' + test_conversation); // people.js
+    var test_conversation = 'foo@example.com,bar@example.com'; // people.js
     pm_list.get_conversation_li(test_conversation);
-    assert.equal(blueslip.get_test_logs('warn').length, 2);
-    blueslip.clear_test_data();
 });
 
 run_test('close', () => {

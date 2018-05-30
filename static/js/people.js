@@ -462,7 +462,7 @@ exports.pm_with_operand_ids = function (operand) {
 };
 
 exports.emails_to_slug = function (emails_string) {
-    var slug = exports.emails_strings_to_user_ids_string(emails_string);
+    var slug = exports.reply_to_to_user_ids_string(emails_string);
 
     if (!slug) {
         return;

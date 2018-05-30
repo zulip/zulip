@@ -34,9 +34,8 @@ function set_count(count) {
 
 exports.get_conversation_li = function (conversation) {
     // conversation is something like "foo@example.com,bar@example.com"
-    var user_ids_string = people.emails_strings_to_user_ids_string(conversation);
+    var user_ids_string = people.reply_to_to_user_ids_string(conversation);
     if (!user_ids_string) {
-        blueslip.warn('Unknown conversation: ' + conversation);
         return;
     }
     return exports.get_li_for_user_ids_string(user_ids_string);
