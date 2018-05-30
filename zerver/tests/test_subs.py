@@ -115,7 +115,8 @@ class TestCreateStreams(ZulipTestCase):
             realm,
             [{"name": stream_name,
               "description": stream_description,
-              "invite_only": True}
+              "invite_only": True,
+              "is_announcement_only": True}
              for (stream_name, stream_description) in zip(stream_names, stream_descriptions)])
 
         self.assertEqual(len(new_streams), 3)
@@ -127,6 +128,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(actual_stream_descriptions, set(stream_descriptions))
         for stream in new_streams:
             self.assertTrue(stream.invite_only)
+            self.assertTrue(stream.is_announcement_only)
 
         new_streams, existing_streams = create_streams_if_needed(
             realm,

@@ -294,6 +294,7 @@ def add_subscriptions_backend(
         streams_raw: Iterable[Mapping[str, str]]=REQ(
             "subscriptions", validator=check_list(check_dict([('name', check_string)]))),
         invite_only: bool=REQ(validator=check_bool, default=False),
+        is_announcement_only: bool=REQ(validator=check_bool, default=False),
         history_public_to_subscribers: Optional[bool]=REQ(validator=check_bool, default=None),
         announce: bool=REQ(validator=check_bool, default=False),
         principals: List[str]=REQ(validator=check_list(check_string), default=[]),
@@ -307,6 +308,7 @@ def add_subscriptions_backend(
         # Strip the stream name here.
         stream_dict_copy['name'] = stream_dict_copy['name'].strip()
         stream_dict_copy["invite_only"] = invite_only
+        stream_dict_copy["is_announcement_only"] = is_announcement_only
         stream_dict_copy["history_public_to_subscribers"] = history_public_to_subscribers
         stream_dicts.append(stream_dict_copy)
 
