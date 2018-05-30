@@ -10,7 +10,7 @@ exports.highlight_toggle = function (tab_name) {
     }
 };
 
-exports.create_toggler = function () {
+exports.initialize = function () {
     toggler = components.toggle({
         values: [
             { label: i18n.t("Settings"), key: "settings" },
@@ -34,10 +34,6 @@ exports.create_toggler = function () {
     });
 
     $("#settings_overlay_container .tab-container").append(toggler.get());
-};
-
-exports.initialize = function () {
-    i18n.ensure_i18n(exports.create_toggler);
 };
 
 return exports;
