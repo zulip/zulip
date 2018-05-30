@@ -1453,6 +1453,7 @@ def do_add_submessage(sender_id: int,
         type="submessage",
         msg_type=msg_type,
         message_id=message_id,
+        submessage_id=submessage.id,
         sender_id=sender_id,
         content=content,
     )
