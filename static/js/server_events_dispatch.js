@@ -258,7 +258,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             sender_id: event.sender_id,
             msg_type: event.msg_type,
             message_id: event.message_id,
-            data: event.data,
+            content: event.content,
         });
         break;
 

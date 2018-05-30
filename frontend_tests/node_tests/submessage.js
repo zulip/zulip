@@ -67,7 +67,7 @@ run_test('handle_event', () => {
         msg_type: 'widget',
         sender_id: 99,
         message_id: message.id,
-        data: 'some_data',
+        content: '"some_data"',
     };
 
     var args;

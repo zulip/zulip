@@ -91,10 +91,19 @@ exports.handle_event = function (event) {
         return;
     }
 
+    var data;
+
+    try {
+        data = JSON.parse(event.content);
+    } catch (err) {
+        blueslip.error('server sent us invalid json in handle_event: ' + event.content);
+        return;
+    }
+
     widgetize.handle_event({
         sender_id: event.sender_id,
         message_id: event.message_id,
-        data: event.data,
+        data: data,
     });
 };
 
