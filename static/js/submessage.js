@@ -81,10 +81,9 @@ exports.do_process_submessages = function (in_opts) {
     });
 };
 
-
-exports.handle_event = function (event) {
+exports.handle_event = function (submsg) {
     // Right now, our only use of submessages is widgets.
-    var msg_type = event.msg_type;
+    var msg_type = submsg.msg_type;
 
     if (msg_type !== 'widget') {
         blueslip.warn('unknown msg_type: ' + msg_type);
@@ -94,15 +93,15 @@ exports.handle_event = function (event) {
     var data;
 
     try {
-        data = JSON.parse(event.content);
+        data = JSON.parse(submsg.content);
     } catch (err) {
-        blueslip.error('server sent us invalid json in handle_event: ' + event.content);
+        blueslip.error('server sent us invalid json in handle_event: ' + submsg.content);
         return;
     }
 
     widgetize.handle_event({
-        sender_id: event.sender_id,
-        message_id: event.message_id,
+        sender_id: submsg.sender_id,
+        message_id: submsg.message_id,
         data: data,
     });
 };
