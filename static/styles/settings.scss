@@ -1373,6 +1373,10 @@ input[type=checkbox].inline-block {
     padding-bottom: 20px;
 }
 
+body:not(.night-mode) #account-settings .custom_user_field .datepicker {
+    background-color: #ffffff;
+}
+
 #settings_page .custom_user_field textarea {
     width: 320px;
     height: 80px;
