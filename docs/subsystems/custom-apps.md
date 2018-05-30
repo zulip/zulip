@@ -181,9 +181,9 @@ The [three different integration models](https://zulipchat.com/api/integration-g
 basically differ in where they perform the main functions of a
 **World Reader**.
 
-#### Webhook integrations
+#### Incoming webhook integrations
 
-In a **webhook** integration, the deployment model is usually this::
+In an **incoming webhook** integration, the deployment model is usually this::
 
 **3rd party hardware**:
 - detect event
