@@ -276,7 +276,7 @@ exports.setup_page = function (callback) {
         return drafts;
     }
 
-    function _populate_and_fill() {
+    function populate_and_fill() {
         $('#drafts_table').empty();
         var drafts = format_drafts(draft_model.get());
         var rendered = templates.render('draft_table_body',{
@@ -293,12 +293,6 @@ exports.setup_page = function (callback) {
         }
 
         setup_event_handlers();
-    }
-
-    function populate_and_fill() {
-        i18n.ensure_i18n(function () {
-            _populate_and_fill();
-        });
     }
 
     remove_old_drafts();
