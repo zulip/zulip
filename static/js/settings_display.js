@@ -165,7 +165,7 @@ exports.report_emojiset_change = function () {
     sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_64.png";
 };
 
-function _update_page() {
+exports.update_page = function () {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
@@ -173,10 +173,6 @@ function _update_page() {
     $("#night_mode").prop('checked', page_params.night_mode);
     // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
-}
-
-exports.update_page = function () {
-    i18n.ensure_i18n(_update_page);
 };
 
 return exports;
