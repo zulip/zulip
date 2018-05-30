@@ -344,6 +344,7 @@ function change_stream_privacy(e) {
     var sub = stream_data.get_sub_by_id(stream_id);
 
     var privacy_setting = $('#stream_privacy_modal input[name=privacy]:checked').val();
+    var is_announcement_only = $('#stream_privacy_modal input[name=is-announcement-only]').prop('checked');
 
     var invite_only;
     var history_public_to_subscribers;
@@ -364,6 +365,7 @@ function change_stream_privacy(e) {
         stream_name: sub.name,
         // toggle the privacy setting
         is_private: JSON.stringify(invite_only),
+        is_announcement_only: JSON.stringify(is_announcement_only),
         history_public_to_subscribers: JSON.stringify(history_public_to_subscribers),
     };
 
@@ -376,6 +378,7 @@ function change_stream_privacy(e) {
 
             // save new privacy settings.
             sub.invite_only = invite_only;
+            sub.is_announcement_only = is_announcement_only;
             sub.history_public_to_subscribers = history_public_to_subscribers;
 
             redraw_privacy_related_stuff(sub_row, sub);
@@ -508,6 +511,7 @@ exports.initialize = function () {
         var template_data = {
             stream_id: stream_id,
             stream_name: stream.name,
+            is_announcement_only: stream.is_announcement_only,
             is_public: !stream.invite_only,
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
             is_private_with_public_history: (stream.invite_only &&
