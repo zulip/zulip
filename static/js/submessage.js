@@ -83,8 +83,6 @@ exports.do_process_submessages = function (in_opts) {
 
 
 exports.handle_event = function (event) {
-    blueslip.info('handle submessage: ' + JSON.stringify(event));
-
     // Right now, our only use of submessages is widgets.
     var msg_type = event.msg_type;
 
