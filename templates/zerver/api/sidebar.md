@@ -3,9 +3,9 @@
 * [Overview](/api/integration-guide)
 * [Existing integrations](/integrations)
 
-## Writing webhook integrations
+## Incoming webhooks
 
-* [Overview](/api/integration-guide#webhook-integrations)
+* [Overview](/api/integration-guide#incoming-webhook-integrations)
 * [Walkthrough](/api/webhook-walkthrough)
 * [Documenting integrations](/api/integration-docs-guide)
 

@@ -11,7 +11,7 @@ On this page you'll find:
 * An overview of the different [types of integrations](#types-of-integrations)
   possible with Zulip.
 * [General advice](#general-advice) for writing integrations.
-* Details about writing [webhook integrations](#webhook-integrations).
+* Details about writing [incoming webhook integrations](#incoming-webhook-integrations).
 * Details about writing [Python script and plugin
   integrations](#python-script-and-plugin-integrations).
 * A guide to
@@ -19,7 +19,7 @@ On this page you'll find:
   separate page.
 
 A detailed walkthrough of a simple "Hello World" integration can be
-found in the [webhook walkthrough](webhook-walkthrough).
+found in the [incoming webhook walkthrough](webhook-walkthrough).
 
 Contributions to this guide are very welcome, so if you run into any
 issues following these instructions or come up with any tips or tools
@@ -32,7 +32,7 @@ to share your ideas!
 We have several different ways that we integrate with 3rd party
 products, ordered here by which types we prefer to write:
 
-1. **[Webhook integrations](#webhook-integrations)** (examples:
+1. **[Incoming webhook integrations](#incoming-webhook-integrations)** (examples:
    Freshdesk, GitHub), where the third-party service supports posting
    content to a particular URI on our site with data about the event.
    For these, you usually just need to create a new python package in
@@ -86,11 +86,11 @@ products, ordered here by which types we prefer to write:
   spot why something isn't working or if the service is using custom HTTP
   headers.
 
-## Webhook integrations
+## Incoming webhook integrations
 
-A webhook allows a third-party service to push data to you when something
+An incoming webhook allows a third-party service to push data to you when something
 happens. It's different from making a REST API call, where you send a request
-to the service's API and wait for a response. With a webhook, the third-party
+to the service's API and wait for a response. With an incoming webhook, the third-party
 service sends you an HTTP POST when it has something for you. Your webhook
 integration defines the URI the service uses to communicate with Zulip, and
 handles that incoming data.
@@ -133,7 +133,7 @@ For a quick guide, read on.
     [this guide](https://zulip.readthedocs.io/en/latest/testing/testing.html)
     for more details on the Zulip test runner.*
 
-* Once you've gotten your webhook working and passing a test, capture
+* Once you've gotten your incoming webhook working and passing a test, capture
     payloads for the other common types of posts the service's webhook
     will make, and add tests for them; usually this part of the
     process is pretty fast.  Webhook integration tests should all use
@@ -146,8 +146,8 @@ For a quick guide, read on.
 
 ### Files that need to be created
 
-Select a name for your webhook and use it consistently. The examples below are
-for a webhook named 'MyWebHook'.
+Select a name for your incoming webhook and use it consistently. The examples
+below are for a webhook named 'MyWebHook'.
 
 * `static/images/integrations/logos/mywebhook.svg`: An image to represent
   your integration in the user interface. Generally this should be the logo of the
@@ -175,7 +175,7 @@ for a webhook named 'MyWebHook'.
 
 * `zerver/lib/integrations.py`: Add your integration to
 `WEBHOOK_INTEGRATIONS` to register it.  This will automatically
-register a url for the webhook of the form `api/v1/external/mywebhook`
+register a url for the incoming webhook of the form `api/v1/external/mywebhook`
 and associate with the function called `api_mywebhook_webhook` in
 `zerver/webhooks/mywebhook/view.py`.
 

@@ -30,9 +30,9 @@ Usually, this involves a few steps:
 
 * Finally, generate a message sent by the integration and take a
   screenshot of the message to provide an example message in the
-  documentation. If your new integration is a webhook integration,
-  you can generate such a message from your test fixtures
-  using `send_webhook_fixture_message`:
+  documentation. If your new integration is an incoming webhook
+  integration, you can generate such a message from your test
+  fixtures using `send_webhook_fixture_message`:
 
   ```
   ./manage.py send_webhook_fixture_message \
@@ -61,13 +61,13 @@ Here are a few common macros used to document Zulip's integrations:
 
 * `{!create-stream.md!}` macro - Recommends that users create a dedicated
   stream for a given integration. Usually the first step in setting up an
-  integration or webhook. For an example rendering, see **Step 1** of
+  integration or incoming webhook. For an example rendering, see **Step 1** of
   [the docs for Zulip's GitHub integration][GitHub].
 
 * `{!create-bot-construct-url.md!}` macro - Instructs users to create a bot
   for a given integration and construct a webhook URL using the bot API key
-  and stream name. The URL is generated automatically for every webhook by using
-  attributes in the [WebhookIntegration][1] class.
+  and stream name. The URL is generated automatically for every incoming webhook
+  by using attributes in the [WebhookIntegration][1] class.
   This macro is usually used right after `{!create-stream!}`. For an example
   rendering, see **Step 2** of [the docs for Zulip's GitHub integration][GitHub].
 
