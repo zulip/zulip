@@ -9,15 +9,14 @@ exports.display_checkmark = function ($elem) {
     $(check_mark).css("width", "13px");
 };
 
-exports.strings = {
-    success: i18n.t("Saved"),
-    failure: i18n.t("Save failed"),
-    saving: i18n.t("Saving"),
-};
-
+exports.strings = {};
 exports.initialize = function () {
-    // TODO: Probably both of the functions this calls should just be
-    // run at module initialization time now that ensure_i18n is dead.
+    exports.strings = {
+        success: i18n.t("Saved"),
+        failure: i18n.t("Save failed"),
+        saving: i18n.t("Saving"),
+    };
+
     settings_bots.setup_bot_creation_policy_values();
     settings_org.setup_time_limit_dropdown_values();
 };
