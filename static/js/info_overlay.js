@@ -22,10 +22,11 @@ function adjust_mac_shortcuts() {
 }
 
 // Make it explicit that our toggler is undefined until
-// _setup_info_overlay is called via ensure_i18n.
+// initialize is called
+// TODO: Determine whether to remove this structure now that ensure_i18n is not needed.
 exports.toggler = undefined;
 
-function _setup_info_overlay() {
+exports.initialize = function () {
     var opts = {
         selected: 0,
         child_wants_focus: true,
@@ -68,7 +69,7 @@ function _setup_info_overlay() {
     }
 
     exports.toggler = toggler;
-}
+};
 
 exports.show = function (target) {
     var overlay = $(".informational-overlays");
@@ -98,10 +99,6 @@ exports.maybe_show_keyboard_shortcuts = function () {
         return;
     }
     exports.show("keyboard-shortcuts");
-};
-
-exports.initialize = function () {
-    i18n.ensure_i18n(_setup_info_overlay);
 };
 
 return exports;
