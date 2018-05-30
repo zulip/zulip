@@ -9,17 +9,17 @@
     </li>
     <li>
         <label class="radio">
-            <input type="radio" name="privacy" value="invite-only" {{#if is_private}}checked{{/if}} />
+            <input type="radio" name="privacy" value="invite-only-public-history" {{#if is_private_with_public_history}}checked{{/if}} />
             {{#tr this}}
-            <b>Private, protected history:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users
+            <b>Private, shared history:</b> must be invited by a member; new members can view complete message history; hidden from non-administrator users
             {{/tr}}
         </label>
     </li>
     <li>
         <label class="radio">
-            <input type="radio" name="privacy" value="invite-only-public-history" {{#if is_private_with_public_history}}checked{{/if}} />
+            <input type="radio" name="privacy" value="invite-only" {{#if is_private}}checked{{/if}} />
             {{#tr this}}
-            <b>Private, shared history:</b> must be invited by a member; new members can view complete message history; hidden from non-administrator users
+            <b>Private, protected history:</b> must be invited by a member; new members can only see messages sent after they join; hidden from non-administrator users
             {{/tr}}
         </label>
     </li>

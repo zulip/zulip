@@ -1256,8 +1256,8 @@ run_test('handlebars_bug', () => {
 
     var other_options = $(html).find("input[name=privacy]");
     assert.equal(other_options[0].value, 'public');
-    assert.equal(other_options[1].value, 'invite-only');
-    assert.equal(other_options[2].value, 'invite-only-public-history');
+    assert.equal(other_options[1].value, 'invite-only-public-history');
+    assert.equal(other_options[2].value, 'invite-only');
 
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));
