@@ -170,6 +170,7 @@ class HomeTest(ZulipTestCase):
             "test_suite",
             "timezone",
             "translate_emoticons",
+            "translation_data",
             "twenty_four_hour_time",
             "two_fa_enabled",
             "two_fa_enabled_user",
@@ -752,3 +753,15 @@ class HomeTest(ZulipTestCase):
         idle_user_msg_list = get_user_messages(long_term_idle_user)
         self.assertEqual(idle_user_msg_list[-1].content, message)
         self.logout()
+
+    def test_translation_data(self) -> None:
+        user = self.example_user("hamlet")
+        user.default_language = 'es'
+        user.save()
+        self.login(user.email)
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+
+        # TODO: Ideally, this should validate something about the translation
+        # data, but that requires parsing page_param from the HTML or doing
+        # more complex interception, which we haven't found worth doing.
