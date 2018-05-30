@@ -16,6 +16,7 @@ from zerver.lib.export import (
     do_export_realm,
     export_files_from_s3,
     export_usermessages_batch,
+    do_export_user,
 )
 from zerver.lib.avatar_hash import (
     user_avatar_path,
@@ -389,3 +390,41 @@ class ExportTest(ZulipTestCase):
         dummy_user_emails = get_set('zerver_userprofile_mirrordummy', 'email')
         self.assertIn(self.example_email('iago'), dummy_user_emails)
         self.assertNotIn(self.example_email('cordelia'), dummy_user_emails)
+
+    def test_export_single_user(self) -> None:
+        output_dir = self._make_output_dir()
+        cordelia = self.example_user('cordelia')
+
+        with patch('logging.info'):
+            do_export_user(cordelia, output_dir)
+
+        def read_file(fn: str) -> Any:
+            full_fn = os.path.join(output_dir, fn)
+            with open(full_fn) as f:
+                return ujson.load(f)
+
+        def get_set(data: List[Dict[str, Any]], field: str) -> Set[str]:
+            values = set(r[field] for r in data)
+            # print('set(%s)' % sorted(values))
+            return values
+
+        messages = read_file('messages-000001.json')
+        user = read_file('user.json')
+
+        exported_user_id = get_set(user['zerver_userprofile'], 'id')
+        self.assertEqual(exported_user_id, set([cordelia.id]))
+        exported_user_email = get_set(user['zerver_userprofile'], 'email')
+        self.assertEqual(exported_user_email, set([cordelia.email]))
+
+        exported_recipient_type_id = get_set(user['zerver_recipient'], 'type_id')
+        self.assertIn(cordelia.id, exported_recipient_type_id)
+
+        exported_stream_id = get_set(user['zerver_stream'], 'id')
+        self.assertIn(list(exported_stream_id)[0], exported_recipient_type_id)
+
+        exported_recipient_id = get_set(user['zerver_recipient'], 'id')
+        exported_subscription_recipient = get_set(user['zerver_subscription'], 'recipient')
+        self.assertEqual(exported_recipient_id, exported_subscription_recipient)
+
+        exported_messages_recipient = get_set(messages['zerver_message'], 'recipient')
+        self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
