@@ -2,7 +2,7 @@ zrequire('submessage');
 
 set_global('channel', {});
 
-(function test_get_message_events() {
+run_test('get_message_events', () => {
     var msg = {};
 
     assert.equal(submessage.get_message_events(msg), undefined);
@@ -30,9 +30,9 @@ set_global('channel', {});
         {sender_id: 33, data: 42},
         {sender_id: 99, data: 84},
     ]);
-}());
+});
 
-(function test_make_server_callback() {
+run_test('make_server_callback', () => {
     var message_id = 444;
     var callback = submessage.make_server_callback(message_id);
     var was_posted;
@@ -55,4 +55,4 @@ set_global('channel', {});
     });
 
     assert(was_posted);
-}());
+});
