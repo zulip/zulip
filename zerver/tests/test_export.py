@@ -1,27 +1,30 @@
 # -*- coding: utf-8 -*-
 
 from django.conf import settings
-from django.test import TestCase
 
 import os
 import shutil
 import ujson
+import io
+from PIL import Image
 
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set, Optional
-
-from zerver.lib.actions import (
-    do_claim_attachments,
-)
+from boto.s3.connection import Location, S3Connection
 
 from zerver.lib.export import (
     do_export_realm,
+    export_files_from_s3,
     export_usermessages_batch,
+)
+from zerver.lib.avatar_hash import (
+    user_avatar_path,
 )
 from zerver.lib.upload import (
     claim_attachment,
     upload_message_file,
     upload_emoji_image,
+    upload_avatar_image,
 )
 from zerver.lib.utils import (
     query_chunker,
@@ -29,12 +32,16 @@ from zerver.lib.utils import (
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
+from zerver.lib.test_helpers import (
+    use_s3_backend,
+)
 
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
     Message,
     Realm,
+    Attachment,
     RealmEmoji,
     Recipient,
     UserMessage,
@@ -214,9 +221,10 @@ class ExportTest(ZulipTestCase):
         result['message'] = read_file('message.json')
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
         result['emoji_dir'] = os.path.join(output_dir, 'emoji')
+        result['avatar_dir'] = os.path.join(output_dir, 'avatars')
         return result
 
-    def test_attachment_and_emoji(self) -> None:
+    def test_export_files_from_local(self) -> None:
         message = Message.objects.all()[0]
         user_profile = message.sender
         url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -227,10 +235,17 @@ class ExportTest(ZulipTestCase):
             message=message,
             is_message_realm_public=True
         )
+        avatar_path_id = user_avatar_path(user_profile)
+        original_avatar_path_id = avatar_path_id + ".original"
 
         realm = Realm.objects.get(string_id='zulip')
         with get_test_image_file('img.png') as img_file:
             upload_emoji_image(img_file, '1.png', user_profile)
+        with get_test_image_file('img.png') as img_file:
+            upload_avatar_image(img_file, user_profile, user_profile)
+        test_image = open(get_test_image_file('img.png').name, 'rb').read()
+        message.sender.avatar_source = 'U'
+        message.sender.save()
 
         full_data = self._export_realm(realm)
 
@@ -239,14 +254,77 @@ class ExportTest(ZulipTestCase):
         record = data['zerver_attachment'][0]
         self.assertEqual(record['path_id'], path_id)
 
+        # Test uploads
         fn = os.path.join(full_data['uploads_dir'], path_id)
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
 
+        # Test emojis
         fn = os.path.join(full_data['emoji_dir'],
                           RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm.id, emoji_file_name='1.png'))
         fn = fn.replace('1.png', '')
         self.assertEqual('1.png', os.listdir(fn)[0])
+
+        # Test avatars
+        fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
+        fn_data = open(fn, 'rb').read()
+        self.assertEqual(fn_data, test_image)
+
+    @use_s3_backend
+    def test_export_files_from_s3(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        realm = Realm.objects.get(string_id='zulip')
+        message = Message.objects.all()[0]
+        user_profile = message.sender
+
+        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
+        attachment_path_id = url.replace('/user_uploads/', '')
+        claim_attachment(
+            user_profile=user_profile,
+            path_id=attachment_path_id,
+            message=message,
+            is_message_realm_public=True
+        )
+
+        avatar_path_id = user_avatar_path(user_profile)
+        original_avatar_path_id = avatar_path_id + ".original"
+
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm.id,
+            emoji_file_name='1.png',
+        )
+
+        with get_test_image_file('img.png') as img_file:
+            upload_emoji_image(img_file, '1.png', user_profile)
+        with get_test_image_file('img.png') as img_file:
+            upload_avatar_image(img_file, user_profile, user_profile)
+        test_image = open(get_test_image_file('img.png').name, 'rb').read()
+
+        full_data = self._export_realm(realm)
+
+        data = full_data['attachment']
+        self.assertEqual(len(data['zerver_attachment']), 1)
+        record = data['zerver_attachment'][0]
+        self.assertEqual(record['path_id'], attachment_path_id)
+
+        # Test uploads
+        fields = attachment_path_id.split('/')
+        fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[1], fields[2]))
+        with open(fn) as f:
+            self.assertEqual(f.read(), 'zulip!')
+
+        # Test emojis
+        fn = os.path.join(full_data['emoji_dir'], emoji_path)
+        fn = fn.replace('1.png', '')
+        self.assertIn('1.png', os.listdir(fn))
+
+        # Test avatars
+        fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
+        fn_data = open(fn, 'rb').read()
+        self.assertEqual(fn_data, test_image)
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
