@@ -20,10 +20,6 @@ i18next
         returnEmptyString: false,  // Empty string is not a valid translation.
     });
 
-i18next.ensure_i18n = function (callback) {
-    callback();
-};
-
 // garbage collect all old-style i18n translation maps in localStorage.
 $(function () {
     if (!localstorage.supported()) {
