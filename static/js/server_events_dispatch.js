@@ -254,12 +254,17 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         break;
 
     case 'submessage':
-        submessage.handle_event({
+        // The fields in the event don't quite exactly
+        // match the layout of a submessage, since there's
+        // an event id.  We also want to be explicit here.
+        var submsg = {
+            id: event.submessage_id,
             sender_id: event.sender_id,
             msg_type: event.msg_type,
             message_id: event.message_id,
             content: event.content,
-        });
+        };
+        submessage.handle_event(submsg);
         break;
 
     case 'subscription':
