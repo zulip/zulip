@@ -579,8 +579,7 @@ run_test('slugs', () => {
     assert.equal(email, 'debbie71@example.com');
 
     // Test undefined slug
-    people.emails_strings_to_user_ids_string = function () { return; };
-    assert.equal(people.emails_to_slug(), undefined);
+    assert.equal(people.emails_to_slug('does@not.exist'), undefined);
 });
 
 initialize();

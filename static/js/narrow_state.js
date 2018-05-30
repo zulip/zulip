@@ -167,7 +167,7 @@ exports.pm_string = function () {
         return;
     }
 
-    var user_ids_string = people.emails_strings_to_user_ids_string(emails_string);
+    var user_ids_string = people.reply_to_to_user_ids_string(emails_string);
 
     return user_ids_string;
 };

@@ -237,11 +237,8 @@ run_test('pm_string', () => {
     set_filter([['pm-with', '']]);
     assert.equal(narrow_state.pm_string(), undefined);
 
-    blueslip.set_test_data('warn', 'Unknown emails: bogus@foo.com');
     set_filter([['pm-with', 'bogus@foo.com']]);
     assert.equal(narrow_state.pm_string(), undefined);
-    assert.equal(blueslip.get_test_logs('warn').length, 1);
-    blueslip.clear_test_data();
 
     var alice = {
         email: 'alice@foo.com',
