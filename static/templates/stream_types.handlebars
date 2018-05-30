@@ -23,4 +23,11 @@
             {{/tr}}
         </label>
     </li>
+    <li>
+        <label class="checkbox">
+            <input type="checkbox" name="is-announcement-only" value="is-announcement-only" {{#if is_announcement_only}}checked{{/if}}/>
+            <span></span>
+            {{#tr this}}Restrict posting to organization administrators{{/tr}}
+        </label>
+    </li>
 </ul>

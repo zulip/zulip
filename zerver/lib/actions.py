@@ -1620,7 +1620,7 @@ def create_stream_if_needed(realm: Realm,
                             stream_name: str,
                             *,
                             invite_only: bool=False,
-                            is_announcement_only: Optional[bool]=False,
+                            is_announcement_only: bool=False,
                             history_public_to_subscribers: Optional[bool]=None,
                             stream_description: str="") -> Tuple[Stream, bool]:
 
