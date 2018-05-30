@@ -1,6 +1,7 @@
 zrequire('submessage');
 
 set_global('channel', {});
+set_global('widgetize', {});
 
 run_test('get_message_events', () => {
     var msg = {};
@@ -55,4 +56,30 @@ run_test('make_server_callback', () => {
     });
 
     assert(was_posted);
+});
+
+run_test('handle_event', () => {
+    const message = {
+        id: 42,
+    };
+
+    const event = {
+        msg_type: 'widget',
+        sender_id: 99,
+        message_id: message.id,
+        data: 'some_data',
+    };
+
+    var args;
+    widgetize.handle_event = (opts) => {
+        args = opts;
+    };
+
+    submessage.handle_event(event);
+
+    assert.deepEqual(args, {
+        sender_id: 99,
+        message_id: 42,
+        data: 'some_data',
+    });
 });
