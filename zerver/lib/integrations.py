@@ -335,7 +335,7 @@ WEBHOOK_INTEGRATIONS = [
         function='zerver.webhooks.opbeat.view.api_opbeat_webhook'
     ),
     WebhookIntegration('opsgenie', ['meta-integration', 'monitoring'], display_name='OpsGenie'),
-    WebhookIntegration('pagerduty', ['monitoring']),
+    WebhookIntegration('pagerduty', ['monitoring'], display_name='PagerDuty'),
     WebhookIntegration('papertrail', ['monitoring']),
     WebhookIntegration('pingdom', ['monitoring']),
     WebhookIntegration('pivotal', ['project-management'], display_name='Pivotal Tracker'),
