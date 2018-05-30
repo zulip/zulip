@@ -1261,7 +1261,7 @@ run_test('handlebars_bug', () => {
 
     var button = $(html).find("#change-stream-privacy-button");
     assert(button.hasClass("btn-danger"));
-    assert.equal(button.text().trim(), "translated: Change privacy");
+    assert.equal(button.text().trim(), "translated: Save changes");
 }());
 
 
