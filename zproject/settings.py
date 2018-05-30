@@ -1530,6 +1530,12 @@ SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 
+SOCIAL_AUTH_PIPELINE = [
+    'social_core.pipeline.social_auth.social_details',
+    'zproject.backends.social_auth_associate_user',
+    'zproject.backends.social_auth_finish',
+]
+
 ########################################################################
 # EMAIL SETTINGS
 ########################################################################
