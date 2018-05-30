@@ -125,8 +125,11 @@ class TestBasics(ZulipTestCase):
             result = self.client_post('/json/submessage', payload)
         self.assert_json_success(result)
 
+        submessage = SubMessage.objects.get(message_id=message_id)
+
         expected_data = dict(
             message_id=message_id,
+            submessage_id=submessage.id,
             content=payload['content'],
             msg_type='whatever',
             sender_id=cordelia.id,

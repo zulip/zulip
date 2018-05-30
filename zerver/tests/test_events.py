@@ -872,6 +872,7 @@ class EventsRegisterTest(ZulipTestCase):
         schema_checker = self.check_events_dict([
             ('type', equals('submessage')),
             ('message_id', check_int),
+            ('submessage_id', check_int),
             ('sender_id', check_int),
             ('msg_type', check_string),
             ('content', check_string),
