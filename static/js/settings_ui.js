@@ -9,13 +9,10 @@ exports.display_checkmark = function ($elem) {
     $(check_mark).css("width", "13px");
 };
 
-exports.strings = {};
-exports.initialize = function () {
-    exports.strings = {
-        success: i18n.t("Saved"),
-        failure: i18n.t("Save failed"),
-        saving: i18n.t("Saving"),
-    };
+exports.strings = {
+    success: i18n.t("Saved"),
+    failure: i18n.t("Save failed"),
+    saving: i18n.t("Saving"),
 };
 
 // Generic function for informing users about changes to the settings
