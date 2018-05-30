@@ -16,8 +16,6 @@ exports.initialize = function () {
         failure: i18n.t("Save failed"),
         saving: i18n.t("Saving"),
     };
-
-    settings_org.setup_time_limit_dropdown_values();
 };
 
 // Generic function for informing users about changes to the settings
