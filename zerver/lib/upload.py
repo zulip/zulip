@@ -85,9 +85,13 @@ name_to_tag_num = dict((name, num) for num, name in ExifTags.TAGS.items())
 
 # https://stackoverflow.com/a/6218425
 def exif_rotate(image: Image) -> Image:
-    if hasattr(image, '_getexif') is False:
+    if not hasattr(image, '_getexif'):
         return image
-    exif_dict = dict(image._getexif().items())
+    exif_data = image._getexif()
+    if exif_data is None:
+        return image
+
+    exif_dict = dict(exif_data.items())
     orientation = exif_dict.get(name_to_tag_num['Orientation'])
 
     if orientation == 3:
