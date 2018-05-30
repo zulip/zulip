@@ -2,6 +2,7 @@ zrequire('submessage');
 
 set_global('channel', {});
 set_global('widgetize', {});
+set_global('message_store', {});
 
 run_test('get_message_events', () => {
     var msg = {};
@@ -64,6 +65,7 @@ run_test('handle_event', () => {
     };
 
     const event = {
+        id: 11,
         msg_type: 'widget',
         sender_id: 99,
         message_id: message.id,
@@ -75,6 +77,11 @@ run_test('handle_event', () => {
         args = opts;
     };
 
+    message_store.get = (msg_id) => {
+        assert.equal(msg_id, message.id);
+        return message;
+    };
+
     submessage.handle_event(event);
 
     assert.deepEqual(args, {
@@ -82,4 +89,6 @@ run_test('handle_event', () => {
         message_id: 42,
         data: 'some_data',
     });
+
+    assert.deepEqual(message.submessages[0], event);
 });

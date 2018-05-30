@@ -81,7 +81,39 @@ exports.do_process_submessages = function (in_opts) {
     });
 };
 
+exports.update_message = function (submsg) {
+    var message = message_store.get(submsg.message_id);
+
+    if (message === undefined) {
+        // This is generally not a problem--the server
+        // can send us events without us having received
+        // the original message, since the server doesn't
+        // track that.
+        return;
+    }
+
+    var existing = _.find(message.submessages, function (sm) {
+        return sm.id === submsg.id;
+    });
+
+    if (existing !== undefined) {
+        blueslip.warn("Got submessage multiple times: " + submsg.id);
+        return;
+    }
+
+    if (message.submessages === undefined) {
+        message.submessages = [];
+    }
+
+    message.submessages.push(submsg);
+};
+
 exports.handle_event = function (submsg) {
+    // Update message.submessages in case we haven't actually
+    // activated the widget yet, so that when the message does
+    // come in view, the data will be complete.
+    exports.update_message(submsg);
+
     // Right now, our only use of submessages is widgets.
     var msg_type = submsg.msg_type;
 
