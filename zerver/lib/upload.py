@@ -298,14 +298,10 @@ class S3UploadBackend(ZulipUploadBackend):
         logging.warning("%s does not exist. Its entry in the database will be removed." % (file_name,))
         return False
 
-    def upload_avatar_image(self, user_file: File,
-                            acting_user_profile: UserProfile,
-                            target_user_profile: UserProfile) -> None:
-        content_type = guess_type(user_file.name)[0]
+    def write_avatar_images(self, s3_file_name: str, target_user_profile: UserProfile,
+                            image_data: bytes, content_type: Optional[str]) -> None:
         bucket_name = settings.S3_AVATAR_BUCKET
-        s3_file_name = user_avatar_path(target_user_profile)
 
-        image_data = user_file.read()
         upload_image_to_s3(
             bucket_name,
             s3_file_name + ".original",
@@ -334,6 +330,16 @@ class S3UploadBackend(ZulipUploadBackend):
         )
         # See avatar_url in avatar.py for URL.  (That code also handles the case
         # that users use gravatar.)
+
+    def upload_avatar_image(self, user_file: File,
+                            acting_user_profile: UserProfile,
+                            target_user_profile: UserProfile) -> None:
+        content_type = guess_type(user_file.name)[0]
+        s3_file_name = user_avatar_path(target_user_profile)
+
+        image_data = user_file.read()
+        self.write_avatar_images(s3_file_name, target_user_profile,
+                                 image_data, content_type)
 
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         bucket = settings.S3_AVATAR_BUCKET
