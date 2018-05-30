@@ -32,7 +32,7 @@ def process_submessage(request: HttpRequest,
         return json_error(msg)
 
     try:
-        data = ujson.loads(content)
+        ujson.loads(content)
     except Exception:
         return json_error(_("Invalid json for submessage"))
 
@@ -41,6 +41,5 @@ def process_submessage(request: HttpRequest,
         message_id=message.id,
         msg_type=msg_type,
         content=content,
-        data=data,
     )
     return json_success()

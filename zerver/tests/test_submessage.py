@@ -127,10 +127,7 @@ class TestBasics(ZulipTestCase):
 
         expected_data = dict(
             message_id=message_id,
-            data=dict(
-                name='alice',
-                salary=20,
-            ),
+            content=payload['content'],
             msg_type='whatever',
             sender_id=cordelia.id,
             type='submessage',

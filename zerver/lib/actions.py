@@ -1440,7 +1440,6 @@ def do_add_submessage(sender_id: int,
                       message_id: int,
                       msg_type: str,
                       content: str,
-                      data: Any,
                       ) -> None:
     submessage = SubMessage(
         sender_id=sender_id,
@@ -1455,7 +1454,7 @@ def do_add_submessage(sender_id: int,
         msg_type=msg_type,
         message_id=message_id,
         sender_id=sender_id,
-        data=data,
+        content=content,
     )
     ums = UserMessage.objects.filter(message_id=message_id)
     target_user_ids = [um.user_profile_id for um in ums]
