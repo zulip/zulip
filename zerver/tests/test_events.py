@@ -1643,6 +1643,7 @@ class EventsRegisterTest(ZulipTestCase):
                 check_services = check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
+                    ('token', check_string),
                 ]), length=1)
             elif bot_type == "EMBEDDED_BOT":
                 check_services = check_list(check_dict_only([
@@ -1835,6 +1836,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('services', check_list(check_dict_only([
                     ('base_url', check_url),
                     ('interface', check_int),
+                    ('token', check_string),
                 ]))),
             ])),
         ])

@@ -110,11 +110,12 @@ exports.generate_zuliprc_content = function (email, api_key) {
            "\n";
 };
 
-exports.generate_botserverrc_content = function (email, api_key) {
+exports.generate_botserverrc_content = function (email, api_key, token) {
     return "[]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +
+           "\ntoken=" + token +
            "\n";
 };
 
@@ -182,7 +183,8 @@ exports.set_up = function () {
         var content = "";
         _.each(bot_data.get_all_bots_for_current_user(), function (bot) {
             if (bot.is_active && bot.bot_type === OUTGOING_WEBHOOK_BOT_TYPE_INT) {
-                content += exports.generate_botserverrc_content(bot.email, bot.api_key);
+                var bot_token = bot_data.get_services(bot.user_id)[0].token;
+                content += exports.generate_botserverrc_content(bot.email, bot.api_key, bot_token);
             }
         });
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
