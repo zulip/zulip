@@ -874,7 +874,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('message_id', check_int),
             ('sender_id', check_int),
             ('msg_type', check_string),
-            ('data', check_string),
+            ('content', check_string),
         ])
 
         cordelia = self.example_user('cordelia')
@@ -889,7 +889,6 @@ class EventsRegisterTest(ZulipTestCase):
                 message_id=message_id,
                 msg_type='whatever',
                 content='"stuff"',
-                data='stuff',
             ),
             state_change_expected=False,
         )
