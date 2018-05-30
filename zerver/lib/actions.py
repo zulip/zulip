@@ -4762,7 +4762,8 @@ def do_update_outgoing_webhook_service(bot_profile: UserProfile,
                     bot=dict(email=bot_profile.email,
                              user_id=bot_profile.id,
                              services = [dict(base_url=service.base_url,
-                                              interface=service.interface)],
+                                              interface=service.interface,
+                                              token=service.token,)],
                              ),
                     ),
                bot_owner_user_ids(bot_profile))
@@ -4788,6 +4789,7 @@ def get_service_dicts_for_bot(user_profile_id: str) -> List[Dict[str, Any]]:
     if user_profile.bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
         service_dicts = [{'base_url': service.base_url,
                           'interface': service.interface,
+                          'token': service.token,
                           }
                          for service in services]
     elif user_profile.bot_type == UserProfile.EMBEDDED_BOT:
@@ -4820,6 +4822,7 @@ def get_service_dicts_for_bots(bot_dicts: List[Dict[str, Any]],
         if bot_type  == UserProfile.OUTGOING_WEBHOOK_BOT:
             service_dicts = [{'base_url': service.base_url,
                               'interface': service.interface,
+                              'token': service.token,
                               }
                              for service in services]
         elif bot_type == UserProfile.EMBEDDED_BOT:

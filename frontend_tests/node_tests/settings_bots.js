@@ -51,10 +51,16 @@ run_test('generate_botserverrc_content', () => {
         email: "vabstest-bot@zulip.com",
         api_key: "nSlA0mUm7G42LP85lMv7syqFTzDE2q34",
     };
-    var content = settings_bots.generate_botserverrc_content(user.email, user.api_key);
+    var service = {
+        token: "abcd1234",
+    };
+    var content = settings_bots.generate_botserverrc_content(user.email,
+                                                             user.api_key,
+                                                             service.token);
     var expected = "[]\nemail=vabstest-bot@zulip.com\n" +
                    "key=nSlA0mUm7G42LP85lMv7syqFTzDE2q34\n" +
-                   "site=https://chat.example.com\n";
+                   "site=https://chat.example.com\n" +
+                   "token=abcd1234\n";
 
     assert.equal(content, expected);
 });
