@@ -4,6 +4,7 @@ from django.conf.urls.i18n import i18n_patterns
 from django.http import HttpResponseBadRequest, HttpRequest, HttpResponse
 from django.views.generic import TemplateView, RedirectView
 from django.utils.module_loading import import_string
+from social_core.utils import setting_name
 import os
 import zerver.forms
 from zproject import dev_urls
@@ -33,6 +34,7 @@ import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
 import zerver.views.realm
+import zerver.views.social_django
 
 from zerver.lib.rest import rest_dispatch
 
@@ -603,7 +605,10 @@ urls += [
 ]
 
 # Python Social Auth
-urls += [url(r'^', include('social_django.urls', namespace='social'))]
+extra = getattr(settings, setting_name('TRAILING_SLASH'), True) and '/' or ''
+urls += [url(r'^complete/(?P<backend>[^/]+){0}$'.format(extra),
+             zerver.views.social_django.complete, name='complete'),
+         url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$',

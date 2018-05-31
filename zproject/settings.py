@@ -1537,6 +1537,34 @@ SOCIAL_AUTH_GITHUB_ORG_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_ORG_SECRET = SOCIAL_AUTH_GITHUB_SECRET
 SOCIAL_AUTH_GITHUB_TEAM_KEY = SOCIAL_AUTH_GITHUB_KEY
 SOCIAL_AUTH_GITHUB_TEAM_SECRET = SOCIAL_AUTH_GITHUB_SECRET
+# Pipeline functions are run as the last step in the authentication process of
+# Python Social Auth. In pipeline, you are expected to authenticate and
+# redirect to the appropriate link.
+#
+# Here is the sequence in which functions are called in Python Social Auth:
+# 1. social_django.views.complete
+# 2. social_core.actions.do_complete
+# 3. social_core.backends.base.BaseAuth.complete
+# 4. social_core.backends.oauth.BaseOAuth2.auth_complete
+# 5. social_core.backends.oauth.BaseOAuth2.do_auth
+# 6. social_django.strategy.authenticate
+# 7. django.contrib.auth.authenticate
+# 8. social_core.backends.base.BaseAuth.authenticate
+# 9. social_core.backends.base.BaseAuth.pipeline
+# 10. social_core.backends.base.BaseAuth.run_pipeline
+SOCIAL_AUTH_GITHUB_PIPELINE = [
+    # Get the information we can about the user and return it in a simple
+    # format to create the user instance later. On some cases the details are
+    # already part of the auth response from the provider, but sometimes this
+    # could hit a provider API.
+    'social_core.pipeline.social_auth.social_details',
+
+    # Get the social uid from whichever service we're authing through. The uid
+    # is the unique identifier of the given user in the provider.
+    'social_core.pipeline.social_auth.social_uid',
+    'zerver.social_django.github.get_user',
+]
+SOCIAL_AUTH_STRATEGY = 'zerver.social_django.strategy.ZulipStrategy'
 
 ########################################################################
 # EMAIL SETTINGS
