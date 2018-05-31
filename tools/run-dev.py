@@ -145,8 +145,7 @@ pid_file.close()
 
 # Pass --nostatic because we configure static serving ourselves in
 # zulip/urls.py.
-cmds = [['./tools/compile-handlebars-templates', 'forever'],
-        ['./manage.py', 'runserver'] +
+cmds = [['./manage.py', 'runserver'] +
         manage_args + runserver_args + ['127.0.0.1:%d' % (django_port,)],
         ['env', 'PYTHONUNBUFFERED=1', './manage.py', 'runtornado'] +
         manage_args + ['127.0.0.1:%d' % (tornado_port,)],
@@ -157,12 +156,15 @@ cmds = [['./tools/compile-handlebars-templates', 'forever'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
          '-p', '%s' % (thumbor_port,)]]
 if options.test:
-    # Webpack doesn't support 2 copies running on the same system, so
-    # in order to support running the Casper tests while a Zulip
-    # development server is running, we use webpack in production mode
-    # for the Casper tests.
+    # We just need to compile handlebars templates and webpack assets
+    # once at startup, not run a daemon, in test mode.  Additionally,
+    # webpack-dev-server doesn't support running 2 copies on the same
+    # system, so this model lets us run the casper tests with a running
+    # development server.
+    subprocess.check_call(['./tools/compile-handlebars-templates'])
     subprocess.check_call(['./tools/webpack', '--quiet'])
 else:
+    cmds.append(['./tools/compile-handlebars-templates', 'forever'])
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
