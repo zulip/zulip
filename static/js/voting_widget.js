@@ -126,7 +126,11 @@ exports.activate = function (opts) {
 
         elem.find("button.poll-comment").on('click', function (e) {
             e.stopPropagation();
-            var comment = elem.find("input.poll-comment").val();
+            var comment = elem.find("input.poll-comment").val().trim();
+
+            if (comment === '') {
+                return;
+            }
 
             var data = poll_data.handle.new_comment.outbound(comment);
             callback(data);
