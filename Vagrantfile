@@ -69,7 +69,7 @@ end
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # For LXC. VirtualBox hosts use a different box, described below.
-  config.vm.box = "fgrehm/trusty64-lxc"
+  config.vm.box = "asy/bionic64-lxc"
 
   # The Zulip development environment runs on 9991 on the guest.
   host_port = 9991
@@ -141,7 +141,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 
   config.vm.provider "virtualbox" do |vb, override|
-    override.vm.box = "ubuntu/trusty64"
+    override.vm.box = "ubuntu/bionic64"
     # It's possible we can get away with just 1.5GB; more testing needed
     vb.memory = 2048
     vb.cpus = 2
