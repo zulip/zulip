@@ -576,6 +576,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
         user_profile = get_user(email, realm)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_github_auth_enabled(self) -> None:
+        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
+            self.assertTrue(github_auth_enabled())
+
 class GitHubAuthBackendLegacyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -595,10 +599,6 @@ class GitHubAuthBackendLegacyTest(ZulipTestCase):
     def do_auth(self, *args: Any, **kwargs: Any) -> UserProfile:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             return authenticate(**kwargs)
-
-    def test_github_auth_enabled(self) -> None:
-        with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
-            self.assertTrue(github_auth_enabled())
 
     def test_full_name_with_missing_key(self) -> None:
         self.assertEqual(self.backend.get_full_name(), '')
