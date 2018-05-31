@@ -79,7 +79,7 @@ for css_file in CSS_FILES:
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 run(['./manage.py', 'collectstatic', '--no-default-ignore',
-     '--noinput', '-i', 'assets', '-i' 'node_modules'],
+     '--noinput', '-i', 'assets', '-i' 'node_modules', '-i', 'styles', '-i', 'templates'],
     stdout=fp, stderr=fp)
 
 if not settings.PRODUCTION:

@@ -64,7 +64,7 @@ class RemoveUnminifiedFilesMixin:
             return []
 
         root = settings.STATIC_ROOT
-        to_remove = ['templates', 'styles', 'js']
+        to_remove = ['js']
 
         for tree in to_remove:
             shutil.rmtree(os.path.join(root, tree))
