@@ -70,8 +70,15 @@ into the database.
 Most Zulip servers host a single Zulip organization on the root domain
 (i.e. `zulip.example.com`).  The way this is implemented internally
 involves the organization having the empty string (`''`) as its
-"subdomain".  You can mix having an organization on the root domain
-and some others on subdomains (e.g. `it.zulip.example.com`).
+"subdomain".
+
+You can mix having an organization on the root domain and some others
+on subdomains (e.g. `subdivision.zulip.example.com`), but this only
+works well if there are no users in common between the two
+organizations, because the auth cookies for the root domain are
+visible to the subdomain (so it's not possible for a single
+browser/client to be logged into both).  So we don't recommend that
+configuration.
 
 ### The system bot realm
 
