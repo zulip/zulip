@@ -190,6 +190,11 @@ run_test('get_unread_ids', () => {
     ];
     set_filter(terms);
 
+    assert_unread_info({
+        flavor: 'cannot_compute',
+    });
+
+    narrow_state.reset_current_filter();
     blueslip.set_test_data('error', 'unexpected call to get_first_unread_info');
     assert_unread_info({
         flavor: 'cannot_compute',

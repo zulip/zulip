@@ -173,10 +173,19 @@ exports.pm_string = function () {
 };
 
 exports.get_first_unread_info = function () {
-    if ((current_filter === undefined) || !current_filter.can_apply_locally()) {
-        // we expect our callers to make sure a "local" narrow
-        // makes sense (and we don't yet support the all-messages view)
+    if (current_filter === undefined) {
+        // we don't yet support the all-messages view
         blueslip.error('unexpected call to get_first_unread_info');
+        return {
+            flavor: 'cannot_compute',
+        };
+    }
+
+    if (!current_filter.can_apply_locally()) {
+        // For things like search queries, where the server has info
+        // that the client isn't privvy to, we need to wait for the
+        // server to give us a definitive list of messages before
+        // deciding where we'll move the selection.
         return {
             flavor: 'cannot_compute',
         };
