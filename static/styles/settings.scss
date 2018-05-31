@@ -1397,12 +1397,7 @@ input[type=checkbox].inline-block {
     margin-top: 10px;
 }
 
-#change_email_modal,
-#change_full_name_modal,
-#change_password_modal,
-#default_language_modal,
-#deactivate_self_modal,
-#deactivate-realm-modal {
+.modal {
     box-shadow: 0px 0px 75px hsla(0, 0%, 0%, 0.5);
     outline: 10000px solid hsla(0, 0%, 0%, 0.3);
     border: none;
