@@ -195,4 +195,4 @@ django-sendfile==0.3.11
 disposable-email-domains==0.0.28
 
 # Needed for parsing YAML with JSON references from the REST API spec files
-yamole==2.1.1
+yamole==2.1.2

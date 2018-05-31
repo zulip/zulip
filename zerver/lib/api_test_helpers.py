@@ -6,7 +6,7 @@ import json
 import os
 
 from zerver.lib import mdiff
-from zerver.lib.openapi import get_openapi_fixture
+from zerver.lib.openapi import validate_against_openapi_schema
 
 if False:
     from zulip import Client
@@ -385,9 +385,7 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    fixture = get_openapi_fixture('/messages/{message_id}', 'patch', '200')
-
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch')
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
