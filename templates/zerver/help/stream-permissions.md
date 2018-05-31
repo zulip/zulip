@@ -36,6 +36,7 @@ At a high level:
 | See subscriber list   | &#10004;   | &#10004;       | &#10004;    |
 | See full history      | &#10004;   | &#10004;       | &#10004;    |
 | See estimated traffic | &#10004;   | &#10004;       | &#10004;    |
+| Post                  | &#10004;   | [3]            |             |
 | Change the privacy    | &#10004;   |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
@@ -51,6 +52,7 @@ At a high level:
 | See subscriber list   | &#10004;   | &#10004;       |             |
 | See full history      |            | [1]            |             |
 | See estimated traffic | &#10004;   | &#10004;       |             |
+| Post                  | &#10004;   | [3]            |             |
 | Change the privacy    | [2]        |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
@@ -61,3 +63,5 @@ At a high level:
 
 [2] Yes, but only if subscribed. If you have a private stream without an
 admin, you'll have to add an admin in order to change the stream's privacy.
+
+[3] The ability to post can be restricted to organization admins only.
