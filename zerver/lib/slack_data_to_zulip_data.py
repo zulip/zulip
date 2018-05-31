@@ -89,7 +89,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
 
     # Custom profile fields
     realm['zerver_customprofilefield'] = zerver_customprofilefield
-    realm['zerver_customprofilefield_value'] = zerver_customprofilefield_value
+    realm['zerver_customprofilefieldvalue'] = zerver_customprofilefield_value
 
     realm['zerver_defaultstream'] = channels_to_zerver_stream_fields[0]
     realm['zerver_stream'] = channels_to_zerver_stream_fields[1]

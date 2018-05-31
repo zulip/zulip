@@ -56,7 +56,7 @@ id_maps = {
     'useractivityinterval': {},
     'usermessage': {},
     'customprofilefield': {},
-    'customprofilefield_value': {},
+    'customprofilefieldvalue': {},
     'attachment': {},
 }  # type: Dict[str, Dict[int, int]]
 
@@ -528,13 +528,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                      related_table="customprofilefield")
     bulk_import_model(data, CustomProfileField, 'zerver_customprofilefield')
 
-    re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'user_profile',
+    re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'user_profile',
                         related_table="user_profile")
-    re_map_foreign_keys(data, 'zerver_customprofilefield_value', 'field',
+    re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'field',
                         related_table="customprofilefield")
-    update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefield_value',
-                     related_table="customprofilefield_value")
-    bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefield_value')
+    update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefieldvalue',
+                     related_table="customprofilefieldvalue")
+    bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefieldvalue')
 
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)

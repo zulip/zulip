@@ -58,7 +58,7 @@ ALL_ZERVER_TABLES = [
     'zerver_attachment_messages',
     'zerver_client',
     'zerver_customprofilefield',
-    'zerver_customprofilefield_value',
+    'zerver_customprofilefieldvalue',
     'zerver_defaultstream',
     'zerver_huddle',
     'zerver_message',
@@ -451,7 +451,7 @@ def get_realm_config() -> Config:
     )
 
     Config(
-        table='zerver_customprofilefield_value',
+        table='zerver_customprofilefieldvalue',
         model=CustomProfileFieldValue,
         normal_parent=user_profile_config,
         parent_key='user_profile__in',
