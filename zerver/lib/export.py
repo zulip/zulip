@@ -1,6 +1,8 @@
 import datetime
 from boto.s3.connection import S3Connection
+from django.apps import apps
 from django.conf import settings
+from django.db import connection
 from django.forms.models import model_to_dict
 from django.utils.timezone import make_aware as timezone_make_aware
 from django.utils.timezone import utc as timezone_utc
@@ -52,65 +54,141 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
 
 
-ALL_ZERVER_TABLES = [
-    # TODO: get a linter to ensure that this list is actually complete.
+ALL_ZERVER_TABLES = {
+    'analytics_anomaly',
+    'analytics_fillstate',
+    'analytics_installationcount',
+    'analytics_realmcount',
+    'analytics_streamcount',
+    'analytics_usercount',
+    'otp_static_staticdevice',
+    'otp_static_statictoken',
+    'otp_totp_totpdevice',
+    'social_auth_association',
+    'social_auth_code',
+    'social_auth_nonce',
+    'social_auth_partial',
+    'social_auth_usersocialauth',
+    'two_factor_phonedevice',
+    'zerver_archivedattachment',
+    'zerver_archivedattachment_messages',
+    'zerver_archivedmessage',
+    'zerver_archivedusermessage',
     'zerver_attachment',
     'zerver_attachment_messages',
+    'zerver_botconfigdata',
+    'zerver_botstoragedata',
     'zerver_client',
     'zerver_customprofilefield',
     'zerver_customprofilefieldvalue',
     'zerver_defaultstream',
+    'zerver_defaultstreamgroup',
+    'zerver_defaultstreamgroup_streams',
+    'zerver_emailchangestatus',
     'zerver_huddle',
     'zerver_message',
+    'zerver_multiuseinvite',
+    'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_pushdevicetoken',
+    'zerver_reaction',
     'zerver_realm',
+    'zerver_realmauditlog',
     'zerver_realmdomain',
     'zerver_realmemoji',
     'zerver_realmfilter',
     'zerver_recipient',
     'zerver_scheduledemail',
+    'zerver_scheduledmessage',
+    'zerver_service',
     'zerver_stream',
+    'zerver_submessage',
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_usergroup',
+    'zerver_usergroupmembership',
+    'zerver_userhotspot',
     'zerver_usermessage',
     'zerver_userpresence',
     'zerver_userprofile',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
-]
+    'zerver_mutedtopic',
+}
 
-NON_EXPORTED_TABLES = [
+NON_EXPORTED_TABLES = {
     # These are known to either be altogether obsolete or
     # simply inappropriate for exporting (e.g. contains transient
     # data).
+    'zerver_emailchangestatus',
+    'zerver_multiuseinvite',
+    'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
-    'zerver_pushdevicetoken',
     'zerver_scheduledemail',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
-]
-assert set(NON_EXPORTED_TABLES).issubset(set(ALL_ZERVER_TABLES))
+    # These are for unfinished features
+    'zerver_defaultstreamgroup',
+    'zerver_defaultstreamgroup_streams',
+    'zerver_scheduledmessage',
+    'zerver_submessage',
+    'two_factor_phonedevice',
+    'otp_static_staticdevice',
+    'otp_static_statictoken',
+    'otp_totp_totpdevice',
+    # These archive tables probably should not be exported (they are for internal correctness)
+    'zerver_archivedmessage',
+    'zerver_archivedusermessage',
+    'zerver_archivedattachment',
+    'zerver_archivedattachment_messages',
 
-IMPLICIT_TABLES = [
+    # Social auth tables are not needed post-export
+    'social_auth_association',
+    'social_auth_code',
+    'social_auth_nonce',
+    'social_auth_partial',
+    'social_auth_usersocialauth',
+
+    # We will likely never want to migrate these tables
+    'analytics_fillstate',
+    'analytics_installationcount',
+    # These analytics tables, however, should ideally be in the export.
+    'analytics_anomaly',
+    'analytics_realmcount',
+    'analytics_streamcount',
+    'analytics_usercount',
+
+    # The fact that these are not exported is a bug
+    'zerver_botstoragedata',
+    'zerver_botconfigdata',
+    'zerver_mutedtopic',
+    'zerver_realmauditlog',
+    'zerver_pushdevicetoken',
+    'zerver_service',
+    'zerver_usergroup',
+    'zerver_usergroupmembership',
+    'zerver_userhotspot',
+}
+
+IMPLICIT_TABLES = {
     # ManyToMany relationships are exported implicitly.
     'zerver_attachment_messages',
-]
-assert set(IMPLICIT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+}
 
-ATTACHMENT_TABLES = [
+ATTACHMENT_TABLES = {
     'zerver_attachment',
-]
-assert set(ATTACHMENT_TABLES).issubset(set(ALL_ZERVER_TABLES))
+}
 
-MESSAGE_TABLES = [
+MESSAGE_TABLES = {
     # message tables get special treatment, because they're so big
     'zerver_message',
     'zerver_usermessage',
-]
+    # zerver_reaction belongs here, since it's added late
+    'zerver_reaction',
+}
 
 DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
@@ -124,11 +202,38 @@ DATE_FIELDS = {
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
+    # First, we verify that the export tool has a declared
+    # configuration for every table.
+    target_models = (
+        list(apps.get_app_config('analytics').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('django_otp').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('otp_static').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('otp_totp').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('social_django').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('two_factor').get_models(include_auto_created=True)) +
+        list(apps.get_app_config('zerver').get_models(include_auto_created=True))
+    )
+    all_tables_db = set(model._meta.db_table for model in target_models)
+
+    # These assertion statements will fire when we add a new database
+    # table that is not included in Zulip's data exports.  Generally,
+    # you can add your new table to `ALL_ZERVER_TABLES` and
+    # `NON_EXPORTED_TABLES` during early work on a new feature so that
+    # CI passes.
+    #
+    # We'll want to make sure we handle it for exports before
+    # releasing the new feature, but doing so correctly requires some
+    # expertise on this export system.
+    assert ALL_ZERVER_TABLES == all_tables_db
+    assert NON_EXPORTED_TABLES.issubset(ALL_ZERVER_TABLES)
+    assert IMPLICIT_TABLES.issubset(ALL_ZERVER_TABLES)
+    assert ATTACHMENT_TABLES.issubset(ALL_ZERVER_TABLES)
+
     tables = set(ALL_ZERVER_TABLES)
-    tables -= set(NON_EXPORTED_TABLES)
-    tables -= set(IMPLICIT_TABLES)
-    tables -= set(MESSAGE_TABLES)
-    tables -= set(ATTACHMENT_TABLES)
+    tables -= NON_EXPORTED_TABLES
+    tables -= IMPLICIT_TABLES
+    tables -= MESSAGE_TABLES
+    tables -= ATTACHMENT_TABLES
 
     for table in tables:
         if table not in data:
