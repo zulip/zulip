@@ -36,11 +36,14 @@ At a high level:
 | See subscriber list   | &#10004;   | &#10004;       | &#10004;    |
 | See full history      | &#10004;   | &#10004;       | &#10004;    |
 | See estimated traffic | &#10004;   | &#10004;       | &#10004;    |
+| Post                  | &#10004;   | [1]            |             |
 | Change the privacy    | &#10004;   |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
 | Remove others         | &#10004;   |                |             |
 | Delete                | &#10004;   |                |             |
+
+[1] Configurable.
 
 ### Private streams
 
@@ -49,15 +52,18 @@ At a high level:
 | Join                  |            | &mdash;        |             |
 | Add others            |            | &#10004;       |             |
 | See subscriber list   | &#10004;   | &#10004;       |             |
-| See full history      |            | [1]            |             |
+| See full history      |            | [2]            |             |
 | See estimated traffic | &#10004;   | &#10004;       |             |
-| Change the privacy    | [2]        |                |             |
+| Post                  | &#10004;   | [1]            |             |
+| Change the privacy    | [3]        |                |             |
 | Rename                | &#10004;   |                |             |
 | Edit the description  | &#10004;   |                |             |
 | Remove others         | &#10004;   |                |             |
 | Delete                | &#10004;   |                |             |
 
-[1] Depends on the stream type.
+[1] Configurable.
 
-[2] Yes, but only if subscribed. If you have a private stream without an
+[2] Depends on the stream type.
+
+[3] Yes, but only if subscribed. If you have a private stream without an
 admin, you'll have to add an admin in order to change the stream's privacy.
