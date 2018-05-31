@@ -105,13 +105,25 @@ exports.activate = function (raw_operators, opts) {
         trigger: 'unknown',
     });
 
+    var id_info = {
+        previous_id: undefined,
+        target_id: undefined,
+        local_select_id: undefined,
+        final_select_id: undefined,
+    };
+
+    if (opts.then_select_id > 0) {
+        id_info.previous_id = opts.then_select_id;
+        id_info.target_id = id_info.previous_id;
+    }
+
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
     if (filter.has_operator("near")) {
-        opts.then_select_id = parseInt(filter.operands("near")[0], 10);
+        id_info.target_id = parseInt(filter.operands("near")[0], 10);
     }
     if (filter.has_operator("id")) {
-        opts.then_select_id = parseInt(filter.operands("id")[0], 10);
+        id_info.target_id = parseInt(filter.operands("id")[0], 10);
     }
 
     var offset_of_prev_selection = (function () {
@@ -121,24 +133,11 @@ exports.activate = function (raw_operators, opts) {
             return;
         }
 
-        var row = current_msg_list.get_row(opts.then_select_id);
+        var row = current_msg_list.get_row(opts.previous_id);
         if (row.length > 0) {
             return row.offset().top;
         }
     }());
-
-    var select_strategy;
-
-    if (opts.then_select_id >= 0) {
-        select_strategy = {
-            flavor: 'exact',
-            msg_id: opts.then_select_id,
-        };
-    } else {
-        select_strategy = {
-            flavor: 'first_unread',
-        };
-    }
 
     if (!was_narrowed_already) {
         unread.messages_read_in_narrow = false;
@@ -162,12 +161,25 @@ exports.activate = function (raw_operators, opts) {
 
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
-    // We may get back a new select_strategy, or we may get our
+    // Also update id_info accordingly.
     // original back.
-    select_strategy = exports.maybe_add_local_messages({
-        select_strategy: select_strategy,
+    exports.maybe_add_local_messages({
+        id_info: id_info,
         msg_data: msg_data,
     });
+
+    if (!id_info.local_select_id) {
+        // If we're not actually read to select an ID, we need to
+        // trash the `MessageListData` object that we just constructed
+        // and pass an empty one to MessageList, because the block of
+        // messages in the MessageListData built inside
+        // maybe_add_local_messages is likely not be contiguous with
+        // the block we're about to request from the server instead.
+        msg_data = new MessageListData({
+            filter: narrow_state.get_current_filter(),
+            muting_enabled: muting_enabled,
+        });
+    }
 
     var msg_list = new message_list.MessageList({
         data: msg_data,
@@ -194,23 +206,21 @@ exports.activate = function (raw_operators, opts) {
             return opts.then_select_offset;
         }
 
-        if (select_strategy.flavor === 'exact') {
-            if (select_strategy.msg_id === opts.then_select_id) {
-                return offset_of_prev_selection;
-            }
+        if (id_info.previous_id === id_info.final_select_id) {
+            return offset_of_prev_selection;
         }
     }());
 
-    var select_immediately = (select_strategy.flavor === 'exact');
+    var select_immediately = (id_info.local_select_id !== undefined);
 
     (function fetch_messages() {
         var anchor;
         var use_first_unread;
 
-        if (select_strategy.flavor === 'exact') {
-            anchor = select_strategy.msg_id;
+        if (id_info.final_select_id !== undefined) {
+            anchor = id_info.final_select_id;
             use_first_unread = false;
-        } else if (select_strategy.flavor === 'first_unread') {
+        } else {
             anchor = -1;
             use_first_unread = true;
         }
@@ -221,9 +231,7 @@ exports.activate = function (raw_operators, opts) {
             cont: function () {
                 if (!select_immediately) {
                     exports.update_selection({
-                        select_strategy: {
-                            flavor: 'first_unread',
-                        },
+                        id_info: id_info,
                         select_offset: then_select_offset,
                     });
                 }
@@ -236,7 +244,7 @@ exports.activate = function (raw_operators, opts) {
     if (select_immediately) {
         message_scroll.hide_indicators();
         exports.update_selection({
-            select_strategy: select_strategy,
+            id_info: id_info,
             select_offset: then_select_offset,
         });
     } else {
@@ -271,6 +279,16 @@ exports.activate = function (raw_operators, opts) {
     }, 0);
 };
 
+function min_defined(a, b) {
+    if (a === undefined) {
+        return b;
+    }
+    if (b === undefined) {
+        return a;
+    }
+    return a < b ? a : b;
+}
+
 function load_local_messages(msg_data) {
     // This little helper loads messages into our narrow message
     // data and returns true unless it's empty.  We use this for
@@ -287,64 +305,109 @@ exports.maybe_add_local_messages = function (opts) {
     // This function does two very closely related things, both of
     // which are somewhat optional:
     //
-    //  - return a new select_strategy for where to advance the cursor
+    //  - update id_info with more complete values
     //  - add messages into our message list from our local cache
-    var select_strategy = opts.select_strategy;
+    var id_info = opts.id_info;
     var msg_data = opts.msg_data;
+    var unread_info = narrow_state.get_first_unread_info();
 
-    if (select_strategy.flavor === 'first_unread') {
-        // Try to upgrade to the "exact" strategy by looking for
-        // unread message ids that match the upcoming narrow.
-        var unread_info = narrow_state.get_first_unread_info();
-
-        if (unread_info.flavor === 'found') {
-            // We found an unread message_id, but we won't return
-            // yet; we'll instead fall through to the next check
-            select_strategy = {
-                flavor: 'exact',
-                msg_id: unread_info.msg_id,
-            };
-        } else if (unread_info.flavor === 'not_found') {
-            // If we didn't find any unread messages, then we
-            // generally want to go the last message in the list,
-            // but only if we've fetched the newest messages
-            // and the narrow's not empty locally.
-            if (message_list.all.fetch_status.has_found_newest()) {
-                // Load messages now and upgrade our strategy
-                // if we find at least one message.
-                if (load_local_messages(msg_data)) {
-                    var last_msg = msg_data.last();
-                    select_strategy = {
-                        flavor: 'exact',
-                        msg_id: last_msg.id,
-                    };
-
-                    return select_strategy;
-                }
-            }
+    if (unread_info.flavor === 'cannot_compute') {
+        if (id_info.target_id) {
+            // TODO: Ideally, in this case we should be asking the
+            // server to give us the first unread or the target_id,
+            // whichever is first (i.e. basically the `found` logic
+            // below), but the server doesn't support that query.
+            id_info.final_select_id = id_info.target_id;
         }
+        // if we can't compute a next unread id, just return without
+        // setting local_select_id, so that we go to the server.
+        return;
     }
 
-    // Do not make this an else-if...the block above could have
-    // changed select_strategy.
-    if (select_strategy.flavor === 'exact') {
-        var msg_to_select = message_list.all.get(select_strategy.msg_id);
-        if (msg_to_select !== undefined) {
-            if (load_local_messages(msg_data)) {
-                return select_strategy;
-            }
+    // We can now assume narrow_state.get_current_filter().can_apply_locally(),
+    // because !can_apply_locally => cannot_compute
+
+    if (unread_info.flavor === 'found') {
+        // We have at least one unread message in this narrow.  So
+        // either we aim for the first unread message, or the
+        // target_id (if any), whichever is earlier.  See #2091 for a
+        // detailed explanation of why we need to look at unread here.
+        id_info.final_select_id = min_defined(
+            id_info.target_id,
+            unread_info.msg_id
+        );
+
+        if (!load_local_messages(msg_data)) {
+            return;
         }
 
-        // Back out to first_unread strategy since we can't find
-        // any messages.
-        select_strategy = {
-            flavor: 'first_unread',
-        };
-        return select_strategy;
+        // Now that we know what message ID we're going to land on, we
+        // can see if we can take the user there locally.
+        if (msg_data.get(id_info.final_select_id)) {
+            id_info.local_select_id = id_info.final_select_id;
+        }
+
+        // If we don't have the first unread message locally, we must
+        // go to the server to get it before we can render the narrow.
+        return;
     }
 
-    // We may still be in our original select_strategy.
-    return select_strategy;
+    // Now we know that there are no unread messages, because
+    //   unread_info.flavor === 'not_found'
+
+    if (!id_info.target_id) {
+        // Without unread messages or a target ID, we're narrowing to
+        // the very latest message matching the narrow.
+
+        // TODO: A possible optimization in this code path is to set
+        // `id_info.final_select_id` to be `max_int` here, i.e. saving the
+        // server the first_unread query when we need the server.
+        if (!message_list.all.fetch_status.has_found_newest()) {
+            // If message_list.all is not caught up, then we cannot
+            // populate the latest messages for the target narrow
+            // correctly from there, so we must go to the server.
+            return;
+        }
+        if (!load_local_messages(msg_data)) {
+            return;
+        }
+        // Otherwise, we have matching messages, and message_list.all
+        // is caught up, so the last message in our now-populated
+        // msg_data object must be the last message matching the
+        // narrow the server could give us, so we can render locally.
+        var last_msg = msg_data.last();
+        id_info.final_select_id = last_msg.id;
+        id_info.local_select_id = id_info.final_select_id;
+        return;
+    }
+
+    // We have a target_id and no unread messages complicating things,
+    // so we definitely want to land on the target_id message.
+    id_info.final_select_id = id_info.target_id;
+
+    if (message_list.all.empty() ||
+        id_info.target_id < message_list.all.first().id ||
+        id_info.target_id > message_list.all.last().id) {
+        // If the target message is outside the range that we had
+        // available for local population, we must go to the server.
+        return;
+    }
+    if (!load_local_messages(msg_data)) {
+        return;
+    }
+    if (msg_data.get(id_info.target_id)) {
+        // We have a range of locally renderable messages, including
+        // our target, so we can render the narrow locally.
+        id_info.local_select_id = id_info.final_select_id;
+        return;
+    }
+
+    // Note: Arguably, we could have a use_closest sort of condition
+    // here to handle cases where `target_id` doesn't match the narrow
+    // but is within the locally renderable range.  But
+    // !can_apply_locally + target_id is a rare combination in the
+    // first place, so we don't bother.
+    return;
 };
 
 exports.update_selection = function (opts) {
@@ -352,14 +415,11 @@ exports.update_selection = function (opts) {
         return;
     }
 
-    var select_strategy = opts.select_strategy;
+    var id_info = opts.id_info;
     var select_offset = opts.select_offset;
 
-    var msg_id;
-
-    if (select_strategy.flavor === 'exact') {
-        msg_id = select_strategy.msg_id;
-    } else if (select_strategy.flavor === 'first_unread') {
+    var msg_id = id_info.final_select_id;
+    if (msg_id === undefined) {
         msg_id = message_list.narrowed.first_unread_message_id();
     }
 
