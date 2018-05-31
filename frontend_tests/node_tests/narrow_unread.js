@@ -71,12 +71,20 @@ run_test('get_unread_ids', () => {
     assert.equal(unread_ids, undefined);
 
     terms = [
-        {operator: 'bogus_operator', operand: 'me@example.com'},
+        {operator: 'search', operand: 'whatever'},
     ];
     set_filter(terms);
     unread_ids = candidate_ids();
     assert.equal(unread_ids, undefined);
     assert_unread_info({flavor: 'cannot_compute'});
+
+    terms = [
+        {operator: 'bogus_operator', operand: 'me@example.com'},
+    ];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, []);
+    assert_unread_info({flavor: 'not_found'});
 
     terms = [
         {operator: 'stream', operand: 'bogus'},
@@ -169,6 +177,15 @@ run_test('get_unread_ids', () => {
     unread_ids = candidate_ids();
     assert.deepEqual(unread_ids, [private_msg.id]);
 
+    // For a negated search, our candidate ids will be all
+    // unread messages, even ones that don't pass the filter.
+    terms = [
+        {operator: 'is', operand: 'private', negated: true},
+    ];
+    set_filter(terms);
+    unread_ids = candidate_ids();
+    assert.deepEqual(unread_ids, [stream_msg.id, private_msg.id]);
+
     terms = [
         {operator: 'pm-with', operand: 'bob@example.com'},
     ];
@@ -196,6 +213,21 @@ run_test('get_unread_ids', () => {
 
     narrow_state.reset_current_filter();
     blueslip.set_test_data('error', 'unexpected call to get_first_unread_info');
+    assert_unread_info({
+        flavor: 'cannot_compute',
+    });
+});
+
+run_test('defensive code', () => {
+    // Test defensive code.  We actually avoid calling
+    // _possible_unread_message_ids for any case where we
+    // couldn't compute the unread message ids, but that
+    // invariant is hard to future-proof.
+    narrow_state._possible_unread_message_ids = () => undefined;
+    var terms = [
+        {operator: 'some-unhandled-case', operand: 'whatever'},
+    ];
+    set_filter(terms);
     assert_unread_info({
         flavor: 'cannot_compute',
     });

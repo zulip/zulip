@@ -273,6 +273,10 @@ exports._possible_unread_message_ids = function () {
         return unread.get_all_msg_ids();
     }
 
+    if (current_filter.can_apply_locally()) {
+        return unread.get_all_msg_ids();
+    }
+
     return;
 };
 
