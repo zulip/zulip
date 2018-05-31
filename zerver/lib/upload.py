@@ -88,7 +88,7 @@ def exif_rotate(image: Image) -> Image:
     if not hasattr(image, '_getexif'):
         return image
     exif_data = image._getexif()
-    if exif_data is None:  # nocoverage # don't have a test image for this case, but it happens
+    if exif_data is None:
         return image
 
     exif_dict = dict(exif_data.items())

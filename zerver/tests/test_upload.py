@@ -1317,6 +1317,12 @@ class ExifRotateTests(TestCase):
         result = exif_rotate(img)
         self.assertEqual(result, img)
 
+        # Image with no exif data.
+        img_data = get_test_image_file('img_no_exif.jpg').read()
+        img = Image.open(io.BytesIO(img_data))
+        result = exif_rotate(img)
+        self.assertEqual(result, img)
+
         # Orientation of the image is 1.
         img_data = get_test_image_file('img.jpg').read()
         img = Image.open(io.BytesIO(img_data))
