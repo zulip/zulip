@@ -162,14 +162,12 @@ exports.activate = function (raw_operators, opts) {
 
     // Populate the message list if we can apply our filter locally (i.e.
     // with no backend help) and we have the message we want to select.
-    if (narrow_state.get_current_filter().can_apply_locally()) {
-        // We may get back a new select_strategy, or we may get our
-        // original back.
-        select_strategy = exports.maybe_add_local_messages({
-            select_strategy: select_strategy,
-            msg_data: msg_data,
-        });
-    }
+    // We may get back a new select_strategy, or we may get our
+    // original back.
+    select_strategy = exports.maybe_add_local_messages({
+        select_strategy: select_strategy,
+        msg_data: msg_data,
+    });
 
     var msg_list = new message_list.MessageList({
         data: msg_data,
