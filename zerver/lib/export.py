@@ -54,7 +54,7 @@ realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmfilter", RealmFilter, "realmfilter")]  # List[Tuple[TableName, Any, str]]
 
 
-ALL_ZERVER_TABLES = {
+ALL_ZULIP_TABLES = {
     'analytics_anomaly',
     'analytics_fillstate',
     'analytics_installationcount',
@@ -217,19 +217,19 @@ def sanity_check_output(data: TableData) -> None:
 
     # These assertion statements will fire when we add a new database
     # table that is not included in Zulip's data exports.  Generally,
-    # you can add your new table to `ALL_ZERVER_TABLES` and
+    # you can add your new table to `ALL_ZULIP_TABLES` and
     # `NON_EXPORTED_TABLES` during early work on a new feature so that
     # CI passes.
     #
     # We'll want to make sure we handle it for exports before
     # releasing the new feature, but doing so correctly requires some
     # expertise on this export system.
-    assert ALL_ZERVER_TABLES == all_tables_db
-    assert NON_EXPORTED_TABLES.issubset(ALL_ZERVER_TABLES)
-    assert IMPLICIT_TABLES.issubset(ALL_ZERVER_TABLES)
-    assert ATTACHMENT_TABLES.issubset(ALL_ZERVER_TABLES)
+    assert ALL_ZULIP_TABLES == all_tables_db
+    assert NON_EXPORTED_TABLES.issubset(ALL_ZULIP_TABLES)
+    assert IMPLICIT_TABLES.issubset(ALL_ZULIP_TABLES)
+    assert ATTACHMENT_TABLES.issubset(ALL_ZULIP_TABLES)
 
-    tables = set(ALL_ZERVER_TABLES)
+    tables = set(ALL_ZULIP_TABLES)
     tables -= NON_EXPORTED_TABLES
     tables -= IMPLICIT_TABLES
     tables -= MESSAGE_TABLES
