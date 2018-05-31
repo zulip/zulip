@@ -518,16 +518,18 @@ exports.initialize = function () {
                                              stream.history_public_to_subscribers),
         };
         var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
-
+        $("#stream_privacy_modal").remove();
         $("#subscriptions_table").append(change_privacy_modal);
-
-        $("#change-stream-privacy-button").click(function (e) {
-            change_stream_privacy(e);
-        });
+        overlays.open_modal('stream_privacy_modal');
     });
 
-    $("#subscriptions_table").on("click", ".close-privacy-modal", function () {
-        $("#stream_privacy_modal").remove();
+    $("#subscriptions_table").on('click', '#change-stream-privacy-button',
+                                 change_stream_privacy);
+
+    $("#subscriptions_table").on('click', '.close-privacy-modal', function (e) {
+        // This fixes a weird bug in which, subscription_settings hides
+        // unexpectedly by clicking the cancel button.
+        e.stopPropagation();
     });
 
     $("#subscriptions_table").on("click", "#sub_setting_not_in_home_view",
