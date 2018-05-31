@@ -1,4 +1,11 @@
 {{! Contents of the "stream actions" popup }}
+<div class="stream_name">
+    <b>{{ stream.name }}</b>
+</div>
+<div class="stream_description">
+    {{ stream.description }}
+    <hr>
+</div>
 <ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
     <li>
         <a class="open_stream_settings">
@@ -9,39 +16,39 @@
     <li>
         <a class="narrow_to_stream">
             <i class="icon-vector-bullhorn"></i>
-            {{#tr this}}Narrow to stream <b>__stream.name__</b>{{/tr}}
+            {{#tr this}}Narrow to stream{{/tr}}
         </a>
     </li>
     <li>
         <a class="pin_to_top">
             <i class="icon-vector-pushpin stream-pin-icon"></i>
             {{#if stream.pin_to_top}}
-                {{#tr this}}Unpin stream <b>__stream.name__</b> from top{{/tr}}
+                {{#tr this}}Unpin from top{{/tr}}
             {{else}}
-                {{#tr this}}Pin stream <b>__stream.name__</b> to top{{/tr}}
+                {{#tr this}}Pin to top{{/tr}}
             {{/if}}
         </a>
     </li>
     <li>
         <a class="compose_to_stream">
             <i class="icon-vector-edit"></i>
-            {{#tr this}}Compose a message to stream <b>__stream.name__</b>{{/tr}}
+            {{#tr this}}New topic{{/tr}}
         </a>
     </li>
     <li>
         <a class="mark_stream_as_read">
             <i class="icon-vector-book"></i>
-            {{#tr this}}Mark all messages in <b>__stream.name__</b> as read{{/tr}}
+            {{#tr this}}Mark as read{{/tr}}
         </a>
     </li>
     <li>
         <a class="toggle_home">
             {{#if stream.in_home_view}}
                 <i class="icon-vector-eye-close"></i>
-                {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
+                {{#tr this}}Mute stream{{/tr}}
             {{else}}
                 <i class="icon-vector-eye-open"></i>
-                {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
+                {{#tr this}}Unmute stream{{/tr}}
             {{/if}}
         </a>
     </li>

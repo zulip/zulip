@@ -110,7 +110,9 @@ function build_stream_popover(e) {
 
     $(elt).popover("show");
     var popover = $('.streams_popover[data-stream-id=' + stream_id + ']');
-
+    var width = $('.mark_stream_as_read').wrap("<span></span>").width();
+    $(".stream_description").css("max-width", width);
+    $(".stream_name").css("max-width", width);
     update_spectrum(popover, function (colorpicker) {
         colorpicker.spectrum(stream_color.sidebar_popover_colorpicker_options);
     });

@@ -43,6 +43,27 @@
     z-index: 100;
 }
 
+.stream_name {
+    text-align: center;
+    line-height: inherit;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.stream_description {
+    text-align: justify;
+    text-align-last: left;
+    line-height: inherit;
+    display: block;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin: 0 auto;
+}
+
 .colorpicker-container .sp-container input {
     -webkit-box-sizing: initial;
     -moz-box-sizing: inherit;
