@@ -135,11 +135,13 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
             for backend in get_backends():
                 if isinstance(backend, LDAPBackend):
                     try:
-                        ldap_attrs = _LDAPUser(backend, backend.django_to_ldap_username(email)).attrs
+                        ldap_username = backend.django_to_ldap_username(email)
                     except ZulipLDAPException:
                         logging.warning("New account email %s could not be found in LDAP" % (email,))
                         form = RegistrationForm(realm_creation=realm_creation)
                         break
+
+                    ldap_attrs = _LDAPUser(backend, ldap_username).attrs
 
                     try:
                         ldap_full_name = ldap_attrs[settings.AUTH_LDAP_USER_ATTR_MAP['full_name']][0]
