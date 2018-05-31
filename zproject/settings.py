@@ -1123,6 +1123,7 @@ else:
     WEBPACK_STATS_FILE = 'webpack-stats-production.json'
 WEBPACK_LOADER = {
     'DEFAULT': {
+        'CACHE': not DEBUG,
         'BUNDLE_DIR_NAME': 'webpack-bundles/',
         'STATS_FILE': os.path.join(DEPLOY_ROOT, WEBPACK_STATS_FILE),
     }
