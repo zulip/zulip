@@ -754,7 +754,7 @@ exports.by_near_uri = function (message_id) {
 exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
     var absolute_url = "";
     if (is_absolute_url) {
-        absolute_url = window.location .protocol + "//" +
+        absolute_url = window.location.protocol + "//" +
             window.location.host + "/" + window.location.pathname.split('/')[1];
     }
     if (message.type === "stream") {

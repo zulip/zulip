@@ -330,7 +330,7 @@
         // Updated regex expressions are currently being tested in casper
         // files and will decide about a potential future enforcement of this rule.
         "no-useless-escape": 0,
-        "no-whitespace-before-property": 0,
+        "no-whitespace-before-property": 2,
         "no-with": 2,
         "one-var": [ "error", "never" ],
         "padded-blocks": 0,
