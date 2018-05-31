@@ -380,6 +380,8 @@ def email_belongs_to_ldap(realm: Realm, email: str) -> bool:
     return email.strip().lower().endswith("@" + settings.LDAP_APPEND_DOMAIN)
 
 class ZulipLDAPException(_LDAPUser.AuthenticationFailed):
+    """Since this inherits from _LDAPUser.AuthenticationFailed, these will
+    be caught and logged at debug level inside django-auth-ldap's authenticate()"""
     pass
 
 class ZulipLDAPExceptionOutsideDomain(ZulipLDAPException):
@@ -433,13 +435,13 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
 
         try:
             username = self.django_to_ldap_username(username)
-            return ZulipLDAPAuthBackendBase.authenticate(self,
-                                                         username=username,
-                                                         password=password)
-        except ZulipLDAPException as e:
-            if isinstance(e, ZulipLDAPExceptionOutsideDomain):
-                return_data['outside_ldap_domain'] = True
+        except ZulipLDAPExceptionOutsideDomain:
+            return_data['outside_ldap_domain'] = True
             return None
+
+        return ZulipLDAPAuthBackendBase.authenticate(self,
+                                                     username=username,
+                                                     password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
 
