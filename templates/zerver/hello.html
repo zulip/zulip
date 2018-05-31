@@ -720,18 +720,12 @@
                         <div class="item">
                             <div class="item-inner">
                                 <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
-                                {% if register_link_disabled %}
-                                {% elif only_sso %}
-                                <a href="{{ url('login-sso') }}">
-                                    <button href="" type="button"
-                                      name="button" class="call-to-action">{{ _('Log in now') }}</button>
+                                <a href="/plans">
+                                    <button href="" type="button" name="button"
+                                      class="call-to-action">
+                                        {{ _('See plans and pricing') }}
+                                    </button>
                                 </a>
-                                {% else %}
-                                <a href="{{ url('register') }}">
-                                    <button href="" type="button"
-                                      name="button" class="call-to-action">{{ _('Try it free') }}</button>
-                                </a>
-                                {% endif %}
                                 <div class="other-resources">
                                     <h3>Other resources:</h3>
                                     <ul>
