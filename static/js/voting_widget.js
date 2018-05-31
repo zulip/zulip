@@ -90,8 +90,14 @@ var poll_data_holder = function () {
             inbound: function (sender_id, data) {
                 var key = data.key;
                 var vote = data.vote;
+                var comment = key_to_comment[key];
 
-                var votes = key_to_comment[key].votes;
+                if (comment === undefined) {
+                    blueslip.error('unknown key for poll: ' + key);
+                    return;
+                }
+
+                var votes = comment.votes;
 
                 if (vote === 1) {
                     votes[sender_id] = 1;
