@@ -466,6 +466,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
+    def test_github_oauth2_deactivated_user(self) -> None:
+        user_profile = self.example_user("hamlet")
+        do_deactivate_user(user_profile)
+        token_data_dict = {
+            'access_token': 'foobar',
+            'token_type': 'bearer'
+        }
+        account_data_dict = dict(email=self.email, name=self.name)
+        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+                                         subdomain='zulip', next='/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result.url, "/login/?next=/user_uploads/image")
+
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
         token_data_dict = {
             'access_token': 'foobar',
@@ -751,20 +764,6 @@ class GitHubAuthBackendLegacyTest(ZulipTestCase):
         self.assertTrue(return_data['invalid_email'])
         result = self.backend.process_do_auth(user, return_data=return_data, response=response)
         self.assertIs(result, None)
-
-    def test_github_backend_inactive_user(self) -> None:
-        def do_auth_inactive(*args: Any, **kwargs: Any) -> UserProfile:
-            return_data = kwargs['return_data']
-            return_data['inactive_user'] = True
-            return self.user_profile
-
-        with mock.patch('zerver.views.auth.login_or_register_remote_user') as result, \
-                mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                           side_effect=do_auth_inactive):
-            response = dict(email=self.email, name=self.name)
-            user = self.backend.do_auth(response=response)
-            result.assert_not_called()
-            self.assertIs(user, None)
 
     def test_github_backend_new_user_wrong_domain(self) -> None:
         rf = RequestFactory()
