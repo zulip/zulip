@@ -598,16 +598,6 @@ elif REMOTE_POSTGRES_HOST != '':
     else:
         DATABASES['default']['OPTIONS']['sslmode'] = 'verify-full'
 
-if USING_PGROONGA:
-    # We need to have "pgroonga" schema before "pg_catalog" schema in
-    # the PostgreSQL search path, because "pgroonga" schema overrides
-    # the "@@" operator from "pg_catalog" schema, and "pg_catalog"
-    # schema is searched first if not specified in the search path.
-    # See also: http://www.postgresql.org/docs/current/static/runtime-config-client.html
-    pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
-        DATABASES['default']
-    DATABASES['default']['OPTIONS']['options'] = pg_options
-
 ########################################################################
 # RABBITMQ CONFIGURATION
 ########################################################################

@@ -449,6 +449,7 @@ def build_custom_checkers(by_lang):
              'zerver/migrations/0041_create_attachments_for_old_messages.py',
              'zerver/migrations/0060_move_avatars_to_be_uid_based.py',
              'zerver/migrations/0104_fix_unreads.py',
+             'pgroonga/migrations/0002_html_escape_subject.py',
          ]),
          'description': "Don't import models or other code in migrations; see docs/subsystems/schema-migrations.md",
          },
