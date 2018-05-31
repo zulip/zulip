@@ -20,8 +20,6 @@ SET search_path = %(SCHEMA)s,public,pgroonga,pg_catalog;
 
 ALTER TABLE zerver_message ADD COLUMN search_pgroonga text;
 
-UPDATE zerver_message SET search_pgroonga = subject || ' ' || rendered_content;
-
 -- TODO: We want to use CREATE INDEX CONCURRENTLY but it can't be used in
 -- transaction. Django uses transaction implicitly.
 -- Django 1.10 may solve the problem.
