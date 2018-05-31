@@ -444,16 +444,17 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
                                                      password=password)
 
     def get_or_build_user(self, username: str, ldap_user: _LDAPUser) -> Tuple[UserProfile, bool]:
+        return_data = {}  # type: Dict[str, Any]
 
         if settings.LDAP_EMAIL_ATTR is not None:
             # Get email from ldap attributes.
             if settings.LDAP_EMAIL_ATTR not in ldap_user.attrs:
+                return_data["ldap_missing_attribute"] = settings.LDAP_EMAIL_ATTR
                 raise ZulipLDAPException("LDAP user doesn't have the needed %s attribute" % (
                     settings.LDAP_EMAIL_ATTR,))
 
             username = ldap_user.attrs[settings.LDAP_EMAIL_ATTR][0]
 
-        return_data = {}  # type: Dict[str, Any]
         user_profile = common_get_active_user(username, self._realm, return_data)
         if user_profile is not None:
             # An existing user, successfully authed; return it.
