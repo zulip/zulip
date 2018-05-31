@@ -589,6 +589,32 @@ class GitHubAuthBackendTest(ZulipTestCase):
         user_profile = get_user(email, realm)
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
 
+    def test_github_oauth2_registration_without_is_signup(self) -> None:
+        """If the user doesn't exist yet, GitHub auth can be used to register an account"""
+        email = "newuser@zulip.com"
+        name = 'Full Name'
+        token_data_dict = {
+            'access_token': 'foobar',
+            'token_type': 'bearer'
+        }
+        account_data_dict = dict(email=email, name=name)
+        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+                                         subdomain='zulip')
+        self.assertEqual(result.status_code, 302)
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], email)
+        self.assertEqual(data['name'], name)
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+        result = self.client_get(result.url)
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("No account found for newuser@zulip.com.", result)
+
     def test_github_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
@@ -793,54 +819,6 @@ class GitHubAuthBackendLegacyTest(ZulipTestCase):
                                     'in one of the domains that are allowed to register '
                                     'for accounts in this organization.'.format(email), result)
 
-    def test_github_backend_new_user(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete', HTTP_HOST=self.user_profile.realm.host)
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '1'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = self.nonreg_email('newuser')
-            name = "Ghost"
-            response = dict(email=email, name=name)
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-            self.assertTrue(result.url.startswith('http://zulip.testserver/accounts/login/subdomain/'))
-
-            result = self.client_get(result.url)
-            confirmation = Confirmation.objects.all().first()
-            confirmation_key = confirmation.confirmation_key
-            self.assertIn('do_confirm/' + confirmation_key, result.url)
-            result = self.client_get(result.url)
-            self.assert_in_response('action="/accounts/register/"', result)
-            data = {"from_confirmation": "1",
-                    "full_name": name,
-                    "key": confirmation_key}
-            result = self.client_post('/accounts/register/', data)
-            self.assert_in_response("You're almost there", result)
-            # Verify that the user is asked for name but not password
-            self.assert_not_in_success_response(['id_password'], result)
-            self.assert_in_success_response(['id_full_name'], result)
-
-            result = self.client_post(
-                '/accounts/register/',
-                {'full_name': name,
-                 'key': confirmation_key,
-                 'terms': True})
-
-        self.assertEqual(result.status_code, 302)
-        user_profile = self.nonreg_user('newuser')
-        self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
-
     def test_github_backend_existing_user(self) -> None:
         rf = RequestFactory()
         request = rf.get('/complete')
@@ -895,49 +873,6 @@ class GitHubAuthBackendLegacyTest(ZulipTestCase):
             self.assert_in_response('action="/register/"', result)
             self.assert_in_response('The account for hamlet@zulip.com has been deactivated',
                                     result)
-
-    def test_github_backend_new_user_when_is_signup_is_false(self) -> None:
-        rf = RequestFactory()
-        request = rf.get('/complete')
-        request.session = {}
-        request.user = self.user_profile
-        self.backend.strategy.request = request
-        session_data = {'subdomain': 'zulip', 'is_signup': '0'}
-        self.backend.strategy.session_get = lambda k: session_data.get(k)
-        name = 'New User Name'
-
-        def do_auth(*args: Any, **kwargs: Any) -> None:
-            return_data = kwargs['return_data']
-            return_data['valid_attestation'] = True
-            return None
-
-        with mock.patch('social_core.backends.github.GithubOAuth2.do_auth',
-                        side_effect=do_auth):
-            email = 'new-user@zulip.com'
-            response = dict(email=email, name=name)
-            result = self.backend.do_auth(response=response)
-            self.assertEqual(result.status_code, 302)
-
-            result = self.client_get(result.url)
-            self.assert_in_response('No account found for', result)
-            self.assert_in_response('new-user@zulip.com.', result)
-            self.assert_in_response('action="http://zulip.testserver/accounts/do_confirm/', result)
-
-            url = re.findall('action="(http://zulip.testserver/accounts/do_confirm[^"]*)"', result.content.decode('utf-8'))[0]
-
-            confirmation = Confirmation.objects.all().first()
-            confirmation_key = confirmation.confirmation_key
-            self.assertIn('do_confirm/' + confirmation_key, url)
-            result = self.client_get(url)
-            self.assert_in_response('action="/accounts/register/"', result)
-            data = {"from_confirmation": "1",
-                    "full_name": name,
-                    "key": confirmation_key}
-            result = self.client_post('/accounts/register/', data)
-            self.assert_in_response("You're almost there", result)
-            # Verify that the user is asked for name but not password
-            self.assert_not_in_success_response(['id_password'], result)
-            self.assert_in_success_response(['id_full_name'], result)
 
     def test_github_backend_realm_invalid_user_when_is_signup_is_false(self) -> None:
         rf = RequestFactory()
