@@ -13,7 +13,7 @@ set_global('document', {
     location: {},
 });
 set_global('transmit', {});
-set_global('window', {
+global.patch_builtin('window', {
     bridge: false,
 });
 set_global('channel', {});

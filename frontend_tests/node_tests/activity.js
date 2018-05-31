@@ -75,7 +75,6 @@ set_global('reload', {
 set_global('resize', {
     resize_page_components: () => {},
 });
-set_global('window', 'window-stub');
 
 const me = {
     email: 'me@zulip.com',

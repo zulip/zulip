@@ -8,7 +8,7 @@ set_global('navigator', {
 set_global('i18n', global.stub_i18n);
 set_global('page_params', { });
 set_global('csrf_token', { });
-set_global('window', {
+global.patch_builtin('window', {
     bridge: false,
 });
 

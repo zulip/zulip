@@ -1,7 +1,6 @@
 var noop = function () {};
 
 set_global('document', 'document-stub');
-set_global('window', {});
 set_global('$', function () {
     return {
         trigger: noop,

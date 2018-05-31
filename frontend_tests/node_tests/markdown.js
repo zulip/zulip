@@ -12,7 +12,7 @@ zrequire('emoji');
 zrequire('message_store');
 zrequire('markdown');
 
-set_global('window', {
+global.patch_builtin('window', {
     location: {
         origin: 'http://zulip.zulipdev.com',
     },

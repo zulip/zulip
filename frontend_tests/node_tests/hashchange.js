@@ -1,3 +1,9 @@
+global.patch_builtin('window', {
+    location: {
+        protocol: 'http:',
+        host: 'example.com',
+    },
+});
 zrequire('people');
 zrequire('hash_util');
 zrequire('hashchange');
@@ -5,12 +11,6 @@ zrequire('stream_data');
 
 set_global('document', 'document-stub');
 set_global('history', {});
-set_global('window', {
-    location: {
-        protocol: 'http:',
-        host: 'example.com',
-    },
-});
 
 set_global('admin', {});
 set_global('drafts', {});
@@ -346,4 +346,3 @@ run_test('save_narrow', () => {
     ]);
     assert.equal(url_pushed, 'http://example.com/#narrow/is/starred');
 });
-

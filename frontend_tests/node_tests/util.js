@@ -1,6 +1,5 @@
 set_global('$', global.make_zjquery());
 set_global('document', {});
-set_global('window', {});
 
 zrequire('util');
 

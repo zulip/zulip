@@ -2,7 +2,7 @@ global.stub_out_jquery();
 
 set_global('ui', {});
 set_global('stream_data', {});
-set_global('window', {
+global.patch_builtin('window', {
     location: {
         hash: "#streams/1/announce",
     },
@@ -212,4 +212,3 @@ run_test('filter_table', () => {
     subs.filter_table({input: "", subscribed_only: false});
     assert($(".stream-row[data-stream-id='1']").hasClass("active"));
 });
-

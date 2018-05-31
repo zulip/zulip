@@ -8,7 +8,6 @@ set_global('document', {
         return true;
     },
 });
-set_global('window', {});
 set_global('page_params', {
     is_admin: false,
     realm_users: [],

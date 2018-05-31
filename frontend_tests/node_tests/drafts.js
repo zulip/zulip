@@ -1,6 +1,5 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-set_global('window', {});
 
 zrequire('localstorage');
 zrequire('drafts');

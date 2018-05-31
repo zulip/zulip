@@ -4,9 +4,20 @@ var fs = require('fs');
 global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
-global.Dict = require('js/dict');
 global._ = require('node_modules/underscore/underscore.js');
 var _ = global._;
+const windowObj = {
+    location: {
+        hash: '#',
+    },
+};
+global.window = _.extend({}, windowObj, {
+    to_$: () => {
+        return windowObj;
+    },
+});
+
+global.Dict = require('js/dict');
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {

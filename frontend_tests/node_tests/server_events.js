@@ -1,7 +1,7 @@
 var noop = function () {};
 
 set_global('document', {});
-set_global('window', {
+global.patch_builtin('window', {
     addEventListener: noop,
 });
 global.stub_out_jquery();
