@@ -34,15 +34,6 @@ DATABASES["default"] = {
     "TEST_NAME": "django_zulip_tests",
     "OPTIONS": {"connection_factory": TimeTrackingConnection},
 }
-if USING_PGROONGA:
-    # We need to have "pgroonga" schema before "pg_catalog" schema in
-    # the PostgreSQL search path, because "pgroonga" schema overrides
-    # the "@@" operator from "pg_catalog" schema, and "pg_catalog"
-    # schema is searched first if not specified in the search path.
-    # See also: http://www.postgresql.org/docs/current/static/runtime-config-client.html
-    pg_options = '-c search_path=%(SCHEMA)s,zulip,public,pgroonga,pg_catalog' % \
-        DATABASES['default']
-    DATABASES['default']['OPTIONS']['options'] = pg_options
 
 if "TORNADO_SERVER" in os.environ:
     # This covers the Casper test suite case
