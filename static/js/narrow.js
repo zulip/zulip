@@ -538,11 +538,6 @@ exports.by_recipient = function (target_id, opts) {
     }
 };
 
-exports.by_time_travel = function (target_id, opts) {
-    opts = _.defaults({}, opts, {then_select_id: target_id});
-    narrow.activate([{operator: "near", operand: target_id}], opts);
-};
-
 exports.deactivate = function () {
     if (narrow_state.get_current_filter() === undefined) {
         return;
