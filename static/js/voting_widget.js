@@ -132,6 +132,8 @@ exports.activate = function (opts) {
                 return;
             }
 
+            elem.find(".poll-comment").val('').focus();
+
             var data = poll_data.handle.new_comment.outbound(comment);
             callback(data);
         });
