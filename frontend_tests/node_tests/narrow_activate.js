@@ -161,6 +161,16 @@ run_test('basics', () => {
             assert.equal(msg_id, selected_id);
             return selected_message;
         },
+        fetch_status: {
+            has_found_newest: () => true,
+        },
+        empty: () => false,
+        first: () => {
+            return {id: 900};
+        },
+        last: () => {
+            return {id: 1100};
+        },
     };
 
     var cont;
