@@ -3,9 +3,9 @@
     <button class="poll-vote" data-key="{{ key }}">
         {{ count }}
     </button>
-    {{ comment }}
+    <span class="poll-option">{{ comment }}</span>
     {{#if names}}
-    ({{ names }})
+    <span class="poll-names">({{ names }})</span>
     {{/if}}
 </li>
 {{/each}}
