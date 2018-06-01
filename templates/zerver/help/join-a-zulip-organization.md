@@ -1,31 +1,45 @@
 # Join a Zulip organization
 
-An **organization**  is a private chamber hosted on Zulip with its own
-users, streams, customizations, etc. Administrators manage the organization,
-controlling the specific settings of the organizations that they own.
+By default, Zulip organizations require an invitation to join.
 
-1. To join a Zulip organization, first navigate to the URL of the Zulip server.
+Organization administrators can allow anyone to join without an invitation, or
+restrict user email addresses to a company domain.
 
-2. Click the **Sign up** button in the top right hand corner of the screen.
+## See if you need an invitation to join
 
-3. You will be taken to the register page and prompted to
- **Enter your email address**. Enter your email address
- and click **Sign Up**.
+1. Go to the Zulip URL of the organization.
 
-4. You will be asked to confirm your email address. Wait for the email to
- arrive in your inbox, and then click on the confirmation link in
- the email to confirm your email address.
+1. Click Sign up.
 
-    !!! tip ""
-        If the email doesn't arrive or you misplace the email, you can
-        request another confirmation link by clicking on the **Resend**
-        link.
+1. If you see a sign up form, invitations are not required! Otherwise, the
+page will say that you need an invitation to join.
 
-5. Finally, when you click the confirmation link, you will be prompted to enter
- your **Full name** and to agree to the **Terms of Service**.
+## See if you need an email from a specific domain
 
-6. Once you have entered your name and checked the checkbox to confirm that
-you have read the Terms of Service, click the **Sign up** button.
+1. Go to the Zulip URL of the organization.
 
-You have now joined the Zulip organization and will be taken to your Zulip
-home page.
+1. Click **Sign up**.
+
+1. Under **Email** enter your email address.
+
+1. Click **Sign up**. If your email is from an acceptable domain, you will be
+sent a confirmation email. If your email address's domain is not in the
+organization's list of accepted email domains, you will get a message
+informing you of that fact.
+
+## Accept an invitation
+
+Invitations to Zulip organizations come by email. Look for an email from
+Zulip. It may take a few minutes for the invitation email to reach your
+inbox.
+
+!!! tip ""
+    This page only applies to organizations that don't have single sign-on
+    authentication (SSO). If you are not at a large organization, your Zulip
+    likely does not have SSO. If your organization has SSO, you will be
+    automatically logged in whenver you visit Zulip.
+
+!!! tip ""
+    If you are a part of multiple Zulip organizations, we
+    recommend using the Zulip Desktop app because the desktop app makes it easy
+    to switch between different organizations.
