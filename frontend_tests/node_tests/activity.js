@@ -725,11 +725,6 @@ run_test('escape_search', () => {
 
 reset_setup();
 
-(function () {
-    const alice_li = $.create('alice stub');
-    simulate_list_items([alice_li]);
-}());
-
 run_test('initiate_search', () => {
     $('.user-list-filter').blur();
     simulate_right_column_buddy_list();
