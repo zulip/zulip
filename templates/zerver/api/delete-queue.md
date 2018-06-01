@@ -70,9 +70,9 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|delete-queue|fixture(successful_response)}
+{generate_code_example|successful-response-empty|fixture}
 
 A typical JSON response for when the `queue_id` is non-existent or the
 associated queue has already been deleted:
 
-{generate_code_example|delete-queue|fixture(bad_event_queue_id_error)}
+{generate_code_example|bad_event_queue_id_error|fixture}

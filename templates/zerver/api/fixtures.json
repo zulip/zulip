@@ -34,21 +34,15 @@
             }
         }
     },
+    "bad_event_queue_id_error": {
+        "code": "BAD_EVENT_QUEUE_ID",
+        "msg": "Bad event queue id: 1518820930:1",
+        "queue_id": "1518820930:1",
+        "result": "error"
+    },
     "create-user": {
         "email_already_used_error": {
             "msg": "Email 'newbie@zulip.com' already in use",
-            "result": "error"
-        },
-        "successful_response": {
-            "msg": "",
-            "result": "success"
-        }
-    },
-    "delete-queue": {
-        "bad_event_queue_id_error": {
-            "code": "BAD_EVENT_QUEUE_ID",
-            "msg": "Bad event queue id: 1518820930:1",
-            "queue_id": "1518820930:1",
             "result": "error"
         },
         "successful_response": {
@@ -357,6 +351,10 @@
     },
     "stream-message": {
         "id": 134,
+        "msg": "",
+        "result": "success"
+    },
+    "successful-response-empty": {
         "msg": "",
         "result": "success"
     },
