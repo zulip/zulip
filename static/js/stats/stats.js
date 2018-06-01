@@ -630,11 +630,12 @@ function populate_number_of_users(data) {
     var layout = {
         width: 750,
         height: 370,
-        margin: { l: 40, r: 0, b: 100, t: 20 },
+        margin: { l: 40, r: 0, b: 65, t: 20 },
         xaxis: {
             fixedrange: true,
+            rangeslider: { bordercolor: '#D8D8D8', borderwidth: 1 },
             rangeselector: {
-                x: 0.808, y: -0.33,
+                x: 0.78, y: -0.72,
                 buttons: [
                     { count: 30, label: i18n.t('Last 30 days'), step: 'day', stepmode: 'backward' },
                     { step: 'all', label: i18n.t('All time') },
