@@ -1,11 +1,12 @@
 
+import json
 import os
+import polib
 import re
+import ujson
 from subprocess import CalledProcessError, check_output
 from typing import Any, Dict, List
 
-import polib
-import ujson
 from django.conf import settings
 from django.conf.locale import LANG_INFO
 from django.core.management.base import CommandParser
@@ -55,7 +56,7 @@ class Command(compilemessages.Command):
             lang_list.sort(key=lambda lang: lang['name'])
 
         with open(output_path, 'w') as output_file:
-            ujson.dump({'name_map': lang_list}, output_file, indent=4)
+            ujson.dump({'name_map': lang_list}, output_file, indent=4, sort_keys=True)
             output_file.write('\n')
 
     def get_po_filename(self, locale_path: str, locale: str) -> str:
@@ -140,7 +141,7 @@ class Command(compilemessages.Command):
             data['languages'].append(info)
 
         with open(output_path, 'w') as writer:
-            ujson.dump(data, writer, indent=2)
+            json.dump(data, writer, indent=2, sort_keys=True)
             writer.write('\n')
 
     def get_translation_percentage(self, locale_path: str, locale: str) -> int:
