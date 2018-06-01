@@ -106,16 +106,10 @@ exports.activate = function (raw_operators, opts) {
     });
 
     var id_info = {
-        previous_id: undefined,
         target_id: undefined,
         local_select_id: undefined,
         final_select_id: undefined,
     };
-
-    if (opts.then_select_id > 0) {
-        id_info.previous_id = opts.then_select_id;
-        id_info.target_id = id_info.previous_id;
-    }
 
     // These two narrowing operators specify what message should be
     // selected and should be the center of the narrow.
@@ -126,18 +120,17 @@ exports.activate = function (raw_operators, opts) {
         id_info.target_id = parseInt(filter.operands("id")[0], 10);
     }
 
-    var offset_of_prev_selection = (function () {
-        if (opts.then_select_offset !== undefined) {
-            // If the caller passes in an explicit offset,
-            // we don't need the offset of then_select_id;
-            return;
+    if (opts.then_select_id > 0) {
+        // We override target_id in this case, since the user could be
+        // having a near: narrow auto-reloaded.
+        id_info.target_id = opts.then_select_id;
+        if (opts.then_select_offset === undefined) {
+            var row = current_msg_list.get_row(opts.then_select_id);
+            if (row.length > 0) {
+                opts.then_select_offset = row.offset().top;
+            }
         }
-
-        var row = current_msg_list.get_row(opts.previous_id);
-        if (row.length > 0) {
-            return row.offset().top;
-        }
-    }());
+    }
 
     if (!was_narrowed_already) {
         unread.messages_read_in_narrow = false;
@@ -200,16 +193,10 @@ exports.activate = function (raw_operators, opts) {
     message_list.narrowed = msg_list;
     current_msg_list = message_list.narrowed;
 
-    var then_select_offset = (function () {
-        if (opts.then_select_offset !== undefined) {
-            // We get passed in a offset for reloads.
-            return opts.then_select_offset;
-        }
-
-        if (id_info.previous_id === id_info.final_select_id) {
-            return offset_of_prev_selection;
-        }
-    }());
+    var then_select_offset;
+    if (id_info.target_id === id_info.final_select_id) {
+        then_select_offset = opts.then_select_offset;
+    }
 
     var select_immediately = (id_info.local_select_id !== undefined);
 
