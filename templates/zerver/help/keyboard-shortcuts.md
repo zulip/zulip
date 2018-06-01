@@ -121,7 +121,7 @@ below, and add more to your repertoire as needed.
 
 * **Edit message**: `i` then `Enter`
 
-* **Star message**: `*`
+* **Star message**: `Ctrl + s`
 
 * **React with <img alt=":thumbs_up:" class="emoji"
 src="/static/generated/emoji/images/emoji/unicode/1f44d.png"
