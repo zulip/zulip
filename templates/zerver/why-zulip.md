@@ -39,42 +39,48 @@ random spam.
 
 ## Remote workers can't participate
 
-If channel conversations only last an hour or two, workers in different
-timezones can only communicate over channels during the narrow window when
-everyone is online.
+This means that workers in different timezones can only effectively
+collaborate during the narrow windows when everyone is at their
+keyboards.  As a result, Slack isn't an effective communication
+platform for remote work.
 
-As a pointed illustration of how hard remote work is on Slack: The company
-that makes Slack advertises no remote job positions (positions where you
-could work from anywhere). By contrast, the Zulip team is distributed across
-a dozen time zones, and uses only Zulip and GitHub issues for communication
-(no email lists, video meetings, etc).
+As a pointed illustration: The company that makes Slack has over 1000
+employees and yet advertises no remote job positions (positions where
+you could work from anywhere).
+
+In contrast, the Zulip team has over 30 core team members distributed
+across a dozen time zones, and uses only Zulip and GitHub issues for
+communication (no email lists, video meetings, etc).
 
 ## Teams that love Slack are often mostly using DMs and small channels
 
 Slack is great for private messages ("DMs"), integrations, and quick
-questions. Most glowing reviews of Slack are actually of these aspects of
-Slack.  We find that even people that love Slack typically send the vast
-majority of their messages in DMs or to small channels.
+questions when everyone's online. Most glowing reviews of Slack are
+actually of these aspects of Slack.  We find that even people that
+love Slack typically send the vast majority of their messages in DMs,
+and avoid using public Slack channels.
 
 ## So where is the communication happening?
 
 In organizations that have adopted Slack, mostly the same place it happened
 before they adopted Slack: email, meetings, and small group chat.
 
-Email is great for asynchronous work; that’s a big part of why everyone uses
-it. Email’s simple subject line model, used properly, can solve all of the
-issues above.  However, it is too slow and clunky for serious discussion;
-even a 50 message thread starts to feel unwieldy. And it lacks many of the
-conversational features of modern chat apps, like instant delivery of
-messages, typing notifications, emoji reactions, at-mentions, and more.
+Email is great for asynchronous work; that’s a big part of why
+everyone uses it. Email’s simple subject line model, used properly,
+can solve all of the issues above.  However, it is too clunky for
+conversations; even a 10-message thread is unwieldy. And it lacks many
+of the conversational features of modern chat apps, like instant
+delivery of messages, typing notifications, emoji reactions,
+at-mentions, and more.
 
-Meetings are the current state-of-the-art for larger conversations where
-managers, PMs, or other senior people are present. However, meetings are
-often extremely inefficient. Participants may need to be present for an
-hour-long meeting when their input is only needed for five minutes portion
-of the discussion. If someone is unable to attend the meeting, their input
-is lost. Someone has to take notes for there to be any record of what
-happened or any record of follow-ups. And meetings add delay and scheduling
+Meetings are the current state-of-the-art for conversations where busy
+people like managers, PMs, or other senior people
+participate. However, meetings are often extremely
+inefficient. Participants may need to be present for an hour-long
+meeting when their input is only needed for five minutes portion of
+the discussion. If someone is unable to attend the meeting, their
+input is lost. Someone has to take notes for there to be any record of
+what happened or any follow-ups. And meetings add delay and scheduling
 overhead to decisions.
 
 Finally, small group chat works for the short term, but it doesn't build
@@ -88,7 +94,7 @@ These problems are all symptoms of the underlying fact that the channel
 model used by Slack and similar tools is a really bad way to structure
 asynchronous communication.
 
-However, asynchronous communication is fundamental to how work happens today.
+However, asynchronous communication is fundamental to how work happens today:
 
 * Managers, PMs, and others in meetings all day need to reply to things in
   batch, either in the few minutes they have between meetings, or at the end
@@ -114,11 +120,11 @@ ceiling on how useful Slack can be to an organization.
 >
 > -Jacinda Shelly, CTO, Doctor On Demand
 
-Zulip provides the benefits of real-time chat, while solving the problems
-discussed above.  Our solution is inspired by email’s highly effective
-threading model.  In Zulip, every channel message has a topic, just like
-every message in email has a subject line. (Channels are called streams in
-Zulip.)
+Zulip provides the benefits of real-time chat, while also being great
+at asynchronous communication.  Zulip is inspired by email’s highly
+effective threading model: Every channel message has a topic, just
+like every message in email has a subject line. (Channels are called
+streams in Zulip.)
 
 ![zulip topics](/static/images/why-zulip/zulip-topics.png)
 
@@ -128,11 +134,21 @@ and reply in context, even to conversations that started hours or days ago.
 
 ![zulip reply later](/static/images/why-zulip/zulip-reply-later.png)
 
-It's simple in concept, but transforms what you can do in chat. Managers can
-batch-reply to messages at the end of the day. Discussions can be moved from
-meetings and email to chat. Individual contributors can do focused work
-instead of paging through GIFs making sure they don't miss anything
-important.
+## Zulip changes how you can operate
+
+It's simple in concept, but switching from Slack to Zulip can
+transform how your organization communicates:
+
+* Leaders can prioritize their time and batch-reply to messages, and
+  thus effectively participate in the chat community.
+* More discussions can be moved from meetings and email to chat.
+* Individual contributors can do focused work instead of paging
+  through GIFs making sure they don't miss anything important.
+* Remote workers can participate in an equal way to people present in
+  person.
+* Employees don't need to be glued to their keyboard or phone in order
+  to avoid missing out on important conversations.
+* Everyone saves a huge amount of wasted time and attention.
 
 > "Zulip's topic-based threading helps us manage discussions with clarity,
 > ensuring the right people can pay attention to the right messages. This
@@ -143,8 +159,8 @@ important.
 
 ## Further reading
 
-- [Zulip features](../features)
-- [Plans and pricing](../plans)
-- [Zulip for companies](../for/companies)
+- [Zulip features](/features)
+- [Plans and pricing](/plans)
+- [Zulip for companies](/for/companies)
 - [Zulip for open source organizations](/for/open-source)
 - [Zulip for working groups and communities](/for/working-groups-and-communities)
