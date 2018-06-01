@@ -168,7 +168,7 @@ sudo bash -c 'cat << EndOfMessage > /etc/motd
 Welcome to the Zulip development environment!  Popular commands:
 * tools/provision - Update the development environment
 * tools/run-dev.py - Run the development server
-* tools/lint - Run the linter (quick and catches many problmes)
+* tools/lint - Run the linter (quick and catches many problems)
 * tools/test-* - Run tests (use --help to learn about options)
 
 Read https://zulip.readthedocs.io/en/latest/testing/testing.html to learn
