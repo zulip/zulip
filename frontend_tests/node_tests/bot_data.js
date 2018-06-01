@@ -27,7 +27,7 @@ bot_data.initialize();
 assert.equal(bot_data.get(42).full_name, 'Bot 0');
 assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
 
-(function () {
+run_test('test_basics', () => {
     const test_bot = {
         email: 'bot1@zulip.com',
         user_id: 43,
@@ -155,4 +155,4 @@ assert.equal(bot_data.get(314).full_name, 'Outgoing webhook');
         assert.equal(bots[0].email, 'bot1@zulip.com');
         assert.equal(bots[1].email, 'bot2@zulip.com');
     }());
-}());
+});
