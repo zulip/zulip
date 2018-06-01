@@ -50,7 +50,8 @@ pr_details="$(curl -s "$pr_url")"
 pr_jq () {
     echo "$pr_details" | jq "$@"
 }
-if [ "$(pr_jq .message)" = '"Not Found"' ]; then
+
+if [ "$(pr_jq -r .message)" = "Not Found" ]; then
     echo "Invalid PR URL: $pr_url"
     exit 1
 fi
