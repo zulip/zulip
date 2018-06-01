@@ -95,9 +95,9 @@ function render_bots() {
     }
 }
 
-exports.generate_zuliprc_uri = function (email, api_key) {
-    var data = exports.generate_zuliprc_content(email, api_key);
-
+exports.generate_zuliprc_uri = function (bot_id) {
+    var bot = bot_data.get(bot_id);
+    var data = exports.generate_zuliprc_content(bot.email, bot.api_key);
     return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
 };
 
@@ -444,13 +444,9 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).closest(".bot-information-box");
-        var email = bot_info.find(".email .value").text();
-        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
-
-        $(this).attr("href", exports.generate_zuliprc_uri(
-            $.trim(email), $.trim(api_key)
-        ));
+        var bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        var bot_id = bot_info.attr("data-user-id");
+        $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
