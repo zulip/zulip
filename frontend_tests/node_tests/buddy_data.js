@@ -10,7 +10,7 @@ zrequire('buddy_data');
 
 set_global('page_params', {});
 
-(function make_people() {
+run_test('make_people', () => {
     _.each(_.range(1000, 2000), (i) => {
         const person = {
             user_id: i,
@@ -19,9 +19,9 @@ set_global('page_params', {});
         };
         people.add_in_realm(person);
     });
-}());
+});
 
-(function activate_people() {
+run_test('activate_people', () => {
     const server_time = 9999;
     const info = {
         website: {
@@ -39,7 +39,7 @@ set_global('page_params', {});
     _.each(_.range(1400, 1700), (user_id) => {
         presence.set_user_status(user_id, {}, server_time);
     });
-}());
+});
 
 run_test('user_ids', () => {
     var user_ids;
