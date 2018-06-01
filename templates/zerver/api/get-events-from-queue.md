@@ -106,3 +106,16 @@ endpoint and a queue would be registered in the absence of a `queue_id`.
 A typical successful JSON response may look like:
 
 {generate_code_example|get-events-from-queue|fixture}
+
+#### BAD_EVENT_QUEUE_ID errors
+
+If the target event queue has been garbage collected, you'll get the
+following error response:
+
+{generate_code_example|bad_event_queue_id_error|fixture}
+
+A compliant client will handle this error by re-initializing itself
+(e.g. a Zulip webapp browser window will reload in this case).
+
+See [the /register endpoint docs](/api/register-queue)  for details
+for on handling these correctly.

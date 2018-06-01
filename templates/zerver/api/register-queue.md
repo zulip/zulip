@@ -24,11 +24,12 @@ client loses network connectivity with the Zulip server for 10 minutes
 or longer.
 
 Once the server garbage-collects your event queue, the server will
-return an error with a code of `BAD_EVENT_QUEUE_ID` if you try to
-connect to the event queue.  Your software will need to handle that
-error condition by re-initializing itself (e.g. this is what triggers
-your browser reloading the Zulip webapp when your laptop comes back
-online after being offline for more than 10 minutes).
+[return an error](/api/get-events-from-queue#bad_event_queue_id-errors)
+with a code of `BAD_EVENT_QUEUE_ID` if you try to fetch events from
+the event queue.  Your software will need to handle that error
+condition by re-initializing itself (e.g. this is what triggers your
+browser reloading the Zulip webapp when your laptop comes back online
+after being offline for more than 10 minutes).
 
 When prototyping with this API, we recommend first calling `register`
 with no `event_types` argument to see all the available data from all
