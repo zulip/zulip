@@ -56,6 +56,21 @@
       "conversion_output": "*mid*word **word**"
     },
     {
+      "name": "no_conversion",
+      "input": "***word***",
+      "conversion_output": "***word***"
+    },
+    {
+      "name": "valid_bold_and_italic_conversion_1",
+      "input": "*_test bold and italic message_*",
+      "conversion_output": "***test bold and italic message***"
+    },
+    {
+      "name": "valid_bold_and_italic_conversion_2",
+      "input": "_*test bold and italic message*_",
+      "conversion_output": "***test bold and italic message***"
+    },
+    {
       "name": "bold_and_strike_conversion",
       "input": "~*bold*~ and *~strike~*.",
       "conversion_output": "~~**bold**~~ and **~~strike~~**."

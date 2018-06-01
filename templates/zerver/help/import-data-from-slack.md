@@ -87,7 +87,4 @@ cd /home/zulip/deployments/current
 
 - The "joined #channel_name" messages are not imported.
 
-- The import tool does not support simultaneous bold and italic
-  formatting of a word; we expect to address this in a future revision.
-
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
