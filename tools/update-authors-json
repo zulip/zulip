@@ -55,7 +55,7 @@ def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
         try:
-            f.write("{}\n".format(json.dumps(json_data)))
+            f.write("{}\n".format(json.dumps(json_data, indent=2, sort_keys=True)))
         except IOError as e:
             print(e)
             sys.exit(1)
