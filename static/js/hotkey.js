@@ -53,6 +53,7 @@ var keydown_ctrl_mappings = {
 
 var keydown_cmd_or_ctrl_mappings = {
     75: {name: 'search_with_k', message_view_only: false}, // 'K'
+    83: {name: 'star_message', message_view_only: true}, // 's'
 };
 
 var keydown_either_mappings = {
@@ -73,7 +74,6 @@ var keydown_either_mappings = {
 };
 
 var keypress_mappings = {
-    42: {name: 'star_message', message_view_only: true}, // '*'
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
@@ -701,7 +701,8 @@ exports.process_hotkey = function (e, hotkey) {
     case 'message_actions':
         return popovers.open_message_menu(msg);
     case 'star_message':
-        return message_flags.toggle_starred(msg);
+        message_flags.toggle_starred(msg);
+        return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
     case 'narrow_by_subject':

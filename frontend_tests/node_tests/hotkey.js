@@ -100,6 +100,7 @@ run_test('mappings', () => {
 
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
+    assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -113,22 +114,22 @@ run_test('mappings', () => {
     assert.equal(map_down(79, false, true), undefined); // ctrl + o
     assert.equal(map_down(80, false, true), undefined); // ctrl + p
     assert.equal(map_down(65, false, true), undefined); // ctrl + a
-    assert.equal(map_down(83, false, true), undefined); // ctrl + s
     assert.equal(map_down(70, false, true), undefined); // ctrl + f
     assert.equal(map_down(72, false, true), undefined); // ctrl + h
     assert.equal(map_down(88, false, true), undefined); // ctrl + x
     assert.equal(map_down(78, false, true), undefined); // ctrl + n
     assert.equal(map_down(77, false, true), undefined); // ctrl + m
     assert.equal(map_down(75, false, false, true), undefined); // cmd + k
+    assert.equal(map_down(83, false, false, true), undefined); // cmd + s
 
     // CMD tests for MacOS
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
     assert.equal(map_down(219, false, true, false).name, 'escape'); // ctrl + [
     assert.equal(map_down(219, false, false, true), undefined); // cmd + [
     assert.equal(map_down(75, false, false, true).name, 'search_with_k'); // cmd + k
-
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
-
+    assert.equal(map_down(83, false, false, true).name, 'star_message'); // cmd + s
+    assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
     // Reset userAgent
     global.navigator.userAgent = '';
 });
@@ -267,7 +268,6 @@ run_test('basic_chars', () => {
     // TODO: Similar check for being in the subs page
 
     assert_mapping('@', 'compose_actions.reply_with_mention');
-    assert_mapping('*', 'message_flags.toggle_starred');
     assert_mapping('+', 'reactions.toggle_emoji_reaction');
     assert_mapping('-', 'condense.toggle_collapse');
     assert_mapping('r', 'compose_actions.respond_to_message');
