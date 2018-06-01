@@ -4,7 +4,8 @@ import os
 import re
 import hashlib
 import sys
-from typing import Any, List, Optional
+from collections import defaultdict
+from typing import Any, List, Optional, Dict
 from importlib import import_module
 from io import StringIO
 
@@ -20,6 +21,33 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
+
+def run_db_migrations(**options: Any) -> None:
+    for app_config in apps.get_app_configs():
+        if module_has_submodule(app_config.module, "management"):
+            import_module('.management', app_config.name)
+
+    app_label = options['app_label'] if options.get('app_label') else None
+    db = options.get('database', DEFAULT_DB_ALIAS)
+    migration_status_file = options.get('migration_status_file', 'migration_status_test')
+    settings = options.get('settings', 'zproject.test_settings')
+    call_command(
+        'migrate',
+        '--noinput',
+        app_label=app_label,
+        database=db,
+        settings=settings,
+        traceback=options.get('traceback', True),
+    )
+    call_command(
+        'get_migration_status',
+        '--output=%s' % (migration_status_file),
+        app_label=app_label,
+        database=db,
+        settings=settings,
+        traceback=options.get('traceback', True),
+    )
+    connections.close_all()
 
 def database_exists(database_name: str, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
@@ -60,13 +88,31 @@ def get_migration_status(**options: Any) -> str:
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def are_migrations_the_same(migration_file: str, **options: Any) -> bool:
+def extract_migrations_as_list(migration_status: str) -> List[str]:
+    MIGRATIONS_RE = re.compile('\[[X| ]\] (\d+_.+)\n')
+    return MIGRATIONS_RE.findall(migration_status)
+
+def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:
     if not os.path.exists(migration_file):
-        return False
+        return 'scrap'
 
     with open(migration_file) as f:
-        migration_content = f.read()
-    return migration_content == get_migration_status(**options)
+        previous_migration_status = f.read()
+    current_migration_status = get_migration_status(**options)
+    all_curr_migrations = extract_migrations_as_list(current_migration_status)
+    all_prev_migrations = extract_migrations_as_list(previous_migration_status)
+
+    if len(all_curr_migrations) < len(all_prev_migrations):
+        return 'scrap'
+
+    for migration in all_prev_migrations:
+        if migration not in all_curr_migrations:
+            return 'scrap'
+
+    if len(all_curr_migrations) == len(all_prev_migrations):
+        return 'migrations_are_latest'
+
+    return 'migrate'
 
 def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
@@ -107,14 +153,15 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
 
     return _check_hash(source_hash_file, target_content)
 
-def is_template_database_current(
+def template_database_status(
         database_name: str='zulip_test_template',
         migration_status: Optional[str]=None,
         settings: str='zproject.test_settings',
         status_dir: Optional[str]=None,
         check_files: Optional[List[str]]=None,
-        check_settings: Optional[List[str]]=None) -> bool:
-    # Using str type for check_files because re.split doesn't accept unicode
+        check_settings: Optional[List[str]]=None) -> str:
+    # This function returns a status string specifying the type of
+    # state the template db is in and thus the kind of action required.
     if check_files is None:
         check_files = [
             'zilencer/management/commands/populate_db.py',
@@ -143,7 +190,14 @@ def is_template_database_current(
         settings_hash_status = all([check_setting_hash(setting_name, status_dir)
                                     for setting_name in check_settings])
         hash_status = files_hash_status and settings_hash_status
+        migration_op = what_to_do_with_migrations(migration_status, settings=settings)
 
-        return are_migrations_the_same(migration_status, settings=settings) and hash_status
+        if not hash_status or migration_op == 'scrap':
+            return 'needs_rebuild'
 
-    return False
+        if migration_op == 'migrate':
+            return 'run_migrations'
+
+        return 'current'
+
+    return 'needs_rebuild'
