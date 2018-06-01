@@ -635,9 +635,10 @@ function populate_number_of_users(data) {
             fixedrange: true,
             rangeslider: { bordercolor: '#D8D8D8', borderwidth: 1 },
             rangeselector: {
-                x: 0.78, y: -0.72,
+                x: 0.64, y: -0.79,
                 buttons: [
-                    { count: 30, label: i18n.t('Last 30 days'), step: 'day', stepmode: 'backward' },
+                    { count: 2, label: i18n.t('Last 2 months'), step: 'month', stepmode: 'backward' },
+                    { count: 6, label: i18n.t('Last 6 months'), step: 'month', stepmode: 'backward' },
                     { step: 'all', label: i18n.t('All time') },
                 ]}},
         yaxis: { fixedrange: true, rangemode: 'tozero' },
