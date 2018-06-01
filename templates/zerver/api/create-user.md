@@ -72,9 +72,9 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|create-user|fixture(successful_response)}
+{generate_code_example|successful-response-empty|fixture}
 
 A typical JSON response for when another user with the same
 email address already exists in the realm:
 
-{generate_code_example|create-user|fixture(email_already_used_error)}
+{generate_code_example|email_already_used_error|fixture}
