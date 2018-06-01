@@ -2,6 +2,9 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Bootstrap 2.3.2--->
+<script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
+
 {{ render_bundle('landing-page') }}
 <style>
     .portico-page {
@@ -33,258 +36,126 @@
                     up on important conversations while ignoring
                     irrelevant ones.
                 </p>
-                {% if register_link_disabled %}
-                {% elif only_sso %}
-                <a href="{{ url('login-sso') }}">
-                    <button href="" class="download-button" type="button"
-                      name="button">{{ _('Log in now!') }}</button>
-                </a>
-                {% else %}
-                <a href="{{ url('register') }}">
-                    <button href="" class="download-button" type="button"
-                      name="button">{{ _('Sign up now!') }}</button>
-                </a>
-                {% endif %}
-                <!-- we want this to be il-block so we'll put a <br> above so it's on
-                the next line.
-                <a id="see_all_apps" class="arrow">See all apps</a>
-                -->
             </header>
-        </div>
-    </div>
+            <div class="tour">
+                <div id="tour-carousel" class="carousel slide carousel-fade">
+                    <!-- Carousel items -->
+                    <div class="carousel-inner">
+                        <div class="item-container">
+                            <div class="item active">
+                                <div class="item-inner">
 
-    <div class="screen hero-screen">
-        <div class="main-page">
-            <div class="left-sidebar col-4">
-                <div class="action-block">
-                    <div class="line med"></div>
-                    <div class="line"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                </div>
-                <div class="action-block">
-                    <div class="line small red"></div>
-                    <div class="sub-block">
-                        <div class="line small"></div>
-                        <div class="line"></div>
-                        <div class="line med"></div>
-                        <div class="line med"></div>
-                    </div>
-                    <div class="line blue"></div>
-                    <div class="sub-block">
-                        <div class="line small"></div>
-                        <div class="line"></div>
-                        <div class="line small"></div>
-                    </div>
-                    <div class="line green"></div>
-                    <div class="sub-block">
-                        <div class="line"></div>
-                        <div class="line med"></div>
-                        <div class="line small"></div>
-                        <div class="line med"></div>
-                        <div class="line"></div>
-                    </div>
-                    <div class="line med orange"></div>
-                    <div class="sub-block">
-                        <div class="line med"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="center-page col-2">
-                <div class="message-feed">
-                    <div class="stream">
-                        <div class="line micro red"></div>
-                        <div class="line nano"></div>
-
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
+                                    <button href="#tour-carousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
+                                    <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
+                                </div>
                             </div>
-                            <div class="content">
-                                <div class="line"></div>
-                                <div class="line"></div>
-                                <div class="line med"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">In Zulip, you subscribe to <b>streams.</b> Streams are like channels in Slack or IRC.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Each stream message also has a <b>topic.</b> Topics are unique to Zulip.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="content">
-                                <div class="line med"></div>
-                                <div class="line small"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Topics make it easy to catch up after a day of meetings.</p>
+                                    <div class="zulip-slack-comparison">
+                                        <div class="comparison-zulip">
+                                            <div class="caption comparison-2-caption-zulip">Zulip</div>
+                                            <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows">
+                                        </div>
+                                        <div class="comparison-slack">
+                                            <div class="caption comparison-2-caption-slack">Other team chat</div>
+                                            <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}">
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </div>
-                    <div class="stream">
-                        <div class="line micro green"></div>
-                        <div class="line nano"></div>
-
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Let&rsquo;s click on &ldquo;Tuesday night catering.&rdquo;</p>
+                                    <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-topic mobile-hide">
+                                    <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show">
+                                </div>
                             </div>
-                            <div class="content">
-                                <div class="line"></div>
-                                <div class="line small"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Messages in Zulip retain their context even if they&rsquo;re sent hours after the conversation started:</p>
+                                    <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="zulip-easy mobile-hide">
+                                    <div class="mobile-show">
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}">
+                                        <p class="tour-explanation">Messages sent hours apart are linked in the same topic.</p>
+                                        <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}">
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header">Without topics, it&rsquo;s hard to catch up efficiently, and hard to participate in conversations that started while you were away.</p>
+                                    <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming mobile-hide">
+                                    <div class="mobile-show">
+                                        <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}">
+                                        <p class="tour-explanation">The last message about Tuesday night catering is hidden 56 messages ago. Meanwhile, you just see a mix of unrelated messages.</p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="content">
-                                <div class="line"></div>
-                                <div class="line small"></div>
-                                <div class="line med"></div>
-                            </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line med"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="stream">
-                        <div class="line micro blue"></div>
-                        <div class="line nano"></div>
-
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line med"></div>
-                            </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line med"></div>
-                                <div class="line small"></div>
-                                <div class="line small"></div>
+                            <div class="item">
+                                <div class="item-inner">
+                                    <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
+                                    <button href="" type="button" name="button"
+                                      class="call-to-action">
+                                        {{ _('See plans and pricing') }}
+                                    </button>
+                                    <div class="other-resources">
+                                        <div class="other-resources-section">
+                                            <a href="/why-zulip"><img src="/static/images/landing-page/organised.svg" alt=""></a>
+                                            <p><a href="/why-zulip">What makes Zulip unique &rarr;</a></p>
+                                        </div>
+                                        <div class="other-resources-section">
+                                            <a href="/features"><img src="/static/images/landing-page/featured.svg" alt=""></a>
+                                            <p><a href="/features">See all features &rarr;</a></p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="stream">
-                        <div class="line micro green"></div>
-                        <div class="line nano"></div>
 
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line"></div>
-                                <div class="line small"></div>
-                                <div class="line med"></div>
-                            </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line"></div>
-                                <div class="line small"></div>
-                            </div>
-                        </div>
-                        <div class="message">
-                            <div class="top">
-                                <div class="avatar"></div>
-                                <div class="line top-line"></div>
-                            </div>
-                            <div class="content">
-                                <div class="line med"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="right-sidebar col-4">
-                <div class="action-block">
-                    <div class="line small darker"></div>
-                    <div class="line"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                    <div class="line"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                    <div class="line med"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                    <div class="line med"></div>
-                    <div class="line"></div>
-                </div>
-
-                <div class="action-block">
-                    <div class="line small darker"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                    <div class="line"></div>
-                    <div class="line med"></div>
-                    <div class="line med"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="features">
-        <header>
-
-        </header>
-        <div class="content">
-            <div class="col-2">
-                <img src="/static/images/landing-page/organised.svg" alt=""/>
-                <div class="il-block">
-                    <h2>Organized</h2>
-                    <p>
-                        Tired of important discussions being disrupted
-                        by automated messages, lunch plans and random
-                        links?  With Zulip, each conversation has its
-                        own thread.  Looking for a conversation from
-                        two months ago?  Zulip's fast and powerful
-                        search experience will delight you.
-                    </p>
-                    <p>
-                        Share content with drag-and-drop file uploads,
-                        link previews, and inline images.
-                    </p>
-                    <p>
-                        <a href="/why-zulip">Learn more about what makes Zulip unique &rarr;</a>
-                    </p>
-                </div>
-            </div>
-            <div class="col-2">
-                <img src="/static/images/landing-page/featured.svg" alt=""/>
-                <div class="il-block">
-                    <h2>Fully Featured</h2>
-                    <p>
-                        Zulip has everything you want in group
-                        chat. Apps for the iPhone, Android and
-                        desktop.  More than 90 integrations (GitHub,
-                        Jira, Stripe, Zendesk, etc.). Keyboard
-                        shortcuts. Emoji reactions.  Translated into a
-                        dozen languages.
-                    </p>
-                    <p>
-                        Need anything else?  <a href="/features">We
-                        probably have it.</a>
-                    </p>
+                    <a class="carousel-control left" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left"></i></a>
+                    <a class="carousel-control right" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right"></i></a>
+                    <ol class="carousel-indicators">
+                        <li data-target="#tour-carousel" data-slide-to="0" class="active"></li>
+                        <li data-target="#tour-carousel" data-slide-to="1"></li>
+                        <li data-target="#tour-carousel" data-slide-to="2"></li>
+                        <li data-target="#tour-carousel" data-slide-to="3"></li>
+                        <li data-target="#tour-carousel" data-slide-to="4"></li>
+                        <li data-target="#tour-carousel" data-slide-to="5"></li>
+                        <li data-target="#tour-carousel" data-slide-to="6"></li>
+                        <li data-target="#tour-carousel" data-slide-to="7"></li>
+                    </ol>
                 </div>
             </div>
         </div>
@@ -625,134 +496,6 @@
                     <div class="company veelo"></div>
                     <div class="company cmt"></div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bootstrap 2.3.2--->
-    <script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
-    <div class="tour">
-        <div class="tour-inner">
-            <div id="myCarousel" class="carousel slide carousel-fade">
-                <!-- Carousel items -->
-                <div class="carousel-inner">
-                    <div class="item-container">
-                        <div class="item active">
-                            <div class="item-inner">
-
-                                <button href="#myCarousel" data-slide="next" type="button" name="button" class="start-button">Take the tour</button>
-                                <img src="/static/images/story-tutorial/zulip-topic-blurred.png" alt="" class="start-image">
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">In Zulip, you subscribe to <b>streams.</b> Streams are like channels in Slack or IRC.</p>
-                                <div class="zulip-slack-comparison">
-                                    <div class="comparison-zulip">
-                                        <div class="caption">Zulip</div>
-                                        <img src="/static/images/story-tutorial/zulip-streams.png" class="zulip-streams" alt="{{ _('Streams in Zulip') }}">
-                                    </div>
-                                    <div class="comparison-slack">
-                                        <div class="caption">Other team chat</div>
-                                        <img src="/static/images/story-tutorial/slack-streams.png" class="slack-streams" alt="{{ _('Streams in Slack') }}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">Each stream message also has a <b>topic.</b> Topics are unique to Zulip.</p>
-                                <div class="zulip-slack-comparison">
-                                    <div class="comparison-zulip">
-                                        <div class="caption">Zulip</div>
-                                        <img src="/static/images/story-tutorial/zulip-streams-selected.png" class="zulip-streams-selected" alt="{{ _('Topics in Zulip') }}">
-                                    </div>
-                                    <div class="comparison-slack">
-                                        <div class="caption">Other team chat</div>
-                                        <img src="/static/images/story-tutorial/slack-streams-selected.png" class="slack-streams-selected" alt="{{ _('Streams in Slack') }}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">Topics make it easy to catch up after a day of meetings.</p>
-                                <div class="zulip-slack-comparison">
-                                    <div class="comparison-zulip">
-                                        <div class="caption comparison-2-caption-zulip mobile-hide">Zulip</div>
-                                        <img src="/static/images/story-tutorial/zulip-streams-unreads-arrows.png" alt="{{ _('Stream topics in Zulip') }}" class="zulip-unreads-arrows">
-                                    </div>
-                                    <div class="comparison-slack mobile-hide">
-                                        <div class="caption comparison-2-caption-slack">Other team chat</div>
-                                        <img src="/static/images/story-tutorial/slack-streams-unreads.png" class="slack-stream-unreads" alt="{{ _('Streams in Slack') }}">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">Let&rsquo;s click on &ldquo;Tuesday night catering.&rdquo;</p>
-                                <img src="/static/images/story-tutorial/zulip-topic.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-hide">
-                                <img src="/static/images/story-tutorial/zulip-topic-crop.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-topic mobile-show">
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">Messages in Zulip retain their context even if they&rsquo;re sent hours after the conversation started:</p>
-                                <img src="/static/images/story-tutorial/zulip-streams-easy.png" alt="{{ _('The Tuesday night catering topic in Zulip') }}" class="centered-image zulip-easy mobile-hide">
-                                <div class="mobile-show">
-                                    <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-top.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip') }}">
-                                    <p class="tour-explanation">Messages sent hours apart are linked in the same topic.</p>
-                                    <img src="/static/images/story-tutorial/zulip-streams-easy-mobile-bottom.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Zulip - compose box') }}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header">Without topics, it&rsquo;s hard to catch up efficiently, and hard to participate in conversations that started while you were away.</p>
-                                <img src="/static/images/story-tutorial/slack-overwhelming.png" alt="{{ _('The Tuesday night catering topic in Slack') }}" class="slack-overwhelming centered-image mobile-hide">
-                                <div class="mobile-show">
-                                    <img src="/static/images/story-tutorial/slack-overwhelming-mobile.png" class="centered-image" alt="{{ _('The Tuesday night catering topic in Slack') }}">
-                                    <p class="tour-explanation">The last message about Tuesday night catering is hidden 56 messages ago. Meanwhile, you just see a mix of unrelated messages.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item">
-                            <div class="item-inner">
-                                <p class="tour-item-header tour-item-header-top-push tour-item-header-centered">Zulip Free is free for an unlimited number of users.</p>
-                                <a href="/plans">
-                                    <button href="" type="button" name="button"
-                                      class="call-to-action">
-                                        {{ _('See plans and pricing') }}
-                                    </button>
-                                </a>
-                                <div class="other-resources">
-                                    <h3>Other resources:</h3>
-                                    <ul>
-                                        <li><a href="/plans/">Plans and pricing</a></li>
-                                        <li><a href="/features">Features</a></li>
-                                        <li><a href="/why-zulip">Why Zulip</a> (10 min read)</li>
-                                        <li>First time users&rsquo; guide: <a href="https://zulipchat.com/help/getting-your-organization-started-with-zulip">admin</a>, <a href="https://zulipchat.com/help/getting-started-with-zulip">user</a></li>
-                                        <li><a href="https://zulip.readthedocs.io/en/stable/production/install.html">Installing Zulip on-premise</a></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <a class="carousel-control left" href="#myCarousel" data-slide="prev"><i class="fa fa-chevron-left"></i></a>
-                <a class="carousel-control right" href="#myCarousel" data-slide="next"><i class="fa fa-chevron-right"></i></a>
-                <ol class="carousel-indicators">
-                    <li data-target="#myCarousel" data-slide-to="0" class="active"></li>
-                    <li data-target="#myCarousel" data-slide-to="1"></li>
-                    <li data-target="#myCarousel" data-slide-to="2"></li>
-                    <li data-target="#myCarousel" data-slide-to="3"></li>
-                    <li data-target="#myCarousel" data-slide-to="4"></li>
-                    <li data-target="#myCarousel" data-slide-to="5"></li>
-                    <li data-target="#myCarousel" data-slide-to="6"></li>
-                    <li data-target="#myCarousel" data-slide-to="7"></li>
-                </ol>
             </div>
         </div>
     </div>
