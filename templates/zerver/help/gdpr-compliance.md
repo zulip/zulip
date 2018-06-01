@@ -128,8 +128,8 @@ In addition to the features described above that are available in
 Zulip Cloud (which are also available on-premise), the following tools
 may be useful:
 
-* The Zulip server comes with a command-line tool, `manage.py
-  export_single_user`, which is a variant of the main Zulip export
+* The Zulip server comes with a command-line tool,
+  `manage.py export_single_user`, which is a variant of the main Zulip export
   tools that exports a single Zulip user's account details,
   preferences, stream subscriptions, and message history in a
   structured JSON format.
