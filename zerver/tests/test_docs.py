@@ -100,7 +100,7 @@ class DocPageTest(ZulipTestCase):
         self._test('/apps/', 'Apps for every platform.')
         self._test('/features/', 'Beautiful messaging')
         self._test('/hello/', 'productive group chat', landing_missing_strings=["Login"])
-        self._test('/why-zulip/', 'all stakeholders can see and')
+        self._test('/why-zulip/', 'Why Zulip?')
         self._test('/for/open-source/', 'for open source projects')
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
