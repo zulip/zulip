@@ -95,6 +95,72 @@ paths:
                       "msg": "You don't have permission to edit this message",
                       "result": "error"
                     }
+  /users/me/{stream_id}:
+    get:
+      description: Get all the topics in a specific stream.
+      parameters:
+      - name: stream_id
+        in: path
+        description: The unique ID of the stream.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    topics:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          max_id:
+                            description:
+                              The ID of the last message sent to the topic.
+                            type: number
+                          name:
+                            description: The name of the topic.
+                            type: string
+                - example:
+                    {
+                      "msg": "",
+                      "result": "success",
+                      "topics": [
+                          {
+                              "max_id": 26,
+                              "name": "Denmark3"
+                          },
+                          {
+                              "max_id": 23,
+                              "name": "Denmark1"
+                          },
+                          {
+                              "max_id": 6,
+                              "name": "Denmark2"
+                          }
+                      ]
+                  }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                      "code": "BAD_REQUEST",
+                      "msg": "Invalid stream id",
+                      "result": "error"
+                    }
 components:
   #######################
   # Security definitions

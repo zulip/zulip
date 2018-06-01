@@ -6,7 +6,7 @@ import json
 import os
 
 from zerver.lib import mdiff
-from zerver.lib.openapi import get_openapi_fixture
+from zerver.lib.openapi import validate_against_openapi_schema
 
 if False:
     from zulip import Client
@@ -385,9 +385,7 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    fixture = get_openapi_fixture('/messages/{message_id}', 'patch', '200')
-
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch')
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
@@ -470,6 +468,15 @@ def upload_file(client):
     test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
                          check_if_exists=['uri'])
 
+def get_stream_topics(client, stream_id):
+    # type: (Client, int) -> None
+
+    # {code_example|start}
+    result = client.get_stream_topics(stream_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users/me/{stream_id}', 'get')
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -506,6 +513,7 @@ TEST_FUNCTIONS = {
     'register-queue': register_queue,
     'delete-queue': deregister_queue,
     'upload-file': upload_file,
+    '/users/me/{stream_id}:get': get_stream_topics
 }
 
 # SETUP METHODS FOLLOW
@@ -584,6 +592,7 @@ def test_streams(client):
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
+    get_stream_topics(client, 1)
 
 def test_queues(client):
     # type: (Client) -> None
