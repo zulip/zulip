@@ -42,7 +42,6 @@ LOG_DIR_PATH = os.path.join(VAR_DIR_PATH, 'log')
 UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'uploads')
 TEST_UPLOAD_DIR_PATH = os.path.join(VAR_DIR_PATH, 'test_uploads')
 COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'coverage')
-LINECOVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'linecoverage-report')
 NODE_TEST_COVERAGE_DIR_PATH = os.path.join(VAR_DIR_PATH, 'node-coverage')
 
 is_travis = 'TRAVIS' in os.environ
@@ -281,8 +280,6 @@ def main(options):
     run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
     # create coverage directory`var/coverage`
     run(["mkdir", "-p", COVERAGE_DIR_PATH])
-    # create linecoverage directory`var/linecoverage-report`
-    run(["mkdir", "-p", LINECOVERAGE_DIR_PATH])
     # create linecoverage directory`var/node-coverage`
     run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
 
