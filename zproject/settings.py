@@ -817,7 +817,7 @@ if DEBUG:
     else:
         STATIC_ROOT = os.path.abspath('static/')
 else:
-    STATICFILES_STORAGE = 'zerver.storage.ZulipStorage'
+    STATICFILES_STORAGE = 'zerver.lib.storage.ZulipStorage'
     STATICFILES_FINDERS = (
         'django.contrib.staticfiles.finders.FileSystemFinder',
         'pipeline.finders.PipelineFinder',
