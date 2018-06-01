@@ -3031,17 +3031,17 @@ class GetSubscribersTest(ZulipTestCase):
         self.unsubscribe(admin_user, stream_name)
         self.unsubscribe(non_admin_user, stream_name)
 
-        # Test non admin user shouldn't get previously subscribed private stream's subscribers.
+        # Test admin user gets previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(admin_user)
         unsubscribed_streams = sub_data[1]
         self.assertEqual(len(unsubscribed_streams), 1)
         self.assertEqual(len(unsubscribed_streams[0]["subscribers"]), 1)
 
-        # Test admin users can get previously subscribed private stream's subscribers.
+        # Test non admin users cannot get previously subscribed private stream's subscribers.
         sub_data = gather_subscriptions_helper(non_admin_user)
         unsubscribed_streams = sub_data[1]
         self.assertEqual(len(unsubscribed_streams), 1)
-        self.assertFalse('subscribers' in unsubscribed_streams)
+        self.assertFalse('subscribers' in unsubscribed_streams[0])
 
     def test_gather_subscriptions_mit(self) -> None:
         """
