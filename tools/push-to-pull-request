@@ -44,11 +44,16 @@ fi
 # This is the old REST API; the new GraphQL API does look neat, but it
 # seems to require authentication even for simple lookups of public data,
 # and that'd be a pain for a simple script like this.
-pr_details="$(curl -s https://api.github.com/repos/"$repo_fq"/pulls/"$pr_id")"
+pr_url=https://api.github.com/repos/"${repo_fq}"/pulls/"${pr_id}"
+pr_details="$(curl -s "$pr_url")"
 
 pr_jq () {
     echo "$pr_details" | jq "$@"
 }
+if [ "$(pr_jq .message)" = '"Not Found"' ]; then
+    echo "Invalid PR URL: $pr_url"
+    exit 1
+fi
 
 if [ "$(pr_jq .maintainer_can_modify)" != "true" ]; then
     # This seems to be rare (in Greg's experience doing the manual
