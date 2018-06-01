@@ -483,7 +483,7 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    timezone: str="", avatar_source: str=UserProfile.AVATAR_FROM_GRAVATAR,
                    default_sending_stream: Optional[Stream]=None,
                    default_events_register_stream: Optional[Stream]=None,
-                   default_all_public_streams: bool=None,
+                   default_all_public_streams: Optional[bool]=None,
                    prereg_user: Optional[PreregistrationUser]=None,
                    newsletter_data: Optional[Dict[str, str]]=None,
                    default_stream_groups: List[DefaultStreamGroup]=[],

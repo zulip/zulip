@@ -67,7 +67,7 @@ def check_valid_bot_type(user_profile: UserProfile, bot_type: int) -> None:
     if bot_type not in user_profile.allowed_bot_types:
         raise JsonableError(_('Invalid bot type'))
 
-def check_valid_interface_type(interface_type: int) -> None:
+def check_valid_interface_type(interface_type: Optional[int]) -> None:
     if interface_type not in Service.ALLOWED_INTERFACE_TYPES:
         raise JsonableError(_('Invalid interface type'))
 

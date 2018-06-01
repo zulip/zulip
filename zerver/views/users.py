@@ -141,6 +141,7 @@ def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpRe
     # our templates depend on being able to use the ampersand to
     # add query parameters to our url, get_avatar_url does '?x=x'
     # hacks to prevent us from having to jump through decode/encode hoops.
+    assert url is not None
     assert '?' in url
     url += '&' + request.META['QUERY_STRING']
     return redirect(url)
@@ -198,6 +199,7 @@ def patch_bot_backend(
 
     if service_payload_url is not None:
         check_valid_interface_type(service_interface)
+        assert service_interface is not None
         do_update_outgoing_webhook_service(bot, service_interface, service_payload_url)
 
     if config_data is not None:
