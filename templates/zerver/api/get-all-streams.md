@@ -79,7 +79,8 @@ A typical successful JSON response may look like:
 
 {generate_code_example|get-all-streams|fixture}
 
-An example of a JSON response for when the user is not authorized
-to use the `include_all_active` parameter:
+An example JSON response for when the user is not authorized to use the
+`include_all_active` parameter (i.e. because they are not an organization
+administrator):
 
 {generate_code_example|user-not-authorized-error|fixture}

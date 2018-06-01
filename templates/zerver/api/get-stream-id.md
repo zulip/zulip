@@ -67,7 +67,6 @@ A typical successful JSON response may look like:
 
 {generate_code_example|get-stream-id|fixture}
 
-An example of a JSON response for when the supplied stream does not
-exist:
+An example JSON response for when the supplied stream does not exist:
 
 {generate_code_example|invalid-stream-error|fixture}
