@@ -40,6 +40,18 @@ function match_criteria(operators, criteria) {
     });
 }
 
+function check_validity(last, operators, valid, invalid) {
+    // valid: list of strings valid for the last operator
+    // invalid: list of operators invalid for any previous operators except last.
+    if (valid.indexOf(last.operator) === -1) {
+        return false;
+    }
+    if (match_criteria(operators, invalid)) {
+        return false;
+    }
+    return true;
+}
+
 function compare_by_huddle(huddle) {
     huddle = _.map(huddle.slice(0, -1), function (person) {
         person = people.get_by_email(person);
@@ -72,17 +84,13 @@ function compare_by_huddle(huddle) {
 }
 
 function get_stream_suggestions(last, operators) {
-    if (!(last.operator === 'stream' || last.operator === 'search'
-        || last.operator === '')) {
-        return [];
-    }
-
+    var valid = ['stream', 'search', ''];
     var invalid = [
         {operator: 'stream'},
         {operator: 'is', operand: 'private'},
         {operator: 'pm-with'},
     ];
-    if (match_criteria(operators, invalid)) {
+    if (!check_validity(last, operators, valid, invalid)) {
         return [];
     }
 
@@ -113,14 +121,7 @@ function get_stream_suggestions(last, operators) {
 }
 
 function get_group_suggestions(all_persons, last, operators) {
-    if (last.operator !== 'pm-with') {
-        return [];
-    }
-
-    var invalid = [
-        {operator: 'stream'},
-    ];
-    if (match_criteria(operators, invalid)) {
+    if (!check_validity(last, operators, ['pm-with'], [{operator: 'stream'}])) {
         return [];
     }
 
@@ -189,16 +190,12 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
 
     var query = last.operand;
 
-    // Only accept queries who match the specified operator, or no operator (search)
-    if (!(last.operator === 'search' || last.operator === autocomplete_operator)) {
-        return [];
-    }
-
     // Be especially strict about the less common "from" operator.
     if (autocomplete_operator === 'from' && last.operator !== 'from') {
         return [];
     }
 
+    var valid = ['search', autocomplete_operator];
     var invalid;
     if (autocomplete_operator === 'pm-with') {
         invalid = [{operator: 'pm-with'}, {operator: 'stream'}];
@@ -207,7 +204,7 @@ function get_person_suggestions(all_persons, last, operators, autocomplete_opera
         invalid = [{operator: 'sender'}, {operator: 'from'}];
     }
 
-    if (match_criteria(operators, invalid)) {
+    if (!check_validity(last, operators, valid, invalid)) {
         return [];
     }
 
@@ -251,17 +248,12 @@ function get_default_suggestion(operators) {
 }
 
 function get_topic_suggestions(last, operators) {
-    if (last.operator === '') {
-        return [];
-    }
-
     var invalid = [
         {operator: 'pm-with'},
         {operator: 'is', operand: 'private'},
         {operator: 'topic'},
     ];
-
-    if (match_criteria(operators, invalid)) {
+    if (!check_validity(last, operators, ['stream', 'topic', 'search'], invalid)) {
         return [];
     }
 
@@ -304,8 +296,6 @@ function get_topic_suggestions(last, operators) {
             suggest_operators.push({operator: 'stream', operand: stream});
         }
         break;
-    default:
-        return [];
     }
 
     if (!stream) {
