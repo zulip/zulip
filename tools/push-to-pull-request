@@ -28,9 +28,9 @@ fi
 remote_url="$(git config remote."$remote".url)"
 repo_fq="$(echo "$remote_url" | perl -lne 'print $1 if (
     m, ^ git\@github\.com:
-         ([^/]+ / [^/]+)
-         (\.git)?
-       $ ,x )' | sed 's/.git$//')"
+         ([^/]+ / [^/]+?)
+         (?:\.git)?
+       $ ,x )')"
 
 if [ -z "$repo_fq" ]; then
     # We're pretty specific about what we expect the URL to look like;
