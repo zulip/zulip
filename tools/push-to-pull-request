@@ -57,11 +57,15 @@ if [ "$(pr_jq -r .message)" = "Not Found" ]; then
 fi
 
 if [ "$(pr_jq .maintainer_can_modify)" != "true" ]; then
-    # This seems to be rare (in Greg's experience doing the manual
-    # equivalent of this script for many different contributors, none
-    # have ever chosen this setting), but give a decent error message
-    # if it does happen.
-    echo "error: contributor has disallowed pushing to PR branch" >&2
+    # This happens when the PR has already been merged or closed, or
+    # if the contributor has turned off the (default) setting to allow
+    # maintainers of the target repo to push to their PR branch.
+    #
+    # The latter seems to be rare (in Greg's experience doing the
+    # manual equivalent of this script for many different
+    # contributors, none have ever chosen this setting), but give a
+    # decent error message if it does happen.
+    echo "error: PR already closed, or contributor has disallowed pushing to branch" >&2
     exit 1
 fi
 
