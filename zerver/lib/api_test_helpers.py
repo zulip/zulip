@@ -468,6 +468,15 @@ def upload_file(client):
     test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
                          check_if_exists=['uri'])
 
+def get_stream_topics(client, stream_id):
+    # type: (Client, int) -> None
+
+    # {code_example|start}
+    result = client.get_stream_topics(stream_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics', 'get')
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -504,6 +513,7 @@ TEST_FUNCTIONS = {
     'register-queue': register_queue,
     'delete-queue': deregister_queue,
     'upload-file': upload_file,
+    '/users/me/{stream_id}/topics:get': get_stream_topics
 }
 
 # SETUP METHODS FOLLOW
@@ -582,6 +592,7 @@ def test_streams(client):
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
+    get_stream_topics(client, 1)
 
 def test_queues(client):
     # type: (Client) -> None
