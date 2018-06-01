@@ -15,6 +15,7 @@ import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
 import zerver.lib.bugdown.help_settings_links
+from zerver.context_processors import zulip_default_context
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
 register = Library()

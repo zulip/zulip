@@ -16,8 +16,11 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.subdomains import get_subdomain
 from zerver.models import Realm
 from zerver.templatetags.app_filters import render_markdown_path
+from zerver.context_processors import zulip_default_context
 
 def add_api_uri_context(context: Dict[str, Any], request: HttpRequest) -> None:
+    context.update(zulip_default_context(request))
+
     subdomain = get_subdomain(request)
     if (subdomain != Realm.SUBDOMAIN_FOR_ROOT_DOMAIN
             or not settings.ROOT_DOMAIN_LANDING_PAGE):
