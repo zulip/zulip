@@ -114,13 +114,13 @@ def create_user(client):
     result = client.create_user(request)
     # {code_example|end}
 
-    fixture = FIXTURES['create-user']['successful_response']
+    fixture = FIXTURES['successful-response-empty']
     test_against_fixture(result, fixture)
 
     # Test "Email already used error"
     result = client.create_user(request)
 
-    fixture = FIXTURES['create-user']['email_already_used_error']
+    fixture = FIXTURES['email_already_used_error']
     test_against_fixture(result, fixture)
 
 def get_members(client):
@@ -440,12 +440,12 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     # {code_example|end}
 
-    fixture = FIXTURES['delete-queue']['successful_response']
+    fixture = FIXTURES['successful-response-empty']
     test_against_fixture(result, fixture)
 
     # Test "BAD_EVENT_QUEUE_ID" error
     result = client.deregister(queue_id)
-    fixture = FIXTURES['delete-queue']['bad_event_queue_id_error']
+    fixture = FIXTURES['bad_event_queue_id_error']
     test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
                          check_if_exists=['queue_id', 'msg'])
 
