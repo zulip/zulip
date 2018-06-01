@@ -77,8 +77,8 @@ cd /home/zulip/deployments/current
 - Slack doesn't export user settings or organization settings, so
   you'll need to configure these manually.
 
-- User phone numbers and custom user profile fields are not currently
-  imported. We expect to address this in a future revision.
+- User phone numbers are not currently imported. We expect to address
+  this in a future revision.
 
 - Permission hierarchy:
     Slack's `Primary owner`, `owner`, and `admin` are mapped to Zulip's `Organization admin`.
