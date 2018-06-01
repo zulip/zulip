@@ -1682,6 +1682,14 @@ input.new-organization-button {
     margin: 5px 25px 5px;
 }
 
+.markdown .content code {
+    display: inline-block;
+}
+
+.markdown .content ol li p:not(:first-child) {
+    display: block;
+}
+
 .markdown ol p {
     margin: 0 0 2px;
 }

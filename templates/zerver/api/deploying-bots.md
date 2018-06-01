@@ -33,6 +33,7 @@ in production.
 ### Installing the Zulip Botserver
 
 Install the `zulip_botserver` PyPI package using `pip`:
+
 ```
 pip install zulip_botserver
 ```
@@ -63,7 +64,8 @@ pip install zulip_botserver
 
 1. Run the Botserver, where `helloworld` is the name of the bot you
    want to run:
-   `zulip-bot-server --config-file <path_to_zuliprc> --bot-name=helloworld`
+
+    `zulip-bot-server --config-file <path_to_zuliprc> --bot-name=helloworld`
 
     You can specify the port number and various other options; run
     `zulip-bot-server --help` to see how to do this.
@@ -81,32 +83,34 @@ Botserver process.  You can do this with the following procedure.
    Botserver format." option at the top.
 
 1. Open the `botserverrc`. It should contain one or more sections that look like this:
-```
-[]
-email=foo-bot@hostname
-key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-site=http://hostname
-```
-   Each section contains the configuration for an outgoing webhook bot. For each
-   bot, enter the name of the bot you want to run in the square brackets `[]`.
-   For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
-   new section would look like this:
 
-```
-[helloworld]
-email=foo-bot@hostname
-key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
-site=http://hostname
-```
+    ```
+    []
+    email=foo-bot@hostname
+    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+    site=http://hostname
+    ```
 
-3.  Run the Zulip Botserver by passing the `botserverrc` to it. The
+    Each section contains the configuration for an outgoing webhook bot. For each
+    bot, enter the name of the bot you want to run in the square brackets `[]`.
+    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
+    new section would look like this:
+
+    ```
+    [helloworld]
+    email=foo-bot@hostname
+    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+    site=http://hostname
+    ```
+
+1.  Run the Zulip Botserver by passing the `botserverrc` to it. The
     command format is:
 
-    ```
-    zulip-bot-server  --config-file <path_to_botserverrc>
-    ```
+     ```
+     zulip-bot-server  --config-file <path_to_botserverrc>
+     ```
 
-    If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
+     If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
 
 ### Running Zulip Botserver with supervisord
 
@@ -119,9 +123,10 @@ Running the Zulip Botserver with *supervisord* works almost like
 running it manually.
 
 1.  Install *supervisord* via your package manager; e.g. on Debian/Ubuntu:
-    ```
-    sudo apt-get install supervisor
-    ```
+
+     ```
+     sudo apt-get install supervisor
+     ```
 
 1.  Configure *supervisord*.  *supervisord* stores its configuration in
     `/etc/supervisor/conf.d`.
@@ -142,20 +147,23 @@ running it manually.
 [supervisord-config-file]: https://raw.githubusercontent.com/zulip/python-zulip-api/master/zulip_botserver/zulip-botserver-supervisord.conf
 
 1. Update *supervisord* to read the configuration file:
-   ```
-   supervisorctl reread
-   supervisorctl update
-   ```
-   (or you can use `/etc/init.d/supervisord restart`, but this is less
-   disruptive if you're using *supervisord* for other services as well).
+
+    ```
+    supervisorctl reread
+    supervisorctl update
+    ```
+
+    (or you can use `/etc/init.d/supervisord restart`, but this is less
+    disruptive if you're using *supervisord* for other services as well).
 
 1. Test if your setup is successful:
-   ```
-   supervisorctl status
-   ```
-   The output should include a line similar to this:
-   > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
 
-   The standard output of the Botserver will be logged to the path in
-   your *supervisord* configuration.
+    ```
+    supervisorctl status
+    ```
 
+    The output should include a line similar to this:
+    > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
+
+    The standard output of the Botserver will be logged to the path in
+    your *supervisord* configuration.
