@@ -118,7 +118,6 @@ from zerver.lib.validator import (
 from zerver.lib.upload import upload_backend, attachment_url_to_path_id
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
-from zerver.views.users import add_service
 
 from zerver.tornado.event_queue import (
     allocate_client_descriptor,

@@ -30,7 +30,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id
+    access_bot_by_id, add_service
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
@@ -241,15 +241,6 @@ def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_
         api_key = bot.api_key
     )
     return json_success(json_result)
-
-# Adds an outgoing webhook or embedded bot service.
-def add_service(name: str, user_profile: UserProfile, base_url: str=None,
-                interface: int=None, token: str=None) -> None:
-    Service.objects.create(name=name,
-                           user_profile=user_profile,
-                           base_url=base_url,
-                           interface=interface,
-                           token=token)
 
 @require_non_guest_human_user
 @has_request_variables

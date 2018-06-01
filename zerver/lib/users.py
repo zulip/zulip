@@ -41,6 +41,15 @@ def check_valid_bot_config(service_name: str, config_data: Dict[str, str]) -> No
         # error message.
         raise JsonableError(_("Invalid configuration data!"))
 
+# Adds an outgoing webhook or embedded bot service.
+def add_service(name: str, user_profile: UserProfile, base_url: Optional[str]=None,
+                interface: Optional[int]=None, token: Optional[str]=None) -> None:
+    Service.objects.create(name=name,
+                           user_profile=user_profile,
+                           base_url=base_url,
+                           interface=interface,
+                           token=token)
+
 def check_bot_creation_policy(user_profile: UserProfile, bot_type: int) -> None:
     # Realm administrators can always add bot
     if user_profile.is_realm_admin:

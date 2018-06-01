@@ -20,7 +20,6 @@ from django.http import HttpRequest
 from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
-from zerver.views.users import add_service
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
