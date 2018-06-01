@@ -37,9 +37,7 @@
             <div class="subscription-type-text">
                 {{partial "subscription_type"}}
             </div>
-            {{#if can_change_stream_permissions}}
-            <a class="change-stream-privacy">[{{t "Change" }}]</a>
-            {{/if}}
+            <a class="change-stream-privacy" {{#unless can_change_stream_permissions}}style="display: none;"{{/unless}}>[{{t "Change" }}]</a>
         </div>
         <div class="regular_subscription_settings collapse {{#subscribed}}in{{/subscribed}}">
             <div class="subscription-config">

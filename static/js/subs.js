@@ -263,6 +263,10 @@ exports.update_settings_for_subscribed = function (sub) {
 
         button.toggleClass("checked");
         settings_button.text(i18n.t("Unsubscribe"));
+
+        if (sub.can_change_stream_permissions) {
+            $(".change-stream-privacy").show();
+        }
     } else {
         exports.add_sub_to_table(sub);
     }
