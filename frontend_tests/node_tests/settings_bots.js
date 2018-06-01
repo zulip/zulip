@@ -5,6 +5,11 @@ set_global("page_params", {
         {name:"giphy", config: {key: "12345678"}},
         {name:"foobot", config: {bar: "baz", qux: "quux"}},
     ],
+    realm_bots: [{api_key: 'QadL788EkiottHmukyhHgePUFHREiu8b',
+                  email: 'error-bot@zulip.org',
+                  full_name: 'Error bot',
+                  user_id: 1},
+    ],
 });
 
 set_global("avatar", {});
@@ -16,14 +21,13 @@ set_global('document', 'document-stub');
 zrequire('bot_data');
 zrequire('settings_bots');
 zrequire('Handlebars', 'handlebars');
+zrequire('people');
 zrequire('templates');
 
+bot_data.initialize();
+
 run_test('generate_zuliprc_uri', () => {
-    var bot = {
-        email: "error-bot@zulip.org",
-        api_key: "QadL788EkiottHmukyhHgePUFHREiu8b",
-    };
-    var uri = settings_bots.generate_zuliprc_uri(bot.email, bot.api_key);
+    var uri = settings_bots.generate_zuliprc_uri(1);
     var expected = "data:application/octet-stream;charset=utf-8," + encodeURIComponent(
         "[api]\nemail=error-bot@zulip.org\n" +
         "key=QadL788EkiottHmukyhHgePUFHREiu8b\n" +
