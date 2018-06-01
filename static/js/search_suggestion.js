@@ -52,6 +52,13 @@ function check_validity(last, operators, valid, invalid) {
     return true;
 }
 
+function format_as_suggestion(terms) {
+    return {
+        description: Filter.describe(terms),
+        search_string: Filter.unparse(terms),
+    };
+}
+
 function compare_by_huddle(huddle) {
     huddle = _.map(huddle.slice(0, -1), function (person) {
         person = people.get_by_email(person);
@@ -242,9 +249,7 @@ function get_default_suggestion(operators) {
     if (operators.length === 0) {
         return {description: '', search_string: ''};
     }
-    var search_string = Filter.unparse(operators);
-    var description = Filter.describe(operators);
-    return {description: description, search_string: search_string};
+    return format_as_suggestion(operators);
 }
 
 function get_topic_suggestions(last, operators) {
@@ -335,9 +340,7 @@ function get_topic_suggestions(last, operators) {
     return _.map(topics, function (topic) {
         var topic_term = {operator: 'topic', operand: topic, negated: negated};
         var operators = suggest_operators.concat([topic_term]);
-        var search_string = Filter.unparse(operators);
-        var description = Filter.describe(operators);
-        return {description: description, search_string: search_string};
+        return format_as_suggestion(operators);
     });
 }
 
@@ -354,10 +357,7 @@ function get_operator_subset_suggestions(operators) {
 
     for (i = operators.length - 1; i >= 1; i -= 1) {
         var subset = operators.slice(0, i);
-        var search_string = Filter.unparse(subset);
-        var description = Filter.describe(subset);
-        var suggestion = {description: description, search_string: search_string};
-        suggestions.push(suggestion);
+        suggestions.push(format_as_suggestion(subset));
     }
 
     return suggestions;
@@ -536,9 +536,7 @@ function get_operator_suggestions(last) {
 
     return _.map(choices, function (choice) {
         var op = [{operator: choice, operand: '', negated: negated}];
-        var search_string = Filter.unparse(op);
-        var description = Filter.describe(op);
-        return {description: description, search_string: search_string};
+        return format_as_suggestion(op);
     });
 }
 
