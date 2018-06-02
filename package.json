@@ -76,8 +76,8 @@
     "xmlhttprequest": "1.8.0"
   },
   "scripts": {
-    "lint": "eslint --quiet --cache",
-    "lint-fix": "eslint --quiet --fix",
+    "lint": "eslint static/js frontend_tests --quiet --cache",
+    "lint-fix": "eslint static/js frontend_tests --quiet --fix",
     "lint-loud": "eslint static/js frontend_tests --cache"
   },
   "repository": {
