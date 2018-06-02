@@ -825,7 +825,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return not self.realm.is_zephyr_mirror_realm
 
     def can_access_all_realm_members(self) -> bool:
-        return not self.realm.is_zephyr_mirror_realm
+        return not (self.realm.is_zephyr_mirror_realm or self.is_guest)
 
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
