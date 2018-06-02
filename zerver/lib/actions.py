@@ -2203,9 +2203,24 @@ def validate_user_access_to_subscribers(user_profile: Optional[UserProfile],
 def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfile],
                                                stream_dict: Mapping[str, Any],
                                                check_user_subscribed: Callable[[], bool]) -> None:
-    """ Helper for validate_user_access_to_subscribers that doesn't require a full stream object
+    """Helper for validate_user_access_to_subscribers that doesn't require
+    a full stream object.  This function is a bit hard to read,
+    because it is carefully optimized for performance in the two code
+    paths we call it from:
 
-    * check_user_subscribed reports whether the user is subscribed to the stream.
+    * In `bulk_get_subscriber_user_ids`, we already know whether the
+    user was subscribed via `sub_dict`, and so we want to avoid a
+    database query at all (especially since it calls this in a loop);
+    * In `validate_user_access_to_subscribers`, we want to only check
+    if the user is subscribed when we absolutely have to, since it
+    costs a database query.
+
+    The `check_user_subscribed` argument is a function that reports
+    whether the user is subscribed to the stream.
+
+    Note also that we raise a ValidationError in cases where the
+    caller is doing the wrong thing (maybe these should be
+    AssertionErrors), and JsonableError for 400 type errors.
     """
     if user_profile is None:
         raise ValidationError("Missing user to validate access for")
