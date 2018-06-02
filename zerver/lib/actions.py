@@ -2213,6 +2213,10 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not in given realm")
 
+    # Guest users can access subscribed public stream's subscribers
+    if user_profile.is_guest and check_user_subscribed():
+        return
+
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
 
