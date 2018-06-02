@@ -4050,6 +4050,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
             subscribers = None
 
+        # Also don't show subscribers to guest user when guest user isn't subscribed
+        # to a public stream anymore
+        if not sub["active"] and user_profile.is_guest:
+            subscribers = None
+
         stream_dict = {'name': stream["name"],
                        'in_home_view': sub["in_home_view"],
                        'invite_only': stream["invite_only"],
