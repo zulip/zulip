@@ -11,3 +11,4 @@ Developer Tutorials
    reading-list
    screenshot-and-gif-software
    shell-tips
+   documenting-api-endpoints
