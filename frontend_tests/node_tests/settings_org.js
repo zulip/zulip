@@ -29,6 +29,12 @@ set_global('channel', {
 });
 
 set_global('templates', {
+    render: function (name, data) {
+        if (name === 'admin-realm-domains-list') {
+            assert(data.realm_domain.domain);
+            return 'stub-domains-list';
+        }
+    },
 });
 
 set_global('overlays', {
@@ -42,15 +48,6 @@ run_test('unloaded', () => {
     settings_org.populate_realm_domains();
     settings_org.populate_auth_methods();
 });
-
-(function stub_rendering() {
-    templates.render = function (name, data) {
-        if (name === 'admin-realm-domains-list') {
-            assert(data.realm_domain.domain);
-            return 'stub-domains-list';
-        }
-    };
-}());
 
 set_global('ui_report', {
     success: function (msg, elem) {
