@@ -2213,6 +2213,14 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
     if user_profile.realm_id != stream_dict["realm_id"]:
         raise ValidationError("Requesting user not in given realm")
 
+    # Guest users can access subscribed public stream's subscribers
+    if user_profile.is_guest:
+        if check_user_subscribed():
+            return
+        # We could put an AssertionError here; in that we don't have
+        # any code paths that would allow a guest user to access other
+        # streams in the first place.
+
     if not user_profile.can_access_public_streams() and not stream_dict["invite_only"]:
         raise JsonableError(_("Subscriber data is not available for this stream"))
 
@@ -4048,6 +4056,10 @@ def gather_subscriptions_helper(user_profile: UserProfile,
         # Important: don't show the subscribers if the stream is invite only
         # and this user isn't on it anymore (or a realm administrator).
         if stream["invite_only"] and not (sub["active"] or user_profile.is_realm_admin):
+            subscribers = None
+
+        # Guest users lose access to subscribers when they are unsubscribed.
+        if not sub["active"] and user_profile.is_guest:
             subscribers = None
 
         stream_dict = {'name': stream["name"],

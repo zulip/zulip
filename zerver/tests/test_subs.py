@@ -3018,6 +3018,47 @@ class GetSubscribersTest(ZulipTestCase):
 
         test_admin_case()
 
+    def test_gather_subscribed_streams_for_guest_user(self) -> None:
+        guest_user = self.example_user("polonius")
+
+        stream_name_sub = "public_stream_1"
+        self.make_stream(stream_name_sub, realm=get_realm("zulip"))
+        self.subscribe(guest_user, stream_name_sub)
+
+        stream_name_unsub = "public_stream_2"
+        self.make_stream(stream_name_unsub, realm=get_realm("zulip"))
+        self.subscribe(guest_user, stream_name_unsub)
+        self.unsubscribe(guest_user, stream_name_unsub)
+
+        stream_name_never_sub = "public_stream_3"
+        self.make_stream(stream_name_never_sub, realm=get_realm("zulip"))
+
+        normal_user = self.example_user("aaron")
+        self.subscribe(normal_user, stream_name_sub)
+        self.subscribe(normal_user, stream_name_unsub)
+        self.subscribe(normal_user, stream_name_unsub)
+
+        subs, unsubs, neversubs = gather_subscriptions_helper(guest_user)
+
+        # Guest users get info about subscribed public stream's subscribers
+        expected_stream_exists = False
+        for sub in subs:
+            if sub["name"] == stream_name_sub:
+                expected_stream_exists = True
+                self.assertEqual(len(sub["subscribers"]), 2)
+        self.assertTrue(expected_stream_exists)
+
+        # Guest users don't get info about unsubscribed public stream's subscribers
+        expected_stream_exists = False
+        for unsub in unsubs:
+            if unsub["name"] == stream_name_unsub:
+                expected_stream_exists = True
+                self.assertNotIn("subscribers", unsub)
+        self.assertTrue(expected_stream_exists)
+
+        # Guest user don't get data about never subscribed public stream's data
+        self.assertEqual(len(neversubs), 0)
+
     def test_previously_subscribed_private_streams(self) -> None:
         admin_user = self.example_user("iago")
         non_admin_user = self.example_user("cordelia")
