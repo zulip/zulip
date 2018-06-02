@@ -78,7 +78,7 @@ below, and add more to your repertoire as needed.
 
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
-* **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
+* **Narrow to all messages**: `a` — Shows all unmuted messages.
 
 * **Narrow to current compose box recipient**: `Ctrl` + `.`
 

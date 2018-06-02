@@ -170,7 +170,7 @@ run_test('basic_chars', () => {
 
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
-    assert_unmapped('abefhlmotyz');
+    assert_unmapped('befhlmotyz');
     assert_unmapped('BEFHILNOQTUWXYZ');
 
     // We have to skip some checks due to the way the code is
@@ -289,6 +289,7 @@ run_test('basic_chars', () => {
     assert_mapping('i', 'popovers.open_message_menu');
     assert_mapping(':', 'reactions.open_reactions_popover', true);
     assert_mapping('>', 'compose_actions.quote_and_reply');
+    assert_mapping('a', 'narrow.deactivate');
 
     overlays.is_active = return_true;
     overlays.lightbox_open = return_true;

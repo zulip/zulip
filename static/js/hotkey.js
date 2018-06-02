@@ -95,6 +95,7 @@ var keypress_mappings = {
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_topic', message_view_only: true}, //'S'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
+    97: {name: 'all_messages', message_view_only: true}, // 'a'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
     103: {name: 'gear_menu', message_view_only: true}, // 'g'
@@ -284,7 +285,7 @@ exports.process_escape_key = function (e) {
         return true;
     }
 
-    narrow.deactivate();
+    ui.maybe_show_deprecation_notice('Esc');
     return true;
 };
 
@@ -633,6 +634,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'compose_private_message':
         compose_actions.start('private', {trigger: "compose_hotkey"});
+        return true;
+    case 'all_messages':
+        narrow.deactivate();
         return true;
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {

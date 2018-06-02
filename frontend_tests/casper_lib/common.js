@@ -376,11 +376,12 @@ exports.expected_messages = function (table, headings, bodies) {
 
 exports.un_narrow = function () {
     casper.test.info('Un-narrowing');
-    if (casper.visible('.message_comp')) {
-        // close the compose box
-        common.keypress(27); // Esc
-    }
+
+    // Press the escape key to close any open modals.
     common.keypress(27); // Esc
+
+    // Then hit a to go to All Messages
+    casper.page.sendEvent('keypress', 'a');
 };
 
 return exports;

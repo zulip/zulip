@@ -141,6 +141,8 @@ exports.maybe_show_deprecation_notice = function (key) {
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? "Cmd" : "Ctrl";
     if (key === 'C') {
         message = exports.get_hotkey_deprecation_notice('C', 'x');
+    } else if (key === 'Esc') {
+        message = i18n.t('We\'ve replaced the "Esc" hotkey with "a" to got to "All messages".');
     } else if (key === '*') {
         message = exports.get_hotkey_deprecation_notice("*", isCmdOrCtrl + " + s");
     } else {
