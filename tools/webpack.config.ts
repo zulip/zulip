@@ -119,7 +119,7 @@ export default (env?: string) : webpack.Configuration => {
         },
         output: {
             path: resolve(__dirname, '../static/webpack-bundles'),
-            filename: production ? '[name]-[hash].js' : '[name].js',
+            filename: production ? '[name]-[chunkhash].js' : '[name].js',
         },
         resolve: {
             extensions: [".tsx", ".ts", ".js", ".json", ".scss", ".css"],
@@ -145,7 +145,7 @@ export default (env?: string) : webpack.Configuration => {
                     }
                     return '[name].[contenthash].css';
                 },
-                chunkFilename: "[id].css"
+                chunkFilename: "[chunkhash].css"
             })
         ];
     } else {
@@ -162,7 +162,7 @@ export default (env?: string) : webpack.Configuration => {
             // Extract CSS from files
             new MiniCssExtractPlugin({
                 filename: "[name].css",
-                chunkFilename: "[id].css"
+                chunkFilename: "[chunkhash].css"
             }),
         ];
 
