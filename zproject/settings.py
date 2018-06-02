@@ -968,6 +968,7 @@ JS_SPECS = {
             'js/compose_state.js',
             'js/compose_actions.js',
             'js/transmit.js',
+            'js/zcommand.js',
             'js/compose.js',
             'js/upload.js',
             'js/stream_color.js',

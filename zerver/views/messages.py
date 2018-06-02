@@ -682,6 +682,15 @@ def find_first_unread_anchor(sa_conn: Any,
     return anchor
 
 @has_request_variables
+def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
+                     command: str=REQ('command')) -> HttpResponse:
+    if command == 'ping':
+        ret = dict()  # type: Dict[str, Any]
+        return json_success(ret)
+
+    raise JsonableError(_('No such command: %s') % (command,))
+
+@has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          anchor: int=REQ(converter=int),
                          num_before: int=REQ(converter=to_non_negative_int),

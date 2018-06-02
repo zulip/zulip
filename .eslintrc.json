@@ -74,6 +74,7 @@
         "typing_status": false,
         "sent_messages": false,
         "transmit": false,
+        "zcommand": false,
         "compose": false,
         "compose_actions": false,
         "compose_state": false,
