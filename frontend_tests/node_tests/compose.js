@@ -55,6 +55,7 @@ set_global('reminder', {
 global.document.location.protocol = 'https:';
 global.document.location.host = 'foo.com';
 
+zrequire('zcommand');
 zrequire('compose_ui');
 zrequire('util');
 zrequire('common');

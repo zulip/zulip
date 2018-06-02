@@ -299,11 +299,21 @@ exports.finish = function () {
     exports.clear_private_stream_alert();
     notifications.clear_compose_notifications();
 
+    var message_content = compose_state.message_content();
+
+    // Skip normal validation for zcommands, since they aren't
+    // actual messages with recipients; users only send them
+    // from the compose box for convenience sake.
+    if (zcommand.process(message_content)) {
+        exports.do_post_send_tasks();
+        clear_compose_box();
+        return;
+    }
+
     if (! compose.validate()) {
         return false;
     }
 
-    var message_content = compose_state.message_content();
     if (reminder.is_deferred_delivery(message_content)) {
         reminder.schedule_message();
     } else {

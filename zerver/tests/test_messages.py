@@ -999,6 +999,17 @@ class SewMessageAndReactionTest(ZulipTestCase):
 
 class MessagePOSTTest(ZulipTestCase):
 
+    def test_zcommand(self) -> None:
+        self.login(self.example_email("hamlet"))
+
+        payload = dict(command="boil-ocean")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_error(result, "No such command: boil-ocean")
+
+        payload = dict(command="ping")
+        result = self.client_post("/json/zcommand", payload)
+        self.assert_json_success(result)
+
     def test_message_to_self(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is
