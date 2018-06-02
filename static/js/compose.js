@@ -309,11 +309,15 @@ exports.finish = function () {
     } else {
         exports.send_message();
     }
+    exports.do_post_send_tasks();
+    return true;
+};
+
+exports.do_post_send_tasks = function () {
     exports.clear_preview_area();
     // TODO: Do we want to fire the event even if the send failed due
     // to a server-side error?
     $(document).trigger($.Event('compose_finished.zulip'));
-    return true;
 };
 
 exports.update_email = function (user_id, new_email) {
