@@ -37,25 +37,59 @@ There are currently two ways to trigger an outgoing webhook:
 
 The Zulip-format webhook messages post the following data, encoded as JSON:
 
-```
-data:       content of message in a ready-to-use format (with the mention stripped)
-token:      A string of alphanumeric characters you can use to
-            authenticate the webhook request (each bot user uses a fixed token).
-message:    the message which triggered outgoing webhook
-├── id
-├── sender_email
-├── sender_full_name
-├── sender_short_name
-├── sender_realm_str
-├── sender_id
-├── type
-├── display_recipient
-├── recipient_id
-├── subject
-├── timestamp
-├── avatar_url
-├── client
-```
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>bot_email</code></td>
+            <td>Email of the bot user</td>
+        </tr>
+        <tr>
+            <td><code>data</code></td>
+            <td>The content of the message (in Markdown)</td>
+        </tr>
+        <tr>
+            <td><code>message</code></td>
+            <td>A dict containing details on the message which
+            triggered the outgoing webhook</td>
+        </tr>
+        <tr>
+            <td><code>token</code></td>
+            <td>A string of alphanumeric characters you can use to
+            authenticate the webhook request (each bot user uses a fixed token)</td>
+        </tr>
+        <tr>
+            <td><code>trigger</code></td>
+            <td>Trigger method</td>
+        </tr>
+    </tbody>
+</table>
+
+Some of the important fields in the `message` dict include the following:
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>recipient_id</code></td>
+            <td>Unique ID of the stream that will persist even if the stream is renamed</td>
+        </tr>
+        <tr>
+            <td><code>rendered_content</code></td>
+            <td>The content of the message, rendered in HTML</td>
+        </tr>
+    </tbody>
+</table>
 
 A correctly implemented endpoint will do the following:
 
@@ -81,19 +115,61 @@ would be able to post data to URLs which support Slack's outgoing
 webhooks.  Here's how we fill in the fields that a Slack format
 webhook expects:
 
-```
-token:          string of alphanumeric characters (similar to above)
-team_id:        string id of the Zulip organization
-team_domain:    domain of the Zulip organization
-channel_id:     stream id
-channel_name:   stream name
-timestamp:      timestamp when message was sent
-user_id:        id of user who sent the message
-user_name:      full name of sender
-text:           content of message in a more readable format
-trigger_word:   trigger method
-service_id:     id of bot user
-```
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>token</code></td>
+            <td>A string of alphanumeric characters you can use to
+            authenticate the webhook request (each bot user uses a fixed token)</td>
+        </tr>
+        <tr>
+            <td><code>team_id</code></td>
+            <td>String ID of the Zulip organization</td>
+        </tr>
+        <tr>
+            <td><code>team_domain</code></td>
+            <td>Domain of the Zulip organization</td>
+        </tr>
+        <tr>
+            <td><code>channel_id</code></td>
+            <td>Stream ID</td>
+        </tr>
+        <tr>
+            <td><code>channel_name</code></td>
+            <td>Stream name</td>
+        </tr>
+        <tr>
+            <td><code>timestamp</code></td>
+            <td>Timestamp for when message was sent</td>
+        </tr>
+        <tr>
+            <td><code>user_id</code></td>
+            <td>ID of the user who sent the message</td>
+        </tr>
+        <tr>
+            <td><code>user_name</code></td>
+            <td>Full name of sender</td>
+        </tr>
+        <tr>
+            <td><code>text</code></td>
+            <td>The content of the message (in Markdown)</td>
+        </tr>
+        <tr>
+            <td><code>trigger_word</code></td>
+            <td>Trigger method</td>
+        </tr>
+        <tr>
+            <td><code>service_id</code></td>
+            <td>ID of the bot user</td>
+        </tr>
+    </tbody>
+</table>
 
 The above data is posted as list of tuples (not JSON), here's an example:
 
