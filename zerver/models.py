@@ -824,6 +824,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         # guest accounts interact with public streams.
         return not self.realm.is_zephyr_mirror_realm
 
+    def can_access_all_realm_members(self) -> bool:
+        return not self.realm.is_zephyr_mirror_realm
+
     def major_tos_version(self) -> int:
         if self.tos_version is not None:
             return int(self.tos_version.split('.')[0])
