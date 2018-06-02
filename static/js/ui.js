@@ -149,6 +149,7 @@ exports.maybe_show_deprecation_notice = function (key) {
     if (shown_deprecation_notices.indexOf(key) === -1) {
         $('#deprecation-notice-modal').modal('show');
         $('#deprecation-notice-message').text(message);
+        $('#close-deprecation-notice').focus();
         shown_deprecation_notices.push(key);
         if (localstorage.supported()) {
             localStorage.setItem('shown_deprecation_notices', JSON.stringify(shown_deprecation_notices));
