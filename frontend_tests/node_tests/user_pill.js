@@ -27,10 +27,10 @@ var isaac_item = {
     user_id: isaac.user_id,
 };
 
-(function setup() {
+run_test('setup', () => {
     people.add_in_realm(alice);
     people.add_in_realm(isaac);
-}());
+});
 
 run_test('create_item', () => {
 
