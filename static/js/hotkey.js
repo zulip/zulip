@@ -21,7 +21,7 @@ var actions_dropdown_hotkeys = [
 
 // The `message_view_only` property is a convenient and performant way
 // to express a common case of which hotkeys do something in which
-// views.  It is set for hotkeys (like `*`) that only have an effect
+// views.  It is set for hotkeys (like `Ctrl + s`) that only have an effect
 // in the main message view with a selected message.
 // `message_view_only` hotkeys, as a group, are not processed if any
 // overlays are open (e.g. settings, streams, etc.).
