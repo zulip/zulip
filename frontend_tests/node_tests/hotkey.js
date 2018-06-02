@@ -252,7 +252,7 @@ run_test('basic_chars', () => {
     assert_mapping('d', 'drafts.launch');
 
     // Next, test keys that only work on a selected message.
-    var message_view_only_keys = '@*+>RjJkKsSuvi:GM';
+    var message_view_only_keys = '@+>RjJkKsSuvi:GM';
 
     // Check that they do nothing without a selected message
     global.current_msg_list.empty = return_true;
