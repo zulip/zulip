@@ -127,7 +127,7 @@ run_test('server_history', () => {
     assert.deepEqual(history, ['hist2', 'hist1', 'hist3']);
 });
 
-(function test_unread_logic() {
+run_test('test_unread_logic', () => {
     var stream_id = 77;
 
     topic_data.add_message({
@@ -162,9 +162,9 @@ run_test('server_history', () => {
 
     history = topic_data.get_recent_names(stream_id);
     assert.deepEqual(history, ['toPic1', 'unread1', 'topic2', 'UNREAD2']);
-}());
+});
 
-(function test_stream_has_topics() {
+run_test('test_stream_has_topics', () => {
     var stream_id = 88;
 
     assert.equal(topic_data.stream_has_topics(stream_id), false);
@@ -182,7 +182,7 @@ run_test('server_history', () => {
     });
 
     assert.equal(topic_data.stream_has_topics(stream_id), true);
-}());
+});
 
 run_test('server_history_end_to_end', () => {
     topic_data.reset();
