@@ -48,6 +48,15 @@ exports.tell_user = function (msg) {
     $('#compose-error-msg').text(msg);
 };
 
+function update_setting(command) {
+    exports.send({
+        command: command,
+        on_success: function (data) {
+            exports.tell_user(data.msg);
+        },
+    });
+}
+
 exports.process = function (message_content) {
 
     var content = message_content.trim();
@@ -65,6 +74,16 @@ exports.process = function (message_content) {
                 exports.tell_user(msg);
             },
         });
+        return true;
+    }
+
+    if (content === '/day') {
+        update_setting('day');
+        return true;
+    }
+
+    if (content === '/night') {
+        update_setting('night');
         return true;
     }
 
