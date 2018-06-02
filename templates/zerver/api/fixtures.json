@@ -331,5 +331,45 @@
         "code": "BAD_REQUEST",
         "msg": "User not authorized for this query",
         "result": "error"
+    },
+    "zulip-outgoing-webhook-payload": {
+        "data": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+        "trigger": "mention",
+        "token": "xvOzfurIutdRRVLzpXrIIHXJvNfaJLJ0",
+        "message": {
+            "subject": "Verona2",
+            "sender_email": "iago@zulip.com",
+            "recipient_type": 2,
+            "timestamp": 1527876931,
+            "client": "website",
+            "submessages": [
+
+            ],
+            "recipient_id": 20,
+            "subject_links": [
+
+            ],
+            "sender_full_name": "Iago",
+            "sender_is_mirror_dummy": false,
+            "rendered_content": "<p><span class=\"user-mention\" data-user-id=\"25\">@Outgoing Webhook Test</span> Zulip is the world\u2019s most productive group chat!</p>",
+            "sender_avatar_source": "G",
+            "sender_id": 5,
+            "stream_id": 5,
+            "content": "@**Outgoing Webhook Test** Zulip is the world\u2019s most productive group chat!",
+            "sender_realm_id": 1,
+            "sender_avatar_version": 1,
+            "display_recipient": "Verona",
+            "type": "stream",
+            "id": 112,
+            "is_me_message": false,
+            "reactions": [
+
+            ],
+            "sender_realm_str": "zulip",
+            "raw_display_recipient": "Verona",
+            "sender_short_name": "iago",
+            "recipient_type_id": 5
+        },
+        "bot_email": "outgoing-bot@localhost"
     }
 }

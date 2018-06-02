@@ -69,6 +69,10 @@ A correctly implemented endpoint will do the following:
 * For a failed request, the endpoint should return data on the
   error.
 
+### Example payload
+
+{generate_code_example|zulip-outgoing-webhook-payload|fixture}
+
 ## Slack-format webhook format
 
 This interface translates the Zulip's outgoing webhook's request into
@@ -91,11 +95,23 @@ trigger_word:   trigger method
 service_id:     id of bot user
 ```
 
-The above data is posted as list of tuples (not JSON).
+The above data is posted as list of tuples (not JSON), here's an example:
+
+```
+[('token', 'abcdef'),
+ ('team_id', 'zulip'),
+ ('team_domain', 'zulip.com'),
+ ('channel_id', '123'),
+ ('channel_name', 'integrations'),
+ ('timestamp', 123456),
+ ('user_id', 21),
+ ('user_name', 'Sample User'),
+ ('text', '@**test**'),
+ ('trigger_word', 'mention'),
+ ('service_id', None)]
+```
 
 * For successful request, if data is returned, it returns that data,
   else it returns a blank response.
 * For failed request, it returns the reason of failure, as returned by
   the server, or the exception message.
-
-
