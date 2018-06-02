@@ -146,7 +146,7 @@ def gather_hot_conversations(user_profile: UserProfile, stream_messages: QuerySe
 def gather_new_users(user_profile: UserProfile, threshold: datetime.datetime) -> Tuple[int, List[str]]:
     # Gather information on users in the realm who have recently
     # joined.
-    if user_profile.realm.is_zephyr_mirror_realm:
+    if not user_profile.can_access_all_realm_members():
         new_users = []  # type: List[UserProfile]
     else:
         new_users = list(UserProfile.objects.filter(
