@@ -1977,7 +1977,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             raise StreamDoesNotExistError(escape(stream_name))
         recipient = get_stream_recipient(stream.id)
 
-        if stream.is_announcement_only and not sender.is_realm_admin:
+        if (stream.is_announcement_only and not
+            (sender.is_realm_admin or
+             is_cross_realm_bot_email(sender.email))):
             raise JsonableError(_("Only organization administrators can send to this stream."))
 
         if not stream.invite_only:
