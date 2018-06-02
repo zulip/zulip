@@ -582,7 +582,7 @@ const social_stream = {
     subscribed: true,
 };
 
-(function set_up_filter() {
+run_test('set_up_filter', () => {
     stream_data.add_sub('Social', social_stream);
 
     const filter_terms = [
@@ -594,7 +594,7 @@ const social_stream = {
 
     narrow_state.filter = () => filter;
     narrow_state.active = () => true;
-}());
+});
 
 function jquery_elem() {
     // We create basic stubs for jQuery elements, so they
