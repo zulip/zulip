@@ -128,6 +128,8 @@ exports.maybe_show_deprecation_notice = function (key) {
     var message;
     if (key === 'C') {
         message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
+    } else if (key === '*') {
+        message = i18n.t('We\'ve replaced the "*" hotkey with "Ctrl + s" to make this common shortcut easier to trigger.');
     } else {
         blueslip.error("Unexpected deprecation notice for hotkey:", key);
         return;

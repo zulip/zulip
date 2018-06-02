@@ -74,6 +74,7 @@ var keydown_either_mappings = {
 };
 
 var keypress_mappings = {
+    42: {name: 'star_deprecated', message_view_only: true}, // '*'
     43: {name: 'thumbs_up_emoji', message_view_only: true}, // '+'
     45: {name: 'toggle_message_collapse', message_view_only: true}, // '-'
     47: {name: 'search', message_view_only: false}, // '/'
@@ -659,6 +660,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'C_deprecated':
         ui.maybe_show_deprecation_notice('C');
+        return true;
+    case 'star_deprecated':
+        ui.maybe_show_deprecation_notice('*');
         return true;
     }
 
