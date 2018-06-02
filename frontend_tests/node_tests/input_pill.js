@@ -15,7 +15,7 @@ set_global('ui_util', {
 
 var id_seq = 0;
 
-(function set_up_ids() {
+run_test('set_up_ids', () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
 
@@ -23,7 +23,7 @@ var id_seq = 0;
         id_seq += 1;
         return 'some_id' + id_seq;
     };
-}());
+});
 
 
 function pill_html(value, data_id) {
