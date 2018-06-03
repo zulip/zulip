@@ -119,7 +119,7 @@ exports.delete_draft_after_send = function () {
     $("#compose-textarea").removeData("draft-id");
 };
 
-exports.restore_draft = function (draft_id) {
+exports.restore_draft = function (draft_id, close_overlay) {
     var draft = draft_model.getDraft(draft_id);
     if (!draft) {
         return;
@@ -151,7 +151,9 @@ exports.restore_draft = function (draft_id) {
         }
     }
 
-    overlays.close_overlay("drafts");
+    if (close_overlay || close_overlay === undefined) {
+        overlays.close_overlay("drafts");
+    }
     compose_fade.clear_compose();
     compose.clear_preview_area();
 
@@ -434,6 +436,17 @@ exports.launch = function () {
             var focus_element = last_draft_element[0].children[0];
             focus_element.focus();
             $(".drafts-list")[0].scrollTop = $('.drafts-list')[0].scrollHeight - $('.drafts-list').height();
+        }
+    });
+};
+
+exports.restore_last_draft = function () {
+    exports.setup_page(function () {
+        var draft_list = drafts.draft_model.get();
+        var draft_id_list = Object.getOwnPropertyNames(draft_list);
+        if (draft_id_list.length > 0) {
+            var last_draft = draft_id_list[draft_id_list.length-1];
+            exports.restore_draft(last_draft, false);
         }
     });
 };

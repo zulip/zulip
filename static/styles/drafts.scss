@@ -61,13 +61,20 @@
     -webkit-font-smoothing: antialiased;
 }
 
-.drafts-list .removed-drafts {
+.drafts-list .removed-drafts,
+.drafts-list .last-draft-hotkey {
     display: block;
     text-align: center;
     font-size: 1em;
     color: hsl(0, 0%, 66%);
     pointer-events: none;
     -webkit-font-smoothing: antialiased;
+}
+
+.drafts-list .last-draft-hotkey {
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
 }
 
 .draft-row {

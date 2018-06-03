@@ -151,6 +151,7 @@ populated and where the focus is placed.
     - use R to reply to the author of a PM stream
     - use c to compose a stream message
     - use x to compose a new PM
+    - use D to restore the last draft
 
 - Buttons
     - Narrow to a stream and click on "New topic"

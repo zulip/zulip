@@ -248,6 +248,8 @@ run_test('basic_chars', () => {
     overlays.is_active = return_false;
     assert_mapping('d', 'drafts.launch');
 
+    assert_mapping('D', 'drafts.restore_last_draft');
+
     // Next, test keys that only work on a selected message.
     var message_view_only_keys = '@+>RjJkKsSuvi:GM';
 

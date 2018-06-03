@@ -135,6 +135,8 @@ title="thumbs up"/>**: `+`
 
 * **Toggle drafts view**: `d`
 
+* **Edit last draft**: `D`
+
 ### Within the drafts view
 
 * **Edit selected draft**: `Enter`
