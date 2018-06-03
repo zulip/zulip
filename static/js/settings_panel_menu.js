@@ -6,24 +6,30 @@ exports.make_menu = function (opts) {
     var main_elem = opts.main_elem;
     var hash_prefix = opts.hash_prefix;
     var load_section = opts.load_section;
+    var curr_li = main_elem.children('li').eq(0);
 
     var self = {};
 
-    self.goto_top = function () {
-        main_elem.children('li').eq(0).click();
-    };
-
     self.show = function () {
         main_elem.show();
+        self.activate_section({
+            li_elem: curr_li,
+        });
     };
 
     self.hide = function () {
         main_elem.hide();
     };
 
+    self.current_tab = function () {
+        return curr_li.data('section');
+    };
+
     self.activate_section = function (opts) {
         var li_elem = opts.li_elem;
         var section = li_elem.data('section');
+
+        curr_li = li_elem;
 
         main_elem.children("li").removeClass("active no-border");
         li_elem.addClass("active");

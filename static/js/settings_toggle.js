@@ -6,7 +6,7 @@ var toggler;
 
 exports.highlight_toggle = function (tab_name) {
     if (toggler) {
-        toggler.goto(tab_name, { dont_switch_tab: true });
+        toggler.goto(tab_name);
     }
 };
 
@@ -16,17 +16,11 @@ exports.initialize = function () {
             { label: i18n.t("Settings"), key: "settings" },
             { label: i18n.t("Organization"), key: "organization" },
         ],
-        callback: function (name, key, payload) {
+        callback: function (name, key) {
             if (key === "organization") {
                 settings_panel_menu.show_org_settings();
-                if (!payload.dont_switch_tab) {
-                    settings_panel_menu.org_settings.goto_top();
-                }
             } else {
                 settings_panel_menu.show_normal_settings();
-                if (!payload.dont_switch_tab) {
-                    settings_panel_menu.normal_settings.goto_top();
-                }
             }
         },
     });
