@@ -584,6 +584,18 @@ Filter.operator_to_prefix = function (operator, negated) {
     return '';
 };
 
+function describe_is_operator(operator) {
+    var verb = operator.negated ? 'exclude ' : '';
+    var operand = operator.operand;
+    var operand_list = ['private', 'starred', 'alerted', 'unread'];
+    if (operand_list.includes(operand)) {
+        return verb + operand + ' messages';
+    } else if (operand === 'mentioned') {
+        return verb + '@-mentions';
+    }
+    return 'invalid ' + operand + ' operand for is operator';
+}
+
 // Convert a list of operators to a human-readable description.
 function describe_unescaped(operators) {
     if (operators.length === 0) {
@@ -610,19 +622,7 @@ function describe_unescaped(operators) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
         if (canonicalized_operator ==='is') {
-            var verb = elem.negated ? 'exclude ' : '';
-            if (operand === 'private') {
-                return verb + 'private messages';
-            } else if (operand === 'starred') {
-                return verb + 'starred messages';
-            } else if (operand === 'mentioned') {
-                return verb + '@-mentions';
-            } else if (operand === 'alerted') {
-                return verb + 'alerted messages';
-            } else if (operand === 'unread') {
-                return verb + 'unread messages';
-            }
-            return 'invalid ' + operand + ' operand for is operator';
+            return describe_is_operator(elem);
         }
         if (canonicalized_operator ==='has') {
             // search_suggestion.get_suggestions takes care that this message will
