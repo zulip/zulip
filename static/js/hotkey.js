@@ -82,9 +82,8 @@ var keypress_mappings = {
     62: {name: 'compose_quote_reply', message_view_only: true}, // '>'
     63: {name: 'show_shortcuts', message_view_only: false}, // '?'
     64: {name: 'compose_reply_with_mention', message_view_only: true}, // '@'
-    65: {name: 'stream_cycle_backward', message_view_only: true}, // 'A'
+    65: {name: 'A_deprecated', message_view_only: true}, // 'A'
     67: {name: 'C_deprecated', message_view_only: true}, // 'C'
-    68: {name: 'stream_cycle_forward', message_view_only: true}, // 'D'
     71: {name: 'G_end', message_view_only: true}, // 'G'
     74: {name: 'vim_page_down', message_view_only: true}, // 'J'
     75: {name: 'vim_page_up', message_view_only: true}, // 'K'
@@ -657,6 +656,9 @@ exports.process_hotkey = function (e, hotkey) {
         // Note that you can "enter" to respond to messages as well,
         // but that is handled in process_enter_key().
         compose_actions.respond_to_message({trigger: 'hotkey'});
+        return true;
+    case 'A_deprecated':
+        ui.maybe_show_deprecation_notice('A');
         return true;
     case 'C_deprecated':
         ui.maybe_show_deprecation_notice('C');

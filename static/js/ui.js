@@ -126,7 +126,9 @@ exports.show_failed_message_success = function (message_id) {
 var shown_deprecation_notices = [];
 exports.maybe_show_deprecation_notice = function (key) {
     var message;
-    if (key === 'C') {
+    if (key === 'A') {
+        message = i18n.t('We\'ve removed the "A" hotkey.');
+    } else if (key === 'C') {
         message = i18n.t('We\'ve replaced the "C" hotkey with "x" to make this common shortcut easier to trigger.');
     } else if (key === '*') {
         message = i18n.t('We\'ve replaced the "*" hotkey with "Ctrl + s" to make this common shortcut easier to trigger.');
