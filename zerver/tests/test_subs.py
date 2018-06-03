@@ -42,8 +42,8 @@ from zerver.lib.test_runner import (
 
 from zerver.models import (
     get_display_recipient, Message, Realm, Recipient, Stream, Subscription,
-    DefaultStream, UserProfile, get_user_profile_by_id, active_user_ids,
-    get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup
+    DefaultStream, UserProfile, get_user_profile_by_id, active_non_guest_user_ids,
+    get_default_stream_groups, flush_per_request_caches, DefaultStreamGroup,
 )
 
 from zerver.lib.actions import (
@@ -97,7 +97,7 @@ class TestCreateStreams(ZulipTestCase):
         self.assertEqual(events[0]['event']['type'], 'stream')
         self.assertEqual(events[0]['event']['op'], 'create')
         # Send public stream creation event to all active users.
-        self.assertEqual(events[0]['users'], active_user_ids(realm.id))
+        self.assertEqual(events[0]['users'], active_non_guest_user_ids(realm.id))
         self.assertEqual(events[0]['event']['streams'][0]['name'], "Public stream")
 
         events = []
@@ -488,11 +488,13 @@ class StreamAdminTest(ZulipTestCase):
         stream_name2_exists = get_stream('stream_name2', realm)
         self.assertTrue(stream_name2_exists)
 
-        self.assertEqual(notified_user_ids, set(active_user_ids(realm.id)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
         self.assertIn(self.example_user('prospero').id,
                       notified_user_ids)
+        self.assertNotIn(self.example_user('polonius').id,
+                         notified_user_ids)
 
         # Test case to handle unicode stream name change
         # *NOTE: Here Encoding is needed when Unicode string is passed as an argument*
@@ -616,11 +618,13 @@ class StreamAdminTest(ZulipTestCase):
         notified_user_ids = set(events[0]['users'])
 
         stream = get_stream('stream_name1', realm)
-        self.assertEqual(notified_user_ids, set(active_user_ids(realm.id)))
+        self.assertEqual(notified_user_ids, set(active_non_guest_user_ids(realm.id)))
         self.assertIn(user_profile.id,
                       notified_user_ids)
         self.assertIn(self.example_user('prospero').id,
                       notified_user_ids)
+        self.assertNotIn(self.example_user('polonius').id,
+                         notified_user_ids)
 
         self.assertEqual('Test description', stream.description)
 
@@ -2014,7 +2018,8 @@ class SubscriptionAPITest(ZulipTestCase):
             set([user1.id, user2.id, self.test_user.id])
         )
 
-        self.assertEqual(len(add_peer_event['users']), 19)
+        self.assertNotIn(self.example_user('polonius').id, add_peer_event['users'])
+        self.assertEqual(len(add_peer_event['users']), 18)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], self.user_profile.id)
@@ -2045,7 +2050,8 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # We don't send a peer_add event to othello
         self.assertNotIn(user_profile.id, add_peer_event['users'])
-        self.assertEqual(len(add_peer_event['users']), 19)
+        self.assertNotIn(self.example_user('polonius').id, add_peer_event['users'])
+        self.assertEqual(len(add_peer_event['users']), 18)
         self.assertEqual(add_peer_event['event']['type'], 'subscription')
         self.assertEqual(add_peer_event['event']['op'], 'peer_add')
         self.assertEqual(add_peer_event['event']['user_id'], user_profile.id)

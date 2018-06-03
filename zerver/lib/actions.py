@@ -73,7 +73,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_user_profile_by_id, PreregistrationUser, get_display_recipient, \
     get_realm, bulk_get_recipients, get_stream_recipient, get_stream_recipients, \
     email_allowed_for_realm, email_to_username, display_recipient_cache_key, \
-    get_user, get_stream_cache_key, \
+    get_user, get_stream_cache_key, active_non_guest_user_ids, \
     UserActivityInterval, active_user_ids, get_active_streams, \
     realm_filters_for_realm, RealmFilter, stream_name_in_use, \
     get_old_unclaimed_attachments, is_cross_realm_bot_email, \
@@ -179,7 +179,8 @@ def can_access_stream_user_ids(stream: Stream) -> Set[int]:
     # a stream, such as its name/description.
     if stream.is_public():
         # For a public stream, this is everyone in the realm
-        return set(active_user_ids(stream.realm_id))
+        # except unsubscribed guest users
+        return public_stream_user_ids(stream)
     else:
         # for a private stream, it's subscribers plus realm admins.
         return private_stream_user_ids(stream.id) | {user.id for user in stream.realm.get_admin_users()}
@@ -188,6 +189,12 @@ def private_stream_user_ids(stream_id: int) -> Set[int]:
     # TODO: Find similar queries elsewhere and de-duplicate this code.
     subscriptions = get_active_subscriptions_for_stream_id(stream_id)
     return {sub['user_profile_id'] for sub in subscriptions.values('user_profile_id')}
+
+def public_stream_user_ids(stream: Stream) -> Set[int]:
+    guest_subscriptions = get_active_subscriptions_for_stream_id(
+        stream.id).filter(user_profile__is_guest=True)
+    guest_subscriptions = {sub['user_profile_id'] for sub in guest_subscriptions.values('user_profile_id')}
+    return set(active_non_guest_user_ids(stream.realm_id)) | guest_subscriptions
 
 def bot_owner_user_ids(user_profile: UserProfile) -> Set[int]:
     is_private_bot = (
@@ -1644,7 +1651,7 @@ def create_stream_if_needed(realm: Realm,
     if created:
         Recipient.objects.create(type_id=stream.id, type=Recipient.STREAM)
         if stream.is_public():
-            send_stream_creation_event(stream, active_user_ids(stream.realm_id))
+            send_stream_creation_event(stream, active_non_guest_user_ids(stream.realm_id))
         else:
             realm_admin_ids = [user.id for user in stream.realm.get_admin_users()]
             send_stream_creation_event(stream, realm_admin_ids)
@@ -2403,7 +2410,7 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
         # We now do "peer_add" or "peer_remove" events even for streams
         # users were never subscribed to, in order for the neversubscribed
         # structure to stay up-to-date.
-        return set(active_user_ids(stream.realm_id)) - set(altered_user_ids)
+        return set(active_non_guest_user_ids(stream.realm_id)) - set(altered_user_ids)
 
 def get_user_ids_for_streams(streams: Iterable[Stream]) -> Dict[int, List[int]]:
     stream_ids = [stream.id for stream in streams]
