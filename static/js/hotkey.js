@@ -476,17 +476,6 @@ exports.process_hotkey = function (e, hotkey) {
     }
 
     if (overlays.settings_open()) {
-        if (exports.processing_text()) {
-            return false;
-        }
-        switch (event_name) {
-        case 'up_arrow':
-            settings.handle_up_arrow(e);
-            return true;
-        case 'down_arrow':
-            settings.handle_down_arrow(e);
-            return true;
-        }
         return false;
     }
 

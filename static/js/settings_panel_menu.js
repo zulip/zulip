@@ -15,6 +15,7 @@ exports.make_menu = function (opts) {
         self.activate_section({
             li_elem: curr_li,
         });
+        curr_li.focus();
     };
 
     self.hide = function () {
@@ -23,6 +24,28 @@ exports.make_menu = function (opts) {
 
     self.current_tab = function () {
         return curr_li.data('section');
+    };
+
+    self.set_key_handlers = function (toggler) {
+        keydown_util.handle({
+            elem: main_elem,
+            handlers: {
+                left_arrow: toggler.maybe_go_left,
+                right_arrow: toggler.maybe_go_right,
+                up_arrow: self.prev,
+                down_arrow: self.next,
+            },
+        });
+    };
+
+    self.prev = function () {
+        curr_li.prev().focus().click();
+        return true;
+    };
+
+    self.next = function () {
+        curr_li.next().focus().click();
+        return true;
     };
 
     self.activate_section = function (opts) {
@@ -82,6 +105,11 @@ exports.show_normal_settings = function () {
 exports.show_org_settings = function () {
     exports.normal_settings.hide();
     exports.org_settings.show();
+};
+
+exports.set_key_handlers = function (toggler) {
+    exports.normal_settings.set_key_handlers(toggler);
+    exports.org_settings.set_key_handlers(toggler);
 };
 
 return exports;
