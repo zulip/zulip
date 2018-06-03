@@ -123,7 +123,7 @@ exports.setup_page = function () {
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(settings)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "your-account";
+            return tab || settings_panel_menu.normal_settings.current_tab();
         }
         return tab;
     }());

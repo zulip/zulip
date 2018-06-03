@@ -97,7 +97,7 @@ exports.setup_page = function () {
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(organization)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "organization-profile";
+            return tab || settings_panel_menu.org_settings.current_tab();
         }
         return tab;
     }());
