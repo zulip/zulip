@@ -121,7 +121,7 @@ function message_matches_search_term(message, operator, operand) {
         if (!user_ids) {
             return false;
         }
-        return (user_ids.includes(operand_ids[0]));
+        return (user_ids.indexOf(operand_ids[0]) !== -1);
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
 
