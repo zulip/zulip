@@ -17,20 +17,15 @@ exports.initialize = function () {
             { label: i18n.t("Organization"), key: "organization" },
         ],
         callback: function (name, key, payload) {
-            var normal_list = $('.normal-settings-list');
-            var org_list = $('.org-settings-list');
-
             if (key === "organization") {
-                normal_list.hide();
-                org_list.show();
+                settings_panel_menu.show_org_settings();
                 if (!payload.dont_switch_tab) {
-                    $("li[data-section='organization-profile']").click();
+                    settings_panel_menu.org_settings.goto_top();
                 }
             } else {
-                org_list.hide();
-                normal_list.show();
+                settings_panel_menu.show_normal_settings();
                 if (!payload.dont_switch_tab) {
-                    $("li[data-section='your-account']").click();
+                    settings_panel_menu.normal_settings.goto_top();
                 }
             }
         },

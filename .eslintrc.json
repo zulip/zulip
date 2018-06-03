@@ -49,6 +49,7 @@
         "user_groups": false,
         "navigate": false,
         "toMarkdown": false,
+        "settings_panel_menu": false,
         "settings_toggle": false,
         "settings_account": false,
         "settings_display": false,
