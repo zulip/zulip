@@ -10,7 +10,7 @@
     <div class="sidebar left">
         <div class="sidebar-list dark-grey small-text">
             <div class="center tab-container"></div>
-            <ul class="settings-list">
+            <ul class="normal-settings-list">
                 <li tabindex="0" class="active" data-section="your-account">
                     <div class="icon icon-vector-user"></div>
                     <div class="text">{{ _('Your account') }}</div>
@@ -39,61 +39,63 @@
                     <div class="icon icon-vector-eye-close"></div>
                     <div class="text">{{ _('Muted topics') }}</div>
                 </li>
+            </ul>
 
-                <li class="admin" tabindex="0" data-section="organization-profile">
+            <ul class="org-settings-list">
+                <li tabindex="0" data-section="organization-profile">
                     <i class="icon icon-vector-lock"></i>
                     <div class="text">{{ _('Organization profile') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="organization-settings">
+                <li tabindex="0" data-section="organization-settings">
                     <i class="icon icon-vector-beaker"></i>
                     <div class="text">{{ _('Organization settings') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="organization-permissions">
+                <li tabindex="0" data-section="organization-permissions">
                     <i class="icon icon-vector-lock"></i>
                     <div class="text">{{ _('Organization permissions') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="emoji-settings">
+                <li tabindex="0" data-section="emoji-settings">
                     <i class="icon icon-vector-smile"></i>
                     <div class="text">{{ _('Custom emoji') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="user-groups-admin">
+                <li tabindex="0" data-section="user-groups-admin">
                     <i class="icon icon-vector-group"></i>
                     <div class="text">{{ _('User groups') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="auth-methods">
+                <li tabindex="0" data-section="auth-methods">
                     <i class="icon icon-vector-lock"></i>
                     <div class="text">{{ _('Authentication methods') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="user-list-admin">
+                <li tabindex="0" data-section="user-list-admin">
                     <i class="icon icon-vector-user"></i>
                     <div class="text">{{ _('Users') }}</div>
                 </li>
                 {% if is_admin %}
-                <li class="admin" tabindex="0" data-section="deactivated-users-admin">
+                <li tabindex="0" data-section="deactivated-users-admin">
                     <i class="icon icon-vector-trash"></i>
                     <div class="text">{{ _('Deactivated users') }}</div>
                 </li>
                 {% endif %}
-                <li class="admin" tabindex="0" data-section="bot-list-admin">
+                <li tabindex="0" data-section="bot-list-admin">
                     <i class="icon icon-vector-github"></i>
                     <div class="text">{{ _('Bots') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="default-streams-list">
+                <li tabindex="0" data-section="default-streams-list">
                     <i class="icon icon-vector-exchange"></i>
                     <div class="text">{{ _('Default streams') }}</div>
                 </li>
-                <li class="admin" tabindex="0" data-section="filter-settings">
+                <li tabindex="0" data-section="filter-settings">
                     <i class="icon icon-vector-font"></i>
                     <div class="text">{{ _('Filter settings') }}</div>
                 </li>
                 {% if development_environment %}
-                <li class="admin" tabindex="0" data-section="profile-field-settings">
+                <li tabindex="0" data-section="profile-field-settings">
                     <i class="icon icon-vector-user"></i>
                     <div class="text">{{ _('Custom profile fields') }}</div>
                 </li>
                 {% endif %}
                 {% if is_admin %}
-                <li class="admin" tabindex="0" data-section="invites-list-admin">
+                <li tabindex="0" data-section="invites-list-admin">
                     <i class="icon icon-vector-user"></i>
                     <div class="text">{{ _('Invitations') }}</div>
                 </li>

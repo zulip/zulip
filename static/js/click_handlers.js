@@ -740,7 +740,7 @@ exports.initialize = function () {
         $this.addClass("active");
         $this.prev().addClass("no-border");
 
-        var is_org_section = $this.hasClass("admin");
+        var is_org_section = $this.closest('ul').hasClass("org-settings-list");
 
         if (is_org_section) {
             window.location.hash = "organization/" + section;

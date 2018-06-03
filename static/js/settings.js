@@ -150,15 +150,12 @@ exports.setup_page = function () {
 
     if (tab) {
         exports.launch_page(tab);
+        settings_toggle.highlight_toggle('settings');
     }
 };
 
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
-
-    if (!$active_tab.hasClass("admin")) {
-        settings_toggle.highlight_toggle('settings');
-    }
 
     overlays.open_settings();
 

@@ -1155,7 +1155,8 @@ input[type=checkbox].inline-block {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-#settings_page .sidebar .settings-list {
+#settings_page .sidebar .normal-settings-list,
+#settings_page .sidebar .org-settings-list {
     position: relative;
 }
 
@@ -1511,12 +1512,8 @@ input[type=text]#settings_search {
     background-repeat: no-repeat;
 }
 
-#settings_page .sidebar li.admin {
+#settings_page .sidebar .org-settings-list {
     display: none;
-}
-
-#settings_page .sidebar li.admin .icon {
-    text-align: center;
 }
 
 #settings_page .sidebar li:last-of-type .text {
