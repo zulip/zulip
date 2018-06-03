@@ -383,6 +383,7 @@ def write_instrumentation_reports(full_suite: bool) -> None:
             'coverage/(?P<path>.*)',
             'node-coverage/(?P<path>.*)',
             'docs/(?P<path>.*)',
+            'casper/(?P<path>.*)',
         ])
 
         untested_patterns -= exempt_patterns
