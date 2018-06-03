@@ -579,7 +579,7 @@ exports.get_suggestions = function (query) {
     // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
     if (operators_len > 1 &&
         last.operator === 'search' &&
-        person_suggestion_ops.includes(operators[operators_len - 2].operator)) {
+        person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
         var person_op = operators[operators_len - 2];
         if (!people.get_by_email(person_op.operand)) {
             last = {

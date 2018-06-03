@@ -107,7 +107,7 @@ var apps_events = function () {
         var parts = path_parts();
 
         Object.keys(info).forEach(function (version) {
-            if (parts.includes(version)) {
+            if (parts.indexOf(version) !== -1) {
                 result = version;
             }
         });
@@ -223,11 +223,11 @@ var events = function () {
         e.stopPropagation();
     });
 
-    if (path_parts().includes("apps")) {
+    if (path_parts().indexOf("apps") !== -1) {
         apps_events();
     }
 
-    if (path_parts().includes('hello')) {
+    if (path_parts().indexOf('hello') !== -1) {
         hello_events();
     }
 };
