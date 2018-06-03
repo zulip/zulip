@@ -331,6 +331,9 @@ def realm_user_dicts_cache_key(realm_id: int) -> str:
 def active_user_ids_cache_key(realm_id: int) -> str:
     return "active_user_ids:%s" % (realm_id,)
 
+def active_non_guest_user_ids_cache_key(realm_id: int) -> str:
+    return "active_non_guest_user_ids:%s" % (realm_id,)
+
 bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
                    'realm_id',
@@ -388,6 +391,10 @@ def flush_user_profile(sender: Any, **kwargs: Any) -> None:
 
     if changed(['is_active']):
         cache_delete(active_user_ids_cache_key(user_profile.realm_id))
+        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
+
+    if changed(['is_guest']):
+        cache_delete(active_non_guest_user_ids_cache_key(user_profile.realm_id))
 
     if changed(['email', 'full_name', 'short_name', 'id', 'is_mirror_dummy']):
         delete_display_recipient_cache(user_profile)
@@ -420,6 +427,7 @@ def flush_realm(sender: Any, **kwargs: Any) -> None:
         cache_delete(active_user_ids_cache_key(realm.id))
         cache_delete(bot_dicts_in_realm_cache_key(realm))
         cache_delete(realm_alert_words_cache_key(realm))
+        cache_delete(active_non_guest_user_ids_cache_key(realm.id))
 
 def realm_alert_words_cache_key(realm: 'Realm') -> str:
     return "realm_alert_words:%s" % (realm.string_id,)
