@@ -537,49 +537,30 @@ Filter.sorted_term_types = function (term_types) {
     return _.clone(term_types).sort(compare);
 };
 
-Filter.operator_to_prefix = function (operator, negated) {
-    var verb;
+var default_prefix_lookup = {
+    stream: 'stream',
+    near: 'messages around',
+    has: 'messages with one or more',
+    id: 'message ID',
+    subject: 'topic',
+    topic: 'topic',
+    from: 'sent by',
+    sender: 'sent by',
+    'pm-with': 'private messages with',
+    in: 'messages in',
+    is: 'messages that are',
+    'group-pm-with': 'group private messages including',
+};
 
+Filter.operator_to_prefix = function (operator, negated) {
     if (operator === 'search') {
         return negated ? 'exclude' : 'search for';
     }
 
-    verb = negated ? 'exclude ' : '';
-
-    switch (operator) {
-    case 'stream':
-        return verb + 'stream';
-
-    case 'near':
-        return verb + 'messages around';
-
-    // Note: We hack around using this in "describe" below.
-    case 'has':
-        return verb + 'messages with one or more';
-
-    case 'id':
-        return verb + 'message ID';
-
-    case 'subject':
-    case 'topic':
-        return verb + 'topic';
-
-    case 'from':
-    case 'sender':
-        return verb + 'sent by';
-
-    case 'pm-with':
-        return verb + 'private messages with';
-
-    case 'in':
-        return verb + 'messages in';
-
-    // Note: We hack around using this in "describe" below.
-    case 'is':
-        return verb + 'messages that are';
-
-    case 'group-pm-with':
-        return verb + 'group private messages including';
+    var verb = negated ? 'exclude ' : '';
+    var default_prefix = default_prefix_lookup[operator];
+    if (default_prefix) {
+        return (verb + default_prefix);
     }
     return '';
 };
