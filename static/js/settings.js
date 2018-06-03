@@ -171,22 +171,6 @@ exports.set_settings_header = function (key) {
     }
 };
 
-exports.handle_up_arrow = function (e) {
-    var prev = e.target.previousElementSibling;
-
-    if ($(prev).css("display") !== "none") {
-        $(prev).focus().click();
-    }
-};
-
-exports.handle_down_arrow = function (e) {
-    var next = e.target.nextElementSibling;
-
-    if ($(next).css("display") !== "none") {
-        $(next).focus().click();
-    }
-};
-
 return exports;
 }());
 

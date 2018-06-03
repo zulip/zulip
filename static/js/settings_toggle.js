@@ -12,6 +12,7 @@ exports.highlight_toggle = function (tab_name) {
 
 exports.initialize = function () {
     toggler = components.toggle({
+        child_wants_focus: true,
         values: [
             { label: i18n.t("Settings"), key: "settings" },
             { label: i18n.t("Organization"), key: "organization" },
@@ -24,6 +25,8 @@ exports.initialize = function () {
             }
         },
     });
+
+    settings_panel_menu.set_key_handlers(toggler);
 
     $("#settings_overlay_container .tab-container").append(toggler.get());
 };
