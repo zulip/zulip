@@ -47,15 +47,13 @@ exports.toggle = function (opts) {
         var elem = meta.$ind_tab.eq(idx);
         elem.addClass("selected");
 
-        if (idx !== meta.idx) {
-            meta.idx = idx;
-            if (opts.callback) {
-                opts.callback(
-                    opts.values[idx].label,
-                    opts.values[idx].key,
-                    payload || {}
-                );
-            }
+        meta.idx = idx;
+        if (opts.callback) {
+            opts.callback(
+                opts.values[idx].label,
+                opts.values[idx].key,
+                payload || {}
+            );
         }
 
         if (!opts.child_wants_focus) {
