@@ -160,8 +160,12 @@ run_test('basics', () => {
     assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
     assert.equal(widget.value(), 'translated: Message formatting');
 
+    // Go to same tab twice and make sure we get callback.
     callback_args = undefined;
+    widget.goto('markdown-help');
+    assert.deepEqual(callback_args, ['translated: Message formatting', 'markdown-help']);
 
+    callback_args = undefined;
     keydown_f.call(tabs[focused_tab], RIGHT_KEY);
     assert.equal(focused_tab, 2);
     assert.equal(tabs[0].class, 'first');
