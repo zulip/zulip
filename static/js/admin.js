@@ -104,7 +104,9 @@ exports.setup_page = function () {
 
     if (tab) {
         exports.launch_page(tab);
+        settings_toggle.highlight_toggle('organization');
     }
+
 
     $("#id_realm_default_language").val(page_params.realm_default_language);
 
@@ -115,10 +117,6 @@ exports.setup_page = function () {
 
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
-
-    if ($active_tab.hasClass("admin")) {
-        settings_toggle.highlight_toggle('organization');
-    }
 
     overlays.open_settings();
     $active_tab.click();

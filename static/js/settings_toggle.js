@@ -17,15 +17,18 @@ exports.initialize = function () {
             { label: i18n.t("Organization"), key: "organization" },
         ],
         callback: function (name, key, payload) {
-            $(".sidebar li").hide();
+            var normal_list = $('.normal-settings-list');
+            var org_list = $('.org-settings-list');
 
             if (key === "organization") {
-                $("li.admin").show();
+                normal_list.hide();
+                org_list.show();
                 if (!payload.dont_switch_tab) {
                     $("li[data-section='organization-profile']").click();
                 }
             } else {
-                $(".settings-list li:not(.admin)").show();
+                org_list.hide();
+                normal_list.show();
                 if (!payload.dont_switch_tab) {
                     $("li[data-section='your-account']").click();
                 }
