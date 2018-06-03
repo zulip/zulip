@@ -81,7 +81,7 @@ function add_choice_row(e) {
 }
 
 function delete_choice_row(e) {
-    var row = $(e.target).parent();
+    var row = $(e.currentTarget).parent();
     row.remove();
 }
 
