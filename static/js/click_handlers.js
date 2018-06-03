@@ -730,36 +730,6 @@ exports.initialize = function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
     });
-
-    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
-        var $this = $(this);
-        var section = $this.data("section");
-        var sel = "[data-name='" + section + "']";
-
-        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
-        $this.addClass("active");
-        $this.prev().addClass("no-border");
-
-        var is_org_section = $this.closest('ul').hasClass("org-settings-list");
-
-        if (is_org_section) {
-            window.location.hash = "organization/" + section;
-        } else {
-            window.location.hash = "settings/" + section;
-        }
-
-        $(".settings-section, .settings-wrapper").removeClass("show");
-
-        ui.update_scrollbar($("#settings_content"));
-
-        if (is_org_section) {
-            admin_sections.load_admin_section(section);
-        } else {
-            settings_sections.load_settings_section(section);
-        }
-
-        $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
-    });
 };
 
 return exports;
