@@ -588,7 +588,7 @@ function describe_is_operator(operator) {
     var verb = operator.negated ? 'exclude ' : '';
     var operand = operator.operand;
     var operand_list = ['private', 'starred', 'alerted', 'unread'];
-    if (operand_list.includes(operand)) {
+    if (operand_list.indexOf(operand) !== -1) {
         return verb + operand + ' messages';
     } else if (operand === 'mentioned') {
         return verb + '@-mentions';
