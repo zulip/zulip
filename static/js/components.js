@@ -41,7 +41,7 @@ exports.toggle = function (opts) {
         idx: -1,
     };
 
-    function select_tab(idx, payload) {
+    function select_tab(idx) {
         meta.$ind_tab.removeClass("selected");
 
         var elem = meta.$ind_tab.eq(idx);
@@ -51,8 +51,7 @@ exports.toggle = function (opts) {
         if (opts.callback) {
             opts.callback(
                 opts.values[idx].label,
-                opts.values[idx].key,
-                payload || {}
+                opts.values[idx].key
             );
         }
 
@@ -110,12 +109,7 @@ exports.toggle = function (opts) {
         },
         // go through the process of finding the correct tab for a given name,
         // and when found, select that one and provide the proper callback.
-        // supply a payload of data; since this is a custom event, we'll pass
-        // the data through to the callback.
-        goto: function (name, payload) {
-            // there are cases in which you would want to set this tab, but
-            // not to run the content inside the callback because it doesn't
-            // need to be initialized.
+        goto: function (name) {
             var value = _.find(opts.values, function (o) {
                 return o.label === name || o.key === name;
             });
@@ -123,7 +117,7 @@ exports.toggle = function (opts) {
             var idx = opts.values.indexOf(value);
 
             if (idx >= 0) {
-                select_tab(idx, payload);
+                select_tab(idx);
             }
         },
     };
