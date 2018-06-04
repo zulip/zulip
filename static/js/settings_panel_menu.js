@@ -32,6 +32,7 @@ exports.make_menu = function (opts) {
             handlers: {
                 left_arrow: toggler.maybe_go_left,
                 right_arrow: toggler.maybe_go_right,
+                enter_key: self.enter_panel,
                 up_arrow: self.prev,
                 down_arrow: self.next,
             },
@@ -45,6 +46,15 @@ exports.make_menu = function (opts) {
 
     self.next = function () {
         curr_li.next().focus().click();
+        return true;
+    };
+
+    self.enter_panel = function () {
+        var panel = self.get_panel();
+        var sel = 'input:visible:first,button:visible:first,select:visible:first';
+        var panel_elem = panel.find(sel).first();
+
+        panel_elem.focus();
         return true;
     };
 
@@ -65,8 +75,14 @@ exports.make_menu = function (opts) {
 
         load_section(section);
 
+        self.get_panel().addClass('show');
+    };
+
+    self.get_panel = function () {
+        var section = curr_li.data('section');
         var sel = "[data-name='" + section + "']";
-        $(".settings-section" + sel + ", .settings-wrapper" + sel).addClass("show");
+        var panel = $(".settings-section" + sel + ", .settings-wrapper" + sel);
+        return panel;
     };
 
     main_elem.on("click", "li[data-section]", function (e) {
