@@ -18,6 +18,9 @@ from zerver.lib.export import (
     export_usermessages_batch,
     do_export_user,
 )
+from zerver.lib.import_realm import (
+    do_import_realm,
+)
 from zerver.lib.avatar_hash import (
     user_avatar_path,
 )
@@ -42,10 +45,18 @@ from zerver.lib.test_runner import slow
 from zerver.models import (
     Message,
     Realm,
+    Stream,
+    UserProfile,
+    Subscription,
     Attachment,
     RealmEmoji,
     Recipient,
     UserMessage,
+    CustomProfileField,
+    CustomProfileFieldValue,
+    get_active_streams,
+    get_stream_recipient,
+    get_personal_recipient,
 )
 
 from zerver.lib.test_helpers import (
@@ -184,7 +195,7 @@ class QueryUtilTest(ZulipTestCase):
         self.assertEqual(actual_msg.sender_id, expected_msg.sender_id)
 
 
-class ExportTest(ZulipTestCase):
+class ImportExportTest(ZulipTestCase):
 
     def setUp(self) -> None:
         rm_tree(settings.LOCAL_UPLOADS_DIR)
@@ -224,6 +235,10 @@ class ExportTest(ZulipTestCase):
         result['emoji_dir'] = os.path.join(output_dir, 'emoji')
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
         return result
+
+    """
+    Tests for export
+    """
 
     def test_export_files_from_local(self) -> None:
         message = Message.objects.all()[0]
@@ -428,3 +443,97 @@ class ExportTest(ZulipTestCase):
 
         exported_messages_recipient = get_set(messages['zerver_message'], 'recipient')
         self.assertIn(list(exported_messages_recipient)[0], exported_recipient_id)
+
+    """
+    Tests for import_realm
+    """
+    def test_import_realm(self) -> None:
+
+        original_realm = Realm.objects.get(string_id='zulip')
+        RealmEmoji.objects.get(realm=original_realm).delete()
+        self._export_realm(original_realm)
+
+        with patch('logging.info'):
+            do_import_realm('var/test-export', 'test-zulip')
+
+        # sanity checks
+
+        # test realm
+        self.assertTrue(Realm.objects.filter(string_id='test-zulip').exists())
+        imported_realm = Realm.objects.get(string_id='test-zulip')
+        realms = [original_realm, imported_realm]
+        self.assertNotEqual(imported_realm.id, original_realm.id)
+
+        # test users
+        emails = [
+            {user.email for user in realm.get_admin_users()}
+            for realm in realms]
+        self.assertEqual(emails[0], emails[1])
+        emails = [
+            {user.email for user in realm.get_active_users().filter(is_bot=False)}
+            for realm in realms]
+        self.assertEqual(emails[0], emails[1])
+
+        # test stream
+        stream_names = [
+            {stream.name for stream in get_active_streams(realm)}
+            for realm in realms]
+        self.assertEqual(stream_names[0], stream_names[1])
+
+        # test recipients
+        stream_recipients = [
+            get_stream_recipient(Stream.objects.get(name='Verona', realm=realm).id)
+            for realm in realms]
+        self.assertEqual(stream_recipients[0].type, stream_recipients[1].type)
+
+        user_recipients = [
+            get_personal_recipient(UserProfile.objects.get(full_name='Iago', realm=realm).id)
+            for realm in realms]
+        self.assertEqual(user_recipients[0].type, user_recipients[1].type)
+
+        # test subscription
+        stream_subscription = [
+            Subscription.objects.filter(recipient=recipient)
+            for recipient in stream_recipients]
+        subscription_stream_user = [
+            [sub.user_profile.email for sub in subscription]
+            for subscription in stream_subscription]
+        self.assertEqual(subscription_stream_user[0], subscription_stream_user[1])
+
+        user_subscription = [
+            Subscription.objects.filter(recipient=recipient)
+            for recipient in user_recipients]
+        subscription_user = [
+            [sub.user_profile.email for sub in subscription]
+            for subscription in user_subscription]
+        self.assertEqual(subscription_user[0], subscription_user[1])
+
+        # test custom profile fields
+        custom_profile_field = [
+            CustomProfileField.objects.filter(realm=realm)
+            for realm in realms]
+        custom_profile_field_name = [
+            {custom_profile_field.name for custom_profile_field in realm_custom_profile_field}
+            for realm_custom_profile_field in custom_profile_field]
+        self.assertEqual(custom_profile_field_name[0], custom_profile_field_name[1])
+
+        # test messages
+        stream_message = [
+            Message.objects.filter(recipient=recipient)
+            for recipient in stream_recipients]
+        stream_message_subject = [
+            {message.subject for message in stream_message}
+            for stream_message in stream_message]
+        self.assertEqual(stream_message_subject[0], stream_message_subject[1])
+
+        # test usermessages
+        stream_message = [
+            stream_message.order_by('content')
+            for stream_message in stream_message]
+        usermessage = [
+            UserMessage.objects.filter(message=stream_message[0])
+            for stream_message in stream_message]
+        usermessage_user = [
+            {user_message.user_profile.email for user_message in usermessage}
+            for usermessage in usermessage]
+        self.assertEqual(usermessage_user[0], usermessage_user[1])
