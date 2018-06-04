@@ -38,7 +38,7 @@ from zerver.lib.actions import (
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.users import user_ids_to_users
+from zerver.lib.users import user_ids_to_users, access_user_by_id
 
 from django.conf import settings
 
@@ -198,6 +198,32 @@ class PermissionTest(ZulipTestCase):
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Invalid characters in name!')
+
+    def test_access_user_by_id(self) -> None:
+        iago = self.example_user("iago")
+
+        # Must be a valid user ID in the realm
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, 1234)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, self.mit_user("sipbtest").id)
+
+        # Can only access bot users if allow_deactivated is passed
+        bot = self.example_user("welcome_bot")
+        access_user_by_id(iago, bot.id, allow_bots=True)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, bot.id)
+
+        # Can only access deactivated users if allow_deactivated is passed
+        hamlet = self.example_user("hamlet")
+        do_deactivate_user(hamlet)
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, hamlet.id)
+        access_user_by_id(iago, hamlet.id, allow_deactivated=True)
+
+        # Non-admin user can't admin another user
+        with self.assertRaises(JsonableError):
+            access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id)
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:

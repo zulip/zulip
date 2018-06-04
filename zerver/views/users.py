@@ -30,7 +30,7 @@ from zerver.lib.upload import upload_avatar_image
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
-    access_bot_by_id, add_service
+    access_bot_by_id, add_service, access_user_by_id
 from zerver.lib.utils import generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
@@ -39,12 +39,7 @@ from zerver.lib.create_user import random_api_key
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
-    try:
-        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-    if target.is_bot:
-        return json_error(_('No such user'))
+    target = access_user_by_id(user_profile, user_id)
     if check_last_admin(target):
         return json_error(_('Cannot deactivate the only organization administrator'))
     return _deactivate_user_profile_backend(request, user_profile, target)
@@ -67,22 +62,12 @@ def deactivate_bot_backend(request: HttpRequest, user_profile: UserProfile,
 
 def _deactivate_user_profile_backend(request: HttpRequest, user_profile: UserProfile,
                                      target: UserProfile) -> HttpResponse:
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
-
     do_deactivate_user(target, acting_user=user_profile)
     return json_success()
 
 def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
-    try:
-        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
-
+    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success()
 
@@ -90,13 +75,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
 def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id: int,
                         full_name: Optional[str]=REQ(default="", validator=check_string),
                         is_admin: Optional[bool]=REQ(default=None, validator=check_bool)) -> HttpResponse:
-    try:
-        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
-    except UserProfile.DoesNotExist:
-        return json_error(_('No such user'))
-
-    if not user_profile.can_admin_user(target):
-        return json_error(_('Insufficient permission'))
+    target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
 
     if is_admin is not None:
         if not is_admin and check_last_admin(user_profile):
