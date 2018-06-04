@@ -127,6 +127,58 @@ run_test('muting enabled', () => {
     assert.deepEqual(mld._all_items, []);
 });
 
+run_test('more muting', () => {
+    muting.is_topic_muted = function (stream, topic) {
+        return topic === 'muted';
+    };
+
+    const mld = new MessageListData({
+        muting_enabled: true,
+        filter: undefined,
+    });
+
+    const orig_messages = [
+        {id: 3, subject: 'muted'},
+        {id: 4},
+        {id: 7, subject: 'muted'},
+        {id: 8},
+    ];
+
+    mld.add_messages(orig_messages);
+
+    assert.deepEqual(
+        _.pluck(mld._all_items, 'id'),
+        [3, 4, 7, 8]
+    );
+
+    assert.deepEqual(
+        _.pluck(mld.all_messages(), 'id'),
+        [4, 8]
+    );
+
+    const more_messages = [
+        {id: 1, subject: 'muted'},
+        {id: 2},
+        {id: 3, subject: 'muted'}, // dup
+        {id: 5, subject: 'muted'},
+        {id: 6},
+        {id: 9, subject: 'muted'},
+        {id: 10},
+    ];
+    mld.add_messages(more_messages);
+
+    assert.deepEqual(
+        _.pluck(mld._all_items, 'id'),
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+    );
+
+    assert.deepEqual(
+        _.pluck(mld.all_messages(), 'id'),
+        [2, 4, 6, 8, 10]
+    );
+
+});
+
 run_test('errors', () => {
     const mld = new MessageListData({
         muting_enabled: false,
