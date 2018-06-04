@@ -244,9 +244,13 @@ var load = function () {
     // Move to the next slide on clicking inside the carousel container
     $(".carousel-inner .item-container").click(function (e) {
         // We don't want to trigger this event if user clicks on a link
-        if (e.target.tagName.toLowerCase() !== "a") {
+        if (e.target.tagName.toLowerCase() !== "a" && e.target.tagName.toLowerCase() !== "button") {
             $(this).closest('.carousel').carousel('next');
         }
+    });
+
+    $(".carousel-link-button").click(function () {
+        window.location.href = $(this).attr("href");
     });
 
     $('.carousel').on('slid', function () {
