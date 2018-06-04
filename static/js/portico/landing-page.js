@@ -245,7 +245,7 @@ var load = function () {
     $(".carousel-inner .item-container").click(function (e) {
         // We don't want to trigger this event if user clicks on a link
         if (e.target.tagName.toLowerCase() !== "a") {
-            $("#myCarousel").carousel("next");
+            $(this).closest('.carousel').carousel('next');
         }
     });
 
