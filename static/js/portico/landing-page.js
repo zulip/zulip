@@ -243,8 +243,16 @@ var load = function () {
 
     // Move to the next slide on clicking inside the carousel container
     $(".carousel-inner .item-container").click(function (e) {
-        // We don't want to trigger this event if user clicks on a link
-        if (e.target.tagName.toLowerCase() !== "a" && e.target.tagName.toLowerCase() !== "button") {
+        var get_tag_name = e.target.tagName.toLowerCase();
+        var is_button = get_tag_name === "button";
+        var is_link = get_tag_name === "a";
+        var is_last_slide = $("#tour-carousel .carousel-inner .item:last-child").hasClass("active");
+
+        // Do not trigger this event if user clicks on a button, link
+        // or if it's the last slide
+        var move_slide_forward = !is_button && !is_link && !is_last_slide;
+
+        if (move_slide_forward) {
             $(this).closest('.carousel').carousel('next');
         }
     });
