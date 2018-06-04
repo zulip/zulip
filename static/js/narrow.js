@@ -177,7 +177,7 @@ exports.activate = function (raw_operators, opts) {
     var msg_list = new message_list.MessageList({
         data: msg_data,
         table_name: 'zfilt',
-        collapse_messages: ! narrow_state.get_current_filter().is_search(),
+        collapse_messages: !narrow_state.get_current_filter().is_search(),
     });
 
     msg_list.start_time = start_time;

@@ -22,11 +22,11 @@ exports.add_topic = function (uc_stream, uc_topic) {
     var stream = uc_stream.toLowerCase();
     var topic = uc_topic.toLowerCase();
 
-    if (! seen_topics.has(stream)) {
+    if (!seen_topics.has(stream)) {
         seen_topics.set(stream, new Dict());
     }
     var topic_dict = seen_topics.get(stream);
-    if (! topic_dict.has(topic)) {
+    if (!topic_dict.has(topic)) {
         topic_dict.set(topic, uc_topic);
     }
 };

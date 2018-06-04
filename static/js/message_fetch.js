@@ -63,7 +63,7 @@ function get_messages_success(data, opts) {
         // don't bother processing the newly arrived messages.
         return;
     }
-    if (! data) {
+    if (!data) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(function () {

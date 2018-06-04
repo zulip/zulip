@@ -310,7 +310,7 @@ exports.finish = function () {
         return;
     }
 
-    if (! compose.validate()) {
+    if (!compose.validate()) {
         return false;
     }
 

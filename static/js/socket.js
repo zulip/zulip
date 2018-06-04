@@ -77,7 +77,7 @@ Socket.prototype = {
         request.error = error;
         this._save_request(request);
 
-        if (! this._can_send()) {
+        if (!this._can_send()) {
             this._try_to_reconnect({reason: 'cant_send'});
             return;
         }

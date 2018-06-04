@@ -471,7 +471,7 @@ Filter.prototype = {
     _build_predicate: function () {
         var operators = this._operators;
 
-        if (! this.can_apply_locally()) {
+        if (!this.can_apply_locally()) {
             return function () { return true; };
         }
 

@@ -6,7 +6,7 @@ var actively_scrolling = false;
 
 var loading_more_messages_indicator_showing = false;
 exports.show_loading_older = function () {
-    if (! loading_more_messages_indicator_showing) {
+    if (!loading_more_messages_indicator_showing) {
         loading.make_indicator($('#loading_more_messages_indicator'),
                                {abs_positioned: true});
         loading_more_messages_indicator_showing = true;

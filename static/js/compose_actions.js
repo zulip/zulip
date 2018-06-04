@@ -31,7 +31,7 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
+    if (msg_type === 'stream' && opts.stream && !opts.subject) {
         return 'subject';
     } else if ((msg_type === 'stream' && opts.stream)
                || (msg_type === 'private' && opts.private_message_recipient)) {
