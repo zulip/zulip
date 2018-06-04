@@ -1078,8 +1078,8 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
             continue
 
-        # Mention triggers, primarily for stream messages
-        if user_profile_id in mentioned_user_ids:
+        # Mention triggers, for stream messages
+        if is_stream and user_profile_id in mentioned_user_ids:
             trigger = 'mention'
         # PM triggers for personal and huddle messsages
         elif (not is_stream) and (user_profile_id in active_user_ids):

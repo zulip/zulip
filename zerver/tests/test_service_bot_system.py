@@ -91,6 +91,26 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(event_dict, expected)
 
+    def test_service_events_for_private_mentions(self) -> None:
+        """Service bots should not get access to mentions if they aren't a
+        direct recipient."""
+        sender = self.example_user('hamlet')
+        assert(not sender.is_bot)
+
+        outgoing_bot = self._get_outgoing_bot()
+
+        event_dict = get_service_bot_events(
+            sender=sender,
+            service_bot_tuples=[
+                (outgoing_bot.id, outgoing_bot.bot_type),
+            ],
+            active_user_ids=set(),
+            mentioned_user_ids={outgoing_bot.id},
+            recipient_type=Recipient.PERSONAL,
+        )
+
+        self.assertEqual(len(event_dict), 0)
+
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
