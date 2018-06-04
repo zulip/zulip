@@ -362,6 +362,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('wordpress', ['marketing'], display_name='WordPress'),
     WebhookIntegration('zapier', ['meta-integration']),
     WebhookIntegration('zendesk', ['customer-support']),
+    WebhookIntegration('zabbix', ['monitoring'], display_name='Zabbix'),
     WebhookIntegration('gci', ['misc'], display_name='Google Code-in',
                        stream_name='gci'),
 ]  # type: List[WebhookIntegration]
