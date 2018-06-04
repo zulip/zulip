@@ -38,7 +38,7 @@ from zerver.lib.actions import (
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.users import user_ids_to_users
+from zerver.lib.users import user_ids_to_users, access_user_by_id
 
 from django.conf import settings
 
@@ -198,6 +198,25 @@ class PermissionTest(ZulipTestCase):
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(self.example_user('hamlet').id), req)
         self.assert_json_error(result, 'Invalid characters in name!')
+
+    def test_access_user_by_id(self) -> None:
+        iago = self.example_user("iago")
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, 1234)
+
+        bot = self.example_user("welcome_bot")
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, bot.id)
+
+        self.login(self.example_email("iago"))
+        hamlet = self.example_user("hamlet")
+        do_deactivate_user(hamlet)
+
+        with self.assertRaises(JsonableError):
+            access_user_by_id(iago, hamlet.id)
+
+        with self.assertRaises(JsonableError):
+            access_user_by_id(self.example_user("cordelia"), self.example_user("aaron").id)
 
 class AdminCreateUserTest(ZulipTestCase):
     def test_create_user_backend(self) -> None:
