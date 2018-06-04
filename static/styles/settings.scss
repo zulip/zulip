@@ -459,11 +459,6 @@ input[type=checkbox] + .inline-block {
     display: inline;
 }
 
-.admin-realm-form .subsection-header div.subsection-failed-status p {
-    background-color: white;
-    margin: 0 0 0 10px;
-}
-
 #default_language {
     margin-left: 20px;
 }
@@ -1529,6 +1524,14 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 
+.subsection-failed-status p {
+    background: #f2dede;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+}
+
+
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1543,6 +1546,10 @@ input[type=text]#settings_search {
 
     #settings_content .warning {
         display: none;
+    }
+
+    .subsection-failed-status p {
+        margin: 5px 0 0 0;
     }
 }
 
