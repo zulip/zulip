@@ -67,6 +67,10 @@
     margin-left: 0px;
 }
 
+.less_dense_mode #stream_filters li ul.topic-list li {
+    padding: 3px 0px 3px 29px;
+}
+
 #stream_filters li ul.topic-list li {
     padding: 2px 0px 2px 29px;
 }
@@ -479,4 +483,44 @@ li.show-more-private-messages a {
 
 .show-all-streams .fa-chevron-left {
     text-decoration: none;
+}
+
+.less_dense_mode {
+    #left-sidebar {
+        font-size: 1rem;
+    }
+
+    #streams_inline_cog,
+    #streams_filter_icon {
+        font-size: 15px;
+    }
+
+    #stream_filters li {
+        padding: 3px 10px;
+    }
+
+    #global_filters .global-filter {
+        padding: 3px 10px;
+    }
+
+    ul.expanded_private_messages {
+        font-size: 1em;
+    }
+
+    #streams_header {
+        margin-bottom: 5px;
+    }
+
+    #global_filters .count,
+    #stream_filters .count,
+    .topic-unread-count,
+    .private_message_count {
+        height: 18px;
+        line-height: 18px;
+        font-size: 14px;
+    }
+
+    #stream_filters li ul.topic-list li.show-more-topics {
+        padding-top: 0;
+    }
 }
