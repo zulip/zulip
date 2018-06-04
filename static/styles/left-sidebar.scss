@@ -172,11 +172,14 @@ li.active-sub-filter {
 }
 
 #global_filters .count,
-#stream_filters .count {
+#stream_filters .count,
+.topic-unread-count,
+.private_message_count {
     float: right;
-    line-height: 12px;
     background: hsl(105, 2%, 50%);
-    padding: 1px 4px;
+    padding: 0 4px;
+    height: 16px;
+    line-height: 16px;
     color: hsl(0, 0%, 100%);
     font-size: 12px;
     font-weight: normal;
@@ -186,10 +189,8 @@ li.active-sub-filter {
 
 #global_filters .count {
     margin-right: 20px;
-    margin-top: 3px;
+    margin-top: 2px;
     display: none;
-
-    line-height: 12px;
 }
 
 #stream_filters .count {
@@ -218,19 +219,6 @@ li.active-sub-filter {
 
 .left-sidebar li a.topic-name:hover {
     text-decoration: underline;
-}
-
-.topic-unread-count,
-.private_message_count {
-    line-height: 1em;
-    padding: 1px 4px 1px 4px;
-    background: hsl(107, 5%, 66%);
-    color: hsl(0, 0%, 100%);
-    border-radius: 1px;
-    font-size: 12px;
-    font-weight: normal;
-    letter-spacing: 0.6px;
-    border-radius: 4px;
 }
 
 ul.filters i {
