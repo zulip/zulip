@@ -2,7 +2,7 @@
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<!-- Bootstrap 2.3.2--->
+<!-- Bootstrap 2.3.2-->
 <script src="https://stackpath.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js"></script>
 
 {{ render_bundle('landing-page') }}
@@ -144,8 +144,8 @@
                         </div>
                     </div>
 
-                    <a class="carousel-control left" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left"></i></a>
-                    <a class="carousel-control right" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right"></i></a>
+                    <a class="carousel-control left visibility-control hide" href="#tour-carousel" data-slide="prev"><i class="fa fa-chevron-left"></i></a>
+                    <a class="carousel-control right visibility-control" href="#tour-carousel" data-slide="next"><i class="fa fa-chevron-right"></i></a>
                     <ol class="carousel-indicators">
                         <li data-target="#tour-carousel" data-slide-to="0" class="active"></li>
                         <li data-target="#tour-carousel" data-slide-to="1"></li>
@@ -474,8 +474,12 @@
                     </div>
                 </div>
 
-                <a class="fa fa-chevron-left" href="#quote-carousel" data-slide="prev"></a>
-                <a class="fa fa-chevron-right" href="#quote-carousel" data-slide="next"></a>
+                <div class="left visibility-control hide">
+                    <a class="fa fa-chevron-left" href="#quote-carousel" data-slide="prev"></a>
+                </div>
+                <div class="right visibility-control">
+                    <a class="fa fa-chevron-right" href="#quote-carousel" data-slide="next"></a>
+                </div>
             </div>
 
             <hr />

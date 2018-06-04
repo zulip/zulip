@@ -249,6 +249,16 @@ var load = function () {
         }
     });
 
+    $('.carousel').on('slid', function () {
+        var $this = $(this);
+        $this.find('.visibility-control').show();
+        if ($this.find('.carousel-inner .item:first').hasClass('active')) {
+            $this.find('.left.visibility-control').hide();
+        } else if ($this.find('.carousel-inner .item:last').hasClass('active')) {
+            $this.find('.right.visibility-control').hide();
+        }
+    });
+
     // Set up events / categories / search
     events();
 };
