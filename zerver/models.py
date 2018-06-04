@@ -16,7 +16,7 @@ from django.core.validators import URLValidator, MinLengthValidator, \
     RegexValidator
 from django.dispatch import receiver
 from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
-    user_profile_by_api_key_cache_key, \
+    user_profile_by_api_key_cache_key, active_non_guest_user_ids_cache_key, \
     user_profile_by_id_cache_key, user_profile_by_email_cache_key, \
     user_profile_cache_key, generic_bulk_cached_fetch, cache_set, flush_stream, \
     display_recipient_cache_key, cache_delete, active_user_ids_cache_key, \
@@ -1558,6 +1558,15 @@ def active_user_ids(realm_id: int) -> List[int]:
     query = UserProfile.objects.filter(
         realm_id=realm_id,
         is_active=True
+    ).values_list('id', flat=True)
+    return list(query)
+
+@cache_with_key(active_non_guest_user_ids_cache_key, timeout=3600*24*7)
+def active_non_guest_user_ids(realm_id: int) -> List[int]:
+    query = UserProfile.objects.filter(
+        realm_id=realm_id,
+        is_active=True,
+        is_guest=False,
     ).values_list('id', flat=True)
     return list(query)
 
