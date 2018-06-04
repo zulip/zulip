@@ -22,11 +22,10 @@ function adjust_mac_shortcuts() {
 }
 
 // Make it explicit that our toggler is undefined until
-// initialize is called
-// TODO: Determine whether to remove this structure now that ensure_i18n is not needed.
+// set_up_toggler is called.
 exports.toggler = undefined;
 
-exports.initialize = function () {
+exports.set_up_toggler = function () {
     var opts = {
         selected: 0,
         child_wants_focus: true,
@@ -72,6 +71,10 @@ exports.initialize = function () {
 };
 
 exports.show = function (target) {
+    if (!exports.toggler) {
+        exports.set_up_toggler();
+    }
+
     var overlay = $(".informational-overlays");
 
     if (!overlay.hasClass("show")) {
@@ -85,9 +88,7 @@ exports.show = function (target) {
     }
 
     if (target) {
-        if (exports.toggler) {
-            exports.toggler.goto(target);
-        }
+        exports.toggler.goto(target);
     }
 };
 
