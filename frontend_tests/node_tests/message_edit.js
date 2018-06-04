@@ -54,7 +54,7 @@ run_test('get_editability', () => {
         realm_message_content_edit_limit_seconds: 10,
     };
     var now = new Date();
-    var current_timestamp = now/1000;
+    var current_timestamp = now / 1000;
     message.timestamp = current_timestamp - 60;
     // Have 55+10 > 60 seconds from message.timestamp to edit the message; we're good!
     assert.equal(get_editability(message, 55), editability_types.FULL);

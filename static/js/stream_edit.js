@@ -289,7 +289,7 @@ exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
         url: '/json/users/me/subscriptions/properties',
         data: {subscription_data: JSON.stringify(sub_data)},
-        timeout: 10*1000,
+        timeout: 10 * 1000,
     });
 };
 
@@ -398,19 +398,19 @@ function change_stream_privacy(e) {
 
 function stream_desktop_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.desktop_notifications = ! sub.desktop_notifications;
+    sub.desktop_notifications = !sub.desktop_notifications;
     exports.set_stream_property(sub, 'desktop_notifications', sub.desktop_notifications);
 }
 
 function stream_audible_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.audible_notifications = ! sub.audible_notifications;
+    sub.audible_notifications = !sub.audible_notifications;
     exports.set_stream_property(sub, 'audible_notifications', sub.audible_notifications);
 }
 
 function stream_push_notifications_clicked(e) {
     var sub = get_sub_for_target(e.target);
-    sub.push_notifications = ! sub.push_notifications;
+    sub.push_notifications = !sub.push_notifications;
     exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
 }
 

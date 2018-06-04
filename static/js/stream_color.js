@@ -179,8 +179,8 @@ exports.get_color_class = _.memoize(function (color) {
 
     // CSS colors are specified in the sRGB color space.
     // Convert to linear intensity values.
-    for (i=0; i<3; i += 1) {
-        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i+1], 16));
+    for (i = 0; i < 3; i += 1) {
+        channel[i] = colorspace.sRGB_to_linear(mult * parseInt(match[i + 1], 16));
     }
 
     // Compute perceived lightness as CIE L*.

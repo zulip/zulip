@@ -305,7 +305,7 @@ exports.update_streams_sidebar = function () {
     exports.build_stream_list();
     exports.stream_cursor.redraw();
 
-    if (! narrow_state.active()) {
+    if (!narrow_state.active()) {
         return;
     }
 

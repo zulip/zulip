@@ -18,7 +18,7 @@ run_test('settings', () => {
     settings_muting.set_up();
 
     var click_handler = $('body').get_on_handler('click', '.settings-unmute-topic');
-    assert.equal(typeof(click_handler), 'function');
+    assert.equal(typeof (click_handler), 'function');
 
     var event = {
         stopImmediatePropagation: noop,

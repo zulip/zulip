@@ -78,8 +78,8 @@ run_test('basics', () => {
     filter = new Filter(operators);
 
     assert(filter.is_search());
-    assert(! filter.can_apply_locally());
-    assert(! filter.is_exactly('stream'));
+    assert(!filter.can_apply_locally());
+    assert(!filter.is_exactly('stream'));
 
     // If our only stream operator is negated, then for all intents and purposes,
     // we don't consider ourselves to have a stream operator, because we don't

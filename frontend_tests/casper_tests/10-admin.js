@@ -299,7 +299,7 @@ function select_from_suggestions(item) {
         casper.evaluate(function (item) {
             var tah = $('.create_default_stream').data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
+                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
         }, {item: item});
@@ -320,21 +320,21 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
+    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
     });
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertSelectorHasText('.default_stream_row[id='+stream_name+'] .default_stream_name', stream_name);
-        casper.click('.default_stream_row[id='+stream_name+'] button.remove-default-stream');
+    casper.waitUntilVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertSelectorHasText('.default_stream_row[id=' + stream_name + '] .default_stream_name', stream_name);
+        casper.click('.default_stream_row[id=' + stream_name + '] button.remove-default-stream');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('.default_stream_row[id='+stream_name+']', function () {
-        casper.test.assertDoesntExist('.default_stream_row[id='+stream_name+']');
+    casper.waitWhileVisible('.default_stream_row[id=' + stream_name + ']', function () {
+        casper.test.assertDoesntExist('.default_stream_row[id=' + stream_name + ']');
     });
 });
 

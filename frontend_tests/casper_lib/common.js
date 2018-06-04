@@ -166,7 +166,7 @@ exports.select_item_via_typeahead = function (field_selector, str, item) {
 
             var tah = $(field_selector).data().typeahead;
             tah.mouseenter({
-                currentTarget: $('.typeahead:visible li:contains("'+item+'")')[0],
+                currentTarget: $('.typeahead:visible li:contains("' + item + '")')[0],
             });
             tah.select();
         }, {field_selector:field_selector, str: str, item: item});
@@ -271,7 +271,7 @@ exports.then_send_message = function (type, params) {
 // 'table' here).
 exports.get_rendered_messages = function (table) {
     return casper.evaluate(function (table) {
-        var tbl = $('#'+table);
+        var tbl = $('#' + table);
         return {
             headings: $.map(tbl.find('.recipient_row .message-header-contents'), function (elem) {
                 var $clone = $(elem).clone(true);
@@ -349,7 +349,7 @@ exports.trim = function (str) {
 // Call get_rendered_messages and then check that the last few headings and
 // bodies match the specified arrays.
 exports.expected_messages = function (table, headings, bodies) {
-    casper.test.assertVisible('#'+table, table + ' is visible');
+    casper.test.assertVisible('#' + table, table + ' is visible');
 
     var msg = exports.get_rendered_messages(table);
 

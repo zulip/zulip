@@ -270,7 +270,7 @@ run_test('last_sent_by_me', () => {
 run_test('local_echo', () => {
     var list = new MessageList({});
     list.append([{id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40}, {id:50}, {id:60}]);
-    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03}};
+    list._local_only = {20.02: {id:20.02}, 20.03: {id:20.03}};
 
     assert.equal(list.closest_id(10), 10);
     assert.equal(list.closest_id(20), 20);
@@ -294,8 +294,8 @@ run_test('local_echo', () => {
     list.append([
         {id:10}, {id:20}, {id:30}, {id:20.02}, {id:20.03}, {id:40},
         {id:50}, {id: 50.01}, {id: 50.02}, {id:60}]);
-    list._local_only= {20.02: {id:20.02}, 20.03: {id:20.03},
-                       50.01: {id: 50.01}, 50.02: {id: 50.02}};
+    list._local_only = {20.02: {id:20.02}, 20.03: {id:20.03},
+                        50.01: {id: 50.01}, 50.02: {id: 50.02}};
 
     assert.equal(list.closest_id(10), 10);
     assert.equal(list.closest_id(20), 20);

@@ -87,7 +87,7 @@ exports.notify_server_message_read = function (message, options) {
 // If we ever materially change the algorithm for this function, we
 // may need to update notifications.received_messages as well.
 exports.process_visible = function () {
-    if (! notifications.window_has_focus()) {
+    if (!notifications.window_has_focus()) {
         return;
     }
 

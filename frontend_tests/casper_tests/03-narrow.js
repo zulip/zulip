@@ -179,7 +179,7 @@ function search_silent_user(str, item) {
     casper.then(function () {
         casper.waitUntilVisible('#silent_user', function () {
             casper.test.info("Empty feed for silent user visible.");
-            var expected_message = "\n        You haven't received any messages sent by this user yet!"+
+            var expected_message = "\n        You haven't received any messages sent by this user yet!" +
                                     "\n    ";
             this.test.assertEquals(casper.fetchText('#silent_user'), expected_message);
         });
@@ -192,7 +192,7 @@ function search_non_existing_user(str, item) {
     casper.then(function () {
         casper.waitUntilVisible('#non_existing_user', function () {
             casper.test.info("Empty feed for non existing user visible.");
-            var expected_message = "\n        This user does not exist!"+
+            var expected_message = "\n        This user does not exist!" +
                                     "\n    ";
             this.test.assertEquals(casper.fetchText('#non_existing_user'), expected_message);
         });

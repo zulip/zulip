@@ -95,7 +95,7 @@ function preserve_state(send_after_reload, save_pointer, save_narrow, save_compo
     //
     // TODO: Remove the now-unnecessary URL-encoding logic above and
     // just pass the actual data structures through local storage.
-    var token = util.random_int(0, 1024*1024*1024*1024);
+    var token = util.random_int(0, 1024 * 1024 * 1024 * 1024);
 
     ls.set("reload:" + token, url);
     window.location.replace("#reload:" + token);
@@ -262,9 +262,9 @@ exports.initiate = function (options) {
     // while composing.  If they finish or cancel the compose, wait
     // until they're idle again
     var idle_control;
-    var unconditional_timeout = 1000*60*30 + util.random_int(0, 1000*60*5);
-    var composing_timeout     = 1000*60*5  + util.random_int(0, 1000*60);
-    var home_timeout          = 1000*60    + util.random_int(0, 1000*60);
+    var unconditional_timeout = 1000 * 60 * 30 + util.random_int(0, 1000 * 60 * 5);
+    var composing_timeout     = 1000 * 60 * 5  + util.random_int(0, 1000 * 60);
+    var home_timeout          = 1000 * 60    + util.random_int(0, 1000 * 60);
     var compose_done_handler;
     var compose_started_handler;
 

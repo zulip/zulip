@@ -84,7 +84,7 @@ exports.initialize = function () {
         if (prev_sender !== undefined) {
             var first_group_msg = $(this).find('.message_row').first();
             var message_sender = first_group_msg.find('.message_sender');
-            if (! message_sender.find('.inline_profile_picture').length) {
+            if (!message_sender.find('.inline_profile_picture').length) {
                 message_sender.replaceWith(prev_sender.clone());
             }
         }

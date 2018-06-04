@@ -107,7 +107,7 @@ exports.active_stream = function () {
 };
 
 exports.toggle_home = function (sub) {
-    stream_muting.update_in_home_view(sub, ! sub.in_home_view);
+    stream_muting.update_in_home_view(sub, !sub.in_home_view);
     stream_edit.set_stream_property(sub, 'in_home_view', sub.in_home_view);
 };
 
@@ -829,7 +829,7 @@ exports.initialize = function () {
         // A hack.  Don't change the state of the checkbox if we
         // clicked on the checkbox itself.
         if (control[0] !== e.target) {
-            control.prop("checked", ! control.prop("checked"));
+            control.prop("checked", !control.prop("checked"));
         }
     });
 

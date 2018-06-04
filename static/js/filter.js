@@ -471,7 +471,7 @@ Filter.prototype = {
     _build_predicate: function () {
         var operators = this._operators;
 
-        if (! this.can_apply_locally()) {
+        if (!this.can_apply_locally()) {
             return function () { return true; };
         }
 
@@ -621,10 +621,10 @@ function describe_unescaped(operators) {
     var more_parts = _.map(operators, function (elem) {
         var operand = elem.operand;
         var canonicalized_operator = Filter.canonicalize_operator(elem.operator);
-        if (canonicalized_operator ==='is') {
+        if (canonicalized_operator === 'is') {
             return describe_is_operator(elem);
         }
-        if (canonicalized_operator ==='has') {
+        if (canonicalized_operator === 'has') {
             // search_suggestion.get_suggestions takes care that this message will
             // only be shown if the `has` operator is not at the last.
             var valid_has_operands = ['image', 'images', 'link', 'links', 'attachment', 'attachments'];

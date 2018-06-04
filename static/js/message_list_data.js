@@ -89,7 +89,7 @@ MessageListData.prototype = {
             return false;
         }
 
-        var last_msg = this._items[n-1];
+        var last_msg = this._items[n - 1];
 
         return (last_msg.id === this._selected_id);
     },

@@ -77,7 +77,7 @@ Socket.prototype = {
         request.error = error;
         this._save_request(request);
 
-        if (! this._can_send()) {
+        if (!this._can_send()) {
             this._try_to_reconnect({reason: 'cant_send'});
             return;
         }
@@ -287,7 +287,7 @@ Socket.prototype = {
             // immediately reconnect when the page is refreshing
             return 30;
         }
-        return Math.min(90, Math.exp(this._connection_failures/2)) * 1000;
+        return Math.min(90, Math.exp(this._connection_failures / 2)) * 1000;
     },
 
     _try_to_reconnect: function Socket__try_to_reconnect(opts) {

@@ -166,7 +166,7 @@ function populate_messages_sent_over_time(data) {
 
     var start_dates = data.end_times.map(function (timestamp) {
         // data.end_times are the ends of hour long intervals.
-        return new Date(timestamp*1000 - 60*60*1000);
+        return new Date(timestamp * 1000 - 60 * 60 * 1000);
     });
 
     function aggregate_data(aggregation) {
@@ -211,7 +211,7 @@ function populate_messages_sent_over_time(data) {
         return {
             dates: dates, values: values,
             last_value_is_partial: !is_boundary(new Date(
-                start_dates[start_dates.length-1].getTime() + 60*60*1000))};
+                start_dates[start_dates.length - 1].getTime() + 60 * 60 * 1000))};
     }
 
     // Generate traces
@@ -235,7 +235,7 @@ function populate_messages_sent_over_time(data) {
     var weekly_traces = make_traces(info.dates, info.values, 'bar', date_formatter);
 
     var dates = data.end_times.map(function (timestamp) {
-        return new Date(timestamp*1000);
+        return new Date(timestamp * 1000);
     });
     values = {human: partial_sums(data.everyone.human), bot: partial_sums(data.everyone.bot),
               me: partial_sums(data.user.human)};
@@ -314,7 +314,7 @@ function round_to_percentages(values, total) {
         if (x === 0) {
             return '0%';
         }
-        var unrounded = x/total*100;
+        var unrounded = x / total * 100;
 
         var precision = Math.min(
             6, // this is the max precision (two #, 4 decimal points; 99.9999%).
@@ -340,8 +340,8 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
             num_steps = time_series_data[key].length;
         }
         var sum = 0;
-        for (var i=1; i<=num_steps; i+=1) {
-            sum += time_series_data[key][time_series_data[key].length-i];
+        for (var i = 1; i <= num_steps; i += 1) {
+            sum += time_series_data[key][time_series_data[key].length - i];
         }
         data[key] = sum;
     }
@@ -356,10 +356,10 @@ function compute_summary_chart_data(time_series_data, num_steps, labels_) {
         }
     });
     if (!$.isEmptyObject(data)) {
-        labels[labels.length-1] = "Other";
+        labels[labels.length - 1] = "Other";
         for (key in data) {
             if (data.hasOwnProperty(key)) {
-                values[labels.length-1] += data[key];
+                values[labels.length - 1] += data[key];
             }
         }
     }
@@ -387,7 +387,7 @@ function populate_messages_sent_by_client(data) {
     var everyone_month = compute_summary_chart_data(
         data.everyone, 30, data.display_order.slice(0, 12));
     var label_values = [];
-    for (var i=0; i<everyone_month.values.length; i+=1) {
+    for (var i = 0; i < everyone_month.values.length; i += 1) {
         label_values.push({
             label: everyone_month.labels[i],
             value: everyone_month.labels[i] === "Other" ? -1 : everyone_month.values[i],
@@ -403,7 +403,7 @@ function populate_messages_sent_by_client(data) {
         plot_data.labels.reverse();
         plot_data.percentages.reverse();
         var annotations = {values: [], labels: [], text: []};
-        for (var i=0; i<plot_data.values.length; i+=1) {
+        for (var i = 0; i < plot_data.values.length; i += 1) {
             if (plot_data.values[i] > 0) {
                 annotations.values.push(plot_data.values[i]);
                 annotations.labels.push(plot_data.labels[i]);
@@ -515,7 +515,7 @@ function populate_messages_sent_by_client(data) {
         }
         // prevent standard hash navigation (avoid blinking in IE)
         e.preventDefault();
-        var pos = $id.offset().top+$('.page-content')[0].scrollTop-50;
+        var pos = $id.offset().top + $('.page-content')[0].scrollTop - 50;
         $('.page-content').animate({scrollTop: pos + "px"}, 500);
     });
 }
@@ -531,7 +531,7 @@ function populate_messages_sent_by_message_type(data) {
     function make_plot_data(time_series_data, num_steps) {
         var plot_data = compute_summary_chart_data(time_series_data, num_steps, data.display_order);
         var labels = [];
-        for (var i=0; i<plot_data.labels.length; i+=1) {
+        for (var i = 0; i < plot_data.labels.length; i += 1) {
             labels.push(plot_data.labels[i] + ' (' + plot_data.percentages[i] + ')');
         }
         return {
@@ -646,7 +646,7 @@ function populate_number_of_users(data) {
     };
 
     var end_dates = data.end_times.map(function (timestamp) {
-        return new Date(timestamp*1000);
+        return new Date(timestamp * 1000);
     });
 
     var text = end_dates.map(function (date) {

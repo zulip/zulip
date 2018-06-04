@@ -3,7 +3,7 @@ var message_fetch = (function () {
 var exports = {};
 
 var consts = {
-    backfill_idle_time: 10*1000,
+    backfill_idle_time: 10 * 1000,
     error_retry_time: 5000,
     backfill_batch_size: 1000,
     narrow_before: 50,
@@ -63,7 +63,7 @@ function get_messages_success(data, opts) {
         // don't bother processing the newly arrived messages.
         return;
     }
-    if (! data) {
+    if (!data) {
         // The server occasionally returns no data during a
         // restart.  Ignore those responses and try again
         setTimeout(function () {
@@ -315,7 +315,7 @@ exports.initialize = function () {
         // If we fall through here, we need to keep fetching more data, and
         // we'll call back to the function we're in.
         var messages = data.messages;
-        var latest_id = messages[messages.length-1].id;
+        var latest_id = messages[messages.length - 1].id;
 
         exports.load_messages({
             anchor: latest_id.toFixed(),

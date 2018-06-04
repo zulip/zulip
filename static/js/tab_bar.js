@@ -64,7 +64,7 @@ function make_tab_data() {
             if (filter.has_operator("pm-with")) {
                 var emails = filter.operands("pm-with")[0].split(',');
                 var names = _.map(emails, function (email) {
-                    if (! people.get_by_email(email)) {
+                    if (!people.get_by_email(email)) {
                         return email;
                     }
                     return people.get_by_email(email).full_name;

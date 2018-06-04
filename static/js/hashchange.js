@@ -72,7 +72,7 @@ exports.save_narrow = function (operators) {
 exports.parse_narrow = function (hash) {
     var i;
     var operators = [];
-    for (i=1; i<hash.length; i+=2) {
+    for (i = 1; i < hash.length; i += 2) {
         // We don't construct URLs with an odd number of components,
         // but the user might write one.
         try {
@@ -82,7 +82,7 @@ exports.parse_narrow = function (hash) {
                 break;
             }
 
-            var operand  = hash_util.decode_operand(operator, hash[i+1] || '');
+            var operand  = hash_util.decode_operand(operator, hash[i + 1] || '');
             var negated = false;
             if (operator[0] === '-') {
                 negated = true;

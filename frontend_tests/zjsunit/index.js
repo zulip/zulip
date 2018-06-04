@@ -88,7 +88,7 @@ function short_tb(tb) {
         return tb;
     }
 
-    return lines.splice(0, i+1).join('\n') + '\n(...)\n';
+    return lines.splice(0, i + 1).join('\n') + '\n(...)\n';
 }
 
 // Set up bugdown comparison helper

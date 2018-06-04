@@ -331,6 +331,7 @@
         // Updated regex expressions are currently being tested in casper
         // files and will decide about a potential future enforcement of this rule.
         "no-useless-escape": 0,
+        "space-unary-ops": 2,
         "no-whitespace-before-property": 2,
         "no-with": 2,
         "one-var": [ "error", "never" ],
@@ -360,7 +361,7 @@
             }
         ],
         "space-in-parens": 2,
-        "space-infix-ops": 0,
+        "space-infix-ops": 2,
         "spaced-comment": 0,
         "strict": 0,
         "template-curly-spacing": "error",

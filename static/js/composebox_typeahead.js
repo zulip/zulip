@@ -22,11 +22,11 @@ exports.add_topic = function (uc_stream, uc_topic) {
     var stream = uc_stream.toLowerCase();
     var topic = uc_topic.toLowerCase();
 
-    if (! seen_topics.has(stream)) {
+    if (!seen_topics.has(stream)) {
         seen_topics.set(stream, new Dict());
     }
     var topic_dict = seen_topics.get(stream);
-    if (! topic_dict.has(topic)) {
+    if (!topic_dict.has(topic)) {
         topic_dict.set(topic, uc_topic);
     }
 };
@@ -281,8 +281,8 @@ exports.tokenize_compose_str = function (s) {
             // Code block must start on a new line
             if (i === 2) {
                 return s.slice(0);
-            } else if (i > 2 && s[i-3] === "\n") {
-                return s.slice(i-2);
+            } else if (i > 2 && s[i - 3] === "\n") {
+                return s.slice(i - 2);
             }
             break;
         case '#':
@@ -290,7 +290,7 @@ exports.tokenize_compose_str = function (s) {
         case ':':
             if (i === 0) {
                 return s.slice(i);
-            } else if (/[\s(){}\[\]]/.test(s[i-1])) {
+            } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
                 return s.slice(i);
             }
         }
@@ -446,7 +446,7 @@ exports.content_typeahead_selected = function (item) {
         if (beginning.lastIndexOf(":") === 0 ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
-            beginning = (beginning.substring(0, beginning.length - this.token.length - 1)+ ":" + item.emoji_name + ": ");
+            beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ");
         } else {
             beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ");
         }

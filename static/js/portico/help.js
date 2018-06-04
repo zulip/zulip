@@ -9,10 +9,10 @@ function registerCodeSection($codeSection) {
         const language = this.dataset.language;
 
         $li.removeClass("active");
-        $li.filter("[data-language="+language+"]").addClass("active");
+        $li.filter("[data-language=" + language + "]").addClass("active");
 
         $blocks.removeClass("active");
-        $blocks.filter("[data-language="+language+"]").addClass("active");
+        $blocks.filter("[data-language=" + language + "]").addClass("active");
     });
 
     $li.eq(0).click();

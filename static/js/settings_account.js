@@ -418,7 +418,7 @@ exports.set_up = function () {
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
-            form_data.append('file-'+i, file);
+            form_data.append('file-' + i, file);
         });
 
         $("#user-avatar-source").hide();

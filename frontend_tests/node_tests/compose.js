@@ -349,8 +349,8 @@ run_test('markdown_shortcuts', () => {
     global.document.execCommand = function (cmd, bool, markdown) {
         var compose_textarea = $("#compose-textarea");
         var value = compose_textarea.val();
-        $("#compose-textarea").val(value.substring(0, compose_textarea.range().start)+
-            markdown+value.substring(compose_textarea.range().end, value.length));
+        $("#compose-textarea").val(value.substring(0, compose_textarea.range().start) +
+            markdown + value.substring(compose_textarea.range().end, value.length));
     };
 
     $("#compose-textarea").range = function () {
@@ -359,7 +359,7 @@ run_test('markdown_shortcuts', () => {
             end: range_start + range_length,
             length: range_length,
             range: noop,
-            text: $("#compose-textarea").val().substring(range_start, range_length+range_start),
+            text: $("#compose-textarea").val().substring(range_start, range_length + range_start),
         };
     };
     $('#compose-textarea').caret = noop;
@@ -566,8 +566,8 @@ run_test('send_message', () => {
             stub_state.send_msg_called += 1;
         };
         echo.reify_message_id = function (local_id, message_id) {
-            assert.equal(typeof(local_id), 'number');
-            assert.equal(typeof(message_id), 'number');
+            assert.equal(typeof (local_id), 'number');
+            assert.equal(typeof (message_id), 'number');
             stub_state.reify_message_id_checked += 1;
         };
 
@@ -779,11 +779,11 @@ function verify_filedrop_payload(payload) {
     assert.equal(payload.maxfilesize, 512);
     assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
     assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
-    assert.equal(typeof(payload.drop), 'function');
-    assert.equal(typeof(payload.progressUpdated), 'function');
-    assert.equal(typeof(payload.error), 'function');
-    assert.equal(typeof(payload.uploadFinished), 'function');
-    assert.equal(typeof(payload.rawDrop), 'function');
+    assert.equal(typeof (payload.drop), 'function');
+    assert.equal(typeof (payload.progressUpdated), 'function');
+    assert.equal(typeof (payload.error), 'function');
+    assert.equal(typeof (payload.uploadFinished), 'function');
+    assert.equal(typeof (payload.rawDrop), 'function');
 }
 
 function test_raw_file_drop(raw_drop_func) {

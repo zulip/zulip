@@ -31,7 +31,7 @@ function hide_box() {
 
 function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
-    if (msg_type === 'stream' && opts.stream && ! opts.subject) {
+    if (msg_type === 'stream' && opts.stream && !opts.subject) {
         return 'subject';
     } else if ((msg_type === 'stream' && opts.stream)
                || (msg_type === 'private' && opts.private_message_recipient)) {
@@ -160,7 +160,7 @@ exports.maybe_scroll_up_selected_message = function () {
     var cover = selected_row.offset().top + selected_row.height()
         - $("#compose").offset().top;
     if (cover > 0) {
-        message_viewport.user_initiated_animate_scroll(cover+5);
+        message_viewport.user_initiated_animate_scroll(cover + 5);
     }
 };
 
@@ -391,9 +391,9 @@ exports.quote_and_reply = function (opts) {
         idempotent: true,
         success: function (data) {
             if (textarea.val() === "") {
-                textarea.val("```quote\n" + data.raw_content +"\n```\n");
+                textarea.val("```quote\n" + data.raw_content + "\n```\n");
             } else {
-                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content +"\n```\n");
+                textarea.val(textarea.val() + "\n```quote\n" + data.raw_content + "\n```\n");
             }
             $("#compose-textarea").trigger("autosize.resize");
         },

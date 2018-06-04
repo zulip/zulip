@@ -548,7 +548,7 @@ exports.emoji_select_tab = function (elt) {
     var elt_height = elt.height();
     var currently_selected = "";
     section_head_offsets.forEach(function (o) {
-        if (scrolltop + elt_height/2 >= o.position_y) {
+        if (scrolltop + elt_height / 2 >= o.position_y) {
             currently_selected = o.section;
         }
     });
@@ -563,7 +563,7 @@ exports.emoji_select_tab = function (elt) {
     }
     if (currently_selected) {
         $('.emoji-popover-tab-item.active').removeClass('active');
-        $('.emoji-popover-tab-item[data-tab-name="'+currently_selected+'"]').addClass('active');
+        $('.emoji-popover-tab-item[data-tab-name="' + currently_selected + '"]').addClass('active');
     }
 };
 
