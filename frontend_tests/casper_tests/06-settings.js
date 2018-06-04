@@ -1,6 +1,7 @@
 var common = require('../casper_lib/common.js').common;
 var test_credentials = require('../../var/casper/test_credentials.js').test_credentials;
 var OUTGOING_WEBHOOK_BOT_TYPE = '3';
+var GENERIC_BOT_TYPE = '1';
 
 common.start_and_log_in();
 
@@ -8,6 +9,7 @@ common.start_and_log_in();
 
 // var form_sel = 'form[action^="/json/settings"]';
 var regex_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\n$/;
+var regex_outgoing_webhook_zuliprc = /^data:application\/octet-stream;charset=utf-8,\[api\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 var regex_botserverrc = /^data:application\/octet-stream;charset=utf-8,\[\]\nemail=.+\nkey=.+\nsite=.+\ntoken=.+\n$/;
 
 casper.then(function () {
@@ -110,7 +112,7 @@ casper.then(function () {
 });
 
 casper.then(function create_bot() {
-    casper.test.info('Filling out the create bot form');
+    casper.test.info('Filling out the create bot form for an outgoing webhook bot');
 
     casper.fill('#create_bot_form',{
         bot_name: 'Bot 1',
@@ -136,6 +138,37 @@ casper.then(function () {
     casper.waitUntilVisible(button_sel + '[href^="data:application"]', function () {
         casper.test.assertMatch(
             decodeURIComponent(casper.getElementsAttribute(button_sel, 'href')),
+            regex_outgoing_webhook_zuliprc,
+            'Looks like an outgoing webhook bot ~/.zuliprc file');
+    });
+});
+
+casper.then(function create_bot() {
+    casper.test.info('Filling out the create bot form for a normal bot');
+
+    casper.fill('#create_bot_form',{
+        bot_name: 'Bot 2',
+        bot_short_name: '2',
+        bot_type: GENERIC_BOT_TYPE,
+    });
+
+    casper.test.info('Submitting the create bot form');
+    casper.click('#create_bot_button');
+});
+
+var second_bot_email = '2-bot@zulip.zulipdev.com';
+var second_button_sel = '.download_bot_zuliprc[data-email="' + second_bot_email + '"]';
+
+casper.then(function () {
+    casper.waitUntilVisible(second_button_sel, function () {
+        casper.click(second_button_sel);
+    });
+});
+
+casper.then(function () {
+    casper.waitUntilVisible(second_button_sel + '[href^="data:application"]', function () {
+        casper.test.assertMatch(
+            decodeURIComponent(casper.getElementsAttribute(second_button_sel, 'href')),
             regex_zuliprc,
             'Looks like a bot ~/.zuliprc file');
     });
