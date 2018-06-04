@@ -398,7 +398,7 @@ run_test('with_external_user', () => {
 
     var exit_button = $.create('fake-pill-exit');
     pill_stub.set_find_results('.exit', exit_button);
-    var exit_button_called=false;
+    var exit_button_called = false;
     exit_button.css = function (property, value) {
         exit_button_called = true;
         assert.equal(property, 'opacity');

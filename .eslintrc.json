@@ -361,7 +361,7 @@
             }
         ],
         "space-in-parens": 2,
-        "space-infix-ops": 0,
+        "space-infix-ops": 2,
         "spaced-comment": 0,
         "strict": 0,
         "template-curly-spacing": "error",

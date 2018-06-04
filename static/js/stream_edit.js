@@ -289,7 +289,7 @@ exports.bulk_set_stream_property = function (sub_data) {
     return channel.post({
         url: '/json/users/me/subscriptions/properties',
         data: {subscription_data: JSON.stringify(sub_data)},
-        timeout: 10*1000,
+        timeout: 10 * 1000,
     });
 };
 

@@ -324,7 +324,7 @@ run_test('sort_recipients', () => {
     assert.deepEqual(recipients_email, expected);
 
     // Reset matches
-    matches.splice(matches.length-1, 1);
+    matches.splice(matches.length - 1, 1);
 
     // full_name starts with same character but emails are 'all'
     var small_matches = [

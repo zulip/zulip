@@ -286,7 +286,7 @@ run_test('num_unread_for_topic', () => {
     assert.deepEqual(missing_topics, []);
 
     for (i = 0; i < num_msgs; i += 1) {
-        message.id = i+1;
+        message.id = i + 1;
         unread.mark_as_read(message.id);
     }
 

@@ -1564,7 +1564,7 @@ run_test('embedded_bot_config_item', () => {
     };
     var html = render('embedded_bot_config_item', args);
     assert.equal($(html).attr('name'), args.botname);
-    assert.equal($(html).attr('id'), args.botname+'_'+args.key);
+    assert.equal($(html).attr('id'), args.botname + '_' + args.key);
     assert.equal($(html).find('label').text(), args.key);
     assert.equal($(html).find('input').attr('placeholder'), args.value);
 });

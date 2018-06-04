@@ -90,7 +90,7 @@ function get_subsection_property_types(subsection) {
 }
 
 exports.get_realm_time_limits_in_minutes = function (property) {
-    var val = (page_params[property]/ 60).toFixed(1);
+    var val = (page_params[property] / 60).toFixed(1);
     if (parseFloat(val, 10) === parseInt(val, 10)) {
         val = parseInt(val, 10);
     }
@@ -200,23 +200,23 @@ var time_limit_dropdown_values = {
     },
     upto_two_min: {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("2 minutes")}),
-        seconds: 2*60,
+        seconds: 2 * 60,
     },
     upto_ten_min: {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("10 minutes")}),
-        seconds: 10*60,
+        seconds: 10 * 60,
     },
     upto_one_hour: {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 hour")}),
-        seconds: 60*60,
+        seconds: 60 * 60,
     },
     upto_one_day: {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 day")}),
-        seconds: 24*60*60,
+        seconds: 24 * 60 * 60,
     },
     upto_one_week: {
         text: i18n.t("Up to __time_limit__ after posting", {time_limit: i18n.t("1 week")}),
-        seconds: 7*24*60*60,
+        seconds: 7 * 24 * 60 * 60,
     },
     custom_limit: {
         text: i18n.t("Up to N minutes after posting"),
@@ -443,7 +443,7 @@ exports.sync_realm_settings = function (property) {
     } else if (property === 'invite_required' || property === 'invite_by_admins_only') {
         property = 'user_invite_restriction';
     }
-    var element =  $('#id_realm_'+property);
+    var element =  $('#id_realm_' + property);
     if (element.length) {
         discard_property_element_changes(element);
     }
@@ -515,15 +515,15 @@ exports.set_up = function () {
         _.each(changing_property_types, function (v, k) {
             var field = changing_property_types[k];
             if (field.type === 'bool') {
-                data[k] = JSON.stringify($('#id_realm_'+k).prop('checked'));
+                data[k] = JSON.stringify($('#id_realm_' + k).prop('checked'));
                 return;
             }
             if (field.type === 'text') {
-                data[k] = JSON.stringify($('#id_realm_'+k).val().trim());
+                data[k] = JSON.stringify($('#id_realm_' + k).val().trim());
                 return;
             }
             if (field.type === 'integer') {
-                data[k] = JSON.stringify(parseInt($("#id_realm_"+k).val().trim(), 10));
+                data[k] = JSON.stringify(parseInt($("#id_realm_" + k).val().trim(), 10));
             }
         });
         return data;
@@ -989,7 +989,7 @@ exports.set_up = function () {
 
         form_data.append('csrfmiddlewaretoken', csrf_token);
         jQuery.each(file_input[0].files, function (i, file) {
-            form_data.append('file-'+i, file);
+            form_data.append('file-' + i, file);
         });
 
         var spinner = $("#upload_icon_spinner").expectOne();

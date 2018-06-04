@@ -58,7 +58,7 @@ run_test('pills', () => {
         pills = {
             pill: {},
         };
-        all_pills= {};
+        all_pills = {};
     };
 
     var appendValue_called;

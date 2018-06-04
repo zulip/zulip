@@ -936,7 +936,7 @@ run_test('begins_typeahead', () => {
 
     var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
         return {
-            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            special_item_text: 'translated: ' + mention + " (Notify stream)",
             email: mention,
             pm_recipient_count: Infinity,
             full_name: mention,
@@ -1130,7 +1130,7 @@ run_test('content_highlighter', () => {
 run_test('typeahead_results', () => {
     var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
         return {
-            special_item_text: 'translated: ' + mention +" (Notify stream)",
+            special_item_text: 'translated: ' + mention + " (Notify stream)",
             email: mention,
             pm_recipient_count: Infinity,
             full_name: mention,

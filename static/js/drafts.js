@@ -207,7 +207,7 @@ exports.setup_page = function (callback) {
             data_array.push([id, data[id]]);
         });
         var data_sorted = data_array.sort(function (draft_a,draft_b) {
-            return draft_a[1].updatedAt-draft_b[1].updatedAt;
+            return draft_a[1].updatedAt - draft_b[1].updatedAt;
         });
         _.each(data_sorted, function (data_element) {
             var draft = data_element[1];
@@ -314,7 +314,7 @@ function drafts_initialize_focus(event_name) {
 
     var draft_element;
     if (event_name === "up_arrow") {
-        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length-1] + '"]');
+        draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[draft_id_arrow.length - 1] + '"]');
     } else if (event_name === "down_arrow") {
         draft_element = document.querySelectorAll('[data-draft-id="' + draft_id_arrow[0] + '"]');
     }
@@ -410,7 +410,7 @@ exports.drafts_handle_events = function (e, event_key) {
         if (document.activeElement.parentElement.hasAttribute("data-draft-id")) {
             exports.restore_draft(focused_draft);
         } else {
-            var first_draft = draft_id_arrow[draft_id_arrow.length-1];
+            var first_draft = draft_id_arrow[draft_id_arrow.length - 1];
             exports.restore_draft(first_draft);
         }
     }
@@ -429,7 +429,7 @@ exports.launch = function () {
         var draft_list = drafts.draft_model.get();
         var draft_id_list = Object.getOwnPropertyNames(draft_list);
         if (draft_id_list.length > 0) {
-            var last_draft = draft_id_list[draft_id_list.length-1];
+            var last_draft = draft_id_list[draft_id_list.length - 1];
             var last_draft_element = document.querySelectorAll('[data-draft-id="' + last_draft + '"]');
             var focus_element = last_draft_element[0].children[0];
             focus_element.focus();

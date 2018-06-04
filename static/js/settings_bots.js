@@ -184,7 +184,7 @@ exports.set_up = function () {
     var selected_embedded_bot = 'converter';
     $('#select_service_name').val(selected_embedded_bot); // TODO: Use 'select a bot'.
     $('#config_inputbox').children().hide();
-    $("[name*='"+selected_embedded_bot+"']").show();
+    $("[name*='" + selected_embedded_bot + "']").show();
 
     $('#download_botserverrc').click(function () {
         var OUTGOING_WEBHOOK_BOT_TYPE_INT = 3;
@@ -243,13 +243,13 @@ exports.set_up = function () {
             } else if (bot_type === EMBEDDED_BOT_TYPE) {
                 formData.append('service_name', service_name);
                 var config_data = {};
-                $("#config_inputbox [name*='"+service_name+"'] input").each(function () {
+                $("#config_inputbox [name*='" + service_name + "'] input").each(function () {
                     config_data[$(this).attr('name')] = $(this).val();
                 });
                 formData.append('config_data', JSON.stringify(config_data));
             }
             jQuery.each($('#bot_avatar_file_input')[0].files, function (i, file) {
-                formData.append('file-'+i, file);
+                formData.append('file-' + i, file);
             });
             loading.make_indicator(spinner, {text: i18n.t('Creating bot')});
             channel.post({
@@ -265,7 +265,7 @@ exports.set_up = function () {
                     $('#create_payload_url').val('');
                     $('#payload_url_inputbox').hide();
                     $('#config_inputbox').hide();
-                    $("[name*='"+service_name+"'] input").each(function () {
+                    $("[name*='" + service_name + "'] input").each(function () {
                         $(this).val('');
                     });
                     $('#create_bot_type').val(GENERIC_BOT_TYPE);
@@ -311,7 +311,7 @@ exports.set_up = function () {
     $("#select_service_name").on("change", function () {
         $('#config_inputbox').children().hide();
         var selected_bot = $('#select_service_name :selected').val();
-        $("[name*='"+selected_bot+"']").show();
+        $("[name*='" + selected_bot + "']").show();
     });
 
     $("#active_bots_list").on("click", "button.delete_bot", function (e) {
@@ -421,7 +421,7 @@ exports.set_up = function () {
                     formData.append('config_data', JSON.stringify(config_data));
                 }
                 jQuery.each(file_input[0].files, function (i, file) {
-                    formData.append('file-'+i, file);
+                    formData.append('file-' + i, file);
                 });
                 loading.make_indicator(spinner, {text: 'Editing bot'});
                 edit_button.hide();
@@ -442,7 +442,7 @@ exports.set_up = function () {
                             // when the user had a previous uploaded avatar.  Only the content
                             // changes, so we version it to get an uncached copy.
                             image_version += 1;
-                            image.find('img').attr('src', data.avatar_url+'&v='+image_version.toString());
+                            image.find('img').attr('src', data.avatar_url + '&v=' + image_version.toString());
                         }
                     },
                     error: function (xhr) {

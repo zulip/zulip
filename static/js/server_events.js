@@ -216,8 +216,8 @@ function get_events(options) {
                                undefined,
                                ex.stack);
             }
-            var retry_sec = Math.min(90, Math.exp(get_events_failures/2));
-            get_events_timeout = setTimeout(get_events, retry_sec*1000);
+            var retry_sec = Math.min(90, Math.exp(get_events_failures / 2));
+            get_events_timeout = setTimeout(get_events, retry_sec * 1000);
         },
     });
 }

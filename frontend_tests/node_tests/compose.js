@@ -349,8 +349,8 @@ run_test('markdown_shortcuts', () => {
     global.document.execCommand = function (cmd, bool, markdown) {
         var compose_textarea = $("#compose-textarea");
         var value = compose_textarea.val();
-        $("#compose-textarea").val(value.substring(0, compose_textarea.range().start)+
-            markdown+value.substring(compose_textarea.range().end, value.length));
+        $("#compose-textarea").val(value.substring(0, compose_textarea.range().start) +
+            markdown + value.substring(compose_textarea.range().end, value.length));
     };
 
     $("#compose-textarea").range = function () {
@@ -359,7 +359,7 @@ run_test('markdown_shortcuts', () => {
             end: range_start + range_length,
             length: range_length,
             range: noop,
-            text: $("#compose-textarea").val().substring(range_start, range_length+range_start),
+            text: $("#compose-textarea").val().substring(range_start, range_length + range_start),
         };
     };
     $('#compose-textarea').caret = noop;

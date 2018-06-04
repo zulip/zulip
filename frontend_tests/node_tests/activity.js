@@ -387,8 +387,8 @@ function simulate_list_items(items) {
     $('#user_presences').set_find_results('li.user_sidebar_entry', list);
 
     _.each(items, (item, i) => {
-        item.next = () => items[i+1] || {length: 0};
-        item.prev = () => items[i-1] || {length: 0};
+        item.next = () => items[i + 1] || {length: 0};
+        item.prev = () => items[i - 1] || {length: 0};
     });
 }
 

@@ -312,9 +312,9 @@ exports.recenter_view = function (message, opts) {
     }
 
     if (is_above || opts.force_center) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/2);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 2);
     } else if (is_below) {
-        exports.set_message_position(message_top, message_height, viewport_info, 1/7);
+        exports.set_message_position(message_top, message_height, viewport_info, 1 / 7);
     }
 };
 
@@ -334,8 +334,8 @@ exports.keep_pointer_in_view = function () {
     }
 
     var info = message_viewport.message_viewport_info();
-    var top_threshold = info.visible_top + (1/10 * info.visible_height);
-    var bottom_threshold = info.visible_top + (9/10 * info.visible_height);
+    var top_threshold = info.visible_top + (1 / 10 * info.visible_height);
+    var bottom_threshold = info.visible_top + (9 / 10 * info.visible_height);
 
     function message_is_far_enough_down() {
         if (message_viewport.at_top()) {

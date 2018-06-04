@@ -77,7 +77,7 @@ run_test('upload_error', () => {
         assert.equal($("#compose-error-msg").text(), msg);
     }
 
-    function test(err, msg, server_response=null, file={}) {
+    function test(err, msg, server_response = null, file = {}) {
         setup_test();
         file.lastModified = 1549958107000;
         upload_opts.error(err, server_response, file);
