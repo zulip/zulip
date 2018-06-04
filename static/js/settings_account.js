@@ -207,10 +207,9 @@ exports.set_up = function () {
     });
 
     $("#download_zuliprc").on("click", function () {
-        $(this).attr("href", settings_bots.generate_zuliprc_uri(
-            people.my_current_email(),
-            $("#api_key_value").text()
-        ));
+        var data = settings_bots.generate_zuliprc_content(people.my_current_email(),
+                                                          $("#api_key_value").text());
+        $(this).attr("href", settings_bots.encode_zuliprc_as_uri(data));
     });
 
     function clear_password_change() {

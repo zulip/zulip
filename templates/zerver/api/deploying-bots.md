@@ -65,10 +65,10 @@ pip install zulip_botserver
 1. Run the Botserver, where `helloworld` is the name of the bot you
    want to run:
 
-    `zulip-bot-server --config-file <path_to_zuliprc> --bot-name=helloworld`
+    `zulip-botserver --config-file <path_to_zuliprc> --bot-name=helloworld`
 
     You can specify the port number and various other options; run
-    `zulip-bot-server --help` to see how to do this.
+    `zulip-botserver --help` to see how to do this.
 
 1.  Congrats, everything is set up! Test your Botserver like you would
     test a normal bot.
@@ -83,12 +83,24 @@ Botserver process.  You can do this with the following procedure.
    Botserver format." option at the top.
 
 1. Open the `botserverrc`. It should contain one or more sections that look like this:
-
     ```
     []
     email=foo-bot@hostname
     key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
     site=http://hostname
+    token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
+    ```
+    Each section contains the configuration for an outgoing webhook bot. For each
+    bot, enter the name of the bot you want to run in the square brackets `[]`.
+    For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
+    new section would look like this:
+
+    ```
+    [helloworld]
+    email=foo-bot@hostname
+    key=dOHHlyqgpt5g0tVuVl6NHxDLlc9eFRX4
+    site=http://hostname
+    token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
     ```
 
     Each section contains the configuration for an outgoing webhook bot. For each
@@ -107,7 +119,7 @@ Botserver process.  You can do this with the following procedure.
     command format is:
 
      ```
-     zulip-bot-server  --config-file <path_to_botserverrc>
+     zulip-botserver  --config-file <path_to_botserverrc>
      ```
 
      If omitted, `hostname` defaults to `127.0.0.1` and `port` to `5002`.
@@ -135,8 +147,8 @@ running it manually.
         and store it in `/etc/supervisor/conf.d/zulip-botserver.conf`.
       * Copy the following section into your existing supervisord config file.
 
-            [program:zulip-bot-server]
-            command=zulip-bot-server --config-file=<path/to/your/botserverrc>
+            [program:zulip-botserver]
+            command=zulip-botserver --config-file=<path/to/your/botserverrc>
             --hostname <address> --port <port>
             startsecs=3
             stdout_logfile=/var/log/zulip-botserver.log ; all output of your Botserver will be logged here
@@ -163,7 +175,7 @@ running it manually.
     ```
 
     The output should include a line similar to this:
-    > zulip-bot-server                 RUNNING   pid 28154, uptime 0:00:27
+    > zulip-botserver                 RUNNING   pid 28154, uptime 0:00:27
 
     The standard output of the Botserver will be logged to the path in
     your *supervisord* configuration.

@@ -95,17 +95,29 @@ function render_bots() {
     }
 }
 
-exports.generate_zuliprc_uri = function (email, api_key) {
-    var data = exports.generate_zuliprc_content(email, api_key);
-
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
+exports.generate_zuliprc_uri = function (bot_id) {
+    var bot = bot_data.get(bot_id);
+    var data;
+    var token;
+    // For outgoing webhooks, include the token in the zuliprc.
+    // It's needed for authenticating to the Botserver.
+    if (bot.bot_type === 3) {
+        token = bot_data.get_services(bot_id)[0].token;
+    }
+    data = exports.generate_zuliprc_content(bot.email, bot.api_key, token);
+    return exports.encode_zuliprc_as_uri(data);
 };
 
-exports.generate_zuliprc_content = function (email, api_key) {
+exports.encode_zuliprc_as_uri = function (zuliprc) {
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
+};
+
+exports.generate_zuliprc_content = function (email, api_key, token) {
     return "[api]" +
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +
+           (token === undefined ? "" : ("\ntoken=" + token)) +
            // Some tools would not work in files without a trailing new line.
            "\n";
 };
@@ -444,13 +456,9 @@ exports.set_up = function () {
     });
 
     $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
-        var bot_info = $(this).closest(".bot-information-box");
-        var email = bot_info.find(".email .value").text();
-        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
-
-        $(this).attr("href", exports.generate_zuliprc_uri(
-            $.trim(email), $.trim(api_key)
-        ));
+        var bot_info = $(this).closest(".bot-information-box").find(".bot_info");
+        var bot_id = bot_info.attr("data-user-id");
+        $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
