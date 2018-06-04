@@ -177,11 +177,12 @@ function show_user_profile(element, user) {
     popovers.hide_all();
 
     var profile_data = {};
+    var localFormat = moment.localeData().longDateFormat('L');
 
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user.user_id, field.id);
         if (settings_profile_fields.field_type_id_to_string(field.type) === "Date") {
-            profile_data[field.name] = moment(field_value).format("MMMM DD YYYY");
+            profile_data[field.name] = moment(field_value).format(localFormat);
         } else {
             profile_data[field.name] = field_value;
         }
@@ -193,7 +194,7 @@ function show_user_profile(element, user) {
         profile_data[i18n.t("User timezone")] = time_preferance.timezone;
     }
 
-    profile_data[i18n.t("Date joined")] = moment(user.date_joined).format("MMMM DD YYYY");
+    profile_data[i18n.t("Date joined")] = moment(user.date_joined).format(localFormat);
     profile_data[i18n.t("Last seen")] = user_last_seen_time_status(user.user_id);
 
     var args = {
