@@ -254,19 +254,8 @@ MessageListData.prototype = {
             });
         }
 
-        // We return probably more info than our actual callers
-        // need, but this is useful for tests and not actually
-        // expensive.
-        var info = {
-            top_messages: top_messages,
-            bottom_messages: bottom_messages,
-            interior_messages: interior_messages,
-        };
-
         if (interior_messages.length > 0) {
-            var all_messages = top_messages.concat(interior_messages).concat(bottom_messages);
-            self.add_anywhere(all_messages);
-            return info;
+            interior_messages = self.add_anywhere(interior_messages);
         }
 
         if (top_messages.length > 0) {
@@ -276,6 +265,12 @@ MessageListData.prototype = {
         if (bottom_messages.length > 0) {
             bottom_messages = self.append(bottom_messages);
         }
+
+        var info = {
+            top_messages: top_messages,
+            bottom_messages: bottom_messages,
+            interior_messages: interior_messages,
+        };
 
         return info;
     },
@@ -294,6 +289,7 @@ MessageListData.prototype = {
             this._items = viewable_messages.concat(this._items);
 
         } else {
+            viewable_messages = messages;
             this._items = messages.concat(this._items);
         }
 

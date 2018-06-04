@@ -144,7 +144,16 @@ run_test('more muting', () => {
         {id: 8},
     ];
 
-    mld.add_messages(orig_messages);
+    const orig_info = mld.add_messages(orig_messages);
+
+    assert.deepEqual(orig_info, {
+        top_messages: [],
+        interior_messages: [],
+        bottom_messages: [
+            {id: 4},
+            {id: 8},
+        ],
+    });
 
     assert.deepEqual(
         _.pluck(mld._all_items, 'id'),
@@ -165,7 +174,8 @@ run_test('more muting', () => {
         {id: 9, subject: 'muted'},
         {id: 10},
     ];
-    mld.add_messages(more_messages);
+
+    const more_info = mld.add_messages(more_messages);
 
     assert.deepEqual(
         _.pluck(mld._all_items, 'id'),
@@ -176,6 +186,18 @@ run_test('more muting', () => {
         _.pluck(mld.all_messages(), 'id'),
         [2, 4, 6, 8, 10]
     );
+
+    assert.deepEqual(more_info, {
+        top_messages: [
+            {id: 2},
+        ],
+        interior_messages: [
+            {id: 6},
+        ],
+        bottom_messages: [
+            {id: 10},
+        ],
+    });
 
 });
 
