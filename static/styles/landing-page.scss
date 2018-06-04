@@ -2131,7 +2131,7 @@ nav ul li.active::after {
 /* -- /for/open-source/ -- */
 .portico-landing.why-page {
     padding-top: 0px;
-    color: hsl(222, 20%, 40%);
+    color: #3b3d42;
 }
 
 .portico-landing.why-page .main {
@@ -2171,15 +2171,9 @@ nav ul li.active::after {
     margin-bottom: 10px;
 }
 
-.portico-landing.why-page .main li {
-    line-height: 1.6;
-    font-size: 1.2em;
-}
-
 .portico-landing.why-page .main p {
     font-size: 1.2em;
     margin: 0px 0px 20px;
-    color: #3b3d42;
     line-height: 1.4;
 }
 
@@ -2187,9 +2181,57 @@ nav ul li.active::after {
     margin-top: 20px;
 }
 
+.portico-landing.why-page .main li {
+    line-height: 1.6;
+    font-size: 1.2em;
+    margin-bottom: 5px;
+}
+
 .portico-landing.why-page .main li strong {
     font-weight: 600;
     color: #333;
+}
+
+.portico-landing.why-page .main blockquote {
+    border: none;
+    position: relative;
+}
+
+.portico-landing.why-page .main blockquote p {
+    font-weight: 400;
+    color: #525e7a;
+    margin-top: 20px;
+    padding-left: 20px;
+}
+
+.portico-landing.why-page .main blockquote:before {
+    color: #ccc;
+    content: '\201c';
+    font-size: 10em;
+    position: absolute;
+    top: 40px;
+    left: -10px;
+    font-weight: 600;
+    color: rgba(221,234,244,0.7);
+    z-index: -10;
+}
+
+.portico-landing.why-page .main img {
+    display: block;
+    margin: 0 auto;
+    max-width: 100%;
+}
+
+.portico-landing.why-page .main .slack-image {
+    width: 500px;
+}
+
+.portico-landing.why-page .main .zulip-topics-image {
+    width: 300px;
+}
+
+.portico-landing.why-page .main .zulip-reply-later-image {
+    width: 600px;
 }
 
 .portico-landing.why-page .photo-description {
