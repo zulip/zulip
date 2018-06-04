@@ -443,14 +443,42 @@ exports.set_up = function () {
         });
     });
 
-    $("#active_bots_list").on("click", "a.download_bot_zuliprc", function () {
+    $("#active_bots_list").on("click", "button.open_get_zuliprc_modal", function (e) {
+        e.stopPropagation();
         var bot_info = $(this).closest(".bot-information-box");
         var email = bot_info.find(".email .value").text();
         var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+        var zuliprc_text = exports.generate_zuliprc_content($.trim(email), $.trim(api_key));
+        $('#zuliprc_textarea').text(zuliprc_text);
+        $('#get_zuliprc_modal').modal('show');
+    });
 
-        $(this).attr("href", exports.generate_zuliprc_uri(
-            $.trim(email), $.trim(api_key)
-        ));
+    $("#active_bots_list").on("click", "button#download_bot_zuliprc", function () {
+        var bot_info = $(this).closest(".bot-information-box");
+        var email = bot_info.find(".email .value").text();
+        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+        var zuliprc_uri = exports.generate_zuliprc_uri($.trim(email), $.trim(api_key));
+        var anchor = document.createElement('a');
+        document.body.appendChild(anchor);
+        anchor.download = "zuliprc";
+        anchor.id = "download_bot_zuliprc_anchor";
+        anchor.href = zuliprc_uri;
+        anchor.click();
+        anchor.parentNode.removeChild(anchor);
+    });
+
+    $("#active_bots_list").on("click", "button#copy_bot_zuliprc", function () {
+        var bot_info = $(this).closest(".bot-information-box");
+        var email = bot_info.find(".email .value").text();
+        var api_key = bot_info.find(".api_key .api-key-value-and-button .value").text();
+        var data = exports.generate_zuliprc_content($.trim(email), $.trim(api_key));
+        // Generates a disposable text area and deletes it after done copying.
+        var element = document.createElement('textarea');
+        element.append(document.createTextNode(data));
+        document.body.append(element);
+        element.select();
+        document.execCommand('copy');
+        element.parentNode.removeChild(element);
     });
 
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {

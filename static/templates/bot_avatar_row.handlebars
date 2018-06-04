@@ -8,9 +8,22 @@
                 <button type="submit" class="btn open_edit_bot_form" data-sidebar-form="edit-bot" title="{{t 'Edit bot' }}" data-email="{{email}}">
                     <i class="icon-vector-pencil blue"></i>
                 </button>
-                <a type="submit" download="{{zuliprc}}" class="btn download_bot_zuliprc" title="{{t 'Download zuliprc' }}" data-email="{{email}}">
+                <button class="btn open_get_zuliprc_modal" title="{{t 'Get zuliprc' }}" data-email="{{email}}">
                     <i class="icon-vector-download-alt sea-green"></i>
-                </a>
+                </button>
+                <div id="get_zuliprc_modal" class="modal hide" tabindex="-1" role="dialog" aria-hidden="true">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                        <h3 id="get_zuliprc_modal_label">{{t "Get zuliprc for" }} {{name}}</h3>
+                    </div>
+                    <div class="modal-body">
+                        <textarea id="zuliprc_textarea"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button id='copy_bot_zuliprc' class="button rounded" data-dismiss="modal" aria-hidden="true">{{t "Copy" }}</button>
+                        <button id='download_bot_zuliprc' class="button rounded" data-dismiss="modal" aria-hidden="true">{{t "Download" }}</button>
+                    </div>
+                </div>
                 <button type="submit" class="btn delete_bot" title="{{t 'Delete bot' }}" data-user-id="{{user_id}}">
                     <i class="icon-vector-trash danger-red"></i>
                 </button>
