@@ -98,7 +98,11 @@ function render_bots() {
 exports.generate_zuliprc_uri = function (bot_id) {
     var bot = bot_data.get(bot_id);
     var data = exports.generate_zuliprc_content(bot.email, bot.api_key);
-    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(data);
+    return exports.encode_zuliprc_as_uri(data);
+};
+
+exports.encode_zuliprc_as_uri = function (zuliprc) {
+    return "data:application/octet-stream;charset=utf-8," + encodeURIComponent(zuliprc);
 };
 
 exports.generate_zuliprc_content = function (email, api_key) {
