@@ -3,17 +3,26 @@
 This document briefly explains how to document
 [Zulip's REST API endpoints](https://zulipchat.com/api/rest).
 
-Our API documentation files live under `templates/zerver/api/*`. To begin,
-we recommend copying over an existing doc file (`render-message.md` is a good
-example) and using it as a template. Make sure you link to your new Markdown
-file in `templates/zerver/help/rest-endpoints.md`, so that it can be displayed
-in the sidebar on the `/api` page.
+Our API documentation files live under `templates/zerver/api/*`. To
+begin, we recommend using an existing doc file (`render-message.md` is
+a good example) as a template. Make sure you link to your new Markdown
+file in `templates/zerver/help/rest-endpoints.md` , so that it appears
+in the index in the left sidebar on the `/api` page.
 
-If you look at the documentation for existing endpoints (see a live example
-[here](https://zulipchat.com/api/render-message)), you'll notice that the
-documentation is roughly divided into three sections: **Usage examples**,
-**Arguments**, and **Response**. The rest of this guide describes how to write
-each of these sections.
+The markdown framework is the same one used by the
+[user docs](../subsystems/user-docs.html), which supports macros and
+various other features, though we don't use them heavily here.
+
+If you look at the documentation for existing endpoints (see a live
+example [here](https://zulipchat.com/api/render-message)), you'll
+notice that a typical endpoint's documentation is roughly divided into
+three sections: **Usage examples**, **Arguments**, and
+**Response**. The rest of this guide describes how to write each of
+these sections.
+
+There's also a small section at the top, where you'll want to explain
+what the endpoint does in clear English, and any important notes on
+how to use it correctly or what it's good or bad for.
 
 ## Usage examples
 
@@ -22,37 +31,43 @@ For JavaScript and `curl` we simply recommend copying and pasting the examples
 directly into the Markdown file. JavaScript examples should conform to the
 coding style and structure of [Zulip's existing JavaScript examples][1].
 However, since Zulip's Python bindings are used most frequently, the process
-of adding Python examples for an endpoint is a bit more involved.
+of adding Python examples for an endpoint have a more involved process
+that includes automated tests for your documentation(!).
 
 [1]: https://github.com/zulip/zulip-js/tree/master/examples
 
 We recommend skimming `zerver/lib/api_test_helpers.py` before proceeding with the
 steps below.
 
-1. Add a function for the endpoint you'd like to document to
-   `zerver/lib/api_test_helpers.py`. `render_message` is a good example to
-   follow.
-
-1. Add the function to the `TEST_FUNCTIONS` dict.
+1. Start adding a function for the endpoint you'd like to document to
+   `zerver/lib/api_test_helpers.py`. `render_message` is a good
+   example to follow.  There are generally two key pieces to your
+   test: (1) doing an API query and (2) verifying its result is
+   as expected using `test_against_fixture`.
 
 1. Make the desired API call inside the function. If our Python bindings don't
    have a dedicated method for a specific API call, you may either use
    `client.call_endpoint` or add a dedicated function to the
    [zulip PyPI package](https://github.com/zulip/python-zulip-api/tree/master/zulip).
+   Ultimately, the goal is for every endpoint to be documented the
+   latter way, but it's nice to be able to write your docs before you
+   have to finish writing dedicated functions.
 
-1. Capture the fixture returned by the API call and add it to
-   `templates/zerver/api/fixtures.json`, where the key is the name of the Markdown
-   file documenting the endpoint (without the `.md` extension), and the value is
-   the fixture JSON object. Make sure that the JSON is formatted properly before
-   you add it to `fixtures.json` (see [Formatting JSON](#formatting-json) for more
-   info).
+1. Add the function to the `TEST_FUNCTIONS` dict and one of the
+   `test_*` functions at the end of `zerver/lib/api_test_helpers.py`;
+   these will ensure your function will be called when running `test-api`.
 
-1. In `zerver/lib/api_test_helpers.py`, use `test_against_fixture` to test the
-   result of the API call against the fixture captured in the previous step. This
-   should be done inside the function you added in step 1. Make sure you update the
-   `test_*` functions at the end of `zerver/lib/api_test_helpers.py` apppropriately.
+1. Capture the JSON response returned by the API call (the test
+   "fixture").  The easiest way to do this is add an appropriate print
+   statement, and then run `tools/test-api` (see
+   [Formatting JSON](#formatting-json) for how to get in it the right
+   JSON format).  Add the fixture to
+   `templates/zerver/api/fixtures.json`, where the key is the name of
+   the Markdown file documenting the endpoint (without the `.md`
+   extension), and the value is the fixture JSON object.
 
-1. Run `./tools/test-api` to make sure the tests pass.
+1. Run `./tools/test-api` to make sure your new test function is being
+   run and the tests pass.
 
 1. Now, inside the function, isolate the lines of code that call the API and could
    be displayed as a code example. Wrap the relevant lines in
@@ -71,10 +86,11 @@ steps below.
     `KEY_IN_TEST_FUNCTIONS` is the key in the `TEST_FUNCTIONS` dict (added in step 2)
     that points to your test function.
 
-This Markdown-based framework allows us to extract code examples from within tests,
-which makes sure that code examples never get out of date or fail, and if they do,
-`./tools/test-api` complains very loudly. To learn more about how this Markdown
-extension works, see `zerver/lib/bugdown/api_code_examples.py`.
+This Markdown-based framework allows us to extract code examples from
+within tests, which makes sure that code examples never get out of
+date, since if they do, `./tools/test-api` will fail in our continuous
+integration. To learn more about how this Markdown extension works,
+see `zerver/lib/bugdown/api_code_examples.py`.
 
 ## Documenting arguments
 
@@ -101,6 +117,9 @@ how this Markdown extension works, see
 The best way to find out what arguments an API endpoint takes is to
 find the corresponding URL pattern in `zprojects/urls.py` and examining
 the backend function that the URL pattern points to.
+
+Be careful here!  There's no currently automated testing verifying
+that the arguments match the code.
 
 ## Displaying example payloads/responses
 
