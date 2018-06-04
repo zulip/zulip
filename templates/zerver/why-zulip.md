@@ -3,14 +3,14 @@
 There are a lot of team chat apps. So why did we build Zulip?
 
 We talk about Slack in the discussion below, but the problems apply equally
-to other apps with Slack's conversation model, including Hipchat, IRC,
+to other apps with Slack’s conversation model, including Hipchat, IRC,
 Mattermost, Discord, Spark, and others.
 
 ## Slack channels are a huge waste of your time
 
 Anyone who wakes up to this frequently can tell you it is not fun.
 
-![slack unreads](/static/images/why-zulip/slack-unreads.png)
+<img src="/static/images/why-zulip/slack-unreads.png" class="slack-image" alt="Slack unreads">
 
 The lack of organization and context in Slack channels means that anyone
 using Slack heavily has to manually scan through hundreds of messages a day
@@ -23,7 +23,7 @@ multiple projects. Even modest usage of Slack leads to more channel messages
 a day than most managers have time to handle.
 
 In practice, in organizations that use Slack, many senior personnel
-(sensibly) don't read their channel messages at all, or only read a handful
+(sensibly) don’t read their channel messages at all, or only read a handful
 of smaller channels. This means you now have a company communication
 platform ... with everyone but the decision makers.
 
@@ -37,11 +37,11 @@ channel. This means that even moderately busy channels can't be used for
 serious discussion, and they devolve into a mix of quick questions and
 random spam.
 
-## Remote workers can't participate
+## Remote workers can’t participate
 
 This means that workers in different timezones can only effectively
 collaborate during the narrow windows when everyone is at their
-keyboards.  As a result, Slack isn't an effective communication
+keyboards.  As a result, Slack isn’t an effective communication
 platform for remote work.
 
 As a pointed illustration: The company that makes Slack has over 1000
@@ -54,8 +54,8 @@ communication (no email lists, video meetings, etc).
 
 ## Teams that love Slack are often mostly using DMs and small channels
 
-Slack is great for private messages ("DMs"), integrations, and quick
-questions when everyone's online. Most glowing reviews of Slack are
+Slack is great for private messages (&ldquo;DMs&rdquo;), integrations, and quick
+questions when everyone’s online. Most glowing reviews of Slack are
 actually of these aspects of Slack.  We find that even people that
 love Slack typically send the vast majority of their messages in DMs,
 and avoid using public Slack channels.
@@ -83,7 +83,7 @@ input is lost. Someone has to take notes for there to be any record of
 what happened or any follow-ups. And meetings add delay and scheduling
 overhead to decisions.
 
-Finally, small group chat works for the short term, but it doesn't build
+Finally, small group chat works for the short term, but it doesn’t build
 knowledge within the team, and leads to only managers having the full
 picture on projects. Having discussions accessible to larger lists allows
 more stakeholders to stay in the loop.
@@ -107,7 +107,7 @@ However, asynchronous communication is fundamental to how work happens today:
   is essential to being able to focus for an hour or more, which has been
   shown to have a huge impact on developer productivity and happiness.
 
-The fact that you can't do asynchronous work in Slack channels puts a
+The fact that you can’t do asynchronous work in Slack channels puts a
 ceiling on how useful Slack can be to an organization.
 
 ## Ok. What does Zulip do differently?
@@ -116,9 +116,9 @@ ceiling on how useful Slack can be to an organization.
 > our distributed team of engineers and PMs across 7+ time zones. We tried
 > Slack, Mattermost, and other team chat products that claim to support
 > threading, and nothing handles synchronous and asynchronous communication
-> so intuitively.
+> so intuitively.&rdquo;
 >
-> -Jacinda Shelly, CTO, Doctor On Demand
+> &mdash;Jacinda Shelly, CTO, Doctor On Demand
 
 Zulip provides the benefits of real-time chat, while also being great
 at asynchronous communication.  Zulip is inspired by email’s highly
@@ -126,17 +126,17 @@ effective threading model: Every channel message has a topic, just
 like every message in email has a subject line. (Channels are called
 streams in Zulip.)
 
-![zulip topics](/static/images/why-zulip/zulip-topics.png)
+<img src="/static/images/why-zulip/zulip-topics.png" class="zulip-topics-image" alt="Zulip topics">
 
 Topics hold Zulip conversations together, just like subject lines hold email
-conversations together.  They allow you to efficiently catch up on messages
+conversations together. They allow you to efficiently catch up on messages
 and reply in context, even to conversations that started hours or days ago.
 
-![zulip reply later](/static/images/why-zulip/zulip-reply-later.png)
+<img src="/static/images/why-zulip/zulip-reply-later.png" class="zulip-reply-later-image" alt="Zulip reply later">
 
 ## Zulip changes how you can operate
 
-It's simple in concept, but switching from Slack to Zulip can
+It’s simple in concept, but switching from Slack to Zulip can
 transform how your organization communicates:
 
 * Leaders can prioritize their time and batch-reply to messages, and
@@ -146,16 +146,16 @@ transform how your organization communicates:
   through GIFs making sure they don't miss anything important.
 * Remote workers can participate in an equal way to people present in
   person.
-* Employees don't need to be glued to their keyboard or phone in order
+* Employees don’t need to be glued to their keyboard or phone in order
   to avoid missing out on important conversations.
 * Everyone saves a huge amount of wasted time and attention.
 
-> "Zulip's topic-based threading helps us manage discussions with clarity,
+> Zulip’s topic-based threading helps us manage discussions with clarity,
 > ensuring the right people can pay attention to the right messages. This
-> makes our large-group discussion far more manageable than what we've
-> experienced with Skype and Slack."
+> makes our large-group discussion far more manageable than what we’ve
+> experienced with Skype and Slack.&rdquo;
 >
-> -Grahame Grieve, founder, FHIR health care standards body
+> &mdash;Grahame Grieve, founder, FHIR health care standards body
 
 ## Further reading
 
