@@ -17,16 +17,35 @@ from django.core.management import call_command
 from django.utils.module_loading import module_has_submodule
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
-from scripts.lib.zulip_tools import get_dev_uuid_var_path
+from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
+
+def run_db_migrations(platform: str) -> None:
+    if platform == 'dev':
+        migration_status_file = 'migration_status_dev'
+        settings = 'zproject.settings'
+    elif platform == 'test':
+        migration_status_file = 'migration_status_test'
+        settings = 'zproject.test_settings'
+
+    # We shell out to `manage.py` and pass `DJANGO_SETTINGS_MODULE` on
+    # the command line rather than just calling the migration
+    # functions, because Django doesn't support changing settings like
+    # what the database is as runtime.
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), './manage.py',
+         'migrate', '--no-input'])
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), './manage.py',
+         'get_migration_status', '--output=%s' % (migration_status_file)])
 
 def run_generate_fixtures_if_required(use_force: bool=False) -> None:
     generate_fixtures_command = ['tools/setup/generate-fixtures']
     test_template_db_status = template_database_status()
     if use_force or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command.append('--force')
+    elif test_template_db_status == 'run_migrations':
+        run_db_migrations('test')
     subprocess.check_call(generate_fixtures_command)
 
 def database_exists(database_name: str, **options: Any) -> bool:
@@ -68,13 +87,31 @@ def get_migration_status(**options: Any) -> str:
     output = out.read()
     return re.sub('\x1b\[(1|0)m', '', output)
 
-def are_migrations_the_same(migration_file: str, **options: Any) -> bool:
+def extract_migrations_as_list(migration_status: str) -> List[str]:
+    MIGRATIONS_RE = re.compile('\[[X| ]\] (\d+_.+)\n')
+    return MIGRATIONS_RE.findall(migration_status)
+
+def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:
     if not os.path.exists(migration_file):
-        return False
+        return 'scrap'
 
     with open(migration_file) as f:
-        migration_content = f.read()
-    return migration_content == get_migration_status(**options)
+        previous_migration_status = f.read()
+    current_migration_status = get_migration_status(**options)
+    all_curr_migrations = extract_migrations_as_list(current_migration_status)
+    all_prev_migrations = extract_migrations_as_list(previous_migration_status)
+
+    if len(all_curr_migrations) < len(all_prev_migrations):
+        return 'scrap'
+
+    for migration in all_prev_migrations:
+        if migration not in all_curr_migrations:
+            return 'scrap'
+
+    if len(all_curr_migrations) == len(all_prev_migrations):
+        return 'migrations_are_latest'
+
+    return 'migrate'
 
 def _get_hash_file_path(source_file_path: str, status_dir: str) -> str:
     basename = os.path.basename(source_file_path)
@@ -152,8 +189,16 @@ def template_database_status(
         settings_hash_status = all([check_setting_hash(setting_name, status_dir)
                                     for setting_name in check_settings])
         hash_status = files_hash_status and settings_hash_status
+        if not hash_status:
+            return 'needs_rebuild'
 
-        if are_migrations_the_same(migration_status, settings=settings) and hash_status:
-            return 'current'
+        migration_op = what_to_do_with_migrations(migration_status, settings=settings)
+        if migration_op == 'scrap':
+            return 'needs_rebuild'
+
+        if migration_op == 'migrate':
+            return 'run_migrations'
+
+        return 'current'
 
     return 'needs_rebuild'
