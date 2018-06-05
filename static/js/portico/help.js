@@ -89,6 +89,13 @@ function scrollToHash(container) {
         name: null,
     };
 
+    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+        scrollingThreshold: 50,
+    });
+
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
             var $html = $(res).find(".markdown .content");
@@ -99,12 +106,23 @@ function scrollToHash(container) {
         });
     };
 
-    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
+    var update_page = function (html_map, path, container) {
+        if (html_map[path]) {
+            $(".markdown .content").html(html_map[path]);
+            render_code_sections();
+            markdownPS.update();
+            scrollToHash(container);
+        } else {
+            loading.name = path;
+            fetch_page(path, function (res) {
+                html_map[path] = res;
+                $(".markdown .content").html(html_map[path]);
+                loading.name = null;
+                markdownPS.update();
+                scrollToHash(container);
+            });
+        }
+    };
 
     new PerfectScrollbar($(".sidebar")[0], {
         suppressScrollX: true,
@@ -127,13 +145,12 @@ function scrollToHash(container) {
         var path = $(this).attr("href");
         var path_dir = path.split('/')[1];
         var current_dir = window.location.pathname.split('/')[1];
+        var container = $(".markdown")[0];
 
         // Do not block redirecting to external URLs
         if (path_dir !== current_dir) {
             return;
         }
-
-        var container = $(".markdown")[0];
 
         if (loading.name === path) {
             return;
@@ -141,22 +158,7 @@ function scrollToHash(container) {
 
         history.pushState({}, "", path);
 
-        if (html_map[path]) {
-            $(".markdown .content").html(html_map[path]);
-            render_code_sections();
-            markdownPS.update();
-            scrollToHash(container);
-        } else {
-            loading.name = path;
-
-            fetch_page(path, function (res) {
-                html_map[path] = res;
-                $(".markdown .content").html(html_map[path]);
-                loading.name = null;
-                markdownPS.update();
-                scrollToHash(container);
-            });
-        }
+        update_page(html_map, path, container);
 
         $(".sidebar").removeClass("show");
 
@@ -172,15 +174,6 @@ function scrollToHash(container) {
     // Scroll to anchor link when clicked
     $('.markdown .content h1, .markdown .content h2, .markdown .content h3').on('click', function () {
         window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
-    });
-
-    window.onresize = function () {
-        markdownPS.update();
-    };
-
-    window.addEventListener("popstate", function () {
-        var path = window.location.pathname;
-        $(".markdown .content").html(html_map[path]);
     });
 
     $(".hamburger").click(function () {
@@ -199,4 +192,14 @@ function scrollToHash(container) {
     // to the right place.
     var container = $(".markdown")[0];
     scrollToHash(container);
+
+    window.onresize = function () {
+        markdownPS.update();
+    };
+
+    window.addEventListener("popstate", function () {
+        var path = window.location.pathname;
+        update_page(html_map, path, container);
+    });
+
 }());
