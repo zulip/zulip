@@ -53,10 +53,13 @@ function settings_change_success(message) {
     ui_report.success(message, $('#account-settings-status').expectOne());
 }
 
-function update_user_custom_profile_fields(fields) {
+function update_user_custom_profile_fields(fields, method) {
+    if (method === undefined) {
+        blueslip.error("Undefined method in update_user_custom_profile_fields");
+    }
     var spinner = $("#custom-field-status").expectOne();
     loading.make_indicator(spinner, {text: 'Saving ...'});
-    settings_ui.do_settings_change(channel.patch, "/json/users/me/profile_data",
+    settings_ui.do_settings_change(method, "/json/users/me/profile_data",
                                    {data: JSON.stringify(fields)}, spinner);
 }
 
@@ -120,12 +123,17 @@ exports.add_custom_profile_fields_to_settings = function () {
             function update_custom_user_field() {
                 var fields = [];
                 var user_id = user_pill.get_user_ids(pills);
-                if (user_id.length !== 1) {
+                if (user_id.length > 1) {
                     ui_report.message(i18n.t("Only one user allowed"), $("#custom-field-status"), 'alert-error');
                     return;
                 }
-                fields.push({id: field.id, value: user_id[0]});
-                update_user_custom_profile_fields(fields);
+                if (user_id.length < 1) {
+                    fields.push(field.id);
+                    update_user_custom_profile_fields(fields, channel.del);
+                } else {
+                    fields.push({id: field.id, value: user_id[0]});
+                    update_user_custom_profile_fields(fields, channel.patch);
+                }
             }
 
             if (value) {
@@ -383,9 +391,14 @@ exports.set_up = function () {
     $('#settings_page').on('change', '.custom_user_field_value', function (e) {
         var fields = [];
         var value = $(this).val();
-        fields.push({id: parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10),
-                     value: value});
-        update_user_custom_profile_fields(fields);
+        var field_id = parseInt($(e.target).closest('.custom_user_field').attr("data-field-id"), 10);
+        if (value) {
+            fields.push({id: field_id, value: value});
+            update_user_custom_profile_fields(fields, channel.patch);
+        } else {
+            fields.push(field_id);
+            update_user_custom_profile_fields(fields, channel.del);
+        }
     });
 
     $("#do_deactivate_self_button").on('click',function () {
