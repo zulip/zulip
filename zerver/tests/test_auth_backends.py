@@ -216,10 +216,10 @@ class AuthBackendTest(ZulipTestCase):
 
         # testing to avoid false error messages.
         result = self.client_get('/login/')
-        self.assert_not_in_success_response(["No Authentication Backend is enabled."], result)
+        self.assert_not_in_success_response(["No authentication backends are enabled"], result)
 
         result = self.client_get('/register/')
-        self.assert_not_in_success_response(["No Authentication Backend is enabled."], result)
+        self.assert_not_in_success_response(["No authentication backends are enabled"], result)
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.GoogleMobileOauth2Backend',))
     def test_google_backend(self) -> None:
