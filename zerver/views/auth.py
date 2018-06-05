@@ -1,4 +1,4 @@
-
+from mock import patch
 from django.forms import Form
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -581,14 +581,9 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         We need to override this function so that we can redirect to
         realm.uri instead of '/'.
         """
-        old_redirect_url = settings.LOGIN_REDIRECT_URL
-        try:
-            # TODO: Get django-two-factor to support this being an option.
-            settings.LOGIN_REDIRECT_URL = self.get_user().realm.uri
-            redirect_response = super().done(form_list, **kwargs)
-        finally:
-            settings.LOGIN_REDIRECT_URL = old_redirect_url
-        return redirect_response
+        realm_uri = self.get_user().realm.uri
+        with patch.object(settings, 'LOGIN_REDIRECT_URL', realm_uri):
+            return super().done(form_list, **kwargs)
 
 def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
     if settings.TWO_FACTOR_AUTHENTICATION_ENABLED:
