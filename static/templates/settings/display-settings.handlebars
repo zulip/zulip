@@ -35,10 +35,12 @@
               "is_checked" page_params.night_mode
               "label" settings_label.night_mode}}
 
+            {{#if page_params.development_environment}}
             {{partial "settings_checkbox"
               "setting_name" "high_contrast_mode"
               "is_checked" page_params.high_contrast_mode
               "label" settings_label.high_contrast_mode}}
+            {{/if}}
 
             {{partial "settings_checkbox"
               "setting_name" "left_side_userlist"
