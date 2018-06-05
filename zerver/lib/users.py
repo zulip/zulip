@@ -150,3 +150,17 @@ def access_bot_by_id(user_profile: UserProfile, user_id: int) -> UserProfile:
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
     return target
+
+def access_user_by_id(user_profile: UserProfile, user_id: int,
+                      allow_deactivated: bool=False, allow_bots: bool=False) -> UserProfile:
+    try:
+        target = get_user_profile_by_id_in_realm(user_id, user_profile.realm)
+    except UserProfile.DoesNotExist:
+        raise JsonableError(_("No such user"))
+    if target.is_bot and not allow_bots:
+        raise JsonableError(_("No such user"))
+    if not target.is_active and not allow_deactivated:
+        raise JsonableError(_("User is deactivated"))
+    if not user_profile.can_admin_user(target):
+        raise JsonableError(_("Insufficient permission"))
+    return target
