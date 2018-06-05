@@ -564,7 +564,7 @@ class TwoFactorLoginView(BaseTwoFactorLoginView):
         super().__init__(*args, **kwargs)
 
     def get_context_data(self, **kwargs: Any) -> Dict[str, Any]:
-        context = super(TwoFactorLoginView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         if self.extra_context is not None:
             context.update(self.extra_context)
         update_login_page_context(self.request, context)
