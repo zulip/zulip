@@ -107,14 +107,15 @@ def check_setting_hash(setting_name: str, status_dir: str) -> bool:
 
     return _check_hash(source_hash_file, target_content)
 
-def is_template_database_current(
+def template_database_status(
         database_name: str='zulip_test_template',
         migration_status: Optional[str]=None,
         settings: str='zproject.test_settings',
         status_dir: Optional[str]=None,
         check_files: Optional[List[str]]=None,
-        check_settings: Optional[List[str]]=None) -> bool:
-    # Using str type for check_files because re.split doesn't accept unicode
+        check_settings: Optional[List[str]]=None) -> str:
+    # This function returns a status string specifying the type of
+    # state the template db is in and thus the kind of action required.
     if check_files is None:
         check_files = [
             'zilencer/management/commands/populate_db.py',
@@ -144,6 +145,7 @@ def is_template_database_current(
                                     for setting_name in check_settings])
         hash_status = files_hash_status and settings_hash_status
 
-        return are_migrations_the_same(migration_status, settings=settings) and hash_status
+        if are_migrations_the_same(migration_status, settings=settings) and hash_status:
+            return 'current'
 
-    return False
+    return 'needs_rebuild'
