@@ -89,6 +89,13 @@ function scrollToHash(container) {
         name: null,
     };
 
+    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
+        suppressScrollX: true,
+        useKeyboard: false,
+        wheelSpeed: 0.68,
+        scrollingThreshold: 50,
+    });
+
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
             var $html = $(res).find(".markdown .content");
@@ -98,13 +105,6 @@ function scrollToHash(container) {
             render_code_sections();
         });
     };
-
-    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
 
     new PerfectScrollbar($(".sidebar")[0], {
         suppressScrollX: true,
@@ -127,13 +127,12 @@ function scrollToHash(container) {
         var path = $(this).attr("href");
         var path_dir = path.split('/')[1];
         var current_dir = window.location.pathname.split('/')[1];
+        var container = $(".markdown")[0];
 
         // Do not block redirecting to external URLs
         if (path_dir !== current_dir) {
             return;
         }
-
-        var container = $(".markdown")[0];
 
         if (loading.name === path) {
             return;
@@ -174,15 +173,6 @@ function scrollToHash(container) {
         window.location.href = window.location.href.replace(/#.*/, '') + '#' + $(this).attr("id");
     });
 
-    window.onresize = function () {
-        markdownPS.update();
-    };
-
-    window.addEventListener("popstate", function () {
-        var path = window.location.pathname;
-        $(".markdown .content").html(html_map[path]);
-    });
-
     $(".hamburger").click(function () {
         $(".sidebar").toggleClass("show");
     });
@@ -199,4 +189,14 @@ function scrollToHash(container) {
     // to the right place.
     var container = $(".markdown")[0];
     scrollToHash(container);
+
+    window.onresize = function () {
+        markdownPS.update();
+    };
+
+    window.addEventListener("popstate", function () {
+        var path = window.location.pathname;
+        $(".markdown .content").html(html_map[path]);
+    });
+
 }());
