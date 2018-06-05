@@ -100,7 +100,7 @@ run_test('pills', () => {
             get_by_email_called = false;
             var res = handler(iago.email, pills.items());
             assert(get_by_email_called);
-            assert.equal(typeof (res), 'object');
+            assert.equal(typeof res, 'object');
             assert.equal(res.user_id, iago.user_id);
             assert.equal(res.display_value, iago.full_name);
         }());
