@@ -8,7 +8,7 @@ if [ "$TRAVIS" ] ; then
 fi
 YARN_BIN="$ZULIP_SRV/zulip-yarn/bin/yarn"
 node_version=8.11.1
-yarn_version=1.5.1
+yarn_version=1.7.0
 
 # This is a fix for the fact that nvm uses $HOME to determine which
 # user account's home directory to ~/.config to.  Ideally, we'd have a
