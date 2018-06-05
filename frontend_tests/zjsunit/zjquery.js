@@ -18,7 +18,7 @@ exports.make_event_store = (selector) => {
     var child_on_functions = new Dict();
 
     function generic_event(event_name, arg) {
-        if (typeof (arg) === 'function') {
+        if (typeof arg === 'function') {
             on_functions.set(event_name, arg);
         } else {
             var handler = on_functions.get(event_name);
@@ -94,8 +94,8 @@ exports.make_event_store = (selector) => {
                 event_name = arguments[0];
                 sel = arguments[1];
                 handler = arguments[2];
-                assert.equal(typeof (sel), 'string', 'String selectors expected here.');
-                assert.equal(typeof (handler), 'function', 'An handler function expected here.');
+                assert.equal(typeof sel, 'string', 'String selectors expected here.');
+                assert.equal(typeof handler, 'function', 'An handler function expected here.');
                 var child_on = child_on_functions.setdefault(sel, new Dict());
                 funcs = child_on.setdefault(event_name, []);
                 funcs.push(handler);

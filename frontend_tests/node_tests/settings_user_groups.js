@@ -154,11 +154,11 @@ run_test('populate_user_groups', () => {
         assert(config.fixed);
         assert(config.dropup);
         assert(config.stopAdvance);
-        assert.equal(typeof (config.source), 'function');
-        assert.equal(typeof (config.highlighter), 'function');
-        assert.equal(typeof (config.matcher), 'function');
-        assert.equal(typeof (config.sorter), 'function');
-        assert.equal(typeof (config.updater), 'function');
+        assert.equal(typeof config.source, 'function');
+        assert.equal(typeof config.highlighter, 'function');
+        assert.equal(typeof config.matcher, 'function');
+        assert.equal(typeof config.sorter, 'function');
+        assert.equal(typeof config.updater, 'function');
 
         (function test_highlighter() {
             var fake_person = $.create('fake-person');
@@ -210,10 +210,10 @@ run_test('populate_user_groups', () => {
                 saved_fade_out_called = true;
             };
             $(cancel_selector).css = function (data) {
-                if (typeof (data) === 'string') {
+                if (typeof data === 'string') {
                     assert.equal(data, 'display');
                 }
-                assert.equal(typeof (data), 'object');
+                assert.equal(typeof data, 'object');
                 assert.equal(data.display, 'inline-block');
                 assert.equal(data.opacity, '0');
                 return $(cancel_selector);
@@ -222,10 +222,10 @@ run_test('populate_user_groups', () => {
                 cancel_fade_to_called = true;
             };
             $(instructions_selector).css = function (data) {
-                if (typeof (data) === 'string') {
+                if (typeof data === 'string') {
                     assert.equal(data, 'display');
                 }
-                assert.equal(typeof (data), 'object');
+                assert.equal(typeof data, 'object');
                 assert.equal(data.display, 'block');
                 assert.equal(data.opacity, '0');
                 return $(instructions_selector);
@@ -258,7 +258,7 @@ run_test('populate_user_groups', () => {
                      'Expected user email to be of Alice or Iago here.');
     };
     pills.onPillCreate = function (handler) {
-        assert.equal(typeof (handler), 'function');
+        assert.equal(typeof handler, 'function');
         handler();
     };
 
@@ -273,7 +273,7 @@ run_test('populate_user_groups', () => {
             get_by_email_called = false;
             var res = handler(bob.email, pills.items());
             assert(get_by_email_called);
-            assert.equal(typeof (res), 'object');
+            assert.equal(typeof res, 'object');
             assert.equal(res.user_id, bob.user_id);
             assert.equal(res.display_value, bob.full_name);
         }());
@@ -298,9 +298,9 @@ run_test('populate_user_groups', () => {
     test_create_item(create_item_handler);
 
     // Tests for settings_user_groups.set_up workflow.
-    assert.equal(typeof ($('.organization form.admin-user-group-form').get_on_handler("submit")), 'function');
-    assert.equal(typeof ($('#user-groups').get_on_handler('click', '.delete')), 'function');
-    assert.equal(typeof ($('#user-groups').get_on_handler('keypress', '.user-group h4 > span')), 'function');
+    assert.equal(typeof $('.organization form.admin-user-group-form').get_on_handler("submit"), 'function');
+    assert.equal(typeof $('#user-groups').get_on_handler('click', '.delete'), 'function');
+    assert.equal(typeof $('#user-groups').get_on_handler('keypress', '.user-group h4 > span'), 'function');
 });
 run_test('with_external_user', () => {
 
@@ -392,8 +392,8 @@ run_test('with_external_user', () => {
         callback = one;
         empty_fn = two;
         pill_hover_called = true;
-        assert.equal(typeof (one), 'function');
-        assert.equal(typeof (two), 'function');
+        assert.equal(typeof one, 'function');
+        assert.equal(typeof two, 'function');
     };
 
     var exit_button = $.create('fake-pill-exit');
@@ -716,10 +716,10 @@ run_test('on_events', () => {
             cancel_fade_out_called = true;
         };
         $(saved_selector).css = function (data) {
-            if (typeof (data) === 'string') {
+            if (typeof data === 'string') {
                 assert.equal(data, 'display');
             }
-            assert.equal(typeof (data), 'object');
+            assert.equal(typeof data, 'object');
             assert.equal(data.display, 'inline-block');
             assert.equal(data.opacity, '0');
             return $(saved_selector);

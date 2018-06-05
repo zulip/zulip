@@ -446,8 +446,11 @@ class LoginTest(ZulipTestCase):
 
         with queries_captured() as queries:
             self.register(self.nonreg_email('test'), "test")
-        # Ensure the number of queries we make is not O(streams)
-        self.assert_length(queries, 72)
+        # For each stream, we have to check for subscribed guest users,
+        # so the number of queries performed have a complexity of O(stream),
+        # more specifically proportional to two times of streams because we
+        # perform two queries  for each stream in `public_stream_user_ids`
+        self.assert_length(queries, 151)
         user_profile = self.nonreg_user('test')
         self.assertEqual(get_session_dict_user(self.client.session), user_profile.id)
         self.assertFalse(user_profile.enable_stream_desktop_notifications)
