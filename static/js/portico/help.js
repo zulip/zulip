@@ -199,7 +199,7 @@ function scrollToHash(container) {
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;
-        $(".markdown .content").html(html_map[path]);
+        update_page(html_map, path, container);
     });
 
 }());
