@@ -566,8 +566,8 @@ run_test('send_message', () => {
             stub_state.send_msg_called += 1;
         };
         echo.reify_message_id = function (local_id, message_id) {
-            assert.equal(typeof (local_id), 'number');
-            assert.equal(typeof (message_id), 'number');
+            assert.equal(typeof local_id, 'number');
+            assert.equal(typeof message_id, 'number');
             stub_state.reify_message_id_checked += 1;
         };
 
@@ -779,11 +779,11 @@ function verify_filedrop_payload(payload) {
     assert.equal(payload.maxfilesize, 512);
     assert.equal(payload.data.csrfmiddlewaretoken, 'fake-csrf-token');
     assert.deepEqual(payload.raw_droppable, ['text/uri-list', 'text/plain']);
-    assert.equal(typeof (payload.drop), 'function');
-    assert.equal(typeof (payload.progressUpdated), 'function');
-    assert.equal(typeof (payload.error), 'function');
-    assert.equal(typeof (payload.uploadFinished), 'function');
-    assert.equal(typeof (payload.rawDrop), 'function');
+    assert.equal(typeof payload.drop, 'function');
+    assert.equal(typeof payload.progressUpdated, 'function');
+    assert.equal(typeof payload.error, 'function');
+    assert.equal(typeof payload.uploadFinished, 'function');
+    assert.equal(typeof payload.rawDrop, 'function');
 }
 
 function test_raw_file_drop(raw_drop_func) {
