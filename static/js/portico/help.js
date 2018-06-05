@@ -106,6 +106,24 @@ function scrollToHash(container) {
         });
     };
 
+    var update_page = function (html_map, path, container) {
+        if (html_map[path]) {
+            $(".markdown .content").html(html_map[path]);
+            render_code_sections();
+            markdownPS.update();
+            scrollToHash(container);
+        } else {
+            loading.name = path;
+            fetch_page(path, function (res) {
+                html_map[path] = res;
+                $(".markdown .content").html(html_map[path]);
+                loading.name = null;
+                markdownPS.update();
+                scrollToHash(container);
+            });
+        }
+    };
+
     new PerfectScrollbar($(".sidebar")[0], {
         suppressScrollX: true,
         useKeyboard: false,
@@ -140,22 +158,7 @@ function scrollToHash(container) {
 
         history.pushState({}, "", path);
 
-        if (html_map[path]) {
-            $(".markdown .content").html(html_map[path]);
-            render_code_sections();
-            markdownPS.update();
-            scrollToHash(container);
-        } else {
-            loading.name = path;
-
-            fetch_page(path, function (res) {
-                html_map[path] = res;
-                $(".markdown .content").html(html_map[path]);
-                loading.name = null;
-                markdownPS.update();
-                scrollToHash(container);
-            });
-        }
+        update_page(html_map, path, container);
 
         $(".sidebar").removeClass("show");
 
