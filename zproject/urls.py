@@ -292,7 +292,8 @@ v1_api_and_json_patterns = [
 
     # users/me/custom_profile_data -> zerver.views.custom_profile_data
     url(r'^users/me/profile_data$', rest_dispatch,
-        {'PATCH': 'zerver.views.custom_profile_fields.update_user_custom_profile_data'}),
+        {'PATCH': 'zerver.views.custom_profile_fields.update_user_custom_profile_data',
+         'DELETE': 'zerver.views.custom_profile_fields.remove_user_custom_profile_data'}),
 
     url(r'^users/me/(?P<stream_id>\d+)/topics$', rest_dispatch,
         {'GET': 'zerver.views.streams.get_topics_backend'}),

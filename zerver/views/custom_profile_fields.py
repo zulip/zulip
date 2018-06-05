@@ -14,13 +14,14 @@ from zerver.lib.actions import (try_add_realm_custom_profile_field,
                                 do_remove_realm_custom_profile_field,
                                 try_update_realm_custom_profile_field,
                                 do_update_user_custom_profile_data,
-                                try_reorder_realm_custom_profile_fields)
+                                try_reorder_realm_custom_profile_fields,
+                                notify_user_update_custom_profile_data)
 from zerver.lib.response import json_success, json_error
 from zerver.lib.types import ProfileFieldData
 from zerver.lib.validator import (check_dict, check_list, check_int,
                                   validate_field_data, check_capped_string)
 
-from zerver.models import (custom_profile_fields_for_realm, UserProfile,
+from zerver.models import (custom_profile_fields_for_realm, UserProfile, CustomProfileFieldValue,
                            CustomProfileField, custom_profile_fields_for_realm)
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -114,6 +115,24 @@ def reorder_realm_custom_profile_fields(request: HttpRequest, user_profile: User
                                         order: List[int]=REQ(validator=check_list(
                                             check_int))) -> HttpResponse:
     try_reorder_realm_custom_profile_fields(user_profile.realm, order)
+    return json_success()
+
+@human_users_only
+@has_request_variables
+def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProfile,
+                                    data: List[int]=REQ(validator=check_list(
+                                                        check_int))) -> HttpResponse:
+    for field_id in data:
+        try:
+            field = CustomProfileField.objects.get(realm=user_profile.realm, id=field_id)
+            field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
+            field_value.delete()
+            notify_user_update_custom_profile_data(user_profile, {'id': field_id, 'value': None})
+        except CustomProfileField.DoesNotExist:
+            return json_error(_('Field id {id} not found.').format(id=field_id))
+        except CustomProfileFieldValue.DoesNotExist:
+            pass
+
     return json_success()
 
 @human_users_only
