@@ -3,6 +3,7 @@ import json
 import os
 import re
 import hashlib
+import subprocess
 import sys
 from typing import Any, List, Optional
 from importlib import import_module
@@ -20,6 +21,13 @@ from scripts.lib.zulip_tools import get_dev_uuid_var_path
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
 FILENAME_SPLITTER = re.compile('[\W\-_]')
+
+def run_generate_fixtures_if_required(use_force: bool=False) -> None:
+    generate_fixtures_command = ['tools/setup/generate-fixtures']
+    test_template_db_status = template_database_status()
+    if use_force or test_template_db_status == 'needs_rebuild':
+        generate_fixtures_command.append('--force')
+    subprocess.check_call(generate_fixtures_command)
 
 def database_exists(database_name: str, **options: Any) -> bool:
     db = options.get('database', DEFAULT_DB_ALIAS)
