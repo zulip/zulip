@@ -243,11 +243,11 @@ strength allowed is controlled by two settings in
   unauthorized users with access to that file.
 
   We have a similar protection for the `LOCAL_UPLOADS_DIR` backend,
-  that is currently only available in Ubuntu Xenial (this is the one
-  place in Zulip where behavior is currently different between Ubuntu
-  Trusty and Ubuntu Xenial).  On Ubuntu Xenial, every access to an
-  uploaded file has access control verified verified (confirming that
-  the browser is logged into a Zulip account that has received the
+  that is not only available on Ubuntu Trusty (this is the one place
+  in Zulip where behavior is currently different between different OS
+  versions).  For platforms that are not Ubuntu Trusty, every access
+  to an uploaded file has access control verified (confirming that the
+  browser is logged into a Zulip account that has received the
   uploaded file in question).
 
   On Ubuntu Trusty, because the older version of `nginx` available

@@ -352,7 +352,7 @@ Backend and scaling
   phase of the upgrade closely, we recommend
   [running them first manually](../production/expensive-migrations.html) and as well
   as the usual trick of
-  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-ubuntu-system-updates).
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
 
 * We've removed support for an uncommon legacy deployment model where
   a Zulip server served multiple organizations on the same domain.

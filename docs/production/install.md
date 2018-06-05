@@ -4,7 +4,7 @@ Make sure you want to install a Zulip production server. If you'd
 instead like to test or develop a new feature, we recommend the
 [Zulip server development environment](../development/overview.html#requirements) instead.
 
-You'll need an Ubuntu system that satisfies
+You'll need an Ubuntu or Debian system that satisfies
 [the installation requirements](../production/requirements.html).
 
 ## Step 1: Download the latest release

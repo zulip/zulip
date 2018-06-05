@@ -12,7 +12,7 @@ through how.
 
 You'll [need a few things](../production/requirements.html) to run a production
 Zulip server.  Key requirements include:
-* a dedicated server or VM, running Ubuntu, with at least 2GB of RAM
+* a dedicated server or VM, running Debian or Ubuntu LTS, with at least 2GB of RAM
   (or 4GB for a large site);
 * a valid DNS name and SSL certificates;
 * a way to send outgoing email.

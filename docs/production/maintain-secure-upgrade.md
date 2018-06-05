@@ -39,11 +39,13 @@ up. Upgrading will result in some brief downtime for the service, which should b
 under 30 seconds unless there is an expensive transition involved. Unless you
 have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
+### Upgrading the distro
+
 Note that upgrading an existing Zulip production server from Ubuntu
-14.04 Trusty to Ubuntu 16.04 Xenial will require significant manual
-intervention on your part to migrate the data in the database from
-Postgres 9.3 to Postgres 9.5.  Contributions on testing and
-documenting this process are welcome!
+14.04 Trusty to Ubuntu 16.04 Xenial (or 16.04 Xenial to 18.04 Bionic)
+will require significant manual intervention on your part to migrate
+the data in the database from Postgres 9.3 to Postgres 9.5.
+Contributions on testing and documenting this process are welcome!
 
 ### Preserving local changes to configuration files
 
@@ -93,13 +95,13 @@ If required, you can update your settings by editing `/etc/zulip/settings.py`
 and then run `/home/zulip/deployments/current/scripts/restart-server` to
 restart the server.
 
-### Applying Ubuntu system updates
+### Applying system updates
 
 The Zulip upgrade script will automatically run `apt-get update` and
 then `apt-get upgrade`, to make sure you have any new versions of
 dependencies (this will also update system packages).  We assume that
-you will install Ubuntu security updates regularly, according to your
-usual security practices for an Ubuntu server.
+you will install security updates from `apt` regularly, according to
+your usual security practices for a production server.
 
 If you'd like to minimize downtime when installing a Zulip server
 upgrade, you may want to do an `apt-get upgrade` (and then restart the
