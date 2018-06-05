@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+"use strict";
+
+const path = require('path');
+const fs = require('fs');
+const { spawn } = require('child_process');
+
+const additonalWebpackArgs = process.argv.slice(2);
+const webpackArgs = [
+    './node_modules/.bin/webpack-dev-server', '--config',
+    'tools/webpack.config.ts', '--hot',
+    ...additonalWebpackArgs,
+];
+
+const ROOT_DIR = path.join(__dirname, '..');
+const webpackFiles = ['webpack.config.ts', 'webpack.assets.json']
+    .map(file => path.join(__dirname, file));
+
+// creates a new webpack-dev-server process
+// when needed
+function createWebpackDevProcess() {
+    const proc = spawn('node', webpackArgs, {
+        cwd: ROOT_DIR,
+        stdio: 'inherit',
+        detached: true,
+    });
+
+    return proc;
+}
+
+let webpackProcess = createWebpackDevProcess();
+function killWebpackProcess() {
+    // kill the whole process range including
+    // the process webpack-dev-server may have spawned.
+    process.kill(-webpackProcess.pid);
+}
+
+// restarts the webpack dev server if either of two
+// config files are changed
+function restartProcess() {
+    const msg = 'Restarting webpack process, due to changes in webpack config';
+    process.stdout.write(`${msg}...\n`);
+    killWebpackProcess();
+    webpackProcess = createWebpackDevProcess();
+}
+
+
+// watch the files, and restart the process
+// if it changes.
+webpackFiles.forEach(file => {
+    fs.watchFile(file, restartProcess);
+});
+
+// kill the running webpack process before exiting
+process.on('SIGINT', killWebpackProcess);
+process.on('SIGTERM', killWebpackProcess);

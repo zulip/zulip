@@ -32,17 +32,11 @@ def run(quiet):
 def run_watch(host, port, minify, disable_host_check):
     # type: (str, str, bool, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    webpack_dev_args = ['node', 'node_modules/.bin/webpack-dev-server']
+    webpack_dev_args = ['./tools/webpack-dev-server']
     webpack_dev_args += [
-        '--config',
-        'tools/webpack.config.ts',
         '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
         '--host', host,
-        '--port', port,
-        # We add the hot flag using the cli because it takes care
-        # of addition to entry points and adding the plugin
-        # automatically
-        '--hot'
+        '--port', port
     ]
     if minify:
         webpack_dev_args.append('--optimize-minimize')
