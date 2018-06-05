@@ -619,6 +619,29 @@ class GitHubAuthBackendTest(ZulipTestCase):
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
 
+    def test_login_url(self) -> None:
+        result = self.client_get('/accounts/login/social/github')
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+
+    def test_login_url_with_next_param(self) -> None:
+        result = self.client_get('/accounts/login/social/github',
+                                 {'next': "/image_path"})
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+        self.assertIn('image_path', result.url)
+
+        result = self.client_get('/accounts/login/social/github',
+                                 {'next': '/#narrow/stream/7-test-here'})
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=0', result.url)
+        self.assertIn('narrow', result.url)
+
+    def test_signup_url(self) -> None:
+        result = self.client_get('/accounts/register/social/github')
+        self.assertIn(reverse('social:begin', args=['github']), result.url)
+        self.assertIn('is_signup=1', result.url)
+
 class GitHubAuthBackendLegacyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -902,29 +925,6 @@ class GitHubAuthBackendLegacyTest(ZulipTestCase):
             self.assert_in_response('Your email address, nonexisting@phantom.com, is not in one of the domains '
                                     'that are allowed to register for accounts in this organization.',
                                     result)
-
-    def test_login_url(self) -> None:
-        result = self.client_get('/accounts/login/social/github')
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-
-    def test_login_url_with_next_param(self) -> None:
-        result = self.client_get('/accounts/login/social/github',
-                                 {'next': "/image_path"})
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-        self.assertIn('image_path', result.url)
-
-        result = self.client_get('/accounts/login/social/github',
-                                 {'next': '/#narrow/stream/7-test-here'})
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=0', result.url)
-        self.assertIn('narrow', result.url)
-
-    def test_signup_url(self) -> None:
-        result = self.client_get('/accounts/register/social/github')
-        self.assertIn(reverse('social:begin', args=['github']), result.url)
-        self.assertIn('is_signup=1', result.url)
 
     def test_github_complete(self) -> None:
         from social_django import utils
