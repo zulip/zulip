@@ -1464,22 +1464,23 @@ class Attachment(AbstractAttachment):
 def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
-        messages = attachment.messages.all()
-
-        if user_profile == attachment.owner:
-            # If you own the file, you can access it.
-            return True
-        elif attachment.is_realm_public and attachment.realm == user_profile.realm:
-            # Any user in the realm can access realm-public files
-            return True
-        elif UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-            # If it was sent in a private message or private stream
-            # message, then anyone who received that message can access it.
-            return True
-        else:
-            return False
     except Attachment.DoesNotExist:
         return None
+
+    if user_profile == attachment.owner:
+        # If you own the file, you can access it.
+        return True
+    if attachment.is_realm_public and attachment.realm == user_profile.realm:
+        # Any user in the realm can access realm-public files
+        return True
+
+    messages = attachment.messages.all()
+    if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
+        # If it was sent in a private message or private stream
+        # message, then anyone who received that message can access it.
+        return True
+
+    return False
 
 def get_old_unclaimed_attachments(weeks_ago: int) -> Sequence[Attachment]:
     # TODO: Change return type to QuerySet[Attachment]
