@@ -16,6 +16,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     POSTRequestMock,
     use_s3_backend,
+    queries_captured,
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.upload import sanitize_name, S3UploadBackend, \
@@ -27,7 +28,8 @@ from zerver.lib.upload import sanitize_name, S3UploadBackend, \
 import zerver.lib.upload
 from zerver.models import Attachment, get_user, \
     get_old_unclaimed_attachments, Message, UserProfile, Stream, Realm, \
-    RealmDomain, RealmEmoji, get_realm, get_system_bot
+    RealmDomain, RealmEmoji, get_realm, get_system_bot, \
+    validate_attachment_request
 from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
@@ -204,12 +206,6 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
 
         result = self.client_post("/json/user_uploads")
         self.assert_json_error(result, "You must specify a file to upload")
-
-    def test_download_non_existent_file(self) -> None:
-        self.login(self.example_email("hamlet"))
-        response = self.client_get('/user_uploads/unk/nonexistent_file')
-        self.assertEqual(response.status_code, 404)
-        self.assertIn('File not found', str(response.content))
 
     # This test will go through the code path for uploading files onto LOCAL storage
     # when zulip is in DEVELOPMENT mode.
@@ -527,43 +523,170 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         self.assert_in_response("You are not authorized to view this file.", response)
 
     def test_file_download_authorization_invite_only(self) -> None:
-        subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
-        unsubscribed_users = [self.example_email("othello"), self.example_email("prospero")]
-        realm = get_realm("zulip")
-        for email in subscribed_users:
-            self.subscribe(get_user(email, realm), "test-subscribe")
+        user = self.example_user("hamlet")
+        subscribed_emails = [user.email, self.example_email("cordelia")]
+        unsubscribed_emails = [self.example_email("othello"), self.example_email("prospero")]
+        stream_name = "test-subscribe"
+        self.make_stream(stream_name, realm=user.realm, invite_only=True, history_public_to_subscribers=False)
 
-        # Make the stream private
-        stream = Stream.objects.get(name='test-subscribe')
-        stream.invite_only = True
-        stream.save()
+        for email in subscribed_emails:
+            self.subscribe(get_user(email, user.realm), stream_name)
 
-        self.login(self.example_email("hamlet"))
+        self.login(user.email)
         fp = StringIO("zulip!")
         fp.name = "zulip.txt"
         result = self.client_post("/json/user_uploads", {'file': fp})
         uri = result.json()['uri']
         fp_path_id = re.sub('/user_uploads/', '', uri)
         body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
-        self.send_stream_message(self.example_email("hamlet"), "test-subscribe", body, "test")
+        self.send_stream_message(user.email, stream_name, body, "test")
         self.logout()
 
-        # Subscribed user should be able to view file
-        for user in subscribed_users:
-            self.login(user)
+        # Owner user should be able to view file
+        self.login(user.email)
+        with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 200)
             data = b"".join(response.streaming_content)
             self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 5)
+
+        # Subscribed user who recieved the message should be able to view file
+        self.login(subscribed_emails[1])
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 6)
+
+        def assert_cannot_access_file(user_email: str) -> None:
+            response = self.api_get(user_email, uri)
+            self.assertEqual(response.status_code, 403)
+            self.assert_in_response("You are not authorized to view this file.", response)
+
+        late_subscribed_user = self.example_user("aaron")
+        self.subscribe(late_subscribed_user, stream_name)
+        assert_cannot_access_file(late_subscribed_user.email)
+
+        # Unsubscribed user should not be able to view file
+        for unsubscribed_user in unsubscribed_emails:
+            assert_cannot_access_file(unsubscribed_user)
+
+    def test_file_download_authorization_invite_only_with_shared_history(self) -> None:
+        user = self.example_user("hamlet")
+        subscribed_emails = [user.email, self.example_email("polonius")]
+        unsubscribed_emails = [self.example_email("othello"), self.example_email("prospero")]
+        stream_name = "test-subscribe"
+        self.make_stream(stream_name, realm=user.realm, invite_only=True, history_public_to_subscribers=True)
+
+        for email in subscribed_emails:
+            self.subscribe(get_user(email, user.realm), stream_name)
+
+        self.login(user.email)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        uri = result.json()['uri']
+        fp_path_id = re.sub('/user_uploads/', '', uri)
+        body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
+        self.send_stream_message(user.email, stream_name, body, "test")
+        self.logout()
+
+        # Add aaron as a subscribed after the message was sent
+        late_subscribed_user = self.example_user("aaron")
+        self.subscribe(late_subscribed_user, stream_name)
+        subscribed_emails.append(late_subscribed_user.email)
+
+        # Owner user should be able to view file
+        self.login(user.email)
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 5)
+
+        # Originally subscribed user should be able to view file
+        self.login(subscribed_emails[1])
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        self.assertEqual(len(queries), 6)
+
+        # Subscribed user who did not receive the message should also be able to view file
+        self.login(late_subscribed_user.email)
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        self.logout()
+        # It takes a few extra queries to verify access because of shared history.
+        self.assertEqual(len(queries), 9)
+
+        def assert_cannot_access_file(user_email: str) -> None:
+            self.login(user_email)
+            with queries_captured() as queries:
+                response = self.client_get(uri)
+            self.assertEqual(response.status_code, 403)
+            # It takes a few extra queries to verify lack of access with shared history.
+            self.assertEqual(len(queries), 8)
+            self.assert_in_response("You are not authorized to view this file.", response)
             self.logout()
 
         # Unsubscribed user should not be able to view file
-        for user in unsubscribed_users:
-            self.login(user)
+        for unsubscribed_user in unsubscribed_emails:
+            assert_cannot_access_file(unsubscribed_user)
+
+    def test_multiple_message_attachment_file_download(self) -> None:
+        hamlet = self.example_user("hamlet")
+        for i in range(0, 5):
+            stream_name = "test-subscribe %s" % (i,)
+            self.make_stream(stream_name, realm=hamlet.realm, invite_only=True, history_public_to_subscribers=True)
+            self.subscribe(hamlet, stream_name)
+
+        self.login(hamlet.email)
+        fp = StringIO("zulip!")
+        fp.name = "zulip.txt"
+        result = self.client_post("/json/user_uploads", {'file': fp})
+        uri = result.json()['uri']
+        fp_path_id = re.sub('/user_uploads/', '', uri)
+        for i in range(20):
+            body = "First message ...[zulip.txt](http://localhost:9991/user_uploads/" + fp_path_id + ")"
+            self.send_stream_message(self.example_email("hamlet"), "test-subscribe %s" % (i % 5,), body, "test")
+        self.logout()
+
+        user = self.example_user("aaron")
+        self.login(user.email)
+        with queries_captured() as queries:
             response = self.client_get(uri)
             self.assertEqual(response.status_code, 403)
             self.assert_in_response("You are not authorized to view this file.", response)
-            self.logout()
+        self.assertEqual(len(queries), 8)
+
+        self.subscribe(user, "test-subscribe 1")
+        self.subscribe(user, "test-subscribe 2")
+
+        with queries_captured() as queries:
+            response = self.client_get(uri)
+            self.assertEqual(response.status_code, 200)
+            data = b"".join(response.streaming_content)
+            self.assertEqual(b"zulip!", data)
+        # If we were accidentally one query per message, this would be 20+
+        self.assertEqual(len(queries), 9)
+
+        with queries_captured() as queries:
+            self.assertTrue(validate_attachment_request(user, fp_path_id))
+        self.assertEqual(len(queries), 6)
+
+        self.logout()
 
     def test_file_download_authorization_public(self) -> None:
         subscribed_users = [self.example_email("hamlet"), self.example_email("iago")]
