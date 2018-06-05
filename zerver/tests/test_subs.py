@@ -848,7 +848,7 @@ class StreamAdminTest(ZulipTestCase):
         those you aren't on.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=21, is_admin=True, is_subbed=True, invite_only=False,
+            query_count=22, is_admin=True, is_subbed=True, invite_only=False,
             other_user_subbed=True)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 1)
@@ -931,7 +931,7 @@ class StreamAdminTest(ZulipTestCase):
         fails gracefully.
         """
         result = self.attempt_unsubscribe_of_principal(
-            query_count=11, is_admin=True, is_subbed=False, invite_only=False,
+            query_count=12, is_admin=True, is_subbed=False, invite_only=False,
             other_user_subbed=False)
         json = self.assert_json_success(result)
         self.assertEqual(len(json["removed"]), 0)
@@ -1978,7 +1978,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 43)
+        self.assert_length(queries, 44)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -2006,7 +2006,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([self.test_email])),
                 )
-        self.assert_length(queries, 16)
+        self.assert_length(queries, 17)
 
         self.assert_length(events, 2)
         add_event, add_peer_event = events
@@ -2178,6 +2178,10 @@ class SubscriptionAPITest(ZulipTestCase):
         user3 = self.example_user("hamlet")
         user4 = self.example_user("iago")
         user5 = self.example_user("AARON")
+        user6 = self.example_user("polonius")
+        user7 = self.example_user("ZOE")
+        user7.is_guest = True
+        user7.save(update_fields=['is_guest'])
 
         stream1 = self.make_stream('stream1')
         stream2 = self.make_stream('stream2')
@@ -2186,6 +2190,7 @@ class SubscriptionAPITest(ZulipTestCase):
         self.subscribe(user1, 'stream1')
         self.subscribe(user2, 'stream1')
         self.subscribe(user3, 'stream1')
+        self.subscribe(user7, 'stream1')
 
         self.subscribe(user2, 'stream2')
 
@@ -2213,9 +2218,11 @@ class SubscriptionAPITest(ZulipTestCase):
         # POSITIVE CASES FIRST
         self.assertIn((user3.id, user1.id, 'stream1'), notifications)
         self.assertIn((user4.id, user1.id, 'stream1'), notifications)
+        self.assertIn((user7.id, user1.id, 'stream1'), notifications)
 
         self.assertIn((user3.id, user2.id, 'stream1'), notifications)
         self.assertIn((user4.id, user2.id, 'stream1'), notifications)
+        self.assertIn((user7.id, user2.id, 'stream1'), notifications)
 
         self.assertIn((user1.id, user2.id, 'stream2'), notifications)
         self.assertIn((user3.id, user2.id, 'stream2'), notifications)
@@ -2241,6 +2248,13 @@ class SubscriptionAPITest(ZulipTestCase):
 
         # don't send notifications to unsubscribed non realm admin users for private streams
         self.assertNotIn((user5.id, user1.id, 'private_stream'), notifications)
+
+        # don't send notifications to unsubscribed guest users for any type of stream
+        self.assertNotIn((user6.id, user1.id, 'stream1'), notifications)
+        self.assertNotIn((user6.id, user2.id, 'stream1'), notifications)
+        self.assertNotIn((user6.id, user2.id, 'stream2'), notifications)
+        self.assertNotIn((user7.id, user2.id, 'stream2'), notifications)
+        self.assertNotIn((user6.id, user1.id, 'private_stream'), notifications)
 
     def test_bulk_subscribe_MIT(self) -> None:
         realm = get_realm("zephyr")
@@ -2275,8 +2289,11 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams,
                     dict(principals=ujson.dumps([self.test_email])),
                 )
-        # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 21)
+        # For each stream, we have to check for subscribed guest users,
+        # so the number of queries performed have a complexity of O(stream),
+        # more specifically proportional to two times of streams because we
+        # perform two queries  for each stream in `public_stream_user_ids`
+        self.assert_length(queries, 60)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """

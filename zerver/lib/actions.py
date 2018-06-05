@@ -2410,7 +2410,7 @@ def get_peer_user_ids_for_stream_change(stream: Stream,
         # We now do "peer_add" or "peer_remove" events even for streams
         # users were never subscribed to, in order for the neversubscribed
         # structure to stay up-to-date.
-        return set(active_non_guest_user_ids(stream.realm_id)) - set(altered_user_ids)
+        return public_stream_user_ids(stream) - set(altered_user_ids)
 
 def get_user_ids_for_streams(streams: Iterable[Stream]) -> Dict[int, List[int]]:
     stream_ids = [stream.id for stream in streams]
