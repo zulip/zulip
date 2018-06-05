@@ -488,7 +488,7 @@ ALLOWED_HOSTS += REALM_HOSTS.values()
 from django.template.loaders import app_directories
 class TwoFactorLoader(app_directories.Loader):
     def get_dirs(self):
-        dirs = super(TwoFactorLoader, self).get_dirs()
+        dirs = super().get_dirs()
         return [d for d in dirs if 'two_factor' in d]
 
 MIDDLEWARE = (
