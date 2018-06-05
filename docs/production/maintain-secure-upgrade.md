@@ -127,6 +127,29 @@ supervisorctl start all
 postgres, and then start the Zulip server again, and you'll be back in
 business.
 
+#### Disabling unattended upgrades
+
+**Important**: We recommend that you
+[disable Ubuntu's unattended-upgrades][disable-unattended-upgrades],
+and instead install apt upgrades manually.  With unattended upgrades
+enabled, the moment a new Postgres release is published, your Zulip
+server will have its postgres server upgraded (and thus restarted).
+
+When one of the services Zulip depends on (postgres, memcached, redis,
+rabbitmq) is restarted, that services will disconnect everything using
+them (like the Zulip server), and every operation that Zulip does
+which uses that service will throw an exception (and send you an error
+report email).  These apparently "random errors" can be confusing and
+might cause you to worry incorrectly about the stability of the Zulip
+software, which in fact the problem is that Ubuntu automatically
+upgraded and then restarted key Zulip dependencies.
+
+Instead, we recommend installing updates for these services manually,
+and then restarting the Zulip server with
+`/home/zulip/deployments/current/scripts/restart-server` afterwards.
+
+[disable-unattended-upgrades]: https://linoxide.com/ubuntu-how-to/enable-disable-unattended-upgrades-ubuntu-16-04/
+
 ### API and your Zulip URL
 
 To use the Zulip API with your Zulip server, you will need to use the
