@@ -189,7 +189,7 @@ def build_custom_checkers(by_lang):
         {'pattern': '\+.*i18n\.t\(.+\)',
          'description': 'Do not concatenate i18n strings'},
         {'pattern': '[.]includes[(]',
-         'exclude': ['frontend_tests/'],
+         'exclude': ['frontend_tests/', 'tools/'],
          'description': '.includes() is incompatible with Internet Explorer. Use .indexOf() !== -1 instead.'},
         {'pattern': '[.]html[(]',
          'exclude_pattern': '[.]html[(]("|\'|templates|html|message.content|sub.rendered_description|i18n.t|rendered_|$|[)]|error_text|widget_elem|[$]error|[$][(]"<p>"[)])',

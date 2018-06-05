@@ -75,9 +75,9 @@ if not options.force:
         print('If you really know what you are doing, use --force to run anyway.')
         sys.exit(1)
 
+user_id = os.getuid()
+user_name = pwd.getpwuid(user_id).pw_name
 if options.interface is None:
-    user_id = os.getuid()
-    user_name = pwd.getpwuid(user_id).pw_name
     if user_name in ["vagrant", "zulipdev"]:
         # In the Vagrant development environment, we need to listen on
         # all ports, and it's safe to do so, because Vagrant is only
@@ -168,6 +168,8 @@ else:
     webpack_cmd = ['./tools/webpack', '--watch', '--port', str(webpack_port)]
     if options.minify:
         webpack_cmd.append('--minify')
+    if user_name is 'vagrant':
+        webpack_cmd.append('--poll')
     if options.interface is None:
         # If interface is None and we're listening on all ports, we also need
         # to disable the webpack host check so that webpack will serve assets.

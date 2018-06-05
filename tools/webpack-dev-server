@@ -4,8 +4,10 @@
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const { promisify } = require('util');
 
-const additonalWebpackArgs = process.argv.slice(2);
+const additonalWebpackArgs = process.argv.slice(3);
+const usePolling = process.argv.includes('--poll=True');
 const webpackArgs = [
     './node_modules/.bin/webpack-dev-server', '--config',
     'tools/webpack.config.ts', '--hot',
@@ -44,12 +46,65 @@ function restartProcess() {
     webpackProcess = createWebpackDevProcess();
 }
 
+const statFile = promisify(fs.stat);
+const mtimes = new Map();
 
-// watch the files, and restart the process
-// if it changes.
+// set initial mtimes
 webpackFiles.forEach(file => {
-    fs.watchFile(file, restartProcess);
+    const stats = fs.statSync(file);
+    mtimes.set(file, stats.mtime);
 });
+
+// get the stats of both config files and
+// if they were changed return true
+async function getConfigStatus() {
+    const statPromises = [];
+    webpackFiles.forEach(file => {
+        statPromises.push(statFile(file));
+    });
+
+    const stats = await Promise.all(statPromises);
+    let configChanged = false;
+    stats.forEach((stat, index) => {
+        const currentFile = webpackFiles[index];
+        const changed = stat.mtime > mtimes.get(currentFile);
+        if (changed) {
+            configChanged = true;
+            mtimes.set(currentFile, stat.mtime);
+        }
+    });
+
+    return configChanged;
+}
+
+async function checkConfig() {
+    const configChanged = await getConfigStatus();
+    if (configChanged) {
+        restartProcess();
+    }
+}
+
+// mimick python's time.sleep
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+if (usePolling) {
+    async function pollForChanges() {
+        while (true) {
+            await checkConfig();
+            await sleep(3000);
+        }
+    }
+
+    pollForChanges();
+} else {
+    // watch the files, and restart the process
+    // if it changes.
+    webpackFiles.forEach(file => {
+        fs.watchFile(file, restartProcess);
+    });
+}
 
 // kill the running webpack process before exiting
 process.on('SIGINT', killWebpackProcess);

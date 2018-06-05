@@ -29,10 +29,10 @@ def run(quiet):
         print('Starting webpack compilation')
     subprocess.check_call(webpack_args)
 
-def run_watch(host, port, minify, disable_host_check):
-    # type: (str, str, bool, bool) -> None
+def run_watch(host, port, minify, disable_host_check, poll):
+    # type: (str, str, bool, bool, bool) -> None
     """watches and rebuilds on changes, serving files from memory via webpack-dev-server"""
-    webpack_dev_args = ['./tools/webpack-dev-server']
+    webpack_dev_args = ['./tools/webpack-dev-server', '--poll=' + str(poll)]
     webpack_dev_args += [
         '--allowed-hosts', ','.join([host, '.zulipdev.com', '.zulipdev.org']),
         '--host', host,
@@ -73,6 +73,9 @@ parser.add_argument('--test',
 parser.add_argument('--quiet',
                     action='store_true', dest='quiet', default=False,
                     help='Minimizes webpack output while running')
+parser.add_argument('--poll',
+                    action='store_true', dest='poll', default=False,
+                    help='Runs ./tools/webpack-dev to use polling.')
 parser.add_argument('--watch',
                     action='store_true', dest='watch', default=False,
                     help='watch for changes to source files (for development)')
@@ -93,6 +96,7 @@ args = parser.parse_args()
 if args.test:
     run_test()
 elif args.watch:
-    run_watch(args.host, args.port, args.minify, args.disable_host_check)
+    run_watch(args.host, args.port, args.minify,
+              args.disable_host_check, args.poll)
 else:
     run(args.quiet)
