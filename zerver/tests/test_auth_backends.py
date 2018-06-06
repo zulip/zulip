@@ -336,6 +336,15 @@ class AuthBackendTest(ZulipTestCase):
             'token_type': 'bearer'
         }
         account_data_dict = dict(email=user.email, name=user.full_name)
+        email_data = [
+            dict(email=account_data_dict["email"],
+                 verified=True,
+                 primary=True),
+            dict(email="nonprimary@example.com",
+                 verified=True),
+            dict(email="ignored@example.com",
+                 verified=False),
+        ]
         httpretty.enable()
         httpretty.register_uri(
             httpretty.POST,
@@ -349,6 +358,12 @@ class AuthBackendTest(ZulipTestCase):
             status=200,
             body=json.dumps(account_data_dict)
         )
+        httpretty.register_uri(
+            httpretty.GET,
+            "https://api.github.com/user/emails",
+            status=200,
+            body=json.dumps(email_data)
+        )
 
         backend = GitHubAuthBackend()
         backend.strategy = DjangoStrategy(storage=BaseDjangoStorage())
@@ -361,8 +376,9 @@ class AuthBackendTest(ZulipTestCase):
             result = orig_authenticate(backend, *args, **kwargs)
             return result
         backend.authenticate = patched_authenticate
-        good_kwargs = dict(backend=backend, strategy=backend.strategy, storage=backend.strategy.storage,
-                           response=account_data_dict,
+        good_kwargs = dict(backend=backend, strategy=backend.strategy,
+                           storage=backend.strategy.storage,
+                           response=token_data_dict,
                            subdomain='zulip')
         bad_kwargs = dict(subdomain='acme')
         with mock.patch('zerver.views.auth.redirect_and_log_into_subdomain',
@@ -410,6 +426,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
                            is_signup: Optional[str]=None,
+                           email_not_verified: bool=False,
                            next: str='') -> HttpResponse:
         url = "/accounts/login/social/github"
         params = {}
@@ -442,6 +459,22 @@ class GitHubAuthBackendTest(ZulipTestCase):
             'access_token': 'foobar',
             'token_type': 'bearer'
         }
+        if email_not_verified:
+            email_data = [
+                dict(email=account_data_dict["email"],
+                     verified=False,
+                     primary=True),
+            ]
+        else:
+            email_data = [
+                dict(email=account_data_dict["email"],
+                     verified=True,
+                     primary=True),
+                dict(email="ignored@example.com",
+                     verified=False),
+                dict(email="notprimary@example.com",
+                     verified=True),
+            ]
         # We register callbacks for the key URLs on github.com that
         # /complete/github will call
         httpretty.enable()
@@ -456,6 +489,12 @@ class GitHubAuthBackendTest(ZulipTestCase):
             "https://api.github.com/user",
             status=200,
             body=json.dumps(account_data_dict)
+        )
+        httpretty.register_uri(
+            httpretty.GET,
+            "https://api.github.com/user/emails",
+            status=200,
+            body=json.dumps(email_data)
         )
 
         parsed_url = urllib.parse.urlparse(result.url)
@@ -487,6 +526,17 @@ class GitHubAuthBackendTest(ZulipTestCase):
         uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_email_not_verified(self) -> None:
+        account_data_dict = dict(email=self.email, name=self.name)
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.github_oauth2_test(account_data_dict,
+                                             subdomain='zulip',
+                                             email_not_verified=True)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed "
+                                                 "because user has no verified emails")
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_github_oauth2_github_team_not_member_failed(self) -> None:

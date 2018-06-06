@@ -10,6 +10,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpResponse
 from oauth2client.crypt import AppIdentityError
+from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.base import BaseAuth
@@ -380,10 +381,20 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if 'auth_failed_reason' in kwargs.get('response', {}):
         return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
         return None
-    elif hasattr(backend, 'get_validated_email'):
+    elif hasattr(backend, 'get_verified_emails'):
         # Some social backends, like GitHubAuthBackend, don't guarantee that
         # the `details` data is validated.
-        validated_email = backend.get_validated_email(*args, **kwargs)
+        verified_emails = backend.get_verified_emails(*args, **kwargs)
+        if len(verified_emails) == 0:
+            # TODO: Provide a nice error message screen to the user
+            # for this case, rather than just logging a warning.
+            logging.warning("Social auth (%s) failed because user has no verified emails" %
+                            (backend.auth_backend_name,))
+            return_data["email_not_verified"] = True
+            return None
+        # TODO: ideally, we'd prompt the user for which email they
+        # want to use with another pipeline stage here.
+        validated_email = verified_emails[0]
     else:  # nocoverage
         # This code path isn't used by GitHubAuthBackend
         validated_email = kwargs["details"].get("email")
@@ -434,6 +445,7 @@ def social_auth_finish(backend: Any,
     user_profile = kwargs['user_profile']
     return_data = kwargs['return_data']
 
+    no_verified_email = return_data.get("email_not_verified")
     auth_backend_disabled = return_data.get('auth_backend_disabled')
     inactive_user = return_data.get('inactive_user')
     inactive_realm = return_data.get('inactive_realm')
@@ -445,7 +457,7 @@ def social_auth_finish(backend: Any,
     if invalid_realm:
         from zerver.views.auth import redirect_to_subdomain_login_url
         return redirect_to_subdomain_login_url()
-    if auth_backend_disabled or inactive_user or inactive_realm:
+    if auth_backend_disabled or inactive_user or inactive_realm or no_verified_email:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
         return None
@@ -490,8 +502,26 @@ def social_auth_finish(backend: Any,
 class GitHubAuthBackend(GithubOAuth2):
     auth_backend_name = "GitHub"
 
-    def get_validated_email(self, *args: Any, **kwargs: Any) -> Optional[str]:
-        return kwargs['response']['email']
+    def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:
+        access_token = kwargs["response"]["access_token"]
+        try:
+            emails = self._user_data(access_token, '/emails')
+        except (HTTPError, ValueError, TypeError):  # nocoverage
+            # We don't really need an explicit test for this code
+            # path, since the outcome will be the same as any other
+            # case without any verified emails
+            emails = []
+
+        verified_emails = []
+        for email_obj in emails:
+            if not email_obj.get("verified"):
+                continue
+            # TODO: When we add a screen to let the user select an email, remove this line.
+            if not email_obj.get("primary"):
+                continue
+            verified_emails.append(email_obj["email"])
+
+        return verified_emails
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
         """This patched user_data function lets us combine together the 3
