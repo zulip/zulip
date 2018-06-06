@@ -171,7 +171,7 @@ if __name__ == "__main__":
     os.environ["http_proxy"] = ""
     os.environ["https_proxy"] = ""
 
-    from zerver.lib.test_fixtures import is_template_database_current
+    from zerver.lib.test_fixtures import template_database_status, run_db_migrations
 
     from tools.lib.test_script import (
         get_provisioning_status,
@@ -344,10 +344,13 @@ if __name__ == "__main__":
     # files, since part of setup is importing the models for all applications in INSTALLED_APPS.
     django.setup()
 
-    if options.generate_fixtures or not is_template_database_current():
+    test_template_db_status = template_database_status()
+    if options.generate_fixtures or test_template_db_status == 'needs_rebuild':
         generate_fixtures_command = [os.path.join(TOOLS_DIR, 'setup', 'generate-fixtures')]
         generate_fixtures_command.append('--force')
         subprocess.call(generate_fixtures_command)
+    elif test_template_db_status == 'run_migrations':
+        run_db_migrations()
 
     subprocess.check_call(['tools/webpack', '--test'])
 
