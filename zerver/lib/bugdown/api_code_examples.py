@@ -7,7 +7,6 @@ import inspect
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from typing import Any, Dict, Optional, List
-from yamole import YamoleParser
 import markdown
 
 import zerver.lib.api_test_helpers

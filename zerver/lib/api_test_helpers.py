@@ -1,6 +1,5 @@
 from typing import Dict, Any, Optional, Iterable
 from io import StringIO
-from yamole import YamoleParser
 
 import json
 import os
