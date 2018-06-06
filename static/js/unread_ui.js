@@ -108,6 +108,8 @@ exports.initialize = function () {
         pointer.fast_forward_pointer();
         $("#yes-bankrupt").hide();
         $("#no-bankrupt").hide();
+        $('#bankruptcy-loader').css('margin', '0 auto');
+        loading.make_indicator($('#bankruptcy-loader'), {text: i18n.t('Marking all messages as read.')});
         $(this).after($("<div>").addClass("alert alert-info settings_committed")
             .text(i18n.t("Bringing you to your latest messages…")));
     });
