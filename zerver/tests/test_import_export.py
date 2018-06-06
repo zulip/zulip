@@ -325,6 +325,10 @@ class ImportExportTest(ZulipTestCase):
         record = data['zerver_attachment'][0]
         self.assertEqual(record['path_id'], attachment_path_id)
 
+        def check_variable_type(user_profile_id: int, realm_id: int) -> None:
+            self.assertEqual(type(user_profile_id), int)
+            self.assertEqual(type(realm_id), int)
+
         # Test uploads
         fields = attachment_path_id.split('/')
         fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[1], fields[2]))
@@ -333,6 +337,7 @@ class ImportExportTest(ZulipTestCase):
         records = full_data['uploads_dir_records']
         self.assertEqual(records[0]['path'], os.path.join(fields[1], fields[2]))
         self.assertEqual(records[0]['s3_path'], attachment_path_id)
+        check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
         # Test emojis
         fn = os.path.join(full_data['emoji_dir'], emoji_path)
@@ -342,6 +347,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(records[0]['file_name'], '1.png')
         self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
         self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
+        check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
@@ -352,6 +358,7 @@ class ImportExportTest(ZulipTestCase):
         record_s3_path = [record['s3_path'] for record in records]
         self.assertIn(original_avatar_path_id, record_path)
         self.assertIn(original_avatar_path_id, record_s3_path)
+        check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
