@@ -570,7 +570,9 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
 
-        var subsection = $(this).closest('.org-subsection-parent');
+        var subsection = $(e.target).closest('.org-subsection-parent');
+        subsection.find('.subsection-failed-status p').hide();
+        subsection.find('.save-button').show();
         var properties_elements = get_subsection_property_elements(subsection);
         var show_change_process_button = false;
         _.each(properties_elements , function (elem) {
@@ -595,7 +597,7 @@ exports.set_up = function () {
     exports.save_organization_settings = function (data, save_button, success_continuation) {
         var subsection_parent = save_button.closest('.org-subsection-parent');
         var save_btn_container = subsection_parent.find('.save-button-controls');
-        var failed_alert_elem = subsection_parent.prevAll('.admin-realm-failed-change-status:first').expectOne();
+        var failed_alert_elem = subsection_parent.find('.subsection-failed-status p');
         exports.change_save_button_state(save_btn_container, "saving");
         channel.patch({
             url: "/json/realm",
@@ -611,7 +613,8 @@ exports.set_up = function () {
             },
             error: function (xhr) {
                 exports.change_save_button_state(save_btn_container, "failed");
-                ui_report.error(i18n.t("Failed"), xhr, failed_alert_elem);
+                save_button.hide();
+                ui_report.error(i18n.t("Save failed"), xhr, failed_alert_elem);
             },
         });
     };

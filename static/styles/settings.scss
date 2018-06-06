@@ -541,6 +541,11 @@ input[type=checkbox].inline-block {
         margin: auto;
         text-align: center;
     }
+
+    #settings_page .save-button-controls {
+        display: block;
+        margin: 10px 0 0 0;
+    }
 }
 
 #organization .settings-section .settings-section-icon,
@@ -1524,6 +1529,14 @@ input[type=text]#settings_search {
     bottom: 0px;
 }
 
+.subsection-failed-status p {
+    background: #f2dede;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 0 0 0 5px;
+}
+
+
 @media (max-width: 953px) {
     .user-avatar-section,
     .realm-icon-section {
@@ -1538,6 +1551,10 @@ input[type=text]#settings_search {
 
     #settings_content .warning {
         display: none;
+    }
+
+    .subsection-failed-status p {
+        margin: 5px 0 0 0;
     }
 }
 
