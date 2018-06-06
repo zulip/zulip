@@ -232,8 +232,11 @@ class ImportExportTest(ZulipTestCase):
         result['attachment'] = read_file('attachment.json')
         result['message'] = read_file('messages-000001.json')
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
+        result['uploads_dir_records'] = read_file(os.path.join('uploads', 'records.json'))
         result['emoji_dir'] = os.path.join(output_dir, 'emoji')
+        result['emoji_dir_records'] = read_file(os.path.join('emoji', 'records.json'))
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
+        result['avatar_dir_records'] = read_file(os.path.join('avatars', 'records.json'))
         return result
 
     def _setup_export_files(self) -> Tuple[str, str, str, bytes]:
@@ -284,16 +287,28 @@ class ImportExportTest(ZulipTestCase):
         fn = os.path.join(full_data['uploads_dir'], path_id)
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
+        records = full_data['uploads_dir_records']
+        self.assertEqual(records[0]['path'], path_id)
+        self.assertEqual(records[0]['s3_path'], path_id)
 
         # Test emojis
         fn = os.path.join(full_data['emoji_dir'], emoji_path)
         fn = fn.replace('1.png', '')
         self.assertEqual('1.png', os.listdir(fn)[0])
+        records = full_data['emoji_dir_records']
+        self.assertEqual(records[0]['file_name'], '1.png')
+        self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
+        self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
         fn_data = open(fn, 'rb').read()
         self.assertEqual(fn_data, test_image)
+        records = full_data['avatar_dir_records']
+        record_path = [record['path'] for record in records]
+        record_s3_path = [record['s3_path'] for record in records]
+        self.assertIn(original_avatar_path_id, record_path)
+        self.assertIn(original_avatar_path_id, record_s3_path)
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
@@ -315,16 +330,28 @@ class ImportExportTest(ZulipTestCase):
         fn = os.path.join(full_data['uploads_dir'], os.path.join(fields[1], fields[2]))
         with open(fn) as f:
             self.assertEqual(f.read(), 'zulip!')
+        records = full_data['uploads_dir_records']
+        self.assertEqual(records[0]['path'], os.path.join(fields[1], fields[2]))
+        self.assertEqual(records[0]['s3_path'], attachment_path_id)
 
         # Test emojis
         fn = os.path.join(full_data['emoji_dir'], emoji_path)
         fn = fn.replace('1.png', '')
         self.assertIn('1.png', os.listdir(fn))
+        records = full_data['emoji_dir_records']
+        self.assertEqual(records[0]['file_name'], '1.png')
+        self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
+        self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
 
         # Test avatars
         fn = os.path.join(full_data['avatar_dir'], original_avatar_path_id)
         fn_data = open(fn, 'rb').read()
         self.assertEqual(fn_data, test_image)
+        records = full_data['avatar_dir_records']
+        record_path = [record['path'] for record in records]
+        record_s3_path = [record['s3_path'] for record in records]
+        self.assertIn(original_avatar_path_id, record_path)
+        self.assertIn(original_avatar_path_id, record_s3_path)
 
     def test_zulip_realm(self) -> None:
         realm = Realm.objects.get(string_id='zulip')
