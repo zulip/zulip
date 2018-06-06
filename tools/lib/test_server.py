@@ -19,7 +19,7 @@ TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, os.path.dirname(TOOLS_DIR))
 
-from zerver.lib.test_fixtures import is_template_database_current
+from zerver.lib.test_fixtures import run_generate_fixtures_if_required
 
 def set_up_django(external_host):
     # type: (str) -> None
@@ -62,10 +62,7 @@ def test_server_running(force: bool=False, external_host: str='testserver',
     set_up_django(external_host)
 
     if use_db:
-        generate_fixtures_command = ['tools/setup/generate-fixtures']
-        if not is_template_database_current():
-            generate_fixtures_command.append('--force')
-        subprocess.check_call(generate_fixtures_command)
+        run_generate_fixtures_if_required()
 
     # Run this not through the shell, so that we have the actual PID.
     run_dev_server_command = ['tools/run-dev.py', '--test']

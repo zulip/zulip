@@ -316,12 +316,12 @@ def main(options):
         # of the development environment (it just uses the development
         # environment to build a release tarball).
 
-        # Need to set up Django before using is_template_database_current
+        # Need to set up Django before using template_database_status
         os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
         import django
         django.setup()
 
-        from zerver.lib.test_fixtures import is_template_database_current
+        from zerver.lib.test_fixtures import template_database_status, run_db_migrations
 
         try:
             from zerver.lib.queue import SimpleQueueClient
@@ -336,20 +336,26 @@ def main(options):
             print("RabbitMQ is already configured.")
 
         migration_status_path = os.path.join(UUID_VAR_PATH, "migration_status_dev")
-        if options.is_force or not is_template_database_current(
-                migration_status=migration_status_path,
-                settings="zproject.settings",
-                database_name="zulip",
-        ):
+        dev_template_db_status = template_database_status(
+            migration_status=migration_status_path,
+            settings="zproject.settings",
+            database_name="zulip",
+        )
+        if options.is_force or dev_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-dev-db"])
             run(["tools/do-destroy-rebuild-database"])
-        else:
+        elif dev_template_db_status == 'run_migrations':
+            run_db_migrations('dev')
+        elif dev_template_db_status == 'current':
             print("No need to regenerate the dev DB.")
 
-        if options.is_force or not is_template_database_current():
+        test_template_db_status = template_database_status()
+        if options.is_force or test_template_db_status == 'needs_rebuild':
             run(["tools/setup/postgres-init-test-db"])
             run(["tools/do-destroy-rebuild-test-database"])
-        else:
+        elif test_template_db_status == 'run_migrations':
+            run_db_migrations('test')
+        elif test_template_db_status == 'current':
             print("No need to regenerate the test DB.")
 
         # Consider updating generated translations data: both `.mo`
