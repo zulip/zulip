@@ -31,6 +31,7 @@ from zerver.lib.actions import (
     do_delete_old_unclaimed_attachments,
     internal_send_private_message,
 )
+from zerver.lib.create_user import copy_user_settings
 from zerver.lib.request import JsonableError
 from zerver.views.upload import upload_file_backend, serve_local
 
@@ -821,6 +822,29 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertEqual(user_profile.avatar_version, version)
             version += 1
 
+    def test_copy_avatar_image(self) -> None:
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        source_user_profile = self.example_user('hamlet')
+        target_user_profile = self.example_user('iago')
+
+        copy_user_settings(source_user_profile, target_user_profile)
+
+        source_path_id = avatar_disk_path(source_user_profile)
+        target_path_id = avatar_disk_path(target_user_profile)
+        self.assertNotEqual(source_path_id, target_path_id)
+        self.assertEqual(open(source_path_id, "rb").read(), open(target_path_id, "rb").read())
+
+        source_original_path_id = avatar_disk_path(source_user_profile, original=True)
+        target_original_path_id = avatar_disk_path(target_user_profile, original=True)
+        self.assertEqual(open(source_original_path_id, "rb").read(), open(target_original_path_id, "rb").read())
+
+        source_medium_path_id = avatar_disk_path(source_user_profile, medium=True)
+        target_medium_path_id = avatar_disk_path(target_user_profile, medium=True)
+        self.assertEqual(open(source_medium_path_id, "rb").read(), open(target_medium_path_id, "rb").read())
+
     def test_invalid_avatars(self) -> None:
         """
         A PUT request to /json/users/me/avatar with an invalid file should fail.
@@ -1201,6 +1225,52 @@ class S3Test(ZulipTestCase):
         zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
         medium_image_key = bucket.get_key(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
+
+    @use_s3_backend
+    def test_copy_avatar_image(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
+
+        source_user_profile = self.example_user('hamlet')
+        target_user_profile = self.example_user('othello')
+
+        copy_user_settings(source_user_profile, target_user_profile)
+
+        source_path_id = user_avatar_path(source_user_profile)
+        target_path_id = user_avatar_path(target_user_profile)
+        self.assertNotEqual(source_path_id, target_path_id)
+
+        source_image_key = bucket.get_key(source_path_id)
+        target_image_key = bucket.get_key(target_path_id)
+        self.assertEqual(target_image_key.key, target_path_id)
+        self.assertEqual(source_image_key.content_type, target_image_key.content_type)
+        source_image_data = source_image_key.get_contents_as_string()
+        target_image_data = target_image_key.get_contents_as_string()
+        self.assertEqual(source_image_data, target_image_data)
+
+        source_original_image_path_id = source_path_id + ".original"
+        target_original_image_path_id = target_path_id + ".original"
+        target_original_image_key = bucket.get_key(target_original_image_path_id)
+        self.assertEqual(target_original_image_key.key, target_original_image_path_id)
+        source_original_image_key = bucket.get_key(source_original_image_path_id)
+        self.assertEqual(source_original_image_key.content_type, target_original_image_key.content_type)
+        source_image_data = source_original_image_key.get_contents_as_string()
+        target_image_data = target_original_image_key.get_contents_as_string()
+        self.assertEqual(source_image_data, target_image_data)
+
+        target_medium_path_id = target_path_id + "-medium.png"
+        source_medium_path_id = source_path_id + "-medium.png"
+        source_medium_image_key = bucket.get_key(source_medium_path_id)
+        target_medium_image_key = bucket.get_key(target_medium_path_id)
+        self.assertEqual(target_medium_image_key.key, target_medium_path_id)
+        self.assertEqual(source_medium_image_key.content_type, target_medium_image_key.content_type)
+        source_medium_image_data = source_medium_image_key.get_contents_as_string()
+        target_medium_image_data = target_medium_image_key.get_contents_as_string()
+        self.assertEqual(source_medium_image_data, target_medium_image_data)
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:

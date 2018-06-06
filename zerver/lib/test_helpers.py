@@ -187,11 +187,13 @@ def get_test_image_file(filename: str) -> IO[Any]:
     test_avatar_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tests/images'))
     return open(os.path.join(test_avatar_dir, filename), 'rb')
 
-def avatar_disk_path(user_profile: UserProfile, medium: bool=False) -> str:
+def avatar_disk_path(user_profile: UserProfile, medium: bool=False, original: bool=False) -> str:
     avatar_url_path = avatar_url(user_profile, medium)
     avatar_disk_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars",
                                     avatar_url_path.split("/")[-2],
                                     avatar_url_path.split("/")[-1].split("?")[0])
+    if original:
+        avatar_disk_path.replace(".png", ".original")
     return avatar_disk_path
 
 def make_client(name: str) -> Client:

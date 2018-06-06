@@ -135,6 +135,9 @@ class ZulipUploadBackend:
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         raise NotImplementedError()
 
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
+        raise NotImplementedError()
+
     def ensure_medium_avatar_image(self, user_profile: UserProfile) -> None:
         raise NotImplementedError()
 
@@ -317,6 +320,24 @@ class S3UploadBackend(ZulipUploadBackend):
         self.write_avatar_images(s3_file_name, target_user_profile,
                                  image_data, content_type)
 
+    def get_avatar_key(self, file_name: str) -> Key:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        bucket_name = settings.S3_AVATAR_BUCKET
+        bucket = get_bucket(conn, bucket_name)
+
+        key = bucket.get_key(file_name)
+        return key
+
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
+        s3_source_file_name = user_avatar_path(source_profile)
+        s3_target_file_name = user_avatar_path(target_profile)
+
+        key = self.get_avatar_key(s3_source_file_name + ".original")
+        image_data = key.get_contents_as_string()  # type: ignore # https://github.com/python/typeshed/issues/1552
+        content_type = key.content_type
+
+        self.write_avatar_images(s3_target_file_name, target_profile, image_data, content_type)  # type: ignore # image_data is `bytes`, boto subs are wrong
+
     def get_avatar_url(self, hash_key: str, medium: bool=False) -> str:
         bucket = settings.S3_AVATAR_BUCKET
         medium_suffix = "-medium.png" if medium else ""
@@ -413,6 +434,11 @@ def write_local_file(type: str, path: str, file_data: bytes) -> None:
     with open(file_path, 'wb') as f:
         f.write(file_data)
 
+def read_local_file(type: str, path: str) -> bytes:
+    file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, type, path)
+    with open(file_path, 'rb') as f:
+        return f.read()
+
 def get_local_file_path(path_id: str) -> Optional[str]:
     local_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
     if os.path.isfile(local_path):
@@ -468,6 +494,13 @@ class LocalUploadBackend(ZulipUploadBackend):
         # ?x=x allows templates to append additional parameters with &s
         medium_suffix = "-medium" if medium else ""
         return "/user_avatars/%s%s.png?x=x" % (hash_key, medium_suffix)
+
+    def copy_avatar(self, source_profile: UserProfile, target_profile: UserProfile) -> None:
+        source_file_path = user_avatar_path(source_profile)
+        target_file_path = user_avatar_path(target_profile)
+
+        image_data = read_local_file('avatars', source_file_path + '.original')
+        self.write_avatar_images(target_file_path, image_data)
 
     def upload_realm_icon_image(self, icon_file: File, user_profile: UserProfile) -> None:
         upload_path = os.path.join('avatars', str(user_profile.realm.id), 'realm')
@@ -532,6 +565,9 @@ def delete_message_image(path_id: str) -> bool:
 def upload_avatar_image(user_file: File, acting_user_profile: UserProfile,
                         target_user_profile: UserProfile) -> None:
     upload_backend.upload_avatar_image(user_file, acting_user_profile, target_user_profile)
+
+def copy_avatar(source_profile: UserProfile, target_profile: UserProfile) -> None:
+    upload_backend.copy_avatar(source_profile, target_profile)
 
 def upload_icon_image(user_file: File, user_profile: UserProfile) -> None:
     upload_backend.upload_realm_icon_image(user_file, user_profile)
