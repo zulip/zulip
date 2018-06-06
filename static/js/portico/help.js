@@ -27,6 +27,8 @@ function highlight_current_article() {
     }
 
     var article = $('.help .sidebar a[href="' + path[0] + '"]');
+    // Highlight current article link and the heading of the same
+    article.closest('ul').css('display', 'block');
     article.addClass('highlighted');
 }
 
