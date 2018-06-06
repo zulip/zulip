@@ -116,7 +116,7 @@ ceiling on how useful Slack can be to an organization.
 > our distributed team of engineers and PMs across 7+ time zones. We tried
 > Slack, Mattermost, and other team chat products that claim to support
 > threading, and nothing handles synchronous and asynchronous communication
-> so intuitively.&rdquo;
+> so intuitively.
 >
 > &mdash;Jacinda Shelly, CTO, Doctor On Demand
 
@@ -153,7 +153,7 @@ transform how your organization communicates:
 > Zulip’s topic-based threading helps us manage discussions with clarity,
 > ensuring the right people can pay attention to the right messages. This
 > makes our large-group discussion far more manageable than what we’ve
-> experienced with Skype and Slack.&rdquo;
+> experienced with Skype and Slack.
 >
 > &mdash;Grahame Grieve, founder, FHIR health care standards body
 

@@ -2193,27 +2193,20 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main blockquote {
-    border: none;
-    position: relative;
-}
-
-.portico-landing.why-page .main blockquote p {
-    font-weight: 400;
-    color: #525e7a;
+    background: white;
+    border-color: #65a195;
+    padding: 20px 30px;
     margin-top: 20px;
-    padding-left: 20px;
-}
-
-.portico-landing.why-page .main blockquote:before {
-    color: #ccc;
-    content: '\201c';
-    font-size: 10em;
-    position: absolute;
-    top: 40px;
-    left: -10px;
-    font-weight: 600;
-    color: rgba(221,234,244,0.7);
-    z-index: -10;
+    font-size: 1.05em;
+    p {
+        line-height: 1.5;
+        margin: 0;
+        font-weight: 400;
+        color: #414e68;
+    }
+    p:last-child {
+        margin-top: 10px;
+    }
 }
 
 .portico-landing.why-page .main img {
