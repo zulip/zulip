@@ -267,7 +267,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('.admin-realm-failed-change-status', function () {
+    casper.waitUntilVisible('#org-msg-editing .subsection-failed-status', function () {
         casper.test.assertSelectorHasText('#org-submit-msg-editing',
                                           'Save');
     });
