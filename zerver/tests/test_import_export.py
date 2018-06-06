@@ -588,3 +588,43 @@ class ImportExportTest(ZulipTestCase):
         avatar_path_id = user_avatar_path(user_profile) + ".original"
         avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
         self.assertTrue(os.path.isfile(avatar_file_path))
+
+    @use_s3_backend
+    def test_import_files_from_s3(self) -> None:
+        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
+        uploads_bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        avatar_bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+
+        realm = Realm.objects.get(string_id='zulip')
+        self._setup_export_files()
+        self._export_realm(realm)
+        with patch('logging.info'):
+            do_import_realm('var/test-export', 'test-zulip')
+        imported_realm = Realm.objects.get(string_id='test-zulip')
+        test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
+
+        # Test attachments
+        uploaded_file = Attachment.objects.get(realm=imported_realm)
+        self.assertEqual(len(b'zulip!'), uploaded_file.size)
+
+        attachment_content = uploads_bucket.get_key(uploaded_file.path_id).get_contents_as_string()
+        self.assertEqual(b"zulip!", attachment_content)
+
+        # Test emojis
+        realm_emoji = RealmEmoji.objects.get(realm=imported_realm)
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=imported_realm.id,
+            emoji_file_name=realm_emoji.file_name,
+        )
+        emoji_key = avatar_bucket.get_key(emoji_path)
+        self.assertIsNotNone(emoji_key)
+        self.assertEqual(emoji_key.key, emoji_path)
+
+        # Test avatars
+        user_email = Message.objects.all()[0].sender.email
+        user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
+        avatar_path_id = user_avatar_path(user_profile) + ".original"
+        original_image_key = avatar_bucket.get_key(avatar_path_id)
+        self.assertEqual(original_image_key.key, avatar_path_id)
+        image_data = original_image_key.get_contents_as_string()
+        self.assertEqual(image_data, test_image_data)
