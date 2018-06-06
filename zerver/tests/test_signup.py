@@ -11,7 +11,7 @@ from django.core.exceptions import ValidationError
 from two_factor.utils import default_device
 
 from mock import patch, MagicMock
-from zerver.lib.test_helpers import MockLDAP
+from zerver.lib.test_helpers import MockLDAP, get_test_image_file, avatar_disk_path
 
 from confirmation.models import Confirmation, create_confirmation_link, MultiuseInvite, \
     generate_key, confirmation_url, get_object_from_key, ConfirmationKeyException
@@ -48,6 +48,7 @@ from zerver.lib.actions import (
     do_set_realm_property,
     add_new_user_history,
 )
+from zerver.lib.avatar import avatar_url
 from zerver.lib.mobile_auth_otp import xor_hex_strings, ascii_to_hex, \
     otp_encrypt_api_key, is_valid_otp, hex_to_ascii, otp_decrypt_api_key
 from zerver.lib.notifications import enqueue_welcome_emails, \
@@ -2045,6 +2046,9 @@ class UserSignUpTest(ZulipTestCase):
         lear_realm = get_realm("lear")
         zulip_realm = get_realm("zulip")
 
+        self.login(self.example_email("hamlet"))
+        with get_test_image_file('img.png') as image_file:
+            self.client_post("/json/users/me/avatar", {'file': image_file})
         hamlet_in_zulip = get_user(self.example_email("hamlet"), zulip_realm)
         hamlet_in_zulip.left_side_userlist = True
         hamlet_in_zulip.default_language = "de"
@@ -2068,6 +2072,9 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
         self.assertEqual(hamlet_in_lear.high_contrast_mode, True)
         self.assertEqual(hamlet_in_lear.enable_stream_sounds, False)
+        zulip_path_id = avatar_disk_path(hamlet_in_zulip)
+        hamlet_path_id = avatar_disk_path(hamlet_in_zulip)
+        self.assertEqual(open(zulip_path_id, "rb").read(), open(hamlet_path_id, "rb").read())
 
     def test_signup_invalid_subdomain(self) -> None:
         """
