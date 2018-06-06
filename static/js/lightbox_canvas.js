@@ -66,8 +66,8 @@ var LightboxCanvas = (function () {
             // where the last `layerX` and `layerY` movements since the last
             // `mousemove` event in this `mousedown` event were registered.
             var polyfillMouseMovement = function (e) {
-                e.movementX = (e.layerX - lastPosition.x) || 0;
-                e.movementY = (e.layerY - lastPosition.y) || 0;
+                e.movementX = e.layerX - lastPosition.x || 0;
+                e.movementY = e.layerY - lastPosition.y || 0;
 
                 lastPosition = {
                     x: e.layerX,
@@ -103,7 +103,7 @@ var LightboxCanvas = (function () {
                 // normalizedDelta = delta * (1 / 20) * 1 = 0.4
                 // zoom = zoom * (0.4 / 100) + 1
                 var zoom = meta.zoom * (
-                    (meta.speed * meta.internalSpeedMultiplier * delta / 100) + 1
+                    meta.speed * meta.internalSpeedMultiplier * delta / 100 + 1
                 );
 
                 funcs.setZoom(meta, zoom);
@@ -201,18 +201,18 @@ var LightboxCanvas = (function () {
 
         displayImage: function (canvas, context, meta) {
             meta.coords.x = Math.max(1 / (meta.zoom * 2), meta.coords.x);
-            meta.coords.x = Math.min(1 - (1 / (meta.zoom * 2)), meta.coords.x);
+            meta.coords.x = Math.min(1 - 1 / (meta.zoom * 2), meta.coords.x);
 
             meta.coords.y = Math.max(1 / (meta.zoom * 2), meta.coords.y);
-            meta.coords.y = Math.min(1 - (1 / (meta.zoom * 2)), meta.coords.y);
+            meta.coords.y = Math.min(1 - 1 / (meta.zoom * 2), meta.coords.y);
 
             var c = {
                 x: meta.coords.x - 1,
                 y: meta.coords.y - 1,
             };
 
-            var x = (meta.zoom * c.x * canvas.width) + canvas.width / 2;
-            var y = (meta.zoom * c.y * canvas.height) + canvas.height / 2;
+            var x = meta.zoom * c.x * canvas.width + canvas.width / 2;
+            var y = meta.zoom * c.y * canvas.height + canvas.height / 2;
             var w = canvas.width * meta.zoom;
             var h = canvas.height * meta.zoom;
 
@@ -244,7 +244,7 @@ var LightboxCanvas = (function () {
                 canvas.style.width = parent.width + "px";
 
 
-                canvas.height = (parent.width / meta.ratio) * 2;
+                canvas.height = parent.width / meta.ratio * 2;
                 canvas.style.height = parent.width / meta.ratio + "px";
             } else {
                 canvas.height = parent.height * 2;

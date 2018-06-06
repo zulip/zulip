@@ -57,15 +57,15 @@ exports.MessageList.prototype = {
             self.append_to_view(bottom_messages, opts);
         }
 
-        if ((self === exports.narrowed) && !self.empty()) {
+        if (self === exports.narrowed && !self.empty()) {
             // If adding some new messages to the message tables caused
             // our current narrow to no longer be empty, hide the empty
             // feed placeholder text.
             narrow.hide_empty_narrow_message();
         }
 
-        if ((self === exports.narrowed) && !self.empty() &&
-            (self.selected_id() === -1)) {
+        if (self === exports.narrowed && !self.empty() &&
+            self.selected_id() === -1) {
             // And also select the newly arrived message.
             self.select_id(self.selected_id(), {then_scroll: true, use_closest: true});
         }
@@ -318,7 +318,7 @@ exports.MessageList.prototype = {
 
     show_message_as_read: function (message, options) {
         var row = this.get_row(message.id);
-        if ((options.from === 'pointer' && feature_flags.mark_read_at_bottom) ||
+        if (options.from === 'pointer' && feature_flags.mark_read_at_bottom ||
             options.from === "server") {
             row.find('.unread_marker').addClass('fast_fade');
         } else {

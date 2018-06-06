@@ -319,7 +319,7 @@ exports.then_send_many = function (msgs) {
 exports.wait_for_receive = function (step) {
     // Wait until the last send or get_events result was more than 1000 ms ago.
     casper.waitFor(function () {
-        return (timestamp() - last_send_or_update) > 1000;
+        return timestamp() - last_send_or_update > 1000;
     }, step);
 };
 

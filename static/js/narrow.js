@@ -411,8 +411,8 @@ exports.update_selection = function (opts) {
     }
 
     var preserve_pre_narrowing_screen_position =
-        (message_list.narrowed.get(msg_id) !== undefined) &&
-        (select_offset !== undefined);
+        message_list.narrowed.get(msg_id) !== undefined &&
+        select_offset !== undefined;
 
     var then_scroll = !preserve_pre_narrowing_screen_position;
 
@@ -620,8 +620,8 @@ exports.deactivate = function () {
 
     if (current_msg_list.selected_id() !== -1) {
         var preserve_pre_narrowing_screen_position =
-            (current_msg_list.selected_row().length > 0) &&
-            (current_msg_list.pre_narrow_offset !== undefined);
+            current_msg_list.selected_row().length > 0 &&
+            current_msg_list.pre_narrow_offset !== undefined;
         var message_id_to_select;
         var select_opts = {
             then_scroll: true,
@@ -711,7 +711,7 @@ function pick_empty_narrow_banner() {
             // You have no unread messages.
             return $("#no_unread_narrow_message");
         }
-    } else if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+    } else if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
         // You are narrowed to a stream which does not exist or is a private stream
         // in which you were never subscribed.
         var stream_sub = stream_data.get_sub(narrow_state.stream());

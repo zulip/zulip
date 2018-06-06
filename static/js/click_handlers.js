@@ -58,7 +58,7 @@ exports.initialize = function () {
         return target.is("a") || target.is("img.message_inline_image") || target.is("img.twitter-avatar") ||
             target.is("div.message_length_controller") || target.is("textarea") || target.is("input") ||
             target.is("i.edit_content_button") ||
-            (target.is(".highlight") && target.parent().is("a"));
+            target.is(".highlight") && target.parent().is("a");
     }
 
     function initialize_long_tap() {
@@ -121,7 +121,7 @@ exports.initialize = function () {
         // work nearly perfectly.  Once we no longer need to support
         // older browsers, we may be able to use the window.selection
         // API instead.
-        if ((drag.val < 5 && drag.time < 150) || drag.val < 2) {
+        if (drag.val < 5 && drag.time < 150 || drag.val < 2) {
             var row = $(this).closest(".message_row");
             var id = rows.id(row);
 

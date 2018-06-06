@@ -33,9 +33,9 @@ exports.open_reactions_popover = function () {
 exports.current_user_has_reacted_to_emoji = function (message, emoji_code, type) {
     var user_id = page_params.user_id;
     return _.any(message.reactions, function (r) {
-        return (r.user.id === user_id) &&
-               (r.reaction_type === type) &&
-               (r.emoji_code === emoji_code);
+        return r.user.id === user_id &&
+               r.reaction_type === type &&
+               r.emoji_code === emoji_code;
     });
 };
 
@@ -206,7 +206,7 @@ exports.add_reaction = function (event) {
     var reacted = exports.current_user_has_reacted_to_emoji(message,
                                                             event.emoji_code,
                                                             event.reaction_type);
-    if (reacted && (event.user.user_id === page_params.user_id)) {
+    if (reacted && event.user.user_id === page_params.user_id) {
         return;
     }
 
@@ -317,7 +317,7 @@ exports.remove_reaction = function (event) {
     var not_reacted = !exports.current_user_has_reacted_to_emoji(message,
                                                                  emoji_code,
                                                                  reaction_type);
-    if (not_reacted && (event.user.user_id === page_params.user_id)) {
+    if (not_reacted && event.user.user_id === page_params.user_id) {
         return;
     }
 

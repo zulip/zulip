@@ -31,8 +31,8 @@ var tictactoe_data_holder = function () {
             }
 
             return (
-                (square_values[line[1]] === token) &&
-                (square_values[line[2]] === token));
+                square_values[line[1]] === token &&
+                square_values[line[2]] === token);
         }
 
         var board = [1, 2, 3, 4, 5, 6, 7, 8, 9];

@@ -122,7 +122,7 @@ exports.page_down = function () {
 
 exports.scroll_to_selected = function () {
     var selected_row = current_msg_list.selected_row();
-    if (selected_row && (selected_row.length !== 0)) {
+    if (selected_row && selected_row.length !== 0) {
         message_viewport.recenter_view(selected_row);
     }
 };

@@ -334,7 +334,7 @@ exports.narrowed_to_topic = function () {
 };
 
 exports.narrowed_to_search = function () {
-    return (current_filter !== undefined) && current_filter.is_search();
+    return current_filter !== undefined && current_filter.is_search();
 };
 
 exports.muting_enabled = function () {

@@ -38,7 +38,7 @@ exports.set_count_toggle_button = function (elem, count) {
             return elem.stop(true, true).hide();
         }
         return elem.hide(500);
-    } else if ((count > 0) && (count < 1000)) {
+    } else if (count > 0 && count < 1000) {
         elem.show(500);
         return elem.text(count);
     }
@@ -87,8 +87,8 @@ function consider_bankruptcy() {
     }
 
     var now = new XDate(true).getTime() / 1000;
-    if ((page_params.unread_msgs.count > 500) &&
-            (now - page_params.furthest_read_time > 60 * 60 * 24 * 2)) { // 2 days.
+    if (page_params.unread_msgs.count > 500 &&
+            now - page_params.furthest_read_time > 60 * 60 * 24 * 2) { // 2 days.
         var rendered_modal = templates.render('bankruptcy_modal', {
             unread_count: page_params.unread_msgs.count});
         $('#bankruptcy-unread-count').html(rendered_modal);

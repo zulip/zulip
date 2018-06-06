@@ -36,7 +36,7 @@ exports.render_now = function (time, today) {
     var days_old = Math.round(start_of_other_day.diffDays(start_of_today));
 
     var is_older_year =
-        (start_of_today.getFullYear() - start_of_other_day.getFullYear()) > 0;
+        start_of_today.getFullYear() - start_of_other_day.getFullYear() > 0;
 
     if (days_old === 0) {
         time_str = i18n.t("Today");
@@ -250,7 +250,7 @@ exports.absolute_time = (function () {
             today = new Date();
         }
         var date = new Date(timestamp);
-        var is_older_year = (today.getFullYear() - date.getFullYear()) > 0;
+        var is_older_year = today.getFullYear() - date.getFullYear() > 0;
         var H_24 = page_params.twenty_four_hour_time;
         var str = MONTHS[date.getMonth()] + " " + date.getDate();
         // include year if message date is from a previous year

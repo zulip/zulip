@@ -52,7 +52,7 @@ function format_date(date, include_hour) {
 
         var str = hour >= 12 ? "PM" : "AM";
 
-        return month_str + " " + day + ", " + (hour % 12) + ":00" + str;
+        return month_str + " " + day + ", " + hour % 12 + ":00" + str;
     }
     return month_str + ' ' + day + ', ' + year;
 }

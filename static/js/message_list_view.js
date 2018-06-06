@@ -18,7 +18,7 @@ function MessageListView(list, table_name, collapse_messages) {
 
 function mention_button_refers_to_me(elem) {
     var user_id = $(elem).attr('data-user-id');
-    if ((user_id === '*') || people.is_my_user_id(user_id)) {
+    if (user_id === '*' || people.is_my_user_id(user_id)) {
         return true;
     }
 
@@ -688,7 +688,7 @@ MessageListView.prototype = {
         var last_visible = rows.last_visible();
 
         // Make sure we have a selected row and last visible row. (defensive)
-        if (!(selected_row && (selected_row.length > 0) && last_visible)) {
+        if (!(selected_row && selected_row.length > 0 && last_visible)) {
             return;
         }
 
@@ -791,10 +791,10 @@ MessageListView.prototype = {
         //   of the bottom of the currently rendered window and the
         //   bottom of the window does not abut the end of the
         //   message list
-        if (!(((selected_idx - this._render_win_start < this._RENDER_THRESHOLD)
-                && (this._render_win_start !== 0)) ||
-               ((this._render_win_end - selected_idx <= this._RENDER_THRESHOLD)
-                && (this._render_win_end !== this.list.num_items())))) {
+        if (!(selected_idx - this._render_win_start < this._RENDER_THRESHOLD
+                && this._render_win_start !== 0 ||
+               this._render_win_end - selected_idx <= this._RENDER_THRESHOLD
+                && this._render_win_end !== this.list.num_items())) {
             return false;
         }
 

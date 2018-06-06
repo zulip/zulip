@@ -122,7 +122,7 @@ exports.process_loaded_messages = function (messages) {
         if (huddle_string) {
             var old_timestamp = huddle_timestamps.get(huddle_string);
 
-            if (!old_timestamp || (old_timestamp < message.timestamp)) {
+            if (!old_timestamp || old_timestamp < message.timestamp) {
                 huddle_timestamps.set(huddle_string, message.timestamp);
                 need_resize = true;
             }

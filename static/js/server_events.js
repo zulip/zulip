@@ -112,7 +112,7 @@ function get_events_success(events) {
         home_msg_list.select_id(new_pointer, {then_scroll: true, use_closest: true});
     }
 
-    if ((home_msg_list.selected_id() === -1) && !home_msg_list.empty()) {
+    if (home_msg_list.selected_id() === -1 && !home_msg_list.empty()) {
         home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
     }
 
@@ -185,8 +185,8 @@ function get_events(options) {
                 get_events_xhr = undefined;
                 // If we're old enough that our message queue has been
                 // garbage collected, immediately reload.
-                if ((xhr.status === 400) &&
-                    (JSON.parse(xhr.responseText).code === 'BAD_EVENT_QUEUE_ID')) {
+                if (xhr.status === 400 &&
+                    JSON.parse(xhr.responseText).code === 'BAD_EVENT_QUEUE_ID') {
                     page_params.event_queue_expired = true;
                     reload.initiate({immediate: true,
                                      save_pointer: false,
@@ -247,7 +247,7 @@ exports.home_view_loaded = function home_view_loaded() {
 var watchdog_time = $.now();
 exports.check_for_unsuspend = function () {
     var new_time = $.now();
-    if ((new_time - watchdog_time) > 20000) { // 20 seconds.
+    if (new_time - watchdog_time > 20000) { // 20 seconds.
         // Defensively reset watchdog_time here in case there's an
         // exception in one of the event handlers
         watchdog_time = new_time;

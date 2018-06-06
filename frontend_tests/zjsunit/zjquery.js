@@ -401,15 +401,15 @@ exports.make_zjquery = function (opts) {
         }
 
         var valid_selector =
-            ('<#.'.indexOf(selector[0]) >= 0) ||
-            (selector === 'window-stub') ||
-            (selector === 'document-stub') ||
-            (selector === 'body') ||
-            (selector === 'html') ||
+            '<#.'.indexOf(selector[0]) >= 0 ||
+            selector === 'window-stub' ||
+            selector === 'document-stub' ||
+            selector === 'body' ||
+            selector === 'html' ||
             selector.location ||
-            (selector.indexOf('#') >= 0) ||
-            (selector.indexOf('.') >= 0) ||
-            (selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('['));
+            selector.indexOf('#') >= 0 ||
+            selector.indexOf('.') >= 0 ||
+            selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('[');
 
         assert(valid_selector,
                'Invalid selector: ' + selector +

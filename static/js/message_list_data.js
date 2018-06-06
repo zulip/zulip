@@ -193,7 +193,7 @@ MessageListData.prototype = {
 
     update_user_full_name: function (user_id, full_name) {
         _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
+            if (item.sender_id && item.sender_id === user_id) {
                 item.sender_full_name = full_name;
             }
         });
@@ -205,7 +205,7 @@ MessageListData.prototype = {
         // especially if we want to optimize this with some kind of
         // hash that maps sender_id -> messages.
         _.each(this._items, function (item) {
-            if (item.sender_id && (item.sender_id === user_id)) {
+            if (item.sender_id && item.sender_id === user_id) {
                 item.small_avatar_url = avatar_url;
             }
         });
@@ -213,7 +213,7 @@ MessageListData.prototype = {
 
     update_stream_name: function (stream_id, new_stream_name) {
         _.each(this._items, function (item) {
-            if (item.stream_id && (item.stream_id === stream_id)) {
+            if (item.stream_id && item.stream_id === stream_id) {
                 item.display_recipient = new_stream_name;
                 item.stream = new_stream_name;
             }
@@ -545,8 +545,8 @@ MessageListData.prototype = {
             var prev = self._next_nonlocal_message(self._items, index,
                                                    function (idx) { return idx - 1; });
 
-            if ((next !== undefined && current_message.id > next.id) ||
-                (prev !== undefined && current_message.id < prev.id)) {
+            if (next !== undefined && current_message.id > next.id ||
+                prev !== undefined && current_message.id < prev.id) {
                 blueslip.debug("Changed message ID from server caused out-of-order list, reordering");
                 self._items.sort(message_sort_func);
                 if (self.muting_enabled) {

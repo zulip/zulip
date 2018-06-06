@@ -112,9 +112,9 @@ function do_hashchange(from_reload) {
     // The second case is for handling the fact that some browsers
     // automatically convert '#' to '' when you change the hash to '#'.
     if (window.location.hash === expected_hash ||
-        (expected_hash !== undefined &&
+        expected_hash !== undefined &&
          window.location.hash.replace(/^#/, '') === '' &&
-         expected_hash.replace(/^#/, '') === '')) {
+         expected_hash.replace(/^#/, '') === '') {
         return false;
     }
 
