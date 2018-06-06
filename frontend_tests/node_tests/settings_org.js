@@ -548,35 +548,6 @@ function test_sync_realm_settings() {
     }
 }
 
-function test_parse_time_limit() {
-    const elem = $('#id_realm_message_content_edit_limit_minutes');
-    const test_function = (value, expected_value = value) => {
-        elem.val(value);
-        global.page_params.realm_message_content_edit_limit_seconds =
-            settings_org.parse_time_limit(elem);
-        assert.equal(expected_value,
-                     settings_org.get_realm_time_limits_in_minutes(
-                         'realm_message_content_edit_limit_seconds'));
-    };
-
-    test_function('0.01', '0');
-    test_function('0.1');
-    test_function('0.122', '0.1');
-    test_function('0.155', '0.2');
-    test_function('0.150', '0.1');
-    test_function('0.5');
-    test_function('1');
-    test_function('1.1');
-    test_function('10.5');
-    test_function('50.3');
-    test_function('100');
-    test_function('100.1');
-    test_function('127.79', '127.8');
-    test_function('201.1');
-    test_function('501.15', '501.1');
-    test_function('501.34', '501.3');
-}
-
 function test_discard_changes_button(discard_changes) {
     const ev = {
         preventDefault: noop,
@@ -687,6 +658,7 @@ run_test('set_up', () => {
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
     $("#id_realm_msg_edit_limit_setting").change = noop;
     $('#id_realm_msg_delete_limit_setting').change = noop;
+    $('.admin-realm-time-limit-input').keypress = noop;
     const parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
@@ -706,7 +678,6 @@ run_test('set_up', () => {
     test_extract_property_name();
     test_change_save_button_state();
     test_sync_realm_settings();
-    test_parse_time_limit();
     test_discard_changes_button(discard_changes);
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;

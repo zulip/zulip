@@ -59,9 +59,9 @@ exports.setup_page = function () {
         can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
         realm_message_content_edit_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds'),
+            Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60),
         realm_message_content_delete_limit_minutes:
-            settings_org.get_realm_time_limits_in_minutes('realm_message_content_delete_limit_seconds'),
+            Math.ceil(page_params.realm_message_content_delete_limit_seconds / 60),
         realm_message_retention_days: page_params.realm_message_retention_days,
         realm_allow_edit_history: page_params.realm_allow_edit_history,
         language_list: page_params.language_list,

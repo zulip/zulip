@@ -89,23 +89,15 @@ function get_subsection_property_types(subsection) {
     return;
 }
 
-exports.get_realm_time_limits_in_minutes = function (property) {
-    var val = (page_params[property] / 60).toFixed(1);
-    if (parseFloat(val, 10) === parseInt(val, 10)) {
-        val = parseInt(val, 10);
-    }
-    return val.toString();
-};
-
 function get_property_value(property_name) {
     var value;
 
     if (property_name === 'realm_message_content_edit_limit_minutes') {
-        return exports.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds');
+        return Math.ceil(page_params.realm_message_content_edit_limit_seconds / 60).toString();
     }
 
     if (property_name === 'realm_message_content_delete_limit_minutes') {
-        return exports.get_realm_time_limits_in_minutes('realm_message_content_delete_limit_seconds');
+        return Math.ceil(page_params.realm_message_content_delete_limit_seconds / 60).toString();
     }
 
     if (property_name === 'realm_create_stream_permission') {
@@ -635,11 +627,6 @@ exports.set_up = function () {
         });
     };
 
-    function parse_time_limit(elem) {
-        return Math.floor(parseFloat(elem.val(), 10).toFixed(1) * 60);
-    }
-    exports.parse_time_limit = parse_time_limit;
-
     function get_complete_data_for_subsection(subsection) {
         var opts = {};
         if (subsection === 'msg_editing') {
@@ -648,9 +635,8 @@ exports.set_up = function () {
             if (edit_limit_setting_value === 'never') {
                 opts.data.allow_message_editing = false;
             } else if (edit_limit_setting_value === 'custom_limit') {
-                opts.data.message_content_edit_limit_seconds = parse_time_limit($('#id_realm_message_content_edit_limit_minutes'));
-                // Disable editing if the parsed time limit is 0 seconds
-                opts.data.allow_message_editing = !!opts.data.message_content_edit_limit_seconds;
+                opts.data.allow_message_editing = true;
+                opts.data.message_content_edit_limit_seconds = parseInt($("#id_realm_message_content_edit_limit_minutes").val(), 10) * 60;
             } else {
                 opts.data.allow_message_editing = true;
                 opts.data.message_content_edit_limit_seconds =
@@ -660,9 +646,8 @@ exports.set_up = function () {
             if (delete_limit_setting_value === 'never') {
                 opts.data.allow_message_deleting = false;
             } else if (delete_limit_setting_value === 'custom_limit') {
-                opts.data.message_content_delete_limit_seconds = parse_time_limit($('#id_realm_message_content_delete_limit_minutes'));
-                // Disable deleting if the parsed time limit is 0 seconds
-                opts.data.allow_message_deleting = !!opts.data.message_content_delete_limit_seconds;
+                opts.data.allow_message_deleting = true;
+                opts.data.message_content_delete_limit_seconds = parseInt($("#id_realm_message_content_delete_limit_minutes").val(), 10) * 60;
             } else {
                 opts.data.allow_message_deleting = true;
                 opts.data.message_content_delete_limit_seconds =
@@ -816,6 +801,11 @@ exports.set_up = function () {
         e.stopPropagation();
     });
 
+    $('.admin-realm-time-limit-input').keypress(function (e) {
+        if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+            e.preventDefault();
+        }
+    });
 
     $('#admin_auth_methods_table').change(function () {
         var new_auth_methods = {};
