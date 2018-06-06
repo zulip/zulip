@@ -541,6 +541,11 @@ input[type=checkbox].inline-block {
         margin: auto;
         text-align: center;
     }
+
+    #settings_page .save-button-controls {
+        display: block;
+        margin: 10px 0 0 0;
+    }
 }
 
 #organization .settings-section .settings-section-icon,
