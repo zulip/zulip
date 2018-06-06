@@ -312,6 +312,7 @@
         "no-shadow": 0,
         "no-sync": 2,
         "no-ternary": 0,
+        "no-trailing-spaces": 2,
         "no-undef": "error",
         "no-undef-init": 2,
         "no-underscore-dangle": 0,
