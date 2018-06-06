@@ -9,7 +9,7 @@ import io
 from PIL import Image
 
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Set, Optional
+from typing import Any, Dict, List, Set, Optional, Tuple
 from boto.s3.connection import Location, S3Connection
 
 from zerver.lib.export import (
@@ -236,25 +236,26 @@ class ImportExportTest(ZulipTestCase):
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
         return result
 
-    """
-    Tests for export
-    """
-
-    def test_export_files_from_local(self) -> None:
+    def _setup_export_files(self) -> Tuple[str, str, str, bytes]:
+        realm = Realm.objects.get(string_id='zulip')
         message = Message.objects.all()[0]
         user_profile = message.sender
         url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
-        path_id = url.replace('/user_uploads/', '')
+        attachment_path_id = url.replace('/user_uploads/', '')
         claim_attachment(
             user_profile=user_profile,
-            path_id=path_id,
+            path_id=attachment_path_id,
             message=message,
             is_message_realm_public=True
         )
         avatar_path_id = user_avatar_path(user_profile)
         original_avatar_path_id = avatar_path_id + ".original"
 
-        realm = Realm.objects.get(string_id='zulip')
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=realm.id,
+            emoji_file_name='1.png',
+        )
+
         with get_test_image_file('img.png') as img_file:
             upload_emoji_image(img_file, '1.png', user_profile)
         with get_test_image_file('img.png') as img_file:
@@ -263,6 +264,15 @@ class ImportExportTest(ZulipTestCase):
         message.sender.avatar_source = 'U'
         message.sender.save()
 
+        return attachment_path_id, emoji_path, original_avatar_path_id, test_image
+
+    """
+    Tests for export
+    """
+
+    def test_export_files_from_local(self) -> None:
+        realm = Realm.objects.get(string_id='zulip')
+        path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
         full_data = self._export_realm(realm)
 
         data = full_data['attachment']
@@ -276,8 +286,7 @@ class ImportExportTest(ZulipTestCase):
             self.assertEqual(f.read(), 'zulip!')
 
         # Test emojis
-        fn = os.path.join(full_data['emoji_dir'],
-                          RealmEmoji.PATH_ID_TEMPLATE.format(realm_id=realm.id, emoji_file_name='1.png'))
+        fn = os.path.join(full_data['emoji_dir'], emoji_path)
         fn = fn.replace('1.png', '')
         self.assertEqual('1.png', os.listdir(fn)[0])
 
@@ -293,32 +302,7 @@ class ImportExportTest(ZulipTestCase):
         conn.create_bucket(settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
-        message = Message.objects.all()[0]
-        user_profile = message.sender
-
-        url = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
-        attachment_path_id = url.replace('/user_uploads/', '')
-        claim_attachment(
-            user_profile=user_profile,
-            path_id=attachment_path_id,
-            message=message,
-            is_message_realm_public=True
-        )
-
-        avatar_path_id = user_avatar_path(user_profile)
-        original_avatar_path_id = avatar_path_id + ".original"
-
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=realm.id,
-            emoji_file_name='1.png',
-        )
-
-        with get_test_image_file('img.png') as img_file:
-            upload_emoji_image(img_file, '1.png', user_profile)
-        with get_test_image_file('img.png') as img_file:
-            upload_avatar_image(img_file, user_profile, user_profile)
-        test_image = open(get_test_image_file('img.png').name, 'rb').read()
-
+        attachment_path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
         full_data = self._export_realm(realm)
 
         data = full_data['attachment']
