@@ -69,7 +69,11 @@ def api_teamcity_webhook(request: HttpRequest, user_profile: UserProfile,
         u'Details: [changes](%s), [build log](%s)')
 
     body = template % (build_name, build_number, status, changes_url, build_url)
-    topic = build_name
+
+    if 'branchDisplayName' in message:
+        topic = build_name + ' (' + message['branchDisplayName'] + ')'
+    else:
+        topic = build_name
 
     # Check if this is a personal build, and if so try to private message the user who triggered it.
     if get_teamcity_property_value(message['teamcityProperties'], 'env.BUILD_IS_PERSONAL') == 'true':
