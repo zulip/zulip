@@ -91,9 +91,9 @@ paths:
                       - Topic can't be empty
                 - example:
                     {
-                      "code": "BAD_REQUEST",
-                      "msg": "You don't have permission to edit this message",
-                      "result": "error"
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to edit this message",
+                        "result": "error"
                     }
   /users/me/{stream_id}/topics:
     get:
@@ -131,23 +131,23 @@ paths:
                             type: string
                 - example:
                     {
-                      "msg": "",
-                      "result": "success",
-                      "topics": [
-                          {
-                              "max_id": 26,
-                              "name": "Denmark3"
-                          },
-                          {
-                              "max_id": 23,
-                              "name": "Denmark1"
-                          },
-                          {
-                              "max_id": 6,
-                              "name": "Denmark2"
-                          }
-                      ]
-                  }
+                        "msg": "",
+                        "result": "success",
+                        "topics": [
+                            {
+                                "max_id": 26,
+                                "name": "Denmark3"
+                            },
+                            {
+                                "max_id": 23,
+                                "name": "Denmark1"
+                            },
+                            {
+                                "max_id": 6,
+                                "name": "Denmark2"
+                            }
+                        ]
+                    }
         '400':
           description: Bad request.
           content:
