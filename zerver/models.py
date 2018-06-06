@@ -1464,22 +1464,39 @@ class Attachment(AbstractAttachment):
 def validate_attachment_request(user_profile: UserProfile, path_id: str) -> Optional[bool]:
     try:
         attachment = Attachment.objects.get(path_id=path_id)
-        messages = attachment.messages.all()
-
-        if user_profile == attachment.owner:
-            # If you own the file, you can access it.
-            return True
-        elif attachment.is_realm_public and attachment.realm == user_profile.realm:
-            # Any user in the realm can access realm-public files
-            return True
-        elif UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
-            # If it was sent in a private message or private stream
-            # message, then anyone who received that message can access it.
-            return True
-        else:
-            return False
     except Attachment.DoesNotExist:
         return None
+
+    if user_profile == attachment.owner:
+        # If you own the file, you can access it.
+        return True
+    if (attachment.is_realm_public and attachment.realm == user_profile.realm and
+            user_profile.can_access_public_streams()):
+        # Any user in the realm can access realm-public files
+        return True
+
+    messages = attachment.messages.all()
+    if UserMessage.objects.filter(user_profile=user_profile, message__in=messages).exists():
+        # If it was sent in a private message or private stream
+        # message, then anyone who received that message can access it.
+        return True
+
+    # The user didn't receive any of the messages that included this
+    # attachment.  But they might still have access to it, if it was
+    # sent to a stream they are on where history is public to
+    # subscribers.
+
+    # These are subscriptions to a stream one of the messages was sent to
+    relevant_stream_ids = Subscription.objects.filter(
+        user_profile=user_profile,
+        active=True,
+        recipient__type=Recipient.STREAM,
+        recipient__in=[m.recipient_id for m in messages]).values_list("recipient__type_id", flat=True)
+    if len(relevant_stream_ids) == 0:
+        return False
+
+    return Stream.objects.filter(id__in=relevant_stream_ids,
+                                 history_public_to_subscribers=True).exists()
 
 def get_old_unclaimed_attachments(weeks_ago: int) -> Sequence[Attachment]:
     # TODO: Change return type to QuerySet[Attachment]
