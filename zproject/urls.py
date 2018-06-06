@@ -371,6 +371,8 @@ i18n_urls = [
     url(r'^accounts/login/jwt/$', zerver.views.auth.remote_user_jwt, name='login-jwt'),
     url(r'^accounts/login/social/(\w+)$', zerver.views.auth.start_social_login,
         name='login-social'),
+    url(r'^accounts/login/social/(?P<backend>\w+)/(?P<idp>\w+)$', zerver.views.auth.start_social_login,
+        name='login-saml'),
     url(r'^accounts/login/google/$', zerver.views.auth.start_google_oauth2,
         name='zerver.views.auth.start_google_oauth2'),
     url(r'^accounts/login/google/send/$',
@@ -421,6 +423,9 @@ i18n_urls = [
     url(r'^accounts/register/social/(\w+)$',
         zerver.views.auth.start_social_signup,
         name='signup-social'),
+    url(r'^accounts/register/social/(?P<backend>\w+)/(?P<idp>\w+)$',
+        zerver.views.auth.start_social_signup,
+        name='signup-saml'),
     url(r'^accounts/home/', zerver.views.registration.accounts_home,
         name='zerver.views.registration.accounts_home'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
@@ -615,6 +620,9 @@ urls += [
     url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
     url(r'^api/v1/events/internal$', zerver.tornado.views.get_events_internal),
 ]
+
+# SAML metadata
+urls += [url(r'^saml/metadata$', zerver.views.auth.saml_metadata_view, name='saml_metadata_view')]
 
 # Python Social Auth
 urls += [url(r'^', include('social_django.urls', namespace='social'))]

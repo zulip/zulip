@@ -9,9 +9,11 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpResponse
+from django.urls import reverse
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
+from social_core.backends.saml import SAMLAuth
 from social_core.backends.base import BaseAuth
 from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
@@ -66,13 +68,23 @@ def google_auth_enabled(realm: Optional[Realm]=None) -> bool:
 def github_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['GitHub'], realm)
 
+def saml_auth_enabled(realm: Optional[Realm]=None) -> bool:
+    return auth_enabled_helper(['SAML'], realm)
+
 def remote_auth_enabled(realm: Optional[Realm]=None) -> bool:
     return auth_enabled_helper(['RemoteUser'], realm)
 
 def any_oauth_backend_enabled(realm: Optional[Realm]=None) -> bool:
     """Used by the login page process to determine whether to show the
     'OR' for login with Google"""
-    return auth_enabled_helper(['GitHub', 'Google'], realm)
+    return auth_enabled_helper(['GitHub', 'Google', 'SAML'], realm)
+
+def saml_get_idps(realm: Optional[Realm]=None) -> List:
+    idps = []
+    if settings.SOCIAL_AUTH_SAML_ENABLED_IDPS is not None:
+        for idp in settings.SOCIAL_AUTH_SAML_ENABLED_IDPS:
+            idps.append(idp)
+    return idps
 
 def require_email_format_usernames(realm: Optional[Realm]=None) -> bool:
     if ldap_auth_enabled(realm):
@@ -635,10 +647,25 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
 
         raise AssertionError("Invalid configuration")
 
+class SAMLAuthBackend(SAMLAuth):
+    auth_backend_name = "SAML"
+
+    def user_data(self, *args: Any, **kwargs: Any) -> Dict[str, str]:
+        return self.get_user_details(self, *args, **kwargs)
+
+    def get_saml_metadata(self):
+        if self.redirect_uri is None:
+            self.redirect_uri = '%s%s%s' % (settings.EXTERNAL_URI_SCHEME,
+                                            settings.EXTERNAL_HOST,
+                                            reverse('social:complete',
+                                                    args=("saml",)))
+        return SAMLAuth.generate_metadata_xml(self)
+
 AUTH_BACKEND_NAME_MAP = {
     'Dev': DevAuthBackend,
     'Email': EmailAuthBackend,
     'GitHub': GitHubAuthBackend,
+    'SAML': SAMLAuthBackend,
     'Google': GoogleMobileOauth2Backend,
     'LDAP': ZulipLDAPAuthBackend,
     'RemoteUser': ZulipRemoteUserBackend,

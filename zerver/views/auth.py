@@ -38,9 +38,9 @@ from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email
     get_realm
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
-    github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
+    github_auth_enabled, saml_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
     ZulipLDAPConfigurationError, ZulipLDAPAuthBackend, email_auth_enabled, \
-    remote_auth_enabled
+    remote_auth_enabled, SAMLAuthBackend
 from version import ZULIP_VERSION
 
 import hashlib
@@ -278,7 +278,8 @@ def reverse_on_root(viewname: str, args: List[str]=None, kwargs: Dict[str, str]=
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
 def oauth_redirect_to_root(request: HttpRequest, url: str,
-                           sso_type: str, is_signup: bool=False) -> HttpResponse:
+                           sso_type: str, is_signup: bool=False,
+                           idp: str=None) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
     if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == 'social':
         main_site_uri = (settings.EXTERNAL_URI_SCHEME +
@@ -290,6 +291,8 @@ def oauth_redirect_to_root(request: HttpRequest, url: str,
         'subdomain': get_subdomain(request),
         'is_signup': '1' if is_signup else '0',
     }
+    if idp is not None:
+        params.update({'idp': idp})
 
     # mobile_flow_otp is a one-time pad provided by the app that we
     # can use to encrypt the API key when passing back to the app.
@@ -314,13 +317,20 @@ def start_google_oauth2(request: HttpRequest) -> HttpResponse:
     is_signup = bool(request.GET.get('is_signup'))
     return oauth_redirect_to_root(request, url, 'google', is_signup=is_signup)
 
-def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
+def start_social_login(request: HttpRequest, backend: str, idp: str=None) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
     if (backend == "github") and not (settings.SOCIAL_AUTH_GITHUB_KEY and
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
-
-    return oauth_redirect_to_root(request, backend_url, 'social')
+    if (backend == "saml") and not (settings.SOCIAL_AUTH_SAML_SP_ENTITY_ID and
+                                    settings.SOCIAL_AUTH_SAML_SP_PUBLIC_CERT and
+                                    settings.SOCIAL_AUTH_SAML_SP_PRIVATE_KEY and
+                                    settings.SOCIAL_AUTH_SAML_ORG_INFO and
+                                    settings.SOCIAL_AUTH_SAML_TECHNICAL_CONTACT and
+                                    settings.SOCIAL_AUTH_SAML_SUPPORT_CONTACT and
+                                    settings.SOCIAL_AUTH_SAML_ENABLED_IDPS):
+        return redirect_to_config_error("saml")
+    return oauth_redirect_to_root(request, backend_url, 'social', idp=idp)
 
 def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
@@ -821,6 +831,7 @@ def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
         "dev": dev_auth_enabled(realm),
         "email": email_auth_enabled(realm),
         "github": github_auth_enabled(realm),
+        "saml": saml_auth_enabled(realm),
         "google": google_auth_enabled(realm),
         "remoteuser": remote_auth_enabled(realm),
         "ldap": ldap_auth_enabled(realm),
@@ -894,3 +905,12 @@ def password_reset(request: HttpRequest, **kwargs: Any) -> HttpResponse:
                                  template_name='zerver/reset.html',
                                  password_reset_form=ZulipPasswordResetForm,
                                  post_reset_redirect='/accounts/password/reset/done/')
+
+def saml_metadata_view(request: HttpRequest) -> HttpResponse:
+    realm = get_realm(get_subdomain(request))
+    if saml_auth_enabled(realm):
+        saml_auth = SAMLAuthBackend()
+        metadata, errors = SAMLAuthBackend.get_saml_metadata(saml_auth)
+        if not errors:
+            return HttpResponse(content=metadata, content_type='text/xml;charset=UTF-8')
+    return redirect_to_config_error("saml")
