@@ -91,7 +91,7 @@ MessageListData.prototype = {
 
         var last_msg = this._items[n - 1];
 
-        return (last_msg.id === this._selected_id);
+        return last_msg.id === this._selected_id;
     },
 
     nth_most_recent_id: function (n) {

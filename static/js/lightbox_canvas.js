@@ -126,8 +126,8 @@ var LightboxCanvas = (function () {
                     // find the percent of movement relative to the canvas width
                     // since e.movementX, e.movementY are in px.
                     var percentMovement = {
-                        x: (e.movementX / canvas.width),
-                        y: (e.movementY / canvas.height),
+                        x: e.movementX / canvas.width,
+                        y: e.movementY / canvas.height,
                     };
 
                     // add the percentMovement to the meta coordinates but divide

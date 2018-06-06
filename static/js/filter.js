@@ -48,7 +48,7 @@ function message_matches_search_term(message, operator, operand) {
     switch (operator) {
     case 'is':
         if (operand === 'private') {
-            return (message.type === 'private');
+            return message.type === 'private';
         } else if (operand === 'starred') {
             return message.starred;
         } else if (operand === 'mentioned') {
@@ -73,7 +73,7 @@ function message_matches_search_term(message, operator, operand) {
         return true;
 
     case 'id':
-        return (message.id.toString() === operand);
+        return message.id.toString() === operand;
 
     case 'stream':
         if (message.type !== 'stream') {
@@ -89,13 +89,13 @@ function message_matches_search_term(message, operator, operand) {
         // the operand.
         var stream_id = stream_data.get_stream_id(operand);
         if (stream_id) {
-            return (message.stream_id === stream_id);
+            return message.stream_id === stream_id;
         }
 
         // We need this fallback logic in case we have a message
         // loaded for a stream that we are no longer
         // subscribed to (or that was deleted).
-        return (message.stream.toLowerCase() === operand);
+        return message.stream.toLowerCase() === operand;
 
     case 'topic':
         if (message.type !== 'stream') {
@@ -106,7 +106,7 @@ function message_matches_search_term(message, operator, operand) {
         if (page_params.realm_is_zephyr_mirror_realm) {
             return zephyr_topic_name_match(message, operand);
         }
-        return (message.subject.toLowerCase() === operand);
+        return message.subject.toLowerCase() === operand;
 
 
     case 'sender':
@@ -121,7 +121,7 @@ function message_matches_search_term(message, operator, operand) {
         if (!user_ids) {
             return false;
         }
-        return (user_ids.indexOf(operand_ids[0]) !== -1);
+        return user_ids.indexOf(operand_ids[0]) !== -1;
         // We should also check if the current user is in the recipient list (user_ids) of the
         // message, but it is implicit by the fact that the current user has access to the message.
 
@@ -360,7 +360,7 @@ Filter.prototype = {
 
     has_operator: function (operator) {
         return _.any(this._operators, function (elem) {
-            if (elem.negated && (!_.contains(['search', 'has'], elem.operator))) {
+            if (elem.negated && !_.contains(['search', 'has'], elem.operator)) {
                 return false;
             }
             return elem.operator === operator;
@@ -372,7 +372,7 @@ Filter.prototype = {
     },
 
     can_apply_locally: function () {
-        return (!this.is_search()) && (!this.has_operator('has'));
+        return !this.is_search() && !this.has_operator('has');
     },
 
     _canonicalize_operators: function (operators_mixed_case) {

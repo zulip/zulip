@@ -198,7 +198,7 @@ exports.activate = function (raw_operators, opts) {
         then_select_offset = opts.then_select_offset;
     }
 
-    var select_immediately = (id_info.local_select_id !== undefined);
+    var select_immediately = id_info.local_select_id !== undefined;
 
     (function fetch_messages() {
         var anchor;

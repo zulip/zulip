@@ -189,7 +189,7 @@ exports.get_color_class = _.memoize(function (color) {
 
     // Determine if we're past the midpoint between the
     // dark and light label lightness.
-    return (lightness < lightness_threshold) ? 'dark_background' : '';
+    return lightness < lightness_threshold ? 'dark_background' : '';
 });
 
 return exports;

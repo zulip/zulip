@@ -29,9 +29,9 @@ function make_tab_data() {
     }
 
     function in_all() {
-        return (filter !== undefined &&
+        return filter !== undefined &&
                (filtered_to_non_home_view_stream() ||
-                filter.has_operand("in", "all")));
+                filter.has_operand("in", "all"));
     }
 
     if (in_all()) {

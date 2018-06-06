@@ -222,7 +222,7 @@ exports.setup_page = function (callback) {
                 // In case there is no stream for the draft, we need a
                 // single space char for proper rendering of the stream label
                 var space_string = new Handlebars.SafeString("&nbsp;");
-                var stream = (draft.stream.length > 0 ? draft.stream : space_string);
+                var stream = draft.stream.length > 0 ? draft.stream : space_string;
                 var draft_topic = draft.subject.length === 0 ?
                     compose.empty_topic_placeholder() : draft.subject;
 

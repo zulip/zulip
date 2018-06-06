@@ -116,7 +116,7 @@ IterationProfiler.prototype = {
         if (this.sections[label] === undefined) {
             this.sections[label] = 0;
         }
-        this.sections[label] += (now - this.last_time);
+        this.sections[label] += now - this.last_time;
         this.last_time = now;
     },
 

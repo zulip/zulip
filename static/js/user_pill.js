@@ -115,8 +115,8 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
         },
         matcher: function (item) {
             var query = this.query.toLowerCase();
-            return (item.email.toLowerCase().indexOf(query) !== -1
-                    || item.full_name.toLowerCase().indexOf(query) !== -1);
+            return item.email.toLowerCase().indexOf(query) !== -1
+                    || item.full_name.toLowerCase().indexOf(query) !== -1;
         },
         sorter: function (matches) {
             return typeahead_helper.sort_recipientbox_typeahead(

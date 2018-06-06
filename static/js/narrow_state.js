@@ -286,8 +286,8 @@ exports.narrowed_to_pms = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return (current_filter.has_operator("pm-with") ||
-            current_filter.has_operand("is", "private"));
+    return current_filter.has_operator("pm-with") ||
+            current_filter.has_operand("is", "private");
 };
 
 exports.narrowed_by_pm_reply = function () {
@@ -295,8 +295,8 @@ exports.narrowed_by_pm_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 1 &&
-            current_filter.has_operator('pm-with'));
+    return operators.length === 1 &&
+            current_filter.has_operator('pm-with');
 };
 
 exports.narrowed_by_topic_reply = function () {
@@ -304,16 +304,16 @@ exports.narrowed_by_topic_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 2 &&
+    return operators.length === 2 &&
             current_filter.operands("stream").length === 1 &&
-            current_filter.operands("topic").length === 1);
+            current_filter.operands("topic").length === 1;
 };
 
 // We auto-reply under certain conditions, namely when you're narrowed
 // to a PM (or huddle), and when you're narrowed to some stream/subject pair
 exports.narrowed_by_reply = function () {
-    return (exports.narrowed_by_pm_reply() ||
-            exports.narrowed_by_topic_reply());
+    return exports.narrowed_by_pm_reply() ||
+            exports.narrowed_by_topic_reply();
 };
 
 exports.narrowed_by_stream_reply = function () {
@@ -321,16 +321,16 @@ exports.narrowed_by_stream_reply = function () {
         return false;
     }
     var operators = current_filter.operators();
-    return (operators.length === 1 &&
-            current_filter.operands("stream").length === 1);
+    return operators.length === 1 &&
+            current_filter.operands("stream").length === 1;
 };
 
 exports.narrowed_to_topic = function () {
     if (current_filter === undefined) {
         return false;
     }
-    return (current_filter.has_operator("stream") &&
-            current_filter.has_operator("topic"));
+    return current_filter.has_operator("stream") &&
+            current_filter.has_operator("topic");
 };
 
 exports.narrowed_to_search = function () {
@@ -338,8 +338,8 @@ exports.narrowed_to_search = function () {
 };
 
 exports.muting_enabled = function () {
-    return (!exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
-            !exports.narrowed_to_pms());
+    return !exports.narrowed_to_topic() && !exports.narrowed_to_search() &&
+            !exports.narrowed_to_pms();
 };
 
 exports.is_for_stream_id = function (stream_id) {
@@ -352,7 +352,7 @@ exports.is_for_stream_id = function (stream_id) {
         return false;
     }
 
-    return (stream_id === narrow_stream_id);
+    return stream_id === narrow_stream_id;
 };
 
 return exports;

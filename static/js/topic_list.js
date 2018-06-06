@@ -236,7 +236,7 @@ exports.zoom_in = function () {
     var before_count = active_widget.num_items();
 
     function on_success() {
-        if ((!active_widget) || (stream_id !== active_widget.get_stream_id())) {
+        if (!active_widget || (stream_id !== active_widget.get_stream_id())) {
             blueslip.warn('User re-narrowed before topic history was returned.');
             return;
         }

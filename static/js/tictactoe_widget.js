@@ -58,7 +58,7 @@ var tictactoe_data_holder = function () {
             [square(7), square(8), square(9)],
         ];
 
-        var token = (num_filled % 2 === 0) ? 'X' : 'O';
+        var token = num_filled % 2 === 0 ? 'X' : 'O';
         var move_status = token + "'s turn";
 
         if (game_over) {
@@ -92,13 +92,13 @@ var tictactoe_data_holder = function () {
                     return;
                 }
 
-                var token = (num_filled % 2 === 0) ? 'X' : 'O';
+                var token = num_filled % 2 === 0 ? 'X' : 'O';
 
                 if (square_values[idx]) {
                     return;
                 }
 
-                waiting = (sender_id === me);
+                waiting = sender_id === me;
 
                 square_values[idx] = token;
                 num_filled += 1;

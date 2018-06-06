@@ -45,7 +45,7 @@ $(function () {
         $(".fixed-app .column-middle").css("margin-left", (250 + sbWidth) + "px");
 
         $(".column-right").css("right", sbWidth + "px");
-        $(".app-main .right-sidebar").css({"margin-left": (sbWidth) + "px",
+        $(".app-main .right-sidebar").css({"margin-left": sbWidth + "px",
                                            width: (250 - sbWidth) + "px"});
 
         $("#compose").css("left", "-" + sbWidth + "px");

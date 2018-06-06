@@ -117,7 +117,7 @@ exports.generate_zuliprc_content = function (email, api_key, token) {
            "\nemail=" + email +
            "\nkey=" + api_key +
            "\nsite=" + page_params.realm_uri +
-           (token === undefined ? "" : ("\ntoken=" + token)) +
+           (token === undefined ? "" : "\ntoken=" + token) +
            // Some tools would not work in files without a trailing new line.
            "\n";
 };

@@ -179,7 +179,7 @@ exports.check_form = function (form_selector, expected, test_name) {
     for (k in expected) {
         if (expected.hasOwnProperty(k)) {
             casper.test.assertEqual(values[k], expected[k],
-                                    test_name ? (test_name + ": " + k) : undefined);
+                                    test_name ? test_name + ": " + k : undefined);
         }
     }
 };
@@ -310,7 +310,7 @@ exports.keypress = function (code) {
 exports.then_send_many = function (msgs) {
     msgs.forEach(function (msg) {
         exports.then_send_message(
-            (msg.stream !== undefined) ? 'stream' : 'private',
+            msg.stream !== undefined ? 'stream' : 'private',
             msg);
     });
 };

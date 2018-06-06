@@ -446,9 +446,9 @@ exports.content_typeahead_selected = function (item) {
         if (beginning.lastIndexOf(":") === 0 ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === " " ||
             beginning.charAt(beginning.lastIndexOf(":") - 1) === "\n") {
-            beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ");
+            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + ":" + item.emoji_name + ": ";
         } else {
-            beginning = (beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ");
+            beginning = beginning.substring(0, beginning.length - this.token.length - 1) + " :" + item.emoji_name + ": ";
         }
     } else if (this.completing === 'mention') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
@@ -613,7 +613,7 @@ exports.initialize = function () {
             // The matcher for "stream" is strictly prefix-based,
             // because we want to avoid mixing up streams.
             var q = this.query.trim().toLowerCase();
-            return (item.toLowerCase().indexOf(q) === 0);
+            return item.toLowerCase().indexOf(q) === 0;
         },
     });
 

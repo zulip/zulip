@@ -33,8 +33,8 @@ exports.password_quality = function (password, bar, password_field) {
     var min_guesses = password_field.data('minGuesses');
 
     var result = zxcvbn(password);
-    var acceptable = (password.length >= min_length
-                      && result.guesses >= min_guesses);
+    var acceptable = password.length >= min_length
+                      && result.guesses >= min_guesses;
 
     if (bar !== undefined) {
         var t = result.crack_times_seconds.offline_slow_hashing_1e4_per_second;

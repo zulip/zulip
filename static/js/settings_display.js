@@ -9,7 +9,7 @@ var meta = {
 function change_display_setting(data, status_element, success_msg, sticky) {
     var $status_el = $(status_element);
     var status_is_sticky = $status_el.data('is_sticky');
-    var display_message = (status_is_sticky) ? $status_el.data('sticky_msg') : success_msg;
+    var display_message = status_is_sticky ? $status_el.data('sticky_msg') : success_msg;
     var opts = {
         success_msg: display_message,
         sticky: status_is_sticky || sticky,

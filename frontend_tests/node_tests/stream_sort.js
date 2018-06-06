@@ -47,7 +47,7 @@ stream_data.add_sub(weaving.name, weaving);
 
 with_overrides(function (override) {
     override('stream_data.is_active', function (sub) {
-        return (sub.name !== "pneumonia");
+        return sub.name !== "pneumonia";
     });
 
     // Test sorting into categories/alphabetized

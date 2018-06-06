@@ -19,7 +19,7 @@ exports.encode_operand = function (operator, operand) {
         }
     }
 
-    if ((operator === 'stream')) {
+    if (operator === 'stream') {
         return exports.encode_stream_name(operand);
     }
 
