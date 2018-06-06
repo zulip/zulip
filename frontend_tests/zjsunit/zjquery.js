@@ -406,7 +406,7 @@ exports.make_zjquery = function (opts) {
             (selector === 'document-stub') ||
             (selector === 'body') ||
             (selector === 'html') ||
-            (selector.location) ||
+            selector.location ||
             (selector.indexOf('#') >= 0) ||
             (selector.indexOf('.') >= 0) ||
             (selector.indexOf('[') >= 0 && selector.indexOf(']') >= selector.indexOf('['));

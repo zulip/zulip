@@ -219,7 +219,7 @@ function build_stream_sidebar_li(sub) {
         name: name,
         id: sub.stream_id,
         uri: narrow.by_stream_uri(name),
-        not_in_home_view: (stream_data.in_home_view(sub.stream_id) === false),
+        not_in_home_view: stream_data.in_home_view(sub.stream_id) === false,
         invite_only: sub.invite_only,
         color: stream_data.get_color(name),
         pin_to_top: sub.pin_to_top,
@@ -383,7 +383,7 @@ exports.get_sidebar_stream_topic_info  = function (filter) {
     result.stream_id = stream_id;
 
     var op_subject = filter.operands('topic');
-    result.topic_selected = (op_subject.length === 1);
+    result.topic_selected = op_subject.length === 1;
 
     return result;
 };

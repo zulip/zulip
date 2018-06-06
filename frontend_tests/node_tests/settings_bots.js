@@ -93,7 +93,7 @@ function test_create_bot_type_input_box_toggle(f) {
 
     $('#create_bot_type :selected').val(GENERIC_BOT_TYPE);
     f.apply();
-    assert(!(create_payload_url.hasClass('required')));
+    assert(!create_payload_url.hasClass('required'));
     assert(!payload_url_inputbox.visible());
     assert(!config_inputbox.visible());
 }

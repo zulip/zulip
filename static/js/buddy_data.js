@@ -86,7 +86,7 @@ function filter_user_ids(filter_text, user_ids) {
 exports.matches_filter = function (filter_text, user_id) {
     // This is a roundabout way of checking a user if you look
     // too hard at it, but it should be fine for now.
-    return (filter_user_ids(filter_text, [user_id]).length === 1);
+    return filter_user_ids(filter_text, [user_id]).length === 1;
 };
 
 function get_num_unread(user_id) {

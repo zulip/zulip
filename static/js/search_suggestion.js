@@ -264,7 +264,7 @@ function get_topic_suggestions(last, operators) {
 
     var operator = Filter.canonicalize_operator(last.operator);
     var operand = last.operand;
-    var negated = (operator === 'topic') && (last.negated);
+    var negated = (operator === 'topic') && last.negated;
     var stream;
     var guess;
     var filter = new Filter(operators);
@@ -392,7 +392,7 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         // e.g for `att` search query, `has:attachment` should be suggested.
         var show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
         return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
-               (show_operator_suggestions) ||
+               show_operator_suggestions ||
                (s.description.toLowerCase().indexOf(last_string) === 0);
     });
 

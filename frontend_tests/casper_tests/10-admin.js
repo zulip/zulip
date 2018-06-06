@@ -410,7 +410,7 @@ casper.then(function () {
     casper.waitUntilVisible(".method_row[data-method='Google'] input[type='checkbox'] + span", function () {
         // Test Setting was saved
         casper.test.assertEval(function () {
-            return !(document.querySelector(".method_row[data-method='Google'] input[type='checkbox']").checked);
+            return !document.querySelector(".method_row[data-method='Google'] input[type='checkbox']").checked;
         });
     });
 });

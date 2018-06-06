@@ -123,7 +123,7 @@ exports.save = function (row, from_topic_edited_only) {
         } else {
             new_topic = row.find(".message_edit_topic").val();
         }
-        topic_changed = (new_topic !== message.subject && new_topic.trim() !== "");
+        topic_changed = new_topic !== message.subject && new_topic.trim() !== "";
     }
     // Editing a not-yet-acked message (because the original send attempt failed)
     // just results in the in-memory message being changed
@@ -237,15 +237,15 @@ function edit_message(row, raw_content) {
     // zerver.views.messages.update_message_backend
     var seconds_left_buffer = 5;
     var editability = get_editability(message, seconds_left_buffer);
-    var is_editable = (editability === message_edit.editability_types.TOPIC_ONLY ||
-                       editability === message_edit.editability_types.FULL);
+    var is_editable = editability === message_edit.editability_types.TOPIC_ONLY ||
+                       editability === message_edit.editability_types.FULL;
 
     var form = $(templates.render(
         'message_edit_form',
-        {is_stream: (message.type === 'stream'),
+        {is_stream: message.type === 'stream',
          message_id: message.id,
          is_editable: is_editable,
-         has_been_editable: (editability !== editability_types.NO),
+         has_been_editable: editability !== editability_types.NO,
          topic: message.subject,
          content: raw_content,
          minutes_to_edit: Math.floor(page_params.realm_message_content_edit_limit_seconds / 60)}));

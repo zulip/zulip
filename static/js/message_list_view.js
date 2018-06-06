@@ -64,13 +64,13 @@ function add_display_time(group, message_container, prev) {
         var prev_time = new XDate(prev.msg.timestamp * 1000);
         if (time.toDateString() !== prev_time.toDateString()) {
             // NB: show_date is HTML, inserted into the document without escaping.
-            group.show_date = (timerender.render_date(time, prev_time, today))[0].outerHTML;
+            group.show_date = timerender.render_date(time, prev_time, today)[0].outerHTML;
             group.show_date_separator = true;
         }
     } else {
         // Show the date in the recipient bar, but not a date separator bar.
         group.show_date_separator = false;
-        group.show_date = (timerender.render_date(time, undefined, today))[0].outerHTML;
+        group.show_date = timerender.render_date(time, undefined, today)[0].outerHTML;
     }
 
     if (message_container.timestr === undefined) {
@@ -143,7 +143,7 @@ MessageListView.prototype = {
             var last_edit_time = new XDate(message_container.msg.last_edit_timestamp * 1000);
             var today = new XDate();
             message_container.last_edit_timestr =
-                (timerender.render_date(last_edit_time, undefined, today))[0].textContent
+                timerender.render_date(last_edit_time, undefined, today)[0].textContent
                 + " at " + timerender.stringify_time(last_edit_time);
         }
     },
@@ -811,7 +811,7 @@ MessageListView.prototype = {
         // viewable window and the selected message
         var old_offset;
         var selected_row = this.selected_row();
-        var selected_in_view = (selected_row.length > 0);
+        var selected_in_view = selected_row.length > 0;
         if (selected_in_view) {
             old_offset = selected_row.offset().top;
         }

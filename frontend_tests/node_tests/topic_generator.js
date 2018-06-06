@@ -147,7 +147,7 @@ run_test('fchain', () => {
         return {
             next: function () {
                 ret += n;
-                return (ret <= 100) ? ret : undefined;
+                return ret <= 100 ? ret : undefined;
             },
         };
     };
@@ -284,7 +284,7 @@ run_test('topics', () => {
     };
 
     global.stream_data.name_in_home_view = function (stream_name) {
-        return (stream_name !== 'muted');
+        return stream_name !== 'muted';
     };
 
     global.unread.topic_has_any_unread = function (stream_id) {
@@ -292,7 +292,7 @@ run_test('topics', () => {
     };
 
     global.muting.is_topic_muted = function (stream_name, topic) {
-        return (topic === 'muted');
+        return topic === 'muted';
     };
 
     var next_item = tg.get_next_topic('announce', 'whatever');

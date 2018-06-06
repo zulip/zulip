@@ -93,8 +93,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             settings_org.sync_realm_settings(event.property);
             if (event.property === 'create_stream_by_admins_only') {
                 if (!page_params.is_admin) {
-                    page_params.can_create_streams = (
-                        !page_params.realm_create_stream_by_admins_only);
+                    page_params.can_create_streams =
+                        !page_params.realm_create_stream_by_admins_only;
                 }
             } else if (event.property === 'notifications_stream_id') {
                 settings_org.render_notifications_stream_ui(

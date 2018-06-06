@@ -20,7 +20,7 @@ function find_boundary_tr(initial_tr, iterate_row) {
     // To ensure we can't enter an infinite loop, bail out (and let the
     // browser handle the copy-paste on its own) if we don't hit what we
     // are looking for within 10 rows.
-    for (j = 0; (!tr.is('.message_row')) && j < 10; j += 1) {
+    for (j = 0; !tr.is('.message_row') && j < 10; j += 1) {
         tr = iterate_row(tr);
     }
     if (j === 10) {

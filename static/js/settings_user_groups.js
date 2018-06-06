@@ -22,7 +22,7 @@ exports.reload = function () {
 
 exports.can_edit = function (group_id) {
     var me = people.get_person_from_user_id(people.my_current_user_id());
-    return (user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin);
+    return user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin;
 };
 
 exports.populate_user_groups = function () {

@@ -266,7 +266,7 @@ exports.populate_realm_domains = function (realm_domains) {
     }
 
     var domains_list = _.map(realm_domains, function (realm_domain) {
-        return (realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain);
+        return realm_domain.allow_subdomains ? "*." + realm_domain.domain : realm_domain.domain;
     });
     var domains = domains_list.join(', ');
     if (domains.length === 0) {
@@ -582,7 +582,7 @@ exports.set_up = function () {
         });
 
         var save_btn_controls = subsection.find('.subsection-header .save-button-controls');
-        var button_state = (show_change_process_button) ? "unsaved" : "saved";
+        var button_state = show_change_process_button ? "unsaved" : "saved";
         exports.change_save_button_state(save_btn_controls, button_state);
     });
 

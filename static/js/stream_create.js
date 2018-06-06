@@ -191,8 +191,8 @@ function create_stream() {
 
     created_stream = stream_name;
 
-    var announce = (!!page_params.notifications_stream &&
-        $('#announce-new-stream input').prop('checked'));
+    var announce = !!page_params.notifications_stream &&
+        $('#announce-new-stream input').prop('checked');
 
     loading.make_indicator($('#stream_creating_indicator'), {text: i18n.t('Creating stream...')});
 

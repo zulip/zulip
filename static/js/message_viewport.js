@@ -11,7 +11,7 @@ var in_stoppable_autoscroll = false;
 exports.last_movement_direction = 1;
 
 exports.at_top = function () {
-    return (exports.scrollTop() <= 0);
+    return exports.scrollTop() <= 0;
 };
 
 exports.message_viewport_info = function () {
@@ -106,12 +106,12 @@ exports.set_message_position = function (message_top, message_height, viewport_i
 function in_viewport_or_tall(rect, top_of_feed, bottom_of_feed,
                              require_fully_visible) {
     if (require_fully_visible) {
-        return ((rect.top > top_of_feed) && // Message top is in view and
+        return (rect.top > top_of_feed) && // Message top is in view and
                 ((rect.bottom < bottom_of_feed) || // message is fully in view or
                  ((rect.height > bottom_of_feed - top_of_feed) &&
-                  (rect.top < bottom_of_feed)))); // message is tall.
+                  (rect.top < bottom_of_feed))); // message is tall.
     }
-    return (rect.bottom > top_of_feed && rect.top < bottom_of_feed);
+    return rect.bottom > top_of_feed && rect.top < bottom_of_feed;
 }
 
 function add_to_visible(candidates, visible,

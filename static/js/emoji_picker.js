@@ -274,7 +274,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
     }
     var user_id = page_params.user_id;
     var reaction = _.find(message.reactions, function (reaction) {
-        return (reaction.user.id === user_id) && (_.contains(aliases, reaction.emoji_name));
+        return (reaction.user.id === user_id) && _.contains(aliases, reaction.emoji_name);
     });
     if (reaction) {
         return reaction.emoji_name;
@@ -322,7 +322,7 @@ exports.toggle_selected_emoji = function () {
 };
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
-    return (number_to_round - (number_to_round % multiple));
+    return number_to_round - (number_to_round % multiple);
 }
 
 function reset_emoji_showcase() {
@@ -392,7 +392,7 @@ function get_next_emoji_coordinates(move_by) {
                 var prev_multiple = round_off_to_previous_multiple(max_len, 6);
                 next_index =  prev_multiple + current_index;
                 next_index = next_index >= max_len
-                    ? (prev_multiple + current_index - 6)
+                    ? prev_multiple + current_index - 6
                     : next_index;
             }
         }

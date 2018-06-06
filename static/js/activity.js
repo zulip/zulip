@@ -302,7 +302,7 @@ function focus_ping(want_redraw) {
     }
     channel.post({
         url: '/json/users/me/presence',
-        data: {status: (exports.has_focus) ? exports.ACTIVE : exports.IDLE,
+        data: {status: exports.has_focus ? exports.ACTIVE : exports.IDLE,
                ping_only: !want_redraw,
                new_user_input: exports.new_user_input},
         idempotent: true,

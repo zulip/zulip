@@ -20,8 +20,8 @@ exports.deferred_message_types = deferred_message_types;
 exports.is_deferred_delivery = function (message_content) {
     var reminders_test = deferred_message_types.reminders.test;
     var scheduled_test = deferred_message_types.scheduled.test;
-    return (reminders_test.test(message_content) ||
-            scheduled_test.test(message_content));
+    return reminders_test.test(message_content) ||
+            scheduled_test.test(message_content);
 };
 
 function patch_request_for_scheduling(request) {

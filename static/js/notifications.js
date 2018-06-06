@@ -46,11 +46,11 @@ if (window.webkitNotifications) {
 
 
 function browser_desktop_notifications_on() {
-    return (notifications_api &&
+    return notifications_api &&
             // Firefox on Ubuntu claims to do webkitNotifications but its notifications are terrible
             /webkit/i.test(navigator.userAgent) &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0);
+            notifications_api.checkPermission() === 0;
 }
 
 function cancel_notification_object(notification_object) {
@@ -121,7 +121,7 @@ exports.redraw_title = function () {
     // Update window title and favicon to reflect unread messages in current view
     var n;
 
-    var new_title = (new_message_count ? ("(" + new_message_count + ") ") : "")
+    var new_title = (new_message_count ? "(" + new_message_count + ") " : "")
         + narrow.narrow_title + " - "
         + page_params.realm_name + " - "
         + "Zulip";
@@ -139,7 +139,7 @@ exports.redraw_title = function () {
             // Make sure we're working with a number, as a defensive programming
             // measure.  And we don't have images above 99, so display those as
             // 'infinite'.
-            n = (+new_message_count);
+            n = +new_message_count;
             if (n > 99) {
                 n = 'infinite';
             }
@@ -463,9 +463,9 @@ function should_send_audible_notification(message) {
 }
 
 exports.granted_desktop_notifications_permission = function () {
-    return (notifications_api &&
+    return notifications_api &&
             // 0 is PERMISSION_ALLOWED
-            notifications_api.checkPermission() === 0);
+            notifications_api.checkPermission() === 0;
 };
 
 

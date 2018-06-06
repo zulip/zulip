@@ -615,7 +615,7 @@ run_test('updates', () => {
     assert.equal(all_people.length, 2);
 
     person = _.filter(all_people, function (p) {
-        return (p.email === new_email);
+        return p.email === new_email;
     })[0];
     assert.equal(person.full_name, 'Foo Barson');
 

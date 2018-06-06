@@ -1,7 +1,7 @@
 var list_cursor = function (opts) {
     var self = {};
 
-    var config_ok = (
+    var config_ok =
         opts.highlight_class &&
         opts.list &&
         opts.list.container &&
@@ -9,7 +9,7 @@ var list_cursor = function (opts) {
         opts.list.first_key &&
         opts.list.prev_key &&
         opts.list.next_key
-    );
+    ;
 
     if (!config_ok) {
         blueslip.error('Programming error');

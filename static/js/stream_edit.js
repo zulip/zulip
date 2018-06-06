@@ -207,7 +207,7 @@ function show_subscription_settings(sub_row) {
                     var email = person.email.toLocaleLowerCase();
                     var full_name = person.full_name.toLowerCase();
 
-                    return (email.indexOf(value) > -1 || full_name.indexOf(value) > -1);
+                    return email.indexOf(value) > -1 || full_name.indexOf(value) > -1;
                 }
             },
         },
@@ -514,8 +514,8 @@ exports.initialize = function () {
             is_announcement_only: stream.is_announcement_only,
             is_public: !stream.invite_only,
             is_private: stream.invite_only && !stream.history_public_to_subscribers,
-            is_private_with_public_history: (stream.invite_only &&
-                                             stream.history_public_to_subscribers),
+            is_private_with_public_history: stream.invite_only &&
+                                             stream.history_public_to_subscribers,
         };
         var change_privacy_modal = templates.render("subscription_stream_privacy_modal", template_data);
         $("#stream_privacy_modal").remove();

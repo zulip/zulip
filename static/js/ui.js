@@ -167,7 +167,7 @@ exports.switchToFullWidth = function () {
     $('head').append('<style id="full-width-style" type="text/css">' +
                          '#home .alert-bar, .recipient-bar-content, #compose-container, .app-main, .header-main { max-width: none; }' +
                      '</style>');
-    return ("Switched to full width");
+    return "Switched to full width";
 };
 
 /* END OF EXPERIMENTS */

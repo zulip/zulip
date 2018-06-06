@@ -103,7 +103,7 @@ function calculate_info_popover_placement(size, elt) {
 
     if (!((ypos + (size / 2) < message_viewport.height()) &&
           (ypos > (size / 2)))) {
-        if (((ypos + size) < message_viewport.height())) {
+        if ((ypos + size) < message_viewport.height()) {
             return 'bottom';
         } else if (ypos > size) {
             return 'top';
@@ -345,7 +345,7 @@ exports.toggle_actions_popover = function (element, id) {
         var ypos = elt.offset().top;
         elt.popover({
             // Popover height with 7 items in it is ~190 px
-            placement: ((message_viewport.height() - ypos) < 220) ? 'top' : 'bottom',
+            placement: (message_viewport.height() - ypos) < 220 ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual",
@@ -368,7 +368,7 @@ exports.render_actions_remind_popover = function (element, id) {
         var ypos = elt.offset().top;
         elt.popover({
             // Popover height with 7 items in it is ~190 px
-            placement: ((message_viewport.height() - ypos) < 220) ? 'top' : 'bottom',
+            placement: (message_viewport.height() - ypos) < 220 ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('remind_me_popover_content', args),
             trigger:   "manual",
@@ -664,7 +664,7 @@ exports.register_click_handlers = function () {
             is_active: people.is_active_user_for_popover(user_id),
             is_bot: user.is_bot,
             is_sender_popover: false,
-            show_user_profile: (!user.is_bot && page_params.custom_profile_fields),
+            show_user_profile: !user.is_bot && page_params.custom_profile_fields,
         };
 
         target.popover({

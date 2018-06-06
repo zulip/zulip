@@ -73,7 +73,7 @@ exports.id_matches_email_operand = function (user_id, email) {
         return false;
     }
 
-    return (person.user_id === user_id);
+    return person.user_id === user_id;
 };
 
 exports.update_email = function (user_id, new_email) {
@@ -137,7 +137,7 @@ exports.huddle_string = function (message) {
     function is_huddle_recip(user_id) {
         return user_id &&
             people_by_user_id_dict.has(user_id) &&
-            (!exports.is_my_user_id(user_id));
+            !exports.is_my_user_id(user_id);
     }
 
     user_ids = _.filter(user_ids, is_huddle_recip);

@@ -278,7 +278,7 @@ exports.set_full_datetime = function timerender_set_full_datetime(message, time_
 
     message.full_date_str = time.toLocaleDateString();
     message.full_time_str = time.toLocaleTimeString() +
-        ' (UTC' + ((tz_offset < 0) ? '' : '+') + tz_offset + ')';
+        ' (UTC' + (tz_offset < 0 ? '' : '+') + tz_offset + ')';
 
     time_elem.attr('title', message.full_date_str + ' ' + message.full_time_str);
 };
