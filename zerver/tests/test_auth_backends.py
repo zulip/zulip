@@ -406,7 +406,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
         from social_core.backends.utils import load_backends
         load_backends(settings.AUTHENTICATION_BACKENDS, force_load=True)
 
-    def github_oauth2_test(self, token_data_dict: Dict[str, str], account_data_dict: Dict[str, str],
+    def github_oauth2_test(self, account_data_dict: Dict[str, str],
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
                            is_signup: Optional[str]=None,
@@ -438,6 +438,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
         # Next, the browser requests result["Location"], and gets
         # redirected back to /complete/github.
 
+        token_data_dict = {
+            'access_token': 'foobar',
+            'token_type': 'bearer'
+        }
         # We register callbacks for the key URLs on github.com that
         # /complete/github will call
         httpretty.enable()
@@ -463,23 +467,15 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_KEY=None)
     def test_github_oauth2_no_key(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/config-error/github")
 
     def test_github_oauth2_success(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
@@ -494,15 +490,11 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_github_oauth2_github_team_not_member_failed(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
-            result = self.github_oauth2_test(token_data_dict, account_data_dict,
+            result = self.github_oauth2_test(account_data_dict,
                                              subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
@@ -510,14 +502,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_github_oauth2_github_team_member_success(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubTeamOAuth2.user_data',
                         return_value=account_data_dict):
-            result = self.github_oauth2_test(token_data_dict, account_data_dict,
+            result = self.github_oauth2_test(account_data_dict,
                                              subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
@@ -526,15 +514,11 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_github_oauth2_github_organization_not_member_failed(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
                         side_effect=AuthFailed('Not found')), \
                 mock.patch('logging.info') as mock_info:
-            result = self.github_oauth2_test(token_data_dict, account_data_dict,
+            result = self.github_oauth2_test(account_data_dict,
                                              subdomain='zulip')
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
@@ -542,14 +526,10 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     @override_settings(SOCIAL_AUTH_GITHUB_ORG_NAME='Zulip')
     def test_github_oauth2_github_organization_member_success(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
         with mock.patch('social_core.backends.github.GithubOrganizationOAuth2.user_data',
                         return_value=account_data_dict):
-            result = self.github_oauth2_test(token_data_dict, account_data_dict,
+            result = self.github_oauth2_test(account_data_dict,
                                              subdomain='zulip')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
@@ -559,60 +539,40 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def test_github_oauth2_deactivated_user(self) -> None:
         user_profile = self.example_user("hamlet")
         do_deactivate_user(user_profile)
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/")
         # TODO: verify whether we provide a clear error message
 
     def test_github_oauth2_invalid_realm(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
         with mock.patch('zerver.middleware.get_realm', return_value=get_realm("zulip")):
             # This mock.patch case somewhat hackishly arranges it so
             # that we switch realms halfway through the test
-            result = self.github_oauth2_test(token_data_dict, account_data_dict,
+            result = self.github_oauth2_test(account_data_dict,
                                              subdomain='invalid', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/accounts/login/?subdomain=1")
 
     def test_github_oauth2_invalid_email(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email="invalid", name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', next='/user_uploads/image')
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result.url, "/login/?next=/user_uploads/image")
 
     def test_user_cannot_log_into_nonexisting_realm(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='nonexistent')
         self.assert_in_success_response(["There is no Zulip organization hosted at this subdomain."],
                                         result)
 
     def test_user_cannot_log_into_wrong_subdomain(self) -> None:
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name=self.name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zephyr')
         self.assertTrue(result.url.startswith("http://zephyr.testserver/accounts/login/subdomain/"))
         result = self.client_get(result.url.replace('http://zephyr.testserver', ''),
@@ -622,23 +582,19 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_oauth2_mobile_success(self) -> None:
         mobile_flow_otp = '1234abcd' * 8
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=self.email, name='Full Name')
         self.assertEqual(len(mail.outbox), 0)
         with self.settings(SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
-            result = self.github_oauth2_test(token_data_dict, account_data_dict, subdomain='zulip',
+            result = self.github_oauth2_test(account_data_dict, subdomain='zulip',
                                              mobile_flow_otp="1234")
             self.assert_json_error(result, "Invalid OTP")
-            result = self.github_oauth2_test(token_data_dict, account_data_dict, subdomain='zulip',
+            result = self.github_oauth2_test(account_data_dict, subdomain='zulip',
                                              mobile_flow_otp="invalido" * 8)
             self.assert_json_error(result, "Invalid OTP")
 
             # Now do it correctly
-            result = self.github_oauth2_test(token_data_dict, account_data_dict, subdomain='zulip',
+            result = self.github_oauth2_test(account_data_dict, subdomain='zulip',
                                              mobile_flow_otp=mobile_flow_otp)
         self.assertEqual(result.status_code, 302)
         redirect_url = result['Location']
@@ -657,12 +613,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         """If the user already exists, signup flow just logs them in"""
         email = "hamlet@zulip.com"
         name = 'Full Name'
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=email, name=name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', is_signup='1')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
@@ -682,12 +634,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         email = "newuser@zulip.com"
         name = 'Full Name'
         realm = get_realm("zulip")
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=email, name=name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', is_signup='1')
 
         data = load_subdomain_token(result)
@@ -733,12 +681,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         """If the user doesn't exist yet, GitHub auth can be used to register an account"""
         email = "newuser@zulip.com"
         name = 'Full Name'
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=email, name=name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip')
         self.assertEqual(result.status_code, 302)
         data = load_subdomain_token(result)
@@ -759,12 +703,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         """If the user doesn't exist yet in closed realm, give an error"""
         email = "nonexisting@phantom.com"
         name = 'Full Name'
-        token_data_dict = {
-            'access_token': 'foobar',
-            'token_type': 'bearer'
-        }
         account_data_dict = dict(email=email, name=name)
-        result = self.github_oauth2_test(token_data_dict, account_data_dict,
+        result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip')
         self.assertEqual(result.status_code, 302)
         data = load_subdomain_token(result)
