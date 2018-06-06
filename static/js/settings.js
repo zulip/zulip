@@ -123,7 +123,7 @@ exports.setup_page = function () {
         var hash_sequence = window.location.hash.split(/\//);
         if (/#*(settings)/.test(hash_sequence[0])) {
             tab = hash_sequence[1];
-            return tab || "your-account";
+            return tab || settings_panel_menu.normal_settings.current_tab();
         }
         return tab;
     }());
@@ -150,15 +150,12 @@ exports.setup_page = function () {
 
     if (tab) {
         exports.launch_page(tab);
+        settings_toggle.highlight_toggle('settings');
     }
 };
 
 exports.launch_page = function (tab) {
     var $active_tab = $("#settings_overlay_container li[data-section='" + tab + "']");
-
-    if (!$active_tab.hasClass("admin")) {
-        settings_toggle.highlight_toggle('settings');
-    }
 
     overlays.open_settings();
 
@@ -171,22 +168,6 @@ exports.set_settings_header = function (key) {
     } else {
         blueslip.warn("Error: the key '" + key + "' does not exist in the settings" +
             " header mapping file. Please add it.");
-    }
-};
-
-exports.handle_up_arrow = function (e) {
-    var prev = e.target.previousElementSibling;
-
-    if ($(prev).css("display") !== "none") {
-        $(prev).focus().click();
-    }
-};
-
-exports.handle_down_arrow = function (e) {
-    var next = e.target.nextElementSibling;
-
-    if ($(next).css("display") !== "none") {
-        $(next).focus().click();
     }
 };
 

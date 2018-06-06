@@ -408,9 +408,6 @@ run_test('motion_keys', () => {
     assert_unmapped('page_up');
     assert_unmapped('page_down');
     assert_unmapped('spacebar');
-
-    assert_mapping('up_arrow', 'settings.handle_up_arrow');
-    assert_mapping('down_arrow', 'settings.handle_down_arrow');
     overlays.settings_open = return_false;
 
     overlays.is_active = return_true;

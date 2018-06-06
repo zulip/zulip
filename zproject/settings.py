@@ -993,6 +993,7 @@ JS_SPECS = {
             'js/ui_util.js',
             'js/pointer.js',
             'js/click_handlers.js',
+            'js/settings_panel_menu.js',
             'js/settings_toggle.js',
             'js/scroll_bar.js',
             'js/gear_menu.js',

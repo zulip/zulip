@@ -307,6 +307,7 @@ $(function () {
     tutorial.initialize();
     notifications.initialize();
     gear_menu.initialize();
+    settings_panel_menu.initialize();
     settings_sections.initialize();
     settings_toggle.initialize();
     hashchange.initialize();
