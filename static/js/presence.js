@@ -25,7 +25,7 @@ exports.is_active = function (user_id) {
 
     if (presence_info[user_id]) {
         var status = presence_info[user_id].status;
-        if (status && (status === "active")) {
+        if (status && status === "active") {
             return true;
         }
     }

@@ -80,7 +80,7 @@ exports.populate_user_groups = function () {
             var description = $('#user-groups #' + data.id + ' .description').text().trim();
             var name = $('#user-groups #' + data.id + ' .name').text().trim();
 
-            if ((group_data.description === description && group_data.name === name) &&
+            if (group_data.description === description && group_data.name === name &&
                 (!draft_group.length || same_groups)) {
                 return false;
             }

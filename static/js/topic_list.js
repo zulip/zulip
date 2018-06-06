@@ -74,8 +74,8 @@ exports.widget = function (parent_elem, my_stream_id) {
 
             if (!zoomed) {
                 // Show the most recent topics, as well as any with unread messages
-                var show_topic = (idx < max_topics) || (num_unread > 0) ||
-                                 (self.active_topic === topic_name.toLowerCase());
+                var show_topic = idx < max_topics || num_unread > 0 ||
+                                 self.active_topic === topic_name.toLowerCase();
 
                 if (!show_topic) {
                     return;
@@ -236,7 +236,7 @@ exports.zoom_in = function () {
     var before_count = active_widget.num_items();
 
     function on_success() {
-        if (!active_widget || (stream_id !== active_widget.get_stream_id())) {
+        if (!active_widget || stream_id !== active_widget.get_stream_id()) {
             blueslip.warn('User re-narrowed before topic history was returned.');
             return;
         }

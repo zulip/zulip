@@ -101,9 +101,9 @@ function user_last_seen_time_status(user_id) {
 function calculate_info_popover_placement(size, elt) {
     var ypos = elt.offset().top;
 
-    if (!((ypos + (size / 2) < message_viewport.height()) &&
-          (ypos > (size / 2)))) {
-        if ((ypos + size) < message_viewport.height()) {
+    if (!(ypos + size / 2 < message_viewport.height() &&
+          ypos > size / 2)) {
+        if (ypos + size < message_viewport.height()) {
             return 'bottom';
         } else if (ypos > size) {
             return 'top';
@@ -344,7 +344,7 @@ exports.toggle_actions_popover = function (element, id) {
         var ypos = elt.offset().top;
         elt.popover({
             // Popover height with 7 items in it is ~190 px
-            placement: (message_viewport.height() - ypos) < 220 ? 'top' : 'bottom',
+            placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('actions_popover_content', args),
             trigger:   "manual",
@@ -367,7 +367,7 @@ exports.render_actions_remind_popover = function (element, id) {
         var ypos = elt.offset().top;
         elt.popover({
             // Popover height with 7 items in it is ~190 px
-            placement: (message_viewport.height() - ypos) < 220 ? 'top' : 'bottom',
+            placement: message_viewport.height() - ypos < 220 ? 'top' : 'bottom',
             title:     "",
             content:   templates.render('remind_me_popover_content', args),
             trigger:   "manual",

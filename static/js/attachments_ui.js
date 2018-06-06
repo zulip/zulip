@@ -29,8 +29,8 @@ function bytes_to_size(bytes, kb_with_1024_bytes) {
     }
     var i = parseInt(Math.floor(Math.log(bytes) / Math.log(kb_size)), 10);
     var size = Math.round(bytes / Math.pow(kb_size, i));
-    if ((i > 0) && (size < 10)) {
-        size = Math.round((bytes / Math.pow(kb_size, i)) * 10) / 10;
+    if (i > 0 && size < 10) {
+        size = Math.round(bytes / Math.pow(kb_size, i) * 10) / 10;
     }
     return size + ' ' + sizes[i];
 }

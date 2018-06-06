@@ -159,7 +159,7 @@ function get_group_suggestions(all_persons, last, operators) {
         if (_.contains(parts, person.email)) {
             return false;
         }
-        return (last_part === '') || people.person_matches_query(person, last_part);
+        return last_part === '' || people.person_matches_query(person, last_part);
     });
 
     persons.sort(compare_by_huddle(parts));
@@ -264,7 +264,7 @@ function get_topic_suggestions(last, operators) {
 
     var operator = Filter.canonicalize_operator(last.operator);
     var operand = last.operand;
-    var negated = (operator === 'topic') && last.negated;
+    var negated = operator === 'topic' && last.negated;
     var stream;
     var guess;
     var filter = new Filter(operators);
@@ -391,9 +391,9 @@ function get_special_filter_suggestions(last, operators, suggestions) {
         var suggestion_operand = s.search_string.substring(s.search_string.indexOf(":") + 1);
         // e.g for `att` search query, `has:attachment` should be suggested.
         var show_operator_suggestions = last.operator === 'search' && suggestion_operand.toLowerCase().indexOf(last_string) === 0;
-        return (s.search_string.toLowerCase().indexOf(last_string) === 0) ||
+        return s.search_string.toLowerCase().indexOf(last_string) === 0 ||
                show_operator_suggestions ||
-               (s.description.toLowerCase().indexOf(last_string) === 0);
+               s.description.toLowerCase().indexOf(last_string) === 0;
     });
 
     // Only show home if there's an empty bar
@@ -478,7 +478,7 @@ function get_has_filter_suggestions(last, operators) {
 
 function get_sent_by_me_suggestions(last, operators) {
     var last_string = Filter.unparse([last]).toLowerCase();
-    var negated = last.negated || (last.operator === 'search' && last.operand[0] === '-');
+    var negated = last.negated || last.operator === 'search' && last.operand[0] === '-';
     var negated_symbol = negated ? '-' : '';
     var verb = negated ? 'exclude ' : '';
 

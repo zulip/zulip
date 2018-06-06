@@ -37,21 +37,21 @@ $(function () {
     if (sbWidth > 0) {
         $(".header").css("left", "-" + sbWidth + "px");
         $(".header-main").css("left", sbWidth + "px");
-        $(".header-main").css("max-width", (1400 + sbWidth) + "px");
-        $(".header-main .column-middle").css("margin-right", (250 + sbWidth) + "px");
+        $(".header-main").css("max-width", 1400 + sbWidth + "px");
+        $(".header-main .column-middle").css("margin-right", 250 + sbWidth + "px");
 
         $(".fixed-app").css("left", "-" + sbWidth + "px");
-        $(".fixed-app .app-main").css("max-width", (1400 + sbWidth) + "px");
-        $(".fixed-app .column-middle").css("margin-left", (250 + sbWidth) + "px");
+        $(".fixed-app .app-main").css("max-width", 1400 + sbWidth + "px");
+        $(".fixed-app .column-middle").css("margin-left", 250 + sbWidth + "px");
 
         $(".column-right").css("right", sbWidth + "px");
         $(".app-main .right-sidebar").css({"margin-left": sbWidth + "px",
-                                           width: (250 - sbWidth) + "px"});
+                                           width: 250 - sbWidth + "px"});
 
         $("#compose").css("left", "-" + sbWidth + "px");
         $(".compose-content").css({left: sbWidth + "px",
-                                   "margin-right": (250 + sbWidth) + "px"});
-        $("#compose-container").css("max-width", (1400 + sbWidth) + "px");
+                                   "margin-right": 250 + sbWidth + "px"});
+        $("#compose-container").css("max-width", 1400 + sbWidth + "px");
         $('#sidebar-keyboard-shortcuts #keyboard-icon').css({right: sbWidth + 13 + "px"});
 
         $("head").append("<style> @media (max-width: 1025px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +

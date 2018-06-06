@@ -227,8 +227,8 @@ function show_subscription_settings(sub_row) {
                 return false;
             }
             // Case-insensitive.
-            var item_matches = (item.email.toLowerCase().indexOf(query) !== -1) ||
-                               (item.full_name.toLowerCase().indexOf(query) !== -1);
+            var item_matches = item.email.toLowerCase().indexOf(query) !== -1 ||
+                               item.full_name.toLowerCase().indexOf(query) !== -1;
             var is_subscribed = stream_data.is_user_subscribed(sub.name, item.user_id);
             return item_matches && !is_subscribed;
         },

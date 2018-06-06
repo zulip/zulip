@@ -8,7 +8,7 @@ exports.autosize_textarea = function () {
 
 exports.smart_insert = function (textarea, syntax) {
     function is_space(c) {
-        return (c === ' ') || (c === '\t') || (c === '\n');
+        return c === ' ' || c === '\t' || c === '\n';
     }
 
     var pos = textarea.caret();

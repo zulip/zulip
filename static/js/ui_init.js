@@ -40,7 +40,7 @@ function message_hover(message_row) {
     }
 
     // But the message edit hover icon is determined by whether the message is still editable
-    if ((message_edit.get_editability(message) === message_edit.editability_types.FULL) &&
+    if (message_edit.get_editability(message) === message_edit.editability_types.FULL &&
         !message.status_message) {
         message_row.find(".edit_content").html('<i class="fa fa-pencil edit_content_button" aria-hidden="true" title="Edit"></i>');
     } else {
@@ -100,8 +100,8 @@ function initialize_kitchen_sink_stuff() {
         var max_scroll = this.scrollHeight - self.innerHeight() - 1;
 
         e.stopPropagation();
-        if (((delta < 0) && (scroll <= 0)) ||
-            ((delta > 0) && (scroll >= max_scroll))) {
+        if (delta < 0 && scroll <= 0 ||
+            delta > 0 && scroll >= max_scroll) {
             e.preventDefault();
         }
     });

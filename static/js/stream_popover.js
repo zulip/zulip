@@ -79,7 +79,7 @@ function update_spectrum(popover, update_func) {
     var current_top_px = parseFloat(popover_root.css('top').replace('px', ''));
     var height_delta = -(after_height - initial_height) * 0.5;
 
-    popover_root.css('top', (current_top_px + height_delta) + "px");
+    popover_root.css('top', current_top_px + height_delta + "px");
 }
 
 function build_stream_popover(e) {

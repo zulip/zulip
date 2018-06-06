@@ -114,7 +114,7 @@ var nextFocus = false;
 function handle_keydown(e) {
     var code = e.keyCode || e.which;
 
-    if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
+    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
         if (e.target.id === "stream" || e.target.id === "subject" || e.target.id === "private_message_recipient") {
             // For enter, prevent the form from submitting
             // For tab, prevent the focus from changing again
@@ -228,7 +228,7 @@ function handle_keydown(e) {
 
 function handle_keyup(e) {
     var code = e.keyCode || e.which;
-    if (code === 13 || (code === 9 && !e.shiftKey)) { // Enter key or tab key
+    if (code === 13 || code === 9 && !e.shiftKey) { // Enter key or tab key
         if (nextFocus) {
             ui_util.focus_on(nextFocus);
             nextFocus = false;

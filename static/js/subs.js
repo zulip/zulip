@@ -158,7 +158,7 @@ exports.rerender_subscribers_count = function (sub, just_subscribed) {
     }
     var stream_row = row_for_stream_id(sub.stream_id);
     stream_data.update_subscribers_count(sub);
-    if (!sub.can_access_subscribers || (just_subscribed && sub.invite_only)) {
+    if (!sub.can_access_subscribers || just_subscribed && sub.invite_only) {
         var rendered_sub_count = templates.render("subscription_count", sub);
         stream_row.find('.subscriber-count').expectOne().html(rendered_sub_count);
     } else {
@@ -331,7 +331,7 @@ function stream_matches_query(query, sub, attr) {
             }
         });
     }());
-    flag = flag && ((sub.subscribed || !query.subscribed_only) ||
+    flag = flag && (sub.subscribed || !query.subscribed_only ||
                     sub.data_temp_view === "true");
     return flag;
 }

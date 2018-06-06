@@ -58,8 +58,8 @@ exports.lower_bound = function (array, arg1, arg2, arg3, arg4) {
 
 exports.same_stream_and_topic = function util_same_stream_and_topic(a, b) {
     // Streams and topics are case-insensitive.
-    return (a.stream_id === b.stream_id) &&
-            (a.subject.toLowerCase() === b.subject.toLowerCase());
+    return a.stream_id === b.stream_id &&
+            a.subject.toLowerCase() === b.subject.toLowerCase();
 };
 
 exports.is_pm_recipient = function (email, message) {
@@ -74,7 +74,7 @@ exports.extract_pm_recipients = function (recipients) {
 };
 
 exports.same_recipient = function util_same_recipient(a, b) {
-    if ((a === undefined) || (b === undefined)) {
+    if (a === undefined || b === undefined) {
         return false;
     }
     if (a.type !== b.type) {
@@ -96,8 +96,8 @@ exports.same_recipient = function util_same_recipient(a, b) {
 };
 
 exports.same_sender = function util_same_sender(a, b) {
-    return (a !== undefined) && (b !== undefined) &&
-            (a.sender_email.toLowerCase() === b.sender_email.toLowerCase());
+    return a !== undefined && b !== undefined &&
+            a.sender_email.toLowerCase() === b.sender_email.toLowerCase();
 };
 
 exports.normalize_recipients = function (recipients) {

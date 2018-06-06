@@ -274,7 +274,7 @@ function get_alias_to_be_used(message_id, emoji_name) {
     }
     var user_id = page_params.user_id;
     var reaction = _.find(message.reactions, function (reaction) {
-        return (reaction.user.id === user_id) && _.contains(aliases, reaction.emoji_name);
+        return reaction.user.id === user_id && _.contains(aliases, reaction.emoji_name);
     });
     if (reaction) {
         return reaction.emoji_name;
@@ -322,7 +322,7 @@ exports.toggle_selected_emoji = function () {
 };
 
 function round_off_to_previous_multiple(number_to_round, multiple) {
-    return number_to_round - (number_to_round % multiple);
+    return number_to_round - number_to_round % multiple;
 }
 
 function reset_emoji_showcase() {
@@ -445,7 +445,7 @@ exports.navigate = function (event_name) {
         var filter_text = $(".emoji-popover-filter").val();
         var is_cursor_at_end = $(".emoji-popover-filter").caret() === filter_text.length;
         if (event_name === "down_arrow" ||
-           (is_cursor_at_end && event_name === "right_arrow")) {
+           is_cursor_at_end && event_name === "right_arrow") {
             selected_emoji.focus();
             if (current_section === 0 && current_index < 6) {
                 $(".emoji-popover-emoji-map").scrollTop(0);
@@ -459,8 +459,8 @@ exports.navigate = function (event_name) {
             return true;
         }
         return false;
-    } else if ((current_section === 0 && current_index < 6 && event_name === 'up_arrow') ||
-               (current_section === 0 && current_index === 0 && event_name === 'left_arrow')) {
+    } else if (current_section === 0 && current_index < 6 && event_name === 'up_arrow' ||
+               current_section === 0 && current_index === 0 && event_name === 'left_arrow') {
         if (selected_emoji) {
             // In this case, we're move up into the reaction
             // filter. Here, we override the default browser

@@ -393,12 +393,12 @@ exports.message_is_notifiable = function (message) {
 
     // Messages to muted streams that don't mention us specifically
     // are not notifiable.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         !stream_data.in_home_view(message.stream_id)) {
         return false;
     }
 
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         muting.is_topic_muted(message.stream, message.subject)) {
         return false;
     }
@@ -411,14 +411,14 @@ exports.message_is_notifiable = function (message) {
 function should_send_desktop_notification(message) {
     // For streams, send if desktop notifications are enabled for this
     // stream.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         stream_data.receives_desktop_notifications(message.stream)) {
         return true;
     }
 
     // For PMs and @-mentions, send if desktop notifications are
     // enabled.
-    if ((message.type === "private") &&
+    if (message.type === "private" &&
         page_params.enable_desktop_notifications) {
         return true;
     }
@@ -440,13 +440,13 @@ function should_send_desktop_notification(message) {
 
 function should_send_audible_notification(message) {
     // For streams, ding if sounds are enabled for this stream.
-    if ((message.type === "stream") &&
+    if (message.type === "stream" &&
         stream_data.receives_audible_notifications(message.stream)) {
         return true;
     }
 
     // For PMs and @-mentions, ding if sounds are enabled.
-    if ((message.type === "private") && page_params.enable_sounds) {
+    if (message.type === "private" && page_params.enable_sounds) {
         return true;
     }
 

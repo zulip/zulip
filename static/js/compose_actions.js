@@ -33,8 +33,8 @@ function get_focus_area(msg_type, opts) {
     // Set focus to "Topic" when narrowed to a stream+topic and "New topic" button clicked.
     if (msg_type === 'stream' && opts.stream && !opts.subject) {
         return 'subject';
-    } else if ((msg_type === 'stream' && opts.stream)
-               || (msg_type === 'private' && opts.private_message_recipient)) {
+    } else if (msg_type === 'stream' && opts.stream
+               || msg_type === 'private' && opts.private_message_recipient) {
         if (opts.trigger === "new topic button") {
             return 'subject';
         }
@@ -181,12 +181,12 @@ function fill_in_opts_from_current_narrowed_view(msg_type, opts) {
 }
 
 function same_recipient_as_before(msg_type, opts) {
-    return (compose_state.get_message_type() === msg_type) &&
-            ((msg_type === "stream" &&
+    return compose_state.get_message_type() === msg_type &&
+            (msg_type === "stream" &&
               opts.stream === compose_state.stream_name() &&
-              opts.subject === compose_state.subject()) ||
-             (msg_type === "private" &&
-              opts.private_message_recipient === compose_state.recipient()));
+              opts.subject === compose_state.subject() ||
+             msg_type === "private" &&
+              opts.private_message_recipient === compose_state.recipient());
 }
 
 exports.start = function (msg_type, opts) {
@@ -202,9 +202,9 @@ exports.start = function (msg_type, opts) {
     // If we are invoked by a compose hotkey (c or x) or new topic button
     // or sidebar stream actions (in stream popover), do not assume that we know what
     // the message's topic or PM recipient should be.
-    if ((opts.trigger === "compose_hotkey") ||
-        (opts.trigger === "new topic button") ||
-        (opts.trigger === "sidebar stream actions")) {
+    if (opts.trigger === "compose_hotkey" ||
+        opts.trigger === "new topic button" ||
+        opts.trigger === "sidebar stream actions") {
         opts.subject = '';
         opts.private_message_recipient = '';
     }
@@ -280,7 +280,7 @@ exports.respond_to_message = function (opts) {
         var first_operator = first_term.operator;
         var first_operand = first_term.operand;
 
-        if ((first_operator === "stream") && !stream_data.is_subscribed(first_operand)) {
+        if (first_operator === "stream" && !stream_data.is_subscribed(first_operand)) {
             compose.nonexistent_stream_reply_error();
             return;
         }

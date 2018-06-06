@@ -119,8 +119,8 @@ exports.message_state = function (opts) {
     };
 
     self.ready = function () {
-        return (self.data.send_finished !== undefined) &&
-               (self.data.received !== undefined);
+        return self.data.send_finished !== undefined &&
+               self.data.received !== undefined;
     };
 
     return self;

@@ -20,7 +20,7 @@ function process_result(data, opts) {
 
     $('#connection-error').removeClass("show");
 
-    if ((messages.length === 0) && (current_msg_list === message_list.narrowed) &&
+    if (messages.length === 0 && current_msg_list === message_list.narrowed &&
         message_list.narrowed.empty()) {
         // Even after trying to load more messages, we have no
         // messages to display in this narrow.

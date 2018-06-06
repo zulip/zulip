@@ -36,8 +36,8 @@ function zephyr_topic_name_match(message, operand) {
 
 function message_in_home(message) {
     if (message.type === "private" || message.mentioned ||
-        (page_params.narrow_stream !== undefined &&
-         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase())) {
+        page_params.narrow_stream !== undefined &&
+         message.stream.toLowerCase() === page_params.narrow_stream.toLowerCase()) {
         return true;
     }
 
@@ -347,7 +347,7 @@ Filter.prototype = {
 
     operands: function (operator) {
         return _.chain(this._operators)
-            .filter(function (elem) { return !elem.negated && (elem.operator === operator); })
+            .filter(function (elem) { return !elem.negated && elem.operator === operator; })
             .map(function (elem) { return elem.operand; })
             .value();
     },
@@ -606,7 +606,7 @@ function describe_unescaped(operators) {
 
     if (operators.length >= 2) {
         var is = function (term, expected) {
-            return (term.operator === expected) && !term.negated;
+            return term.operator === expected && !term.negated;
         };
 
         if (is(operators[0], 'stream') && is(operators[1], 'topic')) {

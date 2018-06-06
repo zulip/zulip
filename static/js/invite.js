@@ -11,9 +11,9 @@ function update_subscription_checkboxes() {
 
     _.each(stream_data.invite_streams(), function (value) {
         var is_notifications_stream = value === page_params.notifications_stream;
-        if ((stream_data.subscribed_streams().length === 1) ||
+        if (stream_data.subscribed_streams().length === 1 ||
             !is_notifications_stream ||
-            (is_notifications_stream && stream_data.get_invite_only(value))) {
+            is_notifications_stream && stream_data.get_invite_only(value)) {
             // You can't actually elect not to invite someone to the
             // notifications stream. We won't even show it as a choice unless
             // it's the only stream you have, or if you've made it private.

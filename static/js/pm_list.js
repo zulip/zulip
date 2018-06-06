@@ -96,8 +96,8 @@ exports._build_private_messages_list = function (active_conversation, max_privat
 
         var num_unread = unread.num_unread_for_person(user_ids_string);
 
-        var always_visible = (idx < max_private_messages) || (num_unread > 0)
-            || (user_ids_string === active_conversation);
+        var always_visible = idx < max_private_messages || num_unread > 0
+            || user_ids_string === active_conversation;
 
         if (!always_visible) {
             if (!zoomed_in) {
