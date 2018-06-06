@@ -56,6 +56,10 @@ var keydown_cmd_or_ctrl_mappings = {
     83: {name: 'star_message', message_view_only: true}, // 's'
 };
 
+var keydown_cmd_or_ctrl_and_shift_mappings = {
+    83: {name: 'narrow_starred', message_view_only: false}, // 's'
+};
+
 var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
@@ -92,6 +96,7 @@ var keypress_mappings = {
     80: {name: 'narrow_private', message_view_only: true}, // 'P'
     82: {name: 'respond_to_author', message_view_only: true}, // 'R'
     83: {name: 'narrow_by_subject', message_view_only: true}, //'S'
+    84: {name: 'toggle_subscription', message_view_only: true}, //'T'
     86: {name: 'view_selected_stream', message_view_only: false}, //'V'
     99: {name: 'compose', message_view_only: true}, // 'c'
     100: {name: 'open_drafts', message_view_only: true}, // 'd'
@@ -126,7 +131,11 @@ exports.get_keydown_hotkey = function (e) {
 
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
     if (isCmdOrCtrl) {
-        hotkey = keydown_cmd_or_ctrl_mappings[e.which];
+        if (e.shiftKey) {
+            hotkey = keydown_cmd_or_ctrl_and_shift_mappings[e.which];
+        } else {
+            hotkey = keydown_cmd_or_ctrl_mappings[e.which];
+        }
         if (hotkey) {
             return hotkey;
         }
@@ -461,6 +470,10 @@ exports.process_hotkey = function (e, hotkey) {
             return false;
         }
         if (event_name === 'narrow_by_subject' && overlays.streams_open()) {
+            ui.maybe_show_deprecation_notice('S');
+            return true;
+        }
+        if (event_name === 'toggle_subscription' && overlays.streams_open()) {
             subs.keyboard_sub();
             return true;
         }
@@ -664,6 +677,8 @@ exports.process_hotkey = function (e, hotkey) {
     case 'star_deprecated':
         ui.maybe_show_deprecation_notice('*');
         return true;
+    case 'narrow_starred':
+        return narrow.by('is', 'starred');
     }
 
     if (current_msg_list.empty()) {

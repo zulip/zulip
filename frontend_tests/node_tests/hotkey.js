@@ -101,6 +101,7 @@ run_test('mappings', () => {
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
     assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
+    assert.equal(map_down(83, true, true, false).name, 'narrow_starred'); // ctrl + shift + s
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -130,6 +131,7 @@ run_test('mappings', () => {
     assert.equal(map_down(75, false, true, false), undefined); // ctrl + k
     assert.equal(map_down(83, false, false, true).name, 'star_message'); // cmd + s
     assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
+    assert.equal(map_down(83, true, false, true).name, 'narrow_starred'); // cmd + shift + s
     // Reset userAgent
     global.navigator.userAgent = '';
 });
@@ -165,7 +167,7 @@ run_test('basic_chars', () => {
     // Unmapped keys should immediately return false, without
     // calling any functions outside of hotkey.js.
     assert_unmapped('abefhlmotyz');
-    assert_unmapped('BEFHILNOQTUWXYZ');
+    assert_unmapped('BEFHILNOQUWXYZ');
 
     // We have to skip some checks due to the way the code is
     // currently organized for mapped keys.
@@ -221,7 +223,7 @@ run_test('basic_chars', () => {
     page_params.can_create_streams = true;
     overlays.streams_open = return_true;
     overlays.is_active = return_true;
-    assert_mapping('S', 'subs.keyboard_sub');
+    assert_mapping('T', 'subs.keyboard_sub');
     assert_mapping('V', 'subs.view_stream');
     assert_mapping('n', 'subs.new_stream_clicked');
     page_params.can_create_streams = false;

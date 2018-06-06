@@ -76,6 +76,8 @@ below, and add more to your repertoire as needed.
 
 * **Narrow to all private messages**: `P`
 
+* **Narrow to all starred messages**: `Ctrl + Shift + s`
+
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
 * **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.
@@ -174,4 +176,4 @@ Keyboard navigation (e.g. arrow keys) works as expected.
 
 * **View stream messages**: `V`
 
-* **Toggle subscription**: `S`
+* **Toggle subscription**: `T`
