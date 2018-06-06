@@ -521,3 +521,36 @@ class ImportExportTest(ZulipTestCase):
             {user_message.user_profile.email for user_message in usermessage}
             for usermessage in usermessage]
         self.assertEqual(usermessage_user[0], usermessage_user[1])
+
+    def test_import_files_from_local(self) -> None:
+
+        realm = Realm.objects.get(string_id='zulip')
+        self._setup_export_files()
+        self._export_realm(realm)
+
+        with patch('logging.info'):
+            do_import_realm('var/test-export', 'test-zulip')
+        imported_realm = Realm.objects.get(string_id='test-zulip')
+
+        # Test attachments
+        uploaded_file = Attachment.objects.get(realm=imported_realm)
+        self.assertEqual(len(b'zulip!'), uploaded_file.size)
+
+        attachment_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', uploaded_file.path_id)
+        self.assertTrue(os.path.isfile(attachment_file_path))
+
+        # Test emojis
+        realm_emoji = RealmEmoji.objects.get(realm=imported_realm)
+        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
+            realm_id=imported_realm.id,
+            emoji_file_name=realm_emoji.file_name,
+        )
+        emoji_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", emoji_path)
+        self.assertTrue(os.path.isfile(emoji_file_path))
+
+        # Test avatars
+        user_email = Message.objects.all()[0].sender.email
+        user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
+        avatar_path_id = user_avatar_path(user_profile) + ".original"
+        avatar_file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, "avatars", avatar_path_id)
+        self.assertTrue(os.path.isfile(avatar_file_path))
