@@ -1,5 +1,5 @@
 
-from typing import Union, List, Dict, Optional
+from typing import Union, List, Dict, Optional, cast
 import logging
 import ujson
 
@@ -142,7 +142,7 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
 def update_user_custom_profile_data(
         request: HttpRequest,
         user_profile: UserProfile,
-        data: List[Dict[str, Union[int, str]]]=REQ(validator=check_list(
+        data: List[Dict[str, Union[int, str, List[int]]]]=REQ(validator=check_list(
             check_dict([('id', check_int)])))) -> HttpResponse:
     for item in data:
         field_id = item['id']
@@ -153,8 +153,8 @@ def update_user_custom_profile_data(
 
         validators = CustomProfileField.FIELD_VALIDATORS
         field_type = field.field_type
-        value = item['value']
         var_name = '{}'.format(field.name)
+        value = item['value']
         if field_type in validators:
             validator = validators[field_type]
             result = validator(var_name, value)
@@ -164,7 +164,8 @@ def update_user_custom_profile_data(
             result = choice_field_validator(var_name, field_data, value)
         elif field_type == CustomProfileField.USER:
             user_field_validator = CustomProfileField.USER_FIELD_VALIDATORS[field_type]
-            result = user_field_validator(user_profile.realm.id, value, False)
+            result = user_field_validator(user_profile.realm.id, cast(List[int], value),
+                                          False)
         else:
             raise AssertionError("Invalid field type")
 

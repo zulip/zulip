@@ -100,6 +100,9 @@ exports.add_custom_profile_fields_to_settings = function () {
         } else if (field_type === "URL") {
             type = "url";
         } else if (field_type === "User") {
+            if (value) {
+                value = JSON.parse(value);
+            }
             type = "user";
         } else {
             blueslip.error("Undefined field type.");
@@ -127,23 +130,21 @@ exports.add_custom_profile_fields_to_settings = function () {
 
             function update_custom_user_field() {
                 var fields = [];
-                var user_id = user_pill.get_user_ids(pills);
-                if (user_id.length > 1) {
-                    ui_report.message(i18n.t("Only one user allowed"), $("#custom-field-status"), 'alert-error');
-                    return;
-                }
-                if (user_id.length < 1) {
+                var user_ids = user_pill.get_user_ids(pills);
+                if (user_ids.length < 1) {
                     fields.push(field.id);
                     update_user_custom_profile_fields(fields, channel.del);
                 } else {
-                    fields.push({id: field.id, value: user_id[0]});
+                    fields.push({id: field.id, value: user_ids});
                     update_user_custom_profile_fields(fields, channel.patch);
                 }
             }
 
-            if (value) {
-                var user = people.get_person_from_user_id(value);
-                user_pill.append_user(user, pills);
+            if (value !== undefined && value.length > 0) {
+                value.forEach(function (user_id) {
+                    var user = people.get_person_from_user_id(user_id);
+                    user_pill.append_user(user, pills);
+                });
             }
             var input = pill_container.children('.input');
             user_pill.set_up_typeahead_on_pills(input, pills, update_custom_user_field);

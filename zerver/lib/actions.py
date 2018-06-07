@@ -4742,14 +4742,14 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
     notify_realm_custom_profile_fields(realm, 'update')
 
 def notify_user_update_custom_profile_data(user_profile: UserProfile,
-                                           field: Dict[str, Union[int, str, None]]) -> None:
+                                           field: Dict[str, Union[int, str, List[int], None]]) -> None:
     payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
                                                                       value=field['value']))
     event = dict(type="realm_user", op="update", person=payload)
     send_event(event, active_user_ids(user_profile.realm.id))
 
 def do_update_user_custom_profile_data(user_profile: UserProfile,
-                                       data: List[Dict[str, Union[int, str]]]) -> None:
+                                       data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
     with transaction.atomic():
         update_or_create = CustomProfileFieldValue.objects.update_or_create
         for field in data:
