@@ -13,6 +13,7 @@ from django.utils.translation import ugettext_lazy as _
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
+from zerver.lib.timezone import get_timezone
 
 def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
@@ -72,8 +73,11 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
         context = common_context(user)
         context['user_email'] = user.email
-        context['login_time'] = timezone_now().strftime('%A, %B %d, %Y at %I:%M%p ') + \
-            timezone_get_current_timezone_name()
+        user_tz = user.timezone
+        if user_tz == '':
+            user_tz = timezone_get_current_timezone_name()
+        local_time = timezone_now().astimezone(get_timezone(user_tz))
+        context['login_time'] = local_time.strftime('%A, %B %d, %Y at %I:%M%p ') + user_tz
         context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
         context['device_os'] = get_device_os(user_agent)
         context['device_browser'] = get_device_browser(user_agent)
