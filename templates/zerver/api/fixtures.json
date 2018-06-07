@@ -1,39 +1,4 @@
 {
-    "add-subscriptions": {
-        "already_subscribed": {
-            "already_subscribed": {
-                "newbie@zulip.com": [
-                    "new stream"
-                ]
-            },
-            "msg": "",
-            "result": "success",
-            "subscribed": {}
-        },
-        "unauthorized_errors_fatal_false": {
-            "already_subscribed": {},
-            "msg": "",
-            "result": "success",
-            "subscribed": {},
-            "unauthorized": [
-                "private_stream"
-            ]
-        },
-        "unauthorized_errors_fatal_true": {
-            "msg": "Unable to access stream (private_stream).",
-            "result": "error"
-        },
-        "without_principals": {
-            "already_subscribed": {},
-            "msg": "",
-            "result": "success",
-            "subscribed": {
-                "iago@zulip.com": [
-                    "new stream"
-                ]
-            }
-        }
-    },
     "bad_event_queue_id_error": {
         "code": "BAD_EVENT_QUEUE_ID",
         "msg": "Bad event queue id: 1518820930:1",
