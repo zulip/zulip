@@ -69,6 +69,12 @@ exports.add_custom_profile_fields_to_settings = function () {
     }
 
     $("#account-settings .custom-profile-fields-form").html("");
+    if (page_params.custom_profile_fields.length > 0) {
+        $("#account-settings #custom-field-header").show();
+    } else {
+        $("#account-settings #custom-field-header").hide();
+    }
+
     var all_custom_fields = page_params.custom_profile_fields;
 
     all_custom_fields.forEach(function (field) {
