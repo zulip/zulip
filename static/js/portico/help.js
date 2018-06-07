@@ -137,6 +137,9 @@ function scrollToHash(container) {
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {
+            // Close other article's headings first
+            $('.sidebar ul').not($next).hide();
+            // Toggle the heading
             $next.slideToggle("fast", "swing", function () {
                 markdownPS.update();
             });
@@ -168,8 +171,9 @@ function scrollToHash(container) {
     });
 
     // Show Guides user docs in sidebar by default
-    $('.help .sidebar h2#guides + ul').css('display', 'block');
-
+    if (window.location.pathname === '/help/') {
+        $('.help .sidebar h2#guides + ul').show();
+    }
     // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
     $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
 
