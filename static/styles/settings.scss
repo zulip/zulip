@@ -1225,6 +1225,8 @@ input[type=checkbox].inline-block {
 }
 
 .modal.fade {
+    /* Ensure the modal is entirely off-screen while we fade the background */
+    top: -50%;
     -webkit-transition: opacity 0.3s linear;
     -moz-transition: opacity 0.3s linear;
     -o-transition: opacity 0.3s linear;
