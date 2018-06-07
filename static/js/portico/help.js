@@ -137,6 +137,9 @@ function scrollToHash(container) {
         var $next = $(e.target).next();
 
         if ($next.is("ul")) {
+            // Close other article's headings first
+            $('.sidebar ul').not($next).hide();
+            // Toggle the heading
             $next.slideToggle("fast", "swing", function () {
                 markdownPS.update();
             });
