@@ -959,7 +959,7 @@ run_test('message_edit_history', () => {
     });
     var edited_message = $(html).find("div.messagebox-content");
     assert.equal(edited_message.text().trim(),
-                 "1468132659\n                Let's go to lunchdinner!\n                Edited by Alice");
+                 "1468132659\n            Let\'s go to lunchdinner!\n            Edited by Alice");
 });
 
 run_test('message_reaction', () => {
