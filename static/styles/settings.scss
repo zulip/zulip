@@ -1225,6 +1225,7 @@ input[type=checkbox].inline-block {
 }
 
 .modal.fade {
+    top: -50%;
     -webkit-transition: opacity 0.3s linear;
     -moz-transition: opacity 0.3s linear;
     -o-transition: opacity 0.3s linear;
