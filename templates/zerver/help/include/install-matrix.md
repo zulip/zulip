@@ -11,12 +11,12 @@
 1. Activate the virtualenv by running the `source` command printed
    at the end of the `provision` output.
 
-1. To install the Matrix bridge software in your virtualenv, run:
+1.  To install the dependencies of the Matrix bridge software in your virtualenv, run:
 
     ```
     pip install -r zulip/integrations/matrix/requirements.txt
     ```
 
 This will create a new Python virtual environment, with all the
-dependences for this bridge installed.  You'll want to run the bridge
+dependencies for this bridge installed.  You'll want to run the bridge
 service inside this virtualenv.
