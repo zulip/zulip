@@ -1,4 +1,5 @@
 import os
+import ujson
 import dateutil.parser
 import random
 import requests
@@ -14,6 +15,7 @@ from typing import Any, Dict, List, Tuple
 
 from zerver.models import Realm, UserProfile
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
 
@@ -218,59 +220,72 @@ def build_subscription(recipient_id: int, user_id: int,
         id=subscription_id)
     return subscription
 
-def convert_gitter_workspace_messages(message_data: GitterDataT,
+def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                       zerver_subscription: List[ZerverFieldsT],
-                                      user_map: Dict[str, int]) -> ZerverFieldsT:
+                                      user_map: Dict[str, int],
+                                      chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
     """
-    Returns:
-    1. message.json, Converted messages
+    Messages are stored in batches
     """
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
-    message_json = {}
-    zerver_message = []
-    zerver_usermessage = []
     message_id = usermessage_id = 0
-
     recipient_id = 0  # Corresponding to stream "gitter"
 
-    for message in message_data:
-        message_time = dateutil.parser.parse(message['sent']).timestamp()
-        rendered_content = None
+    low_index = 0
+    upper_index = low_index + chunk_size
+    dump_file_id = 1
 
-        zulip_message = dict(
-            sending_client=1,
-            rendered_content_version=1,  # This is Zulip-specific
-            has_image=False,
-            subject='imported from gitter',
-            pub_date=float(message_time),
-            id=message_id,
-            has_attachment=False,
-            edit_history=None,
-            sender=user_map[message['fromUser']['id']],
-            content=message['text'],
-            rendered_content=rendered_content,
-            recipient=recipient_id,
-            last_edit_time=None,
-            has_link=False)
-        zerver_message.append(zulip_message)
+    while True:
+        message_json = {}
+        zerver_message = []
+        zerver_usermessage = []
+        message_data = gitter_data[low_index: upper_index]
+        if len(message_data) == 0:
+            break
+        for message in message_data:
+            message_time = dateutil.parser.parse(message['sent']).timestamp()
+            rendered_content = None
 
-        for subscription in zerver_subscription:
-            if subscription['recipient'] == recipient_id:
-                flags_mask = 1  # For read
-                usermessage = dict(
-                    user_profile=subscription['user_profile'],
-                    id=usermessage_id,
-                    flags_mask=flags_mask,
-                    message=message_id)
-                usermessage_id += 1
-                zerver_usermessage.append(usermessage)
-        message_id += 1
+            zulip_message = dict(
+                sending_client=1,
+                rendered_content_version=1,  # This is Zulip-specific
+                has_image=False,
+                subject='imported from gitter',
+                pub_date=float(message_time),
+                id=message_id,
+                has_attachment=False,
+                edit_history=None,
+                sender=user_map[message['fromUser']['id']],
+                content=message['text'],
+                rendered_content=rendered_content,
+                recipient=recipient_id,
+                last_edit_time=None,
+                has_link=False)
+            zerver_message.append(zulip_message)
 
-    message_json['zerver_message'] = zerver_message
-    message_json['zerver_usermessage'] = zerver_usermessage
+            for subscription in zerver_subscription:
+                if subscription['recipient'] == recipient_id:
+                    flags_mask = 1  # For read
+                    usermessage = dict(
+                        user_profile=subscription['user_profile'],
+                        id=usermessage_id,
+                        flags_mask=flags_mask,
+                        message=message_id)
+                    usermessage_id += 1
+                    zerver_usermessage.append(usermessage)
+            message_id += 1
+
+        message_json['zerver_message'] = zerver_message
+        message_json['zerver_usermessage'] = zerver_usermessage
+        message_filename = os.path.join(output_dir, "messages-%06d.json" % (dump_file_id,))
+        logging.info("Writing Messages to %s\n" % (message_filename,))
+        write_data_to_file(os.path.join(message_filename), message_json)
+
+        low_index = upper_index
+        upper_index = chunk_size + low_index
+        dump_file_id += 1
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
-    return message_json
 
 def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> None:
     #  Subdomain is set by the user while running the import commands
@@ -287,9 +302,8 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     realm, avatar_list, user_map = gitter_workspace_to_realm(
         domain_name, gitter_data, realm_subdomain)
-    message_json = convert_gitter_workspace_messages(gitter_data,
-                                                     realm['zerver_subscription'],
-                                                     user_map)
+    convert_gitter_workspace_messages(
+        gitter_data, output_dir, realm['zerver_subscription'], user_map)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
@@ -300,8 +314,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     # IO realm.json
     create_converted_data_files(realm, output_dir, '/realm.json')
-    # IO message.json
-    create_converted_data_files(message_json, output_dir, '/messages-000001.json')
     # IO emoji records
     create_converted_data_files([], output_dir, '/emoji/records.json')
     # IO avatar records
@@ -367,3 +379,7 @@ def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> N
     output_file = output_dir + file_path
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
     json.dump(data, open(output_file, 'w'), indent=4)
+
+def write_data_to_file(output_file: str, data: Any) -> None:
+    with open(output_file, "w") as f:
+        f.write(ujson.dumps(data, indent=4))
