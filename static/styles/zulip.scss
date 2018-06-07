@@ -639,6 +639,10 @@ td.pointer {
     @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
 }
 
+#message-edit-history .message_time {
+    position: static;
+}
+
 /* The way this overrides the menus with a background-color and a high
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
@@ -1379,11 +1383,7 @@ div.focused_table {
 #message-edit-history .author_details {
     display: block;
     font-size: 12px;
-    vertical-align: middle;
     padding: 1px;
-    position: absolute;
-    right: -80px;
-    line-height: 20px;
     text-align: right;
 }
 
@@ -1459,6 +1459,10 @@ blockquote p {
 
 .messagebox-content {
     padding: 4px 115px 1px 10px;
+}
+
+#message-edit-history .messagebox-content {
+    padding: 0px 10px;
 }
 
 .last_message .messagebox-content {
@@ -1933,6 +1937,7 @@ nav a .no-style {
     color: hsl(0, 0%, 73%);
     text-decoration: line-through;
     background-color: hsl(7, 90%, 92%);
+    word-break: break-all;
 }
 
 #search_arrows {
@@ -2059,6 +2064,14 @@ div.floating_recipient {
     border: none !important;
 }
 
+#message-edit-history .message_inline_image {
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-overflow: ellipsis;
+    margin: 0px;
+}
+
 .message_inline_ref {
     margin-bottom: 5px;
     margin-left: 5px;
@@ -2074,6 +2087,10 @@ div.floating_recipient {
     max-height: 100%;
     float: left;
     margin-right: 10px;
+}
+
+#message-edit-history .message_inline_image img {
+    max-height: 100px;
 }
 
 li .message_inline_image img {
