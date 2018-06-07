@@ -236,6 +236,12 @@ body {
     padding-left: 40px;
 }
 
+.help .sidebar a:active,
+.help .sidebar a:hover,
+.help .sidebar a:focus,
+.help .sidebar a:visited {
+    outline: none;
+}
 .app.help .hamburger {
     display: none;
 }
