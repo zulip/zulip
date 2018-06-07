@@ -170,9 +170,10 @@ function scrollToHash(container) {
         e.preventDefault();
     });
 
-    // Show Guides user docs in sidebar by default
-    $('.help .sidebar h2#guides + ul').css('display', 'block');
-
+    if (window.location.pathname === '/help/') {
+        // Expand the Guides user docs section in sidebar in the /help/ homepage.
+        $('.help .sidebar h2#guides + ul').show();
+    }
     // Remove ID attributes from sidebar links so they don't conflict with index page anchor links
     $('.help .sidebar h1, .help .sidebar h2, .help .sidebar h3').removeAttr('id');
 
