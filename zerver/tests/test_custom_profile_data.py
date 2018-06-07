@@ -339,12 +339,12 @@ class CustomProfileFieldTest(ZulipTestCase):
 
         field = CustomProfileField.objects.get(name="Mentor", realm=realm)
         data = [{'id': field.id,
-                 'value': self.example_user("aaron").id}]  # type: List[Dict[str, Union[int, str]]]
+                 'value': [self.example_user("aaron").id]}]  # type: List[Dict[str, Union[int, str, List[int]]]]
         do_update_user_custom_profile_data(iago, data)
 
         iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
         converter = field.FIELD_CONVERTERS[field.field_type]
-        self.assertEqual(self.example_user("aaron").id, converter(iago_value.value))
+        self.assertEqual([self.example_user("aaron").id], converter(iago_value.value))
 
         result = self.client_delete("/json/users/me/profile_data", {
             'data': ujson.dumps([field.id])
@@ -377,7 +377,7 @@ class CustomProfileFieldTest(ZulipTestCase):
     def test_update_invalid_user_field(self) -> None:
         field_name = "Mentor"
         invalid_user_id = 1000
-        self.assert_error_update_invalid_value(field_name, invalid_user_id,
+        self.assert_error_update_invalid_value(field_name, [invalid_user_id],
                                                u"Invalid user ID: %d"
                                                % (invalid_user_id))
 
@@ -399,7 +399,7 @@ class CustomProfileFieldTest(ZulipTestCase):
             ('Favorite editor', 'vim'),
             ('Birthday', '1909-3-5'),
             ('GitHub profile', 'https://github.com/ABC'),
-            ('Mentor', self.example_user("cordelia").id),
+            ('Mentor', [self.example_user("cordelia").id]),
         ]
 
         data = []
@@ -460,7 +460,7 @@ class CustomProfileFieldTest(ZulipTestCase):
         user_profile = self.example_user('iago')
         realm = user_profile.realm
         field = CustomProfileField.objects.get(name="Phone number", realm=realm)
-        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str]]]
+        data = [{'id': field.id, 'value': u'123456'}]  # type: List[Dict[str, Union[int, str, List[int]]]]
         do_update_user_custom_profile_data(user_profile, data)
 
         self.assertTrue(self.custom_field_exists_in_realm(field.id))

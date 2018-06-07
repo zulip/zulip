@@ -33,7 +33,7 @@ from django.utils.translation import ugettext_lazy as _
 from zerver.lib import cache
 from zerver.lib.validator import check_int, check_float, \
     check_short_string, check_long_string, validate_choice_field, check_date, \
-    check_url
+    check_url, check_list
 from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.lib.types import Validator, ExtendedValidator, \
     ProfileDataElement, ProfileData, FieldTypeData, FieldElement, \
@@ -1967,19 +1967,21 @@ class UserHotspot(models.Model):
     class Meta:
         unique_together = ("user", "hotspot")
 
-def check_valid_user_id(realm_id: int, user_id: object,
-                        allow_deactivated: bool=False) -> Optional[str]:
-    if not isinstance(user_id, int):
-        return _("User id is not an integer")
+def check_valid_user_ids(realm_id: int, user_ids: List[int],
+                         allow_deactivated: bool=False) -> Optional[str]:
+    error = check_list(check_int)("User IDs", user_ids)
+    if error:
+        return error
     try:
-        realm = Realm.objects.get(id=realm_id)
-        user_profile = get_user_profile_by_id_in_realm(user_id, realm)
-        if not allow_deactivated:
-            if not user_profile.is_active:
-                return _('User is deactivated')
+        for user_id in user_ids:
+            realm = Realm.objects.get(id=realm_id)
+            user_profile = get_user_profile_by_id_in_realm(user_id, realm)
+            if not allow_deactivated:
+                if not user_profile.is_active:
+                    return _('User with ID %d is deactivated') % (user_id)
 
-        if (user_profile.is_bot):
-            return _('User with id %d is bot') % (user_id)
+            if (user_profile.is_bot):
+                return _('User with ID %d is a bot') % (user_id)
         return None
     except UserProfile.DoesNotExist:
         return _('Invalid user ID: %d') % (user_id)
@@ -2008,7 +2010,7 @@ class CustomProfileField(models.Model):
         (CHOICE, str(_('Choice')), validate_choice_field, str),
     ]  # type: FieldTypeData
     USER_FIELD_TYPE_DATA = [
-        (USER, str(_('User')), check_valid_user_id, int),
+        (USER, str(_('User')), check_valid_user_ids, eval),
     ]  # type: FieldTypeData
 
     CHOICE_FIELD_VALIDATORS = {
