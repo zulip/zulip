@@ -4741,6 +4741,13 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
         field.save(update_fields=['order'])
     notify_realm_custom_profile_fields(realm, 'update')
 
+def notify_user_update_custom_profile_data(user_profile: UserProfile,
+                                           field: Dict[str, Union[int, str, None]]) -> None:
+    payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
+                                                                      value=field['value']))
+    event = dict(type="realm_user", op="update", person=payload)
+    send_event(event, active_user_ids(user_profile.realm.id))
+
 def do_update_user_custom_profile_data(user_profile: UserProfile,
                                        data: List[Dict[str, Union[int, str]]]) -> None:
     with transaction.atomic():
@@ -4749,10 +4756,7 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
             update_or_create(user_profile=user_profile,
                              field_id=field['id'],
                              defaults={'value': field['value']})
-            payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
-                                                                              value=field['value']))
-            event = dict(type="realm_user", op="update", person=payload)
-            send_event(event, active_user_ids(user_profile.realm.id))
+            notify_user_update_custom_profile_data(user_profile, field)
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
     event = dict(type="user_group",

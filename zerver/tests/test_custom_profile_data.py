@@ -8,7 +8,7 @@ from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     try_reorder_realm_custom_profile_fields
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import CustomProfileField, \
-    custom_profile_fields_for_realm, get_realm
+    custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
 import ujson
 
 class CustomProfileFieldTest(ZulipTestCase):
@@ -324,6 +324,38 @@ class CustomProfileFieldTest(ZulipTestCase):
         })
         self.assert_json_error(result,
                                u"Field id 1234 not found.")
+
+    def test_delete_field_value(self) -> None:
+        iago = self.example_user("iago")
+        self.login(iago.email)
+        realm = get_realm("zulip")
+
+        invalid_field_id = 1234
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([invalid_field_id])
+        })
+        self.assert_json_error(result,
+                               u'Field id %d not found.' % (invalid_field_id))
+
+        field = CustomProfileField.objects.get(name="Mentor", realm=realm)
+        data = [{'id': field.id,
+                 'value': self.example_user("aaron").id}]  # type: List[Dict[str, Union[int, str]]]
+        do_update_user_custom_profile_data(iago, data)
+
+        iago_value = CustomProfileFieldValue.objects.get(user_profile=iago, field=field)
+        converter = field.FIELD_CONVERTERS[field.field_type]
+        self.assertEqual(self.example_user("aaron").id, converter(iago_value.value))
+
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
+
+        # Don't throw an exception here
+        result = self.client_delete("/json/users/me/profile_data", {
+            'data': ujson.dumps([field.id])
+        })
+        self.assert_json_success(result)
 
     def test_update_invalid_short_text(self) -> None:
         field_name = "Phone number"
