@@ -70,6 +70,7 @@ exports.setup_page = function () {
         realm_notifications_stream_id: page_params.realm_notifications_stream_id,
         realm_signup_notifications_stream_id: page_params.realm_signup_notifications_stream_id,
         is_admin: page_params.is_admin,
+        is_guest: page_params.is_guest,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,

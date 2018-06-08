@@ -820,6 +820,16 @@ earl-test@zulip.com""", ["Denmark"]))
             "You must specify at least one email address.")
         self.check_sent_emails([])
 
+    def test_guest_user_invitation(self) -> None:
+        """
+        Guest user can't invite new users
+        """
+        self.login(self.example_email("polonius"))
+        invitee = "alice-test@zulip.com"
+        self.assert_json_error(self.invite(invitee, ["Denmark"]), "Not allowed for guest users")
+        self.assertEqual(find_key_by_email(invitee), None)
+        self.check_sent_emails([])
+
     def test_invalid_stream(self) -> None:
         """
         Tests inviting to a non-existent stream.

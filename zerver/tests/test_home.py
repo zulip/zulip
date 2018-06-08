@@ -82,6 +82,7 @@ class HomeTest(ZulipTestCase):
             "hotspots",
             "initial_servertime",
             "is_admin",
+            "is_guest",
             "jitsi_server_url",
             "language_list",
             "language_list_dbl_col",
@@ -600,6 +601,21 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         html = result.content.decode('utf-8')
         self.assertIn('Invite more users', html)
+
+    def test_show_invites_for_guest_users(self) -> None:
+        user_profile = self.example_user('polonius')
+        email = user_profile.email
+
+        realm = user_profile.realm
+        realm.invite_by_admins_only = False
+        realm.save()
+
+        self.login(email)
+        self.assertFalse(user_profile.is_realm_admin)
+        self.assertFalse(get_realm('zulip').invite_by_admins_only)
+        result = self._get_home_page()
+        html = result.content.decode('utf-8')
+        self.assertNotIn('Invite more users', html)
 
     def test_desktop_home(self) -> None:
         email = self.example_email("hamlet")
