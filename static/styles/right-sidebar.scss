@@ -231,3 +231,28 @@
     cursor: pointer;
     font-size: 20px;
 }
+
+.less_dense_mode {
+    .right-sidebar {
+        font-size: 1rem;
+    }
+
+    #user_filter_icon {
+        font-size: 15px;
+    }
+
+    #user_presences li,
+    #group-pms li {
+        padding: 3px 15px 3px 0;
+    }
+
+    .user-status-indicator,
+    .group-pm-status-indicator {
+        top: 9px;
+    }
+
+    #group-pm-list {
+        margin-top: 10px;
+    }
+
+}
