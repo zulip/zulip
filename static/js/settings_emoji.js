@@ -6,6 +6,19 @@ var meta = {
     loaded: false,
 };
 
+exports.can_add_emoji = function () {
+    if (page_params.is_guest) {
+        return false;
+    }
+
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    // for normal users, we depend on the setting
+    return !page_params.realm_add_emoji_by_admins_only;
+};
+
 function can_admin_emoji(emoji) {
     if (page_params.is_admin) {
         return true;
