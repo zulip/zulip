@@ -107,7 +107,7 @@ exports.initialize = function () {
         // The search query box is a visual cue as to
         // whether search or narrowing is active.  If
         // the user blurs the search box, then we should
-        // update the search string to reflect the currect
+        // update the search string to reflect the current
         // narrow (or lack of narrow).
         //
         // But we can't do this right away, because
