@@ -56,7 +56,7 @@ exports.setup_page = function () {
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
-        can_admin_emojis: page_params.is_admin || !page_params.realm_add_emoji_by_admins_only,
+        can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
         realm_message_content_edit_limit_minutes:
             settings_org.get_realm_time_limits_in_minutes('realm_message_content_edit_limit_seconds'),

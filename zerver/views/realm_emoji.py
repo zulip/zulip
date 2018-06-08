@@ -8,6 +8,7 @@ from zerver.lib.emoji import check_emoji_admin, check_valid_emoji_name, check_va
 from zerver.lib.request import JsonableError, REQ, has_request_variables
 from zerver.lib.response import json_success, json_error
 from zerver.lib.actions import check_add_realm_emoji, do_remove_realm_emoji
+from zerver.decorator import require_non_guest_human_user
 
 
 def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
@@ -17,6 +18,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     return json_success({'emoji': user_profile.realm.get_emoji()})
 
 
+@require_non_guest_human_user
 @has_request_variables
 def upload_emoji(request: HttpRequest, user_profile: UserProfile,
                  emoji_name: str=REQ()) -> HttpResponse:

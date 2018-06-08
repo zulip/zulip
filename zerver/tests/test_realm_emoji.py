@@ -129,6 +129,14 @@ class RealmEmojiTest(ZulipTestCase):
             result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
         self.assert_json_success(result)
 
+    def test_emoji_upload_by_guest_user(self) -> None:
+        email = self.example_email('polonius')
+        self.login(email)
+        with get_test_image_file('img.png') as fp1:
+            emoji_data = {'f1': fp1}
+            result = self.client_post('/json/realm/emoji/my_emoji', info=emoji_data)
+        self.assert_json_error(result, 'Not allowed for guest users')
+
     def test_delete(self) -> None:
         emoji_author = self.example_user('iago')
         self.login(emoji_author.email)
