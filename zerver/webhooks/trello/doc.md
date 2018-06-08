@@ -18,7 +18,8 @@
       **Developer API Keys**, click on the **Token** link. Click on **Allow**.
       Note down the token generated.
 
-1. {!download-python-bindings.md!}
+1. Download and install our
+   [Python bindings and example scripts](/api/installation-instructions).
 
 1. Open `/usr/local/share/zulip/integrations/trello/zulip_trello_config.py`
    with your favorite editor and change the following lines to specify
@@ -40,6 +41,9 @@
 
     Replace `<trello_board_name` and `<trello_board_id` with the Trello
     board's name and **Board ID**, respectively.
+
+    The `zulip_trello.py` script needs to be run only once to register
+    the webhook, and can be run from any machine.
 
 !!! tip ""
     To learn more, see [Trello's webhooks documentation][1].
