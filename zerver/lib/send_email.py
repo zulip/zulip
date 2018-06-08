@@ -15,6 +15,7 @@ import os
 from typing import Any, Dict, Iterable, List, Mapping, Optional
 
 from zerver.lib.logging_util import log_to_file
+from confirmation.models import generate_key
 
 ## Logging setup ##
 
@@ -24,6 +25,13 @@ log_to_file(logger, settings.EMAIL_LOG_PATH)
 class FromAddress:
     SUPPORT = parseaddr(settings.ZULIP_ADMINISTRATOR)[1]
     NOREPLY = parseaddr(settings.NOREPLY_EMAIL_ADDRESS)[1]
+
+    # Generates an unpredictable noreply address.
+    @staticmethod
+    def tokenized_no_reply_address() -> str:
+        if settings.ADD_TOKENS_TO_NOREPLY_ADDRESS:
+            return parseaddr(settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS)[1].format(token=generate_key())
+        return FromAddress.NOREPLY
 
 def build_email(template_prefix: str, to_user_id: Optional[int]=None,
                 to_email: Optional[str]=None, from_name: Optional[str]=None,

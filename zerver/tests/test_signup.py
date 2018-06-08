@@ -2937,6 +2937,13 @@ class FollowupEmailTest(ZulipTestCase):
         user_profile.date_joined = datetime.datetime(2018, 1, 5, 1, 0, 0, 0, pytz.UTC)
         self.assertEqual(followup_day2_email_delay(user_profile), datetime.timedelta(days=1, hours=-1))
 
+class NoReplyEmailTest(ZulipTestCase):
+    def test_noreply_email_address(self) -> None:
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, FromAddress.tokenized_no_reply_address()))
+
+        with self.settings(ADD_TOKENS_TO_NOREPLY_ADDRESS=False):
+            self.assertEqual(FromAddress.tokenized_no_reply_address(), "noreply@testserver")
+
 class TwoFactorAuthTest(ZulipTestCase):
     @patch('two_factor.models.totp')
     def test_two_factor_login(self, mock_totp):
