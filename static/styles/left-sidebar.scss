@@ -93,8 +93,10 @@
     background-color: hsl(93, 19%, 88%);
 }
 
-#stream_filters li.active-sub-filter:hover {
+#stream_filters .topic-list li:hover,
+#global_filters li.expanded_private_message:hover {
     background-color: hsl(120, 11%, 82%);
+    cursor: pointer;
 }
 
 ul.filters {
@@ -163,11 +165,10 @@ li.active-sub-filter {
     text-decoration: underline;
 }
 
-#global_filters .global-filter i.fa-home {
+#global_filters .global-filter i.icon-vector-home {
     position: relative;
     top: 1px;
     left: -1px;
-
     font-size: 16px;
 }
 
@@ -221,8 +222,17 @@ li.active-sub-filter {
     line-height: 1.1;
 }
 
-.left-sidebar li a.topic-name:hover {
-    text-decoration: underline;
+.topic-unread-count,
+.private_message_count {
+    line-height: 1em;
+    padding: 1px 4px 1px 4px;
+    background: hsl(107, 5%, 66%);
+    color: hsl(0, 0%, 100%);
+    border-radius: 1px;
+    font-size: 12px;
+    font-weight: normal;
+    letter-spacing: 0.6px;
+    border-radius: 4px;
 }
 
 ul.filters i {
