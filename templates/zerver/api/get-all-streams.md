@@ -70,8 +70,8 @@ zulip(config).then((client) => {
 * `stream_id`: The unique ID of a stream.
 * `name`: The name of a stream.
 * `description`: A short description of a stream.
-* `invite-only`: Specifies whether a stream is invite-only or not.
-  Only people who have been invited can access an invite-only stream.
+* `invite-only`: Specifies whether a stream is private or not.
+  Only people who have been invited can access a private stream.
 
 #### Example response
 

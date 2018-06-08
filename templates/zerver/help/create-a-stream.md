@@ -2,7 +2,7 @@
 
 Streams can either be public to anyone in the organization, or require an
 invitation to join. Organization admins can always see the names and
-membership of invite-only streams, but cannot read any of the messages.
+membership of private streams, but cannot read any of the messages.
 
 If you are an administrator setting up streams for the first time, we highly
 recommend reading our
