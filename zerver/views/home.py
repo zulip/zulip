@@ -245,6 +245,8 @@ def home_real(request: HttpRequest) -> HttpResponse:
     # Some realms only allow admins to invite users
     if user_profile.realm.invite_by_admins_only and not user_profile.is_realm_admin:
         show_invites = False
+    if user_profile.is_guest:
+        show_invites = False
 
     request._log_data['extra'] = "[%s]" % (register_ret["queue_id"],)
 
@@ -264,6 +266,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'pipeline': settings.PIPELINE_ENABLED,
                                'show_invites': show_invites,
                                'is_admin': user_profile.is_realm_admin,
+                               'is_guest': user_profile.is_guest,
                                'show_webathena': user_profile.realm.webathena_enabled,
                                'enable_feedback': settings.ENABLE_FEEDBACK,
                                'embedded': narrow_stream is not None,
