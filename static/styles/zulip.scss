@@ -1892,7 +1892,7 @@ nav a .no-style {
         border-radius: 0px;
         font-family: 'Source Sans Pro';
         font-weight: 300;
-        line-height: 27px;
+        line-height: 40px;
     }
 
     #search_query:focus {
@@ -1948,9 +1948,7 @@ nav a .no-style {
         letter-spacing: -.3em;
     }
 
-    #search_arrows input {
-        /* Chrome and Firefox do this already via default browser stylesheet;
-       but Opera needs this to avoid smushed letters in the search box. */
+    #search_arrows .input {
         letter-spacing: normal;
     }
 }
