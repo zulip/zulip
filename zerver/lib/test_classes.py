@@ -104,6 +104,7 @@ class ZulipTestCase(TestCase):
     '''
     DEFAULT_SUBDOMAIN = "zulip"
     DEFAULT_REALM = Realm.objects.get(string_id='zulip')
+    TOKENIZED_NOREPLY_REGEX = settings.TOKENIZED_NOREPLY_EMAIL_ADDRESS.format(token="[a-z0-9_]{24}")
 
     def set_http_host(self, kwargs: Dict[str, Any]) -> None:
         if 'subdomain' in kwargs:

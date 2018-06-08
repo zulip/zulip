@@ -122,6 +122,8 @@ DEFAULT_SETTINGS = {
 
     # Basic email settings
     'NOREPLY_EMAIL_ADDRESS': "noreply@" + EXTERNAL_HOST.split(":")[0],
+    'ADD_TOKENS_TO_NOREPLY_ADDRESS': True,
+    'TOKENIZED_NOREPLY_EMAIL_ADDRESS': "noreply-{token}@" + EXTERNAL_HOST.split(":")[0],
     'PHYSICAL_ADDRESS': '',
 
     # SMTP settings
