@@ -222,8 +222,8 @@ def main(options):
     last_apt_dependencies_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
     try:
-        hash_file = open(apt_hash_file_path, 'r')
-        last_apt_dependencies_hash = hash_file.read()
+        with open(apt_hash_file_path, 'r') as hash_file:
+            last_apt_dependencies_hash = hash_file.read()
     except IOError:
         run(['touch', apt_hash_file_path])
 
@@ -240,8 +240,8 @@ def main(options):
             # recover automatically.
             run(['sudo', 'apt-get', 'update'])
             install_apt_deps()
-        hash_file = open(apt_hash_file_path, 'w')
-        hash_file.write(new_apt_dependencies_hash)
+        with open(apt_hash_file_path, 'w') as hash_file:
+            hash_file.write(new_apt_dependencies_hash)
     else:
         print("No changes to apt dependencies, so skipping apt operations.")
 
