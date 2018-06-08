@@ -95,13 +95,11 @@ strength allowed is controlled by two settings in
   parser which escapes content to protect against cross-site scripting
   attacks.
 
-* Zulip supports both public streams and private ("invite-only")
-  streams.  Any Zulip user can join any public stream in the realm,
-  and can view the complete message history of any public stream
-  without joining the stream.
+* Zulip supports both public streams and private streams.  Any Zulip
+  user can join any public stream in the realm, and can view the complete
+  message history of any public stream without joining the stream.
 
-* A private ("invite-only") stream is hidden from users who are not
-  subscribed to the stream.
+* A private stream is hidden from users who are not subscribed to the stream.
   * Users who are not members of a private stream cannot read messages
     on the stream, send messages to the stream, or join the stream,
     even if they are a Zulip organization administrator.

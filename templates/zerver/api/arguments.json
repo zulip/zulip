@@ -216,7 +216,7 @@
         },
         {
             "argument": "invite_only",
-            "description": "A boolean specifying whether the streams specified in `subscriptions` are invite-only or not. Default is `False`.",
+            "description": "A boolean specifying whether the streams specified in `subscriptions` are private or not. Default is `False`.",
             "required": false,
             "example": "`True` or `False`"
         },

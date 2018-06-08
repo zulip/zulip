@@ -1240,7 +1240,7 @@ run_test('subscription_settings', () => {
     html += render('subscription_settings', sub);
 
     var div = $(html).find(".subscription-type");
-    assert(div.text().indexOf('invite-only stream') > 0);
+    assert(div.text().indexOf('private stream') > 0);
 
     var anchor = $(html).find(".change-stream-privacy:first");
     assert.equal(anchor.text(), "[translated: Change]");

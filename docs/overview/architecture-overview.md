@@ -40,7 +40,7 @@ Usage assumptions and concepts
 Zulip is a real-time web-based chat application meant for companies and
 similar groups ranging in size from a small team to more than a thousand
 users. It features real-time notifications, message persistence and
-search, public group conversations (*streams*), invite-only streams,
+search, public group conversations (*streams*), private streams,
 private one-on-one and group conversations, inline image previews, team
 presence/buddy lists, a rich API, Markdown message support, and numerous
 integrations with other services. The maintainer team aims to support
