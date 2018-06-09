@@ -30,13 +30,13 @@
         {{#if is_active}}
         <div class="api_key">
             <span class="field">{{t "API key" }}</span>
-            <span class="api-key-value-and-button no-select">
+            <div class="api-key-value-and-button no-select">
                 <!-- have the `.text-select` in `.no-select` so that the value doesn't have trailing whitespace. -->
                 <span class="value text-select">{{api_key}}</span>
                 <button type="submit" class="button no-style btn-secondary regenerate_bot_api_key" title="{{t 'Generate new API key' }}" data-user-id="{{user_id}}">
                     <i class="icon-vector-refresh"></i>
                 </button>
-            </span>
+            </div>
             <div class="api_key_error text-error"></div>
         </div>
         {{else}}
