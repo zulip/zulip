@@ -352,3 +352,17 @@
         top: 5%;
     }
 }
+
+@media only screen and (min-width: 700px) and (max-width: 875px) {
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
+    }
+}
+
+@media only screen and (max-width: 625px) {
+    .bots_list .bot-information-box {
+        width: calc(100% - 10px);
+        max-height: unset;
+    }
+}
