@@ -4,6 +4,7 @@ set_global('$', global.make_zjquery());
 set_global('templates', {});
 set_global('page_params', {});
 set_global('loading', {});
+set_global('Sortable', {create: () => {}});
 
 
 const SHORT_TEXT = 1;
@@ -81,8 +82,6 @@ run_test('populate_profile_fields', () => {
                 is_choice_field: false,
             },
             can_modify: true,
-            first: true,
-            last: false,
         },
         {
             profile_field: {
@@ -97,8 +96,6 @@ run_test('populate_profile_fields', () => {
                 is_choice_field: true,
             },
             can_modify: true,
-            first: false,
-            last: true,
         },
     ];
 
