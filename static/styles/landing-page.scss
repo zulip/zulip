@@ -2220,11 +2220,12 @@ nav ul li.active::after {
 }
 
 .portico-landing.why-page .main .zulip-topics-image {
-    width: 300px;
+    width: 330px;
 }
 
 .portico-landing.why-page .main .zulip-reply-later-image {
     width: 600px;
+    margin-left: 100px;
 }
 
 .portico-landing.why-page .photo-description {
@@ -3509,6 +3510,10 @@ nav ul li.active::after {
 	.tour .carousel-inner .tour-item-header {
        font-size: 1.1em;
    }
+
+   .portico-landing.why-page .main .zulip-reply-later-image {
+        margin-left: 0;
+    }
 }
 
 @media (max-width: 768px) {
