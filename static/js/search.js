@@ -2,8 +2,13 @@ var search = (function () {
 
 var exports = {};
 
+var is_using_input_method = false;
+
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
+    if (is_using_input_method) {
+        return search_query_box.val();
+    }
     ui_util.change_tab_to('#home');
     var operators = Filter.parse(search_string);
     narrow.activate(operators, {trigger: 'search'});
@@ -69,6 +74,15 @@ exports.initialize = function () {
         },
     });
 
+    $('#searchbox_form').on('compositionend', function () {
+        // Set `is_using_input_method` to true if enter is pressed to exit
+        // the input tool popover and get the text in the search bar. Then
+        // we suppress searching triggered by this enter key by checking
+        // `is_using_input_method` before searching.
+        // More details in the commit message that added this line.
+        is_using_input_method = true;
+    });
+
     $("#searchbox_form").keydown(function (e) {
         exports.update_button_visibility();
         var code = e.which;
@@ -81,6 +95,10 @@ exports.initialize = function () {
             return false;
         }
     }).keyup(function (e) {
+        if (is_using_input_method) {
+            is_using_input_method = false;
+            return;
+        }
         var code = e.which;
         var search_query_box = $("#search_query");
         if (code === 13 && search_query_box.is(":focus")) {
