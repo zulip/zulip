@@ -32,6 +32,7 @@ exports.handle = function (opts) {
 
         if (handled) {
             e.preventDefault();
+            e.stopPropagation();
         }
     });
 };
