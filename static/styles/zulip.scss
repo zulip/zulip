@@ -2978,3 +2978,62 @@ div.message_content button.tictactoe-square:disabled {
 .flatpickr-months .numInputWrapper span {
     display: none;
 }
+
+.less_dense_mode {
+    .message_header,
+    .message_header_private_message,
+    .message_header_private_message .message_label_clickable {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .stream_label {
+        height: 22px;
+        line-height: 22px;
+    }
+
+    .message_time,
+    .recipient_row_date {
+        font-size: 14px;
+    }
+
+    .recipient_row_date {
+        top: 5px;
+    }
+
+    .sender_name {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .message_content {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .sub-unsub-message,
+    .date_row {
+        margin-bottom: 20px;
+        span {
+            font-size: 1em;
+        }
+    }
+
+    .message_list .recipient_row {
+        margin-bottom: 20px;
+    }
+
+    .messagebox {
+        p,
+        blockquote {
+            margin: 6px 0 20px;
+        }
+        p:last-of-type {
+            margin-bottom: 10px;
+        }
+    }
+
+    .message_controls {
+        right: -40px;
+    }
+}
