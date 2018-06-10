@@ -35,6 +35,7 @@ set_global('settings_emoji', {
 set_global('settings_account', {
     update_email_change_display: noop,
     update_name_change_display: noop,
+    add_custom_profile_fields_to_settings: noop,
 });
 set_global('settings_display', {
     update_page: noop,
