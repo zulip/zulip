@@ -64,6 +64,11 @@ function update_user_custom_profile_fields(fields, method) {
 }
 
 exports.add_custom_profile_fields_to_settings = function () {
+    if (!overlays.settings_open()) {
+        return;
+    }
+
+    $("#account-settings .custom-profile-fields-form").html("");
     var all_custom_fields = page_params.custom_profile_fields;
 
     all_custom_fields.forEach(function (field) {
