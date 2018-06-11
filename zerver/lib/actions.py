@@ -799,7 +799,7 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
         'activate_url': activation_url
     })
     send_email('zerver/emails/confirm_new_email', to_email=new_email,
-               from_name='Zulip Account Security', from_address=FromAddress.NOREPLY,
+               from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
                context=context)
 
 def compute_irc_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
