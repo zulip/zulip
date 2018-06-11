@@ -610,6 +610,8 @@ RABBITMQ_PASSWORD = get_secret("rabbitmq_password")
 ########################################################################
 
 SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
+PYLIBMC_MIN_COMPRESS_LEN = 1000000
+PYLIBMC_COMPRESS_LEVEL = 5
 
 CACHES = {
     'default': {
