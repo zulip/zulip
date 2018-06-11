@@ -108,6 +108,9 @@ pycrypto==2.6.1
 # Needed for memcached usage
 pylibmc==1.5.2
 
+# Needed for compression support in memcached via pylibmc
+django-pylibmc==0.6.1
+
 # Needed for zerver/tests/test_timestamp.py
 python-dateutil==2.6.1
 
