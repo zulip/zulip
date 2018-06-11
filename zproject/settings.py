@@ -971,6 +971,7 @@ JS_SPECS = {
             'js/markdown.js',
             'js/local_message.js',
             'js/echo.js',
+            'js/zgram.js',
             'js/socket.js',
             'js/sent_messages.js',
             'js/compose_state.js',
