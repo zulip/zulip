@@ -33,3 +33,16 @@
 .poll-widget .poll-option {
     font-weight: 600;
 }
+
+// This file isn't necessarily the best place for this style,
+// but while it's experimental I don't want to muck with existing
+// code too much.
+
+.zgram_row {
+    background: khaki;
+}
+
+.zgram_header {
+    color: white;
+    background: navy;
+}
