@@ -549,6 +549,13 @@ exports.notify_local_mixes = function (messages) {
     */
 
     _.each(messages, function (message) {
+        if (message.simulated) {
+            // TODO: This is just a hack from an early proof-of-concept
+            //       of zgrams that used the local-message code to simulate
+            ///      messages.
+            return;
+        }
+
         if (!people.is_my_user_id(message.sender_id)) {
             blueslip.warn('We did not expect messages sent by others to get here');
             return;
