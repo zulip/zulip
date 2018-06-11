@@ -439,6 +439,11 @@ MessageListView.prototype = {
                 row: row,
                 message_id: id,
             });
+
+            zgram.process_row({
+                row: row,
+                message_id: id,
+            });
         });
     },
 
