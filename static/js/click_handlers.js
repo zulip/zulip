@@ -65,15 +65,30 @@ exports.initialize = function () {
         var MS_DELAY = 750;
         var meta = {
             touchdown: false,
+            current_target: undefined,
         };
 
         $("#main_div").on("touchstart", ".messagebox", function () {
             meta.touchdown = true;
             meta.invalid = false;
-
+            var id = rows.id($(this).closest(".message_row"));
+            meta.current_target = id;
+            if (!id) {
+                return;
+            }
+            current_msg_list.select_id(id);
             setTimeout(function () {
+                // The algorithm to trigger long tap is that first, we check
+                // whether the message is still touched after MS_DELAY ms and
+                // the user isn't scrolling the messages(see other touch event
+                // handlers to see how these meta variables are handled).
+                // Later we check whether after MS_DELAY the user is still
+                // long touching the same message as it can be possible that
+                // user touched another message within MS_DELAY period.
                 if (meta.touchdown === true && !meta.invalid) {
-                    $(this).trigger("longtap");
+                    if (id === meta.current_target) {
+                        $(this).trigger("longtap");
+                    }
                 }
             }.bind(this), MS_DELAY);
         });
