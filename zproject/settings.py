@@ -613,7 +613,7 @@ SESSION_ENGINE = "django.contrib.sessions.backends.cached_db"
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyLibMCCache',
+        'BACKEND': 'django_pylibmc.memcached.PyLibMCCache',
         'LOCATION': MEMCACHED_LOCATION,
         'TIMEOUT': 3600,
         'OPTIONS': {
