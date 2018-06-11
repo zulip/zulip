@@ -4235,7 +4235,7 @@ def do_send_confirmation_email(invitee: PreregistrationUser,
                'activate_url': activation_url, 'referrer_realm_name': referrer.realm.name}
     from_name = "%s (via Zulip)" % (referrer.full_name,)
     send_email('zerver/emails/invitation', to_email=invitee.email, from_name=from_name,
-               from_address=FromAddress.NOREPLY, context=context)
+               from_address=FromAddress.tokenized_no_reply_address(), context=context)
 
 def email_not_system_bot(email: str) -> None:
     if is_cross_realm_bot_email(email):

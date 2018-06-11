@@ -591,7 +591,8 @@ class InviteUserBase(ZulipTestCase):
         if custom_from_name is not None:
             self.assertIn(custom_from_name, outbox[0].from_email)
 
-        self.assertIn(FromAddress.NOREPLY, outbox[0].from_email)
+        tokenized_no_reply_email = parseaddr(outbox[0].from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
     def invite(self, users: str, streams: List[str], body: str='',
                invite_as_admin: str="false") -> HttpResponse:

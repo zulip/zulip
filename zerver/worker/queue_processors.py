@@ -232,7 +232,7 @@ class ConfirmationEmailWorker(QueueProcessingWorker):
             "zerver/emails/invitation_reminder",
             referrer.realm,
             to_email=invitee.email,
-            from_address=FromAddress.NOREPLY,
+            from_address=FromAddress.tokenized_no_reply_address(),
             context=context,
             delay=datetime.timedelta(days=2))
 
