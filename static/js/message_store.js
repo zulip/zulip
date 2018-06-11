@@ -128,6 +128,8 @@ exports.add_message_metadata = function (message) {
         message.sender_email = sender.email;
     }
 
+    message.zgram = message.type === 'zgram';
+
     switch (message.type) {
     case 'stream':
         message.is_stream = true;
