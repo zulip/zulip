@@ -168,9 +168,15 @@ exports.reset = function () {
 
 exports.populate_profile_fields = function (profile_fields_data) {
     if (!meta.loaded) {
+        // If outside callers call us when we're not loaded, just
+        // exit and we'll draw the widgets again during set_up().
         return;
     }
+    exports.do_populate_profile_fields(profile_fields_data);
+};
 
+exports.do_populate_profile_fields = function (profile_fields_data) {
+    // We should only call this internally or from tests.
     var profile_fields_table = $("#admin_profile_fields_table").expectOne();
     profile_fields_table.find("tr.profile-field-row").remove();  // Clear all rows.
     profile_fields_table.find("tr.profile-field-form").remove();  // Clear all rows.
@@ -244,12 +250,12 @@ function set_up_choices_field() {
 }
 
 exports.set_up = function () {
-    meta.loaded = true;
 
     // create loading indicators
     loading.make_indicator($('#admin_page_profile_fields_loading_indicator'));
     // Populate profile_fields table
-    exports.populate_profile_fields(page_params.custom_profile_fields);
+    exports.do_populate_profile_fields(page_params.custom_profile_fields);
+    meta.loaded = true;
 
     $('#admin_profile_fields_table').on('click', '.delete', delete_profile_field);
     $(".organization").on("submit", "form.admin-profile-field-form", create_profile_field);
