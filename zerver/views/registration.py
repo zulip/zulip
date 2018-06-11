@@ -358,7 +358,8 @@ def prepare_activation_url(email: str, request: HttpRequest,
     return activation_url
 
 def send_confirm_registration_email(email: str, activation_url: str) -> None:
-    send_email('zerver/emails/confirm_registration', to_email=email, from_address=FromAddress.NOREPLY,
+    send_email('zerver/emails/confirm_registration', to_email=email,
+               from_address=FromAddress.tokenized_no_reply_address(),
                context={'activate_url': activation_url})
 
 def redirect_to_email_login_url(email: str) -> HttpResponseRedirect:
