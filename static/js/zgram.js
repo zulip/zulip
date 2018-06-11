@@ -60,6 +60,54 @@ exports._fake_sender_id = function () {
     return person.user_id;
 };
 
+exports.process_row = function (in_opts) {
+    var row = in_opts.row;
+
+    var message_id = in_opts.message_id;
+    var message = message_store.get(message_id);
+
+    if (!message) {
+        return;
+    }
+
+    if (message.type !== 'zgram') {
+        return;
+    }
+
+    var content_holder = row.find('.message_content');
+
+    var widget_elem;
+    if (message.widget) {
+        // Use local to work around linter.  We can trust this
+        // value because it comes from a template.
+        widget_elem = message.widget_elem;
+        content_holder.html(widget_elem);
+        return;
+    }
+
+    var widget_type = message.widget_type;
+    var extra_data = message.extra_data;
+
+    if (widget_type !== 'zform') {
+        // Right now zform is our only widget that works with
+        // zgrams.  More complicated widgets like tictactoe and
+        // surveys need "real" Zulip messages under the current
+        // architecture.
+        return;
+    }
+
+    widget_elem = $('<div>');
+    content_holder.html(widget_elem);
+
+    zform.activate({
+        elem: widget_elem,
+        message: message,
+        extra_data: extra_data,
+    });
+
+    message.widget_elem = widget_elem;
+};
+
 return exports;
 
 }());
