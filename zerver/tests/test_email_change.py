@@ -2,6 +2,8 @@
 
 import datetime
 from typing import Any
+from email.utils import parseaddr, formataddr
+import re
 
 import django
 import mock
@@ -103,7 +105,8 @@ class EmailChangeTestCase(ZulipTestCase):
         from_email = email_message.from_email
         self.assertIn('We received a request to change the email', body)
         self.assertIn('Zulip Account Security', from_email)
-        self.assertIn(FromAddress.NOREPLY, email_message.from_email)
+        tokenized_no_reply_email = parseaddr(email_message.from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
 
         activation_url = [s for s in body.split('\n') if s][4]
         response = self.client_get(activation_url)
