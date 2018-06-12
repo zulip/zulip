@@ -4,17 +4,15 @@ A bridge for exchanging messages between [matrix.org](https://matrix.org) and Zu
 
 ### Configure the bridge
 
-{!create-stream.md!}
+1. {!create-stream.md!}
 
-1. Next, on your Zulip settings page, create a generic bot for Matrix,
-   preferably with a formal name like `matrix-bot`.
+1. On your {{ settings_html|safe }}, create a **Generic** bot for
+   {{ integration_display_name }}. Subscribe this bot to the stream
+   created in step 1.
 
-1. Subscribe this bot to the Zulip stream where you'd like the bridge
-   traffic to be sent.
-
-1.  Edit `zulip/integrations/matrix/matrix_bridge_config.py`, providing
-    the following values for the `zulip` section (the first 3 values
-    come from a `zuliprc` file):
+1. Open `zulip/integrations/matrix/matrix_bridge_config.py` with your
+   favorite editor, and change the following lines in the `zulip`
+   section:
 
     ```
     "zulip": {
@@ -26,10 +24,16 @@ A bridge for exchanging messages between [matrix.org](https://matrix.org) and Zu
     }
     ```
 
-1. Now, create a user on [matrix.org](https://matrix.org/), preferably
-   with a formal name like `zulip-bot`.
+    **email**, **api_key**, and **site** should come from your
+    {{ integration_display_name }} bot's `zuliprc` file. Set **stream**
+    to the name of the stream created in step 1, and set **topic** to
+    a topic of your choice.
 
-1.  Edit `matrix_bridge_config.py` to add the Matrix-side settings:
+1. Create a user on [matrix.org](https://matrix.org/), preferably
+   with a descriptive name such as `zulip-bot`.
+
+1. Open `matrix_bridge_config.py`, and provide your Matrix credentials
+   in the `matrix` section:
 
     ```
     "matrix": {
@@ -40,13 +44,13 @@ A bridge for exchanging messages between [matrix.org](https://matrix.org) and Zu
     }
     ```
 
-1. After the steps above have been completed, run `python matrix_bridge.py` to
-start mirroring content.
+1. Run `python matrix_bridge.py` to start mirroring content.
 
-If you want to customize the message formatting, you can do so by
-editing the variables `MATRIX_MESSAGE_TEMPLATE` and
-`ZULIP_MESSAGE_TEMPLATE` in
-`zulip/integrations/matrix/matrix_bridge.py`, with a suitable
-template.
+!!! tip ""
+
+    If you want to customize the message formatting, you can do so by
+    editing the variables `MATRIX_MESSAGE_TEMPLATE` and
+    `ZULIP_MESSAGE_TEMPLATE` in
+    `zulip/integrations/matrix/matrix_bridge.py`.
 
 **Congratulations! You have created the bridge successfully!**
