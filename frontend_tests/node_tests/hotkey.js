@@ -174,6 +174,7 @@ run_test('basic_chars', () => {
 
     set_global('popovers', {
         actions_popped: return_false,
+        message_info_popped: return_false,
     });
     set_global('emoji_picker', {
         reactions_popped: return_false,

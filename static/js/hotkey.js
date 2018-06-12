@@ -520,9 +520,16 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1 && popovers.actions_popped()) {
-        popovers.actions_menu_handle_keyboard(event_name);
-        return true;
+    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1) {
+        if (popovers.actions_popped()) {
+            popovers.actions_menu_handle_keyboard(event_name);
+            return true;
+        }
+
+        if (popovers.message_info_popped()) {
+            popovers.user_info_popover_handle_keyboard(event_name);
+            return true;
+        }
     }
 
     // The next two sections date back to 00445c84 and are Mac/Chrome-specific,
