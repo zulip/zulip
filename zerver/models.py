@@ -813,7 +813,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         diff = (timezone_now() - self.date_joined).days
         if self.is_realm_admin:
             return True
-        elif self.realm.create_stream_by_admins_only:
+        if self.realm.create_stream_by_admins_only:
+            return False
+        if self.is_guest:
             return False
         if diff >= self.realm.waiting_period_threshold:
             return True
