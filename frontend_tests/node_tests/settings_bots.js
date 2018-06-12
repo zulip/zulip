@@ -101,27 +101,27 @@ function test_create_bot_type_input_box_toggle(f) {
 run_test('set_up', () => {
     // bunch of stubs
 
-    $.validator = { addMethod: function () {} };
+    $.validator = { addMethod: () => {} };
 
-    $("#create_bot_form").validate = function () {};
+    $("#create_bot_form").validate = () => {};
 
-    $('#create_bot_type').on = function (action, f) {
+    $('#create_bot_type').on = (action, f) => {
         if (action === 'change') {
             test_create_bot_type_input_box_toggle(f);
         }
     };
 
-    $('#config_inputbox').children = function () {
+    $('#config_inputbox').children = () => {
         var mock_children = {
-            hide: function () {
+            hide: () => {
                 return;
             },
         };
         return mock_children;
     };
     global.compile_template('embedded_bot_config_item');
-    avatar.build_bot_create_widget = function () {};
-    avatar.build_bot_edit_widget = function () {};
+    avatar.build_bot_create_widget = () => {};
+    avatar.build_bot_edit_widget = () => {};
 
     settings_bots.set_up();
 });
