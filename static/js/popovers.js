@@ -400,15 +400,39 @@ function get_action_menu_menu_items() {
     return $('li:not(.divider):visible a', popover_data.$tip);
 }
 
-function focus_first_action_popover_item() {
-    // For now I recommend only calling this when the user opens the menu with a hotkey.
-    // Our popup menus act kind of funny when you mix keyboard and mouse.
-    var items = get_action_menu_menu_items();
+function focus_first_popover_item(items) {
     if (!items) {
         return;
     }
 
     items.eq(0).expectOne().focus();
+}
+
+function popover_items_handle_keyboard(key, items) {
+    if (!items) {
+        return;
+    }
+
+    var index = items.index(items.filter(':focus'));
+
+    if (key === "enter" && index >= 0 && index < items.length) {
+        return items[index].click();
+    }
+    if (index === -1) {
+        index = 0;
+    } else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
+        index += 1;
+    } else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
+        index -= 1;
+    }
+    items.eq(index).focus();
+}
+
+function focus_first_action_popover_item() {
+    // For now I recommend only calling this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    var items = get_action_menu_menu_items();
+    focus_first_popover_item(items);
 }
 
 exports.open_message_menu = function (message) {
@@ -429,23 +453,7 @@ exports.open_message_menu = function (message) {
 
 exports.actions_menu_handle_keyboard = function (key) {
     var items = get_action_menu_menu_items();
-    if (!items) {
-        return;
-    }
-
-    var index = items.index(items.filter(':focus'));
-
-    if (key === "enter" && index >= 0 && index < items.length) {
-        return items[index].click();
-    }
-    if (index === -1) {
-        index = 0;
-    } else if ((key === 'down_arrow' || key === 'vim_down') && index < items.length - 1) {
-        index += 1;
-    } else if ((key === 'up_arrow' || key === 'vim_up') && index > 0) {
-        index -= 1;
-    }
-    items.eq(index).focus();
+    popover_items_handle_keyboard(key, items);
 };
 
 exports.actions_popped = function () {
