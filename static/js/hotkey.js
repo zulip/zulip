@@ -7,7 +7,8 @@ function do_narrow_action(action) {
     return true;
 }
 
-var actions_dropdown_hotkeys = [
+// For message actions and user profile menu.
+var menu_dropdown_hotkeys = [
     'down_arrow',
     'up_arrow',
     'vim_up',
@@ -519,7 +520,7 @@ exports.process_hotkey = function (e, hotkey) {
         }
     }
 
-    if (actions_dropdown_hotkeys.indexOf(event_name) !== -1 && popovers.actions_popped()) {
+    if (menu_dropdown_hotkeys.indexOf(event_name) !== -1 && popovers.actions_popped()) {
         popovers.actions_menu_handle_keyboard(event_name);
         return true;
     }
