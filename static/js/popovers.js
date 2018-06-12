@@ -487,12 +487,12 @@ exports.hide_actions_popover = function () {
     }
 };
 
-function message_info_popped() {
+exports.message_info_popped = function () {
     return current_message_info_popover_elem !== undefined;
-}
+};
 
 exports.hide_message_info_popover = function () {
-    if (message_info_popped()) {
+    if (exports.message_info_popped()) {
         current_message_info_popover_elem.popover("destroy");
         current_message_info_popover_elem = undefined;
     }
@@ -543,6 +543,11 @@ function focus_user_info_popover_item() {
     var items = get_user_info_popover_items();
     focus_first_popover_item(items);
 }
+
+exports.user_info_popover_handle_keyboard = function (key) {
+    var items = get_user_info_popover_items();
+    popover_items_handle_keyboard(key, items);
+};
 
 exports.show_sender_info = function () {
     var $message = $(".selected_message");
@@ -915,7 +920,7 @@ exports.any_active = function () {
     // Expanded sidebars on mobile view count as popovers as well.
     return popovers.actions_popped() || user_sidebar_popped() ||
         stream_popover.stream_popped() || stream_popover.topic_popped() ||
-        message_info_popped() || emoji_picker.reactions_popped() ||
+        exports.message_info_popped() || emoji_picker.reactions_popped() ||
         $("[class^='column-'].expanded").length;
 };
 
