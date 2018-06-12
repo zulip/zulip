@@ -537,6 +537,13 @@ exports.hide_user_sidebar_popover = function () {
     }
 };
 
+function focus_user_info_popover_item() {
+    // For now I recommend only calling this when the user opens the menu with a hotkey.
+    // Our popup menus act kind of funny when you mix keyboard and mouse.
+    var items = get_user_info_popover_items();
+    focus_first_popover_item(items);
+}
+
 exports.show_sender_info = function () {
     var $message = $(".selected_message");
     var $sender = $message.find(".sender_info_hover");
@@ -551,6 +558,9 @@ exports.show_sender_info = function () {
     var message = current_msg_list.get(rows.id($message));
     var user = people.get_person_from_user_id(message.sender_id);
     show_user_info_popover($sender[0], user, message);
+    if (current_message_info_popover_elem) {
+        focus_user_info_popover_item();
+    }
 };
 
 exports.register_click_handlers = function () {
