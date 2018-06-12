@@ -210,6 +210,21 @@ function show_user_profile(element, user) {
     $("#user-profile-modal").modal("show");
 }
 
+function get_user_info_popover_items() {
+    if (!current_message_info_popover_elem) {
+        blueslip.error('Trying to get menu items when action popover is closed.');
+        return;
+    }
+
+    var popover_data = current_message_info_popover_elem.data('popover');
+    if (!popover_data) {
+        blueslip.error('Cannot find popover data for actions menu.');
+        return;
+    }
+
+    return $('li:not(.divider):visible a', popover_data.$tip);
+}
+
 function fetch_group_members(member_ids) {
     return member_ids
         .map(function (m) {
