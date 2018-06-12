@@ -208,7 +208,7 @@ class ExportTest(ZulipTestCase):
             #       for certain edge cases.
             export_usermessages_batch(
                 input_path=os.path.join(output_dir, 'messages-000001.json.partial'),
-                output_path=os.path.join(output_dir, 'message.json')
+                output_path=os.path.join(output_dir, 'messages-000001.json')
             )
 
         def read_file(fn: str) -> Any:
@@ -219,7 +219,7 @@ class ExportTest(ZulipTestCase):
         result = {}
         result['realm'] = read_file('realm.json')
         result['attachment'] = read_file('attachment.json')
-        result['message'] = read_file('message.json')
+        result['message'] = read_file('messages-000001.json')
         result['uploads_dir'] = os.path.join(output_dir, 'uploads')
         result['emoji_dir'] = os.path.join(output_dir, 'emoji')
         result['avatar_dir'] = os.path.join(output_dir, 'avatars')
