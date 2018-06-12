@@ -98,7 +98,9 @@ function test_create_bot_type_input_box_toggle(f) {
     assert(!config_inputbox.visible());
 }
 
-run_test('set_up', () => {
+function set_up() {
+    set_global('$', global.make_zjquery());
+
     // bunch of stubs
 
     $.validator = { addMethod: () => {} };
@@ -124,5 +126,8 @@ run_test('set_up', () => {
     avatar.build_bot_edit_widget = () => {};
 
     settings_bots.set_up();
-});
+}
 
+run_test('set_up', () => {
+    set_up();
+});
