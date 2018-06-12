@@ -28,7 +28,8 @@ from zerver.lib.response import (
 )
 
 from zerver.lib.streams import (
-    access_stream_by_id, access_stream_by_name, filter_stream_authorization
+    access_stream_by_id, access_stream_by_name, filter_stream_authorization,
+    list_to_streams,
 )
 
 from zerver.lib.stream_subscription import (
@@ -2126,6 +2127,17 @@ class SubscriptionAPITest(ZulipTestCase):
         stream = get_stream("Denmark", guest_user.realm)
         self.assertEqual(filter_stream_authorization(guest_user, [stream]),
                          ([], [stream]))
+
+        # Test UserProfile.can_create_streams for guest users.
+        streams_raw = [{
+            'invite_only': False,
+            'history_public_to_subscribers': None,
+            'name': 'new_stream',
+            'is_announcement_only': False
+        }]
+
+        with self.assertRaisesRegex(JsonableError, "User cannot create streams."):
+            list_to_streams(streams_raw, guest_user)
 
         stream = self.make_stream('private_stream', invite_only=True)
         result = self.common_subscribe_to_streams(guest_email, ["private_stream"])
