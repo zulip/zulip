@@ -131,3 +131,67 @@ function set_up() {
 run_test('set_up', () => {
     set_up();
 });
+
+run_test('test tab clicks', () => {
+    set_up();
+
+    function click_on_tab(tab_elem) {
+        var e = {
+            preventDefault: () => {},
+            stopPropagation: () => {},
+        };
+        tab_elem.click(e);
+    }
+
+    const tabs = {
+        add: $('#bots_lists_navbar .add-a-new-bot-tab'),
+        active: $('#bots_lists_navbar .active-bots-tab'),
+        inactive: $('#bots_lists_navbar .inactive-bots-tab'),
+    };
+
+    $('#bots_lists_navbar .active').removeClass = (cls) => {
+        assert.equal(cls, 'active');
+        _.each(tabs, (tab) => {
+            tab.removeClass('active');
+        });
+    };
+
+    const forms = {
+        add: $('#add-a-new-bot-form'),
+        active: $('#active_bots_list'),
+        inactive: $('#inactive_bots_list'),
+    };
+
+    (function () {
+        click_on_tab(tabs.add);
+        assert(tabs.add.hasClass('active'));
+        assert(!tabs.active.hasClass('active'));
+        assert(!tabs.inactive.hasClass('active'));
+
+        assert(forms.add.visible());
+        assert(!forms.active.visible());
+        assert(!forms.inactive.visible());
+    }());
+
+    (function () {
+        click_on_tab(tabs.active);
+        assert(!tabs.add.hasClass('active'));
+        assert(tabs.active.hasClass('active'));
+        assert(!tabs.inactive.hasClass('active'));
+
+        assert(!forms.add.visible());
+        assert(forms.active.visible());
+        assert(!forms.inactive.visible());
+    }());
+
+    (function () {
+        click_on_tab(tabs.inactive);
+        assert(!tabs.add.hasClass('active'));
+        assert(!tabs.active.hasClass('active'));
+        assert(tabs.inactive.hasClass('active'));
+
+        assert(!forms.add.visible());
+        assert(!forms.active.visible());
+        assert(forms.inactive.visible());
+    }());
+});
