@@ -18,7 +18,7 @@ from zerver.lib.test_classes import (
 from zerver.lib.test_runner import slow
 
 from zerver.models import UserProfile, Recipient, \
-    Realm, RealmDomain, UserActivity, \
+    Realm, RealmDomain, UserActivity, UserHotspot, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
     get_membership_realms, get_source_profile, \
     Message, get_context_for_message, ScheduledEmail, check_valid_user_id
@@ -443,6 +443,12 @@ class UserProfileTest(ZulipTestCase):
         cordelia.enable_stream_push_notifications = True
         cordelia.save()
 
+        UserHotspot.objects.filter(user=cordelia).delete()
+        UserHotspot.objects.filter(user=iago).delete()
+        hotspots_completed = ['intro_reply', 'intro_streams', 'intro_topics']
+        for hotspot in hotspots_completed:
+            UserHotspot.objects.create(user=cordelia, hotspot=hotspot)
+
         copy_user_settings(cordelia, iago)
 
         # We verify that cordelia and iago match, but hamlet has the defaults.
@@ -473,6 +479,9 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(iago.enable_stream_push_notifications, True)
         self.assertEqual(cordelia.enable_stream_push_notifications, True)
         self.assertEqual(hamlet.enable_stream_push_notifications, False)
+
+        hotspots = list(UserHotspot.objects.filter(user=iago).values_list('hotspot', flat=True))
+        self.assertEqual(hotspots, hotspots_completed)
 
 class ActivateTest(ZulipTestCase):
     def test_basics(self) -> None:
