@@ -299,8 +299,12 @@ exports.sort_languages = function (matches, query) {
 exports.sort_recipients = function (users, query, current_stream, current_subject, groups) {
     var users_name_results =  util.prefix_sort(
         query, users, function (x) { return x.full_name; });
+
+    var email_results = util.prefix_sort(
+        query, users_name_results.rest, function (x) { return x.email; });
+
     var result = exports.sort_for_at_mentioning(
-        users_name_results.matches,
+        users_name_results.matches.concat(email_results.matches),
         current_stream,
         current_subject
     );
@@ -311,13 +315,6 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
         result = result.concat(groups_results.matches);
     }
 
-    var email_results = util.prefix_sort(query, users_name_results.rest,
-                                         function (x) { return x.email; });
-    result = result.concat(exports.sort_for_at_mentioning(
-        email_results.matches,
-        current_stream,
-        current_subject
-    ));
     var rest_sorted = exports.sort_for_at_mentioning(
         email_results.rest,
         current_stream,
