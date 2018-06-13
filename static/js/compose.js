@@ -310,6 +310,12 @@ exports.finish = function () {
         return;
     }
 
+    if (zgram.process(message_content)) {
+        exports.do_post_send_tasks();
+        clear_compose_box();
+        return;
+    }
+
     if (!compose.validate()) {
         return false;
     }

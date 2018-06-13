@@ -39,6 +39,58 @@ exports.handle_event = function (event) {
     local_message.insert_message(message);
 };
 
+exports.process = function (content) {
+    // TEMPORARY CODE:
+    //
+    // We probably will eventually just have API clients
+    // send zgrams, with no UI hooks.  But this is convenient
+    // code for prototyping purposes.
+
+    var prefix = '/yesno ';
+    if (content.startsWith(prefix)) {
+        var pill_user_ids = compose_pm_pill.get_user_ids();
+
+        if (pill_user_ids.length !== 1) {
+            blueslip.warn('/yesno requires a single PM user target');
+            return false;
+        }
+
+        var question = content.slice(prefix.length);
+
+        var extra_data = {
+            type: 'choices',
+            heading: question,
+            choices: [
+                {
+                    short_name: 'Y',
+                    long_name: 'yes',
+                    reply: 'yes',
+                },
+                {
+                    short_name: 'N',
+                    long_name: 'no',
+                    reply: 'no',
+                },
+            ],
+        };
+
+        var target_user_id = pill_user_ids[0];
+
+        var data = {
+            content: content,
+            target_user_id: target_user_id,
+            extra_data: extra_data,
+            widget_type: 'zform',
+        };
+        exports.send({
+            data: data,
+        });
+        return true;
+    }
+
+    return false;
+};
+
 exports.simulate_simple_message = function () {
     var message = {
         type: 'zgram',
