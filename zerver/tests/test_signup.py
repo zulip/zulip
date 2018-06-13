@@ -2030,6 +2030,7 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
         hamlet_in_zulip.high_contrast_mode = True
+        hamlet_in_zulip.tutorial_status = UserProfile.TUTORIAL_FINISHED
         hamlet_in_zulip.save()
 
         result = self.client_post('/accounts/home/', {'email': email}, subdomain=subdomain)
@@ -2048,6 +2049,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet.emojiset, "google")
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_sounds, False)
+        self.assertEqual(hamlet.tutorial_status, UserProfile.TUTORIAL_WAITING)
 
     def test_signup_with_user_settings_from_another_realm(self) -> None:
         email = self.example_email('hamlet')
@@ -2064,6 +2066,7 @@ class UserSignUpTest(ZulipTestCase):
         hamlet_in_zulip.default_language = "de"
         hamlet_in_zulip.emojiset = "twitter"
         hamlet_in_zulip.high_contrast_mode = True
+        hamlet_in_zulip.tutorial_status = UserProfile.TUTORIAL_FINISHED
         hamlet_in_zulip.save()
 
         result = self.client_post('/accounts/home/', {'email': email}, subdomain=subdomain)
@@ -2082,6 +2085,7 @@ class UserSignUpTest(ZulipTestCase):
         self.assertEqual(hamlet_in_lear.emojiset, "twitter")
         self.assertEqual(hamlet_in_lear.high_contrast_mode, True)
         self.assertEqual(hamlet_in_lear.enable_stream_sounds, False)
+        self.assertEqual(hamlet_in_lear.tutorial_status, UserProfile.TUTORIAL_FINISHED)
         zulip_path_id = avatar_disk_path(hamlet_in_zulip)
         hamlet_path_id = avatar_disk_path(hamlet_in_zulip)
         self.assertEqual(open(zulip_path_id, "rb").read(), open(hamlet_path_id, "rb").read())

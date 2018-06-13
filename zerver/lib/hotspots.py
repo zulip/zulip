@@ -56,3 +56,12 @@ def get_next_hotspots(user: UserProfile) -> List[Dict[str, object]]:
     user.tutorial_status = UserProfile.TUTORIAL_FINISHED
     user.save(update_fields=['tutorial_status'])
     return []
+
+def copy_hotpots(source_profile: UserProfile, target_profile: UserProfile) -> None:
+    for userhotspot in frozenset(UserHotspot.objects.filter(user=source_profile)):
+        UserHotspot.objects.create(user=target_profile, hotspot=userhotspot.hotspot,
+                                   timestamp=userhotspot.timestamp)
+
+    target_profile.tutorial_status = source_profile.tutorial_status
+    target_profile.onboarding_steps = source_profile.onboarding_steps
+    target_profile.save(update_fields=['tutorial_status', 'onboarding_steps'])
