@@ -17,6 +17,7 @@ set_global('sent_messages', {
     report_server_ack: noop,
 });
 set_global('blueslip', global.make_zblueslip());
+set_global('zgram', {});
 
 zrequire('people');
 zrequire('transmit');
@@ -249,6 +250,36 @@ run_test('reply_message_private', () => {
         type: 'private',
         to: '["fred@example.com"]',
         content: 'hello',
+    });
+});
+
+run_test('zgram', () => {
+    page_params.user_id = 99;
+
+    const message = {
+        sender_id: 55,
+        type: 'zgram',
+    };
+
+    var send_opts;
+
+    zgram.send = (opts) => {
+        send_opts = opts;
+    };
+
+    transmit.reply_message({
+        message: message,
+        content: 'hello',
+    });
+
+    assert.deepEqual(send_opts, {
+        data: {
+            queue_id: send_opts.data.queue_id,
+            local_id: send_opts.data.local_id,
+            sender_id: page_params.user_id,
+            target_user_id: message.sender_id,
+            content: 'hello',
+        },
     });
 });
 

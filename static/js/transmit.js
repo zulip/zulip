@@ -129,6 +129,16 @@ exports.reply_message = function (opts) {
         return;
     }
 
+    if (message.type === 'zgram') {
+        reply.target_user_id = message.sender_id;
+        reply.content = content;
+
+        zgram.send({
+            data: reply,
+        });
+        return;
+    }
+
     blueslip.error('unknown message type: ' + message.type);
 };
 
