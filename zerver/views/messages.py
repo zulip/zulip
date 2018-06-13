@@ -19,6 +19,7 @@ from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
+    do_send_zgram, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
@@ -676,6 +677,16 @@ def find_first_unread_anchor(sa_conn: Any,
         anchor = LARGER_THAN_MAX_MESSAGE_ID
 
     return anchor
+
+@has_request_variables
+def zgram_backend(request: HttpRequest, user_profile: UserProfile,
+                  data: str=REQ('data')) -> HttpResponse:
+    # TODO: make this not so opaque, add validation, etc.
+    zgram_data = ujson.loads(data)
+    do_send_zgram(sender_id=user_profile.id, data=zgram_data)
+
+    ret = dict()  # type: Dict[str, Any]
+    return json_success(ret)
 
 @has_request_variables
 def zcommand_backend(request: HttpRequest, user_profile: UserProfile,

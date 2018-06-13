@@ -1179,6 +1179,15 @@ def do_schedule_messages(messages: Sequence[Mapping[str, Any]]) -> List[int]:
     return [scheduled_message.id for scheduled_message in scheduled_messages]
 
 
+def do_send_zgram(sender_id: int, data: Dict[str, Any]) -> None:
+    data['sender_id'] = sender_id
+    target_user_id = data['target_user_id']
+    event = dict(
+        type='zgram',
+        data=data
+    )
+    send_event(event, [target_user_id])
+
 def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, Any]]],
                      email_gateway: Optional[bool]=False) -> List[int]:
     # Filter out messages which didn't pass internal_prep_message properly

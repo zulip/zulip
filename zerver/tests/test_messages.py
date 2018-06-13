@@ -1176,6 +1176,18 @@ class SewMessageAndReactionTest(ZulipTestCase):
 
 class MessagePOSTTest(ZulipTestCase):
 
+    def test_zgram(self) -> None:
+        self.login(self.example_email("hamlet"))
+
+        data = dict(
+            content='hello',
+            target_user_id=self.example_user("cordelia").id
+        )
+
+        payload = dict(data=ujson.dumps(data))
+        result = self.client_post("/json/zgram", payload)
+        self.assert_json_success(result)
+
     def test_message_to_self(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is

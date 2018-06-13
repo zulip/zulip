@@ -164,6 +164,8 @@ v1_api_and_json_patterns = [
 
     url(r'^zcommand$', rest_dispatch,
         {'POST': 'zerver.views.messages.zcommand_backend'}),
+    url(r'^zgram$', rest_dispatch,
+        {'POST': 'zerver.views.messages.zgram_backend'}),
 
     # messages -> zerver.views.messages
     # GET returns messages, possibly filtered, POST sends a message
