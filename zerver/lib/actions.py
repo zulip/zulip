@@ -278,6 +278,27 @@ def get_topic_history_for_stream(user_profile: UserProfile,
 
     return generate_topic_history_from_db_rows(rows)
 
+def get_topic_history_for_web_public_stream(recipient: Recipient) -> List[Dict[str, Any]]:
+    cursor = connection.cursor()
+    query = '''
+    SELECT
+        "zerver_message"."subject" as topic,
+        max("zerver_message".id) as max_message_id
+    FROM "zerver_message"
+    WHERE (
+        "zerver_message"."recipient_id" = %s
+    )
+    GROUP BY (
+        "zerver_message"."subject"
+    )
+    ORDER BY max("zerver_message".id) DESC
+    '''
+    cursor.execute(query, [recipient.id])
+    rows = cursor.fetchall()
+    cursor.close()
+
+    return generate_topic_history_from_db_rows(rows)
+
 def send_signup_message(sender: UserProfile, admin_realm_signup_notifications_stream: str,
                         user_profile: UserProfile, internal: bool=False,
                         realm: Optional[Realm]=None) -> None:

@@ -80,3 +80,47 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_length(public_subs, 1)
         self.assert_length(public_unsubs, 0)
         self.assert_length(public_neversubs, 0)
+
+class WebPublicTopicHistoryTest(ZulipTestCase):
+    def test_non_existant_stream_id(self) -> None:
+        result = self.client_get("/archive/streams/100000000/topics")
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual(history, [])
+
+    def test_non_web_public_stream(self) -> None:
+        test_stream = self.make_stream('Test Public Archives')
+
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message',
+            'TopicGlobal'
+        )
+
+        result = self.client_get(
+            "/archive/streams/" + str(test_stream.id) + "/topics"
+        )
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual(history, [])
+
+    def test_web_public_stream(self) -> None:
+        test_stream = self.make_stream('Test Public Archives')
+        do_change_stream_web_public(test_stream, True)
+
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message',
+            'TopicGlobal'
+        )
+
+        result = self.client_get(
+            "/archive/streams/" + str(test_stream.id) + "/topics"
+        )
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assert_length(history, 1)
+        self.assert_length(history[0], 2)
+        self.assertEqual(history[0]['name'], 'TopicGlobal')
