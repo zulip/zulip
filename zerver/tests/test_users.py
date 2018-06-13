@@ -441,6 +441,7 @@ class UserProfileTest(ZulipTestCase):
         cordelia.night_mode = True
         cordelia.enable_offline_email_notifications = False
         cordelia.enable_stream_push_notifications = True
+        cordelia.enter_sends = False
         cordelia.save()
 
         UserHotspot.objects.filter(user=cordelia).delete()
@@ -479,6 +480,10 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(iago.enable_stream_push_notifications, True)
         self.assertEqual(cordelia.enable_stream_push_notifications, True)
         self.assertEqual(hamlet.enable_stream_push_notifications, False)
+
+        self.assertEqual(iago.enter_sends, False)
+        self.assertEqual(cordelia.enter_sends, False)
+        self.assertEqual(hamlet.enter_sends, True)
 
         hotspots = list(UserHotspot.objects.filter(user=iago).values_list('hotspot', flat=True))
         self.assertEqual(hotspots, hotspots_completed)
