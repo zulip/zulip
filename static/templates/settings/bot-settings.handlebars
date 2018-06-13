@@ -15,7 +15,7 @@
         <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
             <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
             <li class="inactive-bots-tab"><a>{{t "Inactive bots" }}</a></li>
-            <li class="add-a-new-bot-tab {{#unless admin_only_bot_creation}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
+            <li class="add-a-new-bot-tab {{#unless can_create_new_bots}}hide{{/unless}}"><a>{{t "Add a new bot" }}</a></li>
         </ul>
 
         <ol class="bots_list required-text" id="active_bots_list" data-empty="{{t 'You have no active bots.' }}">
@@ -28,7 +28,7 @@
 
         <div id="add-a-new-bot-form">
             <form id="create_bot_form"
-              class="form-horizontal no-padding {{#unless admin_only_bot_creation}}hide{{/unless}}">
+              class="form-horizontal no-padding {{#unless can_create_new_bots}}hide{{/unless}}">
                 <div class="new-bot-form">
                     <div class="input-group">
                         <label for="bot_type">
