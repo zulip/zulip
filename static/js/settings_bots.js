@@ -150,6 +150,10 @@ exports.can_create_new_bots = function () {
         return true;
     }
 
+    if (page_params.is_guest) {
+        return false;
+    }
+
     return page_params.realm_bot_creation_policy !==
         exports.bot_creation_policy_values.admins_only.code;
 };
