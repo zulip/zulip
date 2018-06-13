@@ -170,26 +170,27 @@ run_test('sort_recipients', () => {
 
     // Typeahead for recipientbox [query, "", undefined]
     assert.deepEqual(get_typeahead_result("b", ""), [
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
-        'b_user_3@zulip.net',
-        'b_bot@example.com',
-        'a_user@zulip.org',
-        'zman@test.net',
-        'a_bot@zulip.com',
+        'b_user_1@zulip.net',  // Name is a match, alpha sort.
+        'b_user_2@zulip.net',  // Name is a match, alpha sort.
+        'b_user_3@zulip.net',  // Name is a match, alpha sort.
+        'b_bot@example.com',   // Name is a match, bot.
+        'a_user@zulip.org',    // No match, alpha sort.
+        'zman@test.net',       // No match, alpha sort.
+        'a_bot@zulip.com',     // No match, bot.
     ]);
 
     // Typeahead for private message [query, "", ""]
     assert.deepEqual(get_typeahead_result("a", "", ""), [
-        'a_user@zulip.org',
-        'a_bot@zulip.com',
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
-        'b_user_3@zulip.net',
-        'zman@test.net',
-        'b_bot@example.com',
+        'a_user@zulip.org',    // Name is a match.
+        'a_bot@zulip.com',     // Name is a match, bot.
+        'b_user_1@zulip.net',  // No match, alpha sort.
+        'b_user_2@zulip.net',  // No match, alpha sort.
+        'b_user_3@zulip.net',  // No match, alpha sort.
+        'zman@test.net',       // No match, alpha sort.
+        'b_bot@example.com',   // No match, bot.
     ]);
 
+    // For splitting based on subscription
     var subscriber_email_1 = "b_user_2@zulip.net";
     var subscriber_email_2 = "b_user_3@zulip.net";
     var subscriber_email_3 = "b_bot@example.com";
@@ -198,31 +199,29 @@ run_test('sort_recipients', () => {
     stream_data.add_subscriber("Dev", people.get_user_id(subscriber_email_3));
 
     var dev_sub = stream_data.get_sub("Dev");
-    var linux_sub = stream_data.get_sub("Linux");
     stream_data.update_calculated_fields(dev_sub);
-    stream_data.update_calculated_fields(linux_sub);
 
     // For spliting based on whether a PM was sent
-    global.pm_conversations.set_partner(5);
-    global.pm_conversations.set_partner(6);
-    global.pm_conversations.set_partner(2);
-    global.pm_conversations.set_partner(7);
+    global.pm_conversations.set_partner(5);  // b_user_3@zulip.net
+    global.pm_conversations.set_partner(6);  // b_bot@example.com
+    global.pm_conversations.set_partner(2);  // a_user@zulip.org
+    global.pm_conversations.set_partner(7);  // zman@test.net
 
     // For splitting based on recency
     global.recent_senders.process_message_for_senders({
-        sender_id : 7,
+        sender_id : 7,  // zman@test.net
         stream_id : 1,
         subject : "Dev Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 5,
+        sender_id : 5,  // b_user_3@zulip.net
         stream_id : 1,
         subject : "Dev Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 6,
+        sender_id : 6,  // b_bot@example.com
         stream_id : 1,
         subject : "Dev Topic",
         id : _.uniqueId(),
@@ -230,40 +229,41 @@ run_test('sort_recipients', () => {
 
     // Typeahead for stream message [query, stream-name, topic-name]
     assert.deepEqual(get_typeahead_result("b", "Dev", "Dev Topic"), [
-        subscriber_email_3,
-        subscriber_email_2,
-        subscriber_email_1,
-        'b_user_1@zulip.net',
-        'zman@test.net',
-        'a_user@zulip.org',
-        'a_bot@zulip.com',
+        subscriber_email_3,    // Match: name, subscriber, PM partner, more recent sender.
+        subscriber_email_2,    // Match: name, subscriber, PM partner, less recent sender.
+        subscriber_email_1,    // Match: name, subscriber.
+        'b_user_1@zulip.net',  // Match: name.
+        'zman@test.net',       // No match, PM partner, recent sender.
+        'a_user@zulip.org',    // No match, PM partner.
+        'a_bot@zulip.com',     // No match.
     ]);
 
+    // For splitting based on recency
     global.recent_senders.process_message_for_senders({
-        sender_id : 5,
+        sender_id : 5,  // b_user_3@zulip.net
         stream_id : 2,
         subject : "Linux Topic",
         id : _.uniqueId(),
     });
     global.recent_senders.process_message_for_senders({
-        sender_id : 7,
+        sender_id : 7,  // zman@test.net
         stream_id : 2,
         subject : "Linux Topic",
         id : _.uniqueId(),
     });
 
-    // No match
+    // Typeahead for stream message: no match.
     assert.deepEqual(get_typeahead_result("h", "Linux", "Linux Topic"), [
-        'zman@test.net',
-        'b_user_3@zulip.net',
-        'a_user@zulip.org',
-        'b_bot@example.com',
-        'a_bot@zulip.com',
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
+        'zman@test.net',       // No match, PM partner, more recent sender.
+        'b_user_3@zulip.net',  // No match, PM partner, less recent sender.
+        'a_user@zulip.org',    // No match, PM partner.
+        'b_bot@example.com',   // No match, PM partner.
+        'a_bot@zulip.com',     // No match.
+        'b_user_1@zulip.net',  // No match.
+        'b_user_2@zulip.net',  // No match.
     ]);
 
-    // Test person email is "all" or "everyone"
+    // Typeahead for stream message: "all" goes first.
     var person = {
         email: "all",
         full_name: "All",
@@ -275,36 +275,37 @@ run_test('sort_recipients', () => {
 
     assert.deepEqual(get_typeahead_result("a", "Linux", "Linux Topic"), [
         'all',
-        'a_user@zulip.org',
-        'a_bot@zulip.com',
-        'zman@test.net',
-        'b_user_3@zulip.net',
-        'b_bot@example.com',
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
+        'a_user@zulip.org',    // Match: name, PM partner.
+        'a_bot@zulip.com',     // Match: name.
+        'zman@test.net',       // No match, PM partner, more recent sender.
+        'b_user_3@zulip.net',  // No match, PM partner, less recent sender.
+        'b_bot@example.com',   // No match, PM partner.
+        'b_user_1@zulip.net',  // No match.
+        'b_user_2@zulip.net',  // No match.
     ]);
 
     people.deactivate(person);
 
-    // Test sort_recipients with pm counts
-    matches[0].pm_recipient_count = 50;
-    matches[1].pm_recipient_count = 2;
-    matches[2].pm_recipient_count = 32;
-    matches[3].pm_recipient_count = 42;
-    matches[4].pm_recipient_count = 0;
-    matches[5].pm_recipient_count = 1;
+    // For splitting based on PM counts
+    matches[0].pm_recipient_count = 50;  // a_bot@zulip.com
+    matches[1].pm_recipient_count = 2;   // a_user@zulip.org
+    matches[2].pm_recipient_count = 32;  // b_user_1@zulip.net
+    matches[3].pm_recipient_count = 42;  // b_user_2@zulip.net
+    matches[4].pm_recipient_count = 0;   // b_user_3@zulip.net
+    matches[5].pm_recipient_count = 1;   // b_bot@example.com
 
+    // Typeahead for stream message: PM counts have no effect.
     assert.deepEqual(get_typeahead_result("b", "Linux", "Linux Topic"), [
-        'b_user_3@zulip.net',
-        'b_bot@example.com',
-        'b_user_1@zulip.net',
-        'b_user_2@zulip.net',
-        'zman@test.net',
-        'a_user@zulip.org',
-        'a_bot@zulip.com',
+        'b_user_3@zulip.net',  // Match: name, PM partner, recent sender.
+        'b_bot@example.com',   // Match: name, PM partner.
+        'b_user_1@zulip.net',  // Match: name.
+        'b_user_2@zulip.net',  // Match: name.
+        'zman@test.net',       // No match, PM partner, recent sender.
+        'a_user@zulip.org',    // No match, PM partner.
+        'a_bot@zulip.com',     // No match.
     ]);
 
-    // Test sort_recipients with duplicate people
+    // Typeahead for private message: duplicates, PM counts.
     matches.push(matches[0]);
 
     var recipients = th.sort_recipients(matches, "b", "", "");
@@ -312,13 +313,13 @@ run_test('sort_recipients', () => {
         return person.email;
     });
     var expected = [
-        'b_bot@example.com',
-        'b_user_3@zulip.net',
-        'b_user_2@zulip.net',
-        'b_user_1@zulip.net',
-        'a_user@zulip.org',
-        'zman@test.net',
-        'a_bot@zulip.com',
+        'b_bot@example.com',   // Match: name, PM partner, 1 PM.
+        'b_user_3@zulip.net',  // Match: name, PM partner, 0 PMs.
+        'b_user_2@zulip.net',  // Match: name, 42 PMs.
+        'b_user_1@zulip.net',  // Match: name, 32 PMs.
+        'a_user@zulip.org',    // No match, PM partner, 2 PMs.
+        'zman@test.net',       // No match, PM partner.
+        'a_bot@zulip.com',     // No match.
         'a_bot@zulip.com',
     ];
     assert.deepEqual(recipients_email, expected);
@@ -326,7 +327,7 @@ run_test('sort_recipients', () => {
     // Reset matches
     matches.splice(matches.length - 1, 1);
 
-    // full_name starts with same character but emails are 'all'
+    // Typeahead for stream message: names are a match, emails are "all".
     var small_matches = [
         {
             email: "all",
@@ -353,27 +354,32 @@ run_test('sort_recipients', () => {
     ];
     assert.deepEqual(recipients_email, expected);
 
-    // matches[3] is a subscriber and matches[2] is not.
-    small_matches = [matches[3], matches[2]];
+    // Typeahead for stream message: one of the users is a subscriber.
+    small_matches = [
+        matches[3],  // b_user_2@zulip.net
+        matches[2],  // b_user_1@zulip.net
+    ];
     recipients = th.sort_recipients(small_matches, "b", "Dev", "Dev Topic");
     recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     expected = [
-        'b_user_2@zulip.net',
+        'b_user_2@zulip.net',  // subscriber
         'b_user_1@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
 
-    // matches[4] is a pm partner and matches[3] is not and
-    // both are not subscribered to the stream Linux.
-    small_matches = [matches[4], matches[3]];
+    // Typeahead for stream message: one of the users is a PM partner.
+    small_matches = [
+        matches[4],  // b_user_3@zulip.net
+        matches[3],  // b_user_2@zulip.net
+    ];
     recipients = th.sort_recipients(small_matches, "b", "Linux", "Linux Topic");
     recipients_email = _.map(recipients, function (person) {
         return person.email;
     });
     expected = [
-        'b_user_3@zulip.net',
+        'b_user_3@zulip.net',  // PM partner
         'b_user_2@zulip.net',
     ];
     assert.deepEqual(recipients_email, expected);
@@ -565,8 +571,8 @@ run_test('sort_recipientbox_typeahead', () => {
         return person.email;
     });
     assert.deepEqual(recipients_email, [
-        'a_user@zulip.org', // matches "a"
-        'a_bot@zulip.com', // matches "a"
+        'a_user@zulip.org',  // matches "a"
+        'a_bot@zulip.com',   // matches "a"
         'b_bot@example.com',
         'b_user_3@zulip.net',
         'zman@test.net',
@@ -579,10 +585,10 @@ run_test('sort_recipientbox_typeahead', () => {
         return person.email;
     });
     assert.deepEqual(recipients_email, [
-        'b_bot@example.com',
-        'b_user_3@zulip.net',
-        'b_user_2@zulip.net',
-        'b_user_1@zulip.net',
+        'b_bot@example.com',   // matches "b"
+        'b_user_3@zulip.net',  // matches "b"
+        'b_user_2@zulip.net',  // matches "b"
+        'b_user_1@zulip.net',  // matches "b"
         'a_user@zulip.org',
         'zman@test.net',
         'a_bot@zulip.com',
