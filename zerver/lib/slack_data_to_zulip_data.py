@@ -515,19 +515,16 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
 def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFieldsT], realm_id: int,
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
-                                     zerver_realmemoji: List[ZerverFieldsT],
-                                     domain_name: str) -> Tuple[ZerverFieldsT,
-                                                                List[ZerverFieldsT],
-                                                                List[ZerverFieldsT]]:
+                                     zerver_realmemoji: List[ZerverFieldsT], domain_name: str,
+                                     output_dir: str) -> Tuple[List[ZerverFieldsT],
+                                                               List[ZerverFieldsT],
+                                                               List[ZerverFieldsT]]:
     """
     Returns:
-    1. message.json, Converted messages
+    1. reactions, which is a list of the reactions
     2. uploads, which is a list of uploads to be mapped in uploads records.json
     3. attachment, which is a list of the attachments
     """
-    message_json = {}
-    zerver_message = []  # type: List[ZerverFieldsT]
-    zerver_usermessage = []  # type: List[ZerverFieldsT]
     all_messages = get_all_messages(slack_data_dir, added_channels)
 
     # we sort the messages according to the timestamp to show messages with
@@ -544,13 +541,15 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                                       added_channels,
                                                       domain_name)
 
+    message_json = dict(
+        zerver_message=zerver_message,
+        zerver_usermessage=zerver_usermessage)
+    message_filename = os.path.join(output_dir, "messages-000001.json")
+    logging.info("Writing Messages to %s\n" % (message_filename,))
+    create_converted_data_files(message_json, output_dir, '/messages-000001.json')
+
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
-
-    message_json['zerver_message'] = zerver_message
-    message_json['zerver_usermessage'] = zerver_usermessage
-    message_json['zerver_reaction'] = reactions
-
-    return message_json, uploads, attachment
+    return reactions, uploads, attachment
 
 def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> List[ZerverFieldsT]:
     all_messages = []  # type: List[ZerverFieldsT]
@@ -837,13 +836,12 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
                                                  realm_subdomain,
                                                  slack_data_dir, custom_emoji_list)
 
-    message_json, uploads_list, zerver_attachment = convert_slack_workspace_messages(
+    reactions, uploads_list, zerver_attachment = convert_slack_workspace_messages(
         slack_data_dir, user_list, realm_id, added_users, added_recipient, added_channels,
-        realm, realm['zerver_realmemoji'], domain_name)
+        realm, realm['zerver_realmemoji'], domain_name, output_dir)
 
     # Move zerver_reactions to realm.json file
-    realm['zerver_reaction'] = message_json['zerver_reaction']
-    del message_json['zerver_reaction']
+    realm['zerver_reaction'] = reactions
 
     emoji_folder = os.path.join(output_dir, 'emoji')
     os.makedirs(emoji_folder, exist_ok=True)
@@ -861,8 +859,6 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     # IO realm.json
     create_converted_data_files(realm, output_dir, '/realm.json')
-    # IO message.json
-    create_converted_data_files(message_json, output_dir, '/messages-000001.json')
     # IO emoji records
     create_converted_data_files(emoji_records, output_dir, '/emoji/records.json')
     # IO avatar records
