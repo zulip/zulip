@@ -1,5 +1,6 @@
 <div id="bot-settings" class="settings-section" data-name="your-bots">
     <div class="bot-settings-form">
+        {{#unless page_params.is_guest}}
         <div class="tip">
             {{#tr this}}Looking for our <a href="/integrations" target="_blank">Integrations</a> or <a href="/api" target="_blank">API</a> documentation?{{/tr}}
         </div>
@@ -11,6 +12,7 @@
                 <i class="icon-vector-download-alt sea-green"></i>
             </a>
         </div>
+        {{/unless}}
 
         <ul class="nav nav-tabs nav-justified" id="bots_lists_navbar">
             <li class="active active-bots-tab"><a>{{t "Active bots" }}</a></li>
