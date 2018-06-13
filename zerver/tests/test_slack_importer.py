@@ -458,14 +458,22 @@ class SlackImporter(ZulipTestCase):
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
         user_list = []  # type: List[Dict[str, Any]]
+        reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
+        attachments = uploads = []  # type: List[Dict[str, Any]]
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message, zerver_usermessage, [], [], []]]
-        message_json, uploads, zerver_attachment = convert_slack_workspace_messages(
-            './random_path', user_list, 2, {}, {}, added_channels, realm, [], 'domain')
+        mock_message.side_effect = [[zerver_message, zerver_usermessage, attachments, uploads, reactions]]
+        test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
+            './random_path', user_list, 2, {}, {}, added_channels, realm, [], 'domain', 'var/test-slack-import')
+        messages_file = os.path.join('var', 'test-slack-import', 'messages-000001.json')
+        self.assertTrue(os.path.exists(messages_file))
+
+        with open(messages_file) as f:
+            message_json = ujson.load(f)
         self.assertEqual(message_json['zerver_message'], zerver_message)
         self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
+        self.assertEqual(test_reactions, reactions)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.process_uploads", return_value = [])
     @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_attachment",
