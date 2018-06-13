@@ -5,9 +5,10 @@ from django.shortcuts import render
 from django.template import loader
 from zerver.lib.streams import get_stream_by_id
 
-from zerver.models import Message, UserProfile
-
+from zerver.models import Message, UserProfile, get_stream_recipient
+from zerver.lib.actions import get_topic_history_for_web_public_stream
 from zerver.lib.avatar import get_gravatar_url
+from zerver.lib.response import json_success
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.exceptions import JsonableError
 
@@ -68,3 +69,18 @@ def archive(request: HttpRequest,
         rendered_msg = loader.render_to_string('zerver/archive/single_message.html', context)
         rendered_message_list.append(rendered_msg)
     return get_response(rendered_message_list, True, stream.name)
+
+def get_web_public_topics_backend(request: HttpRequest, stream_id: int) -> HttpResponse:
+    try:
+        stream = get_stream_by_id(stream_id)
+    except JsonableError:
+        return json_success(dict(topics=[]))
+
+    if not stream.is_web_public:
+        return json_success(dict(topics=[]))
+
+    recipient = get_stream_recipient(stream.id)
+
+    result = get_topic_history_for_web_public_stream(recipient=recipient)
+
+    return json_success(dict(topics=result))

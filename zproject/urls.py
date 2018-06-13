@@ -460,6 +460,9 @@ i18n_urls = [
     url(r'^archive/streams/(?P<stream_id>\d+)/topic/(?P<topic_name>[^/]+)$',
         zerver.views.archive.archive,
         name='zerver.views.archive.archive'),
+    url(r'^archive/streams/(?P<stream_id>\d+)/topics$',
+        zerver.views.archive.get_web_public_topics_backend,
+        name='zerver.views.archive.get_web_public_topics_backend'),
 
     # Login/registration
     url(r'^register/$', zerver.views.registration.accounts_home, name='register'),
