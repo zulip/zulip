@@ -72,8 +72,7 @@ function render_bots() {
         user_owns_an_active_bot = user_owns_an_active_bot || elem.is_active;
     });
 
-    if (page_params.is_admin || page_params.realm_bot_creation_policy !==
-        exports.bot_creation_policy_values.admins_only.code) {
+    if (settings_bots.can_create_new_bots()) {
         if (!user_owns_an_active_bot) {
             focus_tab.add_a_new_bot_tab();
             return;
@@ -146,6 +145,15 @@ exports.bot_creation_policy_values = {
     },
 };
 
+exports.can_create_new_bots = function () {
+    if (page_params.is_admin) {
+        return true;
+    }
+
+    return page_params.realm_bot_creation_policy !==
+        exports.bot_creation_policy_values.admins_only.code;
+};
+
 exports.update_bot_settings_tip = function () {
     var permission_type = exports.bot_creation_policy_values;
     var current_permission = page_params.realm_bot_creation_policy;
@@ -164,9 +172,7 @@ exports.update_bot_permissions_ui = function () {
     exports.update_bot_settings_tip();
     $('#bot_table_error').hide();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
-    if (page_params.realm_bot_creation_policy ===
-        exports.bot_creation_policy_values.admins_only.code &&
-        !page_params.is_admin) {
+    if (!exports.can_create_new_bots()) {
         $('#create_bot_form').hide();
         $('.add-a-new-bot-tab').hide();
         focus_tab.active_bots_tab();

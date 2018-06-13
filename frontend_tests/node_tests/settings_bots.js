@@ -195,3 +195,15 @@ run_test('test tab clicks', () => {
         assert(forms.inactive.visible());
     }());
 });
+
+run_test('can_create_new_bots', () => {
+    page_params.is_admin = true;
+    assert(settings_bots.can_create_new_bots());
+
+    page_params.is_admin = false;
+    page_params.realm_bot_creation_policy = 1;
+    assert(settings_bots.can_create_new_bots());
+
+    page_params.realm_bot_creation_policy = 3;
+    assert(!settings_bots.can_create_new_bots());
+});

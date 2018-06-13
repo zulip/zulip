@@ -136,9 +136,7 @@ exports.setup_page = function () {
         zuliprc: 'zuliprc',
         botserverrc: 'botserverrc',
         timezones: moment.tz.names(),
-        admin_only_bot_creation: page_params.is_admin ||
-            page_params.realm_bot_creation_policy !==
-            settings_bots.bot_creation_policy_values.admins_only.code,
+        can_create_new_bots: settings_bots.can_create_new_bots(),
         settings_label: settings.settings_label,
     });
 
