@@ -68,5 +68,5 @@ $(function () {
             return $(this).is(sel) || $(this).closest(sel).length;
         };
     }
-
+    transmit.initialize();
 });
