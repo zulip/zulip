@@ -22,6 +22,7 @@ zrequire('people');
 zrequire('transmit');
 
 function test_with_mock_socket(test_params) {
+    transmit.initialize();
     var socket_send_called;
     var send_args = {};
 
