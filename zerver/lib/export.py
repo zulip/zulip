@@ -21,7 +21,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
-    Iterable
+    Iterable, Union
 
 # Custom mypy types follow:
 Record = Dict[str, Any]
@@ -45,8 +45,8 @@ PostProcessData = Any  # TODO: make more specific
 # The keys of our MessageOutput variables are normally
 # List[Record], but when we write partials, we can get
 # lists of integers or a single integer.
-# TODO: tighten this up with a union.
-MessageOutput = Dict[str, Any]
+# TODO: This could maybe be improved using TypedDict?
+MessageOutput = Dict[str, Union[List[Record], List[int], int]]
 
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
@@ -1362,7 +1362,8 @@ def export_messages_single_user(user_profile: UserProfile, output_dir: Path, chu
 
         output = {'zerver_message': message_chunk}
         floatify_datetime_fields(output, 'zerver_message')
+        message_output = dict(output)  # type: MessageOutput
 
-        write_message_export(message_filename, output)
+        write_message_export(message_filename, message_output)
         min_id = max(user_message_ids)
         dump_file_id += 1
