@@ -10,7 +10,7 @@ from zerver.models import UserProfile, Stream, Subscription, \
     Realm, Recipient, bulk_get_recipients, get_stream_recipient, get_stream, \
     bulk_get_streams, get_realm_stream, DefaultStreamGroup
 
-def access_stream_for_delete_or_update(user_profile: UserProfile, stream_id: int) -> Stream:
+def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Stream:
 
     # We should only ever use this for realm admins, who are allowed
     # to delete or update all streams on their realm, even private streams

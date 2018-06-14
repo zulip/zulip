@@ -25,7 +25,7 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete_or_update, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -61,7 +61,7 @@ def principal_to_user_profile(agent: UserProfile, principal: str) -> UserProfile
 def deactivate_stream_backend(request: HttpRequest,
                               user_profile: UserProfile,
                               stream_id: int) -> HttpResponse:
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    stream = access_stream_for_delete(user_profile, stream_id)
     do_deactivate_stream(stream)
     return json_success()
 
@@ -153,7 +153,7 @@ def update_stream_backend(
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
-    stream = access_stream_for_delete_or_update(user_profile, stream_id)
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
     if description is not None:
         do_change_stream_description(stream, description)
     if new_name is not None:
