@@ -35,8 +35,17 @@ def access_stream_for_admin_actions(user_profile: UserProfile, stream_id: int,
                                     allow_realm_admin: bool=False) -> None:
     (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                    allow_realm_admin=allow_realm_admin)
-    if not user_profile.is_realm_admin:
-        raise JsonableError(_("Must be an organization administrator"))
+    is_user_subscribed = (sub is not None)
+
+    if not is_user_subscribed:
+        # If user is not subscribed then only realm admin can modify, public streams only.
+        if not user_profile.is_realm_admin:
+            raise JsonableError(_("Must be an organization administrator"))
+    else:
+        # If a realm admin is subscribed to a stream, they get admin powers for that stream.
+        # Or you should be stream admin to access stream for admin actions.
+        if not (user_profile.is_realm_admin or sub.is_stream_admin):
+            raise JsonableError(_("Must be an organization administrator"))
     return stream
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
