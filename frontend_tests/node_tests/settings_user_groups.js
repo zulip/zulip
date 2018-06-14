@@ -26,6 +26,8 @@ set_global('ui_report', {});
 set_global('people', {
     my_current_user_id: noop,
 });
+set_global('page_params', {});
+
 function reset_test_setup(pill_container_stub) {
     function input_pill_stub(opts) {
         assert.equal(opts.container, pill_container_stub);
@@ -39,9 +41,15 @@ function reset_test_setup(pill_container_stub) {
 }
 
 run_test('can_edit', () => {
+    page_params.is_guest = false;
     page_params.is_admin = true;
     assert(settings_user_groups.can_edit(1));
 
+    page_params.is_admin = false;
+    page_params.is_guest = true;
+    assert(!settings_user_groups.can_edit(1));
+
+    page_params.is_guest = false;
     page_params.is_admin = false;
     user_groups.is_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);

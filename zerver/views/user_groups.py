@@ -3,6 +3,7 @@ from django.utils.translation import ugettext as _
 
 from typing import List
 
+from zerver.decorator import require_non_guest_human_user
 from zerver.context_processors import get_realm_from_request
 from zerver.lib.actions import check_add_user_group, do_update_user_group_name, \
     do_update_user_group_description, bulk_add_members_to_user_group, \
@@ -17,6 +18,7 @@ from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_u
 from zerver.models import UserProfile, UserGroup, UserGroupMembership
 from zerver.views.streams import compose_views, FuncKwargPair
 
+@require_non_guest_human_user
 @has_request_variables
 def add_user_group(request: HttpRequest, user_profile: UserProfile,
                    name: str=REQ(),
@@ -26,6 +28,7 @@ def add_user_group(request: HttpRequest, user_profile: UserProfile,
     check_add_user_group(user_profile.realm, name, user_profiles, description)
     return json_success()
 
+@require_non_guest_human_user
 @has_request_variables
 def edit_user_group(request: HttpRequest, user_profile: UserProfile,
                     user_group_id: int=REQ(validator=check_int),
@@ -47,6 +50,7 @@ def edit_user_group(request: HttpRequest, user_profile: UserProfile,
 
     return json_success(result)
 
+@require_non_guest_human_user
 @has_request_variables
 def delete_user_group(request: HttpRequest, user_profile: UserProfile,
                       user_group_id: int=REQ(validator=check_int)) -> HttpResponse:
@@ -54,6 +58,7 @@ def delete_user_group(request: HttpRequest, user_profile: UserProfile,
     check_delete_user_group(user_group_id, user_profile)
     return json_success()
 
+@require_non_guest_human_user
 @has_request_variables
 def update_user_group_backend(request: HttpRequest, user_profile: UserProfile,
                               user_group_id: int=REQ(validator=check_int),
