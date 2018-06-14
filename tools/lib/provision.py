@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_hash_updated
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -360,24 +360,11 @@ def main(options):
 
         # Consider updating generated translations data: both `.mo`
         # files and `language-options.json`.
-        sha1sum = hashlib.sha1()
         paths = ['zerver/management/commands/compilemessages.py']
         paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
         paths += glob.glob('static/locale/*/translations.json')
 
-        for path in paths:
-            with open(path, 'rb') as file_to_hash:
-                sha1sum.update(file_to_hash.read())
-
-        compilemessages_hash_path = os.path.join(UUID_VAR_PATH, "last_compilemessages_hash")
-        new_compilemessages_hash = sha1sum.hexdigest()
-        run(['touch', compilemessages_hash_path])
-        with open(compilemessages_hash_path, 'r') as hash_file:
-            last_compilemessages_hash = hash_file.read()
-
-        if options.is_force or (new_compilemessages_hash != last_compilemessages_hash):
-            with open(compilemessages_hash_path, 'w') as hash_file:
-                hash_file.write(new_compilemessages_hash)
+        if file_hash_updated(paths, "last_compilemessages_hash", options.is_force):
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")

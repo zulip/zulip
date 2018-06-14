@@ -15,7 +15,7 @@ import json
 import uuid
 
 if False:
-    from typing import Sequence, Set, Any, Dict
+    from typing import Sequence, Set, Any, Dict, List
 
 DEPLOYMENTS_DIR = "/home/zulip/deployments"
 LOCK_DIR = os.path.join(DEPLOYMENTS_DIR, "lock")
@@ -312,3 +312,22 @@ def parse_lsb_release():
     for k, v in data:
         distro_info[k] = v
     return distro_info
+
+def file_hash_updated(paths, hash_name, is_force):
+    # type: (List[str], str, bool) -> bool
+    sha1sum = hashlib.sha1()
+    for path in paths:
+        with open(path, 'rb') as file_to_hash:
+            sha1sum.update(file_to_hash.read())
+
+    compilemessages_hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
+    new_compilemessages_hash = sha1sum.hexdigest()
+    run(['touch', compilemessages_hash_path])
+    with open(compilemessages_hash_path, 'r') as hash_file:
+        last_compilemessages_hash = hash_file.read()
+
+    if is_force or (new_compilemessages_hash != last_compilemessages_hash):
+        with open(compilemessages_hash_path, 'w') as hash_file:
+            hash_file.write(new_compilemessages_hash)
+            return True
+    return False
