@@ -65,7 +65,7 @@ from zerver.models import (
     Message, Realm, Recipient, Stream, UserMessage, UserProfile, Attachment,
     RealmAuditLog, RealmDomain, get_realm, UserPresence, Subscription,
     get_stream, get_stream_recipient, get_system_bot, get_user, Reaction,
-    flush_per_request_caches, ScheduledMessage
+    flush_per_request_caches, ScheduledMessage, topic_exists, get_realm_stream
 )
 
 
@@ -638,6 +638,16 @@ class StreamMessagesTest(ZulipTestCase):
 
         stream = get_stream('Denmark', user_profile.realm)
         self.assertEqual(dct['stream_id'], stream.id)
+
+    def test_topic_exists(self) -> None:
+        user_profile = self.example_user('iago')
+        self.subscribe(user_profile, "Denmark")
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="whatever", topic_name="my topic")
+        stream = get_realm_stream("Denmark", user_profile.realm.id)
+        recipient = get_stream_recipient(stream.id)
+        self.assertTrue(topic_exists('My Topic', recipient))
+        self.assertFalse(topic_exists('This topic does not exist!', recipient))
 
     def test_stream_message_unicode(self) -> None:
         user_profile = self.example_user('iago')

@@ -1309,6 +1309,12 @@ def get_context_for_message(message: Message) -> Sequence[Message]:
         pub_date__gt=message.pub_date - timedelta(minutes=15),
     ).order_by('-id')[:10]
 
+def topic_exists(topic_name: str, recipient: Recipient) -> bool:
+    topic_exists = Message.objects.filter(
+        subject__iexact=topic_name,
+        recipient=recipient).exists()
+    return topic_exists
+
 post_save.connect(flush_message, sender=Message)
 
 class SubMessage(models.Model):
