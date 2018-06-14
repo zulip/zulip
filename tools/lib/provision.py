@@ -298,7 +298,12 @@ def main(options):
     run(["tools/setup/build_pygments_data"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
-    run(["tools/inline-email-css"])
+    email_source_paths = ["tools/inline-email-css"]
+    email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
+    if file_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
+        run(["tools/inline-email-css"])
+    else:
+        print("No need to run `tools/inline-email-css`.")
     if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
