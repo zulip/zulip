@@ -21,10 +21,12 @@ exports.reload = function () {
 };
 
 exports.can_edit = function (group_id) {
-    var me = people.get_person_from_user_id(people.my_current_user_id());
-    return user_groups.is_member_of(group_id, people.my_current_user_id()) || me.is_admin;
-};
+    if (page_params.is_admin) {
+        return true;
+    }
 
+    return user_groups.is_member_of(group_id, people.my_current_user_id());
+};
 exports.populate_user_groups = function () {
 
     var user_groups_section = $('#user-groups').expectOne();

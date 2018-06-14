@@ -39,19 +39,16 @@ function reset_test_setup(pill_container_stub) {
 }
 
 run_test('can_edit', () => {
-    var me = {
-        is_admin: false,
-    };
-    people.get_person_from_user_id = function (id) {
-        assert.equal(id, undefined);
-        return me;
-    };
-    user_groups.is_member_of = function (group_id, user_id) {
+    page_params.is_admin = true;
+    assert(settings_user_groups.can_edit(1));
+
+    page_params.is_admin = false;
+    user_groups.is_member_of = (group_id, user_id) => {
         assert.equal(group_id, 1);
         assert.equal(user_id, undefined);
         return false;
     };
-    settings_user_groups.can_edit(1);
+    assert(!settings_user_groups.can_edit(1));
 });
 
 var user_group_selector = "#user-groups #1";
