@@ -60,6 +60,7 @@ function update_setting(command) {
 exports.process = function (message_content) {
 
     var content = message_content.trim();
+    var tokens = content.split(' ');
 
     if (content === '/ping') {
         var start_time = new Date();
@@ -72,6 +73,21 @@ exports.process = function (message_content) {
                 diff = Math.round(diff);
                 var msg = "ping time: " + diff + "ms";
                 exports.tell_user(msg);
+            },
+        });
+        return true;
+    }
+
+    if (tokens[0] === '/mute_topic') {
+
+        exports.send({
+            command: content,
+            on_success: function (data) {
+                if (data.subject && data.stream && data.type) {
+                    muting_ui.toggle_mute(data);
+                } else {
+                    exports.tell_user(data.msg);
+                }
             },
         });
         return true;
