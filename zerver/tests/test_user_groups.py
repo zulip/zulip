@@ -110,6 +110,19 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.all(), 2)
 
+    def test_user_group_create_by_guest_user(self) -> None:
+        guest_user = self.example_user('polonius')
+
+        # Guest users can't create user group
+        self.login(guest_user.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_error(result, "Not allowed for guest users")
+
     def test_user_group_update(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -162,6 +175,28 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(result.json()['description'], 'Description successfully updated.')
 
+    def test_user_group_update_by_guest_user(self) -> None:
+        hamlet = self.example_user('hamlet')
+        guest_user = self.example_user('polonius')
+        self.login(hamlet.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id, guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+
+        # Guest user can't edit any detail of an user group
+        self.login(guest_user.email)
+        params = {
+            'name': 'help',
+            'description': 'Troubleshooting team',
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
+        self.assert_json_error(result, "Not allowed for guest users")
+
     def test_user_group_delete(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
@@ -210,6 +245,24 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_success(result)
         self.assertEqual(UserGroup.objects.count(), 1)
         self.assertEqual(UserGroupMembership.objects.count(), 2)
+
+    def test_user_group_delete_by_guest_user(self) -> None:
+        hamlet = self.example_user('hamlet')
+        guest_user = self.example_user('polonius')
+        self.login(hamlet.email)
+        params = {
+            'name': 'support',
+            'members': ujson.dumps([hamlet.id, guest_user.id]),
+            'description': 'Support team',
+        }
+        result = self.client_post('/json/user_groups/create', info=params)
+        self.assert_json_success(result)
+        user_group = UserGroup.objects.get(name='support')
+
+        # Guest users can't delete any user group(not even those of which they are a member)
+        self.login(guest_user.email)
+        result = self.client_delete('/json/user_groups/{}'.format(user_group.id))
+        self.assert_json_error(result, "Not allowed for guest users")
 
     def test_update_members_of_user_group(self) -> None:
         hamlet = self.example_user('hamlet')

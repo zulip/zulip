@@ -25,8 +25,13 @@ exports.can_edit = function (group_id) {
         return true;
     }
 
+    if (page_params.is_guest) {
+        return false;
+    }
+
     return user_groups.is_member_of(group_id, people.my_current_user_id());
 };
+
 exports.populate_user_groups = function () {
 
     var user_groups_section = $('#user-groups').expectOne();
