@@ -97,6 +97,41 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
                   {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
 };
 
+exports.last_online_status_from_date = function (last_active_date, current_date) {
+    if (typeof  current_date === 'undefined') {
+        current_date = new XDate();
+    }
+
+    var minutes = Math.floor(last_active_date.diffMinutes(current_date));
+    if (minutes <= 2) {
+        return i18n.t("Last online just now");
+    }
+    if (minutes < 60) {
+        return i18n.t("Last online __minutes__ minutes ago", {minutes: minutes});
+    }
+
+    var hours = Math.floor(minutes / 60);
+    if (hours === 1) {
+        return i18n.t("Last online an hour ago");
+    }
+    if (hours < 24) {
+        return i18n.t("Last online __hours__ hours ago", {hours: hours});
+    }
+
+    var days = Math.floor(hours / 24);
+    if (days === 1) {
+        return [i18n.t("Last online yesterday")];
+    }
+    if (days < 365) {
+        return i18n.t("Last online on __last_active__",
+                      {last_active: last_active_date.toString("MMM\xa0dd")});
+    }
+
+    return i18n.t("Last online on __last_active_date__",
+                  {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
+};
+
+
 // List of the dates that need to be updated when the day changes.
 // Each timestamp is represented as a list of length 2:
 //   [id of the span element, XDate representing the time]
