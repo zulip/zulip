@@ -29,6 +29,16 @@ exports.send = function (opts) {
     });
 };
 
+exports.handle_event = function (event) {
+    var message = event.data;
+
+    message.id = local_message.get_next_id();
+    message.timestamp = local_message.now();
+    message.simulated = true;
+    message.type = 'zgram';
+    local_message.insert_message(message);
+};
+
 exports.simulate_simple_message = function () {
     var message = {
         type: 'zgram',
