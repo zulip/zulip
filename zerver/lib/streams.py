@@ -30,6 +30,16 @@ def access_stream_for_delete(user_profile: UserProfile, stream_id: int) -> Strea
     return stream
 
 # Only set allow_realm_admin flag to True when you want to allow realm admin to
+# perform admin actions of unsubscribed private stream content.
+def access_stream_for_admin_actions(user_profile: UserProfile, stream_id: int,
+                                    allow_realm_admin: bool=False) -> None:
+    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
+                                                   allow_realm_admin=allow_realm_admin)
+    if not user_profile.is_realm_admin:
+        raise JsonableError(_("Must be an organization administrator"))
+    return stream
+
+# Only set allow_realm_admin flag to True when you want to allow realm admin to
 # access unsubscribed private stream content.
 def access_stream_common(user_profile: UserProfile, stream: Stream,
                          error: str,

@@ -25,7 +25,8 @@ from zerver.lib.actions import bulk_remove_subscriptions, \
 from zerver.lib.response import json_success, json_error, json_response
 from zerver.lib.streams import access_stream_by_id, access_stream_by_name, \
     check_stream_name, check_stream_name_available, filter_stream_authorization, \
-    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id
+    list_to_streams, access_stream_for_delete, access_default_stream_group_by_id, \
+    access_stream_for_admin_actions
 from zerver.lib.validator import check_string, check_int, check_list, check_dict, \
     check_bool, check_variable_type, check_capped_string
 from zerver.models import UserProfile, Stream, Realm, Subscription, \
@@ -139,7 +140,6 @@ def remove_default_stream(request: HttpRequest,
     do_remove_default_stream(stream)
     return json_success()
 
-@require_realm_admin
 @has_request_variables
 def update_stream_backend(
         request: HttpRequest, user_profile: UserProfile,
@@ -153,7 +153,7 @@ def update_stream_backend(
 ) -> HttpResponse:
     # We allow realm administrators to to update the stream name and
     # description even for private streams.
-    (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id, allow_realm_admin=True)
+    stream = access_stream_for_admin_actions(user_profile, stream_id, allow_realm_admin=True)
     if description is not None:
         do_change_stream_description(stream, description)
     if new_name is not None:
@@ -171,7 +171,7 @@ def update_stream_backend(
     # But we require even realm administrators to be actually
     # subscribed to make a private stream public.
     if is_private is not None:
-        (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id)
+        stream = access_stream_for_admin_actions(user_profile, stream_id)
         do_change_stream_invite_only(stream, is_private, history_public_to_subscribers)
     return json_success()
 
