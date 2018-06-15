@@ -999,39 +999,6 @@ class SewMessageAndReactionTest(ZulipTestCase):
 
 class MessagePOSTTest(ZulipTestCase):
 
-    def test_zcommand(self) -> None:
-        self.login(self.example_email("hamlet"))
-
-        payload = dict(command="boil-ocean")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_error(result, "No such command: boil-ocean")
-
-        payload = dict(command="ping")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-
-        user = self.example_user('hamlet')
-        user.night_mode = False
-        user.save()
-
-        payload = dict(command="night")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assertIn('Changed to night', result.json()['msg'])
-
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assertIn('still in night mode', result.json()['msg'])
-
-        payload = dict(command="day")
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assertIn('Changed to day', result.json()['msg'])
-
-        result = self.client_post("/json/zcommand", payload)
-        self.assert_json_success(result)
-        self.assertIn('still in day mode', result.json()['msg'])
-
     def test_message_to_self(self) -> None:
         """
         Sending a message to a stream to which you are subscribed is

@@ -13,12 +13,12 @@ from zerver.decorator import has_request_variables, \
     REQ, to_non_negative_int
 from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
+from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
     compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
-    do_set_user_display_setting, \
     get_user_info_for_message_updates, check_schedule_message
 from zerver.lib.queue import queue_json_publish
 from zerver.lib.message import (
@@ -684,29 +684,7 @@ def find_first_unread_anchor(sa_conn: Any,
 @has_request_variables
 def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
                      command: str=REQ('command')) -> HttpResponse:
-    if command == 'ping':
-        ret = dict()  # type: Dict[str, Any]
-        return json_success(ret)
-
-    if command == 'night':
-        if user_profile.night_mode:
-            msg = 'You are still in night mode.'
-        else:
-            msg = 'Changed to night mode! To revert night mode, type `/day`.'
-            do_set_user_display_setting(user_profile, 'night_mode', True)
-        ret = dict(msg=msg)
-        return json_success(ret)
-
-    if command == 'day':
-        if user_profile.night_mode:
-            msg = 'Changed to day mode! To revert day mode, type `/night`.'
-            do_set_user_display_setting(user_profile, 'night_mode', False)
-        else:
-            msg = 'You are still in day mode.'
-        ret = dict(msg=msg)
-        return json_success(ret)
-
-    raise JsonableError(_('No such command: %s') % (command,))
+    return json_success(process_zcommands(command, user_profile))
 
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
