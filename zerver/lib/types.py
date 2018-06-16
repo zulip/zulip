@@ -7,7 +7,7 @@ ViewFuncT = TypeVar('ViewFuncT', bound=Callable[..., HttpResponse])
 # including many examples
 Validator = Callable[[str, object], Optional[str]]
 ExtendedValidator = Callable[[str, str, object], Optional[str]]
-RealmUserValidator = Callable[[int, object, bool], Optional[str]]
+RealmUserValidator = Callable[[int, List[int], bool], Optional[str]]
 
 ProfileDataElement = Dict[str, Union[int, float, Optional[str]]]
 ProfileData = List[ProfileDataElement]
