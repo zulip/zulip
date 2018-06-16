@@ -9,6 +9,8 @@ zrequire('settings_ui');
 
 const noop = () => {};
 
+set_global('blueslip', global.make_zblueslip());
+
 set_global('loading', {
     make_indicator: noop,
     destroy_indicator: noop,
@@ -447,7 +449,19 @@ function test_sync_realm_settings() {
     overlays.settings_open = () => true;
 
     {
-        /* Test create new stream permissions settings sync */
+        /* Test invalid settings property sync */
+        const property_elem = $('#id_realm_invalid_settings_property');
+        property_elem.attr('id', 'id_realm_invalid_settings_property');
+        property_elem.length = 1;
+
+        blueslip.error = error_string => {
+            assert.equal(error_string, 'Element refers to unknown property realm_invalid_settings_property');
+        };
+        settings_org.sync_realm_settings('invalid_settings_property');
+    }
+
+    {
+        /* Test create new stream permission settings sync */
         const property_elem = $('#id_realm_create_stream_permission');
         property_elem.length = 1;
         property_elem.attr('id', 'id_realm_create_stream_permission');
@@ -461,6 +475,76 @@ function test_sync_realm_settings() {
         settings_org.sync_realm_settings('create_stream_by_admins_only');
         assert.equal($("#id_realm_create_stream_permission").val(), "by_admin_user_with_three_days_old");
         assert.equal(waiting_period_input_parent.visible(), false);
+    }
+
+    {
+        /* Test message content edit limit minutes sync */
+        const property_elem = $('#id_realm_message_content_edit_limit_minutes');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_message_content_edit_limit_minutes');
+
+        page_params.realm_create_stream_by_admins_only = false;
+        page_params.realm_message_content_edit_limit_seconds = 120;
+
+        settings_org.sync_realm_settings('message_content_edit_limit_seconds');
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+    }
+
+    {
+        /* Test message content edit limit dropdown value sync */
+        const property_elem = $('#id_realm_msg_edit_limit_setting');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_msg_edit_limit_setting');
+
+        page_params.realm_allow_message_editing = false;
+        page_params.realm_message_content_edit_limit_seconds = 120;
+        settings_org.sync_realm_settings('allow_message_editing');
+        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "never");
+
+        page_params.realm_allow_message_editing = true;
+
+        page_params.realm_message_content_edit_limit_seconds = 120;
+        settings_org.sync_realm_settings('allow_message_editing');
+        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "upto_two_min");
+
+        page_params.realm_message_content_edit_limit_seconds = 130;
+        settings_org.sync_realm_settings('allow_message_editing');
+        assert.equal($("#id_realm_msg_edit_limit_setting").val(), "custom_limit");
+    }
+
+    {
+        /* Test message content edit limit minutes sync */
+        const property_elem = $('#id_realm_message_content_edit_limit_minutes');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_message_content_edit_limit_minutes');
+
+        page_params.realm_create_stream_by_admins_only = false;
+        page_params.realm_message_content_edit_limit_seconds = 120;
+
+        settings_org.sync_realm_settings('message_content_edit_limit_seconds');
+        assert.equal($("#id_realm_message_content_edit_limit_minutes").val(), 2);
+    }
+
+    {
+        /* Test organization joining restrictions settings sync */
+        const property_elem = $('#id_realm_org_join_restrictions');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_org_join_restrictions');
+
+        page_params.realm_restricted_to_domain = true;
+        page_params.realm_disallow_disposable_email_addresses = false;
+        settings_org.sync_realm_settings('restricted_to_domain');
+        assert.equal($("#id_realm_org_join_restrictions").val(), "only_selected_domain");
+
+        page_params.realm_restricted_to_domain = false;
+
+        page_params.realm_disallow_disposable_email_addresses = true;
+        settings_org.sync_realm_settings('restricted_to_domain');
+        assert.equal($("#id_realm_org_join_restrictions").val(), "no_disposable_email");
+
+        page_params.realm_disallow_disposable_email_addresses = false;
+        settings_org.sync_realm_settings('restricted_to_domain');
+        assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
     }
 }
 
@@ -493,16 +577,74 @@ function test_parse_time_limit() {
     test_function('501.34', '501.3');
 }
 
-run_test('set_up', () => {
-    var callbacks = {};
+function test_discard_changes_button(discard_changes) {
+    const ev = {
+        preventDefault: noop,
+        stopPropagation: noop,
+        target: '#org-discard-msg-editing',
+    };
 
-    var set_callback = (name) => {
+    page_params.realm_allow_edit_history = true;
+    page_params.realm_allow_community_topic_editing = true;
+    page_params.realm_allow_message_editing = true;
+    page_params.realm_message_content_edit_limit_seconds = 3600;
+    page_params.realm_allow_message_deleting = true;
+    page_params.realm_message_content_delete_limit_seconds = 120;
+
+    const allow_edit_history = $('#id_realm_allow_edit_history').prop('checked', false);
+    const allow_community_topic_editing = $('#id_realm_allow_community_topic_editing').prop('checked', true);
+    const msg_edit_limit_setting = $('#id_realm_msg_edit_limit_setting').val("custom_limit");
+    const message_content_edit_limit_minutes = $('#id_realm_message_content_edit_limit_minutes').val(130);
+    const msg_delete_limit_setting = $('#id_realm_msg_delete_limit_setting').val("custom_limit");
+    const message_content_delete_limit_minutes = $('#id_realm_message_content_delete_limit_minutes').val(130);
+
+    allow_edit_history.attr('id', 'id_realm_allow_edit_history');
+    msg_edit_limit_setting.attr('id', 'id_realm_msg_edit_limit_setting');
+    msg_delete_limit_setting.attr('id', 'id_realm_msg_delete_limit_setting');
+    allow_community_topic_editing.attr('id', 'id_realm_allow_community_topic_editing');
+    message_content_edit_limit_minutes.attr('id', 'id_realm_message_content_edit_limit_minutes');
+    message_content_delete_limit_minutes.attr('id', 'id_realm_message_content_delete_limit_minutes');
+
+
+    const discard_button_parent = $('.org-subsection-parent');
+    discard_button_parent.find = () => [
+        allow_edit_history,
+        msg_edit_limit_setting,
+        msg_delete_limit_setting,
+        allow_community_topic_editing,
+        message_content_edit_limit_minutes,
+        message_content_delete_limit_minutes,
+    ];
+
+    $('#org-discard-msg-editing').closest = () => discard_button_parent;
+
+    const stubbed_function = settings_org.change_save_button_state;
+    settings_org.change_save_button_state = (save_btn_controls, state) => {
+        assert.equal(state, "discarded");
+    };
+
+    discard_changes(ev);
+
+    assert.equal(allow_edit_history.prop('checked'), true);
+    assert.equal(allow_community_topic_editing.prop('checked'), true);
+    assert.equal(msg_edit_limit_setting.val(), "upto_one_hour");
+    assert.equal(message_content_edit_limit_minutes.val(), 60);
+    assert.equal(msg_delete_limit_setting.val(), "upto_two_min");
+    assert.equal(message_content_delete_limit_minutes.val(), 2);
+
+    settings_org.change_save_button_state = stubbed_function;
+}
+
+run_test('set_up', () => {
+    const callbacks = {};
+
+    const set_callback = (name) => {
         return (f) => {
             callbacks[name] = f;
         };
     };
 
-    var verify_realm_domains = simulate_realm_domains_table();
+    const verify_realm_domains = simulate_realm_domains_table();
     simulate_auth_methods();
 
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
@@ -514,15 +656,19 @@ run_test('set_up', () => {
     $('.notifications-stream-disable').click = set_callback('disable_notifications_stream');
     $('.signup-notifications-stream-disable').click = set_callback('disable_signup_notifications_stream');
 
-    var submit_settings_form;
+    let submit_settings_form;
+    let discard_changes;
     $('.organization').on = function (action, selector, f) {
         if (selector === '.subsection-header .subsection-changes-save .button') {
             assert.equal(action, 'click');
             submit_settings_form = f;
+        } else if (selector === '.subsection-header .subsection-changes-discard .button') {
+            assert.equal(action, 'click');
+            discard_changes = f;
         }
     };
 
-    var change_allow_subdomains;
+    let change_allow_subdomains;
     $('#realm_domains_table').on = function (action, selector, f) {
         if (action === 'change') {
             assert.equal(selector, '.allow-subdomains');
@@ -530,18 +676,18 @@ run_test('set_up', () => {
         }
     };
 
-    var upload_realm_icon;
+    let upload_realm_icon;
     realm_icon.build_realm_icon_widget = function (f) {
         upload_realm_icon = f;
     };
 
-    var stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
+    const stub_render_notifications_stream_ui = settings_org.render_notifications_stream_ui;
     settings_org.render_notifications_stream_ui = noop;
     $("#id_realm_message_content_edit_limit_minutes").set_parent($.create('<stub edit limit parent>'));
     $("#id_realm_message_content_delete_limit_minutes").set_parent($.create('<stub delete limti parent>'));
     $("#id_realm_msg_edit_limit_setting").change = noop;
     $('#id_realm_msg_delete_limit_setting').change = noop;
-    var parent_elem = $.create('waiting-period-parent-stub');
+    const parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
     // TEST set_up() here, but this mostly just allows us to
@@ -561,6 +707,7 @@ run_test('set_up', () => {
     test_change_save_button_state();
     test_sync_realm_settings();
     test_parse_time_limit();
+    test_discard_changes_button(discard_changes);
 
     settings_org.render_notifications_stream_ui = stub_render_notifications_stream_ui;
 });
