@@ -2428,6 +2428,8 @@ nav ul li.active::after {
 
     background-color: #fff;
     box-shadow: 0px 0px 80px hsla(0, 0%, 0%, 0.12);
+
+    visibility: hidden;
 }
 
 .portico-landing.integrations .padded-content {
