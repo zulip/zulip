@@ -97,13 +97,11 @@ def resend_user_invite_email(request: HttpRequest, user_profile: UserProfile,
     timestamp = do_resend_user_invite_email(prereg_user)
     return json_success({'timestamp': timestamp})
 
+@require_realm_admin
 @has_request_variables
 def generate_multiuse_invite_backend(request: HttpRequest, user_profile: UserProfile,
                                      stream_ids: List[int]=REQ(validator=check_list(check_int),
                                                                default=[])) -> HttpResponse:
-    if not user_profile.is_realm_admin:
-        return json_error(_("Must be an organization administrator"))
-
     streams = []
     for stream_id in stream_ids:
         try:
