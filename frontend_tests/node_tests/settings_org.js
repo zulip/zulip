@@ -139,16 +139,14 @@ function test_realms_domain_modal(add_realm_domain) {
 }
 
 function createSaveButtons(subsection) {
-    var stub_save_button_header = $('.subsection-header');
-    var save_btn_controls = $('.save-btn-controls');
-    var stub_save_button = $(`#org-submit-${subsection}`);
-    var stub_save_button_text = $('.icon-button-text');
+    const stub_save_button_header = $('.subsection-header');
+    const save_btn_controls = $('.save-btn-controls');
+    const stub_save_button = $(`#org-submit-${subsection}`);
+    const stub_save_button_text = $('.icon-button-text');
     stub_save_button_header.set_find_results(
         '.subsection-failed-status p', $('<failed status element>')
     );
-    stub_save_button.closest = function () {
-        return stub_save_button_header;
-    };
+    stub_save_button.closest = () => stub_save_button_header;
     save_btn_controls.set_find_results(
         '.save-button', stub_save_button
     );
@@ -161,7 +159,7 @@ function createSaveButtons(subsection) {
     stub_save_button_header.set_find_results(
         '.subsection-changes-discard .button', $(`#org-discard-${subsection}`)
     );
-    var props  = {};
+    const props  = {};
     props.hidden = false;
     save_btn_controls.fadeIn = () => {
         props.hidden = false;
@@ -179,7 +177,7 @@ function createSaveButtons(subsection) {
 }
 
 function test_submit_settings_form(submit_form) {
-    global.patch_builtin('setTimeout', (func) => func());
+    global.patch_builtin('setTimeout', func => func());
     const ev = {
         preventDefault: noop,
         stopPropagation: noop,
@@ -199,12 +197,12 @@ function test_submit_settings_form(submit_form) {
     let stubs = createSaveButtons('other-permissions');
     let save_button = stubs.save_button;
     save_button.attr('id', 'org-submit-other-permissions');
-    patched = false;
     $("#id_realm_create_stream_permission").val("by_anyone");
     $("#id_realm_add_emoji_by_admins_only").val("by_anyone");
     $("#id_realm_message_retention_days").val("15");
     $("#id_realm_bot_creation_policy").val("1");
 
+    patched = false;
     submit_form(ev);
     assert(patched);
 
@@ -448,19 +446,22 @@ function test_extract_property_name() {
 function test_sync_realm_settings() {
     overlays.settings_open = () => true;
 
-    const property_elem = $('#id_realm_create_stream_permission');
-    property_elem.length = 1;
-    property_elem.attr('id', 'id_realm_create_stream_permission');
+    {
+        /* Test create new stream permissions settings sync */
+        const property_elem = $('#id_realm_create_stream_permission');
+        property_elem.length = 1;
+        property_elem.attr('id', 'id_realm_create_stream_permission');
 
-    const waiting_period_input_parent = $.create('stub-waiting-period-input-parent');
-    $("#id_realm_waiting_period_threshold").set_parent(waiting_period_input_parent);
+        const waiting_period_input_parent = $.create('stub-waiting-period-input-parent');
+        $("#id_realm_waiting_period_threshold").set_parent(waiting_period_input_parent);
 
-    page_params.realm_create_stream_by_admins_only = false;
-    page_params.realm_waiting_period_threshold = 3;
+        page_params.realm_create_stream_by_admins_only = false;
+        page_params.realm_waiting_period_threshold = 3;
 
-    settings_org.sync_realm_settings('create_stream_by_admins_only');
-    assert.equal($("#id_realm_create_stream_permission").val(), "by_admin_user_with_three_days_old");
-    assert.equal(waiting_period_input_parent.visible(), false);
+        settings_org.sync_realm_settings('create_stream_by_admins_only');
+        assert.equal($("#id_realm_create_stream_permission").val(), "by_admin_user_with_three_days_old");
+        assert.equal(waiting_period_input_parent.visible(), false);
+    }
 }
 
 function test_parse_time_limit() {
