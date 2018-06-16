@@ -4,7 +4,7 @@ from pyoembed import oEmbed, PyOembedException
 
 def get_oembed_data(url: str,
                     maxwidth: Optional[int]=640,
-                    maxheight: Optional[int]=480) -> Optional[Dict[Any, Any]]:
+                    maxheight: Optional[int]=480) -> Optional[Dict[str, Any]]:
     try:
         data = oEmbed(url, maxwidth=maxwidth, maxheight=maxheight)
     except PyOembedException:
