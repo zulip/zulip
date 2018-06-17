@@ -455,8 +455,10 @@ class SlackImporter(ZulipTestCase):
     @mock.patch("zerver.lib.slack_data_to_zulip_data.get_all_messages")
     def test_convert_slack_workspace_messages(self, mock_get_all_messages: mock.Mock,
                                               mock_message: mock.Mock) -> None:
+        os.makedirs('var/test-slack-import', exist_ok=True)
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
-        zerver_message = [{'id': 1}, {'id': 5}]
+        time = float(timezone_now().timestamp())
+        zerver_message = [{'id': 1, 'ts': time}, {'id': 5, 'ts': time}]
 
         realm = {'zerver_subscription': []}  # type: Dict[str, Any]
         user_list = []  # type: List[Dict[str, Any]]
@@ -466,17 +468,29 @@ class SlackImporter(ZulipTestCase):
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message, zerver_usermessage, attachments, uploads,
-                                     reactions, id_list]]
+        mock_get_all_messages.side_effect = [zerver_message]
+        mock_message.side_effect = [[zerver_message[:1], zerver_usermessage[:2],
+                                     attachments, uploads, reactions[:1], id_list],
+                                    [zerver_message[1:2], zerver_usermessage[2:5],
+                                     attachments, uploads, reactions[1:1], id_list]]
         test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
-            './random_path', user_list, 2, {}, {}, added_channels, realm, [], 'domain', 'var/test-slack-import')
-        messages_file = os.path.join('var', 'test-slack-import', 'messages-000001.json')
-        self.assertTrue(os.path.exists(messages_file))
+            './random_path', user_list, 2, {}, {}, added_channels,
+            realm, [], 'domain', 'var/test-slack-import', chunk_size=1)
+        messages_file_1 = os.path.join('var', 'test-slack-import', 'messages-000001.json')
+        self.assertTrue(os.path.exists(messages_file_1))
+        messages_file_2 = os.path.join('var', 'test-slack-import', 'messages-000002.json')
+        self.assertTrue(os.path.exists(messages_file_2))
 
-        with open(messages_file) as f:
+        with open(messages_file_1) as f:
             message_json = ujson.load(f)
-        self.assertEqual(message_json['zerver_message'], zerver_message)
-        self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage)
+        self.assertEqual(message_json['zerver_message'], zerver_message[:1])
+        self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage[:2])
+
+        with open(messages_file_2) as f:
+            message_json = ujson.load(f)
+        self.assertEqual(message_json['zerver_message'], zerver_message[1:2])
+        self.assertEqual(message_json['zerver_usermessage'], zerver_usermessage[2:5])
+
         self.assertEqual(test_reactions, reactions)
 
     @mock.patch("zerver.lib.slack_data_to_zulip_data.process_uploads", return_value = [])
