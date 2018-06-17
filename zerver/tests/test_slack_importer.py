@@ -411,9 +411,10 @@ class SlackImporter(ZulipTestCase):
         zerver_subscription = []  # type: List[Dict[str, Any]]
         added_channels = {'random': ('c5', 1), 'general': ('c6', 2)}  # type: Dict[str, Tuple[str, int]]
         zerver_message, zerver_usermessage, attachment, uploads, \
-            reaction = channel_message_to_zerver_message(1, user_data, added_users, added_recipient,
-                                                         all_messages, zerver_subscription, [],
-                                                         added_channels, 'domain')
+            reaction, id_list = channel_message_to_zerver_message(
+                1, user_data, added_users, added_recipient,
+                all_messages, zerver_subscription, [],
+                added_channels, (0, 0, 0, 0), 'domain')
         # functioning already tested in helper function
         self.assertEqual(zerver_usermessage, [])
         # subtype: channel_join is filtered
@@ -421,6 +422,7 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(uploads, [])
         self.assertEqual(attachment, [])
+        self.assertEqual(id_list, (5, 2, 1, 0))
 
         # Test reactions
         self.assertEqual(reaction[0]['user_profile'], 24)
@@ -460,10 +462,12 @@ class SlackImporter(ZulipTestCase):
         user_list = []  # type: List[Dict[str, Any]]
         reactions = [{"name": "grinning", "users": ["U061A5N1G"], "count": 1}]
         attachments = uploads = []  # type: List[Dict[str, Any]]
+        id_list = (2, 4, 0, 1)
 
         zerver_usermessage = [{'id': 3}, {'id': 5}, {'id': 6}, {'id': 9}]
 
-        mock_message.side_effect = [[zerver_message, zerver_usermessage, attachments, uploads, reactions]]
+        mock_message.side_effect = [[zerver_message, zerver_usermessage, attachments, uploads,
+                                     reactions, id_list]]
         test_reactions, uploads, zerver_attachment = convert_slack_workspace_messages(
             './random_path', user_list, 2, {}, {}, added_channels, realm, [], 'domain', 'var/test-slack-import')
         messages_file = os.path.join('var', 'test-slack-import', 'messages-000001.json')

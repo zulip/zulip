@@ -521,13 +521,14 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
 
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
+    message_id = usermessage_id = reaction_id = attachment_id = 0
+    id_list = (message_id, usermessage_id, reaction_id, attachment_id)
+
     zerver_message, zerver_usermessage, attachment, uploads, \
-        reactions = channel_message_to_zerver_message(realm_id, users, added_users,
-                                                      added_recipient, all_messages,
-                                                      zerver_realmemoji,
-                                                      realm['zerver_subscription'],
-                                                      added_channels,
-                                                      domain_name)
+        reactions, id_list = channel_message_to_zerver_message(
+            realm_id, users, added_users, added_recipient, all_messages,
+            zerver_realmemoji, realm['zerver_subscription'], added_channels,
+            id_list, domain_name)
 
     message_json = dict(
         zerver_message=zerver_message,
@@ -560,11 +561,13 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                       zerver_realmemoji: List[ZerverFieldsT],
                                       zerver_subscription: List[ZerverFieldsT],
                                       added_channels: AddedChannelsT,
+                                      id_list: Tuple[int, int, int, int],
                                       domain_name: str) -> Tuple[List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
                                                                  List[ZerverFieldsT],
-                                                                 List[ZerverFieldsT]]:
+                                                                 List[ZerverFieldsT],
+                                                                 Tuple[int, int, int, int]]:
     """
     Returns:
     1. zerver_message, which is a list of the messages
@@ -572,8 +575,9 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
     3. zerver_attachment, which is a list of the attachments
     4. uploads_list, which is a list of uploads to be mapped in uploads records.json
     5. reaction_list, which is a list of all user reactions
+    6. id_list, which is a tuple of max ids of messages, usermessages, reactions and attachments
     """
-    message_id_count = usermessage_id_count = attachment_id_count = reaction_id_count = 0
+    message_id_count, usermessage_id_count, reaction_id_count, attachment_id_count = id_list
     zerver_message = []
     zerver_usermessage = []  # type: List[ZerverFieldsT]
     uploads_list = []  # type: List[ZerverFieldsT]
@@ -687,7 +691,11 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             recipient_id, mentioned_users_id, message_id)
 
         message_id_count += 1
-    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, reaction_list
+
+    id_list = (message_id_count, usermessage_id_count,
+               reaction_id_count, attachment_id_count)
+    return zerver_message, zerver_usermessage, zerver_attachment, uploads_list, \
+        reaction_list, id_list
 
 def get_attachment_path_and_content(fileinfo: ZerverFieldsT, realm_id: int) -> Tuple[str,
                                                                                      str]:
