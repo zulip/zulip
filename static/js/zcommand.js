@@ -87,6 +87,11 @@ exports.process = function (message_content) {
         return true;
     }
 
+    if (content === '/settings') {
+        window.location.hash = 'settings/your-account';
+        return true;
+    }
+
     // It is incredibly important here to return false
     // if we don't see an actual zcommand, so that compose.js
     // knows this is a normal message.
