@@ -374,6 +374,8 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
 
 def import_uploads(import_dir: Path, processing_avatars: bool=False,
                    processing_emojis: bool=False) -> None:
+    if processing_avatars and processing_emojis:
+        raise AssertionError("Cannot import avatars and emojis at the same time!")
     if processing_avatars:
         logging.info("Importing avatars")
     elif processing_emojis:
