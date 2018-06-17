@@ -116,7 +116,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                 </div>
                 {% endif %}
 
-                <div class="input-box">
+                <div class="input-box" id="full_name_input_section">
                     {% if lock_name %}
                         <p class="fakecontrol">{{ full_name }}</p>
                     {% else %}
@@ -130,6 +130,11 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
                             {% endfor %}
                         {% endif %}
                     {% endif %}
+                </div>
+
+                <div class="input-box" id="profile_info_section">
+                    <img id="profile_avatar" />
+                    <div id="profile_full_name"></div>
                 </div>
 
                 {% if password_required %}
