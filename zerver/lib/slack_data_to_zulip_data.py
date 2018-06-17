@@ -516,9 +516,9 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
                                      zerver_realmemoji: List[ZerverFieldsT], domain_name: str,
-                                     output_dir: str) -> Tuple[List[ZerverFieldsT],
-                                                               List[ZerverFieldsT],
-                                                               List[ZerverFieldsT]]:
+                                     output_dir: str, chunk_size: int=800) -> Tuple[List[ZerverFieldsT],
+                                                                                    List[ZerverFieldsT],
+                                                                                    List[ZerverFieldsT]]:
     """
     Returns:
     1. reactions, which is a list of the reactions
@@ -533,24 +533,46 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
 
     logging.info('######### IMPORTING MESSAGES STARTED #########\n')
 
+    total_reactions = []  # type: List[ZerverFieldsT]
+    total_attachments = []  # type: List[ZerverFieldsT]
+    total_uploads = []  # type: List[ZerverFieldsT]
+
     message_id = usermessage_id = reaction_id = attachment_id = 0
     id_list = (message_id, usermessage_id, reaction_id, attachment_id)
 
-    zerver_message, zerver_usermessage, attachment, uploads, \
-        reactions, id_list = channel_message_to_zerver_message(
-            realm_id, users, added_users, added_recipient, all_messages,
-            zerver_realmemoji, realm['zerver_subscription'], added_channels,
-            id_list, domain_name)
+    # The messages are stored in batches
+    low_index = 0
+    upper_index = low_index + chunk_size
+    dump_file_id = 1
 
-    message_json = dict(
-        zerver_message=zerver_message,
-        zerver_usermessage=zerver_usermessage)
-    message_filename = os.path.join(output_dir, "messages-000001.json")
-    logging.info("Writing Messages to %s\n" % (message_filename,))
-    create_converted_data_files(message_json, output_dir, '/messages-000001.json')
+    while True:
+        message_data = all_messages[low_index:upper_index]
+        if len(message_data) == 0:
+            break
+        zerver_message, zerver_usermessage, attachment, uploads, \
+            reactions, id_list = channel_message_to_zerver_message(
+                realm_id, users, added_users, added_recipient, message_data,
+                zerver_realmemoji, realm['zerver_subscription'], added_channels,
+                id_list, domain_name)
+
+        message_json = dict(
+            zerver_message=zerver_message,
+            zerver_usermessage=zerver_usermessage)
+
+        message_file = "/messages-%06d.json" % (dump_file_id,)
+        logging.info("Writing Messages to %s\n" % (output_dir + message_file))
+        create_converted_data_files(message_json, output_dir, message_file)
+
+        total_reactions += reactions
+        total_attachments += attachment
+        total_uploads += uploads
+
+        low_index = upper_index
+        upper_index = chunk_size + low_index
+        dump_file_id += 1
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
-    return reactions, uploads, attachment
+    return total_reactions, total_uploads, total_attachments
 
 def get_all_messages(slack_data_dir: str, added_channels: AddedChannelsT) -> List[ZerverFieldsT]:
     all_messages = []  # type: List[ZerverFieldsT]
