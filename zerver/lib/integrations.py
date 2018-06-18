@@ -282,6 +282,7 @@ WEBHOOK_INTEGRATIONS = [
         legacy=True
     ),
     WebhookIntegration('circleci', ['continuous-integration'], display_name='CircleCI'),
+    WebhookIntegration('clubhouse', ['project-management']),
     WebhookIntegration('codeship', ['continuous-integration', 'deployment']),
     WebhookIntegration('crashlytics', ['monitoring']),
     WebhookIntegration('dialogflow', ['customer-support'], display_name='Dialogflow'),
