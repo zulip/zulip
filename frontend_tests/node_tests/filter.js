@@ -249,6 +249,7 @@ run_test('predicate_basics', () => {
 
     predicate = get_predicate([['topic', 'Bar']]);
     assert(!predicate({type: 'private'}));
+    assert(predicate({type: 'zgram'}));
 
     predicate = get_predicate([['is', 'private']]);
     assert(predicate({type: 'private'}));
@@ -278,6 +279,7 @@ run_test('predicate_basics', () => {
     predicate = get_predicate([['in', 'home']]);
     assert(!predicate({stream_id: unknown_stream_id, stream: 'unknown'}));
     assert(predicate({type: 'private'}));
+    assert(predicate({type: 'zgram'}));
     global.page_params.narrow_stream = 'kiosk';
     assert(predicate({stream: 'kiosk'}));
 
@@ -866,6 +868,17 @@ run_test('update_email', () => {
     assert.deepEqual(filter.operands('stream'), ['steve@foo.com']);
 });
 
+run_test('zgram while loading', () => {
+    var terms = [
+        {operator: 'pm-with', operand: 'steve@foo.com'},
+    ];
+    var filter = new Filter(terms);
+    var predicate = filter.predicate();
+    filter.local_load = true;
+    assert.equal(predicate({type: 'zgram'}), false);
+    filter.local_load = false;
+    assert.equal(predicate({type: 'zgram'}), true);
+});
 
 run_test('error_cases', () => {
     // This test just gives us 100% line coverage on defensive code that
