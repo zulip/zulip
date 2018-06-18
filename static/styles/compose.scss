@@ -487,3 +487,32 @@ a#undo_markdown_preview {
         display: none;
     }
 }
+
+.less_dense_mode {
+    .compose-content {
+        padding: 12px 10px;
+    }
+
+    #compose_buttons .button.small {
+        font-size: 1.1em;
+        padding: 5px 10px;
+    }
+
+    .compose_table {
+        font-size: 16px;
+    }
+
+    #stream-message,
+    #private-message {
+        padding: 5px 0;
+    }
+
+    textarea.new_message_textarea,
+    compose_table .recipient_box {
+        margin: 10px 0;
+    }
+
+    #send_controls {
+        font-size: 0.9em;
+    }
+}
