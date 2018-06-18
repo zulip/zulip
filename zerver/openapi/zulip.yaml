@@ -377,7 +377,113 @@ paths:
                             "private_stream"
                         ]
                     }
-
+  /streams:
+    get:
+      description: Get all streams that the user has access to.
+      parameters:
+      - name: include_public
+        in: query
+        description: Include all public streams.
+        schema:
+           type: boolean
+           default : true
+        example: false
+      - name: include_subscribed
+        in: query
+        description: Include all streams that the user is subscribed to.
+        schema:
+           type: boolean
+           default : true
+        example: false
+      - name: include_all_active
+        in: query
+        description: Include all active streams. The user must have
+          administrative privileges to use this parameter.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: include_default
+        in: query
+        description: Include all default streams for the user's realm.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    streams:
+                      type: array
+                      items:
+                        type: object
+                      description: A list of `stream` objects, which contain a
+                        `description`, a `name`, their `stream_id` and whether
+                        they are `invite_only` or not.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "streams": [
+                            {
+                                "description": "A Scandinavian country",
+                                "invite_only": false,
+                                "name": "Denmark",
+                                "stream_id": 1
+                            },
+                            {
+                                "description": "Yet another Italian city",
+                                "invite_only": false,
+                                "name": "Rome",
+                                "stream_id": 2
+                            },
+                            {
+                                "description": "Located in the United Kingdom",
+                                "invite_only": false,
+                                "name": "Scotland",
+                                "stream_id": 3
+                            },
+                            {
+                                "description": "A northeastern Italian city",
+                                "invite_only": false,
+                                "name": "Venice",
+                                "stream_id": 4
+                            },
+                            {
+                                "description": "A city in Italy",
+                                "invite_only": false,
+                                "name": "Verona",
+                                "stream_id": 5
+                            },
+                            {
+                                "description": "New stream for testing",
+                                "invite_only": false,
+                                "name": "new stream",
+                                "stream_id": 6
+                            }
+                        ]
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "User not authorized for this query",
+                        "result": "error"
+                    }
 
 components:
   #######################

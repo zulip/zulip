@@ -31,7 +31,7 @@ curl {{ api_url }}/v1/streams?include_public=false \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|get-all-streams|example}
+{generate_code_example(python)|/streams:get|example}
 
 </div>
 
@@ -61,7 +61,7 @@ zulip(config).then((client) => {
 
 **Note**: The following arguments are all URL query parameters.
 
-{generate_api_arguments_table|arguments.json|get-all-streams.md}
+{generate_api_arguments_table|zulip.yaml|/streams:get}
 
 ## Response
 
@@ -77,10 +77,10 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-all-streams|fixture}
+{generate_code_example|/streams:get|fixture(200)}
 
 An example JSON response for when the user is not authorized to use the
 `include_all_active` parameter (i.e. because they are not an organization
 administrator):
 
-{generate_code_example|user-not-authorized-error|fixture}
+{generate_code_example|/streams:get|fixture(400)}

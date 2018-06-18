@@ -200,10 +200,7 @@ def get_streams(client):
     result = client.get_streams()
     # {code_example|end}
 
-    fixture = FIXTURES['get-all-streams']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['streams'])
-    assert len(result['streams']) == len(fixture['streams'])
+    validate_against_openapi_schema(result, '/streams', 'get', '200')
     streams = [s for s in result['streams'] if s['name'] == 'new stream']
     assert streams[0]['description'] == 'New stream for testing'
 
@@ -213,8 +210,7 @@ def get_streams(client):
     result = client.get_streams(include_public=False)
     # {code_example|end}
 
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['streams'])
+    validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
 def test_user_not_authorized_error(nonadmin_client):
@@ -504,7 +500,7 @@ TEST_FUNCTIONS = {
     '/messages/{message_id}:patch': update_message,
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
-    'get-all-streams': get_streams,
+    '/streams:get': get_streams,
     'create-user': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,

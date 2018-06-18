@@ -9,48 +9,6 @@
         "msg": "Email 'newbie@zulip.com' already in use",
         "result": "error"
     },
-    "get-all-streams": {
-        "msg": "",
-        "result": "success",
-        "streams": [
-            {
-                "description": "A Scandinavian country",
-                "invite_only": false,
-                "name": "Denmark",
-                "stream_id": 1
-            },
-            {
-                "description": "Yet another Italian city",
-                "invite_only": false,
-                "name": "Rome",
-                "stream_id": 2
-            },
-            {
-                "description": "Located in the United Kingdom",
-                "invite_only": false,
-                "name": "Scotland",
-                "stream_id": 3
-            },
-            {
-                "description": "A northeastern Italian city",
-                "invite_only": false,
-                "name": "Venice",
-                "stream_id": 4
-            },
-            {
-                "description": "A city in Italy",
-                "invite_only": false,
-                "name": "Verona",
-                "stream_id": 5
-            },
-            {
-                "description": "New stream for testing",
-                "invite_only": false,
-                "name": "new stream",
-                "stream_id": 6
-            }
-        ]
-    },
     "get-all-users": {
         "members": [
             {
