@@ -6,6 +6,10 @@ var focused_recipient;
 var normal_display = false;
 
 exports.should_fade_message =  function (message) {
+    if (message.type === 'zgram') {
+        return false;
+    }
+
     return !util.same_recipient(focused_recipient, message);
 };
 
