@@ -271,11 +271,6 @@
         "result": "error",
         "stream": "nonexistent_stream"
     },
-    "private-message": {
-        "id": 134,
-        "msg": "",
-        "result": "success"
-    },
     "register-queue": {
         "last_event_id": -1,
         "msg": "",
@@ -308,7 +303,7 @@
         "rendered": "<p><strong>foo</strong></p>",
         "result": "success"
     },
-    "stream-message": {
+    "send-message": {
         "id": 134,
         "msg": "",
         "result": "success"

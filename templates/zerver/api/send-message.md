@@ -1,10 +1,11 @@
-# Private message
+# Send a message
 
-Send a private message to a user or multiple users.
+Send a stream or a private message.
 
 `POST {{ api_url }}/v1/messages`
 
 ## Usage examples
+
 <div class="code-section" markdown="1">
 <ul class="nav">
 <li data-language="python">Python</li>
@@ -17,17 +18,27 @@ Send a private message to a user or multiple users.
 <div data-language="curl" markdown="1">
 
 ```
+# For stream messages
+curl {{ api_url }}/v1/messages \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "type=stream" \
+    -d "to=Denmark" \
+    -d "subject=Castle" \
+    -d "content=Something is rotten in the state of Denmark."
+
+# For private messages
 curl {{ api_url }}/v1/messages \
     -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
     -d "type=private" \
     -d "to=hamlet@example.com" \
     -d "content=I come not, friends, to steal away your hearts."
 ```
+
 </div>
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|private-message|example}
+{generate_code_example(python)|send-message|example}
 
 </div>
 
@@ -36,13 +47,30 @@ curl {{ api_url }}/v1/messages \
 the command-line, providing the message content via STDIN.
 
 ```bash
+# For stream messages
+zulip-send --stream Denmark --subject Castle \
+    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+
+# For private messages
 zulip-send hamlet@example.com \
     --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
 ```
 
-You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc` file.
+#### Passing in the message on the command-line
 
-See also the [full API endpoint documentation](/api).
+If you'd like, you can also provide the message on the command-line with the
+`-m` or `--message` flag, as follows:
+
+
+```bash
+zulip-send --stream Denmark --subject Castle \
+    --message "Something is rotten in the state of Denmark." \
+    --user othello-bot@example.com --api-key a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5
+```
+
+You can omit the `user` and `api-key` arguments if you have a `~/.zuliprc`
+file.
+
 </div>
 
 <div data-language="javascript" markdown="1">
@@ -55,6 +83,20 @@ const config = {
     zuliprc: 'zuliprc-dev',
 };
 
+// Send a stream message
+zulip(config).then((client) => {
+    // Send a message
+    const params = {
+        to: 'Denmark',
+        type: 'stream',
+        subject: 'Castle',
+        content: 'Something is rotten in the state of Denmark.'
+    }
+
+    client.messages.send(params).then(console.log);
+});
+
+// Send a private message
 zulip(config).then((client) => {
     // Send a private message
     const params = {
@@ -75,7 +117,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|private-message.md}
+{generate_api_arguments_table|arguments.json|send-message.md}
 
 ## Response
 
@@ -84,12 +126,16 @@ zulip(config).then((client) => {
 * `id`: The ID of the newly created message
 
 #### Example response
-
 A typical successful JSON response may look like:
 
-{generate_code_example|private-message|fixture}
+{generate_code_example|send-message|fixture}
 
-A typical failed JSON response for when the recipient's email
-address is invalid:
+A typical failed JSON response for when a stream message is sent to a stream
+that does not exist:
+
+{generate_code_example|nonexistent-stream-error|fixture}
+
+A typical failed JSON response for when a private message is sent to a user
+that does not exist:
 
 {generate_code_example|invalid-pm-recipient-error|fixture}
