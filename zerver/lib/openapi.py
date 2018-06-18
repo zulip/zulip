@@ -40,7 +40,7 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     for key, value in content.items():
         # Check that the key is defined in the schema
         if key not in schema['properties']:
-            raise SchemaError('Extraneous key "{}" in the response\'s'
+            raise SchemaError('Extraneous key "{}" in the response\'s '
                               'content'.format(key))
 
         # Check that the types match
