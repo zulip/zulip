@@ -286,7 +286,7 @@ def render_message(client):
     fixture = FIXTURES['render-message']
     test_against_fixture(result, fixture)
 
-def stream_message(client):
+def send_message(client):
     # type: (Client) -> int
 
     # {code_example|start}
@@ -300,11 +300,34 @@ def stream_message(client):
     result = client.send_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['stream-message']
+    fixture = FIXTURES['send-message']
     test_against_fixture(result, fixture, check_if_equal=['result'],
                          check_if_exists=['id'])
 
-    # test it was actually sent
+    # test that the message was actually sent
+    message_id = result['id']
+    url = 'messages/' + str(message_id)
+    result = client.call_endpoint(
+        url=url,
+        method='GET'
+    )
+    assert result['result'] == 'success'
+    assert result['raw_content'] == request['content']
+
+    # {code_example|start}
+    # Send a private message
+    request = {
+        "type": "private",
+        "to": "iago@zulip.com",
+        "content": "I come not, friends, to steal away your hearts."
+    }
+    result = client.send_message(request)
+    # {code_example|end}
+
+    test_against_fixture(result, fixture, check_if_equal=['result'],
+                         check_if_exists=['id'])
+
+    # test that the message was actually sent
     message_id = result['id']
     url = 'messages/' + str(message_id)
     result = client.call_endpoint(
@@ -328,33 +351,6 @@ def test_nonexistent_stream_error(client):
 
     fixture = FIXTURES['nonexistent-stream-error']
     test_against_fixture(result, fixture)
-
-def private_message(client):
-    # type: (Client) -> None
-
-    # {code_example|start}
-    # Send a private message
-    request = {
-        "type": "private",
-        "to": "iago@zulip.com",
-        "content": "I come not, friends, to steal away your hearts."
-    }
-    result = client.send_message(request)
-    # {code_example|end}
-
-    fixture = FIXTURES['private-message']
-    test_against_fixture(result, fixture, check_if_equal=['result'],
-                         check_if_exists=['id'])
-
-    # test it was actually sent
-    message_id = result['id']
-    url = 'messages/' + str(message_id)
-    result = client.call_endpoint(
-        url=url,
-        method='GET'
-    )
-    assert result['result'] == 'success'
-    assert result['raw_content'] == request['content']
 
 def test_private_message_invalid_recipient(client):
     # type: (Client) -> None
@@ -500,8 +496,7 @@ def test_invalid_stream_error(client):
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
-    'stream-message': stream_message,
-    'private-message': private_message,
+    'send-message': send_message,
     '/messages/{message_id}:patch': update_message,
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
@@ -568,9 +563,8 @@ def test_messages(client):
     # type: (Client) -> None
 
     render_message(client)
-    message_id = stream_message(client)
+    message_id = send_message(client)
     update_message(client, message_id)
-    private_message(client)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
