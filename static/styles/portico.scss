@@ -1569,6 +1569,15 @@ input.new-organization-button {
     font-weight: 700;
 }
 
+.markdown h1,
+.markdown h2,
+.markdown h3 {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
 .markdown h1:hover,
 .markdown h2:hover,
 .markdown h3:hover {
