@@ -130,26 +130,13 @@ def get_members(client):
     result = client.get_members()
     # {code_example|end}
 
-    fixture = FIXTURES['get-all-users']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['members'])
+    validate_against_openapi_schema(result, '/users', 'get', '200')
+
     members = [m for m in result['members'] if m['email'] == 'newbie@zulip.com']
     assert len(members) == 1
     newbie = members[0]
     assert not newbie['is_admin']
     assert newbie['full_name'] == 'New User'
-
-    member_fixture = fixture['members'][0]
-
-    # Get Aaron from all the results we got from the API
-    for member in result['members']:
-        if member['email'] == 'AARON@zulip.com':
-            member_result = member
-
-    assert member_result
-
-    test_against_fixture(member_result, member_fixture,
-                         check_if_exists=member_fixture.keys())
 
     # {code_example|start}
     # You may pass the `client_gravatar` query parameter as follows:
@@ -159,8 +146,7 @@ def get_members(client):
     )
     # {code_example|end}
 
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['members'])
+    validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
 def get_profile(client):
@@ -501,7 +487,7 @@ TEST_FUNCTIONS = {
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
-    'get-all-users': get_members,
+    '/users:get': get_members,
     'register-queue': register_queue,
     'delete-queue': deregister_queue,
     'upload-file': upload_file,

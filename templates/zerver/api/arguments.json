@@ -1,12 +1,4 @@
 {
-    "get-all-users.md": [
-        {
-            "argument": "client_gravatar",
-            "description": "The `client_gravatar` field is set to `True` if clients can compute their own gravatars. Default is `False`.",
-            "required": false,
-            "example": "`True` or `False`"
-        }
-    ],
     "register-queue.md": [
         {
             "argument": "apply_markdown",
