@@ -385,6 +385,13 @@
       "translate_emoticons": true
     },
     {
+      "name": "translate_emoticons_newline",
+      "input":  ":) test\n:) test",
+      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> test<br>\n<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> test</p>",
+      "text_content": "\ud83d\ude03 test\n\ud83d\ude03 test",
+      "translate_emoticons": true
+    },
+    {
       "name": "translate_emoticons_in_code",
       "input":  "`:)`",
       "expected_output": "<p><code>:)</code></p>",
