@@ -330,7 +330,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
             key.key = avatar_path
             if record['s3_path'].endswith('.original'):
                 key.key += '.original'
-        if processing_emojis:
+        elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record['realm_id'],
