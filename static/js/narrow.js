@@ -283,7 +283,10 @@ function load_local_messages(msg_data) {
     // one message the user will expect to see in the new narrow.
 
     var in_msgs = message_list.all.all_messages();
+
+    msg_data.filter.local_load = true;
     msg_data.add_messages(in_msgs);
+    msg_data.filter.local_load = false;
 
     return !msg_data.empty();
 }

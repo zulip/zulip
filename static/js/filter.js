@@ -479,7 +479,20 @@ Filter.prototype = {
         // We could turn it into something more like a compiler:
         // build JavaScript code in a string and then eval() it.
 
+        var self = this;
+
         return function (message) {
+            if (message.type === 'zgram') {
+                if (self.local_load) {
+                    // local_load is kind of a hack--we set it only
+                    // while loading up a narrow from locally cached
+                    // messages, which is a good time to exclude zgrams
+                    return false;
+                }
+
+                return true;
+            }
+
             return _.all(operators, function (term) {
                 var ok = message_matches_search_term(message, term.operator, term.operand);
                 if (term.negated) {
