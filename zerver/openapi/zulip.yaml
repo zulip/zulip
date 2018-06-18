@@ -230,6 +230,37 @@ paths:
                         "msg": "You don't have permission to edit this message",
                         "result": "error"
                     }
+  /messages/render:
+    post:
+      description: Render a message to HTML.
+      parameters:
+        - name: content
+          in: query
+          description: The content of the message.
+          schema:
+             type: string
+          example: '**foo**'
+          required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    rendered:
+                      type: string
+                      description: The rendered HTML.
+                - example:
+                    {
+                        "msg": "",
+                        "rendered": "<p><strong>foo</strong></p>",
+                        "result": "success"
+                    }
   /users/me/{stream_id}/topics:
     get:
       description: Get all the topics in a specific stream.

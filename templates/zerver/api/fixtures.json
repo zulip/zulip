@@ -241,11 +241,6 @@
         ],
         "result": "success"
     },
-    "render-message": {
-        "msg": "",
-        "rendered": "<p><strong>foo</strong></p>",
-        "result": "success"
-    },
     "successful-response-empty": {
         "msg": "",
         "result": "success"
