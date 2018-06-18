@@ -1,12 +1,4 @@
 {
-    "render-message.md": [
-        {
-            "argument": "content",
-            "description": "The content of the message.",
-            "required": true,
-            "example": "**foo**"
-        }
-    ],
     "get-all-users.md": [
         {
             "argument": "client_gravatar",

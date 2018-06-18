@@ -25,7 +25,7 @@ curl {{ api_url }}/v1/messages/render \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|render-message|example}
+{generate_code_example(python)|/messages/render:post|example}
 
 </div>
 
@@ -56,7 +56,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|render-message.md}
+{generate_api_arguments_table|zulip.yaml|/messages/render:post}
 
 ## Response
 
@@ -68,4 +68,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|render-message|fixture}
+{generate_code_example|/messages/render:post|fixture(200)}

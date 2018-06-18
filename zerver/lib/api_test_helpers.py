@@ -284,8 +284,7 @@ def render_message(client):
     result = client.render_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['render-message']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages/render', 'post', '200')
 
 def send_message(client):
     # type: (Client) -> int
@@ -492,7 +491,7 @@ def test_invalid_stream_error(client):
     validate_against_openapi_schema(result, '/get_stream_id', 'get', '400')
 
 TEST_FUNCTIONS = {
-    'render-message': render_message,
+    '/messages/render:post': render_message,
     '/messages:post': send_message,
     '/messages/{message_id}:patch': update_message,
     '/get_stream_id:get': get_stream_id,
