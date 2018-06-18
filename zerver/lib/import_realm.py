@@ -345,7 +345,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
                 sanitize_name(os.path.basename(record['path']))
             ])
             key.key = s3_file_name
-            path_maps['attachment_path'][record['path']] = s3_file_name
+            path_maps['attachment_path'][record['s3_path']] = s3_file_name
 
         user_profile_id = int(record['user_profile_id'])
         # Support email gateway bot and other cross-realm messages
