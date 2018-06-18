@@ -384,7 +384,8 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch')
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch',
+                                    '200')
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
@@ -474,7 +475,8 @@ def get_stream_topics(client, stream_id):
     result = client.get_stream_topics(stream_id)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics', 'get')
+    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
+                                    'get', '200')
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
