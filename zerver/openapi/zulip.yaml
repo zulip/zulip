@@ -24,6 +24,50 @@ servers:
 # Endpoint definitions
 #######################
 paths:
+  /get_stream_id:
+    get:
+      description: Get the unique ID of a given stream.
+      parameters:
+      - name: stream
+        in: query
+        description: The name of the stream to retrieve the ID for.
+        schema:
+           type: string
+        example: Denmark
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    stream_id:
+                      type: integer
+                      description: The ID of the given stream.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "stream_id": 15
+                    }
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream name 'nonexistent'",
+                        "result": "error"
+                    }
   /messages:
     post:
       description: Send a message.

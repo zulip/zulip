@@ -188,9 +188,7 @@ def get_stream_id(client):
     result = client.get_stream_id(stream_name)
     # {code_example|end}
 
-    fixture = FIXTURES['get-stream-id']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['stream_id'])
+    validate_against_openapi_schema(result, '/get_stream_id', 'get', '200')
 
 def get_streams(client):
     # type: (Client) -> None
@@ -491,14 +489,13 @@ def test_invalid_stream_error(client):
     # type: (Client) -> None
     result = client.get_stream_id('nonexistent')
 
-    fixture = FIXTURES['invalid-stream-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/get_stream_id', 'get', '400')
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
     '/messages:post': send_message,
     '/messages/{message_id}:patch': update_message,
-    'get-stream-id': get_stream_id,
+    '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
     'create-user': create_user,

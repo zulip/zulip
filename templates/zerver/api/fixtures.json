@@ -115,11 +115,6 @@
         "short_name": "iago",
         "user_id": 5
     },
-    "get-stream-id": {
-        "msg": "",
-        "result": "success",
-        "stream_id": 15
-    },
     "get-subscribed-streams": {
         "msg": "",
         "result": "success",
@@ -205,11 +200,6 @@
     },
     "invalid-api-key": {
         "msg": "Invalid API key",
-        "result": "error"
-    },
-    "invalid-stream-error": {
-        "code": "BAD_REQUEST",
-        "msg": "Invalid stream name 'nonexistent'",
         "result": "error"
     },
     "missing-request-argument-error": {
