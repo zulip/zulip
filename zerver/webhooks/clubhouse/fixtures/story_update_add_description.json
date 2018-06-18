@@ -1,0 +1,23 @@
+{
+    "id":"5b1feaa3-b3ad-40ec-b6a7-732febad698f",
+    "changed_at":"2018-06-12T15:45:39.951Z",
+    "primary_id":9,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":9,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Story 2",
+            "story_type":"feature",
+            "app_url":"https://app.clubhouse.io/zulip/story/9",
+            "changes":{
+                "description":{
+                    "new":"Added a description.",
+                    "old":""
+                }
+            }
+        }
+    ]
+}

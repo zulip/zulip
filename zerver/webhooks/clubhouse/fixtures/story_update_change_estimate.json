@@ -1,0 +1,23 @@
+{
+    "id":"5b1ff494-3127-424b-bf77-bbdd17a5a59d",
+    "changed_at":"2018-06-12T16:28:04.923Z",
+    "primary_id":11,
+    "version":"v1",
+    "member_id":"5b1fda16-626f-487f-9ecf-f3a4abf42b8b",
+    "actions":[
+        {
+            "id":11,
+            "entity_type":"story",
+            "action":"update",
+            "name":"Add cool feature!",
+            "story_type":"bug",
+            "app_url":"https://app.clubhouse.io/zulip/story/11",
+            "changes":{
+                "estimate":{
+                    "new":4,
+                    "old":1
+                }
+            }
+        }
+    ]
+}
