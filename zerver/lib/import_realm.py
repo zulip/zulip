@@ -385,7 +385,8 @@ def import_uploads(import_dir: Path, processing_avatars: bool=False,
             bucket_name = settings.S3_AVATAR_BUCKET
         else:
             bucket_name = settings.S3_AUTH_UPLOADS_BUCKET
-        import_uploads_s3(bucket_name, import_dir, processing_avatars=processing_avatars)
+        import_uploads_s3(bucket_name, import_dir, processing_avatars=processing_avatars,
+                          processing_emojis=processing_emojis)
 
 # Importing data suffers from a difficult ordering problem because of
 # models that reference each other circularly.  Here is a correct order.
