@@ -18,6 +18,17 @@ exports._fake_send = function (message) {
     local_message.insert_message(message);
 };
 
+exports.send = function (opts) {
+    var data = opts.data;
+
+    channel.post({
+        url: '/json/zgram',
+        data: {
+            data: JSON.stringify(data),
+        },
+    });
+};
+
 exports.simulate_simple_message = function () {
     var message = {
         type: 'zgram',
