@@ -300,9 +300,7 @@ def send_message(client):
     result = client.send_message(request)
     # {code_example|end}
 
-    fixture = FIXTURES['send-message']
-    test_against_fixture(result, fixture, check_if_equal=['result'],
-                         check_if_exists=['id'])
+    validate_against_openapi_schema(result, '/messages', 'post', '200')
 
     # test that the message was actually sent
     message_id = result['id']
@@ -324,8 +322,7 @@ def send_message(client):
     result = client.send_message(request)
     # {code_example|end}
 
-    test_against_fixture(result, fixture, check_if_equal=['result'],
-                         check_if_exists=['id'])
+    validate_against_openapi_schema(result, '/messages', 'post', '200')
 
     # test that the message was actually sent
     message_id = result['id']
@@ -349,8 +346,8 @@ def test_nonexistent_stream_error(client):
     }
     result = client.send_message(request)
 
-    fixture = FIXTURES['nonexistent-stream-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages', 'post',
+                                    '400_non_existing_stream')
 
 def test_private_message_invalid_recipient(client):
     # type: (Client) -> None
@@ -361,8 +358,8 @@ def test_private_message_invalid_recipient(client):
     }
     result = client.send_message(request)
 
-    fixture = FIXTURES['invalid-pm-recipient-error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/messages', 'post',
+                                    '400_non_existing_user')
 
 def update_message(client, message_id):
     # type: (Client, int) -> None
@@ -496,7 +493,7 @@ def test_invalid_stream_error(client):
 
 TEST_FUNCTIONS = {
     'render-message': render_message,
-    'send-message': send_message,
+    '/messages:post': send_message,
     '/messages/{message_id}:patch': update_message,
     'get-stream-id': get_stream_id,
     'get-subscribed-streams': list_subscriptions,

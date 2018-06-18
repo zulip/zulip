@@ -38,7 +38,7 @@ curl {{ api_url }}/v1/messages \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|send-message|example}
+{generate_code_example(python)|/messages:post|example}
 
 </div>
 
@@ -117,7 +117,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|send-message.md}
+{generate_api_arguments_table|zulip.yaml|/messages:post}
 
 ## Response
 
@@ -128,14 +128,14 @@ zulip(config).then((client) => {
 #### Example response
 A typical successful JSON response may look like:
 
-{generate_code_example|send-message|fixture}
+{generate_code_example|/messages:post|fixture(200)}
 
 A typical failed JSON response for when a stream message is sent to a stream
 that does not exist:
 
-{generate_code_example|nonexistent-stream-error|fixture}
+{generate_code_example|/messages:post|fixture(400_non_existing_stream)}
 
 A typical failed JSON response for when a private message is sent to a user
 that does not exist:
 
-{generate_code_example|invalid-pm-recipient-error|fixture}
+{generate_code_example|/messages:post|fixture(400_non_existing_user)}

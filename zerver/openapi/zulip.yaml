@@ -24,6 +24,97 @@ servers:
 # Endpoint definitions
 #######################
 paths:
+  /messages:
+    post:
+      description: Send a message.
+      parameters:
+      - name: type
+        in: query
+        description: The type of message to be sent. `private` for a private
+          message and `stream` for a stream message.
+        schema:
+          type: string
+          enum:
+            - private
+            - stream
+        example: private
+        required: true
+      - name: to
+        in: query
+        description: The destination stream, or a CSV/JSON-encoded list
+          containing the usernames (emails) of the recipients.
+        schema:
+          type: string
+        example: aaron@zulip.com, iago@zulip.com
+        required: true
+      - name: subject
+        in: query
+        description: The topic of the message. Only required if `type` is
+          `stream`, ignored otherwise. Maximum length of 60 characters.
+        schema:
+          type: string
+          default:
+        example: Castle
+      - name: content
+        in: query
+        description: The content of the message. Maximum message size of
+          10000 bytes.
+        schema:
+          type: string
+        example: Hello
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    id:
+                      type: integer
+                      description: The ID assigned to the message sent.
+                - example:
+                    {
+                        "msg": "",
+                        "id": 42,
+                        "result": "success"
+                    }
+        '400_non_existing_stream':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - properties:
+                    stream:
+                      type: string
+                      description: The name of the stream that could not be
+                        found.
+                - example:
+                    {
+                        "code": "STREAM_DOES_NOT_EXIST",
+                        "msg": "Stream 'nonexistent_stream' does not exist",
+                        "result": "error",
+                        "stream": "nonexistent_stream"
+                    }
+        '400_non_existing_user':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid email 'eeshan@zulip.com'",
+                        "result": "error"
+                    }
   /messages/{message_id}:
     patch:
       description: Edit a message that has already been sent.
@@ -287,6 +378,7 @@ paths:
                         ]
                     }
 
+
 components:
   #######################
   # Security definitions
@@ -335,6 +427,13 @@ components:
             - error
           msg:
             type: string
+    CodedError:
+      allOf:
+      - $ref: '#/components/schemas/JsonError'
+      - properties:
+          code:
+            type: string
+            description: A string that identifies the error.
     AddSubscriptionsResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'
