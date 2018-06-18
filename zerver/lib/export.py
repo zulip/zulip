@@ -48,6 +48,8 @@ PostProcessData = Any  # TODO: make more specific
 # TODO: This could maybe be improved using TypedDict?
 MessageOutput = Dict[str, Union[List[Record], List[int], int]]
 
+MESSAGE_BATCH_CHUNK_SIZE = 1000
+
 realm_tables = [("zerver_defaultstream", DefaultStream, "defaultstream"),
                 ("zerver_realmemoji", RealmEmoji, "realmemoji"),
                 ("zerver_realmdomain", RealmDomain, "realmdomain"),
@@ -826,7 +828,7 @@ def write_message_export(message_filename: Path, output: MessageOutput) -> None:
 
 def export_partial_message_files(realm: Realm,
                                  response: TableData,
-                                 chunk_size: int=1000,
+                                 chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE,
                                  output_dir: Optional[Path]=None) -> Set[int]:
     if output_dir is None:
         output_dir = tempfile.mkdtemp(prefix="zulip-export")
@@ -895,15 +897,16 @@ def export_partial_message_files(realm: Realm,
             dump_file_id=dump_file_id,
             all_message_ids=all_message_ids,
             output_dir=output_dir,
-            chunk_size=chunk_size,
             user_profile_ids=user_ids_for_us,
+            chunk_size=chunk_size,
         )
 
     return all_message_ids
 
 def write_message_partial_for_query(realm: Realm, message_query: Any, dump_file_id: int,
                                     all_message_ids: Set[int], output_dir: Path,
-                                    chunk_size: int, user_profile_ids: Set[int]) -> int:
+                                    user_profile_ids: Set[int],
+                                    chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> int:
     min_id = -1
 
     while True:
@@ -1341,7 +1344,8 @@ def get_single_user_config() -> Config:
 
     return user_profile_config
 
-def export_messages_single_user(user_profile: UserProfile, output_dir: Path, chunk_size: int=1000) -> None:
+def export_messages_single_user(user_profile: UserProfile, output_dir: Path,
+                                chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
     user_message_query = UserMessage.objects.filter(user_profile=user_profile).order_by("id")
     min_id = -1
     dump_file_id = 1

@@ -25,6 +25,7 @@ from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.upload import random_name, sanitize_name
+from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 
 # stubs
@@ -516,9 +517,10 @@ def convert_slack_workspace_messages(slack_data_dir: str, users: List[ZerverFiel
                                      added_users: AddedUsersT, added_recipient: AddedRecipientsT,
                                      added_channels: AddedChannelsT, realm: ZerverFieldsT,
                                      zerver_realmemoji: List[ZerverFieldsT], domain_name: str,
-                                     output_dir: str, chunk_size: int=800) -> Tuple[List[ZerverFieldsT],
-                                                                                    List[ZerverFieldsT],
-                                                                                    List[ZerverFieldsT]]:
+                                     output_dir: str,
+                                     chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> Tuple[List[ZerverFieldsT],
+                                                                                        List[ZerverFieldsT],
+                                                                                        List[ZerverFieldsT]]:
     """
     Returns:
     1. reactions, which is a list of the reactions
