@@ -1,12 +1,4 @@
 {
-    "get-stream-id.md": [
-        {
-            "argument": "stream",
-            "description": "The name of the stream to retrieve the ID for.",
-            "required": true,
-            "example": "Denmark"
-        }
-    ],
     "render-message.md": [
         {
             "argument": "content",
