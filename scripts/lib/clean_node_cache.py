@@ -49,12 +49,11 @@ def get_caches_in_use(threshold_days):
 
     return caches_in_use
 
-def main():
-    # type: () -> None
-    args = parse_cache_script_args("This script cleans unused zulip npm caches.")
+def main(args: argparse.Namespace) -> None:
     caches_in_use = get_caches_in_use(args.threshold_days)
     purge_unused_caches(
         NODE_MODULES_CACHE_PATH, caches_in_use, "node modules cache", args)
 
 if __name__ == "__main__":
-    main()
+    args = parse_cache_script_args("This script cleans unused zulip npm caches.")
+    main(args)
