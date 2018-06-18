@@ -9,42 +9,6 @@
         "msg": "Email 'newbie@zulip.com' already in use",
         "result": "error"
     },
-    "get-all-users": {
-        "members": [
-            {
-                "avatar_url": "https://secure.gravatar.com/avatar/818c212b9f8830dfef491b3f7da99a14?d=identicon&version=1",
-                "bot_type": null,
-                "email": "AARON@zulip.com",
-                "full_name": "aaron",
-                "is_active": true,
-                "is_admin": false,
-                "is_bot": false,
-                "user_id": 1
-            },
-            {
-                "avatar_url": "https://secure.gravatar.com/avatar/77c3871a68c8d70356156029fd0a4999?d=identicon&version=1",
-                "bot_type": null,
-                "email": "cordelia@zulip.com",
-                "full_name": "Cordelia Lear",
-                "is_active": true,
-                "is_admin": false,
-                "is_bot": false,
-                "user_id": 3
-            },
-            {
-                "avatar_url": "https://secure.gravatar.com/avatar/0cbf08f3a355995fa2ec542246e35123?d=identicon&version=1",
-                "bot_type": null,
-                "email": "newbie@zulip.com",
-                "full_name": "New User",
-                "is_active": true,
-                "is_admin": false,
-                "is_bot": false,
-                "user_id": 24
-            }
-        ],
-        "msg": "",
-        "result": "success"
-    },
     "get-events-from-queue": {
         "events": [
             {
