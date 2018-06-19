@@ -147,6 +147,7 @@ run_test('sender_hover', () => {
                 user_time: undefined,
                 presence_status: 'offline',
                 user_last_seen_time_status: 'translated: Unknown',
+                user_last_online_time_status: 'translated: Unknown',
                 pm_with_uri: '#narrow/pm-with/42-alice',
                 sent_by_uri: '#narrow/sender/42-alice',
                 narrowed: false,
