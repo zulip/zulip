@@ -135,7 +135,7 @@ def get_stream_name(stream: Optional[Stream]) -> Optional[str]:
 def patch_bot_backend(
         request: HttpRequest, user_profile: UserProfile, bot_id: int,
         full_name: Optional[str]=REQ(default=None),
-        bot_owner: Optional[str]=REQ(default=None),
+        bot_owner_id: Optional[int]=REQ(default=None),
         config_data: Optional[Dict[str, str]]=REQ(default=None,
                                                   validator=check_dict(value_validator=check_string)),
         service_payload_url: Optional[str]=REQ(validator=check_url, default=None),
@@ -148,16 +148,19 @@ def patch_bot_backend(
 
     if full_name is not None:
         check_change_full_name(bot, full_name, user_profile)
-    if bot_owner is not None:
+    if bot_owner_id is not None:
         try:
-            owner = get_user(bot_owner, user_profile.realm)
+            owner = get_user_profile_by_id_in_realm(bot_owner_id, user_profile.realm)
         except UserProfile.DoesNotExist:
             return json_error(_('Failed to change owner, no such user'))
         if not owner.is_active:
             return json_error(_('Failed to change owner, user is deactivated'))
         if owner.is_bot:
             return json_error(_("Failed to change owner, bots can't own other bots"))
-        do_change_bot_owner(bot, owner, user_profile)
+
+        previous_owner = bot.bot_owner
+        if previous_owner != owner:
+            do_change_bot_owner(bot, owner, user_profile)
 
     if default_sending_stream is not None:
         if default_sending_stream == "":

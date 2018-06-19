@@ -416,7 +416,7 @@ exports.set_up = function () {
                 var formData = new FormData();
                 formData.append('csrfmiddlewaretoken', csrf_token);
                 formData.append('full_name', full_name);
-                formData.append('bot_owner', bot_owner);
+                formData.append('bot_owner_id', people.get_by_email(bot_owner).user_id);
 
                 if (type === OUTGOING_WEBHOOK_BOT_TYPE) {
                     var service_payload_url = $("#edit_service_base_url").val();

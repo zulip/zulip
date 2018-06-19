@@ -2812,9 +2812,6 @@ def check_change_full_name(user_profile: UserProfile, full_name_raw: str,
 def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
                         acting_user: UserProfile) -> None:
     previous_owner = user_profile.bot_owner
-    if previous_owner == bot_owner:
-        return
-
     user_profile.bot_owner = bot_owner
     user_profile.save()  # Can't use update_fields because of how the foreign key works.
     event_time = timezone_now()
