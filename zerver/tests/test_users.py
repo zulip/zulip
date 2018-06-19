@@ -20,8 +20,8 @@ from zerver.lib.test_runner import slow
 from zerver.models import UserProfile, Recipient, \
     Realm, RealmDomain, UserActivity, UserHotspot, \
     get_user, get_realm, get_client, get_stream, get_stream_recipient, \
-    get_membership_realms, get_source_profile, \
-    Message, get_context_for_message, ScheduledEmail, check_valid_user_ids
+    get_source_profile, Message, get_context_for_message, \
+    ScheduledEmail, check_valid_user_ids
 
 from zerver.lib.avatar import avatar_url
 from zerver.lib.email_mirror import create_missed_message_address
@@ -38,7 +38,8 @@ from zerver.lib.actions import (
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.topic_mutes import add_topic_mute
 from zerver.lib.stream_topic import StreamTopicTarget
-from zerver.lib.users import user_ids_to_users, access_user_by_id
+from zerver.lib.users import user_ids_to_users, access_user_by_id, \
+    get_accounts_for_email
 
 from django.conf import settings
 
@@ -396,26 +397,35 @@ class UserProfileTest(ZulipTestCase):
         self.assertEqual(result[cordelia].email, cordelia)
         self.assertEqual(result[webhook_bot].email, webhook_bot)
 
-    def test_get_membership_realms(self) -> None:
-        zulip_realm = get_realm("zulip")
+    def test_get_accounts_for_email(self) -> None:
+        def check_account_present_in_accounts(user: UserProfile, accounts: List[Dict[str, Optional[str]]]) -> None:
+            for account in accounts:
+                realm = user.realm
+                if account["avatar"] == avatar_url(user) and account["full_name"] == user.full_name \
+                        and account["realm_name"] == realm.name and account["string_id"] == realm.string_id:
+                    return
+            raise AssertionError("Account not found")
+
         lear_realm = get_realm("lear")
+        cordelia_in_zulip = self.example_user("cordelia")
+        cordelia_in_lear = get_user("cordelia@zulip.com", lear_realm)
 
         email = "cordelia@zulip.com"
-        realms = get_membership_realms(email)
-        self.assert_length(realms, 2)
-        self.assertIn(zulip_realm, realms)
-        self.assertIn(lear_realm, realms)
+        accounts = get_accounts_for_email(email)
+        self.assert_length(accounts, 2)
+        check_account_present_in_accounts(cordelia_in_zulip, accounts)
+        check_account_present_in_accounts(cordelia_in_lear, accounts)
 
         email = "CORDelia@zulip.com"
-        realms = get_membership_realms(email)
-        self.assert_length(realms, 2)
-        self.assertIn(zulip_realm, realms)
-        self.assertIn(lear_realm, realms)
+        accounts = get_accounts_for_email(email)
+        self.assert_length(accounts, 2)
+        check_account_present_in_accounts(cordelia_in_zulip, accounts)
+        check_account_present_in_accounts(cordelia_in_lear, accounts)
 
         email = "IAGO@ZULIP.COM"
-        realms = get_membership_realms(email)
-        self.assert_length(realms, 1)
-        self.assertIn(zulip_realm, realms)
+        accounts = get_accounts_for_email(email)
+        self.assert_length(accounts, 1)
+        check_account_present_in_accounts(self.example_user("iago"), accounts)
 
     def test_get_source_profile(self) -> None:
         iago = get_source_profile("iago@zulip.com", "zulip")
