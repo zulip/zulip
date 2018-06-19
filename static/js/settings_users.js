@@ -419,7 +419,7 @@ exports.on_load_success = function (realm_people_data) {
                 };
                 if (owner_select.val() !== null && owner_select.val() !== undefined &&
                     owner_select.val() !== "") {
-                    data.bot_owner = owner_select.val();
+                    data.bot_owner_id = people.get_by_email(owner_select.val()).user_id;
                 }
             } else {
                 url = "/json/users/" + encodeURIComponent(person.user_id);
