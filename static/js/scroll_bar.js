@@ -1,7 +1,7 @@
-$(function () {
-    ui.set_up_scrollbar($("#stream-filters-container"));
-});
 
+var scroll_bar = (function () {
+
+var exports = {};
 
 // From https://stackoverflow.com/questions/13382516/getting-scroll-bar-width-using-javascript
 function getScrollbarWidth() {
@@ -29,9 +29,8 @@ function getScrollbarWidth() {
     return widthNoScroll - widthWithScroll;
 }
 
-
+exports.initialize = function () {
 // Workaround for browsers with fixed scrollbars
-$(function () {
     var sbWidth = getScrollbarWidth();
 
     if (sbWidth > 0) {
@@ -59,4 +58,11 @@ $(function () {
                          "</style>");
     }
 
-});
+    ui.set_up_scrollbar($("#stream-filters-container"));
+};
+
+return exports;
+}());
+if (typeof module !== 'undefined') {
+    module.exports = scroll_bar;
+}
