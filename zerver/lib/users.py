@@ -2,10 +2,12 @@ from typing import Dict, List, Optional
 
 from django.db.models.query import QuerySet
 from django.utils.translation import ugettext as _
+from django.conf import settings
 
 from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_id, \
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
+from zerver.lib.avatar import avatar_url
 from zerver.models import UserProfile, Service, Realm, \
     get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm
 
@@ -164,3 +166,10 @@ def access_user_by_id(user_profile: UserProfile, user_id: int,
     if not user_profile.can_admin_user(target):
         raise JsonableError(_("Insufficient permission"))
     return target
+
+def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
+    if settings.PRODUCTION:  # nocoverage
+        return []
+    profiles = UserProfile.objects.select_related('realm').filter(email__iexact=email.strip())
+    return [{"realm_name": profile.realm.name, "string_id": profile.realm.string_id,
+             "full_name": profile.full_name, "avatar": avatar_url(profile)} for profile in profiles]
