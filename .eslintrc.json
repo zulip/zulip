@@ -33,6 +33,7 @@
         "popovers": false,
         "server_events": false,
         "server_events_dispatch": false,
+        "scroll_bar": false,
         "message_scroll": false,
         "keydown_util": false,
         "info_overlay": false,
