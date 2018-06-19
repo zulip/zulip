@@ -256,36 +256,18 @@ def remove_subscriptions_backend(
     return json_success(result)
 
 def you_were_just_subscribed_message(acting_user: UserProfile,
-                                     stream_names: Set[str],
-                                     private_stream_names: Set[str]) -> str:
-
-    # stream_names is the list of streams for which we should send notifications.
-    #
-    # We only use private_stream_names to see which of those names
-    # are private; it can possibly be a superset of stream_names due to the way the
-    # calling code is structured.
-
+                                     stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
-
-    msg = "Hi there!  We thought you'd like to know that %s just subscribed you to " % (
-        acting_user.full_name,)
-
     if len(subscriptions) == 1:
-        invite_only = subscriptions[0] in private_stream_names
-        msg += "the%s stream #**%s**." % (" **invite-only**" if invite_only else "",
-                                          subscriptions[0])
-    else:
-        msg += "the following streams: \n\n"
-        for stream_name in subscriptions:
-            invite_only = stream_name in private_stream_names
-            msg += "* #**%s**%s\n" % (stream_name,
-                                      " (**invite-only**)" if invite_only else "")
+        return _("Hi there! %s just subscribed you to the stream #**%s**." %
+                 (acting_user.full_name, subscriptions[0]))
 
-    public_stream_names = stream_names - private_stream_names
-    if public_stream_names:
-        msg += "\nYou can see historical content on a non-invite-only stream by narrowing to it."
-
-    return msg
+    message = _("Hi there! %s just subscribed you to the following streams:" %
+                (acting_user.full_name,))
+    message += "\n\n"
+    for stream_name in subscriptions:
+        message += "* #**%s**\n" % (stream_name,)
+    return message
 
 @require_non_guest_user
 @has_request_variables
@@ -348,7 +330,6 @@ def add_subscriptions_backend(
     bots = dict((subscriber.email, subscriber.is_bot) for subscriber in subscribers)
 
     newly_created_stream_names = {s.name for s in created_streams}
-    private_stream_names = {s.name for s in streams if s.invite_only}
 
     # Inform the user if someone else subscribed them to stuff,
     # or if a new stream was created with the "announce" option.
@@ -372,7 +353,6 @@ def add_subscriptions_backend(
             msg = you_were_just_subscribed_message(
                 acting_user=user_profile,
                 stream_names=notify_stream_names,
-                private_stream_names=private_stream_names
             )
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
