@@ -242,7 +242,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
-                       from_address=FromAddress.NOREPLY, context=context)
+                       from_address=FromAddress.tokenized_no_reply_address(),
+                       context=context)
         else:
             context['no_account_in_realm'] = True
             accounts = UserProfile.objects.filter(email__iexact=email)
@@ -251,7 +252,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
                 context['multiple_accounts'] = accounts.count() != 1
             send_email('zerver/emails/password_reset', to_email=email,
                        from_name="Zulip Account Security",
-                       from_address=FromAddress.NOREPLY, context=context)
+                       from_address=FromAddress.tokenized_no_reply_address(),
+                       context=context)
 
 class CreateUserForm(forms.Form):
     full_name = forms.CharField(max_length=100)

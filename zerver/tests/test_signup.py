@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 import datetime
+from email.utils import parseaddr
+import re
+
 import django_otp
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -178,7 +181,8 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         from_email = outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
-        self.assertIn(FromAddress.NOREPLY, from_email)
+        tokenized_no_reply_email = parseaddr(from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn("Psst. Word on the street is that you", outbox[0].body)
 
         # Visit the password reset link.
@@ -222,8 +226,8 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         from_email = outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
-        self.assertIn(FromAddress.NOREPLY, from_email)
-
+        tokenized_no_reply_email = parseaddr(from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn('Someone (possibly you) requested a password',
                       outbox[0].body)
         self.assertNotIn('does have an active account in the zulip.testserver',
@@ -249,8 +253,8 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         from_email = outbox[0].from_email
         self.assertIn("Zulip Account Security", from_email)
-        self.assertIn(FromAddress.NOREPLY, from_email)
-
+        tokenized_no_reply_email = parseaddr(from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn('Someone (possibly you) requested a password',
                       outbox[0].body)
         self.assertNotIn('does have an active account in the zulip.testserver',
@@ -297,7 +301,8 @@ class PasswordResetTest(ZulipTestCase):
         from django.core.mail import outbox
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
-        self.assertIn(FromAddress.NOREPLY, message.from_email)
+        tokenized_no_reply_email = parseaddr(message.from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn('Someone (possibly you) requested a password',
                       message.body)
         self.assertIn("but\nyou do not have an active account in http://zephyr.testserver",
@@ -366,7 +371,8 @@ class PasswordResetTest(ZulipTestCase):
 
         self.assertEqual(len(outbox), 1)
         message = outbox.pop()
-        self.assertIn(FromAddress.NOREPLY, message.from_email)
+        tokenized_no_reply_email = parseaddr(message.from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
         self.assertIn('Psst. Word on the street is that you need a new password',
                       message.body)
 
