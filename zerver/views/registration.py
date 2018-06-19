@@ -15,7 +15,7 @@ from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_user, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_membership_realms, get_source_profile
+    DomainNotAllowedForRealmError, get_source_profile
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -32,6 +32,7 @@ from zerver.lib.onboarding import setup_initial_streams, \
 from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
+from zerver.lib.users import get_accounts_for_email
 from zerver.views.auth import create_preregistration_user, \
     redirect_and_log_into_subdomain, \
     redirect_to_deactivation_notice
@@ -320,7 +321,7 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  'password_auth_enabled': password_auth_enabled(realm),
                  'root_domain_available': is_root_domain_available(),
                  'default_stream_groups': get_default_stream_groups(realm),
-                 'membership_realms': get_membership_realms(email),
+                 'accounts': get_accounts_for_email(email),
                  'MAX_REALM_NAME_LENGTH': str(Realm.MAX_REALM_NAME_LENGTH),
                  'MAX_NAME_LENGTH': str(UserProfile.MAX_NAME_LENGTH),
                  'MAX_PASSWORD_LENGTH': str(form.MAX_PASSWORD_LENGTH),
