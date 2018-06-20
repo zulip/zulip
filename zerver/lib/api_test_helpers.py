@@ -401,10 +401,7 @@ def register_queue(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['register-queue']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['last_event_id', 'queue_id'])
-
+    validate_against_openapi_schema(result, '/register', 'post', '200')
     return result['queue_id']
 
 def deregister_queue(client, queue_id):
@@ -485,7 +482,7 @@ TEST_FUNCTIONS = {
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
     '/users:get': get_members,
-    'register-queue': register_queue,
+    '/register:post': register_queue,
     'delete-queue': deregister_queue,
     'upload-file': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics
