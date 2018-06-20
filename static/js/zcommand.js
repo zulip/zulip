@@ -65,7 +65,7 @@ exports.process = function (message_content) {
         var start_time = new Date();
 
         exports.send({
-            command: 'ping',
+            command: content,
             on_success: function () {
                 var end_time = new Date();
                 var diff = end_time - start_time;
@@ -78,12 +78,12 @@ exports.process = function (message_content) {
     }
 
     if (content === '/day') {
-        update_setting('day');
+        update_setting(content);
         return true;
     }
 
     if (content === '/night') {
-        update_setting('night');
+        update_setting(content);
         return true;
     }
 
