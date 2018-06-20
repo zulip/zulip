@@ -514,7 +514,7 @@ class ImportExportTest(ZulipTestCase):
             Subscription.objects.filter(recipient=recipient)
             for recipient in stream_recipients]
         subscription_stream_user = [
-            [sub.user_profile.email for sub in subscription]
+            {sub.user_profile.email for sub in subscription}
             for subscription in stream_subscription]
         self.assertEqual(subscription_stream_user[0], subscription_stream_user[1])
 
@@ -522,7 +522,7 @@ class ImportExportTest(ZulipTestCase):
             Subscription.objects.filter(recipient=recipient)
             for recipient in user_recipients]
         subscription_user = [
-            [sub.user_profile.email for sub in subscription]
+            {sub.user_profile.email for sub in subscription}
             for subscription in user_subscription]
         self.assertEqual(subscription_user[0], subscription_user[1])
 
