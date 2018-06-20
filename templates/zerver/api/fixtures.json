@@ -5,10 +5,6 @@
         "queue_id": "1518820930:1",
         "result": "error"
     },
-    "email_already_used_error": {
-        "msg": "Email 'newbie@zulip.com' already in use",
-        "result": "error"
-    },
     "get-profile": {
         "client_id": "74c768b081076fdb3c4326256c17467e",
         "email": "iago@zulip.com",
