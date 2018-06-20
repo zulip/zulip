@@ -467,6 +467,58 @@ paths:
                         "msg": "",
                         "result": "success"
                     }
+    post:
+      description: Create a new user in a realm.
+      parameters:
+      - name: email
+        in: query
+        description: The email address of the new user.
+        schema:
+           type: string
+        example: newbie@zulip.com
+        required: true
+      - name: password
+        in: query
+        description: The password of the new user.
+        schema:
+           type: string
+        example: abdec@7982
+        required: true
+      - name: full_name
+        in: query
+        description: The full name of the new user.
+        schema:
+           type: string
+        example: John Smith
+        required: true
+      - name: short_name
+        in: query
+        description: The short name of the new user.
+        schema:
+           type: string
+        example: jsmith
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonError'
+                - example:
+                    {
+                        "msg": "Email 'newbie@zulip.com' already in use",
+                        "result": "error"
+                    }
   /users/me/{stream_id}/topics:
     get:
       description: Get all the topics in a specific stream.

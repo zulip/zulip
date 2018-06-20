@@ -39,32 +39,6 @@
             "example": "change_all"
         }
     ],
-    "create-user.md": [
-        {
-            "argument": "email",
-            "description": "The email address of the new user.",
-            "required": true,
-            "example": "newbie@zulip.com"
-        },
-        {
-            "argument": "password",
-            "description": "The password of the new user.",
-            "required": true,
-            "example": "abdec@7982"
-        },
-        {
-            "argument": "full_name",
-            "description": "The full name of the new user.",
-            "required": true,
-            "example": "John Smith"
-        },
-        {
-            "argument": "short_name",
-            "description": "The short name of the new user.",
-            "required": true,
-            "example": "jsmith"
-        }
-    ],
     "remove-subscriptions.md": [
         {
             "argument": "subscriptions",

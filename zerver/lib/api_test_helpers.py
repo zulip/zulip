@@ -113,14 +113,12 @@ def create_user(client):
     result = client.create_user(request)
     # {code_example|end}
 
-    fixture = FIXTURES['successful-response-empty']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users', 'post', '200')
 
     # Test "Email already used error"
     result = client.create_user(request)
 
-    fixture = FIXTURES['email_already_used_error']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users', 'post', '400')
 
 def get_members(client):
     # type: (Client) -> None
@@ -474,7 +472,7 @@ TEST_FUNCTIONS = {
     '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
-    'create-user': create_user,
+    '/users:post': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
