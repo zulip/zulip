@@ -85,7 +85,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|get-events-from-queue.md}
+{generate_api_arguments_table|zulip.yaml|/events:get}
 
 **Note**: The arguments documented above are optional in the sense that
 even if you haven't registered a queue by explicitly requesting the
@@ -105,14 +105,14 @@ endpoint and a queue would be registered in the absence of a `queue_id`.
 
 A typical successful JSON response may look like:
 
-{generate_code_example|get-events-from-queue|fixture}
+{generate_code_example|/events:get|fixture(200)}
 
 #### BAD_EVENT_QUEUE_ID errors
 
 If the target event queue has been garbage collected, you'll get the
 following error response:
 
-{generate_code_example|bad_event_queue_id_error|fixture}
+{generate_code_example|/events:get|fixture(400)}
 
 A compliant client will handle this error by re-initializing itself
 (e.g. a Zulip webapp browser window will reload in this case).

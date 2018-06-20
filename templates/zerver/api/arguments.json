@@ -1,24 +1,4 @@
 {
-    "get-events-from-queue.md": [
-        {
-            "argument": "queue_id",
-            "description": "The ID of a queue that you registered via `POST /api/v1/register`(see [Register a queue](/api/register-queue)).",
-            "required": false,
-            "example": "1375801870:2942"
-        },
-        {
-            "argument": "last_event_id",
-            "description": "The highest event ID in this queue that you've received and wish to acknowledge. See the [code for `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py) in the [zulip Python module](https://github.com/zulip/python-zulip-api) for an example implementation of correctly processing each event exactly once.",
-            "required": false,
-            "example": "-1"
-        },
-        {
-            "argument": "dont_block",
-            "description": "Set to `True` if the client is requesting a nonblocking reply. If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event. Default is `False`.",
-            "required": false,
-            "example": "`True` or `False`"
-        }
-    ],
     "call_on_each_event": [
         {
             "argument": "narrow",

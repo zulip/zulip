@@ -9,63 +9,6 @@
         "msg": "Email 'newbie@zulip.com' already in use",
         "result": "error"
     },
-    "get-events-from-queue": {
-        "events": [
-            {
-                "id": 0,
-                "message": {
-                    "avatar_url": "https://url/for/othello-bots/avatar",
-                    "client": "website",
-                    "content": "Something is rotten in the state of Denmark.",
-                    "content_type": "text/x-markdown",
-                    "display_recipient": "Denmark",
-                    "id": 12345678,
-                    "recipient_id": 12314,
-                    "sender_email": "othello-bot@example.com",
-                    "sender_full_name": "Othello Bot",
-                    "sender_id": 13215,
-                    "sender_realm_str": "example",
-                    "sender_short_name": "othello-bot",
-                    "subject": "Castle",
-                    "subject_links": [],
-                    "timestamp": 1375978403,
-                    "type": "stream"
-                },
-                "type": "message"
-            },
-            {
-                "id": 1,
-                "message": {
-                    "avatar_url": "https://url/for/othello-bots/avatar",
-                    "client": "website",
-                    "content": "I come not, friends, to steal away your hearts.",
-                    "content_type": "text/x-markdown",
-                    "display_recipient": [
-                        {
-                            "email": "hamlet@example.com",
-                            "full_name": "Hamlet of Denmark",
-                            "id": 31572,
-                            "short_name": "hamlet"
-                        }
-                    ],
-                    "id": 12345679,
-                    "recipient_id": 18391,
-                    "sender_email": "othello-bot@example.com",
-                    "sender_full_name": "Othello Bot",
-                    "sender_id": 13215,
-                    "sender_realm_str": "example",
-                    "sender_short_name": "othello-bot",
-                    "subject": "",
-                    "subject_links": [],
-                    "timestamp": 1375978404,
-                    "type": "private"
-                },
-                "type": "message"
-            }
-        ],
-        "msg": "",
-        "result": "success"
-    },
     "get-profile": {
         "client_id": "74c768b081076fdb3c4326256c17467e",
         "email": "iago@zulip.com",
