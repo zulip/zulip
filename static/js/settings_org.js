@@ -348,7 +348,7 @@ exports.populate_notifications_stream_dropdown = function (stream_list) {
     var dropdown_list_body = $("#id_realm_notifications_stream .dropdown-list-body").expectOne();
     var search_input = $("#id_realm_notifications_stream .dropdown-search > input[type=text]");
 
-    list_render(dropdown_list_body, stream_list, {
+    list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-notifications-stream-dropdown-list",
         modifier: function (item) {
             return templates.render("admin-realm-dropdown-stream-list", { stream: item });
@@ -379,7 +379,7 @@ exports.populate_signup_notifications_stream_dropdown = function (stream_list) {
     var dropdown_list_body = $("#id_realm_signup_notifications_stream .dropdown-list-body").expectOne();
     var search_input = $("#id_realm_signup_notifications_stream .dropdown-search > input[type=text]");
 
-    list_render(dropdown_list_body, stream_list, {
+    list_render.create(dropdown_list_body, stream_list, {
         name: "admin-realm-signup-notifications-stream-dropdown-list",
         modifier: function (item) {
             return templates.render("admin-realm-dropdown-stream-list", { stream: item });

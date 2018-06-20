@@ -193,7 +193,7 @@ function show_subscription_settings(sub_row) {
     var emails = get_email_of_subscribers(sub.subscribers);
     exports.sort_but_pin_current_user_on_top(emails);
 
-    list_render(list, emails, {
+    list_render.create(list, emails, {
         name: "stream_subscribers/" + stream_id,
         modifier: function (item) {
             return format_member_list_elem(item);
