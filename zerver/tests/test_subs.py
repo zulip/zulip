@@ -65,7 +65,8 @@ from zerver.lib.actions import (
     do_change_default_stream_group_name,
     lookup_default_stream_groups,
     can_access_stream_user_ids,
-    validate_user_access_to_subscribers_helper
+    validate_user_access_to_subscribers_helper,
+    get_average_weekly_stream_traffic, round_to_2_significant_digits
 )
 
 from zerver.views.streams import (
@@ -78,6 +79,7 @@ from zerver.lib.message import (
 )
 
 from django.http import HttpResponse
+from datetime import timedelta
 import mock
 import random
 import ujson
@@ -3318,3 +3320,29 @@ class AccessStreamTest(ZulipTestCase):
         self.assertEqual(stream.id, stream_ret.id)
         self.assertEqual(sub_ret.recipient, rec_ret)
         self.assertEqual(sub_ret.recipient.type_id, stream.id)
+
+class StreamTrafficTest(ZulipTestCase):
+    def test_average_weekly_stream_traffic_calculation(self) -> None:
+        # No traffic data for the stream
+        self.assertEqual(
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=300), {1: 4003}), 0)
+
+        # using high numbers here to make it more likely to catch small errors in the denominators
+        # of the calculations. That being said we don't want to go over 100, since then the 2
+        # significant digits calculation gets applied
+        # old stream
+        self.assertEqual(
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=300), {42: 98*4+3}), 98)
+        # stream between 7 and 27 days old
+        self.assertEqual(
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=10), {42: (98*10+9) // 7}), 98)
+        # stream less than 7 days old
+        self.assertEqual(
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=5), {42: 100}), -1)
+
+        # average traffic between 0 and 1
+        self.assertEqual(
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=300), {42: 1}), 1)
+
+    def test_round_to_2_significant_digits(self) -> None:
+        self.assertEqual(120, round_to_2_significant_digits(116))
