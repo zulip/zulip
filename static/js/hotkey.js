@@ -126,7 +126,7 @@ exports.get_keydown_hotkey = function (e) {
     }
 
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
-    if (isCmdOrCtrl) {
+    if (isCmdOrCtrl && !e.shiftKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
