@@ -96,6 +96,7 @@
 * [Enable high contrast mode](/help/enable-high-contrast-mode)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
+* [Display emojis as text](/help/display-emojis-as-text)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 
