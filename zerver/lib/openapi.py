@@ -18,6 +18,11 @@ OPENAPI_SPEC = yaml_parser.data
 # The validator will ignore these keys when they appear in the "content"
 # passed.
 EXCLUDE_PROPERTIES = {
+    '/register': {
+        'post': {
+            '200': ['max_message_id', 'realm_emoji']
+        }
+    }
 }
 
 

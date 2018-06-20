@@ -517,6 +517,121 @@ paths:
                             "private_stream"
                         ]
                     }
+  /register:
+    post:
+      description: This powerful endpoint can be used to register a Zulip
+        "event queue" (subscribed to certain types of "events", or updates to
+        the messages and other Zulip data the current user has access to), as
+        well as to fetch the current state of that data.
+      parameters:
+      - name: apply_markdown
+        in: query
+        description: Set to `true` if you would like the content to be
+          rendered in HTML format (by default, the API returns the raw text
+          that the user entered)
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: client_gravatar
+        in: query
+        description: The `client_gravatar` field is set to `true` if clients
+          can compute their own gravatars.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: event_types
+        in: query
+        description: "A JSON-encoded array indicating which types of events
+          you're interested in. Values that you might find useful include:
+          <br/> <br/>
+          * **message** (messages), <br/>
+          * **subscription** (changes in your subscriptions), <br/>
+          * **realm_user** (changes in the list of users in your realm)
+          <br/> <br/>
+          If you do not specify this argument, you will receive all events,
+          and have to filter out the events not relevant to your client in
+          your client code. For most applications, one is only interested in
+          messages, so one specifies: `event_types=['message']`"
+        schema:
+           type: string
+        example: event_types=['message']
+      - name: all_public_streams
+        in: query
+        description: Set to `True` if you would like to receive events that
+          occur within all public streams.
+        schema:
+           type: boolean
+           default: false
+        example: true
+      - name: include_subscribers
+        in: query
+        description: Set to `True` if you would like to receive events that
+          include the subscribers for each stream.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: fetch_event_types
+        in: query
+        description: Same as the `event_types` argument except that the values
+          in `fetch_event_types` are used to fetch initial data. If
+          `fetch_event_types` is not provided, `event_types` is used and if
+          `event_types` is not provided, this argument defaults to `None`.
+        schema:
+           type: string
+        example: event_types=['message']
+      - name: narrow
+        in: query
+        description: A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events for. For instance, to
+          receive events for the stream `Denmark`, you would specify
+          `narrow=['stream', 'Denmark']`. Another example is
+          `narrow=['is', 'private']` for private messages.
+        schema:
+           type: string
+           default : narrow=[]
+        example: narrow=['stream', 'Denmark']
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    queue_id:
+                      type: string
+                      description: The ID of the queue that has been allocated
+                        for your client.
+                    last_event_id:
+                      type: integer
+                      description: The initial value of `last_event_id` to
+                        pass to `GET /api/v1/events`.
+                - example:
+                    {
+                        "last_event_id": -1,
+                        "msg": "",
+                        "queue_id": "1517975029:0",
+                        "realm_emoji": {
+                            "1": {
+                                "author": {
+                                    "email": "iago@zulip.com",
+                                    "full_name": "Iago",
+                                    "id": 5
+                                },
+                                "deactivated": false,
+                                "id": "1",
+                                "name": "green_tick",
+                                "source_url": "/user_avatars/1/emoji/images/1.png"
+                            }
+                        },
+                        "result": "success"
+                    }
   /streams:
     get:
       description: Get all streams that the user has access to.
