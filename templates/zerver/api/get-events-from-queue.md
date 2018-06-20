@@ -117,5 +117,5 @@ following error response:
 A compliant client will handle this error by re-initializing itself
 (e.g. a Zulip webapp browser window will reload in this case).
 
-See [the /register endpoint docs](/api/register-queue)  for details
-for on handling these correctly.
+See [the /register endpoint docs](/api/register-queue) for details on how to
+handle these correctly.
