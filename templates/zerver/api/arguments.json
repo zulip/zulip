@@ -13,14 +13,6 @@
             "example": "event_types=['message']"
         }
     ],
-    "delete-queue.md": [
-        {
-            "argument": "queue_id",
-            "description": "The ID of a queue that you registered via `POST /api/v1/register`(see [Register a queue](/api/register-queue) and [Get events from queue](/api/get-events-from-queue)).",
-            "required": true,
-            "example": "1375801870:2942"
-        }
-    ],
     "update-message.md": [
         {
             "argument": "message_id",

@@ -25,7 +25,7 @@ curl -X "DELETE" {{ api_url }}/v1/events \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|delete-queue|example}
+{generate_code_example(python)|/events:delete|example}
 
 </div>
 
@@ -62,7 +62,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|delete-queue.md}
+{generate_api_arguments_table|zulip.yaml|/events:delete}
 
 ## Response
 
@@ -70,9 +70,9 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|successful-response-empty|fixture}
+{generate_code_example|/events:delete|fixture(200)}
 
 A typical JSON response for when the `queue_id` is non-existent or the
 associated queue has already been deleted:
 
-{generate_code_example|bad_event_queue_id_error|fixture}
+{generate_code_example|/events:delete|fixture(400)}
