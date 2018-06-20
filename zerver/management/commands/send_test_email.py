@@ -19,7 +19,7 @@ class Command(sendtestemail.Command):
                    "the Zulip server with /home/zulip/deployments/current/scripts/restart-server "
                    "after changing the settings in /etc/zulip before your changes will take effect.")
         send_mail("Zulip email test", message, FromAddress.SUPPORT, kwargs['email'])
-        send_mail("Zulip noreply email test", message, FromAddress.NOREPLY, kwargs['email'])
+        send_mail("Zulip noreply email test", message, FromAddress.tokenized_no_reply_address(), kwargs['email'])
 
         if kwargs['managers']:
             mail_managers("Zulip manager email test", "This email was sent to the site managers.")
