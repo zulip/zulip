@@ -83,7 +83,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    DisposableEmailError
+    DisposableEmailError, EmailContainsPlusError
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -4269,6 +4269,8 @@ def validate_email(user_profile: UserProfile, email: str) -> Tuple[Optional[str]
         return _("Outside your domain."), None
     except DisposableEmailError:
         return _("Please use your real email address."), None
+    except EmailContainsPlusError:
+        return _("Email addresses containing + are not allowed."), None
 
     try:
         validate_email_for_realm(user_profile.realm, email)

@@ -307,6 +307,24 @@ class AdminCreateUserTest(ZulipTestCase):
         result = self.client_post("/json/users", valid_params)
         self.assert_json_error(result, "Disposable email addresses are not allowed in this organization")
 
+        # Don't allow creating a user with + in their email address when realm
+        # is restricted to a domain.
+        realm.restricted_to_domain = True
+        realm.save()
+
+        valid_params["email"] = "iago+label@zulip.com"
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_error(result, "Email addresses containing + are not allowed.")
+
+        # Users can be created with + in their email address when realm
+        # is not restricted to a domain.
+        realm.restricted_to_domain = False
+        realm.save()
+
+        valid_params["email"] = "iago+label@zulip.com"
+        result = self.client_post("/json/users", valid_params)
+        self.assert_json_success(result)
+
 class UserProfileTest(ZulipTestCase):
     def test_get_emails_from_user_ids(self) -> None:
         hamlet = self.example_user('hamlet')
