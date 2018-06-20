@@ -139,6 +139,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BadEventQueueIdError'
+    delete:
+      description: Delete a previously registered queue.
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via
+          `POST /api/v1/register`(see [Register a queue](/api/register-queue)
+          and [Get events from queue](/api/get-events-from-queue)).
+        schema:
+           type: string
+        example: 1375801870:2942
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadEventQueueIdError'
   /get_stream_id:
     get:
       description: Get the unique ID of a given stream.
