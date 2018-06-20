@@ -399,6 +399,9 @@ class DomainNotAllowedForRealmError(Exception):
 class DisposableEmailError(Exception):
     pass
 
+class EmailContainsPlusError(Exception):
+    pass
+
 # Is a user with the given email address allowed to be in the given realm?
 # (This function does not check whether the user has been invited to the realm.
 # So for invite-only realms, this is the test for whether a user can be invited,
@@ -409,6 +412,8 @@ def email_allowed_for_realm(email: str, realm: Realm) -> None:
                 is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
         return
+    elif '+' in email_to_username(email):
+        raise EmailContainsPlusError
 
     domain = email_to_domain(email)
     query = RealmDomain.objects.filter(realm=realm)

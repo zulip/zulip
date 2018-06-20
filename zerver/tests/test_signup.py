@@ -988,6 +988,32 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assertEqual(result.status_code, 200)
         self.assert_in_response("Please sign up using a real email address.", result)
 
+    def test_invite_with_email_containing_plus_before_closing(self) -> None:
+        """
+        If you invite someone with an email containing plus when
+        `restricted_to_domain = False`, but later change
+        `restricted_to_domain = True`, the invitation should
+        succeed but the invitee's signup attempt should fail as
+        users are not allowed to signup using email containing +
+        when the realm is restricted to domain.
+        """
+        zulip_realm = get_realm("zulip")
+        zulip_realm.restricted_to_domain = False
+        zulip_realm.save()
+
+        self.login(self.example_email("hamlet"))
+        external_address = "foo+label@zulip.com"
+
+        self.assert_json_success(self.invite(external_address, ["Denmark"]))
+        self.check_sent_emails([external_address])
+
+        zulip_realm.restricted_to_domain = True
+        zulip_realm.save()
+
+        result = self.submit_reg_form_for_user(external_address, "password")
+        self.assertEqual(result.status_code, 200)
+        self.assert_in_response("Zulip Dev, does not allow signups using emails\n        that contains +", result)
+
     def test_invalid_email_check_after_confirming_email(self) -> None:
         self.login(self.example_email("hamlet"))
         email = "test@zulip.com"
@@ -2175,6 +2201,17 @@ class UserSignUpTest(ZulipTestCase):
         email = 'abc@mailnator.com'
         form = HomepageForm({'email': email}, realm=realm)
         self.assertIn("Please use your real email address", form.errors['email'][0])
+
+    def test_failed_signup_due_to_email_containing_plus(self) -> None:
+        realm = get_realm('zulip')
+        realm.restricted_to_domain = True
+        realm.save()
+
+        request = HostRequestMock(host = realm.host)
+        request.session = {}  # type: ignore
+        email = 'iago+label@zulip.com'
+        form = HomepageForm({'email': email}, realm=realm)
+        self.assertIn("Email addresses containing + are not allowed in this organization.", form.errors['email'][0])
 
     def test_failed_signup_due_to_invite_required(self) -> None:
         realm = get_realm('zulip')

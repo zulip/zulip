@@ -15,7 +15,7 @@ from zerver.context_processors import get_realm_from_request
 from zerver.models import UserProfile, Realm, Stream, MultiuseInvite, \
     name_changes_disabled, email_to_username, email_allowed_for_realm, \
     get_realm, get_user, get_default_stream_groups, DisposableEmailError, \
-    DomainNotAllowedForRealmError, get_source_profile
+    DomainNotAllowedForRealmError, get_source_profile, EmailContainsPlusError
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
@@ -102,6 +102,9 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
         except DisposableEmailError:
             return render(request, "zerver/invalid_email.html",
                           context={"realm_name": realm.name, "disposable_emails_not_allowed": True})
+        except EmailContainsPlusError:
+            return render(request, "zerver/invalid_email.html",
+                          context={"realm_name": realm.name, "email_contains_plus": True})
 
         if realm.deactivated:
             # The user is trying to register for a deactivated realm. Advise them to
