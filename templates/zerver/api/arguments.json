@@ -12,31 +12,5 @@
             "required": false,
             "example": "event_types=['message']"
         }
-    ],
-    "update-message.md": [
-        {
-            "argument": "message_id",
-            "description": "The ID of the message that you wish to edit/update.",
-            "required": true,
-            "example": "134"
-        },
-        {
-            "argument": "subject",
-            "description": "The topic of the message. Only required for a stream message. Defaults to `None`. Maximum length of 60 characters.",
-            "required": false,
-            "example": "Castle"
-        },
-        {
-            "argument": "content",
-            "description": "The content of the message. Maximum message size of 10000 bytes.",
-            "required": false,
-            "example": "Hello"
-        },
-        {
-            "argument": "propagate_mode",
-            "description": "In the case of a topic update, `propagate_mode` is a value specifying whether the topic of any other messages in the same conversation would be updated or not. Possible values include: <br/> <br/> * **change_one** (Default): Update the topic only of the message with the given `message_id`. <br/> * **change_all**: Update the topic of all messages with the same previous topic as the message with `message_id`. <br/> * **change_later**: Update the topic of the message with `message_id` *and* update the topic of the messages with the same previous topic after it.",
-            "required": false,
-            "example": "change_all"
-        }
     ]
 }
