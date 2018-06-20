@@ -5,7 +5,8 @@ from zerver.models import UserProfile
 from zerver.lib.actions import do_set_user_display_setting
 from zerver.lib.exceptions import JsonableError
 
-def process_zcommands(command: str, user_profile: UserProfile) -> Dict[str, Any]:
+def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]:
+    command = content.replace('/', '')
 
     if command == 'ping':
         ret = dict()  # type: Dict[str, Any]
