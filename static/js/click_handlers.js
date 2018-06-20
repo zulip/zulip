@@ -731,9 +731,6 @@ exports.initialize = function () {
     $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
         var $this = $(this);
 
-        $("#settings_overlay_container .sidebar li").removeClass("active no-border");
-        $this.addClass("active").prev().addClass("no-border");
-
         var $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
         $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
