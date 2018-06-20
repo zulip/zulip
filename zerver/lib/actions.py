@@ -3916,7 +3916,7 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
     if stream_age >= 28:
         average_weekly_traffic = int(stream_traffic // 4)
     elif stream_age >= 7:
-        average_weekly_traffic = int(stream_traffic // (stream_age // 7))
+        average_weekly_traffic = int(stream_traffic * 7 // stream_age)
     else:
         average_weekly_traffic = stream_traffic
 
