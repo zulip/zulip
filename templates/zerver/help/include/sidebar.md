@@ -93,7 +93,7 @@
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
-* [Enable high contrast mode](/help/enable-high-contrast-mode)
+* [Enable high contrast mode](/help/high-contrast-mode)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Display emojis as text](/help/display-emojis-as-text)

@@ -9,4 +9,4 @@ when a heart emoji is displayed as text, it looks like `:heart:`.
 
 ## Related articles
 
-You might also be interested in [**High contrast mode**](/help/enable-high-contrast-mode)
+You might also be interested in [**High contrast mode**](/help/high-contrast-mode)
