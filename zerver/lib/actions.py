@@ -3904,7 +3904,7 @@ def round_to_2_significant_digits(number: int) -> int:
 STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS = 7
 
 def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datetime.datetime,
-                                      recent_traffic: QuerySet) -> int:
+                                      recent_traffic: Dict[int, int]) -> int:
     try:
         stream_traffic = recent_traffic[stream_id]
     except KeyError:
