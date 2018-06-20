@@ -11,4 +11,4 @@ As an example, when a heart emoji is displayed as text, it looks like
 
 ## Related articles
 
-You may also be interested in [**High contrast mode**](/help/enable-high-contrast-mode).
+You may also be interested in [**High contrast mode**](/help/high-contrast-mode).
