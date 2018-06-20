@@ -123,6 +123,7 @@ run_test('mappings', () => {
     assert.equal(map_down(83, false, false, true), undefined); // cmd + s
     assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
     assert.equal(map_down(83, true, true), undefined); // shift + ctrl + s
+    assert.equal(map_down(219, true, true, false), undefined); // shift + ctrl + [
 
     // CMD tests for MacOS
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
