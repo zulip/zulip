@@ -118,7 +118,7 @@ exports.get_keydown_hotkey = function (e) {
 
     var hotkey;
 
-    if (e.ctrlKey) {
+    if (e.ctrlKey && !e.shiftKey) {
         hotkey = keydown_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
