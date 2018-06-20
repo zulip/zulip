@@ -3919,6 +3919,9 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
     else:
         average_weekly_traffic = -1
 
+    if average_weekly_traffic == 0 and stream_traffic > 0:
+        average_weekly_traffic = 1
+
     return round_to_2_significant_digits(average_weekly_traffic)
 
 def is_old_stream(stream_date_created: datetime.datetime) -> bool:
