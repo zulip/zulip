@@ -115,7 +115,22 @@ If it doesn't work, check these common failure causes:
   your hosting provider's firewall.
 
 * Your SMTP server's permissions might not allow the email account
-  you're using to send email from the `noreply` email address.
+  you're using to send email from the `noreply` email addresses used
+  by Zulip when sending confirmation emails.
+
+  For security reasons, Zulip sends confirmation emails (used for
+  account creation, etc.) with randomly generated from addresses
+  starting with `noreply-`.
+
+  If necessary, you can set `ADD_TOKENS_TO_NOREPLY_ADDRESS` to `False`
+  in `/etc/zulip/settings.py` (which will cause these confirmation
+  emails to be sent from a consistent `noreply@` address).  Disabling
+  `ADD_TOKENS_TO_NOREPLY_ADDRESS` is generally safe if you are not
+  using Zulip's feature that allows anyone to create an account in
+  your Zulip organization if they have access to an email address in a
+  certain domain.  See [this article][helpdesk-attack] for details on
+  the security issue with helpdesk software that
+  `ADD_TOKENS_TO_NOREPLY_ADDRESS` helps protect against.
 
 * Make sure you set the password in `/etc/zulip/zulip-secrets.conf`.
 
@@ -158,3 +173,5 @@ aren't receiving emails from Zulip:
   if Django documentation references setting `EMAIL_HOST_PASSWORD`,
   you should instead set `email_password` in
   `/etc/zulip/zulip-secrets.conf`.
+
+[helpdesk-attack]: https://medium.com/intigriti/how-i-hacked-hundreds-of-companies-through-their-helpdesk-b7680ddc2d4c
