@@ -142,7 +142,7 @@ run_test('list_render', () => {
         modifier: (item) => div(item),
     };
 
-    const widget = list_render(container, list, opts);
+    const widget = list_render.create(container, list, opts);
 
     widget.render();
 
@@ -265,7 +265,7 @@ run_test('sorting', () => {
         return _.map(people, opts.modifier).join('');
     }
 
-    list_render(container, list, opts);
+    list_render.create(container, list, opts);
     initialize();
 
     var button_opts;

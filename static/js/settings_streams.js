@@ -17,7 +17,7 @@ exports.build_default_stream_table = function (streams_data) {
 
     var table = $("#admin_default_streams_table").expectOne();
 
-    list_render(table, streams_data, {
+    list_render.create(table, streams_data, {
         name: "default_streams_list",
         modifier: function (item) {
             var row = $(templates.render("admin_default_streams_list", { stream: item, can_modify: page_params.is_admin }));

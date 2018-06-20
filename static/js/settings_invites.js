@@ -28,7 +28,7 @@ function populate_invites(invites_data) {
         admin_invites_list.set_container(invites_table);
         admin_invites_list.render();
     } else {
-        list_render(invites_table, invites_data.invites, {
+        list_render.create(invites_table, invites_data.invites, {
             name: "admin_invites_list",
             modifier: function (item) {
                 item.invited = timerender.absolute_time(item.invited * 1000);

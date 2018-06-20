@@ -112,7 +112,7 @@ function populate_users(realm_people_data) {
     };
 
     var $bots_table = $("#admin_bots_table");
-    list_render($bots_table, bots, {
+    list_render.create($bots_table, bots, {
         name: "admin_bot_list",
         modifier: function (item) {
             return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });
@@ -130,7 +130,7 @@ function populate_users(realm_people_data) {
     }).init();
 
     var $users_table = $("#admin_users_table");
-    list_render($users_table, active_users, {
+    list_render.create($users_table, active_users, {
         name: "users_table_list",
         modifier: function (item) {
             var activity_rendered;
@@ -170,7 +170,7 @@ function populate_users(realm_people_data) {
     }).init();
 
     var $deactivated_users_table = $("#admin_deactivated_users_table");
-    list_render($deactivated_users_table, deactivated_users, {
+    list_render.create($deactivated_users_table, deactivated_users, {
         name: "deactivated_users_table_list",
         modifier: function (item) {
             return templates.render("admin_user_list", { user: item, can_modify: page_params.is_admin });

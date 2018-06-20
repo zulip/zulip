@@ -1,6 +1,9 @@
 /* eslint indent: "off" */
 
 var list_render = (function () {
+
+    var exports = {};
+
     var DEFAULTS = {
         INITIAL_RENDER_COUNT: 80,
         LOAD_COUNT: 20,
@@ -11,7 +14,7 @@ var list_render = (function () {
     // container: jQuery object to append to.
     // list: The list of items to progressively append.
     // opts: An object of random preferences.
-    var func = function ($container, list, opts) {
+    exports.create = function ($container, list, opts) {
         // this memoizes the results and will return a previously invoked
         // instance's prototype.
         if (opts.name && DEFAULTS.instances[opts.name]) {
@@ -322,12 +325,12 @@ var list_render = (function () {
         return prototype;
     };
 
-    func.get = function (name) {
+    exports.get = function (name) {
         return DEFAULTS.instances[name] || false;
     };
 
     // this can delete list render issues and free up memory if needed.
-    func.delete = function (name) {
+    exports.delete = function (name) {
         if (DEFAULTS.instances[name]) {
             delete DEFAULTS.instances[name];
             return true;
@@ -338,7 +341,7 @@ var list_render = (function () {
         return false;
     };
 
-    return func;
+    return exports;
 }());
 
 if (typeof module !== 'undefined') {
