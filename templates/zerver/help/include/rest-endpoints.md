@@ -41,7 +41,11 @@
 * [Get all custom emoji](/api/get-org-emoji)
 
 #### Real-time events
+
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
 * [Get events from an event queue](/api/get-events-from-queue)
 * [Delete an event queue](/api/delete-queue)
+
+#### Specialty endpoints
+* [Fetch a development API key](/api/dev-fetch-api-key)
