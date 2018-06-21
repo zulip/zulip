@@ -626,6 +626,8 @@ paths:
           in our Python API."
         schema:
           type: array
+          items:
+            type: object
         example: [{"name": "Verona"}]
         required: true
       - name: invite_only
@@ -652,6 +654,8 @@ paths:
           If not provided, then the requesting user/bot is subscribed.
         schema:
           type: array
+          items:
+            type: string
           default: []
         example: ['ZOE@zulip.com']
       - name: authorization_errors_fatal
