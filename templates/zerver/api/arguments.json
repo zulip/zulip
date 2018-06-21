@@ -39,20 +39,6 @@
             "example": "change_all"
         }
     ],
-    "remove-subscriptions.md": [
-        {
-            "argument": "subscriptions",
-            "description": "A list of stream names to unsubscribe from. This argument is called `streams` in our Python API.",
-            "required": true,
-            "example": "['Verona', 'Denmark']"
-        },
-        {
-            "argument": "principals",
-            "description": "A list of email addresses of the users that will be unsubscribed from the streams specified in the `subscriptions` argument. Default is `None`. If not provided, then the requesting user/bot is unsubscribed.",
-            "required": false,
-            "example": "['ZOE@zulip.com']"
-        }
-    ],
     "upload-file.md": [
         {
             "argument": "file",

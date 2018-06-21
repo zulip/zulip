@@ -111,20 +111,6 @@
         "result": "error",
         "var_name": "content"
     },
-    "nonexistent-stream-error": {
-        "code": "STREAM_DOES_NOT_EXIST",
-        "msg": "Stream 'nonexistent_stream' does not exist",
-        "result": "error",
-        "stream": "nonexistent_stream"
-    },
-    "remove-subscriptions": {
-        "msg": "",
-        "not_subscribed": [],
-        "removed": [
-            "new stream"
-        ],
-        "result": "success"
-    },
     "successful-response-empty": {
         "msg": "",
         "result": "success"

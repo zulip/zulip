@@ -235,8 +235,8 @@ def remove_subscriptions(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['remove-subscriptions']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions',
+                                    'delete', '200')
 
     # test it was actually removed
     result = client.list_subscriptions()
@@ -252,7 +252,8 @@ def remove_subscriptions(client):
     )
     # {code_example|end}
 
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions',
+                                    'delete', '200')
 
 def render_message(client):
     # type: (Client) -> None
@@ -475,7 +476,7 @@ TEST_FUNCTIONS = {
     '/users:post': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
-    'remove-subscriptions': remove_subscriptions,
+    '/users/me/subscriptions:delete': remove_subscriptions,
     '/users:get': get_members,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
