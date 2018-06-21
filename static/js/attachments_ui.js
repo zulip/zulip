@@ -53,6 +53,7 @@ function render_attachments_ui() {
                 ui.update_scrollbar(uploaded_files_table.closest(".progressive-table-wrapper"));
             },
         },
+        parent_container: $('#attachments-settings').expectOne(),
     }).init();
 
     list.add_sort_function("mentioned-in", function (a, b) {

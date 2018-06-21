@@ -322,6 +322,11 @@ var list_render = (function () {
             DEFAULTS.instances[opts.name] = prototype;
         }
 
+        // Attach click handler to column heads for sorting rows accordingly
+        if (opts.parent_container) {
+            opts.parent_container.on("click", "[data-sort]", exports.handle_sort);
+        }
+
         return prototype;
     };
 
@@ -383,10 +388,6 @@ var list_render = (function () {
 
     return exports;
 }());
-
-$(function () {
-    $("body").on("click", "[data-sort]", list_render.handle_sort);
-});
 
 if (typeof module !== 'undefined') {
     module.exports = list_render;
