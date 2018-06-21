@@ -18,7 +18,7 @@ info:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0.html
 servers:
-  - url: 'https://your.zulip.server/api/v1'
+- url: 'https://your.zulip.server/api/v1'
 
 #######################
 # Endpoint definitions
@@ -61,7 +61,7 @@ paths:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -134,7 +134,7 @@ paths:
                         "result": "success"
                     }
         '400':
-          description: Bad request
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -147,7 +147,7 @@ paths:
         description: The ID of a queue that you registered via
           `POST /api/v1/register`(see [Register a queue](/api/register-queue).
         schema:
-           type: string
+          type: string
         example: 1375801870:2942
         required: true
       security:
@@ -173,14 +173,14 @@ paths:
         in: query
         description: The name of the stream to retrieve the ID for.
         schema:
-           type: string
+          type: string
         example: Denmark
         required: true
       security:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -197,7 +197,7 @@ paths:
                         "stream_id": 15
                     }
         '400':
-          description: Bad request
+          description: Bad request.
           content:
             application/json:
               schema:
@@ -220,8 +220,8 @@ paths:
         schema:
           type: string
           enum:
-            - private
-            - stream
+          - private
+          - stream
         example: private
         required: true
       - name: to
@@ -252,7 +252,7 @@ paths:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -313,19 +313,17 @@ paths:
         required: true
       - name: subject
         in: query
-        description: |
-          The topic of the message. Only required for stream messages.
-          Maximum length of 60 characters.
+        description: The topic of the message. Only required for stream
+          messages. Maximum length of 60 characters.
         schema:
           type: string
           default:
         example: Castle
       - name: propagate_mode
         in: query
-        description: |
-          Which message(s) should be edited: just the one indicated in
-          `message_id`, messages in the same topic that had been sent after
-          this one, or all of them.
+        description: "Which message(s) should be edited: just the one
+          indicated in `message_id`, messages in the same topic that had been
+          sent after this one, or all of them."
         schema:
           type: string
           enum:
@@ -336,8 +334,8 @@ paths:
         example: change_all
       - name: content
         in: query
-        description: |
-          The content of the message. Maximum message size of 10000 bytes.
+        description: The content of the message. Maximum message size of 10000
+          bytes.
         schema:
           type: string
         example: Hello
@@ -345,7 +343,7 @@ paths:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -375,18 +373,18 @@ paths:
     post:
       description: Render a message to HTML.
       parameters:
-        - name: content
-          in: query
-          description: The content of the message.
-          schema:
-             type: string
-          example: '**foo**'
-          required: true
+      - name: content
+        in: query
+        description: The content of the message.
+        schema:
+          type: string
+        example: '**foo**'
+        required: true
       security:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -442,14 +440,14 @@ paths:
         description: The `client_gravatar` field is set to `true` if clients
           can compute their own gravatars.
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       security:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -505,28 +503,28 @@ paths:
         in: query
         description: The email address of the new user.
         schema:
-           type: string
+          type: string
         example: newbie@zulip.com
         required: true
       - name: password
         in: query
         description: The password of the new user.
         schema:
-           type: string
+          type: string
         example: abdec@7982
         required: true
       - name: full_name
         in: query
         description: The full name of the new user.
         schema:
-           type: string
+          type: string
         example: John Smith
         required: true
       - name: short_name
         in: query
         description: The short name of the new user.
         schema:
-           type: string
+          type: string
         example: jsmith
         required: true
       security:
@@ -565,7 +563,7 @@ paths:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -622,19 +620,17 @@ paths:
       parameters:
       - name: subscriptions
         in: query
-        description: |
-          A list of dictionaries, where each dictionary contains key/value
-          pairs specifying a particular stream to subscribe to.
+        description: "A list of dictionaries, where each dictionary contains
+          key/value pairs specifying a particular stream to subscribe to.
           **Note**: This argument is called `streams` and not `subscriptions`
-          in our Python API.
+          in our Python API."
         schema:
-          type: string
+          type: array
         example: [{"name": "Verona"}]
         required: true
       - name: invite_only
         in: query
-        description: |
-          A boolean specifying whether the streams specified in
+        description: A boolean specifying whether the streams specified in
           `subscriptions` are invite-only or not.
         schema:
           type: boolean
@@ -642,9 +638,8 @@ paths:
         example: true
       - name: announce
         in: query
-        description: |
-          If `announce` is `True` and one of the streams specified in
-          `subscriptions` has to be created (i.e. doesn't exist to begin
+        description: If `announce` is `True` and one of the streams specified
+          in `subscriptions` has to be created (i.e. doesn't exist to begin
           with), an announcement will be made notifying that a new stream was
           created.
         schema:
@@ -652,23 +647,21 @@ paths:
         example: true
       - name: principals
         in: query
-        description: |
-          A list of email addresses of the users that will be subscribed to
-          the streams specified in the `subscriptions` argument. If not
-          provided, then the requesting user/bot is subscribed.
+        description: A list of email addresses of the users that will be
+          subscribed to the streams specified in the `subscriptions` argument.
+          If not provided, then the requesting user/bot is subscribed.
         schema:
-          type: string
+          type: array
           default: []
         example: ['ZOE@zulip.com']
       - name: authorization_errors_fatal
         in: query
-        description: |
-          A boolean specifying whether authorization errors (such as when the
-          requesting user is not authorized to access a private stream) should
-          be considered fatal or not. When `True`, an authorization error is
-          reported as such. When set to `False`, the returned JSON payload
-          indicates that there was an authorization error, but the response is
-          still considered a successful one.
+        description: A boolean specifying whether authorization errors (such
+          as when the requesting user is not authorized to access a private
+          stream) should be considered fatal or not. When `True`, an
+          authorization error is reported as such. When set to `False`, the
+          returned JSON payload indicates that there was an authorization
+          error, but the response is still considered a successful one.
         schema:
           type: boolean
           default: true
@@ -677,7 +670,7 @@ paths:
       - basicAuth: []
       responses:
         '200_without_principals':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -695,7 +688,7 @@ paths:
                         }
                     }
         '200_already_subscribed':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -713,7 +706,7 @@ paths:
                         "subscribed": {}
                     }
         '400_unauthorized_errors_fatal_true':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -725,7 +718,7 @@ paths:
                         "result": "error"
                     }
         '400_unauthorized_errors_fatal_false':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -832,16 +825,16 @@ paths:
           rendered in HTML format (by default, the API returns the raw text
           that the user entered)
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       - name: client_gravatar
         in: query
         description: The `client_gravatar` field is set to `true` if clients
           can compute their own gravatars.
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       - name: event_types
         in: query
@@ -857,23 +850,23 @@ paths:
           your client code. For most applications, one is only interested in
           messages, so one specifies: `event_types=['message']`"
         schema:
-           type: string
+          type: string
         example: event_types=['message']
       - name: all_public_streams
         in: query
         description: Set to `True` if you would like to receive events that
           occur within all public streams.
         schema:
-           type: boolean
-           default: false
+          type: boolean
+          default: false
         example: true
       - name: include_subscribers
         in: query
         description: Set to `True` if you would like to receive events that
           include the subscribers for each stream.
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       - name: fetch_event_types
         in: query
@@ -882,7 +875,7 @@ paths:
           `fetch_event_types` is not provided, `event_types` is used and if
           `event_types` is not provided, this argument defaults to `None`.
         schema:
-           type: string
+          type: string
         example: event_types=['message']
       - name: narrow
         in: query
@@ -892,14 +885,14 @@ paths:
           `narrow=['stream', 'Denmark']`. Another example is
           `narrow=['is', 'private']` for private messages.
         schema:
-           type: string
-           default : narrow=[]
+          type: string
+          default: narrow=[]
         example: narrow=['stream', 'Denmark']
       security:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -942,36 +935,36 @@ paths:
         in: query
         description: Include all public streams.
         schema:
-           type: boolean
-           default : true
+          type: boolean
+          default: true
         example: false
       - name: include_subscribed
         in: query
         description: Include all streams that the user is subscribed to.
         schema:
-           type: boolean
-           default : true
+          type: boolean
+          default: true
         example: false
       - name: include_all_active
         in: query
         description: Include all active streams. The user must have
           administrative privileges to use this parameter.
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       - name: include_default
         in: query
         description: Include all default streams for the user's realm.
         schema:
-           type: boolean
-           default : false
+          type: boolean
+          default: false
         example: true
       security:
       - basicAuth: []
       responses:
         '200':
-          description: Success
+          description: Success.
           content:
             application/json:
               schema:
@@ -1050,10 +1043,9 @@ components:
     BasicAuth:
       type: http
       scheme: basic
-      description: |
-        Basic authentication, with the user's email as the username, and the
-        API key as the password. The API key can be fetched using the
-        `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
+      description: Basic authentication, with the user's email as the
+        username, and the API key as the password. The API key can be fetched
+        using the `/fetch_api_key` or `/dev_fetch_api_key` endpoints.
 
   schemas:
     JsonResponse:
@@ -1117,30 +1109,27 @@ components:
       - properties:
           subscribed:
             type: object
-            description: |
-              A dictionary where the key is the email address of the user/bot
-              and the value is a list of the names of the streams that were
-              subscribed to as a result of the query.
+            description: A dictionary where the key is the email address of
+              the user/bot and the value is a list of the names of the streams
+              that were subscribed to as a result of the query.
           already_subscribed:
             type: object
-            description: |
-              A dictionary where the key is the email address of the user/bot
-              and the value is a list of the names of the streams that the
-              user/bot is already subscribed to.
+            description: A dictionary where the key is the email address of
+              the user/bot and the value is a list of the names of the streams
+              that the user/bot is already subscribed to.
           unauthorized:
             type: array
             items:
               type: string
-            description: |
-              A list of names of streams that the requesting user/bot was not
-              authorized to subscribe to.
+            description: A list of names of streams that the requesting
+              user/bot was not authorized to subscribe to.
 
   ###################
   # Shared responses
   ###################
   responses:
     SimpleSuccess:
-      description: Success
+      description: Success.
       content:
         application/json:
           schema:
