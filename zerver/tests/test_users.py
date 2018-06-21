@@ -169,7 +169,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = self.example_user('hamlet')
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(hamlet.id), req)
-        self.assertTrue(result.status_code == 200)
+        self.assert_json_success(result)
         hamlet = self.example_user('hamlet')
         self.assertEqual(hamlet.full_name, new_name)
 
