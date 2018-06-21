@@ -329,35 +329,26 @@ var list_render = (function () {
         return DEFAULTS.instances[name] || false;
     };
 
-    return exports;
-}());
+    exports.handle_sort = function () {
+        /*
+        one would specify sort parameters like this:
+            - name => sort alphabetic.
+            - age  => sort numeric.
 
-if (typeof module !== 'undefined') {
-    module.exports = list_render;
-}
+        you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
 
-$(function () {
-    /*
-    one would specify sort parameters like this:
-        - name => sort alphabetic.
-        - age  => sort numeric.
-
-    you MUST specify the `data-list-render` in the `.progressive-table-wrapper`
-    otherwise it will not know what `list_render` instance to look up.
-
-    <table>
-        <tr>
-            <td data-sort="alphabetic" data-sort-prop="name">
-            <td data-sort="numeric" data-sort-prop="age">
-        </tr>
-    </table>
-    <div class="progressive-table-wrapper" data-list-render="some-list">
         <table>
-            <tbody></tbody>
+            <tr>
+                <td data-sort="alphabetic" data-sort-prop="name">
+                <td data-sort="numeric" data-sort-prop="age">
+            </tr>
         </table>
-    </div>
-    */
-    $("body").on("click", "[data-sort]", function () {
+        <div class="progressive-table-wrapper" data-list-render="some-list">
+            <table>
+                <tbody></tbody>
+            </table>
+        </div>
+        */
         var $this = $(this);
         var sort_type = $this.data("sort");
         var prop_name = $this.data("sort-prop");
@@ -388,5 +379,15 @@ $(function () {
 
         $this.siblings(".active").removeClass("active");
         $this.addClass("active");
-    });
+    };
+
+    return exports;
+}());
+
+$(function () {
+    $("body").on("click", "[data-sort]", list_render.handle_sort);
 });
+
+if (typeof module !== 'undefined') {
+    module.exports = list_render;
+}
