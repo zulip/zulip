@@ -36,7 +36,7 @@ administrative privileges.
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|remove-subscriptions|example}
+{generate_code_example(python)|/users/me/subscriptions:delete|example}
 
 </div>
 
@@ -73,7 +73,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|remove-subscriptions.md}
+{generate_api_arguments_table|zulip.yaml|/users/me/subscriptions:delete}
 
 #### Return values
 
@@ -87,8 +87,8 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|remove-subscriptions|fixture}
+{generate_code_example|/users/me/subscriptions:delete|fixture(200)}
 
 A typical failed JSON response for when the target stream does not exist:
 
-{generate_code_example|nonexistent-stream-error|fixture}
+{generate_code_example|/users/me/subscriptions:delete|fixture(400)}

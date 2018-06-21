@@ -710,6 +710,84 @@ paths:
                             "private_stream"
                         ]
                     }
+    delete:
+      description: Unsubscribe yourself or other users from one or more
+        streams.
+      parameters:
+      - name: subscriptions
+        in: query
+        description: A list of stream names to unsubscribe from. This argument
+          is called `streams` in our Python API.
+        schema:
+          type: array
+          items:
+            type: string
+        example: ['Verona', 'Denmark']
+        required: true
+      - name: principals
+        in: query
+        description: A list of email addresses of the users that will be
+          unsubscribed from the streams specified in the `subscriptions`
+          argument. If not provided, then the requesting user/bot is
+          unsubscribed.
+        schema:
+          type: array
+          items:
+            type: string
+          default:
+        example: ['ZOE@zulip.com']
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    not_subscribed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams that the
+                        user is already unsubscribed from, and hence doesn't
+                        need to be unsubscribed.
+                    removed:
+                      type: array
+                      items:
+                        type: string
+                      description: A list of the names of streams which were
+                        unsubscribed from as a result of the query.
+                - example:
+                    {
+                        "msg": "",
+                        "not_subscribed": [],
+                        "removed": [
+                            "new stream"
+                        ],
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - properties:
+                    stream:
+                      type: string
+                      description: The name of the stream that could not be
+                        found.
+                - example:
+                    {
+                        "code": "STREAM_DOES_NOT_EXIST",
+                        "msg": "Stream 'nonexistent_stream' does not exist",
+                        "result": "error",
+                        "stream": "nonexistent_stream"
+                    }
   /register:
     post:
       description: This powerful endpoint can be used to register a Zulip
