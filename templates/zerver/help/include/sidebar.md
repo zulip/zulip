@@ -113,7 +113,7 @@
 # Zulip administration
 
 ## Organization basics
-* [Create your organization's profile](/help/create-your-organization-profile)
+* [Create your organization profile](/help/create-your-organization-profile)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import data from Slack](/help/import-data-from-slack)

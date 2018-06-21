@@ -15,8 +15,7 @@ to match your organization’s needs.
   your company’s email domain.  You can also allow new users to join
   without being explicitly invited.
 
-- Add an organization [icon](/help/create-your-organization-profile#change-your-organizations-avatar)
-and [description](/help/create-your-organization-profile#change-your-organizations-description) for Zulip to
+- Add an organization [icon and description](/help/create-your-organization-profile) for Zulip to
 customize your login/registration pages as well as how your
 organization appears in the desktop and mobile apps.
 
