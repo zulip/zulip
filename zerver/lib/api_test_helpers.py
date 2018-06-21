@@ -433,9 +433,7 @@ def upload_file(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['upload-file']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['uri'])
+    validate_against_openapi_schema(result, '/user_uploads', 'post', '200')
 
 def get_stream_topics(client, stream_id):
     # type: (Client, int) -> None
@@ -480,7 +478,7 @@ TEST_FUNCTIONS = {
     '/users:get': get_members,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
-    'upload-file': upload_file,
+    '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics
 }
 

@@ -402,6 +402,37 @@ paths:
                         "rendered": "<p><strong>foo</strong></p>",
                         "result": "success"
                     }
+  /user_uploads:
+    post:
+      description: Upload a single file and get the corresponding URI.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              properties:
+                filename:
+                  type: string
+                  format: binary
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    uri:
+                      type: string
+                      description: The URI of the uploaded file.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "uri": "/user_uploads/1/4e/m2A3MSqFnWRLUf9SaPzQ0Up_/zulip.txt"
+                    }
   /users:
     get:
       description: Retrieve all users in a realm.

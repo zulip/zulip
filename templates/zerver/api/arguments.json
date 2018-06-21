@@ -38,13 +38,5 @@
             "required": false,
             "example": "change_all"
         }
-    ],
-    "upload-file.md": [
-        {
-            "argument": "file",
-            "description": "File to be uploaded.",
-            "required": true,
-            "example": "See code examples above."
-        }
     ]
 }
