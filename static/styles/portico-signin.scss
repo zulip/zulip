@@ -20,14 +20,14 @@ html {
     padding: 30px;
     min-width: 0px;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.1);
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
 .grey {
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 }
 
 .find-account-page-container #find_account i {
@@ -83,7 +83,7 @@ html {
 .register-page-container.closed-realm .invite-required {
     display: block;
 
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     font-weight: normal;
 }
 
@@ -184,7 +184,7 @@ html {
 }
 
 .header {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 .header .top-links a,
@@ -197,8 +197,8 @@ html {
 }
 
 .header .header-main .logo .brand-logo path {
-    fill: #fff !important;
-    stroke: #fff !important;
+    fill: hsl(0, 0%, 100%) !important;
+    stroke: hsl(0, 0%, 100%) !important;
 }
 
 .new-style {
@@ -435,7 +435,7 @@ html {
     font-weight: 400;
     box-sizing: border-box;
     outline: none;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     background-color: hsl(213, 23%, 25%);
 
     border: none;
@@ -589,11 +589,11 @@ button.login-social-button {
     margin-left: 0px;
     margin-top: 0px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 button.login-social-button {
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 1px 3px hsla(0, 0%, 0%, 0.3), 0px 0px 5px hsla(0, 0%, 0%, 0.1);
     color: hsl(0, 0%, 34%);
 }
