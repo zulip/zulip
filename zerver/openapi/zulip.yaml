@@ -273,20 +273,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - properties:
-                    stream:
-                      type: string
-                      description: The name of the stream that could not be
-                        found.
-                - example:
-                    {
-                        "code": "STREAM_DOES_NOT_EXIST",
-                        "msg": "Stream 'nonexistent_stream' does not exist",
-                        "result": "error",
-                        "stream": "nonexistent_stream"
-                    }
+                $ref: '#/components/schemas/NonExistingStreamError'
         '400_non_existing_user':
           description: Bad request.
           content:
@@ -802,20 +789,7 @@ paths:
           content:
             application/json:
               schema:
-                allOf:
-                - $ref: '#/components/schemas/CodedError'
-                - properties:
-                    stream:
-                      type: string
-                      description: The name of the stream that could not be
-                        found.
-                - example:
-                    {
-                        "code": "STREAM_DOES_NOT_EXIST",
-                        "msg": "Stream 'nonexistent_stream' does not exist",
-                        "result": "error",
-                        "stream": "nonexistent_stream"
-                    }
+                $ref: '#/components/schemas/NonExistingStreamError'
   /register:
     post:
       description: This powerful endpoint can be used to register a Zulip
@@ -1107,6 +1081,21 @@ components:
               "queue_id": "1518820930:1",
               "result": "error"
           }
+    NonExistingStreamError:
+      allOf:
+        - $ref: '#/components/schemas/CodedError'
+        - properties:
+            stream:
+              type: string
+              description: The name of the stream that could not be
+                found.
+        - example:
+            {
+                "code": "STREAM_DOES_NOT_EXIST",
+                "msg": "Stream 'nonexistent_stream' does not exist",
+                "result": "error",
+                "stream": "nonexistent_stream"
+            }
     AddSubscriptionsResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'
