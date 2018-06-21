@@ -2,42 +2,40 @@
 
 1. {!create-stream.md!}
 
-1. On your {{ settings_html|safe }}, create a **Generic** bot for
-   {{ integration_display_name }}. Subscribe this bot to the stream
-   created in step 1.
+1. [Create a bot](/help/add-a-bot-or-integration), using **Generic bot** for
+   the bot type. Subscribe this bot to the stream you just created.
 
-1. Open `zulip/integrations/matrix/matrix_bridge_config.py` with your
-   favorite editor, and change the following lines in the `zulip`
-   section:
+1. Open `zulip/integrations/matrix/matrix_bridge_config.py` in your cloned
+   repository, and update the following section:
 
     ```
-    "zulip": {
-        "email": "matrix-bot@chat.zulip.org",
-        "api_key": "your_key",
-        "site": "https://chat.zulip.org",
-        "stream": "Stream which acts as the bridge",
-        "topic": "Topic of the stream"
-    }
+    ('zulip', OrderedDict((
+        ('email', 'glitch-bot@chat.zulip.org'),
+        ('api_key', 'aPiKeY'),
+        ('site', 'https://chat.zulip.org'),
+        ('stream', 'test here'),
+        ('topic', 'matrix'),
+    ))),
     ```
 
-    **email**, **api_key**, and **site** should come from your
-    {{ integration_display_name }} bot's `zuliprc` file. Set **stream**
-    to the name of the stream created in step 1, and set **topic** to
-    a topic of your choice.
+    Replace the **email**, **api_key**, and **site** values with those from
+    your bot's `zuliprc` file, and set **stream** to the name of the stream
+    created in step 1. Set **topic** to a topic of your choice, like
+    `IRC mirror`.
 
 1. Create a user on [matrix.org](https://matrix.org/), preferably
    with a descriptive name such as `zulip-bot`.
 
-1. Open `matrix_bridge_config.py`, and provide your Matrix credentials
-   in the `matrix` section:
+1. Open `zulip/integrations/matrix/matrix_bridge_config.py` again, and update
+   the following section with your Matrix credentials:
 
     ```
-    "matrix": {
-        "host": "https://matrix.org",
-        "username": "username of matrix.org user",
-        "password": "password of matrix.org user",
-        "room_id": "#room:matrix.org"
-    }
+    ('matrix', OrderedDict((
+        ('host', 'https://matrix.org'),
+        ('username', 'username'),
+        ('password', 'password'),
+        ('room_id', '#zulip:matrix.org'),
+    ))),
     ```
 
     {% if 'IRC' in integration_display_name %}
@@ -50,12 +48,11 @@
 
     {% endif %}
 
-1. Run `python matrix_bridge.py` to start mirroring content.
+1. Run `python matrix_bridge.py` from inside the Python virtual environment
+   to start mirroring content.
 
 !!! tip ""
 
     If you want to customize the message formatting, you can do so by
     editing the variables `MATRIX_MESSAGE_TEMPLATE` and `ZULIP_MESSAGE_TEMPLATE`
     in `zulip/integrations/matrix/matrix_bridge.py`.
-
-**Congratulations! You have created the bridge successfully!**

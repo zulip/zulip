@@ -1,4 +1,4 @@
-A bridge for exchanging messages between [matrix.org](https://matrix.org) and Zulip!
+Exchange messages between [matrix.org](https://matrix.org) and Zulip!
 
 {!install-matrix.md!}
 

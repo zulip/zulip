@@ -1,6 +1,6 @@
 ### Install the bridge software
 
-1. Clone the Zulip API repository, and install its dependencies:
+1. Clone the Zulip API repository, and install its dependencies.
 
     ```
     git clone https://github.com/zulip/python-zulip-api.git
@@ -8,15 +8,14 @@
     python3 ./tools/provision
     ```
 
-1. Activate the virtualenv by running the `source` command printed
-   at the end of the `provision` output.
+    This will create a new Python virtualenv. You'll run the bridge service
+    inside this virtualenv.
 
-1. To install the Matrix bridge software in your virtualenv, run:
+1. Activate the virtualenv by running the `source` command printed
+   at the end of the output of the previous step.
+
+1. Install the Matrix bridge software in your virtualenv, by running:
 
     ```
     pip install -r zulip/integrations/matrix/requirements.txt
     ```
-
-This will create a new Python virtual environment, with all the
-dependences for this bridge installed.  You'll want to run the bridge
-service inside this virtualenv.
