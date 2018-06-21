@@ -508,6 +508,21 @@
       "expected_output": "<p><span class=\"emoji emoji-1f951\" title=\"avocado\">:avocado:</span>, <span class=\"emoji emoji-1f95d\" title=\"kiwifruit\">:kiwifruit:</span>, <span class=\"emoji emoji-1f933\" title=\"selfie\">:selfie:</span>, <span class=\"emoji emoji-2699\" title=\"gear\">:gear:</span>, <span class=\"emoji emoji-2604\" title=\"comet\">:comet:</span>, <span class=\"emoji emoji-1f947\" title=\"first place medal\">:first_place_medal:</span></p>"
     },
     {
+      "name": "emoji_pipeline_newline",
+      "input": "The winner is:\nsmiley:smiley:",
+      "expected_output": "<p>The winner is:<br>\nsmiley<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span></p>"
+    },
+    {
+      "name": "emoji_pipeline_emphasis",
+      "input": "Testing *:smiley*: :sm*iley*: Testing",
+      "expected_output": "<p>Testing <em>:smiley</em>: :sm<em>iley</em>: Testing</p>"
+    },
+    {
+      "name": "emoji_pipeline_link",
+      "input": "Visit https:smiley://google.com.",
+      "expected_output": "<p>Visit https<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span>//google.com.</p>"
+    },
+    {
       "name": "skin_tones_are_banned",
       "input": ":skin-tone-2: :skin-tone-3:",
       "expected_output": "<p>:skin-tone-2: :skin-tone-3:</p>"
