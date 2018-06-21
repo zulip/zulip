@@ -956,6 +956,13 @@ class MessageDictTest(ZulipTestCase):
         self.assertEqual(msg_dict['reactions'][0]['user']['full_name'],
                          sender.full_name)
 
+    def test_missing_anchor(self) -> None:
+        self.login(self.example_email("hamlet"))
+        result = self.client_get(
+            '/json/messages?use_first_unread_anchor=false&num_before=1&num_after=1')
+
+        self.assert_json_error(
+            result, "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True).")
 
 class SewMessageAndReactionTest(ZulipTestCase):
     def test_sew_messages_and_reaction(self) -> None:
