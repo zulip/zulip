@@ -688,7 +688,7 @@ def zcommand_backend(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
-                         anchor: int=REQ(converter=int),
+                         anchor: int=REQ(converter=int, default=None),
                          num_before: int=REQ(converter=to_non_negative_int),
                          num_after: int=REQ(converter=to_non_negative_int),
                          narrow: Optional[List[Dict[str, Any]]]=REQ('narrow', converter=narrow_parameter,
@@ -696,6 +696,8 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
                          use_first_unread_anchor: bool=REQ(validator=check_bool, default=False),
                          client_gravatar: bool=REQ(validator=check_bool, default=False),
                          apply_markdown: bool=REQ(validator=check_bool, default=True)) -> HttpResponse:
+    if anchor is None and not use_first_unread_anchor:
+        return json_error(_("Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."))
     include_history = ok_to_include_history(narrow, user_profile)
 
     if include_history:
