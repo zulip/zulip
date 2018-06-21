@@ -329,18 +329,6 @@ var list_render = (function () {
         return DEFAULTS.instances[name] || false;
     };
 
-    // this can delete list render issues and free up memory if needed.
-    exports.delete = function (name) {
-        if (DEFAULTS.instances[name]) {
-            delete DEFAULTS.instances[name];
-            return true;
-        }
-
-        blueslip.error("The progressive list render instance with the name '" +
-                      name + "' does not exist.");
-        return false;
-    };
-
     return exports;
 }());
 
