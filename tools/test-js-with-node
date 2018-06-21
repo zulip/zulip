@@ -77,6 +77,7 @@ enforce_fully_covered = {
     'static/js/user_pill.js',
     'static/js/user_search.js',
     'static/js/util.js',
+    'static/js/search_pill.js',
 }
 
 parser = argparse.ArgumentParser(USAGE)

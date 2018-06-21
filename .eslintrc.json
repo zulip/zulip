@@ -190,7 +190,8 @@
         "compose_ui": false,
         "common": false,
         "panels": false,
-        "PerfectScrollbar": false
+        "PerfectScrollbar": false,
+        "search_pill": false
     },
     "plugins": [
         "eslint-plugin-empty-returns"
