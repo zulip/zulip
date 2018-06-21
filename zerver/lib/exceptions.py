@@ -153,3 +153,6 @@ class StreamDoesNotExistError(JsonableError):
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
         super().__init__(msg)
+
+class BugdownRenderingException(Exception):
+    pass

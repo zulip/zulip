@@ -53,6 +53,7 @@ from zerver.models import (
 )
 import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
+from zerver.lib.exceptions import BugdownRenderingException
 
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,
@@ -77,9 +78,6 @@ STREAM_LINK_REGEX = r"""
                          (?P<stream_name>[^\*]+)  # stream name can contain anything
                      \*\*                         # ends by double asterisks
                     """
-
-class BugdownRenderingException(Exception):
-    pass
 
 def rewrite_local_links_to_relative(link: str) -> str:
     """ If the link points to a local destination we can just switch to that

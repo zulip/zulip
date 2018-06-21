@@ -16,7 +16,6 @@ from analytics.lib.counts import COUNT_STATS, do_increment_logging_stat, \
     RealmCount
 
 from zerver.lib.bugdown import (
-    BugdownRenderingException,
     version as bugdown_version,
     url_embed_preview_enabled_for_realm
 )
@@ -120,7 +119,7 @@ from zerver.lib.alert_words import user_alert_words, add_user_alert_words, \
 from zerver.lib.notifications import clear_scheduled_emails, \
     clear_scheduled_invitation_emails, enqueue_welcome_emails
 from zerver.lib.narrow import check_supported_events_narrow_filter
-from zerver.lib.exceptions import JsonableError, ErrorCode
+from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingException
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image

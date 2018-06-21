@@ -13,6 +13,7 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.camo import get_camo_url
 from zerver.lib.create_user import create_user
 from zerver.lib.emoji import get_emoji_url
+from zerver.lib.exceptions import BugdownRenderingException
 from zerver.lib.mention import possible_mentions, possible_user_group_mentions
 from zerver.lib.message import render_markdown
 from zerver.lib.request import (
@@ -1247,7 +1248,7 @@ class BugdownApiTests(ZulipTestCase):
 class BugdownErrorTests(ZulipTestCase):
     def test_bugdown_error_handling(self) -> None:
         with self.simulated_markdown_failure():
-            with self.assertRaises(bugdown.BugdownRenderingException):
+            with self.assertRaises(BugdownRenderingException):
                 bugdown_convert('')
 
     def test_send_message_errors(self) -> None:
@@ -1264,7 +1265,7 @@ class BugdownErrorTests(ZulipTestCase):
         msg = u'* a\n' * MAX_MESSAGE_LENGTH  # Rendering is >100K characters
 
         with self.simulated_markdown_failure():
-            with self.assertRaises(bugdown.BugdownRenderingException):
+            with self.assertRaises(BugdownRenderingException):
                 bugdown_convert(msg)
 
 
