@@ -21,6 +21,7 @@
 * [Overview](/api/rest)
 * [Installation instructions](/api/installation-instructions)
 * [API keys](/api/api-keys)
+* [Fetch a development API key](/api/dev-fetch-api-key)
 * [Configuring the Python bindings](/api/configuring-python-bindings)
 * [Error handling](/api/rest-error-handling)
 

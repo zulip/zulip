@@ -22,6 +22,7 @@
 * [Create a user](/api/create-user)
 
 #### Real-time events
+
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
 * [Get events from an event queue](/api/get-events-from-queue)
