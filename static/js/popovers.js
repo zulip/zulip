@@ -204,6 +204,7 @@ function show_user_profile(element, user) {
         profile_data: profile_data,
         user_avatar: "avatar/" + user.email + "/medium",
         is_me: people.is_current_user(user.email),
+        display_email: page_params.realm_display_email,
     };
 
     $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
