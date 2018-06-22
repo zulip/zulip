@@ -313,12 +313,19 @@ def parse_lsb_release():
         distro_info[k] = v
     return distro_info
 
-def file_hash_updated(paths, hash_name, is_force):
-    # type: (List[str], str, bool) -> bool
+def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
+    # type: (List[str], str, bool, List[str]) -> bool
+    # Check whether the files or package_versions passed as arguments
+    # changed compared to the last execution.
     sha1sum = hashlib.sha1()
     for path in paths:
         with open(path, 'rb') as file_to_hash:
             sha1sum.update(file_to_hash.read())
+
+    # The ouput of tools like build_pygments_data depends
+    # on the version of some pip packages as well.
+    for package_version in package_versions:
+        sha1sum.update(package_version.encode("utf-8"))
 
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = sha1sum.hexdigest()

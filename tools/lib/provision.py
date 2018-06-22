@@ -14,7 +14,7 @@ ZULIP_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__f
 
 sys.path.append(ZULIP_PATH)
 from scripts.lib.zulip_tools import run, subprocess_text_output, OKBLUE, ENDC, WARNING, \
-    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_hash_updated
+    get_dev_uuid_var_path, FAIL, parse_lsb_release, file_or_package_hash_updated
 from scripts.lib.setup_venv import (
     setup_virtualenv, VENV_DEPENDENCIES, THUMBOR_VENV_DEPENDENCIES
 )
@@ -296,7 +296,7 @@ def main(options):
 
     webfont_paths = ["tools/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
     webfont_paths += glob.glob('static/assets/icons/*')
-    if file_hash_updated(webfont_paths, "webfont_files_hash", options.is_force):
+    if file_or_package_hash_updated(webfont_paths, "webfont_files_hash", options.is_force):
         run(["tools/generate-custom-icon-webfont"])
     else:
         print("No need to run `tools/generate-custom-icon-webfont`.")
@@ -307,7 +307,7 @@ def main(options):
 
     email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
-    if file_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
+    if file_or_package_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
         run(["tools/inline-email-css"])
     else:
         print("No need to run `tools/inline-email-css`.")
@@ -377,7 +377,7 @@ def main(options):
         paths += glob.glob('static/locale/*/LC_MESSAGES/*.po')
         paths += glob.glob('static/locale/*/translations.json')
 
-        if file_hash_updated(paths, "last_compilemessages_hash", options.is_force):
+        if file_or_package_hash_updated(paths, "last_compilemessages_hash", options.is_force):
             run(["./manage.py", "compilemessages"])
         else:
             print("No need to run `manage.py compilemessages`.")
