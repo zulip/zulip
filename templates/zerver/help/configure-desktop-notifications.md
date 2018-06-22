@@ -3,29 +3,27 @@
 You can receive desktop notifications for messages sent while Zulip is
 offscreen.
 
-## All streams
+## Stream messages
 
-You can receive notifications for normal stream messages. These instructions
-tell you how to set your preference for all subscribed stream messages at
-once. You can also set
-[notification preferences for individual streams](/help/set-notifications-for-a-single-stream).
+To add desktop notifications for a single stream, follow the instructions
+[here](/help/set-notifications-for-a-single-stream).
+
+You can also add desktop notifications for all your current streams, or set
+a default configuration for streams you join in the future.
 
 {settings_tab|notifications}
 
 1. Under **Stream Messages**, select **Visual desktop notifications** and/or
 **Audible desktop notifications**.
 
-1. Under "Apply this change to all current stream subscriptions?", select
-"yes" to start recieving desktop notifications for streams that you are
-currently subscribed to. Note that the change will apply even if you
-previously set a notification preference on an individual stream. Select "no"
+1. Under **Apply this change to all current stream subscriptions**, select
+"yes" to start receiving desktop notifications for streams that you are
+currently subscribed to. Note that this change will apply to all streams even if you
+previously set notification preferences for individual streams. Select "no"
 if you only want to apply your setting to streams that you subscribe to in
 the future.
 
 ## Private Messages and @-Mentions
-
-You can set seperate preferences for notifications for private messages and
-@-mentions.
 
 {settings_tab|notifications}
 
