@@ -13,13 +13,18 @@ GitHub to see the subsequent push to master as representing a
 merge of the PR, rather than requiring the PR to be manually
 (and to the casual observer misleadingly) closed instead.
 
+REMOTE defaults to the value of the Git config variable
+\`zulip.zulipRemote\` if set, else to \`upstream\`.
+
 See also \`reset-to-pull-request\`.
 EOF
     exit 1
 }
 
+remote_default="$(git config zulip.zulipRemote || echo upstream)"
+
 pr_id="$1"
-remote="${2:-upstream}"
+remote="${2:-"$remote_default"}"
 
 if [ -z "$pr_id" ]; then
     usage

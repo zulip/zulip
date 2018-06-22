@@ -1,6 +1,5 @@
 #!/bin/bash
 set -e
-set -x
 
 if ! git diff-index --quiet HEAD; then
     set +x
@@ -9,7 +8,12 @@ if ! git diff-index --quiet HEAD; then
     echo "Doing nothing to avoid losing your work."
     exit 1
 fi
+
+remote_default="$(git config zulip.zulipRemote || echo upstream)"
+
 request_id="$1"
-remote=${2:-"upstream"}
+remote=${2:-"$remote_default"}
+
+set -x
 git fetch "$remote" "pull/$request_id/head"
 git reset --hard FETCH_HEAD
