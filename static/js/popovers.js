@@ -153,6 +153,7 @@ function show_user_info_popover(element, user, message) {
             is_bot: user.is_bot,
             is_sender_popover: message.sender_id === user.user_id,
             show_user_profile: !(user.is_bot || page_params.custom_profile_fields.length === 0),
+            display_email: page_params.realm_display_email,
         };
 
 
@@ -703,6 +704,7 @@ exports.register_click_handlers = function () {
             is_bot: user.is_bot,
             is_sender_popover: false,
             show_user_profile: !user.is_bot && page_params.custom_profile_fields,
+            display_email: page_params.realm_display_email,
         };
 
         target.popover({
