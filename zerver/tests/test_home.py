@@ -125,6 +125,7 @@ class HomeTest(ZulipTestCase):
             "realm_default_twenty_four_hour_time",
             "realm_description",
             "realm_disallow_disposable_email_addresses",
+            "realm_display_email",
             "realm_domains",
             "realm_email_auth_enabled",
             "realm_email_changes_disabled",
