@@ -24,16 +24,16 @@ function narrow_or_search_for_term(search_string) {
 }
 
 function update_buttons_with_focus(focused) {
-    var search_query = $('#search_query');
+    var search_query_box = $('#search_query');
 
     // Show buttons iff the search input is focused, or has non-empty contents,
     // or we are narrowed.
     if (focused
-        || search_query.val()
+        || search_query_box.val()
         || narrow_state.active()) {
         $('.search_button').prop('disabled', false);
     } else {
-        $('.search_button').attr('disabled', 'disabled');
+        $('.search_button').prop('disabled', true);
     }
 }
 
