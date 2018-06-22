@@ -2,11 +2,15 @@ var search = (function () {
 
 var exports = {};
 
-var is_using_input_method = false;
+// Exported for unit testing
+exports.is_using_input_method = false;
 
 function narrow_or_search_for_term(search_string) {
     var search_query_box = $("#search_query");
-    if (is_using_input_method) {
+    if (exports.is_using_input_method) {
+        // Neither narrow nor search when using input tools as
+        // `updater` is also triggered when 'enter' is triggered
+        // while using input tool
         return search_query_box.val();
     }
     ui_util.change_tab_to('#home');
@@ -82,7 +86,7 @@ exports.initialize = function () {
         // we suppress searching triggered by this enter key by checking
         // `is_using_input_method` before searching.
         // More details in the commit message that added this line.
-        is_using_input_method = true;
+        exports.is_using_input_method = true;
     });
 
     searchbox_form.keydown(function (e) {
@@ -92,12 +96,11 @@ exports.initialize = function () {
             // Don't submit the form so that the typeahead can instead
             // handle our Enter keypress. Any searching that needs
             // to be done will be handled in the keyup.
-            e.preventDefault();
             return false;
         }
     }).keyup(function (e) {
-        if (is_using_input_method) {
-            is_using_input_method = false;
+        if (exports.is_using_input_method) {
+            exports.is_using_input_method = false;
             return;
         }
         var code = e.which;
