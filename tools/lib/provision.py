@@ -294,16 +294,24 @@ def main(options):
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
 
-    run(["tools/generate-custom-icon-webfont"])
+    webfont_paths = ["tools/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
+    webfont_paths += glob.glob('static/assets/icons/*')
+    if file_hash_updated(webfont_paths, "webfont_files_hash", options.is_force):
+        run(["tools/generate-custom-icon-webfont"])
+    else:
+        print("No need to run `tools/generate-custom-icon-webfont`.")
+
     run(["tools/setup/build_pygments_data"])
     run(["scripts/setup/generate_secrets.py", "--development"])
     run(["tools/update-authors-json", "--use-fixture"])
+
     email_source_paths = ["tools/inline-email-css", "templates/zerver/emails/email.css"]
     email_source_paths += glob.glob('templates/zerver/emails/*.source.html')
     if file_hash_updated(email_source_paths, "last_email_source_files_hash", options.is_force):
         run(["tools/inline-email-css"])
     else:
         print("No need to run `tools/inline-email-css`.")
+
     if is_circleci or (is_travis and not options.is_production_travis):
         run(["sudo", "service", "rabbitmq-server", "restart"])
         run(["sudo", "service", "redis-server", "restart"])
