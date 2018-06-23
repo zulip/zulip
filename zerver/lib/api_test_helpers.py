@@ -300,6 +300,19 @@ def get_messages(client):
     validate_against_openapi_schema(result, '/messages', 'get', '200')
     assert len(result['messages']) <= request['num_before']
 
+def get_raw_message(client, message_id):
+    # type: (Client, int) -> None
+
+    assert int(message_id)
+
+    # {code_example|start}
+    # Get the raw content of the message with ID "message_id"
+    result = client.get_raw_message(message_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'get',
+                                    '200')
+
 def send_message(client):
     # type: (Client) -> int
 
@@ -526,6 +539,7 @@ TEST_FUNCTIONS = {
     '/messages/render:post': render_message,
     '/messages:get': get_messages,
     '/messages:post': send_message,
+    '/messages/{message_id}:get': get_raw_message,
     '/messages/{message_id}:patch': update_message,
     '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
@@ -596,6 +610,7 @@ def test_messages(client, nonadmin_client):
     render_message(client)
     message_id = send_message(client)
     update_message(client, message_id)
+    get_raw_message(client, message_id)
     get_messages(client)
 
     test_nonexistent_stream_error(client)
