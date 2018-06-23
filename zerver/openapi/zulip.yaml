@@ -467,6 +467,42 @@ paths:
                         "result": "error"
                     }
   /messages/{message_id}:
+    get:
+      description: Get the raw content of a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The target message's ID.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    raw_content:
+                      type: string
+                      description: The raw content of the message.
+                - example:
+                    {
+                        "raw_content": "**Don't** forget your towel!",
+                        "result": "success",
+                        "msg": ""
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
     patch:
       description: Edit a message that has already been sent.
       parameters:
@@ -1474,6 +1510,19 @@ components:
               "code": "BAD_EVENT_QUEUE_ID",
               "msg": "Bad event queue id: 1518820930:1",
               "queue_id": "1518820930:1",
+              "result": "error"
+          }
+    InvalidMessageError:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          raw_content:
+            type: string
+            description: The raw content of the message.
+      - example:
+          {
+              "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
               "result": "error"
           }
     NonExistingStreamError:

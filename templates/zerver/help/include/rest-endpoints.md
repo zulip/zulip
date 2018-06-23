@@ -1,6 +1,7 @@
 #### Messages
 
 * [Get messages](/api/get-messages)
+* [Get a raw message](/api/get-raw-message)
 * [Send a message](/api/send-message)
 * [Update a message](/api/update-message)
 * [Render a message](/api/render-message)

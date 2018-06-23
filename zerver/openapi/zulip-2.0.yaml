@@ -249,33 +249,6 @@ paths:
             $ref: '#/definitions/MessageResponse'
 
   /messages/{message_id}:
-    get:
-      description: Retrieve the content of a message.
-      parameters:
-      - name: message_id
-        in: path
-        description: ID of the message to be retrieved.
-        type: integer
-        required: true
-      security:
-      - basicAuth: []
-      responses:
-        '200':
-          description: Success.
-          schema:
-            type: object
-            required:
-            - msg
-            - result
-            - raw_content
-            properties:
-              msg:
-                type: string
-              result:
-                type: string
-              raw_content:
-                type: string
-                description: Body of the queried message.
     patch:
       description: Edit a message that has already been sent.
       parameters:
