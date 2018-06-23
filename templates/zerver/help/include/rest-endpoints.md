@@ -4,6 +4,7 @@
 * [Update a message](/api/update-message)
 * [Render a message](/api/render-message)
 * [Upload a file](/api/upload-file)
+* [Construct a narrow](/api/construct-narrow)
 
 #### Streams
 
