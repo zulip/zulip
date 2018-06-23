@@ -564,8 +564,8 @@ def assertIn(key, result):
     else:
         assert key in result
 
-def test_messages(client):
-    # type: (Client) -> None
+def test_messages(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     render_message(client)
     message_id = stream_message(client)
@@ -574,6 +574,8 @@ def test_messages(client):
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
+    test_update_message_edit_permission_error(client, nonadmin_client)
+
 
 def test_users(client):
     # type: (Client) -> None
@@ -583,8 +585,8 @@ def test_users(client):
     get_profile(client)
     upload_file(client)
 
-def test_streams(client):
-    # type: (Client) -> None
+def test_streams(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     add_subscriptions(client)
     test_add_subscriptions_already_subscribed(client)
@@ -594,6 +596,10 @@ def test_streams(client):
     get_subscribers(client)
     remove_subscriptions(client)
     get_stream_topics(client, 1)
+
+    test_user_not_authorized_error(nonadmin_client)
+    test_authorization_errors_fatal(client, nonadmin_client)
+
 
 def test_queues(client):
     # type: (Client) -> None
@@ -610,12 +616,12 @@ def test_errors(client):
     test_missing_request_argument(client)
     test_invalid_stream_error(client)
 
-def test_the_api(client):
-    # type: (Client) -> None
+def test_the_api(client, nonadmin_client):
+    # type: (Client, Client) -> None
 
     get_user_agent(client)
     test_users(client)
-    test_streams(client)
-    test_messages(client)
+    test_streams(client, nonadmin_client)
+    test_messages(client, nonadmin_client)
     test_queues(client)
     test_errors(client)

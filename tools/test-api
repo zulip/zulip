@@ -22,6 +22,7 @@ from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
+from zerver.lib.actions import do_create_user
 from zerver.models import get_user, get_realm
 
 usage = """test-js-with-casper [options]"""
@@ -39,6 +40,9 @@ if not options.force:
         sys.exit(1)
 
 with test_server_running(force=options.force, external_host='zulipdev.com:9981'):
+    print("Running API tests...")
+
+    # Prepare the admin client
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm("zulip")
     api_key = get_user(email, realm).api_key
@@ -47,25 +51,21 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     client = Client(
         email=email,
         api_key=api_key,
-        site=site)
+        site=site
+    )
 
-    print("Running API tests...")
-    test_the_api(client)
-
-    email = 'newbie@zulip.com'  # newbie is not an admin
-    realm = get_realm("zulip")
-    api_key = get_user(email, realm).api_key
-    site = 'http://zulip.zulipdev.com:9981'
+    # Prepare the admin client
+    email = 'guest@zulip.com'  # guest is not an admin
+    guest_user = do_create_user('guest@zulip.com', 'secret',
+                                get_realm('zulip'), 'Mr. Guest', 'guest')
+    api_key = guest_user.api_key
     nonadmin_client = Client(
         email=email,
         api_key=api_key,
         site=site
     )
 
-    # Run tests that require non-admin client
-    test_update_message_edit_permission_error(client, nonadmin_client)
-    test_user_not_authorized_error(nonadmin_client)
-    test_authorization_errors_fatal(client, nonadmin_client)
+    test_the_api(client, nonadmin_client)
 
     # Test error payloads
     client = Client(
