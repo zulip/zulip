@@ -3901,26 +3901,32 @@ def get_streams_traffic(streams: Optional[Iterable[Stream]]=None) -> Dict[int, i
 def round_to_2_significant_digits(number: int) -> int:
     return int(round(number, 2 - len(str(number))))
 
+STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS = 7
+
 def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datetime.datetime,
-                                      recent_traffic: QuerySet) -> int:
+                                      recent_traffic: Dict[int, int]) -> int:
     try:
         stream_traffic = recent_traffic[stream_id]
     except KeyError:
         return 0
 
-    stream_age = (timezone_now().date() - stream_date_created.date()).days
+    stream_age = (timezone_now() - stream_date_created).days
 
     if stream_age >= 28:
         average_weekly_traffic = int(stream_traffic // 4)
-    elif stream_age >= 7:
-        average_weekly_traffic = int(stream_traffic // (stream_age // 7))
+    elif stream_age >= STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS:
+        average_weekly_traffic = int(stream_traffic * 7 // stream_age)
     else:
-        average_weekly_traffic = stream_traffic
+        average_weekly_traffic = -1
+
+    if average_weekly_traffic == 0 and stream_traffic > 0:
+        average_weekly_traffic = 1
 
     return round_to_2_significant_digits(average_weekly_traffic)
 
 def is_old_stream(stream_date_created: datetime.datetime) -> bool:
-    return (datetime.date.today() - stream_date_created.date()).days >= 7
+    return (datetime.date.today() - stream_date_created.date()).days \
+        >= STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS
 
 def encode_email_address(stream: Stream) -> str:
     return encode_email_address_helper(stream.name, stream.email_token)
