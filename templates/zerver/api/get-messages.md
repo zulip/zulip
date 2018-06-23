@@ -1,0 +1,155 @@
+# Get messages
+
+Fetch message history from a Zulip server.
+
+`GET {{ api_url }}/v1/messages`
+
+This `GET /api/v1/messages` endpoint is the primary way to fetch
+message history from a Zulip server.  It is useful both for Zulip
+clients (e.g. the web, desktop, mobile, and terminal clients) as well
+as bots, API clients, backup scripts, etc.
+
+By specifying a [narrow filter](/api/construct-narrow), you can use
+this endpoint to fetch the messages matching any search query that is
+supported by Zulip's powerful full-text search backend.
+
+When a narrow is not specified, it can be used to fetch a user's
+entire message history (though we recommend paginating to 1000
+messages at a time).
+
+In either case, you specify an `anchor` message (or ask the server to
+calculate the first unread message for you and use that as the
+anchor), as well as a number of messages before and after the anchor
+message.  The server returns those messages, sorted by message ID, as
+well as some metadata that makes it easy for a client to determine
+whether there are more messages matching the query that were not
+returned due to the `num_before` and `num_after` limits.
+
+We recommend using `num_before <= 1000` and `num_after <= 1000` to
+avoid generating very large HTTP responses.
+
+## Usage examples
+
+<div class="code-section" markdown="1">
+<ul class="nav">
+<li data-language="python">Python</li>
+<li data-language="javascript">JavaScript</li>
+<li data-language="curl">curl</li>
+</ul>
+<div class="blocks">
+
+<div data-language="curl" markdown="1">
+
+```
+curl {{ api_url }}/v1/messages \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY \
+    -d "anchor=42" \
+    -d "use_first_unread_anchor=false" \
+    -d "num_before=3" \
+    -d "num_after=14" \
+    -d "narrow=[{\"operator\":\"stream\", \"operand\":\"party\"}]" \
+
+```
+
+</div>
+
+<div data-language="python" markdown="1">
+
+{generate_code_example(python)|/messages:get|example}
+
+</div>
+
+<div data-language="javascript" markdown="1">
+More examples and documentation can be found [here](https://github.com/zulip/zulip-js).
+```js
+const zulip = require('zulip-js');
+
+// Download zuliprc-dev from your dev server
+const config = {
+    zuliprc: 'zuliprc-dev',
+};
+
+zulip(config).then((client) => {
+    const readParams = {
+        stream,
+        type: 'stream',
+        anchor: res.id,
+        num_before: 1,
+        num_after: 1,
+    };
+
+    // Fetch messages anchored around id (1 before, 1 after)
+    return client.messages.retrieve(readParams);
+}).then(console.log);
+```
+</div>
+
+</div>
+
+</div>
+
+## Arguments
+
+{generate_api_arguments_table|zulip.yaml|/messages:get}
+
+## Response
+
+#### Return values
+
+When a request is successful, this endpoint returns a dictionary
+containing the following (in addition to the `msg` and `result` keys
+present in all Zulip API responses).
+
+* `anchor`: the same `anchor` specified in the request.
+* `found_newest`: whether the `messages` list includes the latest message in
+    the narrow.
+* `found_oldest`: whether the `messages` list includes the oldest message in
+    the narrow.
+* `found_anchor`: whether it was possible to fetch the requested anchor, or
+    the closest in the narrow has been used.
+* `messages`: an array of `message` objects, each containing the following
+    fields:
+    * `avatar_url`: The URL of the user's avatar.
+    * `client`: A Zulip "client" string, describing what Zulip client
+      sent the message.
+    * `content`: The content/body of the message.
+    * `content_type`: The HTTP `content_type` for the message content.  This
+      will be `text/html` or `text/x-markdown`, depending on
+      whether `apply_markdown` was set.
+    * `display_recipient`: Data on the recipient of the message;
+      either the name of a stream or a dictionary containing data on
+      the users who received the message.
+    * `flags`: The user's message flags for the message.
+    * `id`: The unique message ID.  Messages should always be
+      displayed sorted by ID.
+    * `is_me_message`: Whether the message is a [/me status message][status-messages]
+    * `reactions`: Data on any reactions to the message.
+    * `recipient_id`: A unique ID for the set of users receiving the
+      message (either a stream or group of users).  Useful primarily
+      for hashing.
+    * `sender_email`: The email address of the message's sender.
+    * `sender_full_name`: The full name of the message's sender.
+    * `sender_id`: The user ID of the message's sender.
+    * `sender_realm_str`: A string identifier for the realm the sender
+      is in.
+    * `sender_short_name`: Reserved for future use.
+    * `stream_id`: Only present for stream messages; the ID of the stream.
+    * `subject`: The `topic` of the message (only present for stream
+      messages).  The name is a legacy holdover from when topics were
+      called "subjects".
+    * `subject_links`: Data on any links to be included in the `topic`
+      line (these are generated by
+      [custom linkification filters][linkification-filters] that match
+      content in the message's topic.)
+    * `submessages`: Data used for certain experimental Zulip integrations.
+    * `timestamp`: The UNIX timestamp for when the message was sent,
+      in UTC seconds.
+    * `type`: The type of the message: `stream` or `private`.
+
+#### Example response
+
+A typical successful JSON response may look like:
+
+{generate_code_example|/messages:get|fixture(200)}
+
+[status-messages]: /help/format-your-message-using-markdown#status-messages

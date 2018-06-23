@@ -206,34 +206,6 @@ paths:
                   - Invalid stream name '<stream>'
 
   /messages:
-    get:
-      description: |
-                   Retrieve a specific amount of messages, previous and
-                   posterior to the specified `anchor`.
-      operationId: zerver.views.messages.get_messages_backend
-      parameters:
-      - name: anchor
-        in: query
-        description: A message ID.
-        required: true
-        type: integer
-      - name: num_before
-        in: query
-        description: The number of messages to retrieve before the anchor value.
-        required: true
-        type: integer
-      - name: num_after
-        in: query
-        description: The number of messages to retrieve after the anchor value.
-        required: true
-        type: integer
-      security:
-      - basicAuth: []
-      responses:
-        '200':
-          description: Success.
-          schema:
-            $ref: '#/definitions/MessagesResponse'
     post:
       description: Send a message
       operationId: zerver.views.messages.send_message_backend

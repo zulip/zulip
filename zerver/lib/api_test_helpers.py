@@ -324,6 +324,26 @@ def render_message(client):
 
     validate_against_openapi_schema(result, '/messages/render', 'post', '200')
 
+def get_messages(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Get the 3 last messages sent by "iago@zulip.com" to the stream "Verona"
+    request = {
+        'use_first_unread_anchor': True,
+        'num_before': 3,
+        'num_after': 0,
+        'narrow': [{'operator': 'sender', 'operand': 'iago@zulip.com'},
+                   {'operator': 'stream', 'operand': 'Verona'}],
+        'client_gravatar': True,
+        'apply_markdown': True
+    }  # type: Dict[str, Any]
+    result = client.get_messages(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages', 'get', '200')
+    assert len(result['messages']) <= request['num_before']
+
 def send_message(client):
     # type: (Client) -> int
 
@@ -558,6 +578,7 @@ def test_invalid_stream_error(client):
 
 TEST_FUNCTIONS = {
     '/messages/render:post': render_message,
+    '/messages:get': get_messages,
     '/messages:post': send_message,
     '/messages/{message_id}:patch': update_message,
     '/get_stream_id:get': get_stream_id,
@@ -631,6 +652,7 @@ def test_messages(client, nonadmin_client):
     render_message(client)
     message_id = send_message(client)
     update_message(client, message_id)
+    get_messages(client)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
