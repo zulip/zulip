@@ -103,7 +103,7 @@
 }
 
 .group-pms-sidebar-entry .selectable_sidebar_block {
-    width: calc(100% - 30px);
+    width: 100%;
 }
 
 .group-pm-link,
@@ -112,13 +112,16 @@
     text-overflow: ellipsis;
 }
 
+.user_sidebar_entry .selectable_sidebar_block {
+    width: 100%;
+}
+
 .group-pm-link {
     display: block;
 }
 
 .selectable_sidebar_block {
     cursor: pointer;
-    width: 100%;
 }
 
 .group-pms-sidebar-entry,
