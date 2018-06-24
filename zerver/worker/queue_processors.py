@@ -479,7 +479,8 @@ class OutgoingWebhookWorker(QueueProcessingWorker):
             dup_event['service_name'] = str(service.name)
             service_handler = get_outgoing_webhook_service_handler(service)
             rest_operation, request_data = service_handler.process_event(dup_event)
-            do_rest_call(rest_operation, request_data, dup_event, service_handler)
+            if rest_operation:
+                do_rest_call(rest_operation, request_data, dup_event, service_handler)
 
 @assign_queue('embedded_bots')
 class EmbeddedBotWorker(QueueProcessingWorker):

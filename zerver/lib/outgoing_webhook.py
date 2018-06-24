@@ -83,7 +83,9 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                           'request_kwargs': {}}
 
         if event['message']['type'] == 'private':
-            raise NotImplementedError("Private messaging service not supported.")
+            failure_message = "Slack outgoing webhooks don't support private messages."
+            fail_with_message(event, failure_message)
+            return None, None
 
         request_data = [("token", self.token),
                         ("team_id", event['message']['sender_realm_str']),
