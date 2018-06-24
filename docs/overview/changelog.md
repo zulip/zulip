@@ -15,6 +15,17 @@ in bursts.
   access full history, even before they joined the stream.
 - Added support for announcement-only streams.
 
+**Upgrade notes:**
+
+* Zulip 1.9 contains a significant database migration that can take
+  several minutes to run.  The upgrade process automatically minimizes
+  disruption by running this migration first, before beginning the
+  user-facing downtime.  However, if you'd like to watch the downtime
+  phase of the upgrade closely, we recommend
+  [running them first manually](../production/expensive-migrations.html)
+  and as well as the usual trick of
+  [doing an apt upgrade first](../production/maintain-secure-upgrade.html#applying-system-updates).
+
 **Full feature changelog:**
 - Added an organization setting for message deletion time limits.
 - Added an organization setting to control who can edit topics.

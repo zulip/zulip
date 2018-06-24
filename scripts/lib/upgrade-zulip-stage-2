@@ -98,6 +98,7 @@ usermessage_index_migrations = [
     "[ ] 0095_index_unread_user_messages",
     "[ ] 0098_index_has_alert_word_user_messages",
     "[ ] 0099_index_wildcard_mentioned_user_messages",
+    "[ ] 0177_user_message_add_and_index_is_private_flag",
 ]
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves

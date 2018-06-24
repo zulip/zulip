@@ -88,6 +88,14 @@ def create_indexes() -> None:
         where_clause='WHERE (flags & 8) != 0 OR (flags & 16) != 0',
     )
 
+    # copied from 0177
+    create_index_if_not_exist(
+        index_name='zerver_usermessage_is_private_message_id',
+        table_name='zerver_usermessage',
+        column_string='user_profile_id, message_id',
+        where_clause='WHERE (flags & 2048) != 0',
+    )
+
 class Command(ZulipBaseCommand):
     help = """Create concurrent indexes for large tables."""
 
