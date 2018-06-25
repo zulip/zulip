@@ -2060,7 +2060,7 @@ class UserSignUpTest(ZulipTestCase):
              'key': find_key_by_email(email),
              'terms': True,
              'from_confirmation': '1'})
-        self.assert_in_success_response(["You're almost there."], result)
+        self.assert_in_success_response(["We just need you to do one last thing."], result)
 
         # Verify that the user is asked for name and password
         self.assert_in_success_response(['id_password', 'id_full_name'], result)
@@ -2092,7 +2092,7 @@ class UserSignUpTest(ZulipTestCase):
              'terms': True,
              'full_name': "New Guy",
              'from_confirmation': '1'})
-        self.assert_in_success_response(["You're almost there."], result)
+        self.assert_in_success_response(["We just need you to do one last thing."], result)
 
     def test_signup_with_default_stream_group(self) -> None:
         # Check if user is subscribed to the streams of default
@@ -2403,7 +2403,7 @@ class UserSignUpTest(ZulipTestCase):
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
 
-            self.assert_in_success_response(["You're almost there.",
+            self.assert_in_success_response(["We just need you to do one last thing.",
                                              "New LDAP fullname",
                                              "newuser@zulip.com"],
                                             result)
@@ -2426,7 +2426,7 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-            self.assert_in_success_response(["You're almost there.",
+            self.assert_in_success_response(["We just need you to do one last thing.",
                                              "newuser@zulip.com"],
                                             result)
 
@@ -2478,7 +2478,7 @@ class UserSignUpTest(ZulipTestCase):
                                                    HTTP_HOST=subdomain + ".testserver")
 
             # Full name should be set from LDAP
-            self.assert_in_success_response(["You're almost there.",
+            self.assert_in_success_response(["We just need you to do one last thing.",
                                              full_name,
                                              "newuser@zulip.com"],
                                             result)
@@ -2788,7 +2788,7 @@ class UserSignUpTest(ZulipTestCase):
                                                    from_confirmation='1',
                                                    # Pass HTTP_HOST for the target subdomain
                                                    HTTP_HOST=subdomain + ".testserver")
-            self.assert_in_success_response(["You're almost there.",
+            self.assert_in_success_response(["We just need you to do one last thing.",
                                              "newuser@zulip.com"],
                                             result)
 

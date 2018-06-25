@@ -744,7 +744,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                 "full_name": name,
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("You're almost there", result)
+        self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(['id_password'], result)
@@ -1035,7 +1035,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 "full_name": data['name'],
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data, subdomain="zulip")
-        self.assert_in_response("You're almost there", result)
+        self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(['id_password'], result)
@@ -1063,7 +1063,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 "full_name": data['name'],
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data, subdomain="zulip")
-        self.assert_in_response("You're almost there", result)
+        self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(['id_password'], result)
@@ -1113,7 +1113,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                  "full_name": data['name'],
                  "key": confirmation_key}
         result = self.client_post('/accounts/register/', data2, subdomain="zulip")
-        self.assert_in_response("You're almost there", result)
+        self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(['id_password'], result)
@@ -1208,7 +1208,7 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
                 "full_name": name,
                 "key": confirmation_key}
         result = self.client_post('/accounts/register/', data)
-        self.assert_in_response("You're almost there", result)
+        self.assert_in_response("We just need you to do one last thing", result)
 
         # Verify that the user is asked for name but not password
         self.assert_not_in_success_response(['id_password'], result)
