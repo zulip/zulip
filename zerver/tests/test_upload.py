@@ -8,7 +8,7 @@ from zerver.lib.avatar import (
     get_avatar_field,
 )
 from zerver.lib.avatar_hash import user_avatar_path
-from zerver.lib.bugdown import url_filename
+from zerver.lib.bugdown.links import url_filename
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import (
