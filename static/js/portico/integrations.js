@@ -1,4 +1,3 @@
-import fuzzysearch from 'fuzzysearch';
 import blueslip from './../blueslip';
 
 import { path_parts } from './landing-page';
@@ -117,8 +116,9 @@ var update_integrations = _.debounce(function () {
         }
 
         if (!$integration.hasClass('integration-create-your-own')) {
+            var display_name = INTEGRATIONS[$integration.data('name')];
             var display =
-                fuzzysearch(state.query, $integration.data('name').toLowerCase()) &&
+                common.phrase_match(state.query, display_name) &&
                 ($integration.data('categories').indexOf(CATEGORIES[state.category]) !== -1 ||
                  state.category === 'all');
 
