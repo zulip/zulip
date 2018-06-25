@@ -18,7 +18,7 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
         <div class="pitch">
             {% trans %}
-            <h1>You're almost there.</h1>
+            <h1>You&rsquo;re almost there.</h1>
             <p>We just need you to do one last thing.</p>
             {% endtrans %}
         </div>
@@ -104,11 +104,11 @@ Form is validated both client-side using jquery-validate (see signup.js) and ser
 
                 {% if accounts %}
                 <div class="input-box">
-                    <label for="source_realm" class="inline-block">{{ _('Import settings from an existing Zulip account') }}</label>
+                    <label for="source_realm" class="inline-block">{{ _('Import settings from another Zulip account') }}</label>
                 </div>
                 <div id="source_realm_select_section" class="input-group m-10 inline-block">
                     <select class="select" name="source_realm" id="source_realm_select">
-                        <option value="on" {% if ("source_realm" in form.data and form.data["source_realm"] == "on") or "source_realm" not in form.data %} selected {% endif %}>None</option>
+                        <option value="on" {% if ("source_realm" in form.data and form.data["source_realm"] == "on") or "source_realm" not in form.data %} selected {% endif %}>Don&rsquo;t import settings</option>
                         {% for account in accounts %}
                         <option value="{{ account.string_id }}" data-full-name="{{account.full_name}}" data-avatar="{{account.avatar}}" {% if "source_realm" in form.data and account.string_id == form.data["source_realm"] %} selected {% endif %}>{{ account.realm_name }}</option>
                         {% endfor %}
