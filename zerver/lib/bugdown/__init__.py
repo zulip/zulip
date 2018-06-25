@@ -54,6 +54,7 @@ from zerver.models import (
 import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
 from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.bugdown import arguments
 
 FullNameInfo = TypedDict('FullNameInfo', {
     'id': int,
@@ -83,8 +84,8 @@ def rewrite_local_links_to_relative(link: str) -> str:
     """ If the link points to a local destination we can just switch to that
     instead of opening a new tab. """
 
-    if db_data:
-        realm_uri_prefix = db_data['realm_uri'] + "/"
+    if arguments.db_data:
+        realm_uri_prefix = arguments.db_data['realm_uri'] + "/"
         if link.startswith(realm_uri_prefix):
             # +1 to skip the `/` before the hash link.
             return link[len(realm_uri_prefix):]
@@ -104,9 +105,8 @@ def url_embed_preview_enabled_for_realm(message: Optional[Message]) -> bool:
     return realm.inline_url_embed_preview
 
 def image_preview_enabled_for_realm() -> bool:
-    global current_message
-    if current_message is not None:
-        realm = current_message.get_realm()  # type: Optional[Realm]
+    if arguments.current_message is not None:
+        realm = arguments.current_message.get_realm()  # type: Optional[Realm]
     else:
         realm = None
     if not settings.INLINE_IMAGE_PREVIEW:
@@ -858,17 +858,16 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
                 add_a(root, youtube, url, None, None, "youtube-video message_inline_image", yt_id)
                 continue
 
-            global db_data
-
-            if db_data and db_data['sent_by_bot']:
+            if arguments.db_data and arguments.db_data['sent_by_bot']:
                 continue
 
-            if current_message is None or not url_embed_preview_enabled_for_realm(current_message):
+            if (arguments.current_message is None
+                    or not url_embed_preview_enabled_for_realm(arguments.current_message)):
                 continue
             try:
                 extracted_data = link_preview.link_embed_data_from_cache(url)
             except NotFoundInCache:
-                current_message.links_for_preview.add(url)
+                arguments.current_message.links_for_preview.add(url)
                 continue
             if extracted_data:
                 vm_id = self.vimeo_id(url)
@@ -890,8 +889,8 @@ class Avatar(markdown.inlinepatterns.Pattern):
         email = email_address.strip().lower()
         profile_id = None
 
-        if db_data is not None:
-            user_dict = db_data['email_info'].get(email)
+        if arguments.db_data is not None:
+            user_dict = arguments.db_data['email_info'].get(email)
             if user_dict is not None:
                 profile_id = user_dict['id']
 
@@ -994,8 +993,8 @@ def unicode_emoji_to_codepoint(unicode_emoji: str) -> str:
 class EmoticonTranslation(markdown.inlinepatterns.Pattern):
     """ Translates emoticons like `:)` into emoji like `:smile:`. """
     def handleMatch(self, match: Match[str]) -> Optional[Element]:
-        # If there is `db_data` and it is True, proceed with translating.
-        if db_data is None or not db_data['translate_emoticons']:
+        # If there is `arguments.db_data` and it is True, proceed with translating.
+        if arguments.db_data is None or not arguments.db_data['translate_emoticons']:
             return None
 
         emoticon = match.group('emoticon')
@@ -1019,10 +1018,10 @@ class Emoji(markdown.inlinepatterns.Pattern):
         name = orig_syntax[1:-1]
 
         active_realm_emoji = {}  # type: Dict[str, Dict[str, str]]
-        if db_data is not None:
-            active_realm_emoji = db_data['active_realm_emoji']
+        if arguments.db_data is not None:
+            active_realm_emoji = arguments.db_data['active_realm_emoji']
 
-        if current_message and name in active_realm_emoji:
+        if arguments.current_message and name in active_realm_emoji:
             return make_realm_emoji(active_realm_emoji[name]['source_url'], orig_syntax)
         elif name == 'zulip':
             return make_realm_emoji('/static/generated/emoji/images/emoji/unicode/zulip.png', orig_syntax)
@@ -1342,20 +1341,20 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
 
-        if current_message and db_data is not None:
+        if arguments.current_message and arguments.db_data is not None:
             if match.startswith("**") and match.endswith("**"):
                 name = match[2:-2]
             else:
                 return None
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = db_data['mention_data'].get_user(name)
+            user = arguments.db_data['mention_data'].get_user(name)
 
             if wildcard:
-                current_message.mentions_wildcard = True
+                arguments.current_message.mentions_wildcard = True
                 user_id = "*"
             elif user:
-                current_message.mentions_user_ids.add(user['id'])
+                arguments.current_message.mentions_user_ids.add(user['id'])
                 name = user['full_name']
                 user_id = str(user['id'])
             else:
@@ -1373,11 +1372,11 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         match = m.group(2)
 
-        if current_message and db_data is not None:
+        if arguments.current_message and arguments.db_data is not None:
             name = extract_user_group(match)
-            user_group = db_data['mention_data'].get_user_group(name)
+            user_group = arguments.db_data['mention_data'].get_user_group(name)
             if user_group:
-                current_message.mentions_user_group_ids.add(user_group.id)
+                arguments.current_message.mentions_user_group_ids.add(user_group.id)
                 name = user_group.name
                 user_group_id = str(user_group.id)
             else:
@@ -1394,15 +1393,15 @@ class UserGroupMentionPattern(markdown.inlinepatterns.Pattern):
 
 class StreamPattern(VerbosePattern):
     def find_stream_by_name(self, name: Match[str]) -> Optional[Dict[str, Any]]:
-        if db_data is None:
+        if arguments.db_data is None:
             return None
-        stream = db_data['stream_names'].get(name)
+        stream = arguments.db_data['stream_names'].get(name)
         return stream
 
     def handleMatch(self, m: Match[str]) -> Optional[Element]:
         name = m.group('stream_name')
 
-        if current_message:
+        if arguments.current_message:
             stream = self.find_stream_by_name(name)
             if stream is None:
                 return None
@@ -1425,15 +1424,15 @@ def possible_linked_stream_names(content: str) -> Set[str]:
 
 class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
     def run(self, lines: Iterable[str]) -> Iterable[str]:
-        if current_message and db_data is not None:
+        if arguments.current_message and arguments.db_data is not None:
             # We check for alert words here, the set of which are
             # dependent on which users may see this message.
             #
             # Our caller passes in the list of possible_words.  We
             # don't do any special rendering; we just append the alert words
-            # we find to the set current_message.alert_words.
+            # we find to the set arguments.current_message.alert_words.
 
-            realm_words = db_data['possible_words']
+            realm_words = arguments.db_data['possible_words']
 
             content = '\n'.join(lines).lower()
 
@@ -1447,7 +1446,7 @@ class AlertWordsNotificationProcessor(markdown.preprocessors.Preprocessor):
                                        escaped,
                                        allowed_after_punctuation))
                 if re.search(match_re, content):
-                    current_message.alert_words.add(word)
+                    arguments.current_message.alert_words.add(word)
 
         return lines
 
@@ -1723,16 +1722,6 @@ _privacy_re = re.compile('\\w', flags=re.UNICODE)
 def privacy_clean_markdown(content: str) -> str:
     return repr(_privacy_re.sub('x', content))
 
-
-# Filters such as UserMentionPattern need a message, but python-markdown
-# provides no way to pass extra params through to a pattern. Thus, a global.
-current_message = None  # type: Optional[Message]
-
-# We avoid doing DB queries in our markdown thread to avoid the overhead of
-# opening a new DB connection. These connections tend to live longer than the
-# threads themselves, as well.
-db_data = None  # type: Optional[Dict[str, Any]]
-
 def log_bugdown_error(msg: str) -> None:
     """We use this unusual logging approach to log the bugdown error, in
     order to prevent AdminNotifyHandler from sending the santized
@@ -1900,11 +1889,9 @@ def do_convert(content: str,
     # Reset the parser; otherwise it will get slower over time.
     _md_engine.reset()
 
-    global current_message
-    current_message = message
+    arguments.current_message = message
 
     # Pre-fetch data from the DB that is used in the bugdown thread
-    global db_data
     if message is not None:
         assert message_realm is not None  # ensured above if message is not None
         if possible_words is None:
@@ -1930,7 +1917,7 @@ def do_convert(content: str,
         else:
             active_realm_emoji = dict()
 
-        db_data = {
+        arguments.db_data = {
             'possible_words': possible_words,
             'email_info': email_info,
             'mention_data': mention_data,
@@ -1969,8 +1956,8 @@ def do_convert(content: str,
 
         raise BugdownRenderingException()
     finally:
-        current_message = None
-        db_data = None
+        arguments.current_message = None
+        arguments.db_data = None
 
 bugdown_time_start = 0.0
 bugdown_total_time = 0.0
