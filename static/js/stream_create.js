@@ -328,7 +328,7 @@ exports.create_handlers_for_users = function (container) {
 
     container.on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
-        $("#copy-from-stream-expand-collapse .toggle").toggleClass('icon-vector-caret-right icon-vector-caret-down');
+        $("#copy-from-stream-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
         e.preventDefault();
         update_announce_stream_state();
     });
