@@ -69,6 +69,25 @@ exports.password_warning = function (password, password_field) {
     return zxcvbn(password).feedback.warning || i18n.t("Password is too weak");
 };
 
+exports.phrase_match = function (query, phrase) {
+    // match "tes" to "test" and "stream test" but not "hostess"
+    var i;
+    query = query.toLowerCase();
+
+    phrase = phrase.toLowerCase();
+    if (phrase.indexOf(query) === 0) {
+        return true;
+    }
+
+    var parts = phrase.split(' ');
+    for (i = 0; i < parts.length; i += 1) {
+        if (parts[i].indexOf(query) === 0) {
+            return true;
+        }
+    }
+    return false;
+};
+
 return exports;
 
 }());

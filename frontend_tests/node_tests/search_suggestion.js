@@ -7,6 +7,7 @@ zrequire('stream_data');
 zrequire('topic_data');
 zrequire('people');
 zrequire('unread');
+zrequire('common');
 var search = zrequire('search_suggestion');
 
 var bob = {

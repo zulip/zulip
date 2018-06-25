@@ -2,27 +2,8 @@ var search_suggestion = (function () {
 
 var exports = {};
 
-function phrase_match(phrase, q) {
-    // match "tes" to "test" and "stream test" but not "hostess"
-    var i;
-    q = q.toLowerCase();
-
-    phrase = phrase.toLowerCase();
-    if (phrase.indexOf(q) === 0) {
-        return true;
-    }
-
-    var parts = phrase.split(' ');
-    for (i = 0; i < parts.length; i += 1) {
-        if (parts[i].indexOf(q) === 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
 function stream_matches_query(stream_name, q) {
-    return phrase_match(stream_name, q);
+    return common.phrase_match(q, stream_name);
 }
 
 function highlight_person(query, person) {
@@ -325,7 +306,7 @@ function get_topic_suggestions(last, operators) {
 
     if (guess !== '') {
         topics = _.filter(topics, function (topic) {
-            return phrase_match(topic, guess);
+            return common.phrase_match(guess, topic);
         });
     }
 
@@ -531,7 +512,7 @@ function get_operator_suggestions(last) {
 
     var choices = ['stream', 'topic', 'pm-with', 'sender', 'near', 'from', 'group-pm-with'];
     choices = _.filter(choices, function (choice) {
-        return phrase_match(choice, last_operand);
+        return common.phrase_match(last_operand, choice);
     });
 
     return _.map(choices, function (choice) {
