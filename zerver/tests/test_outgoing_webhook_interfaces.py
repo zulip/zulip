@@ -54,7 +54,7 @@ mock_service = Service()
 class TestSlackOutgoingWebhookService(ZulipTestCase):
 
     def setUp(self) -> None:
-        self.event = {
+        self.stream_message_event = {
             u'command': '@**test**',
             u'user_profile_id': 12,
             u'service_name': 'test-service',
@@ -76,8 +76,8 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                                                    user_profile=None,
                                                    service_name='test-service')
 
-    def test_process_event(self) -> None:
-        rest_operation, request_data = self.handler.process_event(self.event)
+    def test_process_event_stream_message(self, mock_get_service_profile: mock.Mock) -> None:
+        rest_operation, request_data = self.handler.process_event(self.stream_message_event)
 
         self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
         self.assertEqual(rest_operation['method'], 'POST')
@@ -96,9 +96,9 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
     def test_process_success(self) -> None:
         response = mock.Mock(spec=Response)
         response.text = json.dumps({"response_not_required": True})
-        success_response, _ = self.handler.process_success(response, self.event)
+        success_response, _ = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, None)
 
         response.text = json.dumps({"text": 'test_content'})
-        success_response, _ = self.handler.process_success(response, self.event)
+        success_response, _ = self.handler.process_success(response, self.stream_message_event)
         self.assertEqual(success_response, 'test_content')
