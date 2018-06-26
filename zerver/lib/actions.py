@@ -2253,7 +2253,7 @@ def validate_user_access_to_subscribers_helper(user_profile: Optional[UserProfil
         return
 
     if (stream_dict["invite_only"] and not check_user_subscribed()):
-        raise JsonableError(_("Unable to retrieve subscribers for invite-only stream"))
+        raise JsonableError(_("Unable to retrieve subscribers for private stream"))
 
 def bulk_get_subscriber_user_ids(stream_dicts: Iterable[Mapping[str, Any]],
                                  user_profile: UserProfile,
