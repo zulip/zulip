@@ -1522,7 +1522,7 @@ run_test('user_presence_rows', () => {
     html += '</ul>';
 
     var a = $(html).find("a:first");
-    assert.equal(a.text(), 'King Lear');
+    assert.equal(a.text().trim(), 'King Lear');
 });
 
 run_test('user_profile_modal', () => {
