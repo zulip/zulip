@@ -119,8 +119,6 @@ var poll_data_holder = function () {
 };
 
 exports.activate = function (opts) {
-    var self = {};
-
     var elem = opts.elem;
     var callback = opts.callback;
 
@@ -159,7 +157,7 @@ exports.activate = function (opts) {
         });
     }
 
-    self.handle_events = function (events) {
+    elem.handle_events = function (events) {
         _.each(events, function (event) {
             poll_data.handle_event(event.sender_id, event.data);
         });
@@ -168,8 +166,6 @@ exports.activate = function (opts) {
 
     render();
     render_results();
-
-    return self;
 };
 
 return exports;
