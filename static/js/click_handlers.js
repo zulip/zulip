@@ -728,15 +728,6 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
-
-        var $settings_overlay_container = $("#settings_overlay_container");
-        $settings_overlay_container.find(".right").addClass("show");
-        $settings_overlay_container.find(".settings-header.mobile").addClass("slide-left");
-
-        settings.set_settings_header($(this).attr("data-section"));
-    });
-
     $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
