@@ -733,8 +733,9 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         email = 'hambot-bot@zulip.testserver'
         profile = get_user('hambot-bot@zulip.testserver', get_realm('zulip'))
 
+        bad_bot_owner_id = 999999
         bot_info = {
-            'bot_owner_id': 100,
+            'bot_owner_id': bad_bot_owner_id,
         }
         result = self.client_patch("/json/bots/{}".format(self.get_bot_user(email).id), bot_info)
         self.assert_json_error(result, "Failed to change owner, no such user")
