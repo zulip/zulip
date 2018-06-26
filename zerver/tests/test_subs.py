@@ -2770,9 +2770,9 @@ class InviteOnlyStreamTest(ZulipTestCase):
         self.assertIn("subscriptions", result.json())
         for sub in result.json()["subscriptions"]:
             if sub['name'] == "Normandy":
-                self.assertEqual(sub['invite_only'], False, "Normandy was mistakenly marked invite-only")
+                self.assertEqual(sub['invite_only'], False, "Normandy was mistakenly marked private")
             if sub['name'] == "Saxony":
-                self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked invite-only")
+                self.assertEqual(sub['invite_only'], True, "Saxony was not properly marked private")
 
     @slow("lots of queries")
     def test_inviteonly(self) -> None:

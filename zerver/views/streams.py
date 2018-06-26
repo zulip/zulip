@@ -308,7 +308,7 @@ def add_subscriptions_backend(
 
     if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
-            return json_error(_("You can only invite other Zephyr mirroring users to invite-only streams."))
+            return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])
