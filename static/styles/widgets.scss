@@ -23,6 +23,12 @@
 
 .poll-widget li {
     list-style: none;
+    margin: 2px 2px 2px 0px;
+}
+
+.poll-widget ul {
+    margin: 0px 0px 5px 0px;
+    padding: 0;
 }
 
 .poll-widget .poll-names {
@@ -32,4 +38,32 @@
 
 .poll-widget .poll-option {
     font-weight: 600;
+}
+
+.poll-vote {
+    border-radius: 2px;
+    color: #3c906e;
+    border-color: #9dc8b7;
+    margin-right: 4px;
+    background-color: white;
+}
+
+.poll-vote:hover {
+    border-color: #59a687;
+}
+
+input.poll-comment, button.poll-comment {
+    padding: 4px 6px;
+    margin: 2px 0px 2px 0px;
+}
+
+button.poll-comment {
+    border-radius: 3px;
+    border: 1px solid #cccccc;
+    background-color: white;
+    width: 100px;
+}
+
+button.poll-comment:hover {
+    border-color: #999999;
 }
