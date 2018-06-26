@@ -107,17 +107,25 @@
 }
 
 .group-pm-link,
+.user-presence-link,
 .user_sidebar_entry .selectable_sidebar_block {
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .user_sidebar_entry .selectable_sidebar_block {
-    width: 100%;
+    width: calc(100% - 16px);
+    display: flex;
+    flex-direction: row;
+}
+
+.user-presence-link {
+    width: calc(100% - 24px);
 }
 
 .group-pm-link {
-    display: block;
+    width: calc(100% - 60px);
+    display: inline-block;
 }
 
 .selectable_sidebar_block {
@@ -133,6 +141,7 @@
 
 .user_sidebar_entry .count,
 .group-pms-sidebar-entry .count {
+    float: right;
     padding: 0 4px;
     background: hsl(105, 2%, 50%);
     border-radius: 0px;
@@ -145,12 +154,15 @@
     position: relative;
     top: 3px;
     border-radius: 4px;
-    margin-right: 15px;
+    margin-left: 5px;
 }
 
 .user_sidebar_entry .count {
-    margin-left: 2px;
     display: none;
+}
+
+.group-pms-sidebar-entry .count {
+    margin-right: 16px;
 }
 
 .user_sidebar_entry.user-with-count .count {
