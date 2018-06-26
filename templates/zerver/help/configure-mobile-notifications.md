@@ -10,5 +10,3 @@ want mobile notifications only when you're offline.
 
     Check the box by **Mobile push notifications always (even when online)** if
 you always want mobile notifications.
-
-{!save-changes.md!} notification settings.
