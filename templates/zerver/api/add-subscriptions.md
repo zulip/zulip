@@ -4,6 +4,10 @@ Subscribe one or more users to one or more streams.
 
 `POST {{ api_url }}/v1/users/me/subcriptions`
 
+If any of the specified streams do not exist, they are automatically
+created, and configured using the `invite_only` setting specified in
+the arguments (see below).
+
 ## Usage examples
 <div class="code-section" markdown="1">
 <ul class="nav">
