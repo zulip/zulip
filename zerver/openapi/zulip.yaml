@@ -564,6 +564,44 @@ paths:
                         "msg": "You don't have permission to edit this message",
                         "result": "error"
                     }
+    delete:
+      description: Delete a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message to delete.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400_invalid_message':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
+        '400_not_admin':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to delete this message",
+                        "result": "error"
+                    }
   /messages/render:
     post:
       description: Render a message to HTML.

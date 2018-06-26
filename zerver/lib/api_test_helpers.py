@@ -435,6 +435,32 @@ def test_update_message_edit_permission_error(client, nonadmin_client):
     fixture = FIXTURES['update-message-edit-permission-error']
     test_against_fixture(result, fixture)
 
+def delete_message(client, message_id):
+    # type: (Client, int) -> None
+
+    # {code_example|start}
+    # Delete the message with ID "message_id"
+    result = client.delete_message(message_id)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
+                                    '200')
+
+def test_delete_message_edit_permission_error(client, nonadmin_client):
+    # type: (Client, Client) -> None
+    request = {
+        "type": "stream",
+        "to": "Denmark",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }
+    result = client.send_message(request)
+
+    result = nonadmin_client.delete_message(result['id'])
+
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'delete',
+                                    '400_not_admin')
+
 def register_queue(client):
     # type: (Client) -> str
 
@@ -541,6 +567,7 @@ TEST_FUNCTIONS = {
     '/messages:post': send_message,
     '/messages/{message_id}:get': get_raw_message,
     '/messages/{message_id}:patch': update_message,
+    '/messages/{message_id}:delete': delete_message,
     '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
@@ -612,11 +639,12 @@ def test_messages(client, nonadmin_client):
     update_message(client, message_id)
     get_raw_message(client, message_id)
     get_messages(client)
+    delete_message(client, message_id)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
     test_update_message_edit_permission_error(client, nonadmin_client)
-
+    test_delete_message_edit_permission_error(client, nonadmin_client)
 
 def test_users(client):
     # type: (Client) -> None
