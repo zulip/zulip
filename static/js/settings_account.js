@@ -69,6 +69,12 @@ exports.add_custom_profile_fields_to_settings = function () {
     }
 
     $("#account-settings .custom-profile-fields-form").html("");
+    if (page_params.custom_profile_fields.length > 0) {
+        $("#account-settings #custom-field-header").show();
+    } else {
+        $("#account-settings #custom-field-header").hide();
+    }
+
     var all_custom_fields = page_params.custom_profile_fields;
 
     all_custom_fields.forEach(function (field) {
@@ -392,6 +398,15 @@ exports.set_up = function () {
         e.preventDefault();
         e.stopPropagation();
         $("#deactivate_self_modal").modal("show");
+    });
+
+    $('#settings_page').on('click', '.custom_user_field .remove_date', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        var field = $(e.target).parent('.custom_user_field').expectOne();
+        var field_id = parseInt($(field).attr("data-field-id"), 10);
+        $(e.target).prev(".custom_user_field_value").val("");
+        update_user_custom_profile_fields([field_id], channel.del);
     });
 
     $('#settings_page').on('change', '.custom_user_field_value', function (e) {

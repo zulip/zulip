@@ -21,6 +21,7 @@
         "./static/js/common.js",
         "./node_modules/moment/min/moment.min.js",
         "./node_modules/moment-timezone/builds/moment-timezone-with-data.min.js",
+        "./node_modules/sortablejs/Sortable.js",
         "./static/third/bootstrap/css/bootstrap.css",
         "./static/third/bootstrap/css/bootstrap-btn.css",
         "./static/third/bootstrap/css/bootstrap-responsive.css",

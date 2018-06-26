@@ -85,26 +85,6 @@ function delete_choice_row(e) {
     row.remove();
 }
 
-function move_field(e, btn, direction) {
-    e.preventDefault();
-    e.stopPropagation();
-    var button_id = parseInt(btn.attr('data-profile-field-id'), 10);
-    var button_index = order.indexOf(button_id);
-    order[button_index] = order[button_index + direction];
-    order[button_index + direction] = button_id;
-    settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields",
-                                   {order: JSON.stringify(order)},
-                                   $('#admin-profile-field-status').expectOne());
-}
-
-function move_field_up(e) {
-    move_field(e, $(this), -1);
-}
-
-function move_field_down(e) {
-    move_field(e, $(this), 1);
-}
-
 function get_profile_field_info(id) {
     var info = {};
     info.row = $("tr.profile-field-row[data-profile-field-id='" + id + "']");
@@ -166,6 +146,16 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
+function update_field_order() {
+    order = [];
+    $('.profile-field-row').each(function () {
+        order.push(parseInt($(this).attr('data-profile-field-id'), 10));
+    });
+    settings_ui.do_settings_change(channel.patch, "/json/realm/profile_fields",
+                                   {order: JSON.stringify(order)},
+                                   $('#admin-profile-field-status').expectOne());
+}
+
 exports.populate_profile_fields = function (profile_fields_data) {
     if (!meta.loaded) {
         // If outside callers call us when we're not loaded, just
@@ -178,10 +168,11 @@ exports.populate_profile_fields = function (profile_fields_data) {
 exports.do_populate_profile_fields = function (profile_fields_data) {
     // We should only call this internally or from tests.
     var profile_fields_table = $("#admin_profile_fields_table").expectOne();
+
     profile_fields_table.find("tr.profile-field-row").remove();  // Clear all rows.
     profile_fields_table.find("tr.profile-field-form").remove();  // Clear all rows.
     order = [];
-    _.each(profile_fields_data, function (profile_field, index) {
+    _.each(profile_fields_data, function (profile_field) {
         order.push(profile_field.id);
         var field_data = {};
         if (profile_field.field_data !== "") {
@@ -220,12 +211,16 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                         is_choice_field: is_choice_field,
                     },
                     can_modify: page_params.is_admin,
-                    first: index === 0,
-                    last: index === _.size(profile_fields_data) - 1,
                 }
             )
         );
     });
+    if (page_params.is_admin) {
+        var field_list = $("#admin_profile_fields_table")[0];
+        Sortable.create(field_list, {
+            onUpdate: update_field_order,
+        });
+    }
     loading.destroy_indicator($('#admin_page_profile_fields_loading_indicator'));
 };
 
@@ -260,8 +255,6 @@ exports.set_up = function () {
     $('#admin_profile_fields_table').on('click', '.delete', delete_profile_field);
     $(".organization").on("submit", "form.admin-profile-field-form", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
-    $("#admin_profile_fields_table").on("click", ".move-field-up", move_field_up);
-    $("#admin_profile_fields_table").on("click", ".move-field-down", move_field_down);
     set_up_choices_field();
 };
 

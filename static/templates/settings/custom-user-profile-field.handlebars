@@ -4,9 +4,7 @@
     <textarea maxlength="500" class="custom_user_field_value">{{ field_value }}</textarea>
     {{else if is_choice_field}}
     <select class="custom_user_field_value">
-        {{#unless field_value}}
-        <option></option>
-        {{/unless}}
+        <option value="">--{{t 'Select' }}--</option>
         {{#each field_choices}}
         <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
         {{/each}}
@@ -18,6 +16,7 @@
     {{else if is_date_field }}
     <input class="custom_user_field_value datepicker" data-field-id="{{ field.id }}" type="text"
       value="{{ field_value }}" />
+    <span class="remove_date">x</span>
     {{else}}
     <input class="custom_user_field_value" type="{{ field_type }}" value="{{ field_value }}" maxlength="50" />
     {{/if}}
