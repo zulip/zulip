@@ -7,5 +7,3 @@ for private messages and @-mentions sent while you are offline.
 
 2. Select the **Email notifications** option under the
 **Private messages and @-mentions** section.
-
-{!save-changes.md!} notification settings.
