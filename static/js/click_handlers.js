@@ -729,7 +729,6 @@ exports.initialize = function () {
     });
 
     $("#settings_overlay_container .sidebar").on("click", "li[data-section]", function () {
-        var $this = $(this);
 
         var $settings_overlay_container = $("#settings_overlay_container");
         $settings_overlay_container.find(".right").addClass("show");
