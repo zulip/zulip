@@ -36,7 +36,7 @@ follows:
    you'll each need to log out and log back in again in order to start
    getting push notifications.
 
-Congratulations!  You've successful setup the service.
+Congratulations!  You've successfully setup the service.
 
 If you'd like to verify that everything is working, you can do the
 following.  Please follow the instructions carefully:
@@ -149,7 +149,7 @@ that they possess.
 This solution is possible with Zulip, but it requires the server
 administrators to publish their own copies of
 the Zulip mobile apps (and there's nothing the Zulip team can do to
-eliminate this onorous requirement).
+eliminate this onerous requirement).
 
 The main work is distributing your own copies of the Zulip mobile apps
 configured to use APNS/GCM keys that you generate.  This is not for
