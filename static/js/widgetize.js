@@ -8,6 +8,14 @@ widgets.poll = voting_widget;
 widgets.tictactoe = tictactoe_widget;
 widgets.zform = zform;
 
+var widget_contents = {};
+exports.widget_content = widget_contents;
+
+function set_widget_in_message(row, widget_elem) {
+    var content_holder = row.find('.message_content');
+    content_holder.empty().append(widget_elem);
+}
+
 exports.activate = function (in_opts) {
     var widget_type = in_opts.widget_type;
     var extra_data = in_opts.extra_data;
@@ -23,17 +31,6 @@ exports.activate = function (in_opts) {
         return;
     }
 
-    var content_holder = row.find('.message_content');
-
-    var widget_elem;
-    if (message.widget) {
-        // Use local to work around linter.  We can trust this
-        // value because it comes from a template.
-        widget_elem = message.widget_elem;
-        content_holder.html(widget_elem);
-        return;
-    }
-
     var callback = function (data) {
         post_to_server({
             msg_type: 'widget',
@@ -41,34 +38,53 @@ exports.activate = function (in_opts) {
         });
     };
 
+    if (row.attr('id').startsWith('zhome') && narrow_state.active()) {
+        // Don't place widget in a homw message row if we are narrowed
+        // to active state
+        return;
+    }
+
+    var widget_elem = widget_contents[message.id];
+    if (widget_elem) {
+        set_widget_in_message(row, widget_elem);
+        return;
+    }
+
     // We depend on our widgets to use templates to build
     // the HTML that will eventually go in this div.
-    widget_elem = $('<div>');
-    content_holder.html(widget_elem);
+    widget_elem = $('<div>').addClass('widget-content');
 
-    var widget = widgets[widget_type].activate({
+    widgets[widget_type].activate({
         elem: widget_elem,
         callback: callback,
         message: message,
         extra_data: extra_data,
     });
 
-    // This is hacky, we should just maintain our own list.
-    message.widget = widget;
-    message.widget_elem = widget_elem;
+    widget_contents[message.id] = widget_elem;
+    set_widget_in_message(row, widget_elem);
 
     // Replay any events that already happened.  (This is common
     // when you narrow to a message after other users have already
     // interacted with it.)
     if (events.length > 0) {
-        widget.handle_events(events);
+        widget_elem.handle_events(events);
     }
 };
 
-exports.handle_event = function (widget_event) {
-    var message = message_store.get(widget_event.message_id);
+$(document).on('narrow_deactivated.zulip', function () {
+    _.each(widget_contents, function (widget_elem, idx) {
+        if (current_msg_list.get(idx) !== undefined) {
+            var row = current_msg_list.get_row(idx);
+            set_widget_in_message(row, widget_elem);
+        }
+    });
+});
 
-    if (!message || !message.widget) {
+exports.handle_event = function (widget_event) {
+    var widget_elem = widget_contents[widget_event.message_id];
+
+    if (!widget_elem) {
         // It is common for submessage events to arrive on
         // messages that we don't yet have in view. We
         // just ignore them completely here.
@@ -77,7 +93,7 @@ exports.handle_event = function (widget_event) {
 
     var events = [widget_event];
 
-    message.widget.handle_events(events);
+    widget_elem.handle_events(events);
 };
 
 return exports;
