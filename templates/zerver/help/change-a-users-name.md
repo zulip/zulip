@@ -14,5 +14,3 @@ the name of the user you want to change.
 3. After clicking on the pencil icon, an input field labeled **Full name** will
 appear to allow you to change the user's name. Enter the user's new name in
 **Full name**.
-
-{!save-changes.md!} account settings.
