@@ -70,6 +70,10 @@ zrequire('compose_pm_pill');
 zrequire('compose');
 zrequire('upload');
 
+people.small_avatar_url_for_person = function () {
+    return 'http://example.com/example.png';
+};
+
 var me = {
     email: 'me@example.com',
     user_id: 30,

@@ -36,12 +36,15 @@ exports.create_item_from_email = function (email, current_items) {
         return;
     }
 
+    var avatar_url = people.small_avatar_url_for_person(user);
+
     // We must supply display_value for the widget to work.  Everything
     // else is for our own use in callbacks.
     var item = {
         display_value: user.full_name,
         user_id: user.user_id,
         email: user.email,
+        img_src: avatar_url,
     };
 
     return item;
@@ -54,11 +57,13 @@ exports.get_email_from_item = function (item) {
 exports.append_person = function (opts) {
     var person = opts.person;
     var pill_widget = opts.pill_widget;
+    var avatar_url = people.small_avatar_url_for_person(person);
 
     pill_widget.appendValidatedData({
         display_value: person.full_name,
         user_id: person.user_id,
         email: person.email,
+        img_src: avatar_url,
     });
     if (pill_widget.clear_text !== undefined) {
         pill_widget.clear_text();
