@@ -2,7 +2,7 @@ var voting_widget = (function () {
 
 var exports = {};
 
-var poll_data_holder = function () {
+var poll_data_holder = function (is_my_poll) {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
@@ -10,6 +10,7 @@ var poll_data_holder = function () {
     var self = {};
 
     var me = people.my_current_user_id();
+    var poll_question = '';
     var key_to_comment = {};
     var my_idx = 1;
 
@@ -30,6 +31,7 @@ var poll_data_holder = function () {
 
         var widget_data = {
             comments: comments,
+            question: poll_question,
         };
 
         return widget_data;
@@ -64,6 +66,26 @@ var poll_data_holder = function () {
                 if (my_idx <= idx) {
                     my_idx = idx + 1;
                 }
+            },
+        },
+
+        question: {
+            outbound: function (question) {
+                var event = {
+                    type: 'question',
+                    question: question,
+                };
+                poll_question = question;
+
+                if (is_my_poll) {
+                    return event;
+                }
+                return;
+
+            },
+
+            inbound: function (sender_id, data) {
+                poll_question = data.question;
             },
         },
 
@@ -120,7 +142,8 @@ exports.activate = function (opts) {
     var elem = opts.elem;
     var callback = opts.callback;
 
-    var poll_data = poll_data_holder();
+    var is_my_poll = people.is_my_user_id(opts.message.sender_id);
+    var poll_data = poll_data_holder(is_my_poll);
 
     function render() {
         var html = templates.render('poll-widget');
@@ -139,12 +162,43 @@ exports.activate = function (opts) {
             var data = poll_data.handle.new_comment.outbound(comment);
             callback(data);
         });
+
+        elem.find("button.poll-question").on('click', function (e) {
+            e.stopPropagation();
+            var question = elem.find("input.poll-question").val().trim();
+
+            if (question === '') {
+                return;
+            }
+
+            elem.find(".poll-question").val('').focus();
+
+            var data = poll_data.handle.question.outbound(question);
+            callback(data);
+        });
     }
 
     function render_results() {
         var widget_data = poll_data.get_widget_data();
         var html = templates.render('poll-widget-results', widget_data);
         elem.find('ul.poll-widget').html(html);
+
+        elem.find('.poll-question-header').text(widget_data.question);
+        if (!is_my_poll) {
+            if (widget_data.question !== '') {
+                // For the non-senders, we hide the question input bar
+                // when we have a question assigned to the poll
+                elem.find('.poll-question-bar').hide();
+            } else {
+                // For the non-senders we disable the question input bar
+                // when we have no question assigned to the poll
+                elem.find('button.poll-question').attr('disabled', true);
+                elem.find('input.poll-question').attr('disabled', true);
+            }
+        }
+        if (widget_data.question !== '') {
+            elem.find('button.poll-question').text(i18n.t('Edit question'));
+        }
 
         elem.find("button.poll-vote").on('click', function (e) {
             e.stopPropagation();
