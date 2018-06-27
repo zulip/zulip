@@ -52,18 +52,21 @@
     border-color: #59a687;
 }
 
-input.poll-comment, button.poll-comment {
+input.poll-comment,
+button.poll-comment,
+input.poll-question,
+button.poll-question {
     padding: 4px 6px;
     margin: 2px 0px 2px 0px;
 }
 
-button.poll-comment {
+button.poll-comment, button.poll-question {
     border-radius: 3px;
     border: 1px solid #cccccc;
     background-color: white;
     width: 100px;
 }
 
-button.poll-comment:hover {
+button.poll-comment:hover, button.poll-question:hover {
     border-color: #999999;
 }
