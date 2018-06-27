@@ -3,15 +3,17 @@ from functools import wraps
 import logging
 import os
 from typing import Any, Callable, Optional, TypeVar
+import ujson
 
 from django.conf import settings
+from django.db import transaction
 from django.utils.translation import ugettext as _
 import stripe
 
 from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
-from zerver.lib.timestamp import datetime_to_timestamp
-from zerver.models import Realm, UserProfile
+from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
+from zerver.models import Realm, UserProfile, RealmAuditLog
 from zilencer.models import Customer, Plan
 from zproject.settings import get_secret
 
@@ -108,6 +110,11 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         source=stripe_token)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
+    event_time = timestamp_to_datetime(stripe_customer.created)
+    RealmAuditLog.objects.create(
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_START, event_time=event_time)
+    RealmAuditLog.objects.create(
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.CARD_ADDED, event_time=event_time)
     return Customer.objects.create(
         realm=realm,
         stripe_customer_id=stripe_customer.id,
@@ -116,6 +123,8 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(customer: Customer, stripe_plan_id: int,
                                   seat_count: int, tax_percent: float) -> None:
+    # TODO: check that there are no existing live Stripe subscriptions
+    # (canceled subscriptions are ok)
     stripe_subscription = stripe.Subscription.create(
         customer=customer.stripe_customer_id,
         billing='charge_automatically',
@@ -127,3 +136,21 @@ def do_subscribe_customer_to_plan(customer: Customer, stripe_plan_id: int,
         tax_percent=tax_percent)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_subscription": ', str(stripe_subscription), ',']))  # nocoverage
+    with transaction.atomic():
+        customer.realm.has_seat_based_plan = True
+        customer.realm.save(update_fields=['has_seat_based_plan'])
+        RealmAuditLog.objects.create(
+            realm=customer.realm,
+            acting_user=customer.billing_user,
+            event_type=RealmAuditLog.PLAN_START,
+            event_time=timestamp_to_datetime(stripe_subscription.created),
+            extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count}))
+
+        current_seat_count = get_seat_count(customer.realm)
+        if seat_count != current_seat_count:
+            RealmAuditLog.objects.create(
+                realm=customer.realm,
+                event_type=RealmAuditLog.PLAN_UPDATE_QUANTITY,
+                event_time=timestamp_to_datetime(stripe_subscription.created),
+                requires_billing_update=True,
+                extra_data=ujson.dumps({'quantity': current_seat_count}))
