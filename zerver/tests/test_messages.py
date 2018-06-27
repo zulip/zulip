@@ -1859,6 +1859,22 @@ class EditMessageTest(ZulipTestCase):
                           '</span> <span class="highlight_text_deleted"> Link: http://www.zulip.org .'
                           '</span> </a></p>'))
 
+    def test_edit_history_unedited(self) -> None:
+        self.login(self.example_email('hamlet'))
+
+        msg_id = self.send_stream_message(
+            self.example_email('hamlet'),
+            'Scotland',
+            topic_name='editing',
+            content='This message has not been edited.')
+
+        result = self.client_get('/json/messages/{}/history'.format(msg_id))
+
+        self.assert_json_success(result)
+
+        message_history = result.json()['message_history']
+        self.assert_length(message_history, 1)
+
     def test_user_info_for_updates(self) -> None:
         hamlet = self.example_user('hamlet')
         cordelia = self.example_user('cordelia')
