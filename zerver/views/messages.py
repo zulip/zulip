@@ -1240,7 +1240,12 @@ def fill_edit_history_entries(message_history: List[Dict[str, Any]], message: Me
     prev_content = message.content
     prev_rendered_content = message.rendered_content
     prev_topic = message.subject
-    assert(datetime_to_timestamp(message.last_edit_time) == message_history[0]['timestamp'])
+
+    # Make sure that the latest entry in the history corresponds to the
+    # message's last edit time
+    if len(message_history) > 0:
+        assert(datetime_to_timestamp(message.last_edit_time) ==
+               message_history[0]['timestamp'])
 
     for entry in message_history:
         entry['topic'] = prev_topic
@@ -1277,7 +1282,10 @@ def get_message_edit_history(request: HttpRequest, user_profile: UserProfile,
     message, ignored_user_message = access_message(user_profile, message_id)
 
     # Extract the message edit history from the message
-    message_edit_history = ujson.loads(message.edit_history)
+    if message.edit_history is not None:
+        message_edit_history = ujson.loads(message.edit_history)
+    else:
+        message_edit_history = []
 
     # Fill in all the extra data that will make it usable
     fill_edit_history_entries(message_edit_history, message)
