@@ -1,4 +1,7 @@
 <div class='pill' data-id='{{ id }}' tabindex=0>
+    {{#if has_image}}
+    <img class="pill-image" src={{img_src}} />
+    {{/if}}
     {{ display_value }}
     <div class='exit'>
         &times;

@@ -8,13 +8,13 @@ global.compile_template('input_pill');
 set_global('blueslip', global.make_zblueslip());
 
 var noop = function () {};
+var example_img_link = 'http://example.com/example.png';
 
 set_global('ui_util', {
     place_caret_at_end: noop,
 });
 
 var id_seq = 0;
-
 run_test('set_up_ids', () => {
     // just get coverage on a simple one-liner:
     input_pill.random_id();
@@ -26,11 +26,18 @@ run_test('set_up_ids', () => {
 });
 
 
-function pill_html(value, data_id) {
+function pill_html(value, data_id, img_src) {
+    var has_image = img_src !== undefined;
+
     var opts = {
         id: data_id,
         display_value: value,
+        has_image: has_image,
     };
+
+    if (has_image) {
+        opts.img_src = img_src;
+    }
 
     return templates.render('input_pill', opts);
 }
@@ -65,10 +72,11 @@ run_test('basics', () => {
     var item = {
         display_value: 'JavaScript',
         language: 'js',
+        img_src: example_img_link,
     };
 
     var inserted_before;
-    var expected_html = pill_html('JavaScript', 'some_id1');
+    var expected_html = pill_html('JavaScript', 'some_id1', example_img_link);
 
     pill_input.before = function (elem) {
         inserted_before = true;
@@ -87,6 +95,7 @@ run_test('insert_remove', () => {
         blue: {
             display_value: 'BLUE',
             description: 'color of the sky',
+            img_src: example_img_link,
         },
 
         red: {
@@ -143,7 +152,7 @@ run_test('insert_remove', () => {
     assert(!removed);
 
     assert.deepEqual(inserted_html, [
-        pill_html('BLUE', 'some_id1'),
+        pill_html('BLUE', 'some_id1', example_img_link),
         pill_html('RED', 'some_id2'),
         pill_html('YELLOW', 'some_id3'),
     ]);
