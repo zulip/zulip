@@ -248,6 +248,8 @@ class Realm(models.Model):
         BOT_CREATION_ADMINS_ONLY,
     ]
 
+    has_seat_based_plan = models.BooleanField(default=False)  # type: bool
+
     def authentication_methods_dict(self) -> Dict[str, bool]:
         """Returns the a mapping from authentication flags to their status,
         showing only those authentication flags that are supported on
@@ -1946,12 +1948,20 @@ class RealmAuditLog(models.Model):
     modified_user = models.ForeignKey(UserProfile, null=True, related_name='+', on_delete=CASCADE)  # type: Optional[UserProfile]
     modified_stream = models.ForeignKey(Stream, null=True, on_delete=CASCADE)  # type: Optional[Stream]
     event_last_message_id = models.IntegerField(null=True)  # type: Optional[int]
-    event_type = models.CharField(max_length=40)  # type: str
+
     event_time = models.DateTimeField(db_index=True)  # type: datetime.datetime
     # If True, event_time is an overestimate of the true time. Can be used
     # by migrations when introducing a new event_type.
     backfilled = models.BooleanField(default=False)  # type: bool
+    requires_billing_update = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
+
+    # Partial list of event_types.
+    STRIPE_START = 'stripe_start'
+    CARD_ADDED = 'card_added'
+    PLAN_START = 'plan_start'
+    PLAN_UPDATE_QUANTITY = 'plan_update_quantity'
+    event_type = models.CharField(max_length=40)  # type: str
 
     def __str__(self) -> str:
         if self.modified_user is not None:
