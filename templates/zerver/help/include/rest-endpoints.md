@@ -8,6 +8,7 @@
 * [Upload a file](/api/upload-file)
 * [Delete a message](/api/delete-message)
 * [Construct a narrow](/api/construct-narrow)
+* [Get a message's history](/api/get-message-history)
 
 #### Streams
 
