@@ -3,7 +3,11 @@ zrequire('input_pill');
 zrequire('user_pill');
 
 set_global('$', global.make_zjquery());
-set_global('people', {});
+set_global('people', {
+    small_avatar_url_for_person: function () {
+        return 'http://example.com/example.png';
+    },
+});
 var pills = {
     pill: {},
 };
