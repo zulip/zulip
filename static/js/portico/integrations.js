@@ -87,8 +87,8 @@ function update_categories() {
     } else {
         $dropdown_label.text(CATEGORIES[state.category]);
         $dropdown_icon
-            .removeClass('icon-vector-angle-right')
-            .addClass('icon-vector-angle-down');
+            .removeClass('fa-angle-right')
+            .addClass('fa-angle-down');
     }
 
     $('.integration-lozenges').animate(
@@ -341,12 +341,12 @@ function integration_events() {
         if ($dropdown_list.css('display') === 'none' &&
             state.category === INITIAL_STATE.category) {
             $('.integration-categories-dropdown i')
-                .removeClass('icon-vector-angle-down')
-                .addClass('icon-vector-angle-right');
+                .removeClass('fa-angle-down')
+                .addClass('fa-angle-right');
         } else {
             $('.integration-categories-dropdown i')
-                .removeClass('icon-vector-angle-right')
-                .addClass('icon-vector-angle-down');
+                .removeClass('fa-angle-right')
+                .addClass('fa-angle-down');
         }
     });
 
