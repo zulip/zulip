@@ -609,6 +609,66 @@ paths:
                         "msg": "You don't have permission to delete this message",
                         "result": "error"
                     }
+  /messages/{message_id}/history:
+    get:
+      description: Get the different versions of a previously edited message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message you want to fetch the history of.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    message_history:
+                      type: array
+                      items:
+                        type: object
+                      description: A chronologically sorted array of
+                        `snapshot` objects, each one with the values of the
+                        message after the edition.
+                - example:
+                    {
+                        "message_history": [
+                            {
+                                "content": "Hello!",
+                                "topic": "party at my houz",
+                                "rendered_content": "<p>Hello!</p>",
+                                "timestamp": 1530129122,
+                                "user_id": 5
+                            },
+                            {
+                                "topic": "party at my house",
+                                "content": "Howdy!",
+                                "prev_content": "Hello!",
+                                "rendered_content": "<p>Howdy!</p>",
+                                "user_id": 5,
+                                "prev_rendered_content": "<p>Hello!</p>",
+                                "content_html_diff": "<div><p><span class=\"highlight_text_inserted\">Howdy!</span></p> <p><span class=\"highlight_text_deleted\">Hello!</span></p></div>",
+                                "prev_topic": "party at my houz",
+                                "timestamp": 1530129134
+                            }
+                        ],
+                        "msg": "",
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
   /messages/render:
     post:
       description: Render a message to HTML.
