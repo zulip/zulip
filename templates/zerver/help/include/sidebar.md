@@ -96,6 +96,7 @@
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 * [Using custom/self-signed certificates](/help/custom-certificates)
+* [Connect through a proxy server](/help/connect-through-proxy)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
