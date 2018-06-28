@@ -2585,7 +2585,7 @@ nav ul li.active::after {
 
 .portico-landing.integrations .integration-categories-dropdown {
     cursor: pointer;
-    margin: 30px 0;
+    margin: 30px auto;
     display: none;
 }
 
@@ -3363,6 +3363,7 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-categories-dropdown {
         display: block;
+        width: 670px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown h3,
@@ -3520,6 +3521,15 @@ nav ul li.active::after {
     .tour .carousel-inner .tour-item-header {
         font-size: 1.1em;
     }
+   .portico-landing.integrations .integration-categories-dropdown {
+       width: 666px;
+   }
+}
+
+@media (max-width: 786px) {
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 509px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -3655,6 +3665,10 @@ nav ul li.active::after {
 
     .portico-landing.features-app section {
         padding: 0px 20px;
+    }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 666px;
     }
 
     .billing-upgrade-page {
@@ -3901,11 +3915,21 @@ nav ul li.active::after {
     .tour .carousel-inner button.call-to-action {
         margin: 40px auto;
     }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 509px;
+    }
 }
 
 @media (max-width: 640px) {
     .portico-landing.hello .integrations .integration-icons .group {
         margin: 10px 16px 0 16px;
+    }
+}
+
+@media (max-width: 578px) {
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 351px;
     }
 }
 
@@ -4103,6 +4127,10 @@ nav ul li.active::after {
     .portico-landing.features-app section.keyboard-shortcuts::after {
         left: 0;
     }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 323px;
+    }
 }
 
 @media (max-width: 357px) {
@@ -4126,6 +4154,10 @@ nav ul li.active::after {
 
     .portico-landing.integrations .integration-lozenge .integration-category {
         font-size: .77em;
+    }
+
+    .portico-landing.integrations .integration-categories-dropdown {
+        width: 299px;
     }
 }
 
