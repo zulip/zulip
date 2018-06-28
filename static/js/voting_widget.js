@@ -55,8 +55,6 @@ var poll_data_holder = function () {
                 var comment = data.comment;
                 var votes = {};
 
-                votes[sender_id] = 1;
-
                 key_to_comment[key] = {
                     comment: comment,
                     user_id: sender_id,
