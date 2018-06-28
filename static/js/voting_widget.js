@@ -2,7 +2,7 @@ var voting_widget = (function () {
 
 var exports = {};
 
-var poll_data_holder = function (is_my_poll) {
+var poll_data_holder = function (is_my_poll, question) {
     // This object just holds data for a poll, although it
     // works closely with the widget's concept of how data
     // should be represented for rendering, plus how the
@@ -10,7 +10,7 @@ var poll_data_holder = function (is_my_poll) {
     var self = {};
 
     var me = people.my_current_user_id();
-    var poll_question = '';
+    var poll_question = question;
     var key_to_comment = {};
     var my_idx = 1;
 
@@ -141,9 +141,13 @@ var poll_data_holder = function (is_my_poll) {
 exports.activate = function (opts) {
     var elem = opts.elem;
     var callback = opts.callback;
+    var question = '';
+    if (opts.extra_data) {
+        question = opts.extra_data.question;
+    }
 
     var is_my_poll = people.is_my_user_id(opts.message.sender_id);
-    var poll_data = poll_data_holder(is_my_poll);
+    var poll_data = poll_data_holder(is_my_poll, question);
 
     function render() {
         var html = templates.render('poll-widget');
