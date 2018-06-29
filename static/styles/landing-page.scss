@@ -3036,6 +3036,61 @@ nav ul li.active::after {
     background-color: #3ca08d;
 }
 
+// Billing & Upgrade
+.billing-upgrade-page {
+    font-family: Source Sans Pro, Helvetica, Arial, sans-serif;
+    background: #fafafa;
+    height: 100vh;
+
+    .hero {
+        background: #69b190;
+        color: #69b190;
+        position: absolute;
+        top: 0;
+        width: 100%;
+    }
+
+    .small-hero {
+        padding: 120px 50px 0;
+    }
+
+    .main {
+        width: 800px;
+        max-width: 90%;
+        margin: 0 auto;
+    }
+
+    h1 {
+        margin: 30px 0;
+        font-weight: bold;
+    }
+
+    .nav {
+        margin-bottom: 0;
+    }
+
+    .nav-tabs {
+        border-bottom: 0;
+        font-size: 1.2em;
+        a {
+            font-weight: bold;
+        }
+    }
+
+    .tab-content {
+        border: 1px solid #ddd;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+        padding: 20px;
+        background: #fefefe;
+        font-size: 1.1em;
+    }
+
+    .support-link {
+        margin: 10px 20px;
+    }
+}
+
 @keyframes box-shadow-pulse {
     0% {
         box-shadow: 0px 0px 0px rgba(106, 201, 185, 0);
@@ -3646,6 +3701,13 @@ nav ul li.active::after {
 
     .portico-landing.features-app section {
         padding: 0px 20px;
+    }
+
+    .billing-upgrade-page {
+        .nav-tabs,
+        .tab-content {
+            font-size: 1em;
+        }
     }
 
 }
