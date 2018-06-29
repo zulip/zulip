@@ -46,7 +46,7 @@ var tictactoe_data_holder = function () {
     self.get_widget_data = function () {
         function square(i) {
             return {
-                val: square_values[i] || i,
+                val: square_values[i],
                 idx: i,
                 disabled: waiting || square_values[i] || game_over,
             };

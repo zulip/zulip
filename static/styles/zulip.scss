@@ -2797,8 +2797,29 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
 div.message_content table.tictactoe {
     width: 80px;
+    margin-left: 0px;
 }
 
-td.tictactoe {
+div.message_content td.tictactoe {
     width: 15px;
+    border: none;
+    padding: 2px;
+}
+
+div.message_content button.tictactoe-square {
+    background-color: #81bba4;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 3px;
+    font-size: 25px;
+    color: white;
+}
+
+div.message_content button.tictactoe-square:hover {
+    background-color: #808c87;
+}
+
+div.message_content button.tictactoe-square:disabled {
+    background-color: #beded1;
 }
