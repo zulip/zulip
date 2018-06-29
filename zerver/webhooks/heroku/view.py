@@ -14,7 +14,7 @@ def api_heroku_webhook(request: HttpRequest, user_profile: UserProfile,
                        head: str=REQ(), app: str=REQ(), user: str=REQ(),
                        url: str=REQ(), git_log: str=REQ()) -> HttpResponse:
     template = "{} deployed version {} of [{}]({})\n> {}"
-    content = template.format(user, head, app, url, git_log)
+    content = template.format(user, head, app, url, git_log.replace('\n', '\n> '))
 
     check_send_webhook_message(request, user_profile, app, content)
     return json_success()
