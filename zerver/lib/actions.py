@@ -395,7 +395,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 def process_new_human_user(user_profile: UserProfile,
                            prereg_user: Optional[PreregistrationUser]=None,
                            newsletter_data: Optional[Dict[str, str]]=None,
-                           default_stream_groups: List[DefaultStreamGroup]=[]) -> None:
+                           default_stream_groups: List[DefaultStreamGroup]=[],
+                           realm_creation: bool=False) -> None:
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
@@ -445,7 +446,7 @@ def process_new_human_user(user_profile: UserProfile,
 
     notify_new_user(user_profile)
     if user_profile.realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile)
+        enqueue_welcome_emails(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
@@ -534,7 +535,8 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    prereg_user: Optional[PreregistrationUser]=None,
                    newsletter_data: Optional[Dict[str, str]]=None,
                    default_stream_groups: List[DefaultStreamGroup]=[],
-                   source_profile: Optional[UserProfile]=None) -> UserProfile:
+                   source_profile: Optional[UserProfile]=None,
+                   realm_creation: bool=False) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
@@ -559,7 +561,8 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     else:
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data,
-                               default_stream_groups=default_stream_groups)
+                               default_stream_groups=default_stream_groups,
+                               realm_creation=realm_creation)
     return user_profile
 
 def do_activate_user(user_profile: UserProfile) -> None:

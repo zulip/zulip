@@ -487,7 +487,7 @@ def followup_day2_email_delay(user: UserProfile) -> timedelta:
     # or comes in while they are dealing with their inbox.
     return timedelta(days=days_to_delay, hours=-1)
 
-def enqueue_welcome_emails(user: UserProfile) -> None:
+def enqueue_welcome_emails(user: UserProfile, realm_creation: bool=False) -> None:
     from zerver.context_processors import common_context
     if settings.WELCOME_EMAIL_SENDER is not None:
         # line break to avoid triggering lint rule

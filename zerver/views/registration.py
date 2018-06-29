@@ -283,7 +283,8 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                                           timezone=timezone,
                                           newsletter_data={"IP": request.META['REMOTE_ADDR']},
                                           default_stream_groups=default_stream_groups,
-                                          source_profile=source_profile)
+                                          source_profile=source_profile,
+                                          realm_creation=realm_creation)
 
         if realm_creation:
             bulk_add_subscriptions([realm.signup_notifications_stream], [user_profile])
