@@ -150,11 +150,11 @@ class StripeTest(ZulipTestCase):
                                        'plan': Plan.CLOUD_ANNUAL})
         # Check that the non-admin hamlet can still access /billing
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Contact support@zulipchat.com for billing"], response)
+        self.assert_in_success_response(["for billing history or to make changes"], response)
         # Check admins can access billing, even though they are not the billing_user
         self.login(self.example_email('iago'))
         response = self.client_get("/billing/")
-        self.assert_in_success_response(["Contact support@zulipchat.com for billing"], response)
+        self.assert_in_success_response(["for billing history or to make changes"], response)
         # Check that non-admin, non-billing_user does not have access
         self.login(self.example_email("cordelia"))
         response = self.client_get("/billing/")
@@ -214,7 +214,7 @@ class StripeTest(ZulipTestCase):
             realm=self.realm, stripe_customer_id=self.stripe_customer_id, billing_user=self.user)
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
-        for substring in ['Your plan will renew on', 'for $%s.00' % (80 * self.quantity,),
+        for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
                           'Card ending in 4242']:
             self.assert_in_response(substring, response)
 

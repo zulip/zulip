@@ -1,4 +1,4 @@
-{% extends "zerver/base.html" %}
+{% extends "zerver/portico.html" %}
 
 {% block customhead %}
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -6,33 +6,60 @@
 {% endblock %}
 
 {% block content %}
+
 <div class="app portico-page">
+
+    {% include 'zerver/billing_nav.html' %}
 
     {{ render_bundle('translations') }}
 
-    <div class="page-content">
-        <h1>{{ _("Billing") }}</h1>
-        {% if admin_access %}
-            Plan<br/>
-            {{ plan_name }}<br/>
-            <br/>
-            You are paying for {{ seat_count }} users.<br/>
-            Your plan will renew on {{ renewal_date }} for ${{ renewal_amount }}.<br/>
-            {% if prorated_charges %}
-            You have ${{ prorated_charges }} in prorated charges that will be
-            added to your next bill.
-            {% elif prorated_credits %}
-            You have ${{ prorated_credits }} in prorated credits that will be
-            automatically applied to your next bill.
-            {% endif %}
-            <br/>
-            <br/>
-            Payment method: {{ payment_method }}.<br/>
-            <br/>
-            Contact support@zulipchat.com for billing history or to make changes to your subscription.
-        {% else %}
-            You must be an organization administrator or a billing administrator to view this page.
-        {% endif %}
+    <div class="portico-landing billing-upgrade-page">
+        <div class="hero small-hero"></div>
+
+        <div class="page-content">
+            <div class="main">
+
+                <h1>{{ _("Billing") }}</h1>
+                {% if admin_access %}
+                <ul class="nav nav-tabs" id="billing-tabs">
+                    <li class="active"><a href="#overview">Overview</a></li>
+                    <li><a href="#payment-method">Payment Method</a></li>
+                </ul>
+
+                <div class="tab-content">
+                    <div class="tab-pane active" id="overview">
+                        <p>Your current plan is <strong>{{ plan_name }}</strong></p>
+                        <p>You are paying for <strong>{{ seat_count }} users</strong>.</p>
+                        <p>Your plan will renew on <strong>{{ renewal_date }}</strong> for <strong>${{ renewal_amount }}</strong>.</p>
+                        {% if prorated_charges %}
+                        <p>You have <strong>${{ prorated_charges }}</strong> in prorated charges that will be added to your next bill.</p>
+                        {% elif prorated_credits %}
+                        <p>You have <strong>${{ prorated_credits }}</strong> in prorated credits that will be automatically applied to your next bill.</p>
+                        {% endif %}
+                    </div>
+                    <div class="tab-pane" id="payment-method">
+                        <p>Your current payment method is <strong>{{ payment_method }}</strong>.</p>
+                    </div>
+                </div>
+
+                <div class="support-link">
+                    <p>Contact <a href="mailto:support@zulipchat.com">support@zulipchat.com</a> for billing history or to make changes to your subscription.</p>
+                </div>
+
+                <script>
+                $('#billing-tabs a').click(function (e) {
+                    e.preventDefault();
+                    $(this).tab('show');
+                })
+                </script>
+                {% else %}
+                <p>
+                    You must be an organization administrator or a
+                    billing administrator to view this page.
+                </p>
+                {% endif %}
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
