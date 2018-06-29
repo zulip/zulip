@@ -398,6 +398,10 @@ run_test('subject_links', () => {
     assert.equal(message.subject_links.length, 0);
 });
 
+run_test('convert_text', () => {
+    assert.equal(markdown.convert_text('**foo**'), '<p><strong>foo</strong></p>');
+});
+
 run_test('message_flags', () => {
     var input = "/me is testing this";
     var message = {subject: "No links here", raw_content: input};

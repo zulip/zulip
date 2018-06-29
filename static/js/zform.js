@@ -62,6 +62,7 @@ exports.activate = function (opts) {
         // JS code to use later.
         _.each(data.choices, function (choice, idx) {
             choice.idx = idx;
+            choice.long_name_html = markdown.convert_text(choice.long_name);
         });
 
         var html = templates.render('zform-choices', data);
