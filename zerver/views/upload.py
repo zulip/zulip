@@ -50,7 +50,7 @@ def serve_local(request: HttpRequest, path_id: str) -> HttpResponse:
 
 @has_request_variables
 def serve_file_backend(request: HttpRequest, user_profile: UserProfile,
-                       realm_id_str: str, filename: str) -> HttpResponse:
+                       realm_id_str: str=REQ(), filename: str=REQ()) -> HttpResponse:
     path_id = "%s/%s" % (realm_id_str, filename)
     is_authorized = validate_attachment_request(user_profile, path_id)
 
