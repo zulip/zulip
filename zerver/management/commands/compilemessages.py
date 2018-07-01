@@ -67,7 +67,7 @@ class Command(compilemessages.Command):
         return "{}/{}/translations.json".format(locale_path, locale)
 
     def get_name_from_po_file(self, po_filename: str, locale: str) -> str:
-        lang_name_re = re.compile('"Language-Team: (.*?) \(')
+        lang_name_re = re.compile(r'"Language-Team: (.*?) \(')
         with open(po_filename, 'r') as reader:
             result = lang_name_re.search(reader.read())
             if result:
@@ -82,7 +82,7 @@ class Command(compilemessages.Command):
     def get_locales(self) -> List[str]:
         tracked_files = check_output(['git', 'ls-files', 'static/locale'])
         tracked_files = tracked_files.decode().split()
-        regex = re.compile('static/locale/(\w+)/LC_MESSAGES/django.po')
+        regex = re.compile(r'static/locale/(\w+)/LC_MESSAGES/django.po')
         locales = ['en']
         for tracked_file in tracked_files:
             matched = regex.search(tracked_file)

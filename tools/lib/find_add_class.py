@@ -81,7 +81,7 @@ def find(fns):
         for i, line in enumerate(lines):
             if 'addClass' in line:
                 html_classes = []  # type: List[str]
-                m = re.search('addClass\([\'"](.*?)[\'"]', line)
+                m = re.search(r'''addClass\(['"](.*?)['"]''', line)
                 if m:
                     html_classes = [m.group(1)]
                 if not html_classes:

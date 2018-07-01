@@ -75,7 +75,7 @@ def convert_jira_markup(content: str, realm: Realm) -> str:
     # Zulip user mention. We don't know the email, just the JIRA username,
     # so we naively guess at their Zulip account using this
     if realm:
-        mention_re = re.compile(u'\[~(.*?)\]')
+        mention_re = re.compile(u'\\[~(.*?)\\]')
         for username in mention_re.findall(content):
             # Try to look up username
             user_profile = guess_zulip_user_from_jira(username, realm)
@@ -103,7 +103,7 @@ def get_issue_string(payload: Dict[str, Any], issue_id: Optional[str]=None) -> s
     if issue_id is None:
         issue_id = get_issue_id(payload)
 
-    base_url = re.match("(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
+    base_url = re.match(r"(.*)\/rest\/api/.*", get_in(payload, ['issue', 'self']))
     if base_url and len(base_url.groups()):
         return u"[{}]({}/browse/{})".format(issue_id, base_url.group(1), issue_id)
     else:

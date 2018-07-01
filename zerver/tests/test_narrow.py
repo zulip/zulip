@@ -55,7 +55,7 @@ def get_sqlalchemy_query_params(query: str) -> Dict[str, str]:
     return comp.params
 
 def fix_ws(s: str) -> str:
-    return re.sub('\s+', ' ', str(s)).strip()
+    return re.sub(r'\s+', ' ', str(s)).strip()
 
 def get_recipient_id_for_stream_name(realm: Realm, stream_name: str) -> str:
     stream = get_stream(stream_name, realm)
@@ -2020,7 +2020,7 @@ class GetOldMessagesTest(ZulipTestCase):
             queries = [q for q in all_queries if '/* get_messages */' in q['sql']]
             sql = queries[0]['sql']
 
-            m = re.findall('AND message_id >= (\d+)', str(sql))
+            m = re.findall(r'AND message_id >= (\d+)', str(sql))
             self.assertEqual(m, [str(first_visible_message_id)])
 
     def test_use_first_unread_anchor_with_muted_topics(self) -> None:

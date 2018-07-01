@@ -41,7 +41,7 @@ def check_pep8(files):
         'E226',
 
         # New rules in pycodestyle 2.4.0 that we haven't decided whether to comply with yet
-        'E252', 'W605', 'W504',
+        'E252', 'W504',
 
         # "multiple spaces after ':'"
         # This is the `{}` analogue of E221, and these are similarly being used

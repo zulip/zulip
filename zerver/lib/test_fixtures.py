@@ -20,7 +20,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(__file__))))
 from scripts.lib.zulip_tools import get_dev_uuid_var_path, run
 
 UUID_VAR_DIR = get_dev_uuid_var_path()
-FILENAME_SPLITTER = re.compile('[\W\-_]')
+FILENAME_SPLITTER = re.compile(r'[\W\-_]')
 
 def run_db_migrations(platform: str) -> None:
     if platform == 'dev':
@@ -85,10 +85,10 @@ def get_migration_status(**options: Any) -> str:
     connections.close_all()
     out.seek(0)
     output = out.read()
-    return re.sub('\x1b\[(1|0)m', '', output)
+    return re.sub(r'\x1b\[(1|0)m', '', output)
 
 def extract_migrations_as_list(migration_status: str) -> List[str]:
-    MIGRATIONS_RE = re.compile('\[[X| ]\] (\d+_.+)\n')
+    MIGRATIONS_RE = re.compile(r'\[[X| ]\] (\d+_.+)\n')
     return MIGRATIONS_RE.findall(migration_status)
 
 def what_to_do_with_migrations(migration_file: str, **options: Any) -> str:

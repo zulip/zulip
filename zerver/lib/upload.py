@@ -53,10 +53,10 @@ DEFAULT_EMOJI_SIZE = 64
 class RealmUploadQuotaError(JsonableError):
     code = ErrorCode.REALM_UPLOAD_QUOTA
 
-attachment_url_re = re.compile('[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
+attachment_url_re = re.compile(r'[/\-]user[\-_]uploads[/\.-].*?(?=[ )]|\Z)')
 
 def attachment_url_to_path_id(attachment_url: str) -> str:
-    path_id_raw = re.sub('[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
+    path_id_raw = re.sub(r'[/\-]user[\-_]uploads[/\.-]', '', attachment_url)
     # Remove any extra '.' after file extension. These are probably added by the user
     return re.sub('[.]+$', '', path_id_raw, re.M)
 
@@ -72,8 +72,8 @@ def sanitize_name(value: NonBinaryStr) -> str:
     * preserving the case of the value.
     """
     value = unicodedata.normalize('NFKC', value)
-    value = re.sub('[^\w\s._-]', '', value, flags=re.U).strip()
-    return mark_safe(re.sub('[-\s]+', '-', value, flags=re.U))
+    value = re.sub(r'[^\w\s._-]', '', value, flags=re.U).strip()
+    return mark_safe(re.sub(r'[-\s]+', '-', value, flags=re.U))
 
 def random_name(bytes: int=60) -> str:
     return base64.urlsafe_b64encode(os.urandom(bytes)).decode('utf-8')

@@ -38,7 +38,7 @@ class SlowQueryTest(ZulipTestCase):
         self.assertIn("logs", str(last_message.recipient))
         self.assertEqual(last_message.topic_name(), "testserver: slow queries")
         self.assertRegexpMatches(last_message.content,
-                                 "123\.456\.789\.012 SOCKET  200 10\.\ds .*")
+                                 r"123\.456\.789\.012 SOCKET  200 10\.\ds .*")
 
     @override_settings(ERROR_BOT=None)
     @patch('logging.info')

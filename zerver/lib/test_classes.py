@@ -353,7 +353,7 @@ class ZulipTestCase(TestCase):
         from django.core.mail import outbox
         if url_pattern is None:
             # This is a bit of a crude heuristic, but good enough for most tests.
-            url_pattern = settings.EXTERNAL_HOST + "(\S+)>"
+            url_pattern = settings.EXTERNAL_HOST + r"(\S+)>"
         for message in reversed(outbox):
             if email_address in message.to:
                 return re.search(url_pattern, message.body).groups()[0]
