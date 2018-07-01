@@ -134,6 +134,7 @@ class SlackImporter(ZulipTestCase):
                       "deleted": False,
                       "real_name": "John Doe",
                       "profile": {"image_32": "", "email": "jon@gmail.com", "avatar_hash": "hash",
+                                  "phone": "+1-123-456-77-868",
                                   "fields": custom_profile_field_user1}},
                      {"id": "U0CBK5KAT",
                       "team_id": "T5YFFM2QY",
@@ -154,6 +155,7 @@ class SlackImporter(ZulipTestCase):
                       "is_bot": True,
                       "deleted": False,
                       "profile": {"image_32": "https:\/\/secure.gravatar.com\/avatar\/random1.png",
+                                  "skype": "test_skype_name",
                                   "email": "bot1@zulipchat.com", "avatar_hash": "hash"}}]
 
         mock_get_data_file.return_value = user_data
@@ -171,12 +173,20 @@ class SlackImporter(ZulipTestCase):
 
         # Test custom profile fields
         self.assertEqual(customprofilefield[0]['field_type'], 1)
-        self.assertEqual(customprofilefield[1]['name'], 'slack custom field 2')
+        self.assertEqual(customprofilefield[3]['name'], 'skype')
+        cpf_name = {cpf['name'] for cpf in customprofilefield}
+        self.assertIn('phone', cpf_name)
+        self.assertIn('skype', cpf_name)
+        cpf_name.remove('phone')
+        cpf_name.remove('skype')
+        for name in cpf_name:
+            self.assertTrue(name.startswith('slack custom field '))
 
-        self.assertEqual(len(customprofilefield_value), 4)
+        self.assertEqual(len(customprofilefield_value), 6)
         self.assertEqual(customprofilefield_value[0]['field'], 0)
         self.assertEqual(customprofilefield_value[0]['user_profile'], 1)
-        self.assertEqual(customprofilefield_value[2]['user_profile'], 0)
+        self.assertEqual(customprofilefield_value[3]['user_profile'], 0)
+        self.assertEqual(customprofilefield_value[5]['value'], 'test_skype_name')
 
         # test that the primary owner should always be imported first
         self.assertDictEqual(added_users, test_added_users)

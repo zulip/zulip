@@ -159,15 +159,12 @@ def users_to_zerver_userprofile(slack_data_dir: str, users: List[ZerverFieldsT],
     slack_data_file_user_list = get_data_file(slack_data_dir + '/users.json')
 
     # To map user id with the custom profile fields of the corresponding user
-    slack_user_custom_field_map = {}
+    slack_user_custom_field_map = {}  # type: ZerverFieldsT
     # To store custom fields corresponding to their ids
     custom_field_map = {}  # type: ZerverFieldsT
 
     for user in slack_data_file_user_list:
-        if 'fields' in user['profile']:
-            # Make sure the content of fields is not 'None'
-            if user['profile']['fields']:
-                slack_user_custom_field_map[user['id']] = user['profile']['fields']
+        process_slack_custom_fields(user, slack_user_custom_field_map)
 
     # We have only one primary owner in slack, see link
     # https://get.slack.help/hc/en-us/articles/201912948-Owners-and-Administrators
@@ -248,7 +245,11 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
     # Reference: https://api.slack.com/methods/users.profile.set
     for field, value in fields.items():
         if field not in custom_field_map:
-            field_name = ("slack custom field %s" % str(customprofilefield_id + 1))
+            slack_custom_fields = ['phone', 'skype']
+            if field in slack_custom_fields:
+                field_name = field
+            else:
+                field_name = ("slack custom field %s" % str(customprofilefield_id + 1))
             customprofilefield = dict(
                 id=customprofilefield_id,
                 realm=realm_id,
@@ -260,6 +261,17 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
             customprofilefield_id += 1
             customprofile_field.append(customprofilefield)
     return custom_field_map, customprofilefield_id
+
+def process_slack_custom_fields(user: ZerverFieldsT,
+                                slack_user_custom_field_map: ZerverFieldsT) -> None:
+    slack_user_custom_field_map[user['id']] = {}
+    if user['profile'].get('fields'):
+        slack_user_custom_field_map[user['id']] = user['profile']['fields']
+
+    slack_custom_fields = ['phone', 'skype']
+    for field in slack_custom_fields:
+        if field in user['profile']:
+            slack_user_custom_field_map[user['id']][field] = {'value': user['profile'][field]}
 
 def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: ZerverFieldsT,
                                      user_id: int, custom_field_id: int,
