@@ -39,6 +39,11 @@ up. Upgrading will result in some brief downtime for the service, which should b
 under 30 seconds unless there is an expensive transition involved. Unless you
 have tested the upgrade in advance, we recommend doing upgrades at off hours.
 
+(Note that there are
+[separate instructions for upgrading Zulip if you're using Docker][docker-upgrade].)
+
+[docker-upgrade]: https://github.com/zulip/docker-zulip#upgrading-the-zulip-container
+
 ### Upgrading the distro
 
 Note that upgrading an existing Zulip production server from Ubuntu
