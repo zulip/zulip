@@ -8,6 +8,7 @@
 #### Streams
 
 * [Get all streams](/api/get-all-streams)
+* [Create a stream](/api/create-stream)
 * [Get stream ID](/api/get-stream-id)
 * [Get subscribed streams](/api/get-subscribed-streams)
 * [Add subscriptions](/api/add-subscriptions)
