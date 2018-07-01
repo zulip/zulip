@@ -40,7 +40,7 @@
         <div class="column-middle" id="navbar-middle">
             <div class="column-middle-inner">
                 <div id="streamlist-toggle" {%if embedded %} style="visibility: hidden"{% endif %}>
-                    <a href="#" id="streamlist-toggle-button" role="button"><i class="icon-vector-reorder"></i>
+                    <a href="#" id="streamlist-toggle-button" role="button"><i class="fa fa-reorder" aria-hidden="true"></i>
                         <span id="streamlist-toggle-unreadcount">0</span>
                     </a>
                 </div>
@@ -52,8 +52,8 @@
                             <input class="search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
                               autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
                             {# Start the button off disabled since there is no active search #}
-                            <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="icon-vector-remove"></i></button>
-                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="icon-vector-search"></i></a>
+                            <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
+                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
                         </div>
                     </form>
                 </div>{# /searchbox #}
@@ -61,7 +61,7 @@
         </div>
         <div class="column-right">
             <div id="userlist-toggle">
-                <a href="#" id="userlist-toggle-button" role="button"><i class="icon-vector-group"></i>
+                <a href="#" id="userlist-toggle-button" role="button"><i class="fa fa-group" aria-hidden="true"></i>
                     <span id="userlist-toggle-unreadcount">0</span>
                 </a>
             </div>
@@ -69,7 +69,7 @@
                 <ul class="nav" role="navigation">
                     <li class="dropdown actual-dropdown-menu" id="gear-menu">
                         <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
-                            <i class="icon-vector-cog"></i><i class="icon-vector-caret-down settings-dropdown-caret"></i>
+                            <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
                         </a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">
                             {#
@@ -80,60 +80,60 @@
                             <li class="invisible" style="display:none;" role="presentation"><a href="#home" data-toggle="tab"></a></li>
                             <li role="presentation">
                                 <a href="#streams" role="menuitem">
-                                    <i class="icon-vector-exchange"></i> {{ _('Manage streams') }}
+                                    <i class="fa fa-exchange" aria-hidden="true"></i> {{ _('Manage streams') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a href="#settings" role="menuitem">
-                                    <i class="icon-vector-wrench"></i> {{ _('Settings') }}
+                                    <i class="fa fa-wrench" aria-hidden="true"></i> {{ _('Settings') }}
                                 </a>
                             </li>
                             <li class="admin-menu-item" role="presentation">
                                 <a href="#organization" role="menuitem">
-                                    <i class="icon-vector-bolt"></i>
+                                    <i class="fa fa-bolt" aria-hidden="true"></i>
                                     <span>{{ _('Manage organization') }}</span>
                                 </a>
                             </li>
                             <li class="divider"></li>
                             <li role="presentation">
                                 <a href="/help" target="_blank" role="menuitem">
-                                    <i class="icon-vector-question-sign"></i> {{ _('User documentation') }}
+                                    <i class="fa fa-question-circle" aria-hidden="true"></i> {{ _('User documentation') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a tabindex="0" role="menuitem" data-overlay-trigger="keyboard-shortcuts">
-                                    <i class="icon-vector-keyboard"></i> {{ _('Keyboard shortcuts') }} <span class="hotkey-hint">(?)</span>
+                                    <i class="fa fa-keyboard-o" aria-hidden="true"></i> {{ _('Keyboard shortcuts') }} <span class="hotkey-hint">(?)</span>
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a tabindex="0" role="menuitem" data-overlay-trigger="markdown-help">
-                                    <i class="icon-vector-pencil"></i> {{ _('Message formatting') }}
+                                    <i class="fa fa-pencil" aria-hidden="true"></i> {{ _('Message formatting') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a tabindex="0" role="menuitem" data-overlay-trigger="search-operators">
-                                    <i class="icon-vector-search"></i> {{ _('Search operators') }}
+                                    <i class="fa fa-search" aria-hidden="true"></i> {{ _('Search operators') }}
                                 </a>
                             </li>
                             <li class="divider" role="presentation"></li>
                             <li role="presentation">
                                 <a href="{{ apps_page_url }}" target="_blank" role="menuitem">
-                                    <i class="icon-vector-desktop"></i> {{ _('Desktop & mobile apps') }}
+                                    <i class="fa fa-desktop" aria-hidden="true"></i> {{ _('Desktop & mobile apps') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a href="/integrations" target="_blank" role="menuitem">
-                                    <i class="icon-vector-github"></i> {{ _('Integrations') }}
+                                    <i class="fa fa-github" aria-hidden="true"></i> {{ _('Integrations') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a href="/api" target="_blank" role="menuitem">
-                                    <i class="icon-vector-sitemap"></i> {{ _('API documentation') }}
+                                    <i class="fa fa-sitemap" aria-hidden="true"></i> {{ _('API documentation') }}
                                 </a>
                             </li>
                             <li role="presentation">
                                 <a href="/stats" target="_blank" role="menuitem">
-                                    <i class="icon-vector-bar-chart"></i>
+                                    <i class="fa fa-bar-chart" aria-hidden="true"></i>
                                     <span>{{ _('Statistics') }}</span>
                                 </a>
                             </li>
@@ -141,14 +141,14 @@
                             {% if enable_feedback %}
                             <li role="presentation">
                                 <a href="#feedback" class="feedback" role="menuitem">
-                                    <i class="icon-vector-comment"></i> {{ _('Feedback') }}
+                                    <i class="fa fa-comment" aria-hidden="true"></i> {{ _('Feedback') }}
                                 </a>
                             </li>
                             {% endif %}
                             {% if show_invites %}
                             <li role="presentation">
                                 <a href="#invite" role="menuitem">
-                                    <i class="icon-vector-plus-sign"></i> {{ _('Invite users') }}
+                                    <i class="fa fa-plus-circle" aria-hidden="true"></i> {{ _('Invite users') }}
                                 </a>
                             </li>
                             <li class="divider" role="presentation"></li>
@@ -156,19 +156,19 @@
                             {% if show_webathena %}
                             <li title="{% trans %}Grant Zulip the Kerberos tickets needed to run your Zephyr mirror via Webathena{% endtrans %}" id="webathena_login_menu" role="presentation">
                                 <a href="#webathena" class="webathena_login" role="menuitem">
-                                    <i class="icon-vector-bolt"></i>{{ _('Link with Webathena') }}
+                                    <i class="fa fa-bolt" aria-hidden="true"></i>{{ _('Link with Webathena') }}
                                 </a>
                             </li>
                             {% endif %}
                             <li role="presentation">
                                 <a href="#logout" class="logout_button" role="menuitem">
-                                    <i class="icon-vector-off"></i> {{ _('Log out') }}
+                                    <i class="fa fa-power-off" aria-hidden="true"></i> {{ _('Log out') }}
                                 </a>
                             </li>
                             {% if show_debug %}
                             <li role="presentation">
                                 <a href="#debug" data-toggle="tab" role="menuitem">
-                                    <i class="icon-vector-barcode"></i> {{ _('Debug') }}
+                                    <i class="fa fa-barcode" aria-hidden="true"></i> {{ _('Debug') }}
                                 </a>
                             </li>
                             {% endif %}
