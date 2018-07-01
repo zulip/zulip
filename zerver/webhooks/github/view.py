@@ -279,6 +279,27 @@ def get_pull_request_review_comment_body(payload: Dict[str, Any]) -> str:
         type='PR Review Comment'
     )
 
+def get_pull_request_review_requested_body(payload: Dict[str, Any]) -> str:
+    requested_reviewers = payload['pull_request']['requested_reviewers']
+    sender = get_sender_name(payload)
+    pr_number = payload['pull_request']['number']
+    pr_url = payload['pull_request']['html_url']
+    message = "**{sender}** requested {reviewers} for a review on [PR #{pr_number}]({pr_url})."
+    reviewers = ""
+    if len(requested_reviewers) == 1:
+        reviewers = "[{login}]({html_url})".format(**requested_reviewers[0])
+    else:
+        for reviewer in requested_reviewers[:-1]:
+            reviewers += "[{login}]({html_url}), ".format(**reviewer)
+        reviewers += "and [{login}]({html_url})".format(**requested_reviewers[-1])
+
+    return message.format(
+        sender=sender,
+        reviewers=reviewers,
+        pr_number=pr_number,
+        pr_url=pr_url,
+    )
+
 def get_ping_body(payload: Dict[str, Any]) -> str:
     return get_setup_webhook_message('GitHub', get_sender_name(payload))
 
@@ -358,6 +379,7 @@ EVENT_FUNCTION_MAPPER = {
     'public': get_public_body,
     'pull_request_review': get_pull_request_review_body,
     'pull_request_review_comment': get_pull_request_review_comment_body,
+    'pull_request_review_requested': get_pull_request_review_requested_body,
     'push_commits': get_push_commits_body,
     'push_tags': get_push_tags_body,
     'release': get_release_body,
@@ -389,6 +411,8 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
+        if action == 'review_requested':
+            return '{}_{}'.format(event, action)
         # Unsupported pull_request events
         if action in ('labeled', 'unlabeled', 'review_request_removed'):
             return None

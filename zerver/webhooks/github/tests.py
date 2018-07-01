@@ -208,6 +208,20 @@ class GithubWebhookTest(WebhookTestCase):
             HTTP_X_GITHUB_EVENT='pull_request'
         )
 
+    def test_pull_request_review_requested_msg(self) -> None:
+        expected_message = u"**eeshangarg** requested [showell](https://github.com/showell) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
+        self.send_and_test_stream_message('pull_request_review_requested',
+                                          'Scheduler / PR #1 This is just a test commit',
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
+    def test_pull_request_review_requested_multiple_reviwers_msg(self) -> None:
+        expected_message = u"**eeshangarg** requested [showell](https://github.com/showell), and [timabbott](https://github.com/timabbott) for a review on [PR #1](https://github.com/eeshangarg/Scheduler/pull/1)."
+        self.send_and_test_stream_message('pull_request_review_requested_multiple_reviewers',
+                                          'Scheduler / PR #1 This is just a test commit',
+                                          expected_message,
+                                          HTTP_X_GITHUB_EVENT='pull_request')
+
     @patch('zerver.webhooks.github.view.check_send_webhook_message')
     def test_pull_request_labeled_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
