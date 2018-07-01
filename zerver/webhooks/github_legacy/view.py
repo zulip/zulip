@@ -267,7 +267,7 @@ def api_github_landing(request: HttpRequest, user_profile: UserProfile, event: s
     if event == 'push':
         # If we are given a whitelist of branches, then we silently ignore
         # any push notification on a branch that is not in our whitelist.
-        if branches and short_ref not in re.split('[\s,;|]+', branches):
+        if branches and short_ref not in re.split(r'[\s,;|]+', branches):
             return json_success()
 
     # Map payload to the handler with the right version

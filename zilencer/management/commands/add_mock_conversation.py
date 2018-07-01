@@ -55,7 +55,7 @@ From image editing program:
              "You can have:\n* bulleted lists\n  * with sub-bullets too\n"
              "* **bold**, *italic*, and ~~strikethrough~~ text\n"
              "* LaTeX for mathematical formulas, both inline -- $$O(n^2)$$ -- and displayed:\n"
-             "```math\n\\int_a^b f(t)\, dt=F(b)-F(a)\n```"},
+             "```math\n\\int_a^b f(t)\\, dt=F(b)-F(a)\n```"},
             {'sender': fisher,
              'content': "My favorite is the syntax highlighting for code blocks\n"
              "```python\ndef fib(n: int) -> int:\n    # returns the n-th Fibonacci number\n"

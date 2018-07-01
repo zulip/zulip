@@ -318,7 +318,7 @@ class HomeTest(ZulipTestCase):
     def _get_page_params(self, result: HttpResponse) -> Dict[str, Any]:
         html = result.content.decode('utf-8')
         lines = html.split('\n')
-        page_params_line = [l for l in lines if re.match('^\s*var page_params', l)][0]
+        page_params_line = [l for l in lines if re.match(r'^\s*var page_params', l)][0]
         page_params_json = page_params_line.split(' = ')[1].rstrip(';')
         page_params = ujson.loads(page_params_json)
         return page_params

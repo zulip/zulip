@@ -491,7 +491,7 @@ class TestMissedMessages(ZulipTestCase):
         for test_name in test_fixtures:
             test_data = test_fixtures[test_name]["expected_output"]
             output_data = relative_to_full_url("http://example.com", test_data)
-            if re.search("(?<=\=['\"])/(?=[^<]+>)", output_data) is not None:
+            if re.search(r"""(?<=\=['"])/(?=[^<]+>)""", output_data) is not None:
                 raise AssertionError("Relative URL present in email: " + output_data +
                                      "\nFailed test case's name is: " + test_name +
                                      "\nIt is present in markdown_test_cases.json")

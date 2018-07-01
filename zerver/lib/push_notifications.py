@@ -444,7 +444,7 @@ def get_mobile_push_content(rendered_content: str) -> str:
         # Convert default emojis to their unicode equivalent.
         classes = elem.get("class", "")
         if "emoji" in classes:
-            match = re.search("emoji-(?P<emoji_code>\S+)", classes)
+            match = re.search(r"emoji-(?P<emoji_code>\S+)", classes)
             if match:
                 emoji_code = match.group('emoji_code')
                 char_repr = ""

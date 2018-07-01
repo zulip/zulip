@@ -6,7 +6,7 @@ from django.conf import settings
 from typing import Optional
 
 def render_tex(tex: str, is_inline: bool=True) -> Optional[str]:
-    """Render a TeX string into HTML using KaTeX
+    r"""Render a TeX string into HTML using KaTeX
 
     Returns the HTML string, or None if there was some error in the TeX syntax
 

@@ -120,7 +120,7 @@ def fix_emojis(content: str, base_url: str, emojiset: str) -> str:
     def make_emoji_img_elem(emoji_span_elem: CSSSelector) -> Dict[str, Any]:
         # Convert the emoji spans to img tags.
         classes = emoji_span_elem.get('class')
-        match = re.search('emoji-(?P<emoji_code>\S+)', classes)
+        match = re.search(r'emoji-(?P<emoji_code>\S+)', classes)
         # re.search is capable of returning None,
         # but since the parent function should only be called with a valid css element
         # we assert that it does not.
