@@ -389,8 +389,9 @@ def get_event(request: HttpRequest, payload: Dict[str, Any], branches: str) -> O
             return 'assigned_or_unassigned_pull_request'
         if action == 'closed':
             return 'closed_pull_request'
-        logging.warning(u'Event pull_request with {} action is unsupported'.format(action))
-        return None
+        # Unsupported pull_request events
+        if action in ('labeled', 'unlabeled', 'review_request_removed'):
+            return None
     if event == 'push':
         if is_commit_push_event(payload):
             if branches is not None:
