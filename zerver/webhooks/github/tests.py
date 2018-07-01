@@ -225,14 +225,6 @@ class GithubWebhookTest(WebhookTestCase):
         self.assert_json_success(result)
 
     @patch('zerver.webhooks.github.view.check_send_webhook_message')
-    def test_pull_request_request_review_ignore(
-            self, check_send_webhook_message_mock: MagicMock) -> None:
-        payload = self.get_body('request_review_pull_request')
-        result = self.client_post(self.url, payload, HTTP_X_GITHUB_EVENT='pull_request', content_type="application/json")
-        self.assertFalse(check_send_webhook_message_mock.called)
-        self.assert_json_success(result)
-
-    @patch('zerver.webhooks.github.view.check_send_webhook_message')
     def test_pull_request_request_review_remove_ignore(
             self, check_send_webhook_message_mock: MagicMock) -> None:
         payload = self.get_body('request_review_removed_pull_request')
