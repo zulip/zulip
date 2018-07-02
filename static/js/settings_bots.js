@@ -51,7 +51,7 @@ exports.type_id_to_string = function (type_id) {
     return i18n.t(name);
 };
 
-function render_bots() {
+exports.render_bots = function () {
     $('#active_bots_list').empty();
     $('#inactive_bots_list').empty();
 
@@ -92,7 +92,7 @@ function render_bots() {
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
     }
-}
+};
 
 exports.generate_zuliprc_uri = function (bot_id) {
     var bot = bot_data.get(bot_id);
@@ -208,9 +208,7 @@ exports.set_up = function () {
         $(this).attr("href", "data:application/octet-stream;charset=utf-8," + encodeURIComponent(content));
     });
 
-    // TODO: render bots xxxx
-    render_bots();
-    $(document).on('zulip.bot_data_changed', render_bots);
+    exports.render_bots();
 
     $.validator.addMethod("bot_local_part",
                           function (value, element) {

@@ -16,7 +16,6 @@ set_global("avatar", {});
 
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-set_global('document', 'document-stub');
 
 zrequire('bot_data');
 zrequire('settings_bots');
