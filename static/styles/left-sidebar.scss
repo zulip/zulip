@@ -159,7 +159,7 @@ li.active-sub-filter {
     text-decoration: underline;
 }
 
-#global_filters .global-filter i.icon-vector-home {
+#global_filters .global-filter i.fa-home {
     position: relative;
     top: 1px;
     left: -1px;
@@ -167,7 +167,7 @@ li.active-sub-filter {
     font-size: 16px;
 }
 
-#global_filters .global-filter i.icon-vector-envelope {
+#global_filters .global-filter i.fa-envelope {
     font-size: 13px;
 }
 
@@ -477,6 +477,6 @@ li.show-more-private-messages a {
     display: none;
 }
 
-.show-all-streams .icon-vector-chevron-left {
+.show-all-streams .fa-chevron-left {
     text-decoration: none;
 }
