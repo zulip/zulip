@@ -73,7 +73,9 @@ exports.initialize = function () {
         source: function (query) {
             var suggestions;
             if (page_params.search_pills_enabled) {
-                suggestions = search_suggestion.get_suggestions(query);
+                var base_query = search_pill.get_search_string_for_current_filter(
+                    search_pill_widget.my_pill);
+                suggestions = search_suggestion.get_suggestions(base_query, query);
             } else {
                 suggestions = search_suggestion.get_suggestions_legacy(query);
             }
