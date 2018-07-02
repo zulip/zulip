@@ -1,10 +1,9 @@
 zrequire('people');
 zrequire('bot_data');
 
-set_global('$', () => {
-    return {trigger: () => {}};
+set_global('settings_bots', {
+    render_bots: () => {},
 });
-set_global('document', null);
 
 const page_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0'},
