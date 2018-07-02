@@ -44,6 +44,8 @@ exports.bot_error = function (bot_id, xhr) {
     var bot_error_div = bot_info.find('.bot_error');
     bot_error_div.text(JSON.parse(xhr.responseText).msg);
     bot_error_div.show();
+    var bot_box = bot_info.closest('.bot-information-box');
+    bot_box.scrollTop(bot_box[0].scrollHeight - bot_box[0].clientHeight);
 };
 
 function add_bot_row(info) {
