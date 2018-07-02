@@ -39,9 +39,9 @@
             </span>
             <div class="api_key_error text-error"></div>
         </div>
-        <div id="bot_delete_error{{id_suffix}}" class="alert alert-error hide"></div>
         {{else}}
-        <button class="button round btn-warning reactivate_bot" title="{{t 'Reactivate bot' }}" data-email="{{email}}">{{t "Reactivate bot" }}</button>
+        <button class="button round btn-warning reactivate_bot" title="{{t 'Reactivate bot' }}" data-user-id="{{user_id}}">{{t "Reactivate bot" }}</button>
         {{/if}}
+        <div class="bot_error alert alert-error hide"></div>
     </div>
 </li>
