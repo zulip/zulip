@@ -313,18 +313,6 @@ run_test('admin_invites_list', () => {
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
 });
 
-run_test('admin_streams_list', () => {
-    var html = '<table>';
-    var streams = ['devel', 'trac', 'zulip'];
-    _.each(streams, function (stream) {
-        var args = {stream: {name: stream, invite_only: false}};
-        html += render('admin_streams_list', args);
-    });
-    html += "</table>";
-    var span = $(html).find(".stream_name:first");
-    assert.equal(span.text(), "devel");
-});
-
 run_test('admin_tab', () => {
     var args = {
         realm_name: 'Zulip',
