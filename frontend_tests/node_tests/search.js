@@ -68,6 +68,10 @@ run_test('initizalize', () => {
         assert(search.is_using_input_method);
     };
 
+    search_pill.get_search_string_for_current_filter = function () {
+        return 'is:starred';
+    };
+
     search_query_box.typeahead = (opts) => {
         assert.equal(opts.fixed, true);
         assert.equal(opts.items, 12);
