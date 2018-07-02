@@ -1,7 +1,7 @@
 # Configure desktop notifications
 
-You can receive desktop notifications for messages sent while Zulip is
-offscreen.
+You can receive desktop notifications in the corner of your main monitor for
+messages sent while Zulip is offscreen.
 
 ## Stream messages
 
@@ -37,7 +37,7 @@ to allow Zulip to send you desktop notifications.
 
 ### Zulip Desktop app on Mac OS
 
-1. From your desktop, open **System Notifications** and select **Notifications**.
+1. From your desktop, open **System Preferences** and select **Notifications**.
 
 2. Select **Zulip** from the list of apps.
 
