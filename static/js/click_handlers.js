@@ -728,7 +728,7 @@ exports.initialize = function () {
         e.stopPropagation();
     });
 
-    $(".settings-header.mobile .icon-vector-chevron-left").on("click", function () {
+    $(".settings-header.mobile .fa-chevron-left").on("click", function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
     });
