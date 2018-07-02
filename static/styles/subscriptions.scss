@@ -404,7 +404,7 @@ form#add_new_subscription {
 }
 
 .subscriptions-header .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile .icon-vector-chevron-left {
+#settings_overlay_container .settings-header.mobile .fa-chevron-left {
     position: relative;
     transform: translate(-50px, 0px);
     opacity: 0;
@@ -419,7 +419,7 @@ form#add_new_subscription {
 }
 
 .subscriptions-header.slide-left .fa-chevron-left,
-#settings_overlay_container .settings-header.mobile.slide-left .icon-vector-chevron-left {
+#settings_overlay_container .settings-header.mobile.slide-left .fa-chevron-left {
     transform: translate(-0px, 0px);
     opacity: 1;
 }
