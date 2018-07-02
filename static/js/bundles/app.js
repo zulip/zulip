@@ -65,6 +65,7 @@ import "js/top_left_corner.js";
 import "js/stream_list.js";
 import "js/filter.js";
 import 'js/voting_widget.js';
+import 'js/todo_widget.js';
 import 'js/tictactoe_widget.js';
 import 'js/zform.js';
 import 'js/widgetize.js';

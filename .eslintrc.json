@@ -177,6 +177,7 @@
         "user_events": false,
         "voting_widget": false,
         "tictactoe_widget": false,
+        "todo_widget": false,
         "zform": false,
         "widgetize": false,
         "submessage": false,
