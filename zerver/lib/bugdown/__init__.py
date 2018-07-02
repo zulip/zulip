@@ -1967,14 +1967,12 @@ def do_convert(content: str,
         return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
-
-        # Output error to log as well as sending a zulip and email
-        log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-                          % (traceback.format_exc(), cleaned))
-        subject = "Markdown parser failure on %s" % (platform.node(),)
-        mail.mail_admins(
-            subject, "Failed message: %s\n\n%s\n\n" % (cleaned, traceback.format_exc()),
-            fail_silently=False)
+        # NOTE: Don't change this message without also changing the
+        # logic in logging_handlers.py or we can create recursive
+        # exceptions.
+        exception_message = ('Exception in Markdown parser: %sInput (sanitized) was: %s'
+                             % (traceback.format_exc(), cleaned))
+        bugdown_logger.exception(exception_message)
 
         raise BugdownRenderingException()
     finally:

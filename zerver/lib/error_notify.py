@@ -83,10 +83,10 @@ def zulip_browser_error(report: Dict[str, Any]) -> None:
     internal_send_message(realm, settings.ERROR_BOT,
                           "stream", "errors", format_subject(subject), body)
 
-def notify_server_error(report: Dict[str, Any]) -> None:
+def notify_server_error(report: Dict[str, Any], skip_error_zulip: Optional[bool]=False) -> None:
     report = defaultdict(lambda: None, report)
     email_server_error(report)
-    if settings.ERROR_BOT:
+    if settings.ERROR_BOT and not skip_error_zulip:
         zulip_server_error(report)
 
 def zulip_server_error(report: Dict[str, Any]) -> None:
