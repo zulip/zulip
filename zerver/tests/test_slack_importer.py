@@ -114,11 +114,11 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_admin(user_data[3]), False)
 
     def test_get_timezone(self) -> None:
-        user_chicago_timezone = {"tz": r"America\/Chicago"}
+        user_chicago_timezone = {"tz": "America/Chicago"}
         user_timezone_none = {"tz": None}
         user_no_timezone = {}  # type: Dict[str, Any]
 
-        self.assertEqual(get_user_timezone(user_chicago_timezone), r"America\/Chicago")
+        self.assertEqual(get_user_timezone(user_chicago_timezone), "America/Chicago")
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
@@ -145,7 +145,7 @@ class SlackImporter(ZulipTestCase):
                       'name': 'Jane',
                       "real_name": "Jane Doe",
                       "deleted": False,
-                      "profile": {"image_32": r"https:\/\/secure.gravatar.com\/avatar\/random.png",
+                      "profile": {"image_32": "https://secure.gravatar.com/avatar/random.png",
                                   "fields": custom_profile_field_user2,
                                   "email": "jane@foo.com", "avatar_hash": "hash"}},
                      {"id": "U09TYF5Sk",
@@ -154,7 +154,7 @@ class SlackImporter(ZulipTestCase):
                       "real_name": "Bot",
                       "is_bot": True,
                       "deleted": False,
-                      "profile": {"image_32": r"https:\/\/secure.gravatar.com\/avatar\/random1.png",
+                      "profile": {"image_32": "https://secure.gravatar.com/avatar/random1.png",
                                   "skype": "test_skype_name",
                                   "email": "bot1@zulipchat.com", "avatar_hash": "hash"}}]
 
