@@ -70,11 +70,11 @@ exports.send_read = (function () {
 }());
 
 exports.save_collapsed = function (message) {
-    send_flag_update(message, 'collapsed', true);
+    send_flag_update(message, 'collapsed', 'add');
 };
 
 exports.save_uncollapsed = function (message) {
-    send_flag_update(message, 'collapsed', true);
+    send_flag_update(message, 'collapsed', 'remove');
 };
 
 exports.toggle_starred = function (message) {
