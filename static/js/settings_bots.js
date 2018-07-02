@@ -2,6 +2,11 @@ var settings_bots = (function () {
 
 var exports = {};
 
+exports.hide_errors = function () {
+    $('#bot_table_error').hide();
+    $('.bot_error').hide();
+};
+
 var focus_tab = {
     add_a_new_bot_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -9,7 +14,7 @@ var focus_tab = {
         $("#add-a-new-bot-form").show();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
     active_bots_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -17,7 +22,7 @@ var focus_tab = {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").show();
         $("#inactive_bots_list").hide();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
     inactive_bots_tab: function () {
         $("#bots_lists_navbar .active").removeClass("active");
@@ -25,12 +30,23 @@ var focus_tab = {
         $("#add-a-new-bot-form").hide();
         $("#active_bots_list").hide();
         $("#inactive_bots_list").show();
-        $('#bot_table_error').hide();
+        exports.hide_errors();
     },
 };
 
+exports.get_bot_info_div = function (bot_id) {
+    var sel = '.bot_info[data-user-id="' + bot_id + '"]';
+    return $(sel).expectOne();
+};
+
+exports.bot_error = function (bot_id, xhr) {
+    var bot_info = exports.get_bot_info_div(bot_id);
+    var bot_error_div = bot_info.find('.bot_error');
+    bot_error_div.text(JSON.parse(xhr.responseText).msg);
+    bot_error_div.show();
+};
+
 function add_bot_row(info) {
-    info.id_suffix = _.uniqueId('_bot_');
     var row = $(templates.render('bot_avatar_row', info));
     if (info.is_active) {
         $('#active_bots_list').append(row);
@@ -174,7 +190,7 @@ exports.update_bot_settings_tip = function () {
 
 exports.update_bot_permissions_ui = function () {
     exports.update_bot_settings_tip();
-    $('#bot_table_error').hide();
+    exports.hide_errors();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
     if (!exports.can_create_new_bots()) {
         $('#create_bot_form').hide();
@@ -227,7 +243,7 @@ exports.set_up = function () {
     $('#create_bot_form').validate({
         errorClass: 'text-error',
         success: function () {
-            $('#bot_table_error').hide();
+            exports.hide_errors();
         },
         submitHandler: function () {
             var bot_type = $('#create_bot_type :selected').val();
@@ -267,7 +283,7 @@ exports.set_up = function () {
                 processData: false,
                 contentType: false,
                 success: function () {
-                    $('#bot_table_error').hide();
+                    exports.hide_errors();
                     $('#create_bot_name').val('');
                     $('#create_bot_short_name').val('');
                     $('#create_payload_url').val('');
@@ -332,7 +348,7 @@ exports.set_up = function () {
                 row.hide('slow', function () { row.remove(); });
             },
             error: function (xhr) {
-                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+                exports.bot_error(bot_id, xhr);
             },
         });
     });
@@ -343,7 +359,7 @@ exports.set_up = function () {
         channel.post({
             url: '/json/users/' + encodeURIComponent(user_id) + "/reactivate",
             error: function (xhr) {
-                $('#bot_delete_error').text(JSON.parse(xhr.responseText).msg).show();
+                exports.bot_error(user_id, xhr);
             },
         });
     });
