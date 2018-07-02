@@ -31,7 +31,7 @@ exports.uncollapse = function (row) {
     // [Condense] link if necessary.
     var message = current_msg_list.get(rows.id(row));
     message.collapsed = false;
-    message_flags.save_uncollapsed(message.id);
+    message_flags.save_uncollapsed(message);
 
     var process_row = function process_row(row) {
         var content = row.find(".message_content");
@@ -75,7 +75,7 @@ exports.collapse = function (row) {
         return;
     }
 
-    message_flags.save_collapsed(message.id);
+    message_flags.save_collapsed(message);
 
     var process_row = function process_row(row) {
         row.find(".message_content").addClass("collapsed");
