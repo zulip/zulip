@@ -2,9 +2,8 @@ from typing import Any, Dict
 
 from django.conf import settings
 from django.contrib.staticfiles.storage import staticfiles_storage
-from django.template import Library, Node, TemplateSyntaxError
+from django.template import Library, Node
 
-from django.template.base import Parser, Token
 
 register = Library()
 
