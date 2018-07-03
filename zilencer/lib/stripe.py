@@ -2,7 +2,7 @@ import datetime
 from functools import wraps
 import logging
 import os
-from typing import Any, Callable, Optional, TypeVar, Tuple
+from typing import Any, Callable, Dict, Optional, TypeVar, Tuple
 import ujson
 
 from django.conf import settings
@@ -16,7 +16,7 @@ from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.models import Realm, UserProfile, RealmAuditLog
-from zilencer.models import Customer, Plan
+from zilencer.models import Customer, Plan, BillingProcessor
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -205,3 +205,100 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
         # TODO: billing address details are passed to us in the request;
         # use that to calculate taxes.
         tax_percent=0)
+
+## Process RealmAuditLog
+
+def do_set_subscription_quantity(
+        customer: Customer, timestamp: int, idempotency_key: str, quantity: int) -> None:
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+    stripe_subscription = extract_current_subscription(stripe_customer)
+    stripe_subscription.quantity = quantity
+    stripe_subscription.proration_date = timestamp
+    stripe_subscription.save(idempotency_key=idempotency_key)
+
+def do_adjust_subscription_quantity(
+        customer: Customer, timestamp: int, idempotency_key: str, delta: int) -> None:
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
+    stripe_subscription = extract_current_subscription(stripe_customer)
+    stripe_subscription.quantity = stripe_subscription.quantity + delta
+    stripe_subscription.proration_date = timestamp
+    stripe_subscription.save(idempotency_key=idempotency_key)
+
+def increment_subscription_quantity(
+        customer: Customer, timestamp: int, idempotency_key: str) -> None:
+    return do_adjust_subscription_quantity(customer, timestamp, idempotency_key, 1)
+
+def decrement_subscription_quantity(
+        customer: Customer, timestamp: int, idempotency_key: str) -> None:
+    return do_adjust_subscription_quantity(customer, timestamp, idempotency_key, -1)
+
+@catch_stripe_errors
+def process_billing_log_entry(processor: BillingProcessor, log_row: RealmAuditLog) -> None:
+    processor.state = BillingProcessor.STARTED
+    processor.log_row = log_row
+    processor.save()
+
+    customer = Customer.objects.get(realm=log_row.realm)
+    timestamp = datetime_to_timestamp(log_row.event_time)
+    idempotency_key = 'process_billing_log_entry:%s' % (log_row.id,)
+    extra_args = {}  # type: Dict[str, Any]
+    if log_row.extra_data is not None:
+        extra_args = ujson.loads(log_row.extra_data)
+    processing_functions = {
+        RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET: do_set_subscription_quantity,
+        RealmAuditLog.USER_CREATED: increment_subscription_quantity,
+        RealmAuditLog.USER_ACTIVATED: increment_subscription_quantity,
+        RealmAuditLog.USER_DEACTIVATED: decrement_subscription_quantity,
+        RealmAuditLog.USER_REACTIVATED: increment_subscription_quantity,
+    }  # type: Dict[str, Callable[..., None]]
+    processing_functions[log_row.event_type](customer, timestamp, idempotency_key, **extra_args)
+
+    processor.state = BillingProcessor.DONE
+    processor.save()
+
+def get_next_billing_log_entry(processor: BillingProcessor) -> Optional[RealmAuditLog]:
+    if processor.state == BillingProcessor.STARTED:
+        return processor.log_row
+    assert processor.state != BillingProcessor.STALLED
+    if processor.state not in [BillingProcessor.DONE, BillingProcessor.SKIPPED]:
+        raise BillingError(
+            'unknown processor state',
+            "Check for typos, since this value is sometimes set by hand: %s" % (processor.state,))
+
+    if processor.realm is None:
+        realms_with_processors = BillingProcessor.objects.exclude(
+            realm=None).values_list('realm', flat=True)
+        query = RealmAuditLog.objects.exclude(realm__in=realms_with_processors)
+    else:
+        global_processor = BillingProcessor.objects.get(realm=None)
+        query = RealmAuditLog.objects.filter(
+            realm=processor.realm, id__lt=global_processor.log_row.id)
+    return query.filter(id__gt=processor.log_row.id,
+                        requires_billing_update=True).order_by('id').first()
+
+def run_billing_processor_one_step(processor: BillingProcessor) -> bool:
+    # Returns True if a row was processed, or if processing was attempted
+    log_row = get_next_billing_log_entry(processor)
+    if log_row is None:
+        if processor.realm is not None:
+            processor.delete()
+        return False
+    try:
+        process_billing_log_entry(processor, log_row)
+        return True
+    except Exception as e:
+        billing_logger.error("Error on log_row.realm=%s, event_type=%s, log_row.id=%s, "
+                             "processor.id=%s, processor.realm=%s" % (
+                                 processor.log_row.realm.string_id, processor.log_row.event_type,
+                                 processor.log_row.id, processor.id, processor.realm))
+        if isinstance(e, StripeCardError):
+            if processor.realm is None:
+                BillingProcessor.objects.create(log_row=processor.log_row,
+                                                realm=processor.log_row.realm,
+                                                state=BillingProcessor.STALLED)
+                processor.state = BillingProcessor.SKIPPED
+            else:
+                processor.state = BillingProcessor.STALLED
+            processor.save()
+            return True
+        raise

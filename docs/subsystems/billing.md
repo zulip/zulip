@@ -41,3 +41,40 @@ Notes:
 * 4242424242424242 is Stripe's test credit card, also useful for manually
   testing. You can put anything in the address fields, any future expiry
   date, and anything for the CVV code.
+
+## BillingProcessor
+
+The general strategy here is that billing-relevant events get written to
+RealmAuditLog with `requires_billing_update = True`, and then a worker
+goes through, reads RealmAuditLog row by row, and makes the appropriate
+updates in Stripe (in order), keeping track of its state in
+`BillingProcessor`. An invariant is that it cannot be important when
+exactly the worker gets around to making the update in Stripe, as long
+as the updates for each customer (realm) are made in `RealmAuditLog.id` order.
+
+Almost all the complexity in the code is due to error handling. We
+distinguish three kinds of errors:
+* Transient errors, like rate limiting or network failures, where we just
+  wait a bit and try again.
+* Card decline errors (see below)
+* Everything else (e.g. misconfigured API keys, errors thrown by buggy code,
+  etc.), where we just throw an exception and stop the worker.
+
+We use the following strategy for card decline errors. There is a global
+BillingProcessor (with `realm=None`) that processes RealmAuditLog
+entries for every customer (realm). If it runs into a card decline error on
+some entry, it gives up on that entry and (temporarily) all future entries
+of that realm, and spins off a realm-specific BillingProcessor that
+marks that realm as needing manual attention. When whatever issue has been
+corrected, the realm-specific BillingProcessor completes any
+realm-specific RealmAuditLog entries, and then deletes itself.
+
+Notes for manually resolving errors:
+* `BillingProcessor.objects.filter(state='stalled')` is always safe to
+  handle manually.
+* `BillingProcessor.objects.filter(state='started')` is safe to handle
+  manually only if the billing process worker is not running.
+* After resolving the issue, set the processor's state to `done`.
+* Stripe's idempotency keys are only valid for 24 hours. So be mindful of
+  that if manually cleaning something up more than 24 hours after the error
+  occured.

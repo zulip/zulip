@@ -436,6 +436,10 @@ DEFAULT_SETTINGS.update({
     # value in static/js/presence.js.  Also, probably move it out of
     # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
+
+    # Controls whether we run the worker that syncs billing-related updates
+    # into Stripe. Should be True on at most one machine.
+    'BILLING_PROCESSOR_ENABLED': False,
 })
 
 
