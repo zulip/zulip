@@ -13,7 +13,7 @@
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
-                    <i class="icon-vector-question-sign change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
+                    <i class="fa fa-question-circle change_email_tooltip settings-info-icon" {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_email_changes_disabled}}style="display:none"{{/unless}}{{/if}}  data-toggle="tooltip"
                       title="{{t 'Changing email addresses has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"></i>
                 </div>
 
@@ -54,7 +54,7 @@
                                 <i class="fa fa-pencil"></i>
                             </button>
                         </a>
-                        <i class="icon-vector-question-sign change_name_tooltip settings-info-icon" data-toggle="tooltip"
+                        <i class="fa fa-question-circle change_name_tooltip settings-info-icon" data-toggle="tooltip"
                           {{#if page_params.is_admin}}style="display:none"{{else}}{{#unless page_params.realm_name_changes_disabled}}style="display:none"{{/unless}}{{/if}}
                           title="{{t 'Changing your name has been disabled by your Zulip organization administrators. Contact an administrator for help.' }}"/>
                     </div>
