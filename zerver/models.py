@@ -239,6 +239,16 @@ class Realm(models.Model):
                                    max_length=1)  # type: str
     icon_version = models.PositiveSmallIntegerField(default=1)  # type: int
 
+    LOGO_FROM_GRAVATAR = u'G'
+    LOGO_UPLOADED = u'U'
+    LOGO_SOURCES = (
+        (LOGO_FROM_GRAVATAR, 'Hosted by Gravatar'),
+        (LOGO_UPLOADED, 'Uploaded by administrator'),
+    )
+    logo_source = models.CharField(default=LOGO_FROM_GRAVATAR, choices=LOGO_SOURCES,
+                                   max_length=1)  # type: str
+    logo_version = models.PositiveSmallIntegerField(default=1)  # type: int
+
     DEFAULT_NOTIFICATION_STREAM_NAME = u'announce'
     INITIAL_PRIVATE_STREAM_NAME = u'core team'
 
