@@ -731,6 +731,73 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InvalidMessageError'
+  /messages/flags:
+    post:
+      description: Add or remove flags in a list of messages.
+      parameters:
+      - name: messages
+        in: query
+        description: An array containing the IDs of the target messages.
+        schema:
+          type: array
+          items:
+            type: integer
+        example: [4, 8, 15]
+        required: true
+      - name: op
+        in: query
+        description: Whether to `add` the flag or `remove` it.
+        schema:
+          type: string
+          enum:
+          - add
+          - remove
+        example: add
+        required: true
+      - name: flag
+        in: query
+        description: The flag that should be added/removed.
+        schema:
+          type: string
+          enum:
+          - read
+          - starred
+          - collapsed
+          - mentioned
+          - wildcard_mentioned
+          - summarize_in_home
+          - summarize_in_stream
+          - force_expand
+          - force_collapse
+          - has_alert_word
+          - historical
+        example: read
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    messages:
+                      type: array
+                      items:
+                        type: integer
+                      description: An array with the IDs of the modified
+                        messages.
+                - example:
+                    {
+                        "msg": "",
+                        "messages": [
+                            4, 18, 15
+                        ],
+                        "result": "success"
+                    }
   /messages/render:
     post:
       description: Render a message to HTML.

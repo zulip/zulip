@@ -588,6 +588,46 @@ def get_realm_emoji(client):
 
     validate_against_openapi_schema(result, '/realm/emoji', 'GET', '200')
 
+def update_message_flags(client):
+    # type: (Client) -> None
+
+    # Send a few test messages
+    request = {
+        "type": "stream",
+        "to": "Denmark",
+        "subject": "Castle",
+        "content": "Something is rotten in the state of Denmark."
+    }  # type: Dict[str, Any]
+    message_ids = []
+    for i in range(0, 3):
+        message_ids.append(client.send_message(request)['id'])
+
+    # {code_example|start}
+    # Add the "read" flag to the messages with IDs in "message_ids"
+    request = {
+        'messages': message_ids,
+        'op': 'add',
+        'flag': 'read'
+    }
+    result = client.update_message_flags(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages/flags', 'post',
+                                    '200')
+
+    # {code_example|start}
+    # Remove the "starred" flag from the messages with IDs in "message_ids"
+    request = {
+        'messages': message_ids,
+        'op': 'remove',
+        'flag': 'starred'
+    }
+    result = client.update_message_flags(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/messages/flags', 'post',
+                                    '200')
+
 def register_queue(client):
     # type: (Client) -> str
 
@@ -709,6 +749,7 @@ TEST_FUNCTIONS = {
     '/messages/{message_id}:patch': update_message,
     '/messages/{message_id}:delete': delete_message,
     '/messages/{message_id}/history:get': get_message_history,
+    '/messages/flags:post': update_message_flags,
     '/get_stream_id:get': get_stream_id,
     'get-subscribed-streams': list_subscriptions,
     '/streams:get': get_streams,
@@ -791,6 +832,7 @@ def test_messages(client, nonadmin_client):
     mark_all_as_read(client)
     mark_stream_as_read(client)
     mark_topic_as_read(client)
+    update_message_flags(client)
 
     test_nonexistent_stream_error(client)
     test_private_message_invalid_recipient(client)
