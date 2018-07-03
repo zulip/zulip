@@ -19,6 +19,7 @@ from zerver.lib.bugdown import convert
 from zerver.lib.send_email import FromAddress
 from zerver.lib.subdomains import get_subdomain
 from zerver.lib.realm_icon import get_realm_icon_url
+from zerver.lib.realm_logo import get_realm_logo_url
 
 from version import ZULIP_VERSION
 
@@ -54,12 +55,14 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_uri = settings.ROOT_DOMAIN_URI
         realm_name = None
         realm_icon = None
+        realm_logo = None
         realm_description = None
         realm_invite_required = False
     else:
         realm_uri = realm.uri
         realm_name = realm.name
         realm_icon = get_realm_icon_url(realm)
+        realm_logo = get_realm_logo_url(realm)
         realm_description_raw = realm.description or "The coolest place in the universe."
         realm_description = convert(realm_description_raw, message_realm=realm)
         realm_invite_required = realm.invite_required
@@ -114,6 +117,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_uri': realm_uri,
         'realm_name': realm_name,
         'realm_icon': realm_icon,
+        'realm_logo': realm_logo,
         'realm_description': realm_description,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'apps_page_url': apps_page_url,
