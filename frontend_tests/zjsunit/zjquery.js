@@ -171,7 +171,12 @@ exports.make_new_elem = function (selector, opts) {
                 selector: selector,
             };
         },
-        empty: noop,
+        empty: function (arg) {
+            if (arg === undefined) {
+                find_results.clear();
+            }
+            return self;
+        },
         eq: function () {
             return self;
         },
