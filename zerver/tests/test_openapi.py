@@ -10,7 +10,8 @@ from zerver.lib.openapi import (
 
 TEST_ENDPOINT = '/messages/{message_id}'
 TEST_METHOD = 'patch'
-TEST_RESPONSE = '400'
+TEST_RESPONSE_BAD_REQ = '400'
+TEST_RESPONSE_SUCCESS = '200'
 
 
 class OpenAPIToolsTest(ZulipTestCase):
@@ -21,7 +22,8 @@ class OpenAPIToolsTest(ZulipTestCase):
     specification, and comparing them to objects returned by our REST API.
     """
     def test_get_openapi_fixture(self) -> None:
-        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD, TEST_RESPONSE)
+        actual = get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD,
+                                     TEST_RESPONSE_BAD_REQ)
         expected = {
             'code': 'BAD_REQUEST',
             'msg': 'You don\'t have permission to edit this message',
@@ -53,7 +55,8 @@ class OpenAPIToolsTest(ZulipTestCase):
             }  # type: Dict[str, Any]
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
-                                            TEST_METHOD)
+                                            TEST_METHOD,
+                                            TEST_RESPONSE_SUCCESS)
 
         with self.assertRaises(SchemaError,
                                msg=("Expected type <class 'str'> for key "
@@ -65,7 +68,8 @@ class OpenAPIToolsTest(ZulipTestCase):
             }
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
-                                            TEST_METHOD)
+                                            TEST_METHOD,
+                                            TEST_RESPONSE_SUCCESS)
 
         with self.assertRaises(SchemaError,
                                msg='Expected to find the "msg" required key'):
@@ -74,7 +78,8 @@ class OpenAPIToolsTest(ZulipTestCase):
             }
             validate_against_openapi_schema(bad_content,
                                             TEST_ENDPOINT,
-                                            TEST_METHOD)
+                                            TEST_METHOD,
+                                            TEST_RESPONSE_SUCCESS)
 
         # No exceptions should be raised here.
         good_content = {
@@ -83,7 +88,8 @@ class OpenAPIToolsTest(ZulipTestCase):
         }
         validate_against_openapi_schema(good_content,
                                         TEST_ENDPOINT,
-                                        TEST_METHOD)
+                                        TEST_METHOD,
+                                        TEST_RESPONSE_SUCCESS)
 
     def test_to_python_type(self) -> None:
         TYPES = {

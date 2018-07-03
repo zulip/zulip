@@ -36,8 +36,8 @@ def add_subscriptions(client):
     )
     # {code_example|end}
 
-    fixture = FIXTURES['add-subscriptions']['without_principals']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '200_without_principals')
 
     # {code_example|start}
     # To subscribe another user to a stream, you may pass in
@@ -61,8 +61,8 @@ def test_add_subscriptions_already_subscribed(client):
         principals=['newbie@zulip.com']
     )
 
-    fixture = FIXTURES['add-subscriptions']['already_subscribed']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '200_already_subscribed')
 
 def test_authorization_errors_fatal(client, nonadmin_client):
     # type: (Client, Client) -> None
@@ -86,8 +86,8 @@ def test_authorization_errors_fatal(client, nonadmin_client):
         authorization_errors_fatal=False,
     )
 
-    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_false']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '400_unauthorized_errors_fatal_false')
 
     result = nonadmin_client.add_subscriptions(
         streams=[
@@ -96,8 +96,8 @@ def test_authorization_errors_fatal(client, nonadmin_client):
         authorization_errors_fatal=True,
     )
 
-    fixture = FIXTURES['add-subscriptions']['unauthorized_errors_fatal_true']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
+                                    '400_unauthorized_errors_fatal_true')
 
 def create_user(client):
     # type: (Client) -> None
@@ -384,7 +384,8 @@ def update_message(client, message_id):
     result = client.update_message(request)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch')
+    validate_against_openapi_schema(result, '/messages/{message_id}', 'patch',
+                                    '200')
 
     # test it was actually updated
     url = 'messages/' + str(message_id)
@@ -474,7 +475,8 @@ def get_stream_topics(client, stream_id):
     result = client.get_stream_topics(stream_id)
     # {code_example|end}
 
-    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics', 'get')
+    validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
+                                    'get', '200')
 
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None

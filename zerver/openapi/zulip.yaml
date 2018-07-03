@@ -157,10 +157,136 @@ paths:
                 - $ref: '#/components/schemas/JsonError'
                 - example:
                     {
-                      "code": "BAD_REQUEST",
-                      "msg": "Invalid stream id",
-                      "result": "error"
+                        "code": "BAD_REQUEST",
+                        "msg": "Invalid stream id",
+                        "result": "error"
                     }
+  /users/me/subscriptions:
+    post:
+      description: Subscribe one or more users to one or more streams.
+      parameters:
+      - name: subscriptions
+        in: query
+        description: |
+          A list of dictionaries, where each dictionary contains key/value
+          pairs specifying a particular stream to subscribe to.
+          **Note**: This argument is called `streams` and not `subscriptions`
+          in our Python API.
+        schema:
+          type: string
+        example: [{"name": "Verona"}]
+        required: true
+      - name: invite_only
+        in: query
+        description: |
+          A boolean specifying whether the streams specified in
+          `subscriptions` are invite-only or not.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: announce
+        in: query
+        description: |
+          If `announce` is `True` and one of the streams specified in
+          `subscriptions` has to be created (i.e. doesn't exist to begin
+          with), an announcement will be made notifying that a new stream was
+          created.
+        schema:
+          type: boolean
+        example: true
+      - name: principals
+        in: query
+        description: |
+          A list of email addresses of the users that will be subscribed to
+          the streams specified in the `subscriptions` argument. If not
+          provided, then the requesting user/bot is subscribed.
+        schema:
+          type: string
+          default: []
+        example: ['ZOE@zulip.com']
+      - name: authorization_errors_fatal
+        in: query
+        description: |
+          A boolean specifying whether authorization errors (such as when the
+          requesting user is not authorized to access a private stream) should
+          be considered fatal or not. When `True`, an authorization error is
+          reported as such. When set to `False`, the returned JSON payload
+          indicates that there was an authorization error, but the response is
+          still considered a successful one.
+        schema:
+          type: boolean
+          default: true
+        example: false
+      security:
+      - basicAuth: []
+      responses:
+        '200_without_principals':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {},
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {
+                            "iago@zulip.com": [
+                                "new stream"
+                            ]
+                        }
+                    }
+        '200_already_subscribed':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {
+                            "newbie@zulip.com": [
+                                "new stream"
+                            ]
+                        },
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {}
+                    }
+        '400_unauthorized_errors_fatal_true':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "msg": "Unable to access stream (private_stream).",
+                        "result": "error"
+                    }
+        '400_unauthorized_errors_fatal_false':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/AddSubscriptionsResponse'
+                - example:
+                    {
+                        "already_subscribed": {},
+                        "msg": "",
+                        "result": "success",
+                        "subscribed": {},
+                        "unauthorized": [
+                            "private_stream"
+                        ]
+                    }
+
 components:
   #######################
   # Security definitions
@@ -209,6 +335,29 @@ components:
             - error
           msg:
             type: string
+    AddSubscriptionsResponse:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          subscribed:
+            type: object
+            description: |
+              A dictionary where the key is the email address of the user/bot
+              and the value is a list of the names of the streams that were
+              subscribed to as a result of the query.
+          already_subscribed:
+            type: object
+            description: |
+              A dictionary where the key is the email address of the user/bot
+              and the value is a list of the names of the streams that the
+              user/bot is already subscribed to.
+          unauthorized:
+            type: array
+            items:
+              type: string
+            description: |
+              A list of names of streams that the requesting user/bot was not
+              authorized to subscribe to.
 
   ###################
   # Shared responses

@@ -30,17 +30,17 @@ def get_openapi_parameters(endpoint: str,
     return (OPENAPI_SPEC['paths'][endpoint][method.lower()]['parameters'])
 
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
-                                    method: str) -> None:
+                                    method: str, response: str) -> None:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
     schema = (OPENAPI_SPEC['paths'][endpoint][method.lower()]['responses']
-              ['200']['content']['application/json']['schema'])
+              [response]['content']['application/json']['schema'])
 
     for key, value in content.items():
         # Check that the key is defined in the schema
         if key not in schema['properties']:
-            raise SchemaError('Extraneous key "{}" in the response\'s'
+            raise SchemaError('Extraneous key "{}" in the response\'s '
                               'content'.format(key))
 
         # Check that the types match
