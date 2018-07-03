@@ -309,7 +309,7 @@ run_test('admin_invites_list', () => {
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
 
-    var icon = $(html).find(".icon-vector-bolt");
+    var icon = $(html).find(".fa-bolt");
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
 });
 
