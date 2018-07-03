@@ -3944,7 +3944,7 @@ def encode_email_address_helper(name: str, email_token: str) -> str:
     # everything that isn't alphanumeric plus _ as the percent-prefixed integer
     # ordinal of that character, padded with zeroes to the maximum number of
     # bytes of a UTF-8 encoded Unicode character.
-    encoded_name = re.sub("\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
+    encoded_name = re.sub(r"\W", lambda x: "%" + str(ord(x.group(0))).zfill(4), name)
     encoded_token = "%s+%s" % (encoded_name, email_token)
     return settings.EMAIL_GATEWAY_PATTERN % (encoded_token,)
 
@@ -3975,7 +3975,7 @@ def decode_email_address(email: str) -> Optional[Tuple[str, str]]:
         encoded_stream_name, token = msg_string.split('.')
     else:
         encoded_stream_name, token = msg_string.split('+')
-    stream_name = re.sub("%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
+    stream_name = re.sub(r"%\d{4}", lambda x: chr(int(x.group(0)[1:])), encoded_stream_name)
     return stream_name, token
 
 SubHelperT = Tuple[List[Dict[str, Any]], List[Dict[str, Any]], List[Dict[str, Any]]]

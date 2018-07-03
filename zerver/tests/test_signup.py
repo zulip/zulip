@@ -187,7 +187,7 @@ class PasswordResetTest(ZulipTestCase):
 
         # Visit the password reset link.
         password_reset_url = self.get_confirmation_url_from_outbox(
-            email, url_pattern=settings.EXTERNAL_HOST + "(\S+)")
+            email, url_pattern=settings.EXTERNAL_HOST + r"(\S+)")
         result = self.client_get(password_reset_url)
         self.assertEqual(result.status_code, 200)
 
@@ -2268,7 +2268,7 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
                     message.body).groups()[0]
                 break
@@ -2645,7 +2645,7 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
                     message.body).groups()[0]
                 break
@@ -2705,7 +2705,7 @@ class UserSignUpTest(ZulipTestCase):
         from django.core.mail import outbox
         for message in reversed(outbox):
             if email in message.to:
-                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + "(\S+)>")
+                confirmation_link_pattern = re.compile(settings.EXTERNAL_HOST + r"(\S+)>")
                 confirmation_url = confirmation_link_pattern.search(
                     message.body).groups()[0]
                 break

@@ -513,7 +513,7 @@ def filter_format_validator(value: str) -> None:
 
     if not regex.match(value):
         raise ValidationError('URL format string must be in the following format: '
-                              '`https://example.com/%(\w+)s`')
+                              r'`https://example.com/%(\w+)s`')
 
 class RealmFilter(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm

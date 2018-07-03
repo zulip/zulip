@@ -1483,7 +1483,7 @@ class SanitizeNameTests(TestCase):
         self.assertEqual(sanitize_name(u'*testingfile?*.txt'), u'testingfile.txt')
         self.assertEqual(sanitize_name(u'snowman☃.txt'), u'snowman.txt')
         self.assertEqual(sanitize_name(u'테스트.txt'), u'테스트.txt')
-        self.assertEqual(sanitize_name(u'~/."\`\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
+        self.assertEqual(sanitize_name(u'~/."\\`\\?*"u0`000ssh/test.t**{}ar.gz'), u'.u0000sshtest.tar.gz')
 
 
 class UploadSpaceTests(UploadSerializeMixin, ZulipTestCase):

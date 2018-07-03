@@ -124,7 +124,7 @@ class TemplateTestCase(ZulipTestCase):
 
         # Since static/generated/bots/ is searched by Jinja2 for templates,
         # it mistakes logo files under that directory for templates.
-        bot_logos_regexp = re.compile('\w+\/logo\.(svg|png)$')
+        bot_logos_regexp = re.compile(r'\w+\/logo\.(svg|png)$')
 
         skip = covered + defer + logged_out + logged_in + unusual + ['tests/test_markdown.html',
                                                                      'zerver/terms.html',

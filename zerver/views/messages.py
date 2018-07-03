@@ -384,7 +384,7 @@ class NarrowBuilder:
         # search here so we can ignore punctuation and do
         # stemming, but there isn't a standard phrase search
         # mechanism in Postgres
-        for term in re.findall('"[^"]+"|\S+', operand):
+        for term in re.findall(r'"[^"]+"|\S+', operand):
             if term[0] == '"' and term[-1] == '"':
                 term = term[1:-1]
                 term = '%' + connection.ops.prep_for_like_query(term) + '%'

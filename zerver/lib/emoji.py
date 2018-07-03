@@ -114,7 +114,7 @@ def check_emoji_admin(user_profile: UserProfile, emoji_name: Optional[str]=None)
         raise JsonableError(_("Must be an organization administrator or emoji author"))
 
 def check_valid_emoji_name(emoji_name: str) -> None:
-    if re.match('^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
+    if re.match(r'^[0-9a-z.\-_]+(?<![.\-_])$', emoji_name):
         return
     raise JsonableError(_("Invalid characters in emoji name"))
 

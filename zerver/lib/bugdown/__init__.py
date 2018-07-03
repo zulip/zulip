@@ -1322,7 +1322,7 @@ def prepare_realm_pattern(source: str) -> str:
     """ Augment a realm filter so it only matches after start-of-string,
     whitespace, or opening delimiters, won't match if there are word
     characters directly after, and saves what was matched as "name". """
-    return r"""(?<![^\s'"\(,:<])(?P<name>""" + source + ')(?!\w)'
+    return r"""(?<![^\s'"\(,:<])(?P<name>""" + source + r')(?!\w)'
 
 # Given a regular expression pattern, linkifies groups that match it
 # using the provided format string to construct the URL.
