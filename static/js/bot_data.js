@@ -12,7 +12,7 @@ var bot_data = (function () {
                            'config_data', 'service_name', 'token'];
 
     var send_change_event = _.debounce(function () {
-        $(document).trigger('zulip.bot_data_changed');
+        settings_bots.render_bots();
     }, 50);
 
     var set_can_admin = function bot_data__set_can_admin(bot) {
