@@ -9,7 +9,7 @@ widgets.tictactoe = tictactoe_widget;
 widgets.zform = zform;
 
 var widget_contents = {};
-exports.widget_content = widget_contents;
+exports.widget_contents = widget_contents;
 
 function set_widget_in_message(row, widget_elem) {
     var content_holder = row.find('.message_content');
@@ -39,7 +39,7 @@ exports.activate = function (in_opts) {
     };
 
     if (row.attr('id').startsWith('zhome') && narrow_state.active()) {
-        // Don't place widget in a homw message row if we are narrowed
+        // Don't place widget in a home message row if we are narrowed
         // to active state
         return;
     }
