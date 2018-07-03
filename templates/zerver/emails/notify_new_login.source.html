@@ -1,5 +1,9 @@
 {% extends "zerver/emails/compiled/email_base_default.html" %}
 
+{% block preheader %}
+Server: {{ realm_uri }} Account: {{ user_email }} Time: {{ login_time }}
+{% endblock %}
+
 {% block illustration %}
 <img src="{{ email_images_base_uri }}/email_logo.png"/>
 {% endblock %}
