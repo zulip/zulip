@@ -72,14 +72,16 @@ exports.activate = function (in_opts) {
     }
 };
 
-$(document).on('narrow_deactivated.zulip', function () {
+exports.set_widgets_for_list = function () {
     _.each(widget_contents, function (widget_elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = current_msg_list.get_row(idx);
             set_widget_in_message(row, widget_elem);
         }
     });
-});
+};
+
+$(document).on('narrow_deactivated.zulip', exports.set_widgets_for_list);
 
 exports.handle_event = function (widget_event) {
     var widget_elem = widget_contents[widget_event.message_id];
