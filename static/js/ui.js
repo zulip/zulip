@@ -86,9 +86,9 @@ exports.update_starred = function (message) {
     update_message_in_all_views(message.id, function update_row(row) {
         var elt = row.find(".star");
         if (starred) {
-            elt.addClass("icon-vector-star").removeClass("icon-vector-star-empty").removeClass("empty-star");
+            elt.addClass("fa-star").removeClass("fa-star-o").removeClass("empty-star");
         } else {
-            elt.removeClass("icon-vector-star").addClass("icon-vector-star-empty").addClass("empty-star");
+            elt.removeClass("fa-star").addClass("fa-star-o").addClass("empty-star");
         }
         var title_state = starred ? i18n.t("Unstar") : i18n.t("Star");
         elt.attr("title", i18n.t("__starred_status__ this message", {starred_status: title_state}));
