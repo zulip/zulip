@@ -79,21 +79,21 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
     return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
 
 @catch_stripe_errors
-def get_stripe_customer(stripe_customer_id: int) -> Any:
+def get_stripe_customer(stripe_customer_id: int) -> stripe.Customer:
     stripe_customer = stripe.Customer.retrieve(stripe_customer_id)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"retrieve_customer": ', str(stripe_customer), ',']))  # nocoverage
     return stripe_customer
 
 @catch_stripe_errors
-def get_upcoming_invoice(stripe_customer_id: int) -> Any:
+def get_upcoming_invoice(stripe_customer_id: int) -> stripe.Invoice:
     stripe_invoice = stripe.Invoice.upcoming(customer=stripe_customer_id)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"upcoming_invoice": ', str(stripe_invoice), ',']))  # nocoverage
     return stripe_invoice
 
 @catch_stripe_errors
-def payment_source(stripe_customer: Any) -> Any:
+def payment_source(stripe_customer: stripe.Customer) -> Optional[stripe.Card]:
     if stripe_customer.default_source is None:
         return None  # nocoverage -- no way to get here yet
     for source in stripe_customer.sources.data:
