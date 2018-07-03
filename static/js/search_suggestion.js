@@ -560,8 +560,15 @@ exports.get_suggestions = function (base_query, query) {
     var query_operators = Filter.parse(query);
     var operators = base_query_operators.concat(query_operators);
     var last = {operator: '', operand: '', negated: false};
-    if (operators.length > 0) {
-        last = operators.slice(-1)[0];
+    if (query_operators.length > 0) {
+        last = query_operators.slice(-1)[0];
+    } else {
+        // If query_operators = [] then last will remain
+        // {operator: '', operand: '', negated: false}; from above.
+        // `last` has not yet been added to operators/query_operators.
+        // The code below adds last to operators/query_operators
+        operators.push(last);
+        query_operators.push(last);
     }
 
     var person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];

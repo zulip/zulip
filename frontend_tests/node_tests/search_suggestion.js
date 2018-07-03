@@ -598,6 +598,39 @@ run_test('check_is_suggestions', () => {
     assert.equal(describe('-is:alerted'), 'Exclude alerted messages');
     assert.equal(describe('-is:unread'), 'Exclude unread messages');
 
+    query = '';
+    suggestions = search.get_suggestions('', query);
+    expected = [
+        '',
+        'is:private',
+        'is:starred',
+        'is:mentioned',
+        'is:alerted',
+        'is:unread',
+        'sender:bob@zulip.com',
+        'stream:devel',
+        'stream:office',
+        'has:link',
+        'has:image',
+        'has:attachment',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
+    query = '';
+    var base_query = 'is:private';
+    suggestions = search.get_suggestions(base_query, query);
+    expected = [
+        'is:starred',
+        'is:mentioned',
+        'is:alerted',
+        'is:unread',
+        'sender:bob@zulip.com',
+        'has:link',
+        'has:image',
+        'has:attachment',
+    ];
+    assert.deepEqual(suggestions.strings, expected);
+
     // operand suggestions follow.
 
     query = 'is:';
@@ -635,7 +668,7 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:sta';
-    var base_query = 'stream:Denmark has:link';
+    base_query = 'stream:Denmark has:link';
     suggestions = search.get_suggestions(base_query, query);
     expected = [
         'is:starred',
