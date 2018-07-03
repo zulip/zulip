@@ -2,7 +2,7 @@ var common = require('../casper_lib/common.js').common;
 
 function star_count() {
     return casper.evaluate(function () {
-        return $("#zhome .icon-vector-star:not(.empty-star)").length;
+        return $("#zhome .fa-star:not(.empty-star)").length;
     });
 }
 
@@ -40,7 +40,7 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('#zhome .icon-vector-star', function () {
+    casper.waitUntilVisible('#zhome .fa-star', function () {
         casper.test.assertEquals(star_count(), 1,
                                  "Got expected single star count.");
 
