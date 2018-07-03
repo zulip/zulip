@@ -305,14 +305,14 @@ exports.MessageList.prototype = {
 
     show_edit_topic: function MessageList_show_edit_topic(recipient_row, form) {
         recipient_row.find(".topic_edit_form").empty().append(form);
-        recipient_row.find('.icon-vector-pencil').hide();
+        recipient_row.find('.fa-pencil').hide();
         recipient_row.find(".stream_topic").hide();
         recipient_row.find(".topic_edit").show();
     },
 
     hide_edit_topic: function MessageList_hide_edit_topic(recipient_row) {
         recipient_row.find(".stream_topic").show();
-        recipient_row.find('.icon-vector-pencil').show();
+        recipient_row.find('.fa-pencil').show();
         recipient_row.find(".topic_edit").hide();
     },
 
