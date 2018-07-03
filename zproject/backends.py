@@ -499,7 +499,31 @@ def social_auth_finish(backend: Any,
                                            is_signup=is_signup,
                                            redirect_to=redirect_to)
 
-class GitHubAuthBackend(GithubOAuth2):
+class SocialAuthMixin(ZulipAuthMixin):
+    def auth_complete(self, *args: Any, **kwargs: Any) -> Optional[HttpResponse]:
+        """This is a small wrapper around the core `auth_complete` method of
+        python-social-auth, designed primarily to prevent 500s for
+        exceptions in the social auth code from situations that are
+        really user errors.  Returning `None` from this function will
+        redirect the browser to the login page.
+        """
+        try:
+            # Call the auth_complete method of social_core.backends.oauth.BaseOAuth2
+            return super().auth_complete(*args, **kwargs)  # type: ignore # monkey-patching
+        except AuthFailed as e:
+            # When a user's social authentication fails (e.g. because
+            # they did something funny with reloading in the middle of
+            # the flow), don't throw a 500, just send them back to the
+            # login page and record the event at the info log level.
+            logging.info(str(e))
+            return None
+        except SocialAuthBaseException as e:
+            # Other python-social-auth exceptions are likely
+            # interesting enough that we should log a warning.
+            logging.warning(str(e))
+            return None
+
+class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
 
     def get_verified_emails(self, *args: Any, **kwargs: Any) -> List[str]:

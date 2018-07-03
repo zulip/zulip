@@ -774,6 +774,21 @@ class GitHubAuthBackendTest(ZulipTestCase):
                                 'in one of the domains that are allowed to register '
                                 'for accounts in this organization.'.format(email), result)
 
+    def test_github_complete(self) -> None:
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.process_error',
+                        side_effect=AuthFailed('Not found')):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
+    def test_github_complete_when_base_exc_is_raised(self) -> None:
+        with mock.patch('social_core.backends.oauth.BaseOAuth2.auth_complete',
+                        side_effect=AuthStateForbidden('State forbidden')), \
+                mock.patch('zproject.backends.logging.warning'):
+            result = self.client_get(reverse('social:complete', args=['github']))
+            self.assertEqual(result.status_code, 302)
+            self.assertIn('login', result.url)
+
     def test_github_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
