@@ -536,6 +536,15 @@ def get_message_history(client, message_id):
     validate_against_openapi_schema(result, '/messages/{message_id}/history',
                                     'get', '200')
 
+def get_realm_emoji(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    result = client.get_realm_emoji()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/emoji', 'GET', '200')
+
 def register_queue(client):
     # type: (Client) -> str
 
@@ -663,6 +672,7 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users:get': get_members,
+    '/realm/emoji:get': get_realm_emoji,
     '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
     '/realm/filters/<filter_id>:delete': remove_realm_filter,
@@ -780,6 +790,7 @@ def test_server_organizations(client):
     add_realm_filter(client)
     get_server_settings(client)
     remove_realm_filter(client)
+    get_realm_emoji(client)
 
 def test_errors(client):
     # type: (Client) -> None

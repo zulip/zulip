@@ -1168,6 +1168,42 @@ paths:
                           "msg": "Topic is not muted",
                           "result": "error"
                       }
+  /realm/emoji:
+    get:
+      description: Get all the custom emoji in the user's realm.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    emoji:
+                      type: object
+                      description: An object that contains `emoji` objects,
+                        each identified with their emoji ID as the key.
+                - example:
+                    {
+                        "result": "success",
+                        "msg": "",
+                        "emoji": {
+                            "1": {
+                                "id": "1",
+                                "name": "green_tick",
+                                "source_url": "/user_avatars/1/emoji/images/1.png",
+                                "deactivated": false,
+                                "author": {
+                                    "id": 5,
+                                    "email": "iago@zulip.com",
+                                    "full_name": "Iago"
+                                }
+                            }
+                        }
+                    }
   /realm/filters:
     get:
       description: Fetch all the filters set up for the user's organization.
