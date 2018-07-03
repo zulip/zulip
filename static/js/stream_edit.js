@@ -327,7 +327,7 @@ function redraw_privacy_related_stuff(sub_row, sub) {
     if (sub.invite_only) {
         stream_settings.find(".large-icon")
             .removeClass("hash").addClass("lock")
-            .html("<i class='icon-vector-lock'></i>");
+            .html("<i class='fa fa-lock' aria-hidden='true'></i>");
     } else {
         stream_settings.find(".large-icon")
             .addClass("hash").removeClass("lock")
