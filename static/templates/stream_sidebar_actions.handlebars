@@ -2,19 +2,19 @@
 <ul class="nav nav-list streams_popover" data-stream-id="{{ stream.stream_id }}" data-name="{{ stream.name }}">
     <li>
         <a class="open_stream_settings">
-            <i class="icon-vector-cog"></i>
+            <i class="fa fa-cog" aria-hidden="true"></i>
             {{t "Stream settings" }}
         </a>
     </li>
     <li>
         <a class="narrow_to_stream">
-            <i class="icon-vector-bullhorn"></i>
+            <i class="fa fa-bullhorn" aria-hidden="true"></i>
             {{#tr this}}Narrow to stream <b>__stream.name__</b>{{/tr}}
         </a>
     </li>
     <li>
         <a class="pin_to_top">
-            <i class="icon-vector-pushpin stream-pin-icon"></i>
+            <i class="fa fa-thumb-tack stream-pin-icon" aria-hidden="true"></i>
             {{#if stream.pin_to_top}}
                 {{#tr this}}Unpin stream <b>__stream.name__</b> from top{{/tr}}
             {{else}}
@@ -24,30 +24,30 @@
     </li>
     <li>
         <a class="compose_to_stream">
-            <i class="icon-vector-edit"></i>
+            <i class="fa fa-edit" aria-hidden="true"></i>
             {{#tr this}}Compose a message to stream <b>__stream.name__</b>{{/tr}}
         </a>
     </li>
     <li>
         <a class="mark_stream_as_read">
-            <i class="icon-vector-book"></i>
+            <i class="fa fa-book" aria-hidden="true"></i>
             {{#tr this}}Mark all messages in <b>__stream.name__</b> as read{{/tr}}
         </a>
     </li>
     <li>
         <a class="toggle_home">
             {{#if stream.in_home_view}}
-                <i class="icon-vector-eye-close"></i>
+                <i class="fa fa-eye-slash" aria-hidden="true"></i>
                 {{#tr this}}Mute the stream <b>__stream.name__</b>{{/tr}}
             {{else}}
-                <i class="icon-vector-eye-open"></i>
+                <i class="fa fa-eye" aria-hidden="true"></i>
                 {{#tr this}}Unmute the stream <b>__stream.name__</b>{{/tr}}
             {{/if}}
         </a>
     </li>
     <li>
         <a class="popover_sub_unsub_button" data-name="{{stream.name}}">
-            <i class='icon-vector-envelope'></i>
+            <i class='fa fa-envelope' aria-hidden="true"></i>
             {{t "Unsubscribe" }}
         </a>
     </li>
