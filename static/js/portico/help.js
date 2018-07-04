@@ -101,7 +101,6 @@ function scrollToHash(container) {
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
             var $html = $(res).find(".markdown .content");
-            $html.find(".back-to-home").remove();
 
             callback($html.html().trim());
             render_code_sections();
