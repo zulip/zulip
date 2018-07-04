@@ -843,11 +843,6 @@ exports.initialize = function () {
         });
     }());
 
-    $("#subscriptions_table").on("hide", ".subscription_settings", function (e) {
-        var sub_arrow = $(e.target).closest('.stream-row').find('.sub_arrow i');
-        sub_arrow.removeClass('icon-vector-chevron-up');
-        sub_arrow.addClass('icon-vector-chevron-down');
-    });
 };
 
 function focus_on_narrowed_stream() {
