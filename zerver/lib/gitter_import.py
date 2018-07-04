@@ -223,6 +223,7 @@ def build_subscription(recipient_id: int, user_id: int,
 def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                       zerver_subscription: List[ZerverFieldsT],
                                       user_map: Dict[str, int],
+                                      user_short_name_to_full_name: Dict[str, str],
                                       chunk_size: int=MESSAGE_BATCH_CHUNK_SIZE) -> None:
     """
     Messages are stored in batches
@@ -244,6 +245,8 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             break
         for message in message_data:
             message_time = dateutil.parser.parse(message['sent']).timestamp()
+            mentioned_user_ids = get_usermentions(message, user_map,
+                                                  user_short_name_to_full_name)
             rendered_content = None
 
             zulip_message = dict(
@@ -266,6 +269,9 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             for subscription in zerver_subscription:
                 if subscription['recipient'] == recipient_id:
                     flags_mask = 1  # For read
+                    if subscription['user_profile'] in mentioned_user_ids:
+                        flags_mask = 9  # For read and mentioned
+
                     usermessage = dict(
                         user_profile=subscription['user_profile'],
                         id=usermessage_id,
@@ -287,6 +293,20 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
 
     logging.info('######### IMPORTING MESSAGES FINISHED #########\n')
 
+def get_usermentions(message: Dict[str, Any], user_map: Dict[str, int],
+                     user_short_name_to_full_name: Dict[str, str]) -> List[int]:
+    mentioned_user_ids = []
+    if 'mentions' in message:
+        for mention in message['mentions']:
+            if mention.get('userId') in user_map:
+                gitter_mention = '@%s' % (mention['screenName'])
+                zulip_mention = ('@**%s**' %
+                                 (user_short_name_to_full_name[mention['screenName']]))
+                message['text'] = message['text'].replace(gitter_mention, zulip_mention)
+
+                mentioned_user_ids.append(user_map[mention['userId']])
+    return mentioned_user_ids
+
 def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> None:
     #  Subdomain is set by the user while running the import commands
     realm_subdomain = ""
@@ -302,8 +322,15 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     realm, avatar_list, user_map = gitter_workspace_to_realm(
         domain_name, gitter_data, realm_subdomain)
+
+    # For user mentions
+    user_short_name_to_full_name = {}
+    for userprofile in realm['zerver_userprofile']:
+        user_short_name_to_full_name[userprofile['short_name']] = userprofile['full_name']
+
     convert_gitter_workspace_messages(
-        gitter_data, output_dir, realm['zerver_subscription'], user_map)
+        gitter_data, output_dir, realm['zerver_subscription'], user_map,
+        user_short_name_to_full_name)
 
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))

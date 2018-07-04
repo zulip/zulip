@@ -20,6 +20,7 @@ from zerver.models import (
 )
 from zerver.lib.gitter_import import (
     do_convert_data,
+    get_usermentions,
 )
 
 import ujson
@@ -106,3 +107,26 @@ class GitterImporter(ZulipTestCase):
         self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
         exported_usermessage_message = get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_message, exported_messages_id)
+
+    def test_get_usermentions(self) -> None:
+        user_map = {'57124a4': 3, '57124b4': 5, '57124c4': 8}
+        user_short_name_to_full_name = {'user': 'user name', 'user2': 'user2',
+                                        'user3': 'user name 3', 'user4': 'user 4'}
+        messages = [{'text': 'hi @user',
+                     'mentions': [{'screenName': 'user', 'userId': '57124a4'}]},
+                    {'text': 'hi @user2 @user3',
+                     'mentions': [{'screenName': 'user2', 'userId': '57124b4'},
+                                  {'screenName': 'user3', 'userId': '57124c4'}]},
+                    {'text': 'hi @user4',
+                     'mentions': [{'screenName': 'user4'}]},
+                    {'text': 'hi @user5',
+                     'mentions': [{'screenName': 'user', 'userId': '5712ds4'}]}]
+
+        self.assertEqual(get_usermentions(messages[0], user_map, user_short_name_to_full_name), [3])
+        self.assertEqual(messages[0]['text'], 'hi @**user name**')
+        self.assertEqual(get_usermentions(messages[1], user_map, user_short_name_to_full_name), [5, 8])
+        self.assertEqual(messages[1]['text'], 'hi @**user2** @**user name 3**')
+        self.assertEqual(get_usermentions(messages[2], user_map, user_short_name_to_full_name), [])
+        self.assertEqual(messages[2]['text'], 'hi @user4')
+        self.assertEqual(get_usermentions(messages[3], user_map, user_short_name_to_full_name), [])
+        self.assertEqual(messages[3]['text'], 'hi @user5')
