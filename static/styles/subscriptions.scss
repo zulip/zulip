@@ -79,10 +79,6 @@
     text-align: left;
 }
 
-#create_or_filter_stream_row > .subscription_table_elem {
-    text-align: left;
-}
-
 .subscription_header {
     min-height: 47px;
 }
@@ -188,17 +184,6 @@
     text-decoration: none;
     background-color: hsl(0, 0%, 92%);
     border: 1px solid hsl(0, 0%, 68%);
-}
-
-#create_or_filter_stream_row td {
-    background-color: hsl(0, 0%, 95%);
-    border-color: hsl(0, 0%, 73%);
-    border-bottom: 1px solid hsl(0, 0%, 73%);
-}
-
-#create_or_filter_stream_row input[type="text"] {
-    width: 220px;
-    margin: 5px 0 20px 38px;
 }
 
 form#add_new_subscription {
