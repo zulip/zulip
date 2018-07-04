@@ -10,7 +10,7 @@ guide should help you find the API you need:
   Zulip's native integrations with Zapier and IFTTT often allow
   integrating a new service with Zulip without writing any code.
 * If you'd like to send content into Zulip, you can
-  [write a native incoming webhook integration](/api/integration-guide#incoming-webhook-integrations)
+  [write a native incoming webhook integration](/api/incoming-webhooks-overview)
   or use [Zulip's API for sending messages](/api/stream-message).
 * If you're building an interactive bot that reacts to activity inside
   Zulip, you'll want to look at Zulip's
@@ -23,4 +23,3 @@ the full [REST API](/api/rest), generally starting with
 
 In case you already know how you want to build your integration and you're
 just looking for an API key, we've got you covered [here](/api/api-keys).
-
