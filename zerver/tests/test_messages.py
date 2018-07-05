@@ -3369,3 +3369,39 @@ class MessageVisibilityTest(ZulipTestCase):
                 mock.patch("zerver.lib.message.update_first_visible_message_id") as m:
             maybe_update_first_visible_message_id(realm, lookback_hours)
         m.assert_called_once_with(realm)
+
+
+class SpamTests(ZulipTestCase):
+
+    @override_settings(SPAM_COUNT_THRESHOLD=2, SPAM_REGISTERED_THRESHOLD=30)
+    def report_spam(self, message_id: int) -> HttpResponse:
+        return self.client_post("/json/messages/" + str(message_id) + "/report_spam")
+
+    def test_report_spam(self) -> None:
+
+        stream_name = 'spam_stream'
+        date_registered = timezone_now() - datetime.timedelta(days=30)
+        notification_bot = self.notification_bot()
+        user_names = ['hamlet', 'prospero', 'cordelia', 'iago']
+        non_admin_user_profiles = (self.example_user(name) for name in user_names if name != 'iago')
+        hamlet, prospero, cordelia, iago = (self.example_user(name) for name in user_names)
+        for user_profile in non_admin_user_profiles:
+            self.subscribe(user_profile, stream_name)
+            user_profile.date_joined = date_registered
+            user_profile.save()
+
+        message_id = self.send_stream_message(hamlet.email, stream_name, 'spam_test')
+
+        for user_profile in [prospero, cordelia]:
+            self.login(user_profile.email)
+            result = self.report_spam(message_id)
+            self.assert_json_success(result)
+            if user_profile == prospero:
+                hamlet = self.example_user('hamlet')
+                self.assertTrue(hamlet.is_active)
+            self.logout()
+
+        spam_report_msg = self.get_last_message()
+        admin_messages = get_user_messages(iago)
+        self.assertEqual(notification_bot, spam_report_msg.sender)
+        self.assertIn('spam_test', admin_messages[-1].content)

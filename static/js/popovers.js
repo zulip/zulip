@@ -342,6 +342,10 @@ exports.toggle_actions_popover = function (element, id) {
                 editability === message_edit.editability_types.FULL ||
                 editability === message_edit.editability_types.TOPIC_ONLY;
         var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
+        var sent_by_admin = people.get_person_from_user_id(message.sender_id).is_admin;
+        var sent_by_bot = people.get_person_from_user_id(message.sender_id).is_bot;
+        var should_display_report_spam = page_params.report_spam_enabled && message.content !== '<p>(deleted)</p>' &&
+                !message.sent_by_me && !sent_by_admin && !sent_by_bot;
 
         var should_display_delete_option = message_edit.get_deletability(message);
         var args = {
@@ -360,6 +364,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
             should_display_edit_and_view_source: should_display_edit_and_view_source,
             should_display_quote_and_reply: should_display_quote_and_reply,
+            should_display_report_spam: should_display_report_spam,
         };
 
         var ypos = elt.offset().top;
@@ -876,6 +881,14 @@ exports.register_click_handlers = function () {
         var msgid = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
         message_edit.delete_message(msgid);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.report_spam', function (e) {
+        var msgid = $(e.currentTarget).data('message-id');
+        popovers.hide_actions_popover();
+        message_edit.report_spam(msgid);
         e.stopPropagation();
         e.preventDefault();
     });

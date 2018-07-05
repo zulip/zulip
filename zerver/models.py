@@ -1433,6 +1433,15 @@ class UserMessage(AbstractUserMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
 
+class SpamReport(models.Model):
+    reporter = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
+    timestamp = models.DateTimeField(default=timezone_now, db_index=True)  # type: datetime.datetime
+
+    def __str__(self) -> str:
+        return "<Spam report by %s on %s>" % (self.reporter, self.message)
+
+
 class AbstractAttachment(models.Model):
     file_name = models.TextField(db_index=True)  # type: str
     # path_id is a storage location agnostic representation of the path of the file.

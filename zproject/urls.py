@@ -200,6 +200,11 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.reactions.add_reaction',
          'DELETE': 'zerver.views.reactions.remove_reaction'}),
 
+    # New endpoint for reporting spam.
+    url(r'^messages/(?P<message_id>[0-9]+)/report_spam$',
+        rest_dispatch,
+        {'POST': 'zerver.views.reactions.report_spam'}),
+
     # reactions -> zerver.view.reactions
     # PUT adds a reaction to a message
     # DELETE removes a reaction from a message

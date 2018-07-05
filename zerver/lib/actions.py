@@ -82,7 +82,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    DisposableEmailError, EmailContainsPlusError
+    DisposableEmailError, EmailContainsPlusError, SpamReport
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -1588,6 +1588,10 @@ def do_remove_reaction(user_profile: UserProfile, message: Message,
                                        reaction_type=reaction_type).get()
     reaction.delete()
     notify_reaction_update(user_profile, message, reaction, "remove")
+
+def do_add_spam_report(user_profile: UserProfile, message: Message) -> None:
+    report = SpamReport(reporter=user_profile, message=message)
+    report.save()
 
 def do_send_typing_notification(notification: Dict[str, Any]) -> None:
     recipient_user_profiles = get_typing_user_profiles(notification['recipient'],
