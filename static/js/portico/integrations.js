@@ -350,7 +350,7 @@ function integration_events() {
         }
     });
 
-    $('.integration-categories-dropdown .dropdown-toggle').click(function () {
+    $('.integration-categories-dropdown h3, i').click(function () {
         toggle_categories_dropdown();
     });
 
