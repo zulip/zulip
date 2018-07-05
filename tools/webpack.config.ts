@@ -133,6 +133,7 @@ export default (env?: string) : webpack.Configuration => {
         { path: "../node_modules/jquery/dist/jquery.js", name: ['$', 'jQuery'] },
         { path: "../node_modules/underscore/underscore.js", name: '_' },
         { path: "../node_modules/handlebars/dist/handlebars.runtime.js", name: 'Handlebars' },
+        { path: "../node_modules/to-markdown/dist/to-markdown.js", name: 'toMarkdown' },
         { path: "../node_modules/sortablejs/Sortable.js"}
     ];
     config.module.rules.push(...getExposeLoaders(exposeOptions));
