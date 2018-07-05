@@ -131,6 +131,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             if (electron_bridge !== undefined) {
                 electron_bridge.send_event('realm_icon_url', event.data.icon_url);
             }
+        } else if (event.op === 'update_dict' && event.property === 'logo') {
+            page_params.realm_logo_url = event.data.logo_url;
+            page_params.realm_logo_source = event.data.logo_source;
         } else if (event.op === 'deactivated') {
             window.location.href = "/accounts/deactivated/";
         }

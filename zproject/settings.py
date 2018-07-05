@@ -321,6 +321,7 @@ DEFAULT_SETTINGS.update({
     'DATA_UPLOAD_MAX_MEMORY_SIZE': 25 * 1024 * 1024,
     'MAX_AVATAR_FILE_SIZE': 5,
     'MAX_ICON_FILE_SIZE': 5,
+    'MAX_LOGO_FILE_SIZE': 5,
     'MAX_EMOJI_FILE_SIZE': 5,
 
     # Limits to help prevent spam, in particular by sending invitations.
