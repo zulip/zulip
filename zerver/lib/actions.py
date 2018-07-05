@@ -789,7 +789,8 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
     user_profile.email = new_email
-    user_profile.save(update_fields=["email"])
+    user_profile.delivery_email = new_email
+    user_profile.save(update_fields=["email", "delivery_email"])
 
     payload = dict(user_id=user_profile.id,
                    new_email=new_email)

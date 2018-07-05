@@ -43,7 +43,7 @@ def build_email(template_prefix: str, to_user_id: Optional[int]=None,
         to_user = get_user_profile_by_id(to_user_id)
         # Change to formataddr((to_user.full_name, to_user.email)) once
         # https://github.com/zulip/zulip/issues/4676 is resolved
-        to_email = to_user.email
+        to_email = to_user.delivery_email
 
     if context is None:
         context = {}
