@@ -185,5 +185,17 @@ def report_spam(request: HttpRequest, user_profile: UserProfile,
                                       report_spam_message_content)
 
     do_add_spam_report(user_profile=user_profile, message=message)
+    recent_report = timezone_now() - datetime.timedelta(days=1)
+    recently_registered = timezone_now() - datetime.timedelta(days=settings.SPAM_REGISTERED_THRESHOLD)
+    sum_of_spam_reports = SpamReport.objects.filter(reporter__date_joined__lte=recently_registered,
+                                                    message__sender=message.sender,
+                                                    timestamp__gte=recent_report).distinct('reporter') \
+                                                                                 .count()
+    if sum_of_spam_reports >= settings.SPAM_COUNT_THRESHOLD:
+        do_deactivate_user(message.sender)
+        context = {'realm_name': message.sender.realm.name}
+        send_email('zerver/emails/notify_spam_deactivation', to_user_id=message.sender.id,
+                   from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
+                   context=context)
 
     return json_success()

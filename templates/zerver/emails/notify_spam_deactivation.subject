@@ -1,0 +1,3 @@
+{% trans %}
+Your Zulip account for {{ realm_name }} has been deactivated.
+{% endtrans %}

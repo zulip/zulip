@@ -1399,3 +1399,7 @@ CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.jso
 THUMBOR_KEY = get_secret('thumbor_key')
 
 REPORT_SPAM_ENABLED = DEVELOPMENT
+
+SPAM_COUNT_THRESHOLD = 2
+
+SPAM_REGISTERED_THRESHOLD = 30
