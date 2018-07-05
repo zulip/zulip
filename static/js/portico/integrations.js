@@ -81,14 +81,10 @@ function update_categories() {
     $('[data-category="' + state.category + '"]').addClass('selected');
 
     var $dropdown_label = $('.integration-categories-dropdown .dropdown-category-label');
-    var $dropdown_icon = $('.integration-categories-dropdown i');
     if (state.category === INITIAL_STATE.category) {
         $dropdown_label.text(i18n.t('Filter by category'));
     } else {
         $dropdown_label.text(CATEGORIES[state.category]);
-        $dropdown_icon
-            .removeClass('fa-angle-right')
-            .addClass('fa-angle-down');
     }
 
     $('.integration-lozenges').animate(
@@ -321,18 +317,6 @@ function dispatch(action, payload) {
 
 function toggle_categories_dropdown() {
     var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
-
-    if ($dropdown_list.css('display') === 'none' &&
-        state.category === INITIAL_STATE.category) {
-        $('.integration-categories-dropdown i')
-            .removeClass('fa-angle-right')
-            .addClass('fa-angle-down');
-    } else {
-        $('.integration-categories-dropdown i')
-            .removeClass('fa-angle-down')
-            .addClass('fa-angle-right');
-    }
-
     $dropdown_list.slideToggle(250);
 }
 
