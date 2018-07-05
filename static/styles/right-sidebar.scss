@@ -231,3 +231,41 @@
     cursor: pointer;
     font-size: 20px;
 }
+
+#invite-stream-checkboxes {
+    .stream-name {
+        padding: 2px 0;
+    }
+
+    .stream-privacy {
+        font-size: 15px;
+        width: 9px;
+        margin-right: 2px;
+        margin-left: 1px;
+        position: relative;
+        top: 1px;
+        color: hsl(0, 0%, 38%);
+    }
+
+    span.stream-hashtag {
+        top: -2px;
+        margin: 0 2px 0 0;
+        padding: 0;
+        height: auto;
+        width: auto;
+        font-weight: 800;
+        line-height: auto;
+        text-align: left;
+        border: none;
+        color: hsl(0, 0%, 38%);
+        cursor: auto;
+
+        &::after {
+            content: "#";
+            font-size: 1.3rem;
+            font-weight: 800;
+            line-height: 0;
+        }
+    }
+
+}
