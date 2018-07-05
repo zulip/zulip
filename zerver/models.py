@@ -602,6 +602,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     # Fields from models.AbstractUser minus last_name and first_name,
     # which we don't use; email is modified to make it indexed and unique.
     email = models.EmailField(blank=False, db_index=True)  # type: str
+    delivery_email = models.EmailField(blank=False, db_index=True)  # type: str
     is_staff = models.BooleanField(default=False)  # type: bool
     is_active = models.BooleanField(default=True, db_index=True)  # type: bool
     is_realm_admin = models.BooleanField(default=False, db_index=True)  # type: bool
