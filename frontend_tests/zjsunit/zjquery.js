@@ -470,6 +470,10 @@ exports.make_zjquery = function (opts) {
 
     zjquery.fn = fn;
 
+    zjquery.clear_all_elements = function () {
+        elems = {};
+    };
+
     return zjquery;
 };
 
