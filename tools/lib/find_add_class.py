@@ -20,6 +20,7 @@ GENERIC_KEYWORDS = [
     'notdisplayed',
     'popover',
     'no-border',
+    'rtl',
     'second',
     'selected',
     'slide-left',

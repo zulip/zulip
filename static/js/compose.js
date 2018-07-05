@@ -565,8 +565,20 @@ exports.validate = function () {
 };
 
 exports.handle_keydown = function (event) {
-    var code = event.keyCode || event.which;
     var textarea = $("#compose-textarea");
+
+    // Set the rtl class if the text has an rtl direction, remove it otherwise
+    var text = textarea.val();
+    if (text.startsWith('```quote')) {
+        text = text.substr(8);
+    }
+    if (rtl.get_direction(text) === 'rtl') {
+        textarea.addClass('rtl');
+    } else {
+        textarea.removeClass('rtl');
+    }
+
+    var code = event.keyCode || event.which;
     var range = textarea.range();
     var isBold = code === 66;
     var isItalic = code === 73 && !event.shiftKey;

@@ -104,6 +104,7 @@
         "flatpickr": false,
         "pointer": false,
         "util": false,
+        "rtl": false,
         "MessageListData": false,
         "MessageListView": false,
         "blueslip": false,
