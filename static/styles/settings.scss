@@ -743,7 +743,7 @@ input[type=checkbox].inline-block {
     margin: 10px 0px 5px 0px;
 
     overflow: hidden;
-    max-height: 1em;
+    line-height: 1.3em;
     text-overflow: ellipsis;
     white-space: pre;
 }
@@ -825,6 +825,7 @@ input[type=checkbox].inline-block {
 .bots_list .api_key .api-key-value-and-button {
     font-family: "Inconsolata", Menlo, monospace;
     font-size: 0.85em;
+    display: flex;
 }
 
 .bots_list .bot_info {
