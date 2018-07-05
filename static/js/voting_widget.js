@@ -75,8 +75,6 @@ exports.poll_data_holder = function (is_my_poll, question) {
                     type: 'question',
                     question: question,
                 };
-                poll_question = question;
-
                 if (is_my_poll) {
                     return event;
                 }
