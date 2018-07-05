@@ -18,7 +18,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
-    CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot
+    CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
+    RealmAuditLog
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -167,7 +168,6 @@ NON_EXPORTED_TABLES = {
     'zerver_botstoragedata',
     'zerver_botconfigdata',
     'zerver_mutedtopic',
-    'zerver_realmauditlog',
     'zerver_pushdevicetoken',
     'zerver_service',
     'zerver_usergroup',
@@ -201,6 +201,7 @@ DATE_FIELDS = {
     'zerver_useractivityinterval': ['start', 'end'],
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
+    'zerver_realmauditlog': ['event_time'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
@@ -576,6 +577,13 @@ def get_realm_config() -> Config:
         model=UserActivityInterval,
         normal_parent=user_profile_config,
         parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_realmauditlog',
+        model=RealmAuditLog,
+        normal_parent=user_profile_config,
+        parent_key='modified_user__in',
     )
 
     # Some of these tables are intermediate "tables" that we
