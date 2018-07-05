@@ -36,6 +36,7 @@ from zerver.lib.test_classes import (
 from zerver.models import (
     Realm,
     get_realm,
+    RealmAuditLog,
 )
 from zerver.lib import mdiff
 
@@ -539,7 +540,14 @@ class SlackImporter(ZulipTestCase):
 
         # test import of the converted slack data into an existing database
         do_import_realm(output_dir, test_realm_subdomain)
-        self.assertTrue(get_realm(test_realm_subdomain).name, test_realm_subdomain)
+        realm = get_realm(test_realm_subdomain)
+        self.assertTrue(realm.name, test_realm_subdomain)
+
+        # test RealmAuditLog
+        realmauditlog = RealmAuditLog.objects.filter(realm=realm)
+        realmauditlog_event_type = {log.event_type for log in realmauditlog}
+        self.assertEqual(realmauditlog_event_type, {'subscription_created'})
+
         Realm.objects.filter(name=test_realm_subdomain).delete()
 
         remove_folder(output_dir)
