@@ -1048,6 +1048,7 @@ JS_SPECS = {
             'js/upload_widget.js',
             'js/avatar.js',
             'js/realm_icon.js',
+            'js/realm_logo.js',
             'js/reminder.js',
             'js/settings_account.js',
             'js/settings_display.js',

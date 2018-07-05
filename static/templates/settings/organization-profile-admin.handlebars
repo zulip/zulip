@@ -40,6 +40,25 @@
             </div>
         </div>
 
+        <h3>{{t "Organization logo" }}</h3>
+        <h5 class="light">{{t "Please upload an image with 4:1 aspect ratio" }}</h5>
+
+        <div class="realm-logo-section">
+            <div class="inline-block">
+                <img id="realm-settings-logo" src="{{ realm_logo_url }}"/>
+                <input type="file" name="realm_logo_file_input" class="notvisible"
+                  id="realm_logo_file_input" value="{{t 'Upload logo' }}"/>
+                <div id="upload_logo_spinner"></div>
+            </div>
+            <div class="inline-block avatar-controls">
+                <button class="button rounded sea-green w-200 block input-size"
+                  id="realm_logo_upload_button">{{t 'Upload new logo' }}</button>
+                <div id="realm_logo_file_input_error" class="text-error"></div>
+                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
+                  id="realm_logo_delete_button">{{t 'Delete logo' }}</button>
+            </div>
+        </div>
+
         <h3 class="light">{{t "Deactivate organization" }}</h3>
         <div class="deactivate-realm-section">
             <div class="input-group">
