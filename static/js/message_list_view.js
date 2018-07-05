@@ -406,6 +406,12 @@ MessageListView.prototype = {
                 blueslip.warn('Only DOM nodes can be passed to _post_process_messages');
             }
             var row = $(dom_message);
+            var content = row.find('.message_content');
+
+            // Set the rtl class if the text has an rtl direction
+            if (rtl.get_direction(content.text()) === 'rtl') {
+                content.addClass('rtl');
+            }
 
             // Save DOM elements by id into self._rows for O(1) lookup
             if (row.hasClass('message_row')) {

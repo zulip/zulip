@@ -58,6 +58,7 @@ global.document.location.host = 'foo.com';
 zrequire('zcommand');
 zrequire('compose_ui');
 zrequire('util');
+zrequire('rtl');
 zrequire('common');
 zrequire('Handlebars', 'handlebars');
 zrequire('stream_data');
