@@ -321,18 +321,19 @@ function dispatch(action, payload) {
 
 function toggle_categories_dropdown() {
     var $dropdown_list = $('.integration-categories-dropdown .dropdown-list');
-    $dropdown_list.toggle();
 
     if ($dropdown_list.css('display') === 'none' &&
         state.category === INITIAL_STATE.category) {
         $('.integration-categories-dropdown i')
-            .removeClass('fa-angle-down')
-            .addClass('fa-angle-right');
-    } else {
-        $('.integration-categories-dropdown i')
             .removeClass('fa-angle-right')
             .addClass('fa-angle-down');
+    } else {
+        $('.integration-categories-dropdown i')
+            .removeClass('fa-angle-down')
+            .addClass('fa-angle-right');
     }
+
+    $dropdown_list.slideToggle(250);
 }
 
 function integration_events() {
