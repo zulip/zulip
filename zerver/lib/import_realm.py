@@ -24,7 +24,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
-    CustomProfileField, CustomProfileFieldValue, \
+    CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username
 
 # Code from here is the realm import code path
@@ -58,6 +58,7 @@ id_maps = {
     'customprofilefield': {},
     'customprofilefieldvalue': {},
     'attachment': {},
+    'realmauditlog': {},
 }  # type: Dict[str, Dict[int, int]]
 
 path_maps = {
@@ -541,6 +542,18 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefieldvalue',
                      related_table="customprofilefieldvalue")
     bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefieldvalue')
+
+    fix_datetime_fields(data, 'zerver_realmauditlog')
+    re_map_foreign_keys(data, 'zerver_realmauditlog', 'realm', related_table="realm")
+    re_map_foreign_keys(data, 'zerver_realmauditlog', 'modified_user',
+                        related_table='user_profile')
+    re_map_foreign_keys(data, 'zerver_realmauditlog', 'acting_user',
+                        related_table='user_profile')
+    re_map_foreign_keys(data, 'zerver_realmauditlog', 'modified_stream',
+                        related_table="stream")
+    update_model_ids(RealmAuditLog, data, 'zerver_realmauditlog',
+                     related_table="realmauditlog")
+    bulk_import_model(data, RealmAuditLog, 'zerver_realmauditlog')
 
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
