@@ -1396,8 +1396,11 @@ body:not(.night-mode) #account-settings .custom_user_field .datepicker {
 
 #settings_page .custom_user_field .remove_date {
     opacity: 0.5;
-    font-size: 1.1em;
     display: none;
+    cursor: pointer;
+    position: relative;
+    top: 2px;
+    left: -20px;
 }
 
 #settings_page .custom_user_field:hover .remove_date {
