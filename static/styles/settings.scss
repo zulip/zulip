@@ -705,6 +705,17 @@ input[type=checkbox].inline-block {
 .admin_profile_fields_table,
 .admin_filters_table {
     margin-top: 20px;
+    .movable-profile-field-row {
+        cursor: move;
+        i {
+            color: hsl(0, 0, 75%);
+            position: relative;
+            top: 1px;
+            + i {
+                margin-right: 5px;
+            }
+        }
+    }
 }
 
 #admin-filter-pattern-status,

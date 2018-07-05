@@ -1,8 +1,9 @@
 {{#with profile_field}}
-<tr class="profile-field-row" data-profile-field-id="{{id}}">
+<tr class="profile-field-row movable-profile-field-row" data-profile-field-id="{{id}}">
     <td>
         {{#if ../can_modify}}
-        <i class="fa fa-sort" aria-hidden="true"></i>
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
+        <i class="fa fa-ellipsis-v" aria-hidden="true"></i>
         {{/if}}
         <span class="profile_field_name">{{name}}</span>
     </td>
