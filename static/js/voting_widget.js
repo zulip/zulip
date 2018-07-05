@@ -155,13 +155,14 @@ exports.activate = function (opts) {
 
         elem.find("button.poll-comment").on('click', function (e) {
             e.stopPropagation();
-            var comment = elem.find("input.poll-comment").val().trim();
+            var poll_comment_input = elem.find("input.poll-comment");
+            var comment = poll_comment_input.val().trim();
 
             if (comment === '') {
                 return;
             }
 
-            elem.find(".poll-comment").val('').focus();
+            poll_comment_input.val('').focus();
 
             var data = poll_data.handle.new_comment.outbound(comment);
             callback(data);
@@ -169,13 +170,14 @@ exports.activate = function (opts) {
 
         elem.find("button.poll-question").on('click', function (e) {
             e.stopPropagation();
-            var question = elem.find("input.poll-question").val().trim();
+            var poll_question_input = elem.find("input.poll-question");
+            var question = poll_question_input.val().trim();
 
             if (question === '') {
                 return;
             }
 
-            elem.find(".poll-question").val('').focus();
+            poll_question_input.val('').focus();
 
             var data = poll_data.handle.question.outbound(question);
             callback(data);
