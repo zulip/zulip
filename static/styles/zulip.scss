@@ -2870,3 +2870,8 @@ div.message_content button.tictactoe-square:hover {
 div.message_content button.tictactoe-square:disabled {
     background-color: #beded1;
 }
+
+// Hide the up and down arrows in the Flatpickr datepicker year
+.flatpickr-months .numInputWrapper span {
+    display: none;
+}
