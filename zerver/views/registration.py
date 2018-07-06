@@ -332,6 +332,12 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
                  }
     )
 
+def select_emails(request: HttpRequest, primary_email: str, email_list: List[str]):
+    return render(request, 'zerver/social_auth_select_email.html', context = {
+        'primary_email': primary_email,
+        'verified_non_primary_emails': email_list
+    })
+
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 
     # Mark the user as having been just created, so no "new login" email is sent

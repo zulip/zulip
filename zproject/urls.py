@@ -423,6 +423,8 @@ i18n_urls = [
         name='signup-social'),
     url(r'^accounts/home/', zerver.views.registration.accounts_home,
         name='zerver.views.registration.accounts_home'),
+    url(r'^accounts/select-emails/', zerver.views.registration.select_emails,
+        name='zerver.views.registration.select_emails'),
     url(r'^accounts/send_confirm/(?P<email>[\S]+)?',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
         name='send_confirm'),

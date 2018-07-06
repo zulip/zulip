@@ -15,6 +15,9 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
     GithubTeamOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.utils import handle_http_errors
+from social_core.pipeline.partial import partial
+from django.shortcuts import redirect, render
+
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
 from social_django.strategy import DjangoStrategy
@@ -25,6 +28,7 @@ from zerver.lib.subdomains import user_matches_subdomain, get_subdomain
 from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     remote_user_to_email, email_to_username, get_realm, get_user
+from django.urls import reverse
 
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
@@ -361,27 +365,38 @@ class DevAuthBackend(ZulipAuthMixin):
             return None
         return common_get_active_user(dev_auth_username, realm, return_data=return_data)
 
+def name_not_decided(
+        backend: BaseAuth,
+        *args: Any,
+        **kwargs: Any) -> Dict[str, Any]:
+    subdomain = backend.strategy.session_get('subdomain')
+    realm = get_realm(subdomain)
+    print(';lolol')
+    details = kwargs['details']
+    return_data = {}
+    if realm is None:
+        return_data["invalid_realm"] = True
+        return {'is_userprofile_none': True, 'return_data': return_data, 'details': details}
+    return_data["realm"] = realm
+    print(realm)
+    print(';lolol2')
+
+    if not auth_enabled_helper([backend.auth_backend_name], realm):
+        return_data["auth_backend_disabled"] = True
+        return {'is_userprofile_none': True, 'return_data': return_data, 'details': details}
+
+    if 'auth_failed_reason' in kwargs.get('response', {}):
+        return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
+        return {'is_userprofile_none': True, 'return_data': return_data, 'details': details}
+    return {'is_userprofile_none': False, 'return_data': return_data, 'details': details}
+
 def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
                                  *args: Any, **kwargs: Any) -> Optional[UserProfile]:
     """Responsible for doing the Zulip-account lookup and validation parts
     of the Zulip Social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
     """
-    subdomain = backend.strategy.session_get('subdomain')
-    realm = get_realm(subdomain)
-    if realm is None:
-        return_data["invalid_realm"] = True
-        return None
-    return_data["realm"] = realm
-
-    if not auth_enabled_helper([backend.auth_backend_name], realm):
-        return_data["auth_backend_disabled"] = True
-        return None
-
-    if 'auth_failed_reason' in kwargs.get('response', {}):
-        return_data["social_auth_failed_reason"] = kwargs['response']["auth_failed_reason"]
-        return None
-    elif hasattr(backend, 'get_verified_emails'):
+    if hasattr(backend, 'get_verified_emails'):
         # Some social backends, like GitHubAuthBackend, don't guarantee that
         # the `details` data is validated.
         verified_emails = backend.get_verified_emails(*args, **kwargs)
@@ -422,6 +437,65 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         raise AssertionError("Social auth backend doesn't provide fullname")
 
     return user_profile
+
+@partial
+def select_email(
+        backend: BaseAuth,
+        *args: Any,
+        **kwargs: Any) -> Dict[str, Any]:
+    subdomain = backend.strategy.session_get('subdomain')
+    realm = get_realm(subdomain)
+    print(kwargs['return_data'])
+    return_data = kwargs['return_data']
+    return_data['realm'] = realm
+    if hasattr(backend, 'get_verified_emails'):
+        # Some social backends, like GitHubAuthBackend, don't guarantee that
+        # the `details` data is validated.
+        verified_emails = backend.get_verified_emails(*args, **kwargs)
+        if len(verified_emails) == 0:
+            # TODO: Provide a nice error message screen to the user
+            # for this case, rather than just logging a warning.
+            logging.warning("Social auth (%s) failed because user has no verified emails" %
+                            (backend.auth_backend_name,))
+            return {'return_data': return_data, 'user_profile': None}
+        # TODO: ideally, we'd prompt the user for which email they
+        # want to use with another pipeline stage here.
+        email = backend.strategy.request_data().get('email')
+        if not email:
+            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+            'primary_email': verified_emails[0],
+            'verified_non_primary_emails': verified_emails[1:],
+            'backend': 'github'
+            })
+        print(email)
+        validated_email = email
+    else:  # nocoverage
+        # This code path isn't used by GitHubAuthBackend
+        validated_email = kwargs["details"].get("email")
+
+    if not validated_email:  # nocoverage
+        # This code path isn't used with GitHubAuthBackend, but may be relevant for other
+        # social auth backends.
+        return_data['invalid_email'] = True
+        return {'return_data': return_data, 'user_profile': None}
+    try:
+        validate_email(validated_email)
+    except ValidationError:
+        return_data['invalid_email'] = True
+        return {'return_data': return_data, 'user_profile': None}
+
+    return_data["valid_attestation"] = True
+    return_data['validated_email'] = validated_email
+    user_profile = common_get_active_user(validated_email, realm, return_data)
+
+    if 'fullname' in kwargs["details"]:
+        return_data["full_name"] = kwargs["details"]["fullname"]
+    else:
+        # If we add support for any of the social auth backends that
+        # don't provide this feature, we'll need to add code here.
+        raise AssertionError("Social auth backend doesn't provide fullname")
+
+    return {'return_data': return_data, 'user_profile': user_profile}
 
 def social_auth_associate_user(
         backend: BaseAuth,
@@ -541,7 +615,8 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             if not email_obj.get("verified"):
                 continue
             # TODO: When we add a screen to let the user select an email, remove this line.
-            if not email_obj.get("primary"):
+            if email_obj.get("primary"):
+                verified_emails.insert(0, email_obj["email"])
                 continue
             verified_emails.append(email_obj["email"])
 
