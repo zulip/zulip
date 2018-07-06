@@ -32,12 +32,10 @@
     }
 
 </style>
-
-
-{% include "zerver/app/topic_is_muted.html" %}
 {% endblock %}
 
 {% block content %}
+{% include "zerver/app/topic_is_muted.html" %}
 
 <div id="css-loading">
     <h3>{{ _('Loading...') }}</h3>
