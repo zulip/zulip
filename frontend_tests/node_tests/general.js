@@ -524,11 +524,14 @@ run_test('unread_ops', () => {
         notifications.window_has_focus = () => true;
 
         // Make our "test" message appear visible.
-        message_viewport.visible_messages = () => test_messages;
+        message_viewport.bottom_message_visible = () => true;
 
         // Make us not be in a narrow (somewhat hackily).
         message_list.narrowed = undefined;
-        set_global('current_msg_list', 'not-narrowed-stub');
+
+        set_global('current_msg_list', {
+            all_messages: () => test_messages,
+        });
 
         // Ignore these interactions for now:
         home_msg_list.show_message_as_read = noop;
