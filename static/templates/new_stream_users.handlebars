@@ -12,6 +12,8 @@
     <label class="checkbox add-user-label" data-stream-id="{{this.stream_id}}" data-stream-name="{{this.name}}">
         <input type="checkbox" name="stream" value="{{this.name}}" />
         <span></span>
+        {{#if invite_only}}<i class="fa fa-lock stream-privacy" aria-hidden="true"></i>{{/if}}
+        {{#unless invite_only}}<span class="stream-hashtag"></span>{{/unless}}
         {{this.name}} ( <i class="fa fa-user" aria-hidden="true"></i> {{this.subscriber_count}})
     </label>
     {{/each}}
