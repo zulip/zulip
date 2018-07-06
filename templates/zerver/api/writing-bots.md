@@ -498,7 +498,7 @@ to see examples of bot tests.
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that you bot script is located in zulip_bots/bots/<my-bot>/
+    * Ensure that you bot script is located in `zulip_bots/bots/<my-bot>/`
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running

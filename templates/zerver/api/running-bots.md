@@ -77,7 +77,7 @@ Zulip Botserver.
 
 * My bot won't start
     * Ensure that your API config file is correct (download the config file from the server).
-    * Ensure that your bot script is located in zulip_bots/bots/<my-bot>/
+    * Ensure that your bot script is located in `zulip_bots/bots/<my-bot>/`
     * Are you using your own Zulip development server? Ensure that you run your bot outside
       the Vagrant environment.
     * Some bots require Python 3. Try switching to a Python 3 environment before running
