@@ -42,7 +42,7 @@ can be found in the following table:
         <td>Yes</td>
         <td>
             <a href="/api/api-keys">API key</a>, which you can get through
-            Zulip's web interface.</a>
+            Zulip's web interface.
         </td>
     </tr>
     <tr>
