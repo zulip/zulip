@@ -267,10 +267,6 @@ function initialize_kitchen_sink_stuff() {
         $("#user-list").hide();
         $("#group-pm-list").hide();
     }
-
-    if (feature_flags.full_width) {
-        ui.switchToFullWidth();
-    }
 }
 
 $(function () {
