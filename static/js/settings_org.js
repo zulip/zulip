@@ -1028,6 +1028,31 @@ exports.set_up = function () {
     }
     realm_icon.build_realm_icon_widget(upload_realm_icon);
 
+    function upload_realm_logo(file_input) {
+        var form_data = new FormData();
+
+        form_data.append('csrfmiddlewaretoken', csrf_token);
+        jQuery.each(file_input[0].files, function (i, file) {
+            form_data.append('file-' + i, file);
+        });
+
+        var spinner = $("#upload_logo_spinner").expectOne();
+        loading.make_indicator(spinner, {text: i18n.t("Uploading logo.")});
+
+        channel.post({
+            url: '/json/realm/logo',
+            data: form_data,
+            cache: false,
+            processData: false,
+            contentType: false,
+            success: function () {
+                loading.destroy_indicator($("#upload_logo_spinner"));
+            },
+        });
+
+    }
+    realm_logo.build_realm_logo_widget(upload_realm_logo);
+
     $('#deactivate_realm_button').on('click', function (e) {
         if (!overlays.is_modal_open()) {
             e.preventDefault();

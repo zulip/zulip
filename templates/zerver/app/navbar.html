@@ -31,7 +31,11 @@
     <nav class="header-main rightside-userlist" id="top_navbar">
         <div class="column-left">
             <a class="brand no-style" href="#">
-                <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
+                {% if realm_logo!="https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon" %}
+                    <img id="realm-logo-navbar" src="{{ realm_logo }}" class="nav-logo no-drag" alt=""/>
+                {% else %}
+                    <img src="/static/images/logo/zulip-icon-128x128.png" class="nav-logo no-drag" alt=""/>
+                {% endif %}
                 <div class="company-name">
                     zulip
                 </div>

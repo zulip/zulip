@@ -45,6 +45,7 @@ from zerver.lib.message import (
     render_markdown,
 )
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.retention import move_message_to_archive
 from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.stream_subscription import (
@@ -2924,6 +2925,23 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                     property="icon",
                     data=dict(icon_source=realm.icon_source,
                               icon_url=realm_icon_url(realm))),
+               active_user_ids(realm.id))
+
+def do_change_logo_source(realm: Realm, logo_source: str, log: bool=True) -> None:
+    realm.logo_source = logo_source
+    realm.logo_version += 1
+    realm.save(update_fields=["logo_source", "logo_version"])
+
+    if log:
+        log_event({'type': 'realm_change_logo',
+                   'realm': realm.string_id,
+                   'logo_source': logo_source})
+
+    send_event(dict(type='realm',
+                    op='update_dict',
+                    property="logo",
+                    data=dict(logo_source=realm.logo_source,
+                              logo_url=realm_logo_url(realm))),
                active_user_ids(realm.id))
 
 def _default_stream_permision_check(user_profile: UserProfile, stream: Optional[Stream]) -> None:
