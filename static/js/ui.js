@@ -157,21 +157,6 @@ exports.maybe_show_deprecation_notice = function (key) {
     }
 };
 
-/* EXPERIMENTS */
-
-/* This method allows an advanced user to use the console
- * to switch the application to span full width of the browser.
- */
-exports.switchToFullWidth = function () {
-    $("#full-width-style").remove();
-    $('head').append('<style id="full-width-style" type="text/css">' +
-                         '#home .alert-bar, .recipient-bar-content, #compose-container, .app-main, .header-main { max-width: none; }' +
-                     '</style>');
-    return "Switched to full width";
-};
-
-/* END OF EXPERIMENTS */
-
 // Save the compose content cursor position and restore when we
 // shift-tab back in (see hotkey.js).
 var saved_compose_cursor = 0;
