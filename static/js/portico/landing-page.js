@@ -204,7 +204,7 @@ var events = function () {
     // pop the last element to get the current section (eg. `features`).
     var location = window.location.pathname.replace(/\/#*$/, "").split(/\//).pop();
 
-    $("[on-page='" + location + "']").addClass("active");
+    $("[data-on-page='" + location + "']").addClass("active");
 
     $("body").click(function (e) {
         var $e = $(e.target);

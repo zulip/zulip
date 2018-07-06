@@ -11,22 +11,22 @@
         </a>
         <ul>
             <div class="exit">&times;</div>
-            <li on-page="hello">
+            <li data-on-page="hello">
                 <a href="/hello/">Home</a>
             </li>
-            <li on-page="features">
+            <li data-on-page="features">
                 <a href="/features/">Features</a>
             </li>
-            <li on-page="plans">
+            <li data-on-page="plans">
                 <a href="/plans/">Plans</a>
             </li>
-            <li on-page="apps">
+            <li data-on-page="apps">
                 <a href="{{ apps_page_url }}">Apps</a>
             </li>
-            <li on-page="integrations">
+            <li data-on-page="integrations">
                 <a href="/integrations/">Integrations</a>
             </li>
-            <li on-page="why-zulip">
+            <li data-on-page="why-zulip">
                 <a href="/why-zulip/">Why Zulip</a>
             </li>
             {% if user_is_authenticated %}
