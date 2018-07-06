@@ -28,7 +28,9 @@ set_global('narrow_state', {});
 set_global('pm_list', {});
 set_global('resize', {});
 set_global('server_events', {});
-set_global('stream_list', {});
+set_global('stream_list', {
+    maybe_scroll_narrow_into_view: () => {},
+});
 
 muting.is_topic_muted = function () { return false; };
 resize.resize_bottom_whitespace = noop;

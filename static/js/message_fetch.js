@@ -51,6 +51,7 @@ function process_result(data, opts) {
     activity.process_loaded_messages(messages);
     stream_list.update_streams_sidebar();
     pm_list.update_private_messages();
+    stream_list.maybe_scroll_narrow_into_view();
 
     if (opts.cont !== undefined) {
         opts.cont(data);
