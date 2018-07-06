@@ -73,14 +73,14 @@
                             <div class="right_part">
                                 <div class="pm_recipient">
                                     <div class="pill-container" data-before="{{ _('You and') }}">
-                                        <div class="input" contenteditable="true" id="private_message_recipient" name="recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
+                                        <div class="input" contenteditable="true" id="private_message_recipient" data-no-recipients-text="{{ _('Add one or more users') }}" data-some-recipients-text="{{ _('Add another user...') }}"></div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                         <div>
-                            <div class="messagebox" colspan="2">
-                                <textarea class="new_message_textarea" name="content" id='compose-textarea' value="" placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
+                            <div class="messagebox">
+                                <textarea class="new_message_textarea" name="content" id='compose-textarea' placeholder="{{ _('Compose your message here') }}" tabindex="0" maxlength="10000" aria-label="{{ _('Compose your message here...') }}"></textarea>
                                 <div class="scrolling_list" id="preview_message_area" style="display:none;">
                                     <div id="markdown_preview_spinner"></div>
                                     <div id="preview_content"></div>
