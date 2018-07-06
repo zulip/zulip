@@ -177,8 +177,8 @@ function initialize_kitchen_sink_stuff() {
             return;
         }
         var row = event.msg_list.get_row(event.id);
-        $('.selected_message').removeClass('selected_message');
-        row.addClass('selected_message');
+        $('.selected_message').removeClass('selected_message').removeAttr('tabindex');
+        row.addClass('selected_message').attr('tabindex', -1);
 
         if (event.then_scroll) {
             if (row.length === 0) {
