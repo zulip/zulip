@@ -2,7 +2,7 @@
 
 <p id="utctime" style="text-align: center;"></p>
 <p id="localtime" style="text-align: center;"></p>
-<script type="text/javascript">
+<script>
     var now = moment('{{ now }}');
     $('#utctime')[0].innerHTML = moment.utc(now).format('YYYY-MM-DD HH:mm') + 'Z';
     $('#localtime')[0].innerHTML = '(' + now.format('YYYY-MM-DD HH:mm ZZ') + ')';

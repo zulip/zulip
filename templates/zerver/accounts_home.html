@@ -4,7 +4,7 @@
 {# This is where we pitch the app and solicit signups. #}
 
 {% block portico_content %}
-<script type="text/javascript">
+<script>
 $(function () {
     common.autofocus('#email');
 });
@@ -102,7 +102,7 @@ $(function () {
     </div>
 </div>
 
-<script type="text/javascript">
+<script>
 if (window.location.hash.substring(0, 1) === "#") {
     document.email_form.action += window.location.hash;
 }
