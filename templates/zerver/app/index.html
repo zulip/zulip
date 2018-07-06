@@ -4,7 +4,7 @@
 
 {% block page_params %}
 {# Insert parameters, which have been encoded with JSONEncoderForHTML. #}
-<script type="text/javascript" nonce="{{ csp_nonce }}">
+<script nonce="{{ csp_nonce }}">
     {% autoescape off %}
     var page_params = {{ page_params }};
     {% endautoescape %}
@@ -20,7 +20,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
 <link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}_sprite.css" rel="stylesheet" type="text/css">
-<style type="text/css">
+<style>
     #css-loading {
     background: white;
     position: fixed;
