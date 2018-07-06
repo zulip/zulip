@@ -1,1 +1,1 @@
-down chevron (<i class="icon-vector-chevron-down"></i>) icon to reveal an actions dropdown.
+down chevron (<i class="icon-vector-chevron-down"></i>) to reveal an actions dropdown.

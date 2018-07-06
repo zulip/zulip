@@ -1,88 +1,56 @@
 # Mute a topic
 
-If you would like to stop receiving notifications from a certain topic, you can
-choose to mute it. You can [mute the whole stream](/help/mute-a-stream)
-as well.
+If you would like to stop certain topics from appearing in your **All messages**
+feed or contributing to the unread counts of its parent stream, you
+can mute a topic. Muted topics are grayed out in the list of topics for a
+stream. You still receive notifications for @-mentions for a muted topic, and
+unread counts for the topic still appear next to the topic name when the topic
+name is visible in the left sidebar.
 
-There are two main ways of muting a topic; you can mute a topic through the
-stream list or through your current filter.
+The following techniques for muting topics are categorized based off of how
+you discovered the topic that you would like to mute.
 
-## Mute a topic through the stream list
+## Stream List
 
-1. Find the **Streams** section located on the left sidebar. In the list, click
-on the stream that the topic you want to mute belongs to. Upon clicking on the
-stream's name, all the topics of the stream will appear.
+### Mute a topic
 
-2. In the stream's topics list, hover over a topic to reveal a {!down-chevron.md!}
-To mute the topic, simply select the **Mute the topic (topic name)** option
-from the dropdown.
+1. On the left, click on the stream name that contains the topic you want to mute.
 
-3. Upon clicking **Mute the topic (topic name)**, a tooltip titled **Topic muted**
-will appear, and the topic will be grayed out in the stream list dropdown,
-confirming the success of your muting of the topic.
+2. In the stream's topics list, hover over a topic to reveal a down chevron
+(<i class="icon-vector-chevron-down"></i>). Click on the {!down-chevron.md!}
 
-## Mute a topic through your current view
+3. Select the **Mute the topic (topic name)**.
 
-1. The **All messages** view displays all messages from unmuted streams and topics
-that you are subscribed to. Find a message belonging to the topic that you wish
-to mute in your current filter or in the **All messages** view.
+### Unmute a topic
 
-    !!! tip ""
-        Alternatively, you can narrow your view to messages sent to the topic
-        that you want to mute by using the search operator `topic:(topic name)`
-        in the search bar.
+1. On the left, click on the stream name that contains the topic you want to mute.
 
-{!message-actions.md!}
-{!down-chevron.md!}
+2. In the stream's topics list, hover over a topic to reveal a down chevron (<i class="icon-vector-chevron-down"></i>).
+Click on the {!down-chevron.md!}
 
-3. Select the **Mute the topic (topic name)** option from the dropdown to mute
-the topic that the selected message belongs to.
+3. Select the **Unmute the topic (topic name)**.
 
-4. Upon clicking **Mute the topic (topic name)**, a dialog titled **Topic muted**
-will appear, and any messages belonging to the topic will disappear from your
-filter, confirming the success of your muting of the topic.
+## Message View
 
-## Unmute a topic through the stream list
+### Mute a topic
 
-1. Find the **Streams** section located in the left sidebar. In the list, click
-the stream that the topic you want to unmute. Upon clicking on the
-stream's name, recent topics of the stream will appear.
-
-2. In the stream's topics list, hover over the muted (and grayed out) topic to
-reveal a {!down-chevron.md!} To unmute the topic, simply select the
-**Unmute the topic (topic name)** option from the dropdown.
-
-3. Upon clicking **Unmute the topic (topic name)**, the topic will no longer be
-grayed out in the stream list dropdown, confirming the success of your unmuting
-of the topic.
-
-## Unmute a topic by narrowing to it
-
-1. Narrow to messages sent to the topic that you want to unmute by pressing the
-topic's name in the **Streams** section located on the left sidebar, or by
-using the search operator `topic:(topic name)` in the search bar.
+1. Find a message belonging to the topic that you wish to mute.
 
 {!message-actions.md!}
 {!down-chevron.md!}
 
-3. Select the **Unmute the topic (topic name)** option from the dropdown to
-unmute the topic that the selected message belongs to.
+3. Select the **Mute the topic (topic name)**.
 
-4. Upon clicking **Unmute the topic (topic name)**, any messages belonging to
-the topic will reappear in your filters and the topic will stop being grayed
-out in the **Streams** section, confirming the success of your unmuting of the
-topic.
+### Unmute a topic
 
-## Unmute a topic through the Settings page
+1. [Find a message in the topic](/help/reading-messages-by-stream-or-topic#view-messages-from-a-topic)
+that you want to unmute.
 
-{settings_tab|muted-topics}
+{!message-actions.md!}
+{!down-chevron.md!}
 
-2. Locate the topic you want to unmute in the **Muted topics** section; the
-topics are sorted according to when you first muted a topic in the selected
-topic's corresponding stream, oldest to newest.
+3. Select the **Unmute the topic (topic name)**.
 
-3. Click on the **Unmute** link to the right of the topic you want to unmute.
+## Related articles
 
-4. Upon clicking the **Unmute** link, any messages belonging to the topic will
-reappear in your filters and the topic will stop being grayed out in the
-**Streams** section, confirming the success of your unmuting of the topic.
+[Mute a stream](/help/mute-a-stream)
