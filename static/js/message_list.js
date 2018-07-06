@@ -318,8 +318,7 @@ exports.MessageList.prototype = {
 
     show_message_as_read: function (message, options) {
         var row = this.get_row(message.id);
-        if (options.from === 'pointer' && feature_flags.mark_read_at_bottom ||
-            options.from === "server") {
+        if (options.from === 'pointer' || options.from === "server") {
             row.find('.unread_marker').addClass('fast_fade');
         } else {
             row.find('.unread_marker').addClass('slow_fade');
