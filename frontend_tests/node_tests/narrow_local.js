@@ -26,7 +26,7 @@ function test_with(fixture) {
 
     const muting_enabled = narrow_state.muting_enabled();
     const msg_data = new MessageListData({
-        filter: narrow_state.get_current_filter(),
+        filter: narrow_state.filter(),
         muting_enabled: muting_enabled,
     });
     const id_info = {

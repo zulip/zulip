@@ -12,10 +12,6 @@ exports.set_current_filter = function (filter) {
     current_filter = filter;
 };
 
-exports.get_current_filter = function () {
-    return current_filter;
-};
-
 exports.active = function () {
     return current_filter !== undefined;
 };

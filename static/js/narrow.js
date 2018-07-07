@@ -148,7 +148,7 @@ exports.activate = function (raw_operators, opts) {
     exports.save_pre_narrow_offset_for_reload();
 
     var msg_data =  new MessageListData({
-        filter: narrow_state.get_current_filter(),
+        filter: narrow_state.filter(),
         muting_enabled: muting_enabled,
     });
 
@@ -169,7 +169,7 @@ exports.activate = function (raw_operators, opts) {
         // maybe_add_local_messages is likely not be contiguous with
         // the block we're about to request from the server instead.
         msg_data = new MessageListData({
-            filter: narrow_state.get_current_filter(),
+            filter: narrow_state.filter(),
             muting_enabled: muting_enabled,
         });
     }
@@ -177,7 +177,7 @@ exports.activate = function (raw_operators, opts) {
     var msg_list = new message_list.MessageList({
         data: msg_data,
         table_name: 'zfilt',
-        collapse_messages: !narrow_state.get_current_filter().is_search(),
+        collapse_messages: !narrow_state.filter().is_search(),
     });
 
     msg_list.start_time = start_time;
@@ -251,7 +251,7 @@ exports.activate = function (raw_operators, opts) {
 
     compose_actions.on_narrow(opts);
 
-    var current_filter = narrow_state.get_current_filter();
+    var current_filter = narrow_state.filter();
 
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
@@ -311,7 +311,7 @@ exports.maybe_add_local_messages = function (opts) {
         return;
     }
 
-    // We can now assume narrow_state.get_current_filter().can_apply_locally(),
+    // We can now assume narrow_state.filter().can_apply_locally(),
     // because !can_apply_locally => cannot_compute
 
     if (unread_info.flavor === 'found') {
@@ -586,7 +586,7 @@ exports.by_recipient = function (target_id, opts) {
 };
 
 exports.deactivate = function () {
-    if (narrow_state.get_current_filter() === undefined) {
+    if (narrow_state.filter() === undefined) {
         return;
     }
     unnarrow_times = {start_time: new Date()};
@@ -684,7 +684,7 @@ exports.restore_home_state = function () {
 function pick_empty_narrow_banner() {
     var default_banner = $('#empty_narrow_message');
 
-    var current_filter = narrow_state.get_current_filter();
+    var current_filter = narrow_state.filter();
 
     if (current_filter === undefined) {
         return default_banner;

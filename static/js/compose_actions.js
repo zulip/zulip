@@ -275,7 +275,7 @@ exports.respond_to_message = function (opts) {
             compose.nonexistent_stream_reply_error();
             return;
         }
-        var current_filter = narrow_state.get_current_filter();
+        var current_filter = narrow_state.filter();
         var first_term = current_filter.operators()[0];
         var first_operator = first_term.operator;
         var first_operand = first_term.operand;
