@@ -20,6 +20,14 @@ exports.filter = function () {
     return current_filter;
 };
 
+exports.is_reading_mode = function () {
+    if (current_filter === undefined) {
+        return true;
+    }
+
+    return current_filter.is_reading_mode();
+};
+
 exports.operators = function () {
     if (current_filter === undefined) {
         return new Filter(page_params.narrow).operators();

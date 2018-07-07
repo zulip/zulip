@@ -29,6 +29,7 @@ run_test('stream', () => {
         ['search', 'yo'],
     ]);
     assert(narrow_state.active());
+    assert(!narrow_state.is_reading_mode());
 
     assert.equal(narrow_state.stream(), 'Test');
     assert.equal(narrow_state.stream_id(), test_stream.stream_id);
@@ -57,6 +58,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
     assert.equal(narrow_state.stream_id(), undefined);
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['stream', 'Foo']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -66,6 +68,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['pm-with', 'steve@zulip.com']]);
     assert(narrow_state.narrowed_to_pms());
@@ -75,6 +78,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['stream', 'Foo'], ['topic', 'bar']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -84,6 +88,7 @@ run_test('narrowed', () => {
     assert(!narrow_state.narrowed_to_search());
     assert(narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(narrow_state.is_reading_mode());
 
     set_filter([['search', 'grail']]);
     assert(!narrow_state.narrowed_to_pms());
@@ -93,6 +98,7 @@ run_test('narrowed', () => {
     assert(narrow_state.narrowed_to_search());
     assert(!narrow_state.narrowed_to_topic());
     assert(!narrow_state.narrowed_by_stream_reply());
+    assert(!narrow_state.is_reading_mode());
 });
 
 run_test('operators', () => {

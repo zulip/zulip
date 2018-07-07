@@ -415,6 +415,25 @@ Filter.prototype = {
         return _.isEqual(term_types, wanted_term_types);
     },
 
+    is_reading_mode: function () {
+        // We only turn on "reading mode" for filters that
+        // have contiguous messages for a narrow, as opposed
+        // to "random access" queries like search:<keyword>
+        // or id:<number> that jump you to parts of the message
+        // view where you might only care about reading the
+        // current message.
+        var term_types = this.sorted_term_types();
+        var wanted_list = [
+            ['stream'],
+            ['stream', 'topic'],
+            ['is-private'],
+            ['pm-with'],
+        ];
+        return _.any(wanted_list, function (wanted_types) {
+            return _.isEqual(wanted_types, term_types);
+        });
+    },
+
     can_bucket_by: function () {
         // TODO: in ES6 use spread operator
         //
