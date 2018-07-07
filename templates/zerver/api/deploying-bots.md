@@ -83,6 +83,7 @@ Botserver process.  You can do this with the following procedure.
    Botserver format." option at the top.
 
 1. Open the `botserverrc`. It should contain one or more sections that look like this:
+
     ```
     []
     email=foo-bot@hostname
@@ -90,6 +91,7 @@ Botserver process.  You can do this with the following procedure.
     site=http://hostname
     token=aQVQmSd6j6IHphJ9m1jhgHdbnhl5ZcsY
     ```
+
     Each section contains the configuration for an outgoing webhook bot. For each
     bot, enter the name of the bot you want to run in the square brackets `[]`.
     For example, if we want `foo-bot@hostname` to run the `helloworld` bot, our
