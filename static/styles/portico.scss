@@ -315,9 +315,15 @@ body {
     margin-left: 0;
 }
 
+.markdown ol > li > p:not(:first-child),
 .portico-landing.integrations ol > li > p:not(:first-child) {
     padding-left: 24px;
     margin-left: 5px;
+}
+
+.markdown .content ol li p:not(:first-child),
+.integration-instructions .help-content ol li p:not(:first-child) {
+    display: block;
 }
 
 .portico-landing.integrations ol ul {
@@ -327,10 +333,6 @@ body {
 
 .markdown ol > li > ul {
     padding-left: 20px;
-}
-
-.markdown ol > li > p:not(:first-child) {
-    padding-left: 30px;
 }
 
 .markdown ul > li:before {
@@ -1053,12 +1055,6 @@ input#terminal:checked ~ #tab-terminal {
     margin-left: 220px;
 }
 
-/* This is a workaround for line-wrapping issues with markdown code
-   blocks; see CircleCI docs for an example of what it fixes */
-.integration-instructions .help-content ol li p:not(:first-child) {
-    display: block;
-}
-
 .api-page-header,
 .authors-page-header,
 .integrations-page-header,
@@ -1684,10 +1680,6 @@ input.new-organization-button {
 
 .markdown .content code {
     display: inline-block;
-}
-
-.markdown .content ol li p:not(:first-child) {
-    display: block;
 }
 
 .markdown ol p {
