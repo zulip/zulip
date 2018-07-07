@@ -4,6 +4,9 @@ zrequire('message_flags');
 
 set_global('ui', {});
 set_global('channel', {});
+set_global('narrow_state', {
+    is_reading_mode: () => true,
+});
 
 run_test('starred', () => {
     const message = {

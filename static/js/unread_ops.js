@@ -61,6 +61,10 @@ exports.process_read_messages_event = function (message_ids) {
 exports.notify_server_messages_read = function (messages, options) {
     options = options || {};
 
+    if (!narrow_state.is_reading_mode()) {
+        return;
+    }
+
     messages = unread.get_unread_messages(messages);
     if (messages.length === 0) {
         return;
