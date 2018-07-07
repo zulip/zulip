@@ -91,12 +91,8 @@ exports.process_visible = function () {
         return;
     }
 
-    if (feature_flags.mark_read_at_bottom) {
-        if (message_viewport.bottom_message_visible()) {
-            exports.mark_current_list_as_read();
-        }
-    } else {
-        exports.notify_server_messages_read(message_viewport.visible_messages(true));
+    if (message_viewport.bottom_message_visible()) {
+        exports.mark_current_list_as_read();
     }
 };
 
