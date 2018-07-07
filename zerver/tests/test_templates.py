@@ -213,6 +213,21 @@ class TemplateTestCase(ZulipTestCase):
         self.assertEqual(content_sans_whitespace,
                          'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
+    def test_markdown_nested_code_blocks(self) -> None:
+        template = get_template("tests/test_markdown.html")
+        context = {
+            'markdown_test_file': "zerver/tests/markdown/test_nested_code_blocks.md"
+        }
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        expected = ('header<h1id="this-is-a-heading">Thisisaheading.</h1><ol>'
+                    '<li><p>Alistitemwithanindentedcodeblock:</p><divclass="codehilite">'
+                    '<pre>indentedcodeblockwithmultiplelines</pre></div></li></ol>'
+                    '<divclass="codehilite"><pre><span></span>'
+                    'non-indentedcodeblockwithmultiplelines</pre></div>footer')
+        self.assertEqual(content_sans_whitespace, expected)
+
     def test_custom_tos_template(self) -> None:
         response = self.client_get("/terms/")
 

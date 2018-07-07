@@ -315,6 +315,7 @@ body {
     margin-left: 0;
 }
 
+ol > li > div.codehilite,
 .markdown ol > li > p:not(:first-child),
 .portico-landing.integrations ol > li > p:not(:first-child) {
     padding-left: 24px;
@@ -324,6 +325,10 @@ body {
 .markdown .content ol li p:not(:first-child),
 .integration-instructions .help-content ol li p:not(:first-child) {
     display: block;
+}
+
+li div.codehilite {
+    background-color: #ffffff;
 }
 
 .portico-landing.integrations ol ul {
@@ -1676,10 +1681,6 @@ input.new-organization-button {
 .markdown ol > li > div.tip,
 .markdown ol > li > div.warn {
     margin: 5px 25px 5px;
-}
-
-.markdown .content code {
-    display: inline-block;
 }
 
 .markdown ol p {
