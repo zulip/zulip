@@ -1940,11 +1940,13 @@ input.new-organization-button {
     }
 
     .app.help .sidebar {
+        pointer-events: none;
         width: calc(100% - 40px);
         height: calc(100vh - 40px - 10px - 9px);
     }
 
     .app.help .sidebar.show {
+        pointer-events: initial;
         transform: translateX(calc(100% - 50px));
     }
 
