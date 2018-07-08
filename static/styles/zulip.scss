@@ -86,11 +86,9 @@ p.n-margin {
 }
 
 .top-messages-logo {
-    position: absolute;
-    left: calc(50% - 12px);
-    top: 57px;
     width: 24px;
     height: 24px;
+    margin: 0 auto 12px;
 }
 
 .top-messages-logo svg circle {
@@ -580,7 +578,7 @@ li.actual-dropdown-menu i {
 
 .message_area_padder {
     /* The height of the header and the tabbar plus a small gap */
-    margin-top: 93px;
+    margin-top: 57px;
     /* This is needed for the floating recipient bar
        in Firefox only, for some reason;
        otherwise it gets a scrollbar */
