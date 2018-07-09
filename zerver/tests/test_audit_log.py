@@ -28,7 +28,7 @@ class TestRealmAuditLog(ZulipTestCase):
             realm=realm, acting_user=None, modified_user=user, modified_stream=None,
             event_time__gte=now, event_time__lte=now+timedelta(minutes=60))
             .order_by('event_time').values_list('event_type', flat=True))
-        self.assertEqual(event_types, [RealmAuditLog.USER_CREATED, 'user_deactivated', 'user_activated',
+        self.assertEqual(event_types, [RealmAuditLog.USER_CREATED, 'user_deactivated', RealmAuditLog.USER_ACTIVATED,
                                        'user_deactivated', 'user_reactivated'])
 
     def test_change_password(self) -> None:
