@@ -372,7 +372,23 @@ Filter.prototype = {
     },
 
     can_apply_locally: function () {
-        return !this.is_search() && !this.has_operator('has');
+        if (this.is_search()) {
+            // The semantics for matching keywords are implemented
+            // by database plugins, and we don't have JS code for
+            // that, plus search queries tend to go too far back in
+            // history.
+            return false;
+        }
+
+        if (this.has_operator('has')) {
+            // See #6186 to see why we currently punt on 'has:foo'
+            // queries.  This can be fixed, there are just some random
+            // complications that make it non-trivial.
+            return false;
+        }
+
+        // If we get this far, we're good!
+        return true;
     },
 
     _canonicalize_operators: function (operators_mixed_case) {
