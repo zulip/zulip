@@ -36,7 +36,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         password = 'test1'
         do_change_password(user, password)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_change_password',
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_CHANGE_PASSWORD,
                                                       event_time__gte=now).count(), 1)
         self.assertIsNone(validate_password(password, user))
 

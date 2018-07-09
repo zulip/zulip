@@ -2785,7 +2785,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool=Tr
         user_profile.save(update_fields=["password"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
-                                 modified_user=user_profile, event_type='user_change_password',
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_CHANGE_PASSWORD,
                                  event_time=event_time)
 
 def do_change_full_name(user_profile: UserProfile, full_name: str,
