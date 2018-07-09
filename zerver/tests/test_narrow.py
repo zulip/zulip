@@ -2094,6 +2094,19 @@ class GetOldMessagesTest(ZulipTestCase):
         ]
         set_topic_mutes(user_profile, muted_topics)
 
+        # We never exclude muted messages for id/near queries.
+        narrow = [
+            dict(operator='near', operand='999'),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        self.assertEqual(muting_conditions, [])
+
+        narrow = [
+            dict(operator='id', operand='999'),
+        ]
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+        self.assertEqual(muting_conditions, [])
+
         # If nothing relevant is muted, then exclude_muting_conditions()
         # should return an empty list.
         narrow = [

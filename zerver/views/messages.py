@@ -527,7 +527,15 @@ def get_stream_name_from_narrow(narrow: Optional[Iterable[Dict[str, Any]]]) -> O
 
 def exclude_muting_conditions(user_profile: UserProfile,
                               narrow: Optional[Iterable[Dict[str, Any]]]) -> List[Selectable]:
-    conditions = []
+    conditions = []  # type: List[Selectable]
+
+    if narrow is not None:
+        for term in narrow:
+            # Never exclude muted messages if we are looking to
+            # be on or near a specific id.
+            if term['operator'] in ['near', 'id']:
+                return conditions
+
     stream_name = get_stream_name_from_narrow(narrow)
 
     stream_id = None
