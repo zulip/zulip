@@ -15,7 +15,7 @@ from analytics.models import Anomaly, BaseCount, \
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import ceiling_to_day, \
     ceiling_to_hour, floor_to_hour, verify_UTC
-from zerver.models import Message, Realm, RealmAuditLog, \
+from zerver.models import Message, Realm, \
     Stream, UserActivityInterval, UserProfile, models
 
 ## Logging setup ##
