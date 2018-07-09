@@ -6,6 +6,7 @@ from typing import Any, Callable, Dict, Iterable, List, \
 
 import ujson
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandParser
 from django.db.models import F, Max
 from django.utils.timezone import now as timezone_now
@@ -526,6 +527,11 @@ class Command(BaseCommand):
                         pointer=user['pointer'])
 
             create_user_groups()
+
+            if not options["test_suite"]:
+                # We populate the analytics database here for
+                # development purpose only
+                call_command('populate_analytics_db')
             self.stdout.write("Successfully populated test database.\n")
 
 recipient_hash = {}  # type: Dict[int, Recipient]

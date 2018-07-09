@@ -160,16 +160,21 @@ statistics, etc.). There is currently a reference implementation of a
 
 ### Setup and Testing
 
-The main testing approach for the /stats page UI is manual testing.  For UI
-testing, you want a comprehensive initial data set.  You can create
-one by using the `./manage.py populate_analytics_db` command from the
-main `zulip` directory inside your development environment.
+The main testing approach for the /stats page UI is manual testing.
+For most UI testing, you can visit `/stats/realm/analytics` while
+logged in as Iago (this is the server administrator view of stats for
+a given realm).  The only piece that you can't test here is the "Me"
+buttons, which won't have any data.  For those, you can instead login
+as the `shylock@analytics.ds` in the `analytics` realm and visit
+`/stats` there (which is only a bit more work).  Note that the
+`analytics` realm is a shell with no streams, so you'll only want to
+use it for testing the graphs.
 
-Then, in the development server web UI, (logout if needed) and then
-login as the "shylock@analytics.ds" user; note that user's Zulip UI
-will be a bit broken, since it doesn't have other data populated
-properly.  Finally, go to /stats to see the graphs with the
-prepopulated data.
+If you're adding a new stat/table, you'll want to edit
+`analytics/management/commands/populate_analytics_db.py` and add code
+to generate fake data of the form needed for your new stat/table;
+you'll then run `./manage.py populate_analytics_db` before looking at
+the updated graphs.
 
 ### Adding or editing /stats graphs
 
