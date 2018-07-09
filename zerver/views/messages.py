@@ -624,6 +624,7 @@ def add_narrow_conditions(user_profile: UserProfile,
 
 def find_first_unread_anchor(sa_conn: Any,
                              user_profile: UserProfile,
+                             muting_conditions: List[Selectable],
                              narrow: List[Dict[str, Any]]) -> int:
     # We always need UserMessage in our query, because it has the unread
     # flag for the user.
@@ -653,7 +654,6 @@ def find_first_unread_anchor(sa_conn: Any,
 
     # We exclude messages on muted topics when finding the first unread
     # message in this narrow
-    muting_conditions = exclude_muting_conditions(user_profile, narrow)
     if muting_conditions:
         condition = and_(condition, *muting_conditions)
 
@@ -741,11 +741,14 @@ def get_messages_backend(request: HttpRequest, user_profile: UserProfile,
 
     sa_conn = get_sqlalchemy_connection()
 
+    muting_conditions = exclude_muting_conditions(user_profile, narrow)
+
     if use_first_unread_anchor:
         anchor = find_first_unread_anchor(
-            sa_conn,
-            user_profile,
-            narrow,
+            sa_conn=sa_conn,
+            user_profile=user_profile,
+            muting_conditions=muting_conditions,
+            narrow=narrow,
         )
 
     anchored_to_left = (anchor == 0)

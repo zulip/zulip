@@ -1861,10 +1861,15 @@ class GetOldMessagesTest(ZulipTestCase):
 
         user_profile = hamlet
 
+        narrow = []  # type: List[Dict[str, Any]]
+
+        muting_conditions = exclude_muting_conditions(user_profile, narrow)
+
         anchor = find_first_unread_anchor(
             sa_conn=sa_conn,
             user_profile=user_profile,
-            narrow=[],
+            muting_conditions=muting_conditions,
+            narrow=narrow,
         )
         self.assertEqual(anchor, first_message_id)
 
