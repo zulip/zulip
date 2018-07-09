@@ -91,6 +91,7 @@ from zerver.lib.actions import (
     bulk_add_members_to_user_group,
     remove_members_from_user_group,
     check_delete_user_group,
+    do_update_user_custom_profile_data,
 )
 from zerver.lib.events import (
     apply_events,
@@ -994,6 +995,29 @@ class EventsRegisterTest(ZulipTestCase):
                 self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_custom_profile_field_data_events(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('user_id', check_int),
+                ('custom_profile_field', check_dict_only([
+                    ('id', check_int),
+                    ('value', check_none_or(check_string)),
+                ])),
+            ])),
+        ])
+
+        realm = get_realm("zulip")
+        field_id = realm.customprofilefield_set.get(realm=realm, name='Biography').id
+        field = {
+            "id": field_id,
+            "value": "New value",
+        }
+        events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
