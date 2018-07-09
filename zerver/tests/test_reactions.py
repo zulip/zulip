@@ -494,6 +494,12 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
 
+    def test_delete_insufficient_arguments_reaction(self) -> None:
+        result = self.delete_reaction({})
+        self.assert_json_error(result, 'At least one of the following '
+                               'arguments must be present: emoji_name, '
+                               'emoji_code')
+
     def test_delete_non_existing_emoji_reaction(self) -> None:
         reaction_info = {
             'emoji_name': 'thumbs_up',
@@ -518,6 +524,29 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         }
         result = self.delete_reaction(reaction_info)
         self.assert_json_success(result)
+
+    def test_delete_reaction_by_name(self) -> None:
+        hamlet = self.example_user('hamlet')
+        message = Message.objects.get(id=1)
+        Reaction.objects.create(user_profile=hamlet,
+                                message=message,
+                                emoji_name='+1',
+                                emoji_code='1f44d',
+                                reaction_type='unicode_emoji',
+                                )
+
+        reaction_info = {
+            'emoji_name': '+1'
+        }
+        result = self.delete_reaction(reaction_info)
+        self.assert_json_success(result)
+        self.assertFalse(
+            Reaction.objects.filter(user_profile=hamlet,
+                                    message=message,
+                                    emoji_name=reaction_info['emoji_name'],
+                                    emoji_code='1f44d',
+                                    reaction_type='unicode_emoji').exists()
+        )
 
     def test_react_historical(self) -> None:
         """

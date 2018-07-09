@@ -79,9 +79,19 @@ def add_reaction(request: HttpRequest, user_profile: UserProfile, message_id: in
 
 @has_request_variables
 def remove_reaction(request: HttpRequest, user_profile: UserProfile, message_id: int,
-                    emoji_code: str=REQ(),
+                    emoji_name: Optional[str]=REQ(default=None),
+                    emoji_code: Optional[str]=REQ(default=None),
                     reaction_type: str=REQ(default="unicode_emoji")) -> HttpResponse:
     message, user_message = access_message(user_profile, message_id)
+
+    if emoji_code is None:
+        if emoji_name is not None:
+            # We have got the emoji name, but have to find the code
+            emoji_code = emoji_name_to_emoji_code(message.sender.realm,
+                                                  emoji_name)[0]
+        else:
+            raise JsonableError(_('At least one of the following arguments '
+                                  'must be present: emoji_name, emoji_code'))
 
     if not Reaction.objects.filter(user_profile=user_profile,
                                    message=message,
