@@ -58,7 +58,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         avatar_source = u'G'
         do_change_avatar_fields(user, avatar_source)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_change_avatar_source',
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_CHANGE_AVATAR_SOURCE,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(avatar_source, user.avatar_source)
 
