@@ -29,7 +29,7 @@ class TestRealmAuditLog(ZulipTestCase):
             event_time__gte=now, event_time__lte=now+timedelta(minutes=60))
             .order_by('event_time').values_list('event_type', flat=True))
         self.assertEqual(event_types, [RealmAuditLog.USER_CREATED, RealmAuditLog.USER_DEACTIVATED, RealmAuditLog.USER_ACTIVATED,
-                                       RealmAuditLog.USER_DEACTIVATED, 'user_reactivated'])
+                                       RealmAuditLog.USER_DEACTIVATED, RealmAuditLog.USER_REACTIVATED])
 
     def test_change_password(self) -> None:
         now = timezone_now()
