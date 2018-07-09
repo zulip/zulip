@@ -25,7 +25,7 @@ REALM_HOSTS = {}
 BACKEND_DATABASE_TEMPLATE = 'zulip_test_template'
 
 DATABASES["default"] = {
-    "NAME": "zulip_test",
+    "NAME": os.getenv("ZULIP_DB_NAME", "zulip_test"),
     "USER": "zulip_test",
     "PASSWORD": LOCAL_DATABASE_PASSWORD,
     "HOST": "localhost",
