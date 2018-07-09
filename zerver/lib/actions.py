@@ -551,7 +551,7 @@ def do_reactivate_user(user_profile: UserProfile, acting_user: Optional[UserProf
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_reactivated', event_time=event_time,
+                                 event_type=RealmAuditLog.USER_REACTIVATED, event_time=event_time,
                                  acting_user=acting_user,
                                  requires_billing_update=activity_change_requires_seat_update(user_profile))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
