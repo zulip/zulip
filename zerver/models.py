@@ -1964,6 +1964,7 @@ class RealmAuditLog(models.Model):
 
     USER_CREATED = 'user_created'
     USER_ACTIVATED = 'user_activated'
+    USER_DEACTIVATED = 'user_deactivated'
 
     event_type = models.CharField(max_length=40)  # type: str
 
