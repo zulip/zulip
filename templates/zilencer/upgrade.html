@@ -1,0 +1,50 @@
+{% extends "zerver/base.html" %}
+
+{% block customhead %}
+{% stylesheet 'portico' %}
+{% endblock %}
+
+{% block content %}
+<div class="app portico-page">
+
+    {{ render_bundle('translations') }}
+
+    <div class="page-content">
+        <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
+        <form method="post">
+            {{ csrf_input }}
+            <input type="hidden" name="seat_count" value="{{ seat_count }}">
+            <div class="payment-schedule">
+                <h3>{{ _("Payment schedule") }}</h3>
+                <input type="radio" name="plan" value="{{ nickname_annual }}" checked />
+                {{ _("Pay annually") }} | $80/user/year <br/>
+                <input type="radio" name="plan" value="{{ nickname_monthly }}" />
+                {{ _("Pay monthly") }} | $8/user/month <br/>
+            </div>
+            <p>
+                You'll initially be charged <b><span id="charged_amount">XXX</span></b>
+                for <b>{{ seat_count }}</b> users. You'll receive prorated charges
+                and credits as users are added, deactivated, or become inactive.
+            </p>
+            <script src="https://checkout.stripe.com/checkout.js" class="stripe-button"
+                data-key="{{ publishable_key }}"
+                data-image="/static/images/logo/zulip-icon-128x128.png"
+                data-name="Zulip"
+                data-description="Zulip Cloud Premium"
+                data-locale="auto"
+                data-zip-code="true"
+                data-billing-address="true"
+                data-panel-label="Make payment"
+                data-email="{{ email }}"
+                data-label="{{ _('Add card') }}"
+                data-allow-remember-me="false">
+            </script>
+        </form>
+        <p>
+            We can also bill by invoice for annual contracts over
+            $2000. Contact support@zulipchat.com to pay by invoice or for
+            any other billing questions.
+        </p>
+    </div>
+</div>
+{% endblock %}

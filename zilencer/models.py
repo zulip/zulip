@@ -2,7 +2,7 @@ import datetime
 
 from django.db import models
 
-from zerver.models import AbstractPushDeviceToken, Realm
+from zerver.models import AbstractPushDeviceToken, Realm, UserProfile
 
 def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
@@ -36,5 +36,17 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
         return "<RemotePushDeviceToken %s %s>" % (self.server, self.user_id)
 
 class Customer(models.Model):
-    stripe_customer_id = models.CharField(max_length=255, unique=True)
-    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)
+    realm = models.OneToOneField(Realm, on_delete=models.CASCADE)  # type: Realm
+    stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
+    billing_user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self) -> str:
+        return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
+
+class Plan(models.Model):
+    # The two possible values for nickname
+    CLOUD_MONTHLY = 'monthly'
+    CLOUD_ANNUAL = 'annual'
+    nickname = models.CharField(max_length=40, unique=True)  # type: str
+
+    stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
