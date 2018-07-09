@@ -161,8 +161,10 @@ statistics, etc.). There is currently a reference implementation of a
 ### Setup and Testing
 
 The main testing approach for the /stats page UI is manual testing.  For UI
-testing, you want a comprehensive initial data set.  You can create
-one by using the `./manage.py populate_analytics_db` command from the
+testing, you want a comprehensive initial data set, which is automatically
+created while populating the database by `./manage.py populate_db`
+but you can create that explicity by yourself using the
+`./manage.py populate_analytics_db` command from the
 main `zulip` directory inside your development environment.
 
 Then, in the development server web UI, (logout if needed) and then
