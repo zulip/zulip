@@ -26,18 +26,23 @@ def run_db_migrations(platform: str) -> None:
     if platform == 'dev':
         migration_status_file = 'migration_status_dev'
         settings = 'zproject.settings'
+        db_name = 'ZULIP_DB_NAME=zulip'
     elif platform == 'test':
         migration_status_file = 'migration_status_test'
         settings = 'zproject.test_settings'
+        db_name = 'ZULIP_DB_NAME=zulip_test_template'
 
     # We shell out to `manage.py` and pass `DJANGO_SETTINGS_MODULE` on
     # the command line rather than just calling the migration
     # functions, because Django doesn't support changing settings like
     # what the database is as runtime.
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), './manage.py',
-         'migrate', '--no-input'])
-    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), './manage.py',
-         'get_migration_status', '--output=%s' % (migration_status_file)])
+    # Also we export DB_NAME which is ignored by dev platform but
+    # recognised by test platform and used to migrate correct db.
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), db_name,
+         './manage.py', 'migrate', '--no-input'])
+    run(['env', ('DJANGO_SETTINGS_MODULE=%s' % settings), db_name,
+         './manage.py', 'get_migration_status',
+         '--output=%s' % (migration_status_file)])
 
 def run_generate_fixtures_if_required(use_force: bool=False) -> None:
     generate_fixtures_command = ['tools/setup/generate-fixtures']
