@@ -442,6 +442,22 @@ class DefaultEmojiReactionTests(EmojiReactionBase):
         result = self.post_reaction(reaction_info)
         self.assert_json_error(result, 'Reaction already exists.')
 
+    def test_add_reaction_by_name(self) -> None:
+        reaction_info = {
+            'emoji_name': '+1'
+        }
+        result = self.post_reaction(reaction_info)
+        self.assert_json_success(result)
+        hamlet = self.example_user('hamlet')
+        message = Message.objects.get(id=1)
+        self.assertTrue(
+            Reaction.objects.filter(user_profile=hamlet,
+                                    message=message,
+                                    emoji_name=reaction_info['emoji_name'],
+                                    emoji_code='1f44d',
+                                    reaction_type='unicode_emoji').exists()
+        )
+
     def test_preserve_non_canonical_name(self) -> None:
         reaction_info = {
             'emoji_name': '+1',
