@@ -77,8 +77,15 @@ exports.make_zblueslip = function (opts) {
         };
     });
 
-    // lib.exception_msg = noop;
-    // lib.wrap_function = noop;
+    lib.exception_msg = function (ex) {
+        return ex.message;
+    };
+
+    lib.wrap_function = (f) => {
+        return (...args) => {
+            return f.apply(this, args);
+        };
+    };
 
     return lib;
 };

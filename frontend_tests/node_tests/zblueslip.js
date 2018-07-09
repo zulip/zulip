@@ -85,4 +85,12 @@ run_test('basics', () => {
     throw_a_warning();
     assert.equal(blueslip.get_test_logs('warn').length, 1);
     blueslip.clear_test_data();
+
+    // Finally, let's check the wrap_function feature which allows logging
+    // of errors in function calls. We can use it as follows:
+    const original_function = () => {
+        return 'hello';
+    };
+    const wrapped_function = blueslip.wrap_function(original_function);
+    assert.equal(original_function(), wrapped_function());
 });
