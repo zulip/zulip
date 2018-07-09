@@ -174,6 +174,7 @@ class Realm(models.Model):
     DEFAULT_COMMUNITY_TOPIC_EDITING_LIMIT_SECONDS = 86400
     allow_community_topic_editing = models.BooleanField(default=True)  # type: bool
     default_twenty_four_hour_time = models.BooleanField(default=False)  # type: bool
+    display_email = models.BooleanField(default=True)  # type: bool
 
     # Valid org_types are {CORPORATE, COMMUNITY}
     CORPORATE = 1
@@ -213,6 +214,7 @@ class Realm(models.Model):
         default_twenty_four_hour_time = bool,
         description=str,
         disallow_disposable_email_addresses=bool,
+        display_email=bool,
         email_changes_disabled=bool,
         google_hangouts_domain=str,
         invite_required=bool,

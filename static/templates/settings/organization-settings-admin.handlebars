@@ -60,6 +60,15 @@
                   "prefix" "id_"
                   "is_checked" realm_allow_edit_history
                   "label" admin_settings_label.realm_allow_edit_history}}
+
+
+                {{#if development_environment}}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_display_email"
+                  "prefix" "id_"
+                  "is_checked" realm_display_email
+                  "label" admin_settings_label.realm_display_email}}
+                {{/if}}
             </div>
         </div>
 

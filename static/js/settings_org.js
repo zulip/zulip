@@ -27,6 +27,9 @@ var org_settings = {
         allow_community_topic_editing: {
             type: 'bool',
         },
+        display_email: {
+            type: 'bool',
+        },
     },
     msg_feed: {
         inline_image_preview: {

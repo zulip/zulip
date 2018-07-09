@@ -69,6 +69,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             description: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,
+            display_email: noop,
             google_hangouts_domain: noop,
             inline_image_preview: noop,
             inline_url_embed_preview: noop,
