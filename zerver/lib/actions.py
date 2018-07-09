@@ -708,7 +708,7 @@ def do_deactivate_user(user_profile: UserProfile,
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
                                  acting_user=acting_user,
-                                 event_type='user_deactivated', event_time=event_time,
+                                 event_type=RealmAuditLog.USER_DEACTIVATED, event_time=event_time,
                                  requires_billing_update=activity_change_requires_seat_update(user_profile))
     do_increment_logging_stat(user_profile.realm, COUNT_STATS['active_users_log:is_bot:day'],
                               user_profile.is_bot, event_time, increment=-1)
