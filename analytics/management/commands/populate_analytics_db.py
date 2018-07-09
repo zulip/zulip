@@ -47,9 +47,21 @@ class Command(BaseCommand):
             frequency=stat.frequency, partial_sum=partial_sum, random_seed=self.random_seed)
 
     def handle(self, *args: Any, **options: Any) -> None:
+        # TODO: This should arguably only delete the objects
+        # associated with the "analytics" realm.
         do_drop_all_analytics_tables()
-        # I believe this also deletes any objects with this realm as a foreign key
+
+        # This also deletes any objects with this realm as a foreign key
         Realm.objects.filter(string_id='analytics').delete()
+
+        # Because we just deleted a bunch of objects in the database
+        # directly (rather than deleting individual objects in Django,
+        # in which case our post_save hooks would have flushed the
+        # individual objects from memcached for us), we need to flush
+        # memcached in order to ensure deleted objects aren't still
+        # present in the memcached cache.
+        from zerver.apps import flush_cache
+        flush_cache(None)
 
         installation_time = timezone_now() - timedelta(days=self.DAYS_OF_DATA)
         last_end_time = floor_to_day(timezone_now())
