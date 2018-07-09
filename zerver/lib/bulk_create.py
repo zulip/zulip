@@ -32,7 +32,7 @@ def bulk_create_users(realm: Realm,
 
     RealmAuditLog.objects.bulk_create(
         [RealmAuditLog(realm=realm, modified_user=profile_,
-                       event_type='user_created', event_time=profile_.date_joined)
+                       event_type=RealmAuditLog.USER_CREATED, event_time=profile_.date_joined)
          for profile_ in profiles_to_create])
 
     profiles_by_email = {}  # type: Dict[str, UserProfile]

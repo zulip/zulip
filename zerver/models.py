@@ -1961,6 +1961,9 @@ class RealmAuditLog(models.Model):
     CARD_ADDED = 'card_added'
     PLAN_START = 'plan_start'
     PLAN_UPDATE_QUANTITY = 'plan_update_quantity'
+
+    USER_CREATED = 'user_created'
+
     event_type = models.CharField(max_length=40)  # type: str
 
     def __str__(self) -> str:
