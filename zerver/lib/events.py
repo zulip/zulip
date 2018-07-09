@@ -56,7 +56,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
     # TODO: Consider optimizing this query away with caching.
     custom_profile_field_values = CustomProfileFieldValue.objects.filter(user_profile__realm_id=realm_id)
     profiles_by_user_id = defaultdict(dict)  # type: Dict[int, Dict[str, Any]]
-    for profile_field in custom_profile_field_values:  # nocoverage # TODO: Fix this.
+    for profile_field in custom_profile_field_values:
         user_id = profile_field.user_profile_id
         profiles_by_user_id[user_id][profile_field.field_id] = profile_field.value
 

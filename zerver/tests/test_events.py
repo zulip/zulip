@@ -2291,6 +2291,23 @@ class FetchInitialStateDataTest(ZulipTestCase):
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
 
+    def test_custom_profile_fields_in_initial_data(self) -> None:
+        user_profile = self.example_user('cordelia')
+        realm = user_profile.realm
+        favorite_editor = realm.customprofilefield_set.get(realm=realm, name='Favorite editor')
+        phone_no = realm.customprofilefield_set.get(realm=realm, name='Phone number')
+        do_update_user_custom_profile_data(user_profile, [{"id": favorite_editor.id,
+                                                           "value": "vim"},
+                                                          {"id": phone_no.id,
+                                                           "value": "+1-222-333-4444"}])
+
+        expected_custom_profile_data = {favorite_editor.id: "vim", phone_no.id: "+1-222-333-4444"}
+
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result_custom_profile_data = result['raw_users'][user_profile.id]['profile_data']
+        self.assertEqual(len(result_custom_profile_data), 2)
+        self.assertEqual(result_custom_profile_data, expected_custom_profile_data)
+
 class GetUnreadMsgsTest(ZulipTestCase):
     def mute_stream(self, user_profile: UserProfile, stream: Stream) -> None:
         recipient = Recipient.objects.get(type_id=stream.id, type=Recipient.STREAM)
