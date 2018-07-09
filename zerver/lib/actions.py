@@ -2898,7 +2898,7 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> No
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type='user_change_avatar_source',
+                                 event_type=RealmAuditLog.USER_CHANGE_AVATAR_SOURCE,
                                  extra_data={'avatar_source': avatar_source},
                                  event_time=event_time)
 
