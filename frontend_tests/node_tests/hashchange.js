@@ -22,16 +22,7 @@ set_global('overlays', {});
 set_global('settings', {});
 set_global('subs', {});
 set_global('ui_util', {});
-
-function blueslip_wrap(f) {
-    return function (e) {
-        return f(e);
-    };
-}
-
-set_global('blueslip', {
-    wrap_function: blueslip_wrap,
-});
+set_global('blueslip', global.make_zblueslip());
 
 run_test('operators_round_trip', () => {
     var operators;
