@@ -937,7 +937,7 @@ class TestActiveUsersAudit(AnalyticsTestCase):
     def test_event_types(self) -> None:
         self.add_event(RealmAuditLog.USER_CREATED, 4)
         self.add_event('user_deactivated', 3)
-        self.add_event('user_activated', 2)
+        self.add_event(RealmAuditLog.USER_ACTIVATED, 2)
         self.add_event('user_reactivated', 1)
         for i in range(4):
             do_fill_count_stat_at_hour(self.stat, self.TIME_ZERO - i*self.DAY)

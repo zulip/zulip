@@ -1963,6 +1963,7 @@ class RealmAuditLog(models.Model):
     PLAN_UPDATE_QUANTITY = 'plan_update_quantity'
 
     USER_CREATED = 'user_created'
+    USER_ACTIVATED = 'user_activated'
 
     event_type = models.CharField(max_length=40)  # type: str
 
