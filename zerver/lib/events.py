@@ -385,6 +385,10 @@ def apply_event(state: Dict[str, Any],
                 for field in p:
                     if field in person:
                         p[field] = person[field]
+                    if 'custom_profile_field' in person:
+                        custom_field_id = person['custom_profile_field']['id']
+                        custom_field_new_value = person['custom_profile_field']['value']
+                        p['profile_data'][custom_field_id] = custom_field_new_value
 
     elif event['type'] == 'realm_bot':
         if event['op'] == 'add':
