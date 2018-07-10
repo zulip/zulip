@@ -691,7 +691,7 @@ def do_reactivate_realm(realm: Realm) -> None:
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
-        realm=realm, event_type='realm_reactivated', event_time=event_time)
+        realm=realm, event_type=RealmAuditLog.REALM_REACTIVATED, event_time=event_time)
 
 def do_deactivate_user(user_profile: UserProfile,
                        acting_user: Optional[UserProfile]=None,
