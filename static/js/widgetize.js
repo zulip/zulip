@@ -6,6 +6,7 @@ var widgets = {};
 
 widgets.poll = voting_widget;
 widgets.tictactoe = tictactoe_widget;
+widgets.todo = todo_widget;
 widgets.zform = zform;
 
 var widget_contents = {};

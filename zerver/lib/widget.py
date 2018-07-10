@@ -18,7 +18,7 @@ def do_widget_pre_save_actions(message: MutableMapping[str, Any]) -> None:
         return
 
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
-    valid_widget_types = ['tictactoe', 'poll']
+    valid_widget_types = ['tictactoe', 'poll', 'todo']
     tokens = content.split(' ')
     if not tokens:
         return None, None
