@@ -1966,6 +1966,7 @@ class RealmAuditLog(models.Model):
     USER_DEACTIVATED = 'user_deactivated'
     USER_REACTIVATED = 'user_reactivated'
     USER_SOFT_ACTIVATED = 'user_soft_activated'
+    USER_SOFT_DEACTIVATED = 'user_soft_deactivated'
     USER_CHANGE_PASSWORD = 'user_change_password'
     USER_CHANGE_AVATAR_SOURCE = 'user_change_avatar_source'
     USER_FULL_NAME_CHANGED = 'user_full_name_changed'

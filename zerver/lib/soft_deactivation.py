@@ -181,7 +181,7 @@ def do_soft_deactivate_users(users: List[UserProfile]) -> List[UserProfile]:
             log = RealmAuditLog(
                 realm=user.realm,
                 modified_user=user,
-                event_type='user_soft_deactivated',
+                event_type=RealmAuditLog.USER_SOFT_DEACTIVATED,
                 event_time=event_time
             )
             realm_logs.append(log)
