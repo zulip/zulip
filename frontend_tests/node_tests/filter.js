@@ -32,6 +32,8 @@ people.add(joe);
 people.add(steve);
 people.initialize_current_user(me.user_id);
 
+message_store.get = () => false;
+
 function assert_same_operators(result, terms) {
     terms = _.map(terms, function (term) {
         // If negated flag is undefined, we explicitly
@@ -283,6 +285,12 @@ run_test('predicate_basics', () => {
 
     predicate = get_predicate([['near', 5]]);
     assert(predicate({}));
+
+    var msg = {id: 5};
+    message_store.get = (id) => {
+        assert.equal(id, 5);
+        return msg;
+    };
 
     predicate = get_predicate([['id', 5]]);
     assert(predicate({id: 5}));
@@ -538,12 +546,43 @@ run_test('parse', () => {
 });
 
 run_test('can_apply_locally', () => {
-    var terms = [
+    var terms;
+    var filter;
+
+    terms = [
         {operator: 'near', operand: '9999'},
     ];
-    var filter = new Filter(terms);
+    filter = new Filter(terms);
 
     assert.equal(filter.can_apply_locally(), false);
+
+    // If we have an id, return true.
+    message_store.get = (id) => {
+        assert.equal(id, 100);
+        return {id: 100};
+    };
+
+    terms = [
+        {operator: 'id', operand: '100'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.can_apply_locally(), true);
+
+    message_store.get = () => false;
+
+    terms = [
+        {operator: 'id', operand: '9999'},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.can_apply_locally(), false);
+
+    // negated id queries can be processed locally (kind
+    // of an edge case, we might want to flip this)
+    terms = [
+        {operator: 'id', operand: '9999', negated: true},
+    ];
+    filter = new Filter(terms);
+    assert.equal(filter.can_apply_locally(), true);
 });
 
 run_test('unparse', () => {

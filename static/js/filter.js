@@ -390,6 +390,14 @@ Filter.prototype = {
             return false;
         }
 
+        if (this.has_operator('id')) {
+            var msg_id = this.operands('id')[0];
+
+            if (!message_store.get(msg_id)) {
+                return false;
+            }
+        }
+
         // If we get this far, we're good!
         return true;
     },
