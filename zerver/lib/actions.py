@@ -2881,7 +2881,7 @@ def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -
     user_profile.save(update_fields=["api_key"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
-                                 modified_user=user_profile, event_type='user_api_key_changed',
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_API_KEY_CHANGED,
                                  event_time=event_time)
 
     if user_profile.is_bot:
