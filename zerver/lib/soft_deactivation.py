@@ -31,7 +31,7 @@ def filter_by_subscription_history(user_profile: UserProfile,
         for log_entry in stream_subscription_logs:
             if len(stream_messages) == 0:
                 continue
-            if log_entry.event_type == 'subscription_deactivated':
+            if log_entry.event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
                 for stream_message in stream_messages:
                     if stream_message['id'] <= log_entry.event_last_message_id:
                         store_user_message_to_insert(stream_message)
@@ -105,7 +105,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     # For Stream messages we need to check messages against data from
     # RealmAuditLog for visibility to user. So we fetch the subscription logs.
     stream_ids = [sub['recipient__type_id'] for sub in all_stream_subs]
-    events = [RealmAuditLog.SUBSCRIPTION_CREATED, 'subscription_deactivated', 'subscription_activated']
+    events = [RealmAuditLog.SUBSCRIPTION_CREATED, RealmAuditLog.SUBSCRIPTION_DEACTIVATED, 'subscription_activated']
     subscription_logs = list(RealmAuditLog.objects.select_related(
         'modified_stream').filter(
         modified_user=user_profile,
@@ -119,7 +119,7 @@ def add_missing_messages(user_profile: UserProfile) -> None:
     recipient_ids = []
     for sub in all_stream_subs:
         stream_subscription_logs = all_stream_subscription_logs[sub['recipient__type_id']]
-        if stream_subscription_logs[-1].event_type == 'subscription_deactivated':
+        if stream_subscription_logs[-1].event_type == RealmAuditLog.SUBSCRIPTION_DEACTIVATED:
             assert stream_subscription_logs[-1].event_last_message_id is not None
             if stream_subscription_logs[-1].event_last_message_id <= user_profile.last_active_message_id:
                 # We are going to short circuit this iteration as its no use

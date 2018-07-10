@@ -1978,6 +1978,7 @@ class RealmAuditLog(models.Model):
 
     BOT_OWNER_CHANGED = 'bot_owner_changed'
     SUBSCRIPTION_CREATED = 'subscription_created'
+    SUBSCRIPTION_DEACTIVATED = 'subscription_deactivated'
 
     event_type = models.CharField(max_length=40)  # type: str
 
