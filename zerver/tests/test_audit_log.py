@@ -45,12 +45,12 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         email = 'test@example.com'
         do_change_user_email(user, email)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_email_changed',
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_EMAIL_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(email, user.email)
 
         # Test the RealmAuditLog stringification
-        audit_entry = RealmAuditLog.objects.get(event_type='user_email_changed', event_time__gte=now)
+        audit_entry = RealmAuditLog.objects.get(event_type=RealmAuditLog.USER_EMAIL_CHANGED, event_time__gte=now)
         self.assertTrue(str(audit_entry).startswith("<RealmAuditLog: <UserProfile: test@example.com <Realm: zulip 1>> user_email_changed "))
 
     def test_change_avatar_source(self) -> None:

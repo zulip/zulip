@@ -797,7 +797,7 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
                active_user_ids(user_profile.realm_id))
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
-                                 modified_user=user_profile, event_type='user_email_changed',
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_EMAIL_CHANGED,
                                  event_time=event_time)
 
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
