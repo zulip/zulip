@@ -9,7 +9,8 @@ from boto.s3.connection import S3Connection
 from boto.s3.key import Key
 from django.conf import settings
 from django.db import connection
-from django.utils.timezone import utc as timezone_utc
+from django.db.models import Max
+from django.utils.timezone import utc as timezone_utc, now as timezone_now
 from typing import Any, Dict, List, Optional, Set, Tuple, \
     Iterable
 
@@ -24,7 +25,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
-    CustomProfileField, CustomProfileFieldValue, \
+    CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username
 
 # Code from here is the realm import code path
@@ -58,6 +59,7 @@ id_maps = {
     'customprofilefield': {},
     'customprofilefieldvalue': {},
     'attachment': {},
+    'realmauditlog': {},
 }  # type: Dict[str, Dict[int, int]]
 
 path_maps = {
@@ -93,6 +95,37 @@ def fix_upload_links(data: TableData, message_table: TableName) -> None:
                     message['content'] = message['content'].replace(key, value)
                     if message['rendered_content']:
                         message['rendered_content'] = message['rendered_content'].replace(key, value)
+
+def create_subscription_events(data: TableData, table: TableName) -> None:
+    """
+    When the export data doesn't contain the table `zerver_realmauditlog`,
+    this functions creates RealmAuditLog objects for `subscription_created`
+    type event for all the existing subscriptions.
+
+    This would be common for all the export tools which do not include the
+    table `zerver_realmauditlog`.
+    """
+    all_subscription_logs = []
+
+    # from bulk_add_subscriptions in lib/actions
+    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
+    if event_last_message_id is None:
+        event_last_message_id = -1
+    event_time = timezone_now()
+
+    for item in data[table]:
+        recipient = Recipient.objects.get(id=item['recipient_id'])
+        if recipient.type == Recipient.STREAM:
+            stream = Stream.objects.get(id=recipient.type_id)
+            user = UserProfile.objects.get(id=item['user_profile_id'])
+
+            all_subscription_logs.append(RealmAuditLog(realm=user.realm,
+                                                       modified_user=user,
+                                                       modified_stream=stream,
+                                                       event_last_message_id=event_last_message_id,
+                                                       event_time=event_time,
+                                                       event_type='subscription_created'))
+    RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -510,6 +543,21 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     re_map_foreign_keys(data, 'zerver_subscription', 'recipient', related_table="recipient")
     update_model_ids(Subscription, data, 'zerver_subscription', 'subscription')
     bulk_import_model(data, Subscription, 'zerver_subscription')
+
+    if 'zerver_realmauditlog' in data:
+        fix_datetime_fields(data, 'zerver_realmauditlog')
+        re_map_foreign_keys(data, 'zerver_realmauditlog', 'realm', related_table="realm")
+        re_map_foreign_keys(data, 'zerver_realmauditlog', 'modified_user',
+                            related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_realmauditlog', 'acting_user',
+                            related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_realmauditlog', 'modified_stream',
+                            related_table="stream")
+        update_model_ids(RealmAuditLog, data, 'zerver_realmauditlog',
+                         related_table="realmauditlog")
+        bulk_import_model(data, RealmAuditLog, 'zerver_realmauditlog')
+    else:
+        create_subscription_events(data, 'zerver_subscription')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")

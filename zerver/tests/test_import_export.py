@@ -54,6 +54,7 @@ from zerver.models import (
     UserMessage,
     CustomProfileField,
     CustomProfileFieldValue,
+    RealmAuditLog,
     get_active_streams,
     get_stream_recipient,
     get_personal_recipient,
@@ -534,6 +535,15 @@ class ImportExportTest(ZulipTestCase):
             {custom_profile_field.name for custom_profile_field in realm_custom_profile_field}
             for realm_custom_profile_field in custom_profile_field]
         self.assertEqual(custom_profile_field_name[0], custom_profile_field_name[1])
+
+        # test realmauditlog
+        realmauditlogs = [
+            RealmAuditLog.objects.filter(realm=realm)
+            for realm in realms]
+        realmauditlog_event_type = [
+            {log.event_type for log in realmauditlog}
+            for realmauditlog in realmauditlogs]
+        self.assertEqual(realmauditlog_event_type[0], realmauditlog_event_type[1])
 
         # test messages
         stream_message = [
