@@ -1,4 +1,4 @@
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('page_params', {});
 
 zrequire('dict');
@@ -48,20 +48,17 @@ run_test('user_groups', () => {
     user_groups.update(update_des_event);
     assert.equal(user_groups.get_user_group_from_id(admins.id).description, "administer");
 
-    var called = false;
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, "Unknown group_id in get_user_group_from_id: " + all.id);
-        called = true;
-    };
-
+    blueslip.set_test_data('error', 'Unknown group_id in get_user_group_from_id: ' + all.id);
     assert.equal(user_groups.get_user_group_from_id(all.id), undefined);
-    assert(called);
+    assert(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     user_groups.remove(students);
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, "Unknown group_id in get_user_group_from_id: " + students.id);
-    };
+
+    blueslip.set_test_data('error', 'Unknown group_id in get_user_group_from_id: ' + students.id);
     assert.equal(user_groups.get_user_group_from_id(students.id), undefined);
+    assert(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 
     assert.equal(user_groups.get_user_group_from_name(all.name), undefined);
     assert.equal(user_groups.get_user_group_from_name(admins.name).id, 1);
