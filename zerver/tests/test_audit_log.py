@@ -69,7 +69,7 @@ class TestRealmAuditLog(ZulipTestCase):
         req = dict(full_name=ujson.dumps(new_name))
         result = self.client_patch('/json/users/{}'.format(self.example_user("hamlet").id), req)
         self.assertTrue(result.status_code == 200)
-        query = RealmAuditLog.objects.filter(event_type='user_full_name_changed',
+        query = RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
                                              event_time__gte=start)
         self.assertEqual(query.count(), 1)
 

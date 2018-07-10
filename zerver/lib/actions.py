@@ -2804,7 +2804,7 @@ def do_change_full_name(user_profile: UserProfile, full_name: str,
     user_profile.save(update_fields=["full_name"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
-                                 modified_user=user_profile, event_type='user_full_name_changed',
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_FULL_NAME_CHANGED,
                                  event_time=event_time, extra_data=old_name)
     payload = dict(email=user_profile.email,
                    user_id=user_profile.id,
