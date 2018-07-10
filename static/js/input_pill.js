@@ -93,10 +93,17 @@ exports.create = function (opts) {
 
             store.pills.push(payload);
 
+            var has_image = item.img_src !== undefined;
+
             var opts = {
                 id: payload.id,
                 display_value: item.display_value,
+                has_image: has_image,
             };
+
+            if (has_image) {
+                opts.img_src = item.img_src;
+            }
 
             var pill_html = templates.render('input_pill', opts);
             payload.$element = $(pill_html);

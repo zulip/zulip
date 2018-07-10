@@ -1,4 +1,7 @@
 zrequire('people');
+set_global('md5', function (s) {
+    return 'md5-' + s;
+});
 zrequire('user_pill');
 
 set_global('page_params', {
@@ -25,6 +28,7 @@ var isaac_item = {
     email: 'isaac@example.com',
     display_value: 'Isaac Newton',
     user_id: isaac.user_id,
+    img_src: 'https://secure.gravatar.com/avatar/md5-isaac@example.com?d=identicon&s=50',
 };
 
 run_test('setup', () => {
@@ -67,6 +71,7 @@ run_test('append', () => {
         assert.equal(opts.email, isaac.email);
         assert.equal(opts.display_value, isaac.full_name);
         assert.equal(opts.user_id, isaac.user_id);
+        assert.equal(opts.img_src, isaac_item.img_src);
     }
 
     function fake_clear() {
