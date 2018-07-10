@@ -1976,6 +1976,8 @@ class RealmAuditLog(models.Model):
     REALM_DEACTIVATED = 'realm_deactivated'
     REALM_REACTIVATED = 'realm_reactivated'
 
+    BOT_OWNER_CHANGED = 'bot_owner_changed'
+
     event_type = models.CharField(max_length=40)  # type: str
 
     def __str__(self) -> str:

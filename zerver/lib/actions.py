@@ -2823,7 +2823,7 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
     user_profile.save()  # Can't use update_fields because of how the foreign key works.
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
-                                 modified_user=user_profile, event_type='bot_owner_changed',
+                                 modified_user=user_profile, event_type=RealmAuditLog.BOT_OWNER_CHANGED,
                                  event_time=event_time)
 
     update_users = bot_owner_user_ids(user_profile)

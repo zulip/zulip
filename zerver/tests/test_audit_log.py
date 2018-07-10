@@ -88,7 +88,7 @@ class TestRealmAuditLog(ZulipTestCase):
         bot = self.notification_bot()
         bot_owner = self.example_user('hamlet')
         do_change_bot_owner(bot, bot_owner, admin)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='bot_owner_changed',
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.BOT_OWNER_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(bot_owner, bot.bot_owner)
 
