@@ -23,6 +23,10 @@ zrequire('Handlebars', 'handlebars');
 zrequire('people');
 zrequire('templates');
 
+set_global('ClipboardJS', function (sel) {
+    assert.equal(sel, '#copy_zuliprc');
+});
+
 bot_data.initialize();
 
 run_test('generate_zuliprc_uri', () => {

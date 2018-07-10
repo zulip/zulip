@@ -487,6 +487,16 @@ exports.set_up = function () {
         $(this).attr("href", exports.generate_zuliprc_uri(bot_id));
     });
 
+    new ClipboardJS('#copy_zuliprc', {
+        text: function (trigger) {
+            var bot_info = trigger.closest(".bot-information-box");
+            var email = $(bot_info).find(".email .value").text();
+            var api_key = $(bot_info).find(".api_key .api-key-value-and-button .value").text();
+            var data = exports.generate_zuliprc_content(email.trim(), api_key.trim());
+            return data;
+        },
+    });
+
     $("#bots_lists_navbar .add-a-new-bot-tab").click(function (e) {
         e.preventDefault();
         e.stopPropagation();
