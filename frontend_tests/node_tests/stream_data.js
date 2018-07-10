@@ -6,7 +6,7 @@ set_global('page_params', {
 set_global('$', function () {
 });
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 
 zrequire('util');
 zrequire('hash_util');
@@ -220,22 +220,23 @@ run_test('subscribers', () => {
     assert(!stream_data.is_user_subscribed('Rome', george.user_id));
 
     // verify that checking subscription with undefined user id
-    global.blueslip.warn = function (msg) {
-        assert.equal(msg, "Undefined user_id passed to function is_user_subscribed");
-    };
+
+    blueslip.set_test_data('warn', 'Undefined user_id passed to function is_user_subscribed');
     assert.equal(stream_data.is_user_subscribed('Rome', undefined), undefined);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
 
     // Verify noop for bad stream when removing subscriber
     var bad_stream = 'UNKNOWN';
-    global.blueslip.warn = function (msg) {
-        assert.equal(msg, "We got a remove_subscriber call for a non-existent stream " + bad_stream);
-    };
+    blueslip.set_test_data('warn', 'We got a remove_subscriber call for a non-existent stream ' + bad_stream);
     ok = stream_data.remove_subscriber(bad_stream, brutus.user_id);
     assert(!ok);
+    assert.equal(blueslip.get_test_logs('warn').length, 2);
 
     // Defensive code will give warnings, which we ignore for the
     // tests, but the defensive code needs to not actually blow up.
-    global.blueslip.warn = function () {};
+    set_global('blueslip', global.make_zblueslip({
+        warn: false,
+    }));
 
     // verify that removing an already-removed subscriber is a noop
     ok = stream_data.remove_subscriber('Rome', brutus.user_id);
@@ -275,9 +276,12 @@ run_test('subscribers', () => {
     assert(!ok);
 
     // Verify that we don't crash and return false for a bad user id.
-    global.blueslip.error = function () {};
+    blueslip.set_test_data('error', 'Unknown user_id in get_person_from_user_id: 9999999');
+    blueslip.set_test_data('error', 'We tried to add invalid subscriber: 9999999');
     ok = stream_data.add_subscriber('Rome', 9999999);
     assert(!ok);
+    assert.equal(blueslip.get_test_logs('error').length, 2);
+    blueslip.clear_test_data();
 });
 
 run_test('is_active', () => {
@@ -452,14 +456,13 @@ run_test('delete_sub', () => {
     assert(!stream_data.get_sub('Canada'));
     assert(!stream_data.get_sub_by_id(canada.stream_id));
 
-    var warned = false;
-    blueslip.warn = function (msg) {
-        warned = true;
-        assert.equal(msg, 'Failed to delete stream does_not_exist');
-    };
+    // We had earlier disabled warnings, so we need to remake zblueslip.
+    set_global('blueslip', global.make_zblueslip());
+    blueslip.set_test_data('warn', 'Failed to delete stream does_not_exist');
+    blueslip.set_test_data('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
     stream_data.delete_sub('does_not_exist');
-    assert(warned);
-    blueslip.warn = function () {};
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
 });
 
 run_test('get_subscriber_count', () => {
@@ -469,7 +472,12 @@ run_test('get_subscriber_count', () => {
         subscribed: true,
     };
     stream_data.clear_subscriptions();
+
+    blueslip.set_test_data('warn', 'We got a get_subscriber_count count call for a non-existent stream.');
     assert.equal(stream_data.get_subscriber_count('India'), undefined);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    blueslip.clear_test_data();
+
     stream_data.add_sub('India', india);
     assert.equal(stream_data.get_subscriber_count('India'), 0);
 
@@ -607,14 +615,11 @@ run_test('create_sub', () => {
     var new_sub = stream_data.create_sub_from_server_data('India', india); // make sure sub doesn't get created twice
     assert.equal(india_sub, new_sub);
 
-    var called = false;
-    global.blueslip.fatal = function (msg) {
-        assert.equal(msg, 'We cannot create a sub without a stream_id');
-        called = true;
-    };
+    blueslip.set_test_data('fatal', 'We cannot create a sub without a stream_id');
     var ok = stream_data.create_sub_from_server_data('Canada', canada);
     assert.equal(ok, undefined);
-    assert(called);
+    assert.equal(blueslip.get_test_logs('fatal').length, 1);
+    blueslip.clear_test_data();
 
     var antarctica_sub = stream_data.create_sub_from_server_data('Antarctica', antarctica);
     assert(antarctica_sub);
@@ -667,7 +672,6 @@ run_test('initialize_from_page_params', () => {
 
     stream_data.add_sub('foo', foo);
     stream_data.initialize_from_page_params();
-
     assert.equal(page_params.notifications_stream, "foo");
 });
 
