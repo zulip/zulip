@@ -9,7 +9,7 @@ import io
 from PIL import Image
 
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Set, Optional, Tuple
+from typing import Any, Dict, List, Set, Optional, Tuple, Callable
 from boto.s3.connection import Location, S3Connection
 
 from zerver.lib.export import (
@@ -480,91 +480,92 @@ class ImportExportTest(ZulipTestCase):
         # test realm
         self.assertTrue(Realm.objects.filter(string_id='test-zulip').exists())
         imported_realm = Realm.objects.get(string_id='test-zulip')
-        realms = [original_realm, imported_realm]
         self.assertNotEqual(imported_realm.id, original_realm.id)
 
+        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
+            orig_realm_result = f(original_realm)
+            imported_realm_result = f(imported_realm)
+            self.assertEqual(orig_realm_result, imported_realm_result)
+
         # test users
-        emails = [
-            {user.email for user in realm.get_admin_users()}
-            for realm in realms]
-        self.assertEqual(emails[0], emails[1])
-        emails = [
-            {user.email for user in realm.get_active_users().filter(is_bot=False)}
-            for realm in realms]
-        self.assertEqual(emails[0], emails[1])
+        assert_realm_values(
+            lambda r: {user.email for user in r.get_admin_users()}
+        )
+
+        assert_realm_values(
+            lambda r: {user.email for user in r.get_active_users()}
+        )
 
         # test stream
-        stream_names = [
-            {stream.name for stream in get_active_streams(realm)}
-            for realm in realms]
-        self.assertEqual(stream_names[0], stream_names[1])
+        assert_realm_values(
+            lambda r: {stream.name for stream in get_active_streams(r)}
+        )
 
         # test recipients
-        stream_recipients = [
-            get_stream_recipient(Stream.objects.get(name='Verona', realm=realm).id)
-            for realm in realms]
-        self.assertEqual(stream_recipients[0].type, stream_recipients[1].type)
+        def get_recipient_stream(r: str) -> Stream:
+            return get_stream_recipient(
+                Stream.objects.get(name='Verona', realm=r).id
+            )
 
-        user_recipients = [
-            get_personal_recipient(UserProfile.objects.get(full_name='Iago', realm=realm).id)
-            for realm in realms]
-        self.assertEqual(user_recipients[0].type, user_recipients[1].type)
+        def get_recipient_user(r: str) -> UserProfile:
+            return get_personal_recipient(
+                UserProfile.objects.get(full_name='Iago', realm=r).id
+            )
+
+        assert_realm_values(lambda r: get_recipient_stream(r).type)
+        assert_realm_values(lambda r: get_recipient_user(r).type)
 
         # test subscription
-        stream_subscription = [
-            Subscription.objects.filter(recipient=recipient)
-            for recipient in stream_recipients]
-        subscription_stream_user = [
-            {sub.user_profile.email for sub in subscription}
-            for subscription in stream_subscription]
-        self.assertEqual(subscription_stream_user[0], subscription_stream_user[1])
+        def get_subscribers(recipient: Recipient) -> Set[str]:
+            subscriptions = Subscription.objects.filter(recipient=recipient)
+            users = {sub.user_profile.email for sub in subscriptions}
+            return users
 
-        user_subscription = [
-            Subscription.objects.filter(recipient=recipient)
-            for recipient in user_recipients]
-        subscription_user = [
-            {sub.user_profile.email for sub in subscription}
-            for subscription in user_subscription]
-        self.assertEqual(subscription_user[0], subscription_user[1])
+        assert_realm_values(
+            lambda r: get_subscribers(get_recipient_stream(r))
+        )
+
+        assert_realm_values(
+            lambda r: get_subscribers(get_recipient_user(r))
+        )
 
         # test custom profile fields
-        custom_profile_field = [
-            CustomProfileField.objects.filter(realm=realm)
-            for realm in realms]
-        custom_profile_field_name = [
-            {custom_profile_field.name for custom_profile_field in realm_custom_profile_field}
-            for realm_custom_profile_field in custom_profile_field]
-        self.assertEqual(custom_profile_field_name[0], custom_profile_field_name[1])
+        def get_custom_profile_field_names(r: str) -> Set[str]:
+            custom_profile_fields = CustomProfileField.objects.filter(realm=r)
+            custom_profile_field_names = {field.name for field in custom_profile_fields}
+            return custom_profile_field_names
+
+        assert_realm_values(get_custom_profile_field_names)
 
         # test realmauditlog
-        realmauditlogs = [
-            RealmAuditLog.objects.filter(realm=realm)
-            for realm in realms]
-        realmauditlog_event_type = [
-            {log.event_type for log in realmauditlog}
-            for realmauditlog in realmauditlogs]
-        self.assertEqual(realmauditlog_event_type[0], realmauditlog_event_type[1])
+        def get_realm_audit_log_event_type(r: str) -> Set[str]:
+            realmauditlogs = RealmAuditLog.objects.filter(realm=r)
+            realmauditlog_event_type = {log.event_type for log in realmauditlogs}
+            return realmauditlog_event_type
+
+        assert_realm_values(get_realm_audit_log_event_type)
 
         # test messages
-        stream_message = [
-            Message.objects.filter(recipient=recipient)
-            for recipient in stream_recipients]
-        stream_message_subject = [
-            {message.subject for message in stream_message}
-            for stream_message in stream_message]
-        self.assertEqual(stream_message_subject[0], stream_message_subject[1])
+        def get_stream_messages(r: str) -> Message:
+            recipient = get_recipient_stream(r)
+            messages = Message.objects.filter(recipient=recipient)
+            return messages
+
+        def get_stream_topics(r: str) -> Set[str]:
+            messages = get_stream_messages(r)
+            topics = {m.subject for m in messages}
+            return topics
+
+        assert_realm_values(get_stream_topics)
 
         # test usermessages
-        stream_message = [
-            stream_message.order_by('content')
-            for stream_message in stream_message]
-        usermessage = [
-            UserMessage.objects.filter(message=stream_message[0])
-            for stream_message in stream_message]
-        usermessage_user = [
-            {user_message.user_profile.email for user_message in usermessage}
-            for usermessage in usermessage]
-        self.assertEqual(usermessage_user[0], usermessage_user[1])
+        def get_usermessages_user(r: str) -> Set[Any]:
+            messages = get_stream_messages(r).order_by('content')
+            usermessage = UserMessage.objects.filter(message=messages[0])
+            usermessage_user = {um.user_profile.email for um in usermessage}
+            return usermessage_user
+
+        assert_realm_values(get_usermessages_user)
 
     def test_import_files_from_local(self) -> None:
 
