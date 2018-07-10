@@ -1974,6 +1974,7 @@ class RealmAuditLog(models.Model):
     USER_API_KEY_CHANGED = 'user_api_key_changed'
 
     REALM_DEACTIVATED = 'realm_deactivated'
+    REALM_REACTIVATED = 'realm_reactivated'
 
     event_type = models.CharField(max_length=40)  # type: str
 
