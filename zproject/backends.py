@@ -377,7 +377,7 @@ def name_not_decided(
     if realm is None:
         return_data["invalid_realm"] = True
         return {'is_userprofile_none': True, 'return_data': return_data, 'details': details}
-    return_data["realm"] = realm
+    return_data["realm_id"] = realm.id
     print(realm)
     print(';lolol2')
 
@@ -396,6 +396,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     of the Zulip Social auth pipeline (similar to the authenticate()
     methods in most other auth backends in this file).
     """
+    print("Calling helper")
     if hasattr(backend, 'get_verified_emails'):
         # Some social backends, like GitHubAuthBackend, don't guarantee that
         # the `details` data is validated.
@@ -443,11 +444,10 @@ def select_email(
         backend: BaseAuth,
         *args: Any,
         **kwargs: Any) -> Dict[str, Any]:
-    subdomain = backend.strategy.session_get('subdomain')
-    realm = get_realm(subdomain)
+    print("Calling select_email")
     print(kwargs['return_data'])
     return_data = kwargs['return_data']
-    return_data['realm'] = realm
+    realm = Realm.objects.get(id=return_data["realm_id"])
     if hasattr(backend, 'get_verified_emails'):
         # Some social backends, like GitHubAuthBackend, don't guarantee that
         # the `details` data is validated.
@@ -513,6 +513,7 @@ def social_auth_finish(backend: Any,
                        response: HttpResponse,
                        *args: Any,
                        **kwargs: Any) -> Optional[UserProfile]:
+    print("Calling finish!")
     from zerver.views.auth import (login_or_register_remote_user,
                                    redirect_and_log_into_subdomain)
 
@@ -559,7 +560,7 @@ def social_auth_finish(backend: Any,
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
     redirect_to = strategy.session_get('next')
-    realm = return_data["realm"]
+    realm = Realm.objects.get(id=return_data["realm_id"])
 
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
     if mobile_flow_otp is not None:
