@@ -2686,7 +2686,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=event_last_message_id,
-                                                   event_type='subscription_deactivated',
+                                                   event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                                                    event_time=event_time))
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)

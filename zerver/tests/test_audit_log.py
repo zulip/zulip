@@ -113,7 +113,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(subscription_creation_logs[0].modified_user, user[0])
 
         bulk_remove_subscriptions(user, stream)
-        subscription_deactivation_logs = RealmAuditLog.objects.filter(event_type='subscription_deactivated',
+        subscription_deactivation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                                                                       event_time__gte=now)
         self.assertEqual(subscription_deactivation_logs.count(), 1)
         self.assertEqual(subscription_deactivation_logs[0].modified_stream.id, stream[0].id)
