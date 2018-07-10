@@ -537,6 +537,15 @@ run_test('parse', () => {
     _test();
 });
 
+run_test('can_apply_locally', () => {
+    var terms = [
+        {operator: 'near', operand: '9999'},
+    ];
+    var filter = new Filter(terms);
+
+    assert.equal(filter.can_apply_locally(), false);
+});
+
 run_test('unparse', () => {
     var string;
     var operators;

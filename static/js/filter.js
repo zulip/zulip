@@ -68,10 +68,6 @@ function message_matches_search_term(message, operator, operand) {
         }
         return true; // in:whatever returns true
 
-    case 'near':
-        // this is all handled server side
-        return true;
-
     case 'id':
         return message.id.toString() === operand;
 
@@ -384,6 +380,13 @@ Filter.prototype = {
             // See #6186 to see why we currently punt on 'has:foo'
             // queries.  This can be fixed, there are just some random
             // complications that make it non-trivial.
+            return false;
+        }
+
+        if (this.has_operator('near')) {
+            // We let near queries happen server-side since we can't
+            // really tell if we have gaps in our client-side data near
+            // an id, and we often want to go back in history.
             return false;
         }
 
