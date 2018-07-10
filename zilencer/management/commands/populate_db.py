@@ -296,7 +296,7 @@ class Command(BaseCommand):
                                     modified_user=profile,
                                     modified_stream_id=recipient.type_id,
                                     event_last_message_id=0,
-                                    event_type='subscription_created',
+                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                     event_time=event_time)
                 all_subscription_logs.append(log)
 
@@ -494,7 +494,7 @@ class Command(BaseCommand):
                                             modified_user=profile,
                                             modified_stream=stream,
                                             event_last_message_id=0,
-                                            event_type='subscription_created',
+                                            event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                             event_time=event_time)
                         all_subscription_logs.append(log)
                 Subscription.objects.bulk_create(subscriptions_to_add)
