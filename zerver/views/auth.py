@@ -275,8 +275,15 @@ def google_oauth2_csrf(request: HttpRequest, value: str) -> str:
 def reverse_on_root(viewname: str, args: List[str]=None, kwargs: Dict[str, str]=None) -> str:
     return settings.ROOT_DOMAIN_URI + reverse(viewname, args=args, kwargs=kwargs)
 
-def oauth_redirect_to_root(request: HttpRequest, url: str, is_signup: bool=False) -> HttpResponse:
+def oauth_redirect_to_root(request: HttpRequest, url: str,
+                           sso_type: str, is_signup: bool=False) -> HttpResponse:
     main_site_uri = settings.ROOT_DOMAIN_URI + url
+    if settings.SOCIAL_AUTH_SUBDOMAIN is not None and sso_type == 'social':
+        main_site_uri = (settings.EXTERNAL_URI_SCHEME +
+                         settings.SOCIAL_AUTH_SUBDOMAIN +
+                         "." +
+                         settings.EXTERNAL_HOST) + url
+
     params = {
         'subdomain': get_subdomain(request),
         'is_signup': '1' if is_signup else '0',
@@ -303,7 +310,7 @@ def start_google_oauth2(request: HttpRequest) -> HttpResponse:
         return redirect_to_config_error("google")
 
     is_signup = bool(request.GET.get('is_signup'))
-    return oauth_redirect_to_root(request, url, is_signup=is_signup)
+    return oauth_redirect_to_root(request, url, 'google', is_signup=is_signup)
 
 def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
@@ -311,11 +318,11 @@ def start_social_login(request: HttpRequest, backend: str) -> HttpResponse:
                                       settings.SOCIAL_AUTH_GITHUB_SECRET):
         return redirect_to_config_error("github")
 
-    return oauth_redirect_to_root(request, backend_url)
+    return oauth_redirect_to_root(request, backend_url, 'social')
 
 def start_social_signup(request: HttpRequest, backend: str) -> HttpResponse:
     backend_url = reverse('social:begin', args=[backend])
-    return oauth_redirect_to_root(request, backend_url, is_signup=True)
+    return oauth_redirect_to_root(request, backend_url, 'social', is_signup=True)
 
 def send_oauth_request_to_google(request: HttpRequest) -> HttpResponse:
     subdomain = request.GET.get('subdomain', '')

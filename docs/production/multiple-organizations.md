@@ -41,6 +41,9 @@ things:
   new organization.  Review
   [the install instructions](install.html) if you need a
   refresher on how this works.
+* If you're planning on using GitHub auth or another social
+  authentication method, review
+  [the notes on `SOCIAL_AUTH_SUBDOMAIN` below](#social-authentication).
 
 For servers hosting a large number of organizations, like
 [zulipchat.com](https://zulipchat.com), one can set
@@ -79,6 +82,17 @@ organizations, because the auth cookies for the root domain are
 visible to the subdomain (so it's not possible for a single
 browser/client to be logged into both).  So we don't recommend that
 configuration.
+
+### Social authentication
+
+If you're using GitHub authentication (or any other authentication
+backend that we implement using python-social-auth), you will likely
+want to set the `SOCIAL_AUTH_SUBDOMAIN` setting to something (`'auth'`
+is a good choice) and update the GitHub authentication callback URL to
+be that subdomain.  Otherwise, your users will experience confusing
+behavior where attempting to login using a social authentication
+backend will appear to log them out of the other organizations on your
+server.
 
 ### The system bot realm
 

@@ -146,7 +146,7 @@ AUTHENTICATION_BACKENDS = (
 #   https://github.com/organizations/ORGNAME/settings/developers
 # Fill in "Callback URL" with a value like
 #   https://zulip.example.com/complete/github/ as
-# based on your value for EXTERNAL_HOST.
+# based on your values for EXTERNAL_HOST and SOCIAL_AUTH_SUBDOMAIN.
 #
 # (2) You should get a page with settings for your new application,
 # showing a client ID and a client secret.  Use the client ID as
@@ -160,6 +160,15 @@ AUTHENTICATION_BACKENDS = (
 # this, set one of the two parameters below:
 #SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
 #SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
+
+# (4) If you are serving multiple Zulip organizations on different
+# subdomains, you need to set SOCIAL_AUTH_SUBDOMAIN.  You can set it
+# to any subdomain on which you do not plan to host a Zulip
+# organization.  The default recommendation, `auth`, is a reserved
+# subdomain; if you're using this setting, the "Callback URL" should be e.g.:
+#   https://auth.zulip.example.com/complete/github/
+#
+#SOCIAL_AUTH_SUBDOMAIN = 'auth'
 
 ########
 # SSO via REMOTE_USER.

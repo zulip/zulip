@@ -443,7 +443,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
             url += "?%s" % (urllib.parse.urlencode(params))
 
         result = self.client_get(url, **headers)
-        if result.status_code != 302 or 'http://testserver/login/github/' not in result.url:
+
+        expected_result_url_prefix = 'http://testserver/login/github/'
+        if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
+            expected_result_url_prefix = ('http://%s.testserver/login/github/' %
+                                          settings.SOCIAL_AUTH_SUBDOMAIN)
+
+        if result.status_code != 302 or not result.url.startswith(expected_result_url_prefix):
             return result
 
         result = self.client_get(result.url, **headers)
@@ -513,6 +519,22 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.assertEqual(result.url, "/config-error/github")
 
     def test_github_oauth2_success(self) -> None:
+        account_data_dict = dict(email=self.email, name=self.name)
+        result = self.github_oauth2_test(account_data_dict,
+                                         subdomain='zulip', next='/user_uploads/image')
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    @override_settings(SOCIAL_AUTH_SUBDOMAIN=None)
+    def test_github_when_social_auth_subdomain_is_not_set(self) -> None:
         account_data_dict = dict(email=self.email, name=self.name)
         result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', next='/user_uploads/image')

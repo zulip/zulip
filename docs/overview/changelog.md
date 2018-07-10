@@ -20,6 +20,9 @@ in bursts.
 - Added an organization setting to control who can edit topics.
 - Added ctrl+K keyboard shortcut for getting to search (same as /, but
   works even when you're inside compose).
+- Added the new `SOCIAL_AUTH_SUBDOMAIN` setting, which all servers using
+  both GitHub authentication and hosting multiple Zulip organizations
+  should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
 - Optimized the performance of loading Zulip in an organization with
   thousands of users and hundreds of bot users.
 - Removed the "Delete streams" administration page; one can delete

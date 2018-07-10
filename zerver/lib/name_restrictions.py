@@ -34,6 +34,8 @@ ZULIP_RESERVED_SUBDOMAINS = frozenset([
     'contribute', 'floss', 'foss', 'free', 'opensource', 'open', 'code', 'license',
     # intership programs
     'intern', 'outreachy', 'gsoc', 'gci', 'externship',
+    # Things that sound like security
+    'auth', 'authentication', 'security',
     # tech blogs
     'engineering', 'infrastructure', 'tooling', 'tools', 'javascript', 'python'])
 
