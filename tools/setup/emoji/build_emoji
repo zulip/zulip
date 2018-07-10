@@ -59,6 +59,13 @@ span.emoji
     overflow: hidden;
 }
 
+.emoji-1f419
+{
+    background-image: url('images-google-64/1f419.png') !important;
+    background-position: 0%% 0%% !important;
+    background-size: contain !important;
+}
+
 %(emoji_positions)s
 """
 
@@ -170,6 +177,13 @@ def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
             os.symlink(image_file_path, unicode_symlink_path)
         except FileExistsError:
             pass
+
+    # We hardcode octopus emoji image to Google emojiset's old
+    # "cute octopus" image. Copy it to the emoji farms.
+    for emojiset in EMOJISETS:
+        input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, '1f419.png')
+        output_img_file = os.path.join(cache_path, 'images-' + emojiset + '-64', '1f419.png')
+        run(['cp', input_img_file, output_img_file])
 
 def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
