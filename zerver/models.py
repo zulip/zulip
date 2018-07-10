@@ -1956,7 +1956,6 @@ class RealmAuditLog(models.Model):
     requires_billing_update = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
-    # Partial list of event_types.
     STRIPE_START = 'stripe_start'
     CARD_ADDED = 'card_added'
     PLAN_START = 'plan_start'
@@ -1978,6 +1977,7 @@ class RealmAuditLog(models.Model):
 
     BOT_OWNER_CHANGED = 'bot_owner_changed'
     SUBSCRIPTION_CREATED = 'subscription_created'
+    SUBSCRIPTION_ACTIVATED = 'subscription_activated'
     SUBSCRIPTION_DEACTIVATED = 'subscription_deactivated'
 
     event_type = models.CharField(max_length=40)  # type: str
