@@ -394,7 +394,7 @@ exports.get_message_reactions = function (message) {
         reaction.local_id = exports.get_local_reaction_id(reaction);
         if (!people.is_known_user_id(user_id)) {
             blueslip.warn('Unknown user_id ' + user_id +
-                          'in reaction for message ' + message.id);
+                          ' in reaction for message ' + message.id);
             return;
         }
         reaction.user_ids = [];
