@@ -197,7 +197,7 @@ def maybe_catch_up_soft_deactivated_user(user_profile: UserProfile) -> Union[Use
         RealmAuditLog.objects.create(
             realm=user_profile.realm,
             modified_user=user_profile,
-            event_type='user_soft_activated',
+            event_type=RealmAuditLog.USER_SOFT_ACTIVATED,
             event_time=timezone_now()
         )
         logger.info('Soft Reactivated user %s (%s)' %
