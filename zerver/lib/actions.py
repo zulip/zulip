@@ -2532,7 +2532,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=event_last_message_id,
-                                                   event_type='subscription_activated',
+                                                   event_type=RealmAuditLog.SUBSCRIPTION_ACTIVATED,
                                                    event_time=event_time))
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
