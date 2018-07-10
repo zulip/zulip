@@ -1,33 +1,57 @@
-# Restrict editing of old messages and topics
+# Configure message editing and deletion
 
 {!admin-only.md!}
 
-You can easily change the time limit that your organization's users have to
-change their messages after sending them. Alternatively, you can choose to
-disable message editing for your organization users.
+There are several settings that control who can edit and delete messages and
+topics. By default, users have 10 minutes after posting a message to edit
+it, they can edit any topic at any time, and they cannot delete their
+messages.
 
-1. Go to the [Organization settings](/#organization/organization-settings)
-{!admin.md!}
+Different organizations have different message editing needs, so this area
+is highly configurable. Two things are true under any configuration:
 
-4. Under the **Message editing** section, find the **Users can edit their messages**
-checkbox and **Message edit limit in minutes (0 for no limit)** input field
-underneath it.
+* Message content can only ever be modified by the original author.
+* Any message can be deleted at any time by an organization administrator.
 
-    By default, user message editing is enabled for 10 minutes after sending.
+|                              | Admins   | Members  |
+|---                           |---       |---       |
+| Edit your message content    | [1]      | [1]      |
+| Edit others' message content |          |          |
+| Edit your message topics     | [1]      | [1]      |
+| Edit others' message topics  | [1]      | [2]      |
+| Delete your messages         | &#10004; | [3]      |
+| Delete others' messages      | &#10004; |          |
 
-    * **Users can edit their messages** - Uncheck this option if you wish to
-    disable message editing. Upon doing so, the **Message edit limit in minutes (0 for no limit)**
-    input field will be grayed out.
+[1] Controlled by **Allow message editing**.
 
-    * **Message edit limit in minutes (0 for no limit)** - If you enable message
-    editing in your organization, you can restrict the time that organization
-    users have to edit their messages. Simply input the time limit in minutes
-    that you would like to set; for example, if you want to set a message edit
-    time limit of 5 minutes, enter **5** in the field.
+[2] Controlled by **Users can edit the topic of any message**.
 
-        !!! tip ""
-            If you would like to disable the message editing time limit for your
-            organization, enter **0** in the field. This enables users to edit
-            their messages whenever they want.
+[3] Controlled by **Allow message deleting**.
+
+There are a few useful things to understand about the message editing
+settings.
+
+* **Allow message editing** can be set to **Never**, **Any time** or
+  **Up to [a customizable time limit] after posting**. If set to **Never**,
+  users cannot edit message topics either. For any other value, users can
+  edit message topics at any time.
+
+* If a user can edit a message, they can also "delete" it by removing all
+  the message content. This is different from proper message deletion in two
+  ways: the original content will still show up in
+  [message edit history](view-a-messages-edit-history), and will be included
+  in [exports](import-or-export-a-zulip-organization). Deletion
+  permanently (and irretrievably) removes the message from Zulip.
+
+You can access the message editing and deletion settings as follows.
+
+{settings_tab|organization-settings}
+
+4. Under **Message editing**, configure **Allow message editing**,
+   **Users can edit the topic of any message**, and **Allow message deleting**.
 
 {!save-changes.md!}
+
+## Related articles
+
+* [Disable message edit history](/help/disable-message-edit-history)
