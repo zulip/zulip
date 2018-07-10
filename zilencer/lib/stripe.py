@@ -92,6 +92,16 @@ def get_upcoming_invoice(stripe_customer_id: int) -> stripe.Invoice:
         print(''.join(['"upcoming_invoice": ', str(stripe_invoice), ',']))  # nocoverage
     return stripe_invoice
 
+# Return type should be Optional[stripe.Subscription], which throws a mypy error.
+# Will fix once we add type stubs for the Stripe API.
+def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
+    if not stripe_customer.subscriptions:
+        return None
+    for stripe_subscription in stripe_customer.subscriptions.data:
+        if stripe_subscription.status != "canceled":
+            return stripe_subscription
+    return None
+
 @catch_stripe_errors
 def payment_source(stripe_customer: stripe.Customer) -> Optional[stripe.Card]:
     if stripe_customer.default_source is None:
@@ -125,8 +135,11 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
-    # TODO: check that there are no existing live Stripe subscriptions
-    # (canceled subscriptions are ok)
+    if extract_current_subscription(stripe_customer) is not None:
+        billing_logger.error("Stripe customer %s trying to subscribe to %s, "
+                             "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
+        # TODO: Change to an error sent to the frontend
+        raise AssertionError("Customer already has an active subscription.")
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',

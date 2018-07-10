@@ -13,7 +13,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count
+    get_seat_count, extract_current_subscription
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -232,6 +232,25 @@ class StripeTest(ZulipTestCase):
         # Test that inactive users aren't counted
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(self.realm), initial_count)
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_extract_current_subscription(self, mock_create_customer: mock.Mock,
+                                          mock_retrieve_customer: mock.Mock) -> None:
+        # Only the most basic test. In particular, doesn't include testing with a
+        # canceled subscription, because we don't have a fixture for it.
+        customer_without_subscription = stripe.Customer.create()
+        self.assertIsNone(extract_current_subscription(customer_without_subscription))
+
+        customer_with_subscription = stripe.Customer.retrieve()
+        subscription = extract_current_subscription(customer_with_subscription)
+        self.assertEqual(subscription["id"][:4], "sub_")
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
+    def test_subscribe_customer_to_second_plan(self, mock_retrieve_customer: mock.Mock) -> None:
+        with self.assertRaisesRegex(AssertionError, "Customer already has an active subscription."):
+            do_subscribe_customer_to_plan(stripe.Customer.retrieve(), self.stripe_plan_id,
+                                          self.quantity, 0)
 
 class BillingUpdateTest(ZulipTestCase):
     def setUp(self) -> None:
