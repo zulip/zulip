@@ -13,6 +13,7 @@
 * [Add subscriptions](/api/add-subscriptions)
 * [Remove subscriptions](/api/remove-subscriptions)
 * [Get topics in a stream](/api/get-stream-topics)
+* [Topic muting](/api/mute-topics)
 * [Create a stream](/api/create-stream)
 * [Get stream ID](/api/get-stream-id)
 

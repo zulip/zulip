@@ -267,6 +267,50 @@ def remove_subscriptions(client):
     validate_against_openapi_schema(result, '/users/me/subscriptions',
                                     'delete', '200')
 
+def toggle_mute_topic(client):
+    # type: (Client) -> None
+
+    # Send a test message
+    message = {
+        'type': 'stream',
+        'to': 'Denmark',
+        'subject': 'boat party'
+    }
+    client.call_endpoint(
+        url='messages',
+        method='POST',
+        request=message
+    )
+
+    # {code_example|start}
+    # Mute the topic "boat party" in the stream "Denmark"
+    request = {
+        'stream': 'Denmark',
+        'topic': 'boat party',
+        'op': 'add'
+    }
+    result = client.mute_topic(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result,
+                                    '/users/me/subscriptions/muted_topics',
+                                    'patch', '200')
+
+    # {code_example|start}
+    # Unmute the topic "boat party" in the stream "Denmark"
+    request = {
+        'stream': 'Denmark',
+        'topic': 'boat party',
+        'op': 'remove'
+    }
+
+    result = client.mute_topic(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result,
+                                    '/users/me/subscriptions/muted_topics',
+                                    'patch', '200')
+
 def render_message(client):
     # type: (Client) -> None
 
@@ -513,6 +557,7 @@ TEST_FUNCTIONS = {
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
     '/users/me/subscriptions:delete': remove_subscriptions,
+    '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users:get': get_members,
     '/realm/filters:post': add_realm_filter,
     '/register:post': register_queue,
@@ -600,6 +645,7 @@ def test_streams(client, nonadmin_client):
     get_streams(client)
     get_subscribers(client)
     remove_subscriptions(client)
+    toggle_mute_topic(client)
     get_stream_topics(client, 1)
 
     test_user_not_authorized_error(nonadmin_client)
