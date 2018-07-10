@@ -267,7 +267,7 @@ run_test('retry', () => {
             });
 
             assert.equal(blueslip.get_test_logs('log').length, 1);
-            assert.equal(blueslip.get_test_logs('log')[0], 'Retrying idempotent[object Object]');
+            assert.equal(blueslip.get_test_logs('log')[0].message, 'Retrying idempotent[object Object]');
             blueslip.clear_test_data();
         },
     });
