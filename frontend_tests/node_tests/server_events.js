@@ -10,7 +10,7 @@ zrequire('message_store');
 zrequire('server_events_dispatch');
 zrequire('server_events');
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('channel', {});
 set_global('home_msg_list', {
     select_id: noop,
@@ -75,7 +75,7 @@ run_test('pointer_event', () => {
 
 // Start blueslip tests here
 
-var setup = function (results) {
+var setup = function () {
     server_events.home_view_loaded();
     set_global('message_events', {
         insert_new_messages: function () {
@@ -90,64 +90,60 @@ var setup = function (results) {
             throw Error('subs update error');
         },
     });
-    global.blueslip.error = function (msg, more_info, stack) {
-        results.msg = msg;
-        results.more_info = more_info;
-        results.stack = stack;
-    };
-    global.blueslip.exception_msg = function (ex) {
-        return ex.message;
-    };
 };
 
 run_test('event_dispatch_error', () => {
-    var results = {};
-    setup(results);
+    setup();
 
     var data = {events: [{type: 'stream', op: 'update', id: 1, other: 'thing'}]};
     global.channel.get = function (options) {
         options.success(data);
     };
 
+    blueslip.set_test_data('error', 'Failed to process an event\nsubs update error');
+
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to process an event\n' +
-                              'subs update error');
-    assert.equal(results.more_info.event.type , 'stream');
-    assert.equal(results.more_info.event.op , 'update');
-    assert.equal(results.more_info.event.id , 1);
-    assert.equal(results.more_info.other , undefined);
+    const logs = blueslip.get_test_logs('error');
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0].more_info.event.type , 'stream');
+    assert.equal(logs[0].more_info.event.op , 'update');
+    assert.equal(logs[0].more_info.event.id , 1);
+    assert.equal(logs[0].more_info.other , undefined);
+    blueslip.clear_test_data();
 });
 
 
 run_test('event_new_message_error', () => {
-    var results = {};
-    setup(results);
+    setup();
 
     var data = {events: [{type: 'message', id: 1, other: 'thing', message: {}}]};
     global.channel.get = function (options) {
         options.success(data);
     };
 
+    blueslip.set_test_data('error', 'Failed to insert new messages\ninsert error');
+
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to insert new messages\n' +
-                               'insert error');
-    assert.equal(results.more_info, undefined);
+    const logs = blueslip.get_test_logs('error');
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0].more_info, undefined);
+    blueslip.clear_test_data();
 });
 
 run_test('event_edit_message_error', () => {
-    var results = {};
-    setup(results);
-
+    setup();
     var data = {events: [{type: 'update_message', id: 1, other: 'thing'}]};
     global.channel.get = function (options) {
         options.success(data);
     };
+    blueslip.set_test_data('error', 'Failed to update messages\nupdate error');
 
     server_events.restart_get_events();
 
-    assert.equal(results.msg, 'Failed to update messages\n' +
-                              'update error');
-    assert.equal(results.more_info, undefined);
+    const logs = blueslip.get_test_logs('error');
+    assert.equal(logs.length, 1);
+    assert.equal(logs[0].more_info, undefined);
+    blueslip.clear_test_data();
 });
