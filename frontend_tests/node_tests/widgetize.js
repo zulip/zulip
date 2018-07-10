@@ -12,7 +12,7 @@ $(document).on = noop;
 
 zrequire('widgetize');
 
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('narrow_state', {});
 set_global('current_msg_list', {});
 
@@ -125,10 +125,7 @@ run_test('activate', () => {
     assert(!is_widget_activated);
     assert(!is_event_handled);
 
-    blueslip.warn = (warning_text, invalid_widget_type) => {
-        assert.equal(warning_text, "unknown widget_type");
-        assert.equal(invalid_widget_type, 'invalid_widget');
-    };
+    blueslip.set_test_data('warn', 'unknown widget_type');
     narrow_state.active = return_false;
     is_widget_elem_inserted = false;
     is_widget_activated = false;
@@ -136,10 +133,12 @@ run_test('activate', () => {
     opts.widget_type = 'invalid_widget';
 
     widgetize.activate(opts);
-
     assert(!is_widget_elem_inserted);
     assert(!is_widget_activated);
     assert(!is_event_handled);
+    assert.equal(blueslip.get_test_logs('warn').length, 1);
+    assert.equal(blueslip.get_test_logs('warn')[0].more_info, 'invalid_widget');
+    blueslip.clear_test_data();
 
     /* Testing widgetize.handle_events */
     const post_activate_event = {
