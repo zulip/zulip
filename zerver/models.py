@@ -1971,6 +1971,7 @@ class RealmAuditLog(models.Model):
     USER_FULL_NAME_CHANGED = 'user_full_name_changed'
     USER_EMAIL_CHANGED = 'user_email_changed'
     USER_TOS_VERSION_CHANGED = 'user_tos_version_changed'
+    USER_API_KEY_CHANGED = 'user_api_key_changed'
 
     event_type = models.CharField(max_length=40)  # type: str
 
