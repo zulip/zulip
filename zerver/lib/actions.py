@@ -2872,7 +2872,8 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
     user_profile.save(update_fields=["tos_version"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
-                                 modified_user=user_profile, event_type='user_tos_version_changed',
+                                 modified_user=user_profile,
+                                 event_type=RealmAuditLog.USER_TOS_VERSION_CHANGED,
                                  event_time=event_time)
 
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> None:

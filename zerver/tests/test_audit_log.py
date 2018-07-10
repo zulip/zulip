@@ -78,7 +78,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user("hamlet")
         tos_version = 'android'
         do_change_tos_version(user, tos_version)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type='user_tos_version_changed',
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_TOS_VERSION_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(tos_version, user.tos_version)
 
