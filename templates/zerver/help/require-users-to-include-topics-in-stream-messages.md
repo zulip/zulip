@@ -16,7 +16,7 @@ the use of topics in new messages to streams:
 2. Select the **Require topics in messages to streams** checkbox under the
 **Message feed** section.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}
 
 Once this setting is enabled, any users that attempt to send a stream
 message without a specified topic will see a warning in the compose

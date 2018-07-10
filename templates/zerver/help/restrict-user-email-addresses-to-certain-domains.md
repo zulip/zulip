@@ -32,4 +32,4 @@ the list and clicking the **Add** button.
  by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
  right-hand corner of the **Allowed Domains** list.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

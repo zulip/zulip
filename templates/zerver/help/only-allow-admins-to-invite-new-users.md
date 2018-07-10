@@ -14,4 +14,4 @@ checkboxes under the **Joining the organization** section.
     If this option is enabled, only administrators in your organization can send
     email invitations to new users.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

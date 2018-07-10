@@ -11,4 +11,4 @@ administrators to add new emoji.
 2. Select the **Prevent users from adding custom emoji** checkbox under the
 **Streams & custom emoji** section.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}
