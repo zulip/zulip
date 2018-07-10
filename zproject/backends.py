@@ -432,7 +432,7 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if realm is None:
         return_data["invalid_realm"] = True
         return None
-    return_data["realm"] = realm
+    return_data["realm_id"] = realm.id
 
     if not auth_enabled_helper([backend.auth_backend_name], realm):
         return_data["auth_backend_disabled"] = True
@@ -545,7 +545,7 @@ def social_auth_finish(backend: Any,
     full_name = return_data['full_name']
     is_signup = strategy.session_get('is_signup') == '1'
     redirect_to = strategy.session_get('next')
-    realm = return_data["realm"]
+    realm = Realm.objects.get(id=return_data["realm_id"])
 
     mobile_flow_otp = strategy.session_get('mobile_flow_otp')
     if mobile_flow_otp is not None:
