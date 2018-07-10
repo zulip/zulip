@@ -681,7 +681,7 @@ def do_deactivate_realm(realm: Realm) -> None:
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(
-        realm=realm, event_type='realm_deactivated', event_time=event_time)
+        realm=realm, event_type=RealmAuditLog.REALM_DEACTIVATED, event_time=event_time)
 
     ScheduledEmail.objects.filter(realm=realm).delete()
     for user in active_humans_in_realm(realm):
