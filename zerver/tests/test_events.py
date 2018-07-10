@@ -91,6 +91,7 @@ from zerver.lib.actions import (
     bulk_add_members_to_user_group,
     remove_members_from_user_group,
     check_delete_user_group,
+    do_update_user_custom_profile_data,
 )
 from zerver.lib.events import (
     apply_events,
@@ -994,6 +995,29 @@ class EventsRegisterTest(ZulipTestCase):
                 self.user_profile.realm, 'add'),
             state_change_expected=False,
         )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_custom_profile_field_data_events(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('user_id', check_int),
+                ('custom_profile_field', check_dict_only([
+                    ('id', check_int),
+                    ('value', check_none_or(check_string)),
+                ])),
+            ])),
+        ])
+
+        realm = get_realm("zulip")
+        field_id = realm.customprofilefield_set.get(realm=realm, name='Biography').id
+        field = {
+            "id": field_id,
+            "value": "New value",
+        }
+        events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -2266,6 +2290,23 @@ class FetchInitialStateDataTest(ZulipTestCase):
         UserMessage.objects.filter(user_profile=user_profile).delete()
         result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
         self.assertEqual(result['max_message_id'], -1)
+
+    def test_custom_profile_fields_in_initial_data(self) -> None:
+        user_profile = self.example_user('cordelia')
+        realm = user_profile.realm
+        favorite_editor = realm.customprofilefield_set.get(realm=realm, name='Favorite editor')
+        phone_no = realm.customprofilefield_set.get(realm=realm, name='Phone number')
+        do_update_user_custom_profile_data(user_profile, [{"id": favorite_editor.id,
+                                                           "value": "vim"},
+                                                          {"id": phone_no.id,
+                                                           "value": "+1-222-333-4444"}])
+
+        expected_custom_profile_data = {favorite_editor.id: "vim", phone_no.id: "+1-222-333-4444"}
+
+        result = fetch_initial_state_data(user_profile, None, "", client_gravatar=False)
+        result_custom_profile_data = result['raw_users'][user_profile.id]['profile_data']
+        self.assertEqual(len(result_custom_profile_data), 2)
+        self.assertEqual(result_custom_profile_data, expected_custom_profile_data)
 
 class GetUnreadMsgsTest(ZulipTestCase):
     def mute_stream(self, user_profile: UserProfile, stream: Stream) -> None:
