@@ -162,13 +162,13 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
-        customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
+        stripe_customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
         # TODO: the current way this is done is subject to tampering by the user.
         seat_count = int(request.POST['seat_count'])
         if seat_count < 1:
             raise AssertionError('seat_count is less than 1')
         do_subscribe_customer_to_plan(
-            customer=customer,
+            stripe_customer=stripe_customer,
             stripe_plan_id=Plan.objects.get(nickname=request.POST['plan']).stripe_plan_id,
             seat_count=seat_count,
             # TODO: billing address details are passed to us in the request;

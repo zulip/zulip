@@ -102,7 +102,7 @@ def payment_source(stripe_customer: stripe.Customer) -> Optional[stripe.Card]:
     raise AssertionError("Default source not in sources.")
 
 @catch_stripe_errors
-def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str) -> Customer:
+def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
     realm = user.realm
     stripe_customer = stripe.Customer.create(
         description="%s (%s)" % (realm.string_id, realm.name),
@@ -115,18 +115,19 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_START, event_time=event_time)
     RealmAuditLog.objects.create(
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.CARD_ADDED, event_time=event_time)
-    return Customer.objects.create(
+    Customer.objects.create(
         realm=realm,
         stripe_customer_id=stripe_customer.id,
         billing_user=user)
+    return stripe_customer
 
 @catch_stripe_errors
-def do_subscribe_customer_to_plan(customer: Customer, stripe_plan_id: int,
+def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: int,
                                   seat_count: int, tax_percent: float) -> None:
     # TODO: check that there are no existing live Stripe subscriptions
     # (canceled subscriptions are ok)
     stripe_subscription = stripe.Subscription.create(
-        customer=customer.stripe_customer_id,
+        customer=stripe_customer.id,
         billing='charge_automatically',
         items=[{
             'plan': stripe_plan_id,
@@ -136,6 +137,7 @@ def do_subscribe_customer_to_plan(customer: Customer, stripe_plan_id: int,
         tax_percent=tax_percent)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_subscription": ', str(stripe_subscription), ',']))  # nocoverage
+    customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
     with transaction.atomic():
         customer.realm.has_seat_based_plan = True
         customer.realm.save(update_fields=['has_seat_based_plan'])
