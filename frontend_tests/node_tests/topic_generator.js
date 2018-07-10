@@ -1,4 +1,4 @@
-set_global('blueslip', {});
+set_global('blueslip', global.make_zblueslip());
 set_global('pm_conversations', {
     recent: {},
 });
@@ -177,13 +177,12 @@ run_test('fchain', () => {
         return;
     };
 
-    global.blueslip.error = function (msg) {
-        assert.equal(msg, 'Invalid generator returned.');
-    };
-
+    blueslip.set_test_data('error', 'Invalid generator returned.');
     ints = tg.list_generator([29, 43]);
     gen = tg.fchain(ints, undef);
     gen.next();
+    assert.equal(blueslip.get_test_logs('error').length, 1);
+    blueslip.clear_test_data();
 });
 
 run_test('streams', () => {
