@@ -625,14 +625,17 @@ run_test('initialize_from_page_params', () => {
     function initialize() {
         page_params.subscriptions = [{
             name: 'subscriptions',
+            stream_id: '2001',
         }];
 
         page_params.unsubscribed = [{
             name: 'unsubscribed',
+            stream_id: '2002',
         }];
 
         page_params.never_subscribed = [{
             name: 'never_subscribed',
+            stream_id: '2003',
         }];
     }
 
@@ -640,6 +643,10 @@ run_test('initialize_from_page_params', () => {
     page_params.realm_notifications_stream_id = -1;
     stream_data.initialize_from_page_params();
 
+    const stream_names = stream_data.get_streams_for_admin().map(elem => elem.name);
+    assert(stream_names.indexOf('subscriptions') !== -1);
+    assert(stream_names.indexOf('unsubscribed') !== -1);
+    assert(stream_names.indexOf('never_subscribed') !== -1);
     assert(!page_params.subscriptions);
     assert(!page_params.unsubscribed);
     assert(!page_params.never_subscribed);
