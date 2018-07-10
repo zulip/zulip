@@ -30,4 +30,4 @@ underneath it.
             organization, enter **0** in the field. This enables users to edit
             their messages whenever they want.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

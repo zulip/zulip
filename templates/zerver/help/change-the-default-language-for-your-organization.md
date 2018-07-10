@@ -11,4 +11,4 @@ Follow the following steps to change the default language of your organization.
 
 3. Select the appropriate option from the dropdown menu that appears.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

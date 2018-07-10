@@ -31,4 +31,4 @@ only), and/or various other SSO methods (also currently on premise only).
             modify the `AUTHENTICATION_BACKENDS` list in the
             `/etc/zulip/settings.py` file.
 
-{!save-changes.md!} authentication methods.
+{!save-changes.md!}

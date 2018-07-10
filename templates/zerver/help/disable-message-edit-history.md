@@ -20,4 +20,4 @@ organization using the following steps:
 2. Disable the the **Enable message edit history** checkbox under the
 **Message editing** section.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

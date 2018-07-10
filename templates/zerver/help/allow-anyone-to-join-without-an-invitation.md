@@ -26,4 +26,4 @@ organization to join your organization.
     [only allow administrators](/help/only-allow-admins-to-invite-new-users) in
     your organization to send email invitations to new users.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

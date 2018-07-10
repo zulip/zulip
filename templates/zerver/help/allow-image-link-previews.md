@@ -12,4 +12,4 @@ images and links separately.
 **Show previews of linked websites** checkbox under the **Message feed**
 section.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

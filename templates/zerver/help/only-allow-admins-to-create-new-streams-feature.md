@@ -15,4 +15,4 @@ only allows administrators to create new streams in the organization.
         input to specify the period of time users must wait to create a new
         stream.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}

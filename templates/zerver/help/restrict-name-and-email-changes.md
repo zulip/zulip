@@ -29,4 +29,4 @@ setting that prevents them from changing their own names via the Zulip UI.
 2. Select the **Prevent users from changing their name** checkbox under the
 **User identity** section.
 
-{!save-changes.md!} organization settings.
+{!save-changes.md!}
