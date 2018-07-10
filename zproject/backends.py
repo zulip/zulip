@@ -598,14 +598,16 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             # case without any verified emails
             emails = []
 
-        verified_emails = []
+        verified_emails = []  # type: List[str]
         for email_obj in emails:
             if not email_obj.get("verified"):
                 continue
-            # TODO: When we add a screen to let the user select an email, remove this line.
-            if not email_obj.get("primary"):
-                continue
-            verified_emails.append(email_obj["email"])
+            # social_associate_user_helper assumes that the first email in
+            # verified_emails is primary.
+            if email_obj.get("primary"):
+                verified_emails.insert(0, email_obj["email"])
+            else:
+                verified_emails.append(email_obj["email"])
 
         return verified_emails
 

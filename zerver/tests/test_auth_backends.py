@@ -477,14 +477,18 @@ class GitHubAuthBackendTest(ZulipTestCase):
                      primary=True),
             ]
         else:
+            # Keeping a verified email before the primary email makes sure
+            # get_verified_emails puts the primary email at the start of the
+            # email list returned as social_associate_user_helper assumes the
+            # first email as the primary email.
             email_data = [
+                dict(email="notprimary@example.com",
+                     verified=True),
                 dict(email=account_data_dict["email"],
                      verified=True,
                      primary=True),
                 dict(email="ignored@example.com",
                      verified=False),
-                dict(email="notprimary@example.com",
-                     verified=True),
             ]
         # We register callbacks for the key URLs on github.com that
         # /complete/github will call
