@@ -62,10 +62,11 @@ if __name__ == '__main__':
         file_index = [file[0:4] for file in files_list]
 
         for file in file_index:
-            counter = file_index.count(file[0:4])
+            migration_number = file[0:4]
+            counter = file_index.count(migration_number)
             if counter > 1 and file[0:4] not in stack:
-                conflicts += [file_name for file_name in files_list if file[0:4] in file_name]
-                stack.append(file[0:4])
+                conflicts += [file_name for file_name in files_list if file_name.startswith(migration_number)]
+                stack.append(migration_number)
 
         if len(conflicts) > 0:
             resolve_conflicts(conflicts, files_list)
