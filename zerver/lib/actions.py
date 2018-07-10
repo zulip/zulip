@@ -2515,7 +2515,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                                                    modified_user=sub.user_profile,
                                                    modified_stream=stream,
                                                    event_last_message_id=event_last_message_id,
-                                                   event_type='subscription_created',
+                                                   event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                                    event_time=event_time))
     for (sub, stream) in subs_to_activate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,

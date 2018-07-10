@@ -106,7 +106,7 @@ class TestRealmAuditLog(ZulipTestCase):
         stream = [self.make_stream('test_stream')]
 
         bulk_add_subscriptions(stream, user)
-        subscription_creation_logs = RealmAuditLog.objects.filter(event_type='subscription_created',
+        subscription_creation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_CREATED,
                                                                   event_time__gte=now)
         self.assertEqual(subscription_creation_logs.count(), 1)
         self.assertEqual(subscription_creation_logs[0].modified_stream.id, stream[0].id)
