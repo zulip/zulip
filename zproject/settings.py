@@ -145,6 +145,7 @@ DEFAULT_SETTINGS = {
     'SOCIAL_AUTH_GITHUB_KEY': get_secret('social_auth_github_key', development_only=True),
     'SOCIAL_AUTH_GITHUB_ORG_NAME': None,
     'SOCIAL_AUTH_GITHUB_TEAM_ID': None,
+    'SOCIAL_AUTH_SUBDOMAIN': None,
 
     # Email gateway
     'EMAIL_GATEWAY_PATTERN': '',

@@ -443,7 +443,13 @@ class GitHubAuthBackendTest(ZulipTestCase):
             url += "?%s" % (urllib.parse.urlencode(params))
 
         result = self.client_get(url, **headers)
-        if result.status_code != 302 or 'http://testserver/login/github/' not in result.url:
+
+        expected_result_url = 'http://testserver/login/github/'
+        if settings.SOCIAL_AUTH_SUBDOMAIN is not None:
+            expected_result_url = ('http://%stestserver/login/github/' %
+                                   settings.SOCIAL_AUTH_SUBDOMAIN)
+
+        if result.status_code != 302 or expected_result_url not in result.url:
             return result
 
         result = self.client_get(result.url, **headers)
@@ -792,6 +798,14 @@ class GitHubAuthBackendTest(ZulipTestCase):
     def test_github_auth_enabled(self) -> None:
         with self.settings(AUTHENTICATION_BACKENDS=('zproject.backends.GitHubAuthBackend',)):
             self.assertTrue(github_auth_enabled())
+
+    def test_github_when_social_auth_subdomain_is_not_set(self) -> None:
+        with self.settings(SOCIAL_AUTH_SUBDOMAIN=None):
+            account_data_dict = dict(email=self.email, name=self.name)
+            result = self.github_oauth2_test(account_data_dict,
+                                             subdomain='zulip', next='/user_uploads/image')
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/config-error/github")
 
 class GoogleOAuthTest(ZulipTestCase):
     def google_oauth2_test(self, token_response: ResponseMock, account_response: ResponseMock,

@@ -161,6 +161,8 @@ AUTHENTICATION_BACKENDS = (
 #SOCIAL_AUTH_GITHUB_TEAM_ID = <your team id>
 #SOCIAL_AUTH_GITHUB_ORG_NAME = <your org name>
 
+# (4) Setting up SOCIAL_AUTH_SUBDOMAIN setting is a requirement for using social login.
+#SOCIAL_AUTH_SUBDOMAIN = 'www.'
 ########
 # SSO via REMOTE_USER.
 #
