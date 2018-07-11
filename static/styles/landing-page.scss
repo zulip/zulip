@@ -2584,7 +2584,6 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .integration-categories-dropdown {
-    cursor: pointer;
     margin: 30px auto;
     display: none;
 }
@@ -3375,20 +3374,26 @@ nav ul li.active::after {
     }
 
     .portico-landing.integrations .integration-categories-dropdown .dropdown-toggle {
+        cursor: pointer;
         position: relative;
-        padding: 0 25px;
+        padding: 0;
+        margin-left: 25px;
+        margin-right: 25px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown i {
         position: absolute;
         top: 10px;
-        right: 36px;
+        right: 11px;
         font-size: 24px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown .dropdown-list {
         display: none;
-        padding: 0 25px;
+        cursor: pointer;
+        padding: 0;
+        margin-left: 25px;
+        margin-right: 25px;
     }
 
     .portico-landing.integrations .integration-categories-dropdown h3 {
