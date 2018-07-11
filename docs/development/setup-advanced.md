@@ -91,7 +91,7 @@ sudo apt-get install postgresql-10-pgroonga
 # If using Debian, follow the instructions here: http://pgroonga.github.io/install/debian.html
 
 # Next, install Zulip's tsearch-extras postgresql extension
-# If on 14.04 or 16.04, you can use the Zulip PPA for tsearch-extras:
+# If on Ubuntu LTS, you can use the Zulip PPA for tsearch-extras:
 cd zulip
 sudo apt-add-repository -ys ppa:tabbott/zulip
 sudo apt-get update
@@ -103,26 +103,7 @@ sudo apt-get install postgresql-9.5-tsearch-extras
 sudo apt-get install postgresql-10-tsearch-extras
 
 
-# Otherwise, you can download a .deb directly
-# If on 12.04 or wheezy:
-wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
-sudo dpkg -i postgresql-9.1-tsearch-extras_0.1.2_amd64.deb
-
-# If on 14.04:
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
-sudo dpkg -i postgresql-9.3-tsearch-extras_0.1.3_amd64.deb
-
-# If on 15.04 or jessie:
-wget https://dl.dropboxusercontent.com/u/283158365/zuliposs/postgresql-9.4-tsearch-extras_0.1_amd64.deb
-sudo dpkg -i postgresql-9.4-tsearch-extras_0.1_amd64.deb
-
-# If on 16.04
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-9.5-tsearch-extras_0.4_amd64.deb
-sudo dpkg -i postgresql-9.5-tsearch-extras_0.4_amd64.deb
-
-# If on 18.04
-wget https://launchpad.net/~tabbott/+archive/ubuntu/zulip/+files/postgresql-10-tsearch-extras_0.4bionic2_amd64.deb
-sudo dpkg -i postgresql-10-tsearch-extras_0.4bionic2_amd64.deb
+# For Debian, you can download a .deb from packagecloud:
 
 # If on Stretch
 wget --content-disposition \
