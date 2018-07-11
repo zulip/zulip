@@ -568,18 +568,9 @@ exports.handle_keydown = function (event) {
     var textarea = $("#compose-textarea");
 
     // Set the rtl class if the text has an rtl direction, remove it otherwise
-    var text = textarea.val();
-    if (text.startsWith('```quote')) {
-        text = text.substr(8);
-    }
-    if (rtl.get_direction(text) === 'rtl') {
-        textarea.addClass('rtl');
-    } else {
-        textarea.removeClass('rtl');
-    }
+    rtl.set_rtl_class_for_textarea(textarea);
 
     var code = event.keyCode || event.which;
-    var range = textarea.range();
     var isBold = code === 66;
     var isItalic = code === 73 && !event.shiftKey;
     var isLink = code === 76 && event.shiftKey;
@@ -588,6 +579,8 @@ exports.handle_keydown = function (event) {
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? event.metaKey : event.ctrlKey;
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
+        var range = textarea.range();
+
         function add_markdown(markdown) {
             var textarea = $("#compose-textarea");
             var range = textarea.range();
