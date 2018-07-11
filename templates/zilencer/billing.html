@@ -12,23 +12,27 @@
 
     <div class="page-content">
         <h1>{{ _("Billing") }}</h1>
-        Plan<br/>
-        {{ plan_name }}<br/>
-        <br/>
-        You are paying for {{ seat_count }} users.<br/>
-        Your plan will renew on {{ renewal_date }} for ${{ renewal_amount }}.<br/>
-        {% if prorated_charges %}
-        You have ${{ prorated_charges }} in prorated charges that will be
-        added to your next bill.
-        {% elif prorated_credits %}
-        You have ${{ prorated_credits }} in prorated credits that will be
-        automatically applied to your next bill.
+        {% if admin_access %}
+            Plan<br/>
+            {{ plan_name }}<br/>
+            <br/>
+            You are paying for {{ seat_count }} users.<br/>
+            Your plan will renew on {{ renewal_date }} for ${{ renewal_amount }}.<br/>
+            {% if prorated_charges %}
+            You have ${{ prorated_charges }} in prorated charges that will be
+            added to your next bill.
+            {% elif prorated_credits %}
+            You have ${{ prorated_credits }} in prorated credits that will be
+            automatically applied to your next bill.
+            {% endif %}
+            <br/>
+            <br/>
+            Payment method: {{ payment_method }}.<br/>
+            <br/>
+            Contact support@zulipchat.com for billing history or to make changes to your subscription.
+        {% else %}
+            You must be an organization administrator or a billing administrator to view this page.
         {% endif %}
-        <br/>
-        <br/>
-        Payment method: {{ payment_method }}.<br/>
-        <br/>
-        Contact support@zulipchat.com for billing history or to make changes to your subscription.
     </div>
 </div>
 {% endblock %}

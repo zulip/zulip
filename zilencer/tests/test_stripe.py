@@ -131,6 +131,37 @@ class StripeTest(ZulipTestCase):
 
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    def test_billing_page_permissions(self, mock_create_subscription: mock.Mock,
+                                      mock_create_customer: mock.Mock,
+                                      mock_retrieve_customer: mock.Mock,
+                                      mock_upcoming_invoice: mock.Mock) -> None:
+        # Check that non-admins can access /upgrade via /billing, when there is no Customer object
+        self.login(self.example_email('hamlet'))
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/upgrade/', response.url)
+        # Check that non-admins can sign up and pay
+        self.client_post("/upgrade/", {'stripeToken': self.token,
+                                       'seat_count': self.quantity,
+                                       'plan': Plan.CLOUD_ANNUAL})
+        # Check that the non-admin hamlet can still access /billing
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Contact support@zulipchat.com for billing"], response)
+        # Check admins can access billing, even though they are not the billing_user
+        self.login(self.example_email('iago'))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["Contact support@zulipchat.com for billing"], response)
+        # Check that non-admin, non-billing_user does not have access
+        self.login(self.example_email("cordelia"))
+        response = self.client_get("/billing/")
+        self.assert_in_success_response(["You must be an organization administrator"], response)
+
+    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: mock.Mock,
