@@ -802,7 +802,6 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
 
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
     old_email = user_profile.email
-    user_profile.email = new_email
     obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
                                            user_profile=user_profile, realm=user_profile.realm)
 
