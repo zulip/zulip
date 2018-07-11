@@ -1,35 +1,25 @@
-# Restrict user email addresses to certain domains
+# Restrict new users by email domain
 
 {!admin-only.md!}
 
-Zulip allows organization administrators to block new users from signing up
-who are not in their organization. The administrator can accomplish this by
-restricting users to have email addresses only from the organization's
-domains.
+Zulip allows organization administrators to restrict user sign-ups to users
+who have email addresses from certain domains.
 
 {settings_tab|organization-permissions}
 
-2. Restricting user email addresses to certain domains can be enabled or disabled
- with the **Users restricted to (allowed domains)** checkbox in the
- **Joining the organization** section.
+2. Under **Joining the organization**, under **Restrict email domains of new users?**,
+select **Restrict to a list of domains**.
 
-    !!! tip ""
-        The allowed domains will be listed after the **Users restricted to**
-         next to the checkbox.
+3. Next to **Allowed domains**, click **[Configure]**.
 
-3. Domains can be added to the allowed domains list by clicking on the **Change domains**
-link next to the checkbox to reveal the **Allowed domains** list. You
-can then add a domain to the list by typing the domain into the box underneath
-the list and clicking the **Add** button.
+4. Add your domain in the text box under the list of allowed domains and click **add**
 
-    !!! tip ""
-        Domains can be deleted from the **Allowed domains** list by clicking the
-        **Delete** button next to a domain on the list. However, you must have
-        at least one allowed domain if the **Users restricted to** option is
-        enabled.
-
-5. Once you have made all your changes, exit out of the **Allowed domains** list
- by clicking the x (<i class="icon-vector-remove"></i>) icon in the top
- right-hand corner of the **Allowed Domains** list.
+5. Click **Close**
 
 {!save-changes.md!}
+
+## Related articles
+
+[Manage requiring an invitation to join](/help/allow-anyone-to-join-without-an-invitation)
+
+[Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
