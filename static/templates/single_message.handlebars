@@ -1,6 +1,6 @@
 <div zid="{{msg/id}}" id="{{table_name}}{{msg/id}}"
   class="message_row{{^msg/is_stream}} private-message{{/msg/is_stream}}{{#include_sender}} include-sender{{/include_sender}}{{#contains_mention}} mention{{/contains_mention}}{{#include_footer}} last_message{{/include_footer}}{{#msg.unread}} unread{{/msg.unread}} {{#if msg.locally_echoed}}local{{/if}} selectable_row">
-    <div class="unread_marker"><div class="unread-marker-fill"></div></div>
+    <div class="unread_marker" {{#msg.unread}}aria-label="Unread message"{{/msg.unread}}><div class="unread-marker-fill"></div></div>
     <div class="messagebox{{^include_sender}} prev_is_same_sender{{/include_sender}}{{^msg/is_stream}} private-message{{/msg/is_stream}} {{#if next_is_same_sender}}next_is_same_sender{{/if}}"
       style="box-shadow: inset 2px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}}, -1px 0px 0px 0px {{#if msg/is_stream}}{{background_color}}{{else}}#444444{{/if}};">
         <div class="messagebox-border">
@@ -22,7 +22,7 @@
                                         {{{ status_message }}}
                                     </span>
                                     {{#if_and last_edit_timestr include_sender}}
-                                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                                    <div class="message_edit_notice" aria-label="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                                     {{/if_and}}
                                 </span>
                             {{else}}
@@ -37,7 +37,7 @@
                     <span class="message_time{{#if msg.locally_echoed}} notvisible{{/if}}{{#if status_message}} status-time{{/if}}">{{timestr}}</span>
                     {{#if_and last_edit_timestr include_sender}}
                         {{#unless status_message}}
-                        <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                        <div class="message_edit_notice" aria-label="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                         {{/unless}}
                     {{/if_and}}
                     <div class="message_controls{{#status_message}} sender-status-controls{{/status_message}} no-select">
@@ -45,23 +45,23 @@
                         <div class="edit_content"></div>
                         {{else}}
                         <div class="reaction_button">
-                            <i class="icon-vector-smile" title="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
+                            <i class="icon-vector-smile" aria-label="{{#tr this}}Add emoji reaction{{/tr}} (:)"></i>
                         </div>
                         {{/if}}
 
                         {{#unless msg/locally_echoed}}
                         <div class="info actions_hover">
-                            <i class="icon-vector-chevron-down" title="{{#tr this}}Message actions{{/tr}} (i)"></i>
+                            <i class="icon-vector-chevron-down" aria-label="{{#tr this}}Message actions{{/tr}} (i)"></i>
                         </div>
                         {{/unless}}
 
                         <div class="message_failed {{#unless msg.failed_request}}notvisible{{/unless}}">
-                            <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" title="{{t 'Retry' }}"></i>
-                            <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" title="{{t 'Cancel' }}"></i>
+                            <i class="icon-vector-refresh refresh-failed-message" data-toggle="tooltip" aria-label="{{t 'Retry' }}"></i>
+                            <i class="icon-vector-remove-sign remove-failed-message" data-toggle="tooltip" aria-label="{{t 'Cancel' }}"></i>
                         </div>
 
                         {{#unless msg/locally_echoed}}
-                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" title="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
+                        <div class="star {{#if msg/starred}}icon-vector-star{{else}}icon-vector-star-empty{{/if}} {{#if msg/starred}}{{else}}empty-star{{/if}}" aria-label="{{#tr this.msg}}__starred_status__ this message{{/tr}} (*)">
                         </div>
                         {{/unless}}
 
@@ -70,14 +70,14 @@
                 <div class="message_content">{{#unless status_message}}{{#if use_match_properties}}{{{msg/match_content}}}{{else}}{{{msg/content}}}{{/if}}{{/unless}}</div>
                 {{#if last_edit_timestr}}
                     {{#unless include_sender}}
-                    <div class="message_edit_notice" title="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
+                    <div class="message_edit_notice" aria-label="{{#tr this}}Edited (__last_edit_timestr__){{/tr}}">{{t "EDITED" }}</div>
                     {{/unless}}
                 {{/if}}
                 <div class="message_edit">
                     <div class="message_edit_form"></div>
                 </div>
-                <div class="message_expander message_length_controller" title="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
-                <div class="message_condenser message_length_controller" title="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
+                <div class="message_expander message_length_controller" aria-label="{{t 'See the rest of this message' }}">{{t "[More...]" }}</div>
+                <div class="message_condenser message_length_controller" aria-label="{{t 'Make this message take up less space on the screen' }}">{{t "[Condense this message]" }}</div>
                 <div class="message_reactions">{{ partial "message_reactions" }}</div>
             </div>
         </div>
