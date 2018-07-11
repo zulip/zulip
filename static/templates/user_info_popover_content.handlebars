@@ -52,7 +52,7 @@
     {{#if is_me}}
     <li>
         <a href="/#settings/your-account">
-            <i class="icon-vector-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
+            <i class="fa fa-edit" aria-hidden="true"></i> {{#tr this}}Edit your profile{{/tr}}
         </a>
     </li>
     {{/if}}
@@ -67,13 +67,13 @@
     {{#unless is_me}}
     <li>
         <a href="{{ pm_with_uri }}" class="narrow_to_private_messages">
-            <i class="icon-vector-lock"></i> {{#tr this}}View private messages{{/tr}}
+            <i class="fa fa-lock" aria-hidden="true"></i> {{#tr this}}View private messages{{/tr}}
         </a>
     </li>
     {{/unless}}
     <li>
         <a href="{{ sent_by_uri }}" class="narrow_to_messages_sent">
-            <i class="icon-vector-bullhorn"></i> {{#tr this}}View messages sent{{/tr}}
+            <i class="fa fa-bullhorn" aria-hidden="true"></i> {{#tr this}}View messages sent{{/tr}}
         </a>
     </li>
 </ul>

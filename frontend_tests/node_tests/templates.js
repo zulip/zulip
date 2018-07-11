@@ -309,7 +309,7 @@ run_test('admin_invites_list', () => {
     var span = $(html).find(".email:first");
     assert.equal(span.text(), "alice@zulip.com");
 
-    var icon = $(html).find(".icon-vector-bolt");
+    var icon = $(html).find(".fa-bolt");
     assert.equal(icon.attr('title'), "translated: Invited as administrator");
 });
 
@@ -1317,7 +1317,7 @@ run_test('topic_edit_form', () => {
     var html = render('topic_edit_form');
 
     var button = $(html).find("button:first");
-    assert.equal(button.find("i").attr("class"), 'icon-vector-ok');
+    assert.equal(button.find("i").attr("class"), 'fa fa-check');
 });
 
 run_test('topic_list_item', () => {

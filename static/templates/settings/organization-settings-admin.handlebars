@@ -36,8 +36,8 @@
                 <div class="input-group">
                     <label for="realm_msg_delete_limit_setting" class="dropdown-title">
                         {{t "Allow message deleting" }}
-                        <i class="icon-vector-info-sign settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
-                          title="{{t 'Administrators can always delete any message.' }}"/>
+                        <i class="fa fa-info-circle settings-info-icon realm_allow_message_deleting_tooltip" data-toggle="tooltip"
+                          aria-hidden="true" title="{{t 'Administrators can always delete any message.' }}"/>
                     </label>
                     <select name="realm_msg_delete_limit_setting" id="id_realm_msg_delete_limit_setting">
                         {{#each msg_delete_limit_dropdown_values}}

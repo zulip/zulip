@@ -9,7 +9,7 @@
                 title="{{#tr this}}Narrow to stream &quot;__display_recipient__&quot;{{/tr}}">
                 {{! invite only lock }}
                 {{#if invite_only}}
-                <i class="icon-vector-lock invite-stream-icon" title="{{t 'This is a private stream' }}"></i>
+                <i class="fa fa-lock invite-stream-icon" aria-hidden="true" title="{{t 'This is a private stream' }}"></i>
                 {{/if}}
                 {{display_recipient}}
             </a>
@@ -33,16 +33,16 @@
             </span><span class="recipient_bar_controls no-select">
                 {{! edit subject pencil icon }}
                 {{#if always_visible_topic_edit}}
-                    <i class="icon-vector-pencil always_visible_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
+                    <i class="fa fa-pencil always_visible_topic_edit" aria-hidden="true" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
                 {{else}}
                     {{#if on_hover_topic_edit}}
-                    <i class="icon-vector-pencil on_hover_topic_edit" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
+                    <i class="fa fa-pencil on_hover_topic_edit" aria-hidden="true" {{#unless realm_allow_message_editing}}style="display: none"{{/unless}}></i>
                     {{/if}}
                 {{/if}}
                 {{! exterior links (e.g. to a trac ticket) }}
                 {{#each subject_links}}
                 <a href="{{this}}" target="_blank" class="no-underline">
-                    <i class="icon-vector-external-link-sign"></i>
+                    <i class="fa fa-external-link-square" aria-hidden="true"></i>
                 </a>
                 {{/each}}
 
@@ -50,7 +50,7 @@
                     <span class="topic_edit_form" id="{{id}}"></span>
                 </span>
 
-                <i class="icon-vector-eye-close on_hover_topic_mute" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}" title="{{t 'Mute topic' }} (M)"></i>
+                <i class="fa fa-eye-slash on_hover_topic_mute" aria-hidden="true" data-stream-id="{{stream_id}}" data-topic-name="{{subject}}" title="{{t 'Mute topic' }} (M)"></i>
                 <span class="recipient_row_date {{#if show_date}}{{else}}hide-date{{/if}}">{{{date}}}</span>
             </span>
         </div>
