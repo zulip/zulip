@@ -397,6 +397,10 @@ input.recipient_box {
     display: flex;
 }
 
+#private-message {
+    align-items: center;
+}
+
 .compose_table .drafts-link {
     position: relative;
     margin-right: 1em;
