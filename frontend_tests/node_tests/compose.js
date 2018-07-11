@@ -332,6 +332,44 @@ run_test('test_validate_stream_message_announcement_only', () => {
     };
 });
 
+run_test('markdown_rtl', () => {
+    var textarea = $('#compose-textarea');
+
+    var event = {
+        keyCode: 65,  // A
+    };
+
+    rtl.get_direction = (text) => {
+        assert.equal(text, ' foo');
+        return 'rtl';
+    };
+
+    assert.equal(textarea.hasClass('rtl'), false);
+
+    textarea.val('```quote foo');
+    compose.handle_keydown(event);
+
+    assert.equal(textarea.hasClass('rtl'), true);
+});
+
+// This is important for subsequent tests--put
+// us back to the "normal" ltr case.
+rtl.get_direction = () => 'ltr';
+
+run_test('markdown_ltr', () => {
+    var textarea = $('#compose-textarea');
+
+    var event = {
+        keyCode: 65,  // A
+    };
+
+    assert.equal(textarea.hasClass('rtl'), true);
+    textarea.val('```quote foo');
+    compose.handle_keydown(event);
+
+    assert.equal(textarea.hasClass('rtl'), false);
+});
+
 run_test('markdown_shortcuts', () => {
     var queryCommandEnabled = true;
     var event = {
