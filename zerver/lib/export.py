@@ -19,7 +19,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog, UserHotspot, MutedTopic, Service
+    RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
+    UserGroupMembership
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -168,8 +169,6 @@ NON_EXPORTED_TABLES = {
     'zerver_botstoragedata',
     'zerver_botconfigdata',
     'zerver_pushdevicetoken',
-    'zerver_usergroup',
-    'zerver_usergroupmembership',
 }
 
 IMPLICIT_TABLES = {
@@ -539,6 +538,20 @@ def get_realm_config() -> Config:
         table='zerver_userprofile',
         virtual_parent=realm_config,
         custom_fetch=fetch_user_profile,
+    )
+
+    Config(
+        table='zerver_usergroup',
+        model=UserGroup,
+        normal_parent=realm_config,
+        parent_key='realm__in',
+    )
+
+    Config(
+        table='zerver_usergroupmembership',
+        model=UserGroupMembership,
+        normal_parent=user_profile_config,
+        parent_key='user_group__in',
     )
 
     Config(
