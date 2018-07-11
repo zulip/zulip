@@ -27,8 +27,8 @@
 }
 
 .pill-container .pill:focus {
-    color: #fff;
-    border: 1px solid #108179;
+    color: hsl(0, 0%, 100%);
+    border: 1px solid hsl(175, 77%, 28%);
     background: hsl(176, 49%, 42%);
     outline: none;
 }

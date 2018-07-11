@@ -151,7 +151,7 @@ ul.remind_me_popover .remind_icon {
     width: 180px;
     background-size: cover;
     background-position: center;
-    border: 1px solid #f2f2f2;
+    border: 1px solid hsl(0, 0%, 94%);
     border-radius: 5px;
     margin-right: 10px;
 }
@@ -173,7 +173,7 @@ ul.remind_me_popover .remind_icon {
 }
 
 .user-profile-modal-hr {
-    border: 1px solid #ededed;
+    border: 1px solid hsl(0, 0%, 92%);
     margin: 5px 0;
 }
 
@@ -186,7 +186,7 @@ ul.remind_me_popover .remind_icon {
 }
 
 .user-profile-modal-field-name {
-    color: #8b8b8b;
+    color: hsl(0, 0%, 54%);
 }
 
 .user-profile-modal-field-value {
@@ -202,7 +202,7 @@ ul.remind_me_popover .remind_icon {
     padding-top: 10px;
     margin-bottom: 10px;
     margin-top: 10px;
-    background: #f9f9f9;
+    background: hsl(0, 0%, 97%);
 }
 
 .user-profile-modal-edit-button {
@@ -239,7 +239,7 @@ ul.remind_me_popover .remind_icon {
     }
 
     .message-info-popover .popover-inner {
-        background-color: #fff;
+        background-color: hsl(0, 0%, 100%);
         pointer-events: all;
     }
 

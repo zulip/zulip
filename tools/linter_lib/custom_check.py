@@ -586,6 +586,10 @@ def build_custom_checkers(by_lang):
          'description': "thick CSS attribute is under-specified, please use pixels.",
          'good_lines': ["border-width: 5px;"],
          'bad_lines': ["border-width: thick;", "border: thick solid black;"]},
+        {'pattern': ':\s*#[0-9a-fA-F]+',
+         'description': "HSL color description should be used instead of RGB one",
+         'good_lines': ["background-color: hsl(0, 0%, 100%);"],
+         'bad_lines': ["background-color: #ffffff;"]},
     ]) + whitespace_rules + comma_whitespace_rule
     prose_style_rules = cast(RuleList, [
         {'pattern': r'[^\/\#\-"]([jJ]avascript)',  # exclude usage in hrefs/divs

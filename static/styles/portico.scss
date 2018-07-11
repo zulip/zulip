@@ -1,5 +1,5 @@
 body {
-    background-color: #fafafa;
+    background-color: hsl(0, 0%, 98%);
 }
 
 .container-fluid {
@@ -39,7 +39,7 @@ body {
     padding: 6px 0px;
     height: 29px;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
 
     z-index: 100;
@@ -85,7 +85,7 @@ body {
     padding: 3px 10px;
     margin: 0;
 
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     border-bottom: none;
     border-radius: 4px 4px 0px 0px;
 
@@ -99,8 +99,8 @@ body {
 .code-section .blocks {
     padding: 20px;
 
-    background-color: #fafafa;
-    border: 1px solid #ddd;
+    background-color: hsl(0, 0%, 98%);
+    border: 1px solid hsl(0, 0%, 86%);
 
     border-radius: 0px 4px 4px 4px;
 }
@@ -613,7 +613,7 @@ input.text-error {
 }
 
 .footer section ul {
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
 
     list-style-type: none;
     margin-left: 0;
@@ -641,7 +641,7 @@ input.text-error {
 
     font-size: 1.2em;
     font-weight: 400;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     opacity: 0.5;
 }
 
@@ -661,7 +661,7 @@ input.text-error {
     margin-top: 8px;
     margin-left: 10px;
 
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: 0.1em;
@@ -688,11 +688,11 @@ input.text-error {
     list-style-type: none;
     width: 200px;
 
-    background: #fff;
+    background: hsl(0, 0%, 100%);
     padding: 5px 0px;
 
     border-radius: 4px;
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
 }
 
@@ -708,7 +708,7 @@ input.text-error {
     right: 9px;
 
     font-size: 0.5em;
-    color: #ddd;
+    color: hsl(0, 0%, 86%);
 
     line-height: 0;
 
@@ -727,7 +727,7 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover {
-    background: linear-gradient(to bottom,#08c,#0077b3);
+    background: linear-gradient(to bottom,hsl(199, 100%, 40%),hsl(200, 100%, 35%));
     transition: none;
 }
 
@@ -739,12 +739,12 @@ input.text-error {
     font-size: 0.9em;
     font-weight: 400;
 
-    color: #444;
+    color: hsl(0, 0%, 26%);
 }
 
 .portico-header .dropdown ul li:hover a {
     background: transparent;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .portico-header .dropdown ul li a i {
@@ -810,7 +810,7 @@ input.text-error {
 }
 
 a.bottom-signup-button {
-    color: #fff !important;
+    color: hsl(0, 0%, 100%) !important;
     text-decoration: none !important;
     font-size: 20px;
     padding: 20px;
@@ -862,7 +862,7 @@ a.bottom-signup-button {
 }
 
 .table.table-striped {
-    background: #fff;
+    background: hsl(0, 0%, 100%);
     box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
 }
 
@@ -956,9 +956,9 @@ a.bottom-signup-button {
 }
 
 .team input:checked + label {
-    border: 1px solid #eee;
+    border: 1px solid hsl(0, 0%, 93%);
     border-top: 2px solid yellowgreen;
-    border-bottom-color: #fff;
+    border-bottom-color: hsl(0, 0%, 100%);
 }
 
 .contributors {
@@ -974,7 +974,7 @@ input#python-zulip-api:checked ~ #tab-python-zulip-api,
 input#zulip-js:checked ~ #tab-zulip-js,
 input#zulipbot:checked ~ #tab-zulipbot,
 input#terminal:checked ~ #tab-terminal {
-    border-top: 1px solid #eee;
+    border-top: 1px solid hsl(0, 0%, 93%);
     padding-top: 20px;
     display: grid;
     grid-gap: 5px;
@@ -988,13 +988,13 @@ input#terminal:checked ~ #tab-terminal {
 .contributors .person {
     box-sizing: border-box;
     padding: 10px;
-    border: 1px solid #eee;
+    border: 1px solid hsl(0, 0%, 93%);
     border-radius: 4px;
     transition: all 0.3s ease;
 }
 
 .contributors .person:hover {
-    border: 1px solid #bbb;
+    border: 1px solid hsl(0, 0%, 73%);
 }
 
 .contributors .person .avatar {
@@ -1021,7 +1021,7 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .last-updated {
-    color: #aaa;
+    color: hsl(0, 0%, 66%);
     font-size: 0.8em;
     text-align: center;
 }
@@ -1164,14 +1164,14 @@ input#terminal:checked ~ #tab-terminal {
 }
 
 .btn-user {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(169, 44%, 54%);
     border-style: solid;
     color: hsl(170, 40%, 41%);
 }
 
 .btn-admin {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
     border-color: hsl(198, 100%, 48%);
     border-style: solid;
     color: hsl(207, 89%, 54%);
@@ -1355,7 +1355,7 @@ input.new-organization-button {
 
 .top-links a {
     display: inline-block;
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     padding: 2px 7px 1px 8px;
     font-weight: 600;
     font-size: 16px;
@@ -1514,7 +1514,7 @@ input.new-organization-button {
     font-size: 1rem;
     line-height: 1.5;
 
-    background-color: #fff;
+    background-color: hsl(0, 0%, 100%);
 
     overflow: auto;
 
@@ -1528,7 +1528,7 @@ input.new-organization-button {
 
     min-height: calc(100% - 60px);
 
-    background: #fff;
+    background: hsl(0, 0%, 100%);
 }
 
 .markdown a {
@@ -1582,7 +1582,7 @@ input.new-organization-button {
 
 .markdown h1,
 .why-page .main h1 {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid hsl(0, 0%, 93%);
     padding-bottom: 10px;
     margin-bottom: 15px;
 }
@@ -1611,7 +1611,7 @@ input.new-organization-button {
 .markdown img {
     vertical-align: top;
     box-shadow: 0px 0px 4px hsla(0, 0%, 0%, 0.05);
-    border: 1px solid #ddd;
+    border: 1px solid hsl(0, 0%, 86%);
     border-radius: 4px;
 }
 
@@ -1728,7 +1728,7 @@ input.new-organization-button {
 .error_page {
     padding: 20px 0px;
     min-height: calc(100vh - 290px);
-    background-color: #c9e9e0;
+    background-color: hsl(163, 42%, 85%);
     font-family: 'Source Sans Pro', Helvetica, Arial, sans-serif;
 }
 
@@ -1746,10 +1746,10 @@ input.new-organization-button {
 
 .error_page .errorbox {
     margin: auto;
-    border: 2px solid #44A98C;
+    border: 2px solid hsl(162, 42%, 46%);
     max-width: 500px;
     background-color: white;
-    box-shadow: 0 0 4px #44A98C;
+    box-shadow: 0 0 4px hsl(162, 42%, 46%);
     font-size: 18px;
 }
 
@@ -1758,7 +1758,7 @@ input.new-organization-button {
 }
 
 .error_page p {
-    color: #333333;
+    color: hsl(0, 0%, 20%);
 }
 
 .error_page .errorcontent {
@@ -1767,7 +1767,7 @@ input.new-organization-button {
 }
 
 .error_page .lead {
-    color: #39a688;
+    color: hsl(163, 48%, 43%);
     font-size: 35px;
     margin-bottom: 20px;
     line-height: normal;
@@ -2101,7 +2101,7 @@ input.new-organization-button {
     font-weight: 400;
 
     background-color: hsl(207, 55%, 53%);
-    color: #FFF;
+    color: hsl(0, 0%, 100%);
     outline: none;
     border: none;
     border-radius: 2px;
@@ -2125,7 +2125,7 @@ input.new-organization-button {
 
 .button-new.sea-green {
     background-color: hsl(177, 70%, 46%);
-    color: #fff;
+    color: hsl(0, 0%, 100%);
 }
 
 .float-left {

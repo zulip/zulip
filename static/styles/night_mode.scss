@@ -114,7 +114,7 @@ body.night-mode .pm_recipient .pill-container .pill {
 }
 
 body.night-mode .pm_recipient .pill-container .pill:focus {
-    color: #fff;
+    color: hsl(0, 0%, 100%);
     border: 1px solid hsla(176, 78%, 28%, 0.6);
     background: hsla(176, 49%, 42%, 0.4);
 }
@@ -345,7 +345,7 @@ body.night-mode .alert {
 body.night-mode .alert.alert-success {
     color: inherit;
     background-color: hsla(161, 60%, 46%, 0.20);
-    border-color: #1e9e7f;
+    border-color: hsl(165, 68%, 36%);
 }
 
 body.night-mode .alert.alert-error,
@@ -473,11 +473,11 @@ body.night-mode #out-of-view-notification {
 }
 
 body.night-mode .email_tooltip {
-    background-color: #404c59;
+    background-color: hsl(211, 16%, 30%);
 }
 
 body.night-mode .email_tooltip:after {
-    border-bottom-color: #404c59 !important;
+    border-bottom-color: hsl(211, 16%, 30%) !important;
 }
 
 body.night-mode .ps__rail-y {
@@ -491,9 +491,9 @@ body.night-mode .ps__rail-y {
 }
 
 body.night-mode #bots_lists_navbar .active a {
-    color: #ddd;
+    color: hsl(0, 0%, 86%);
     background-color: hsl(212, 28%, 18%);
-    border-color: #ddd;
+    border-color: hsl(0, 0%, 86%);
     border-bottom-color: transparent;
 }
 

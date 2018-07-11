@@ -1116,8 +1116,8 @@ input[type=checkbox].inline-block {
 #user-groups .save-status.cancel {
     display: none;
     opacity: 0;
-    border: 1px solid #333;
-    color: #333;
+    border: 1px solid hsl(0, 0%, 20%);
+    color: hsl(0, 0%, 20%);
 }
 
 #user-groups .checkmark {
@@ -1131,7 +1131,7 @@ input[type=checkbox].inline-block {
 #user-groups .save-instructions {
     display: none;
     opacity: 0;
-    color: #333;
+    color: hsl(0, 0%, 20%);
     font-size: 0.9em;
 }
 
@@ -1386,7 +1386,7 @@ input[type=checkbox].inline-block {
 }
 
 body:not(.night-mode) #account-settings .custom_user_field .datepicker {
-    background-color: #ffffff;
+    background-color: hsl(0, 0%, 100%);
 }
 
 #settings_page .custom_user_field textarea {
@@ -1557,7 +1557,7 @@ input[type=text]#settings_search {
 }
 
 .subsection-failed-status p {
-    background: #f2dede;
+    background: hsl(0, 43%, 90%);
     padding: 2px 6px;
     border-radius: 4px;
     margin: 0 0 0 5px;
@@ -1747,8 +1747,8 @@ thead .actions {
 }
 
 #settings_page .pill-container {
-    background: #fff;
-    border: 1px solid #cccccc;
+    background: hsl(0, 0%, 100%);
+    border: 1px solid hsl(0, 0%, 80%);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     transition: border linear 0.2s, box-shadow linear 0.2s;
     min-width: 206px;
