@@ -568,15 +568,7 @@ exports.handle_keydown = function (event) {
     var textarea = $("#compose-textarea");
 
     // Set the rtl class if the text has an rtl direction, remove it otherwise
-    var text = textarea.val();
-    if (text.startsWith('```quote')) {
-        text = text.substr(8);
-    }
-    if (rtl.get_direction(text) === 'rtl') {
-        textarea.addClass('rtl');
-    } else {
-        textarea.removeClass('rtl');
-    }
+    rtl.set_rtl_class_for_textarea(textarea);
 
     var code = event.keyCode || event.which;
     var isBold = code === 66;
