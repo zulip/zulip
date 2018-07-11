@@ -403,9 +403,9 @@ exports.set_up = function () {
     $('#settings_page').on('click', '.custom_user_field .remove_date', function (e) {
         e.preventDefault();
         e.stopPropagation();
-        var field = $(e.target).parent('.custom_user_field').expectOne();
+        var field = $(e.target).closest('.custom_user_field').expectOne();
         var field_id = parseInt($(field).attr("data-field-id"), 10);
-        $(e.target).prev(".custom_user_field_value").val("");
+        field.find(".custom_user_field_value").val("");
         update_user_custom_profile_fields([field_id], channel.del);
     });
 
