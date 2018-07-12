@@ -214,24 +214,24 @@ def activity_change_requires_seat_update(user: UserProfile) -> bool:
     return user.realm.has_seat_based_plan and not user.is_bot
 
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
-    canonical_topic_names = set()  # type: Set[str]
+    canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
     history = []
-    # This algorithm relies on the fact that `rows` is reverse-sorted
-    # by `max_message_id`, so that we will correctly use the highest
-    # max_message_id where multiple topics have the same canonical
-    # name.
-    #
-    # Arguably, we should just reimplment this using a dict rather
-    # than a set to remove that assumption for better readability.
+
     for (topic_name, max_message_id) in rows:
         canonical_name = topic_name.lower()
-        if canonical_name in canonical_topic_names:
+
+        if canonical_name not in canonical_topic_names:
+            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
+            history.append(dict(
+                name=topic_name,
+                max_id=max_message_id))
             continue
 
-        canonical_topic_names.add(canonical_name)
-        history.append(dict(
-            name=topic_name,
-            max_id=max_message_id))
+        if max_message_id > canonical_topic_names[canonical_name][0]:
+            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
+            history.append(dict(
+                name=topic_name,
+                max_id=max_message_id))
 
     return history
 
