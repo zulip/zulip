@@ -95,7 +95,6 @@ from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q, Max, Sum
 from django.db.models.query import QuerySet
 from django.core.exceptions import ValidationError
-from django.core.mail import EmailMessage
 from django.utils.timezone import now as timezone_now
 
 from confirmation.models import Confirmation, create_confirmation_link
