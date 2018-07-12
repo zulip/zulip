@@ -29,7 +29,7 @@ The Zulip Team
 
 Manage email preferences:
 
-{{ realm_uri }}/#settings
+{{ realm_uri }}/#settings/notifications
 
 Unsubscribe from missed message emails:
 
