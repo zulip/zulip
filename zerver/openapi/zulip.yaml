@@ -1384,6 +1384,58 @@ paths:
                             }
                         }
                     }
+  /users/me/subscriptions/properties:
+    post:
+      description: Make bulk modifications of the subscription properties on
+        one or more streams the user is subscribed to.
+      parameters:
+      - name: subscription_data
+        in: query
+        description: A list of objects that describe the changes that should
+          be applied in each subscription. Each object represents a
+          subscription, and must have a `stream_id` key that identifies the
+          stream, as well as the `property` being modified and its new
+          `value`.
+        schema:
+          type: array
+          items:
+            type: object
+        example: [{"stream_id": 1, "property": "pin_to_top", "value": true}]
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    subscription_data:
+                      type: array
+                      items:
+                        type: object
+                      description: The same `subscription_data` object sent
+                        by the client for the request.
+                - example:
+                    {
+                        "subscription_data": [
+                            {
+                                "property": "pin_to_top",
+                                "value": true,
+                                "stream_id": 1
+                            },
+                            {
+                                "property": "color",
+                                "value": 'f00',
+                                "stream_id": 3
+                            }
+                        ],
+                        "result": "success",
+                        "msg": ""
+                    }
   /realm/filters:
     get:
       description: Fetch all the filters set up for the user's organization.
