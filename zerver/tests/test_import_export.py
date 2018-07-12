@@ -493,10 +493,13 @@ class ImportExportTest(ZulipTestCase):
         imported_realm = Realm.objects.get(string_id='test-zulip')
         self.assertNotEqual(imported_realm.id, original_realm.id)
 
-        def assert_realm_values(f: Callable[[Realm], Any]) -> None:
+        def assert_realm_values(f: Callable[[Realm], Any], equal: bool=True) -> None:
             orig_realm_result = f(original_realm)
             imported_realm_result = f(imported_realm)
-            self.assertEqual(orig_realm_result, imported_realm_result)
+            if equal:
+                self.assertEqual(orig_realm_result, imported_realm_result)
+            else:
+                self.assertNotEqual(orig_realm_result, imported_realm_result)
 
         # test users
         assert_realm_values(
@@ -556,33 +559,24 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_realm_audit_log_event_type)
 
-        # TODO: Migrate the huddle tests to use assert_realm_values
-        realms = [original_realm, imported_realm]
-
         # test huddles
-        short_names = ['cordelia', 'hamlet', 'othello']
-        user_id_lists = [
-            [UserProfile.objects.get(realm=realm, short_name=name).id
-             for name in short_names] for realm in realms]
-        huddle_hashes = [
-            get_huddle_hash(user_id_list)
-            for user_id_list in user_id_lists]
+        def get_huddle_hashes(r: str) -> str:
+            short_names = ['cordelia', 'hamlet', 'othello']
+            user_id_list = [UserProfile.objects.get(realm=r, short_name=name).id for name in short_names]
+            huddle_hash = get_huddle_hash(user_id_list)
+            return huddle_hash
 
-        self.assertNotEqual(huddle_hashes[0], huddle_hashes[1])
-        self.assertTrue(Huddle.objects.filter(huddle_hash=huddle_hashes[1]).exists())
+        assert_realm_values(get_huddle_hashes, equal=False)
 
-        huddle_ids = [
-            Huddle.objects.get(huddle_hash=huddle_hash).id
-            for huddle_hash in huddle_hashes]
-        huddle_recipients = [
-            Recipient.objects.get(type_id=huddle_id, type=3)
-            for huddle_id in huddle_ids]
-        huddle_messages = [
-            Message.objects.get(recipient=recipient)
-            for recipient in huddle_recipients]
-        self.assertEqual(len(huddle_messages), 2)
-        self.assertEqual(huddle_messages[0].content, huddle_messages[1].content)
-        self.assertEqual(huddle_messages[1].content, 'test huddle message')
+        def get_huddle_message(r: str) -> str:
+            huddle_hash = get_huddle_hashes(r)
+            huddle_id = Huddle.objects.get(huddle_hash=huddle_hash).id
+            huddle_recipient = Recipient.objects.get(type_id=huddle_id, type=3)
+            huddle_message = Message.objects.get(recipient=huddle_recipient)
+            return huddle_message.content
+
+        assert_realm_values(get_huddle_message)
+        self.assertEqual(get_huddle_message(imported_realm), 'test huddle message')
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
