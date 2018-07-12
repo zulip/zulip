@@ -393,14 +393,10 @@ MessageListView.prototype = {
         return message_actions;
     },
 
-    _put_row: function (dom_row) {
-        var row = $(dom_row);
-
-        // Save DOM elements by id into self._rows for O(1) lookup.
-        // These can be used by get_row later, which re-wraps them
-        // inside jQuery objects.
+    _put_row: function (row) {
+        // row is a jQuery object wrapping one message row
         if (row.hasClass('message_row')) {
-            this._rows[row.attr('zid')] = dom_row;
+            this._rows[row.attr('zid')] = row;
         }
     },
 
@@ -414,8 +410,8 @@ MessageListView.prototype = {
 
         var self = this;
         _.each($message_rows, function (dom_row) {
-            self._put_row(dom_row);
             var row = $(dom_row);
+            self._put_row(row);
             self._post_process_single_row(row);
         });
     },
@@ -998,7 +994,15 @@ MessageListView.prototype = {
     },
 
     get_row: function (id) {
-        return $(this._rows[id]);
+        var row = this._rows[id];
+
+        if (row === undefined) {
+            // For legacy reasons we need to return an empty
+            // jQuery object here.
+            return $(undefined);
+        }
+
+        return row;
     },
 
     clear_trailing_bookend: function () {
@@ -1028,9 +1032,9 @@ MessageListView.prototype = {
             var row = this._rows[old_id];
             delete this._rows[old_id];
 
-            row.setAttribute('zid', new_id);
-            row.setAttribute('id', this.table_name + new_id);
-            $(row).removeClass('local');
+            row.attr('zid', new_id);
+            row.attr('id', this.table_name + new_id);
+            row.removeClass('local');
             this._rows[new_id] = row;
         }
 
