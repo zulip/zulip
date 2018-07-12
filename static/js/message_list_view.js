@@ -393,6 +393,17 @@ MessageListView.prototype = {
         return message_actions;
     },
 
+    _put_row: function (dom_row) {
+        var row = $(dom_row);
+
+        // Save DOM elements by id into self._rows for O(1) lookup.
+        // These can be used by get_row later, which re-wraps them
+        // inside jQuery objects.
+        if (row.hasClass('message_row')) {
+            this._rows[row.attr('zid')] = dom_row;
+        }
+    },
+
     _post_process: function ($message_rows) {
         // $message_rows wraps one or more message rows
 
@@ -404,17 +415,14 @@ MessageListView.prototype = {
 
         var self = this;
         _.each($message_rows, function (dom_row) {
+            self._put_row(dom_row);
+
             var row = $(dom_row);
             var content = row.find('.message_content');
 
             // Set the rtl class if the text has an rtl direction
             if (rtl.get_direction(content.text()) === 'rtl') {
                 content.addClass('rtl');
-            }
-
-            // Save DOM elements by id into self._rows for O(1) lookup
-            if (row.hasClass('message_row')) {
-                self._rows[row.attr('zid')] = dom_row;
             }
 
             if (row.hasClass('mention')) {
