@@ -513,12 +513,12 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # test recipients
-        def get_recipient_stream(r: str) -> Stream:
+        def get_recipient_stream(r: Realm) -> Stream:
             return get_stream_recipient(
                 Stream.objects.get(name='Verona', realm=r).id
             )
 
-        def get_recipient_user(r: str) -> UserProfile:
+        def get_recipient_user(r: Realm) -> UserProfile:
             return get_personal_recipient(
                 UserProfile.objects.get(full_name='Iago', realm=r).id
             )
@@ -541,7 +541,7 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # test custom profile fields
-        def get_custom_profile_field_names(r: str) -> Set[str]:
+        def get_custom_profile_field_names(r: Realm) -> Set[str]:
             custom_profile_fields = CustomProfileField.objects.filter(realm=r)
             custom_profile_field_names = {field.name for field in custom_profile_fields}
             return custom_profile_field_names
@@ -549,7 +549,7 @@ class ImportExportTest(ZulipTestCase):
         assert_realm_values(get_custom_profile_field_names)
 
         # test realmauditlog
-        def get_realm_audit_log_event_type(r: str) -> Set[str]:
+        def get_realm_audit_log_event_type(r: Realm) -> Set[str]:
             realmauditlogs = RealmAuditLog.objects.filter(realm=r)
             realmauditlog_event_type = {log.event_type for log in realmauditlogs}
             return realmauditlog_event_type
@@ -585,12 +585,12 @@ class ImportExportTest(ZulipTestCase):
         self.assertEqual(huddle_messages[1].content, 'test huddle message')
 
         # test messages
-        def get_stream_messages(r: str) -> Message:
+        def get_stream_messages(r: Realm) -> Message:
             recipient = get_recipient_stream(r)
             messages = Message.objects.filter(recipient=recipient)
             return messages
 
-        def get_stream_topics(r: str) -> Set[str]:
+        def get_stream_topics(r: Realm) -> Set[str]:
             messages = get_stream_messages(r)
             topics = {m.subject for m in messages}
             return topics
@@ -598,7 +598,7 @@ class ImportExportTest(ZulipTestCase):
         assert_realm_values(get_stream_topics)
 
         # test usermessages
-        def get_usermessages_user(r: str) -> Set[Any]:
+        def get_usermessages_user(r: Realm) -> Set[Any]:
             messages = get_stream_messages(r).order_by('content')
             usermessage = UserMessage.objects.filter(message=messages[0])
             usermessage_user = {um.user_profile.email for um in usermessage}
