@@ -25,7 +25,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username, get_huddle_hash
+    Attachment, get_system_bot, email_to_username, get_huddle_hash, \
+    UserHotspot
 
 # Code from here is the realm import code path
 
@@ -61,6 +62,7 @@ id_maps = {
     'attachment': {},
     'realmauditlog': {},
     'recipient_to_huddle_map': {},
+    'userhotspot': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -669,6 +671,12 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
         bulk_import_model(data, Huddle, 'zerver_huddle')
+
+    if 'zerver_userhotspot' in data:
+        fix_datetime_fields(data, 'zerver_userhotspot')
+        re_map_foreign_keys(data, 'zerver_userhotspot', 'user', related_table='user_profile')
+        update_model_ids(UserHotspot, data, 'zerver_userhotspot', 'userhotspot')
+        bulk_import_model(data, UserHotspot, 'zerver_userhotspot')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
