@@ -46,6 +46,7 @@ function deselect_top_left_corner_items() {
     remove('private');
     remove('starred');
     remove('mentioned');
+    remove('recent');
 }
 
 exports.handle_narrow_activated = function (filter) {
@@ -67,7 +68,7 @@ exports.handle_narrow_activated = function (filter) {
     ops = filter.operands('is');
     if (ops.length >= 1) {
         filter_name = ops[0];
-        if (filter_name === 'starred' || filter_name === 'mentioned') {
+        if (filter_name === 'starred' || filter_name === 'mentioned' || filter_name === 'recent') {
             filter_li = exports.get_global_filter_li(filter_name);
             filter_li.addClass('active-filter');
         }
