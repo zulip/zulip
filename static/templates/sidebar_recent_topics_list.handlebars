@@ -1,0 +1,11 @@
+<ul class='expanded_private_messages {{zoom_class}}' data-name='private'>
+    {{#each topics}}
+    <li class='expanded_private_message' data-topic-key='{{key}}'>
+        <span class='pm-box'>
+            <a href='{{url}}' class="conversation-partners">
+                {{display_text}}
+            </a>
+        </span>
+    </li>
+    {{/each}}
+</ul>

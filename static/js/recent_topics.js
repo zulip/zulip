@@ -128,7 +128,27 @@ exports.is_message_recent = function is_message_recent(msg) {
     // return boolean for whether we have a message indexed or not.
     var key = msg.stream_id + ':' + msg.subject;
     return exports.get().has(key);
-}
+};
+
+exports.render_topic_list = function render_topic_list() {
+    var li = $("#global_filters > li[data-name='recent']");
+    var display_topics = [];
+    exports.get().each(function (elem, key) {
+        var stream = stream_data.get_sub_by_id(key.split(':')[0]);
+        var subject = key.split(':',2)[1];
+        var display_text = stream.name + " > " + subject;
+        var url = narrow.by_stream_subject_uri(stream.name, subject);
+        display_topics.push({display_text, url, key});
+    });
+    display_topics.slice(0,10);
+    var zoom_class = true;
+    var options = {
+        topics: display_topics,
+        zoom_class: zoom_class,
+    };
+    var topics_dom = templates.render('sidebar_recent_topics_list', options);
+    li.append(topics_dom);
+};
 
 return exports;
 

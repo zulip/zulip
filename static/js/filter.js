@@ -448,7 +448,7 @@ Filter.prototype = {
             ['stream'],
             ['stream', 'topic'],
             ['is-private'],
-            ['is-recent']
+            ['is-recent'],
             ['pm-with'],
         ];
         return _.any(wanted_list, function (wanted_types) {
