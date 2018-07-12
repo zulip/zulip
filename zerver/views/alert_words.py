@@ -20,14 +20,14 @@ def clean_alert_words(alert_words: List[str]) -> List[str]:
 
 @has_request_variables
 def add_alert_words(request: HttpRequest, user_profile: UserProfile,
-                    alert_words: List[str]=REQ(validator=check_list(check_string), default=[])
+                    alert_words: List[str]=REQ(validator=check_list(check_string))
                     ) -> HttpResponse:
     do_add_alert_words(user_profile, clean_alert_words(alert_words))
     return json_success()
 
 @has_request_variables
 def remove_alert_words(request: HttpRequest, user_profile: UserProfile,
-                       alert_words: List[str]=REQ(validator=check_list(check_string), default=[])
+                       alert_words: List[str]=REQ(validator=check_list(check_string))
                        ) -> HttpResponse:
     do_remove_alert_words(user_profile, alert_words)
     return json_success()
