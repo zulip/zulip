@@ -62,6 +62,8 @@ from zerver.models import (
     Huddle,
     UserHotspot,
     MutedTopic,
+    UserGroup,
+    UserGroupMembership,
     get_active_streams,
     get_stream,
     get_stream_recipient,
@@ -617,6 +619,19 @@ class ImportExportTest(ZulipTestCase):
             return topic_names
 
         assert_realm_values(get_muted_topics)
+
+        # test usergroups
+        assert_realm_values(
+            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)}
+        )
+
+        def get_user_membership(r: str) -> Set[str]:
+            usergroup = UserGroup.objects.get(realm=r, name='hamletcharacters')
+            usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
+            users = {membership.user_profile.email for membership in usergroup_membership}
+            return users
+
+        assert_realm_values(get_user_membership)
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
