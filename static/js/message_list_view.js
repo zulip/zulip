@@ -393,18 +393,17 @@ MessageListView.prototype = {
         return message_actions;
     },
 
-    _post_process_dom_messages: function (dom_messages) {
-        // _post_process_dom_messages adds applies some extra formating to messages
-        // and stores them in self._rows and sends an event that the message is
-        // complete. _post_process_dom_messages should be a list of DOM nodes not
-        // jQuery objects.
+    _post_process: function ($message_rows) {
+        // $message_rows wraps one or more message rows
+
+        if ($message_rows.constructor !== jQuery) {
+            // An assertion check that we're calling this properly
+            blueslip.error('programming error--pass in jQuery objects');
+        }
 
         var self = this;
-        _.each(dom_messages, function (dom_message) {
-            if (!_.isElement(dom_message)) {
-                blueslip.warn('Only DOM nodes can be passed to _post_process_messages');
-            }
-            var row = $(dom_message);
+        _.each($message_rows, function (dom_row) {
+            var row = $(dom_row);
             var content = row.find('.message_content');
 
             // Set the rtl class if the text has an rtl direction
@@ -414,7 +413,7 @@ MessageListView.prototype = {
 
             // Save DOM elements by id into self._rows for O(1) lookup
             if (row.hasClass('message_row')) {
-                self._rows[row.attr('zid')] = dom_message;
+                self._rows[row.attr('zid')] = dom_row;
             }
 
             if (row.hasClass('mention')) {
@@ -530,7 +529,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_dom_messages(dom_messages.get());
+            self._post_process(dom_messages);
 
             // The date row will be included in the message groups or will be
             // added in a rerenderd in the group below
@@ -557,7 +556,7 @@ MessageListView.prototype = {
                 dom_messages = rendered_groups.find('.message_row');
                 // Not adding to new_dom_elements it is only used for autoscroll
 
-                self._post_process_dom_messages(dom_messages.get());
+                self._post_process(dom_messages);
                 old_message_group.replaceWith(rendered_groups);
                 condense.condense_and_collapse(dom_messages);
             });
@@ -568,7 +567,7 @@ MessageListView.prototype = {
             _.each(message_actions.rerender_messages, function (message_container) {
                 var old_row = self.get_row(message_container.msg.id);
                 var row = $(self._get_message_template(message_container));
-                self._post_process_dom_messages(row.get());
+                self._post_process(row);
                 old_row.replaceWith(row);
                 condense.condense_and_collapse(row);
                 list.reselect_selected_id();
@@ -583,7 +582,7 @@ MessageListView.prototype = {
                 return self._get_message_template(message_container);
             }).join('')).filter('.message_row');
 
-            self._post_process_dom_messages(dom_messages.get());
+            self._post_process(dom_messages);
             last_group_row.append(dom_messages);
 
             condense.condense_and_collapse(dom_messages);
@@ -604,7 +603,7 @@ MessageListView.prototype = {
             dom_messages = rendered_groups.find('.message_row');
             new_dom_elements = new_dom_elements.concat(rendered_groups);
 
-            self._post_process_dom_messages(dom_messages.get());
+            self._post_process(dom_messages);
 
             // This next line is a workaround for a weird scrolling
             // bug on Chrome.  Basically, in Chrome 64, we had a
@@ -887,7 +886,7 @@ MessageListView.prototype = {
         if (message_content_edited) {
             rendered_msg.addClass("fade-in-message");
         }
-        this._post_process_dom_messages(rendered_msg.get());
+        this._post_process(rendered_msg);
         row.replaceWith(rendered_msg);
 
         if (was_selected) {
