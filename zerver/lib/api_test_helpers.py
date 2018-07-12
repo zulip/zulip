@@ -311,6 +311,28 @@ def toggle_mute_topic(client):
                                     '/users/me/subscriptions/muted_topics',
                                     'patch', '200')
 
+def update_subscription_settings(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Update the user's subscription in stream #1 to pin it to the top of the
+    # stream list; and in stream #3 to have the hex color "f00"
+    request = [{
+        'stream_id': 1,
+        'property': 'pin_to_top',
+        'value': True
+    }, {
+        'stream_id': 3,
+        'property': 'color',
+        'value': 'f00'
+    }]
+    result = client.update_subscription_settings(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result,
+                                    '/users/me/subscriptions/properties',
+                                    'POST', '200')
+
 def render_message(client):
     # type: (Client) -> None
 
@@ -642,6 +664,7 @@ TEST_FUNCTIONS = {
     'add-subscriptions': add_subscriptions,
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
+    '/users/me/subscriptions/properties:post': update_subscription_settings,
     '/users:get': get_members,
     '/realm/filters:post': add_realm_filter,
     '/register:post': register_queue,
@@ -735,6 +758,7 @@ def test_streams(client, nonadmin_client):
     get_subscribers(client)
     remove_subscriptions(client)
     toggle_mute_topic(client)
+    update_subscription_settings(client)
     get_stream_topics(client, 1)
 
     test_user_not_authorized_error(nonadmin_client)
