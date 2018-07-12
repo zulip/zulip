@@ -140,7 +140,14 @@ def get_members(client):
     assert newbie['full_name'] == 'New User'
 
     member_fixture = fixture['members'][0]
-    member_result = result['members'][0]
+
+    # Get Aaron from all the results we got from the API
+    for member in result['members']:
+        if member['email'] == 'AARON@zulip.com':
+            member_result = member
+
+    assert member_result
+
     test_against_fixture(member_result, member_fixture,
                          check_if_exists=member_fixture.keys())
 
