@@ -16,6 +16,7 @@ sys.path.append(os.path.dirname(TOOLS_DIR))
 from lib.test_script import get_provisioning_status
 
 exclude = """
+stubs/
 """.split()
 
 parser = argparse.ArgumentParser(description="Run mypy on files tracked by git.")
