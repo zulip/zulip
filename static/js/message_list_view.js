@@ -416,41 +416,52 @@ MessageListView.prototype = {
         var self = this;
         _.each($message_rows, function (dom_row) {
             self._put_row(dom_row);
-
             var row = $(dom_row);
-            var content = row.find('.message_content');
+            self._fix_single_row(row);
+        });
+    },
 
-            // Set the rtl class if the text has an rtl direction
-            if (rtl.get_direction(content.text()) === 'rtl') {
-                content.addClass('rtl');
-            }
+    _fix_single_row: function (row) {
+        // Things like mentions, text emojis, rtl support, and
+        // widgets require manipulation beyond what we do in
+        // "normal" rendering.
 
-            if (row.hasClass('mention')) {
-                row.find('.user-mention').each(function () {
-                    // We give special highlights to the mention buttons
-                    // that refer to the current user.
-                    if (mention_button_refers_to_me(this)) {
-                        $(this).addClass('user-mention-me');
-                    }
-                });
-            }
+        if (row.length !== 1) {
+            blueslip.error('programming error--expected single element');
+        }
 
-            // Display emoji (including realm emoji) as text if
-            // page_params.emojiset is 'text'.
-            if (page_params.emojiset === 'text') {
-                row.find(".emoji").replaceWith(function () {
-                    var text = $(this).attr("title");
-                    return ":" + text + ":";
-                });
-            }
+        var content = row.find('.message_content');
 
-            var id = rows.id(row);
-            message_edit.maybe_show_edit(row, id);
+        // Set the rtl class if the text has an rtl direction
+        if (rtl.get_direction(content.text()) === 'rtl') {
+            content.addClass('rtl');
+        }
 
-            submessage.process_submessages({
-                row: row,
-                message_id: id,
+        if (row.hasClass('mention')) {
+            row.find('.user-mention').each(function () {
+                // We give special highlights to the mention buttons
+                // that refer to the current user.
+                if (mention_button_refers_to_me(this)) {
+                    $(this).addClass('user-mention-me');
+                }
             });
+        }
+
+        // Display emoji (including realm emoji) as text if
+        // page_params.emojiset is 'text'.
+        if (page_params.emojiset === 'text') {
+            row.find(".emoji").replaceWith(function () {
+                var text = $(this).attr("title");
+                return ":" + text + ":";
+            });
+        }
+
+        var id = rows.id(row);
+        message_edit.maybe_show_edit(row, id);
+
+        submessage.process_submessages({
+            row: row,
+            message_id: id,
         });
     },
 
