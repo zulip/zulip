@@ -50,23 +50,15 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                         parent_dir = self.base_path
                         filename = os.path.normpath(os.path.join(parent_dir, filename))
 
-                    try:
-                        if is_openapi_format:
-                            endpoint, method = doc_name.rsplit(':', 1)
-                            arguments = get_openapi_parameters(endpoint, method)
-                        else:
-                            with open(filename, 'r') as fp:
-                                json_obj = ujson.load(fp)
-                                arguments = json_obj[doc_name]
+                    if is_openapi_format:
+                        endpoint, method = doc_name.rsplit(':', 1)
+                        arguments = get_openapi_parameters(endpoint, method)
+                    else:
+                        with open(filename, 'r') as fp:
+                            json_obj = ujson.load(fp)
+                            arguments = json_obj[doc_name]
 
-                        text = self.render_table(arguments)
-                    except Exception as e:
-                        print('Warning: could not find file {}. Ignoring '
-                              'statement. Error: {}'.format(filename, e))
-                        # If the file cannot be opened, just substitute an empty line
-                        # in place of the macro include line
-                        lines[loc] = REGEXP.sub('', line)
-                        break
+                    text = self.render_table(arguments)
 
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
