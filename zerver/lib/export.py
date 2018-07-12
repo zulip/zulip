@@ -19,7 +19,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog
+    RealmAuditLog, UserHotspot
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -172,7 +172,6 @@ NON_EXPORTED_TABLES = {
     'zerver_service',
     'zerver_usergroup',
     'zerver_usergroupmembership',
-    'zerver_userhotspot',
 }
 
 IMPLICIT_TABLES = {
@@ -202,6 +201,7 @@ DATE_FIELDS = {
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
+    'zerver_userhotspot': ['timestamp'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
@@ -584,6 +584,13 @@ def get_realm_config() -> Config:
         model=RealmAuditLog,
         normal_parent=user_profile_config,
         parent_key='modified_user__in',
+    )
+
+    Config(
+        table='zerver_userhotspot',
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        parent_key='user__in',
     )
 
     # Some of these tables are intermediate "tables" that we
