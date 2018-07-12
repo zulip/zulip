@@ -59,6 +59,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.4.0
 jedi==0.11.0              # via ipython
 jinja2==2.10
+libthumbor==1.3.2
 lxml==4.2.1
 markdown-include==0.5.1
 markdown==2.6.11
