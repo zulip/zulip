@@ -56,6 +56,7 @@ from zerver.models import (
     CustomProfileFieldValue,
     RealmAuditLog,
     Huddle,
+    UserHotspot,
     get_active_streams,
     get_stream_recipient,
     get_personal_recipient,
@@ -481,6 +482,11 @@ class ImportExportTest(ZulipTestCase):
             self.example_email('cordelia'), huddle, 'test huddle message'
         )
 
+        # data to test import of hotspots
+        UserHotspot.objects.create(
+            user=self.example_user('hamlet'), hotspot='intro_streams'
+        )
+
         self._export_realm(original_realm)
 
         with patch('logging.info'):
@@ -577,6 +583,15 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_huddle_message)
         self.assertEqual(get_huddle_message(imported_realm), 'test huddle message')
+
+        # test userhotspot
+        def get_user_hotspots(r: str) -> Set[str]:
+            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
+            hotspots = UserHotspot.objects.filter(user=user_profile)
+            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            return user_hotspots
+
+        assert_realm_values(get_user_hotspots)
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
