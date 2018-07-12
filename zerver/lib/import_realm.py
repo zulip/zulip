@@ -27,7 +27,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic, Service
+    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership
 
 # Code from here is the realm import code path
 
@@ -66,6 +66,8 @@ id_maps = {
     'userhotspot': {},
     'mutedtopic': {},
     'service': {},
+    'usergroup': {},
+    'usergroupmembership': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -701,6 +703,21 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         fix_service_tokens(data, 'zerver_service')
         update_model_ids(Service, data, 'zerver_service', 'service')
         bulk_import_model(data, Service, 'zerver_service')
+
+    if 'zerver_usergroup' in data:
+        re_map_foreign_keys(data, 'zerver_usergroup', 'realm', related_table='realm')
+        re_map_foreign_keys_many_to_many(data, 'zerver_usergroup',
+                                         'members', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_usergroup', 'usergroup')
+        bulk_import_model(data, UserGroup, 'zerver_usergroup')
+
+        re_map_foreign_keys(data, 'zerver_usergroupmembership',
+                            'user_group', related_table='usergroup')
+        re_map_foreign_keys(data, 'zerver_usergroupmembership',
+                            'user_profile', related_table='user_profile')
+        update_model_ids(UserGroupMembership, data, 'zerver_usergroupmembership',
+                         'usergroupmembership')
+        bulk_import_model(data, UserGroupMembership, 'zerver_usergroupmembership')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")

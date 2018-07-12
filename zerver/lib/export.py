@@ -540,7 +540,7 @@ def get_realm_config() -> Config:
         custom_fetch=fetch_user_profile,
     )
 
-    Config(
+    user_groups_config = Config(
         table='zerver_usergroup',
         model=UserGroup,
         normal_parent=realm_config,
@@ -550,7 +550,7 @@ def get_realm_config() -> Config:
     Config(
         table='zerver_usergroupmembership',
         model=UserGroupMembership,
-        normal_parent=user_profile_config,
+        normal_parent=user_groups_config,
         parent_key='user_group__in',
     )
 
