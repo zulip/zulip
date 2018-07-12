@@ -433,6 +433,13 @@ function get_is_filter_suggestions(last, operators) {
                 {operator: 'is', operand: 'unread'},
             ],
         },
+        {
+            search_string: 'is:recent',
+            description: 'recent messages',
+            invalid: [
+                {operator: 'is', operand: 'recent'},
+            ],
+        },
     ];
     return get_special_filter_suggestions(last, operators, suggestions);
 }
