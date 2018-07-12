@@ -457,7 +457,7 @@ i18n_urls = [
         zerver.views.registration.create_realm, name='zerver.views.create_realm'),
 
     # Global public streams (Zulip's way of doing archives)
-    url(r'^archive/streams/(?P<stream_id>\d+)/topic/(?P<topic_name>[^/]+)$',
+    url(r'^archive/streams/(?P<stream_id>\d+)/topics/(?P<topic_name>[^/]+)$',
         zerver.views.archive.archive,
         name='zerver.views.archive.archive'),
     url(r'^archive/streams/(?P<stream_id>\d+)/topics$',
