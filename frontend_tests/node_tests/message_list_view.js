@@ -46,49 +46,51 @@ set_global('rows', {
     },
 });
 
+// Builder functions
+
+function build_message_context(message, message_context) {
+    if (message_context === undefined) {
+        message_context = {};
+    }
+    if (message === undefined) {
+        message = {};
+    }
+    message_context = _.defaults(message_context, {
+        include_sender: true,
+    });
+    message_context.msg = _.defaults(message, {
+        id: _.uniqueId('test_message_'),
+        status_message: false,
+        type: 'stream',
+        stream: 'Test Stream 1',
+        subject: 'Test Subject 1',
+        sender_email: 'test@example.com',
+        timestamp: _.uniqueId(),
+    });
+    return message_context;
+}
+
+function build_message_group(messages) {
+    return {
+        message_containers: messages,
+        message_group_id: _.uniqueId('test_message_group_'),
+        show_date: true,
+    };
+}
+
+function build_list(message_groups) {
+    var list = new MessageListView(undefined, undefined, true);
+    list._message_groups = message_groups;
+    list.list = {
+        unsubscribed_bookend_content: function () {},
+        subscribed_bookend_content: function () {},
+    };
+    return list;
+}
+
 run_test('merge_message_groups', () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
-
-    function build_message_context(message, message_context) {
-        if (message_context === undefined) {
-            message_context = {};
-        }
-        if (message === undefined) {
-            message = {};
-        }
-        message_context = _.defaults(message_context, {
-            include_sender: true,
-        });
-        message_context.msg = _.defaults(message, {
-            id: _.uniqueId('test_message_'),
-            status_message: false,
-            type: 'stream',
-            stream: 'Test Stream 1',
-            subject: 'Test Subject 1',
-            sender_email: 'test@example.com',
-            timestamp: _.uniqueId(),
-        });
-        return message_context;
-    }
-
-    function build_message_group(messages) {
-        return {
-            message_containers: messages,
-            message_group_id: _.uniqueId('test_message_group_'),
-            show_date: true,
-        };
-    }
-
-    function build_list(message_groups) {
-        var list = new MessageListView(undefined, undefined, true);
-        list._message_groups = message_groups;
-        list.list = {
-            unsubscribed_bookend_content: function () {},
-            subscribed_bookend_content: function () {},
-        };
-        return list;
-    }
 
     function assert_message_list_equal(list1, list2) {
         assert.deepEqual(
