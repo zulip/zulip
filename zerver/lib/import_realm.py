@@ -241,7 +241,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
     '''
     We occasionally need to assign new ids to rows during the
     import/export process, to accommodate things like existing rows
-    already being in tables.  See bulk_import_client for more context.
+    already being in tables. See bulk_import_client for more context.
 
     The tricky part is making sure that foreign key references
     are in sync with the new ids, and this fixer function does
@@ -287,6 +287,36 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 item[field_name] = str(new_id)
             else:
                 item[field_name] = new_id
+
+def re_map_foreign_keys_many_to_many(data: TableData,
+                                     table: TableName,
+                                     field_name: Field,
+                                     related_table: TableName,
+                                     verbose: bool=False) -> None:
+    """
+    We need to assign new ids to rows during the import/export
+    process.
+
+    The tricky part is making sure that foreign key references
+    are in sync with the new ids, and this fixer function does
+    the re-mapping only for ManyToMany fields.
+    """
+    lookup_table = id_maps[related_table]
+    for item in data[table]:
+        new_id_list = []
+        for old_id in item[field_name]:
+            if old_id in lookup_table:
+                new_id = lookup_table[old_id]
+                if verbose:
+                    logging.info('Remapping %s %s from %s to %s' % (table,
+                                                                    field_name + '_id',
+                                                                    old_id,
+                                                                    new_id))
+            else:
+                new_id = old_id
+            new_id_list.append(new_id)
+        item[field_name] = new_id_list
+        del item[field_name]
 
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
