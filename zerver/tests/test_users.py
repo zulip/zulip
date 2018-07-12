@@ -634,6 +634,7 @@ class RecipientInfoTest(ZulipTestCase):
             active_user_ids=all_user_ids,
             push_notify_user_ids=set(),
             stream_push_user_ids={hamlet.id},
+            stream_email_user_ids=set(),
             um_eligible_user_ids=all_user_ids,
             long_term_idle_user_ids=set(),
             default_bot_user_ids=set(),
