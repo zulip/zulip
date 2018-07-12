@@ -52,14 +52,25 @@ class APIArgumentsTablePreprocessor(Preprocessor):
 
                     if is_openapi_format:
                         endpoint, method = doc_name.rsplit(':', 1)
-                        arguments = get_openapi_parameters(endpoint, method)
+                        arguments = []  # type: List[Dict[str, Any]]
+
+                        try:
+                            arguments = get_openapi_parameters(endpoint, method)
+                        except KeyError as e:
+                            # Don't raise an exception if the "parameters"
+                            # field is missing; we assume that's because the
+                            # endpoint doesn't accept any parameters
+                            if e.args != ('parameters',):
+                                raise e
                     else:
                         with open(filename, 'r') as fp:
                             json_obj = ujson.load(fp)
                             arguments = json_obj[doc_name]
 
-                    text = self.render_table(arguments)
-
+                    if arguments:
+                        text = self.render_table(arguments)
+                    else:
+                        text = ['This endpoint does not consume any arguments.']
                     # The line that contains the directive to include the macro
                     # may be preceded or followed by text or tags, in that case
                     # we need to make sure that any preceding or following text
