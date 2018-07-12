@@ -88,6 +88,31 @@ function build_list(message_groups) {
     return list;
 }
 
+run_test('test_rows', () => {
+    var list = {};
+
+    var view = new MessageListView(list, 'test_table', false);
+    var jquery_rows = {};
+
+    function build_row(id) {
+        jquery_rows[id] = $('#row_' + id);
+        view._rows[id] = '#row_' + id;
+    }
+
+    build_row(1);
+    build_row(2);
+    build_row(3);
+    build_row(3.1);
+
+    assert.equal(jquery_rows[1], view.get_row(1));
+
+    list.selected_id = () => 2;
+    assert.equal(jquery_rows[2], view.selected_row());
+
+    list.get = (id) => id;
+    assert.equal(3, view.get_message(3));
+});
+
 run_test('merge_message_groups', () => {
     // MessageListView has lots of DOM code, so we are going to test the message
     // group mearging logic on its own.
