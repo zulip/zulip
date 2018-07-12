@@ -55,9 +55,11 @@ from zerver.models import (
     CustomProfileField,
     CustomProfileFieldValue,
     RealmAuditLog,
+    Huddle,
     get_active_streams,
     get_stream_recipient,
     get_personal_recipient,
+    get_huddle_hash,
 )
 
 from zerver.lib.test_helpers import (
@@ -470,6 +472,15 @@ class ImportExportTest(ZulipTestCase):
 
         original_realm = Realm.objects.get(string_id='zulip')
         RealmEmoji.objects.get(realm=original_realm).delete()
+        # data to test import of huddles
+        huddle = [
+            self.example_email('hamlet'),
+            self.example_email('othello')
+        ]
+        self.send_huddle_message(
+            self.example_email('cordelia'), huddle, 'test huddle message'
+        )
+
         self._export_realm(original_realm)
 
         with patch('logging.info'):
@@ -544,6 +555,30 @@ class ImportExportTest(ZulipTestCase):
             return realmauditlog_event_type
 
         assert_realm_values(get_realm_audit_log_event_type)
+
+        # test huddles
+        short_names = ['cordelia', 'hamlet', 'othello']
+        user_id_lists = [
+            [UserProfile.objects.get(realm=realm, short_name=name).id
+             for name in short_names] for realm in realms]
+        huddle_hashes = [
+            get_huddle_hash(user_id_list)
+            for user_id_list in user_id_lists]
+
+        self.assertNotEqual(huddle_hashes[0], huddle_hashes[1])
+        self.assertTrue(Huddle.objects.filter(huddle_hash=huddle_hashes[1]).exists())
+
+        huddle_ids = [
+            Huddle.objects.get(huddle_hash=huddle_hash).id
+            for huddle_hash in huddle_hashes]
+        huddle_recipient = [
+            Recipient.objects.get(type_id=huddle_id, type=3)
+            for huddle_id in huddle_ids]
+        huddle_message = [
+            Message.objects.get(recipient=recipient)
+            for recipient in huddle_recipient]
+        self.assertEqual(huddle_message[0].content, huddle_message[1].content)
+        self.assertEqual(huddle_message[1].content, 'test huddle message')
 
         # test messages
         def get_stream_messages(r: str) -> Message:
