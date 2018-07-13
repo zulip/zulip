@@ -35,6 +35,7 @@ VENV_DEPENDENCIES = [
     "libxml2-dev",          # Used for installing talon
     "libxslt1-dev",         # Used for installing talon
     "libpq-dev",            # Needed by psycopg2
+    "libssl-dev",           # Needed to build pycurl and other libraries
 ]
 
 codename = parse_lsb_release()["DISTRIB_CODENAME"]

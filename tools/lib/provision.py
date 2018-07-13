@@ -125,7 +125,6 @@ UBUNTU_COMMON_APT_DEPENDENCIES = [
     "hunspell-en-us",
     "supervisor",
     "git",
-    "libssl-dev",
     "yui-compressor",
     "wget",
     "ca-certificates",      # Explicit dependency in case e.g. wget is already installed
