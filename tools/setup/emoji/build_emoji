@@ -96,6 +96,11 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
     emoji_positions = ""
     for emoji in emoji_data:
         if emoji["has_img_google"]:
+            # Why is the test here has_img_google and not
+            # emoji_is_universal?  Because we briefly supported all
+            # Google emoji (not just the universal ones), we need to
+            # ensure the spritesheet is setup to correctly display
+            # those google emoji (in case anyone used them).
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': emoji['unified'].lower(),
                 'pos_x': (emoji["sheet_x"] * 100) / 48,
