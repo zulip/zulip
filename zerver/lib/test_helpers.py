@@ -378,6 +378,7 @@ def write_instrumentation_reports(full_suite: bool) -> None:
         exempt_patterns = set([
             # We exempt some patterns that are called via Tornado.
             'api/v1/events',
+            'api/v1/events/internal',
             'api/v1/register',
             # We also exempt some development environment debugging
             # static content URLs, since the content they point to may

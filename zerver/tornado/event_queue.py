@@ -560,17 +560,18 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
                'client_gravatar': ujson.dumps(client_gravatar),
                'all_public_streams': ujson.dumps(all_public_streams),
                'client': 'internal',
+               'user_profile_id': user_profile.id,
                'user_client': user_client.name,
                'narrow': ujson.dumps(narrow),
+               'secret': settings.SHARED_SECRET,
                'lifespan_secs': queue_lifespan_secs}
         if event_types is not None:
             req['event_types'] = ujson.dumps(event_types)
 
         try:
-            resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
-                                       auth=requests.auth.HTTPBasicAuth(
-                                           user_profile.email, user_profile.api_key),
-                                       params=req)
+            resp = requests_client.post(settings.TORNADO_SERVER +
+                                        '/api/v1/events/internal',
+                                        data=req)
         except requests.adapters.ConnectionError:
             logging.error('Tornado server does not seem to be running, check %s '
                           'and %s for more information.' %
@@ -587,14 +588,16 @@ def request_event_queue(user_profile: UserProfile, user_client: Client, apply_ma
 
 def get_user_events(user_profile: UserProfile, queue_id: str, last_event_id: int) -> List[Dict[Any, Any]]:
     if settings.TORNADO_SERVER:
-        resp = requests_client.get(settings.TORNADO_SERVER + '/api/v1/events',
-                                   auth=requests.auth.HTTPBasicAuth(
-                                       user_profile.email, user_profile.api_key),
-                                   params={'queue_id': queue_id,
-                                           'last_event_id': last_event_id,
-                                           'dont_block': 'true',
-                                           'client': 'internal'})
-
+        post_data = {
+            'queue_id': queue_id,
+            'last_event_id': last_event_id,
+            'dont_block': 'true',
+            'user_profile_id': user_profile.id,
+            'secret': settings.SHARED_SECRET,
+            'client': 'internal'
+        }  # type: Dict[str, Any]
+        resp = requests_client.post(settings.TORNADO_SERVER + '/api/v1/events/internal',
+                                    data=post_data)
         resp.raise_for_status()
 
         return extract_json_response(resp)['events']

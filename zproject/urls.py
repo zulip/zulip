@@ -613,6 +613,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 urls += [
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
+    url(r'^api/v1/events/internal$', zerver.tornado.views.get_events_internal),
 ]
 
 # Python Social Auth
