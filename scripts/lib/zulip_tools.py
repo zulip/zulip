@@ -307,10 +307,28 @@ def may_be_perform_purging(dirs_to_purge, dirs_to_keep, dir_type, dry_run, verbo
 def parse_lsb_release():
     # type: () -> Dict[str, str]
     distro_info = {}
-    with open('/etc/lsb-release', 'r') as fp:
-        data = [line.strip().split('=') for line in fp]
-    for k, v in data:
-        distro_info[k] = v
+    try:
+        # For performance reasons, we read /etc/lsb-release directly,
+        # rather than using the lsb_release command; this saves ~50ms
+        # in several places in provisioning and the installer
+        with open('/etc/lsb-release', 'r') as fp:
+            data = [line.strip().split('=') for line in fp]
+        for k, v in data:
+            if k not in ['DISTRIB_CODENAME', 'DISTRIB_ID']:
+                # We only return to the caller the values that we get
+                # from lsb_release in the exception code path.
+                continue
+            distro_info[k] = v
+    except FileNotFoundError:
+        # Unfortunately, Debian stretch doesn't yet have an
+        # /etc/lsb-release, so we instead fetch the pieces of data
+        # that we use from the `lsb_release` command directly.
+        vendor = subprocess_text_output(["lsb_release", "-is"])
+        codename = subprocess_text_output(["lsb_release", "-cs"])
+        distro_info = dict(
+            DISTRIB_CODENAME=codename,
+            DISTRIB_ID=vendor
+        )
     return distro_info
 
 def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]):
