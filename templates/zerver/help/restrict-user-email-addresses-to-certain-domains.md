@@ -20,6 +20,6 @@ select **Restrict to a list of domains**.
 
 ## Related articles
 
-[Manage requiring an invitation to join](/help/allow-anyone-to-join-without-an-invitation)
+[Limit new membership to invited users](/help/limit-new-membership-to-invited-users)
 
 [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)

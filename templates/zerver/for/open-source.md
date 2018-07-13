@@ -28,8 +28,7 @@ members.
 
 ### Join without an invitation
 
-Allow anyone to
-[join without an invitation](/help/allow-anyone-to-join-without-an-invitation).
+Zulip allows anyone to join without an invitation by default.
 You can also link to your Zulip with a [badge](/help/join-zulip-chat-badge)
 in your readme document.
 

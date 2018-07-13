@@ -115,7 +115,7 @@
 * [Import data from Slack](/help/import-data-from-slack)
 * [Import or export a Zulip organization](/help/import-or-export-a-zulip-organization)
 * [Restrict new users by email domain](/help/restrict-user-email-addresses-to-certain-domains)
-* [Allow joining without an invitation](/help/allow-anyone-to-join-without-an-invitation)
+* [Limit new membership to invited users](/help/limit-new-membership-to-invited-users)
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Deactivate your organization](/help/deactivate-your-organization)
