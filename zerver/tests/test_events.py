@@ -16,7 +16,7 @@ from zerver.models import (
     get_client, get_realm, get_stream_recipient, get_stream, get_user,
     Message, RealmDomain, Recipient, UserMessage, UserPresence, UserProfile,
     Realm, Subscription, Stream, flush_per_request_caches, UserGroup, Service,
-    Attachment,
+    Attachment, PreregistrationUser,
 )
 
 from zerver.lib.actions import (
@@ -53,6 +53,7 @@ from zerver.lib.actions import (
     do_deactivate_stream,
     do_deactivate_user,
     do_delete_message,
+    do_invite_users,
     do_mark_hotspot_as_read,
     do_mute_topic,
     do_reactivate_user,
@@ -67,6 +68,7 @@ from zerver.lib.actions import (
     do_remove_realm_filter,
     do_remove_streams_from_default_stream_group,
     do_rename_stream,
+    do_revoke_user_invite,
     do_set_realm_authentication_methods,
     do_set_realm_message_editing,
     do_set_realm_property,
@@ -921,6 +923,63 @@ class EventsRegisterTest(ZulipTestCase):
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_invite_user_event(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('invites_changed')),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Scotland"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+        events = self.do_test(
+            lambda: do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_revoke_user_invite_event(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('invites_changed')),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Verona"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        prereg_users = PreregistrationUser.objects.filter(referred_by__realm=self.user_profile.realm)
+        events = self.do_test(
+            lambda: do_revoke_user_invite(prereg_users[0]),
+            state_change_expected=False,
+        )
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_invitation_accept_invite_event(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('invites_changed')),
+        ])
+
+        self.user_profile = self.example_user('iago')
+        streams = []
+        for stream_name in ["Denmark", "Scotland"]:
+            streams.append(get_stream(stream_name, self.user_profile.realm))
+
+        do_invite_users(self.user_profile, ["foo@zulip.com"], streams, False)
+        prereg_users = PreregistrationUser.objects.get(email="foo@zulip.com")
+
+        events = self.do_test(
+            lambda: do_create_user('foo@zulip.com', 'password', self.user_profile.realm,
+                                   'full name', 'short name', prereg_user=prereg_users),
+            state_change_expected=True,
+            num_events=5,
+        )
+
+        error = schema_checker('events[4]', events[4])
         self.assert_on_error(error)
 
     def test_typing_events(self) -> None:

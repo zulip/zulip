@@ -607,6 +607,8 @@ def apply_event(state: Dict[str, Any],
     elif event['type'] == "update_global_notifications":
         assert event['notification_name'] in UserProfile.notification_setting_types
         state[event['notification_name']] = event['setting']
+    elif event['type'] == "invites_changed":
+        pass
     elif event['type'] == "user_group":
         if event['op'] == 'add':
             state['realm_user_groups'].append(event['group'])

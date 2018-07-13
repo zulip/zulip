@@ -26,6 +26,12 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             event.hotspots;
         break;
 
+    case 'invites_changed':
+        if ($('#admin-invites-list').length) {
+            settings_invites.set_up();
+        }
+        break;
+
     case 'muted_topics':
         muting_ui.handle_updates(event.muted_topics);
         break;
