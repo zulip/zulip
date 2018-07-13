@@ -93,8 +93,8 @@ def get_success_stamp():
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
-def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
-    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
+def generate_sprite_css_files(cache_path, emoji_data):
+    # type: (str, List[Dict[str, Any]]) -> None
     # Spritesheet CSS generation code.
     emoji_positions = ""
     for emoji in emoji_data:
@@ -113,8 +113,8 @@ def generate_sprite_css_files(cache_path, emoji_map, emoji_data):
                                                           })
         sprite_css_file.close()
 
-def setup_emoji_farm(cache_path, emoji_map, emoji_data):
-    # type: (str, Dict[str, str], List[Dict[str, Any]]) -> None
+def setup_emoji_farm(cache_path, emoji_data):
+    # type: (str, List[Dict[str, Any]]) -> None
     for emojiset in EMOJISETS:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
@@ -133,7 +133,7 @@ def setup_emoji_farm(cache_path, emoji_map, emoji_data):
         output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_64.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])
 
-    generate_sprite_css_files(cache_path, emoji_map, emoji_data)
+    generate_sprite_css_files(cache_path, emoji_data)
 
 def setup_old_emoji_farm(cache_path, emoji_map):
     # type: (str, Dict[str, str]) -> None
@@ -245,7 +245,7 @@ def dump_emojis(cache_path):
 
     # Setup emoji farms.
     run(['rm', '-rf', cache_path])
-    setup_emoji_farm(cache_path, emoji_map, emoji_data)
+    setup_emoji_farm(cache_path, emoji_data)
     setup_old_emoji_farm(cache_path, emoji_map)
 
     # Generate various map files.
