@@ -189,7 +189,6 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
     # type: (str, Dict[str, str], List[Dict[str, Any]], Dict[str, List[str]], Dict[str, str]) -> None
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
     EMOJI_CODES_PATH = os.path.join(cache_path, 'emoji_codes.js')
-    emoji_codes_file = open(EMOJI_CODES_PATH, 'w')
 
     # put thumbs_up before thumbs_down
     names = emoji_names_for_picker(emoji_map)
@@ -206,25 +205,21 @@ def generate_map_files(cache_path, emoji_map, emoji_data, emoji_catalog, unified
     name_to_codepoint = get_extended_name_to_codepoint(name_to_codepoint, new_emoji_dicts)
     codepoint_to_name = get_extended_codepoint_to_name(codepoint_to_name, new_emoji_dicts)
 
-    emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
-        'names': names,
-        'name_to_codepoint': name_to_codepoint,
-        'codepoint_to_name': codepoint_to_name,
-        'emoji_catalog': emoji_catalog,
-    })
-    emoji_codes_file.close()
+    with open(EMOJI_CODES_PATH, 'w') as emoji_codes_file:
+        emoji_codes_file.write(EMOJI_CODES_FILE_TEMPLATE % {
+            'names': names,
+            'name_to_codepoint': name_to_codepoint,
+            'codepoint_to_name': codepoint_to_name,
+            'emoji_catalog': emoji_catalog,
+        })
 
     NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
-    name_to_codepoint_file = open(NAME_TO_CODEPOINT_PATH, 'w')
-
-    name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
-    name_to_codepoint_file.close()
+    with open(NAME_TO_CODEPOINT_PATH, 'w') as name_to_codepoint_file:
+        name_to_codepoint_file.write(ujson.dumps(name_to_codepoint))
 
     CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')
-    codepoint_to_name_file = open(CODEPOINT_TO_NAME_PATH, 'w')
-
-    codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
-    codepoint_to_name_file.close()
+    with open(CODEPOINT_TO_NAME_PATH, 'w') as codepoint_to_name_file:
+        codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
 
 def dump_emojis(cache_path):
     # type: (str) -> None
