@@ -71,7 +71,8 @@ def get_issue_created_event_body(payload: Dict[str, Any]) -> str:
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
         description,
-        get_objects_assignee(payload)
+        get_objects_assignee(payload),
+        title=payload['object_attributes'].get('title')
     )
 
 def get_issue_event_body(payload: Dict[str, Any], action: str) -> str:
@@ -80,6 +81,7 @@ def get_issue_event_body(payload: Dict[str, Any], action: str) -> str:
         action,
         get_object_url(payload),
         payload['object_attributes'].get('iid'),
+        title=payload['object_attributes'].get('title')
     )
 
 def get_merge_request_updated_event_body(payload: Dict[str, Any]) -> str:

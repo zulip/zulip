@@ -93,7 +93,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_without_assignee_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title"
-        expected_message = u"Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)\n\n~~~ quote\nIssue description\n~~~"
+        expected_message = u"Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)\n\n~~~ quote\nIssue description\n~~~"
 
         self.send_and_test_stream_message(
             'issue_created_without_assignee',
@@ -104,7 +104,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_assignee_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title"
-        expected_message = u"Tomasz Kolek created [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)(assigned to Tomasz Kolek)\n\n~~~ quote\nIssue description\n~~~"
+        expected_message = u"Tomasz Kolek created [Issue #1 Issue title](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)(assigned to Tomasz Kolek)\n\n~~~ quote\nIssue description\n~~~"
 
         self.send_and_test_stream_message(
             'issue_created_with_assignee',
@@ -115,7 +115,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_hidden_comment_in_description(self) -> None:
         expected_subject = u"public-repo / Issue #3 New Issue with hidden comment"
-        expected_message = u"Eeshan Garg created [Issue #3](https://gitlab.com/eeshangarg/public-repo/issues/3)\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
+        expected_message = u"Eeshan Garg created [Issue #3 New Issue with hidden comment](https://gitlab.com/eeshangarg/public-repo/issues/3)\n\n~~~ quote\nThis description actually has a hidden comment in it!\n~~~"
 
         self.send_and_test_stream_message(
             'issue_created_with_hidden_comment_in_description',
@@ -126,7 +126,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_create_issue_with_null_description(self) -> None:
         expected_subject = u"my-awesome-project / Issue #7 Issue without description"
-        expected_message = u"Eeshan Garg created [Issue #7](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)"
+        expected_message = u"Eeshan Garg created [Issue #7 Issue without description](https://gitlab.com/eeshangarg/my-awesome-project/issues/7)"
         self.send_and_test_stream_message(
             'issue_opened_with_null_description',
             expected_subject,
@@ -136,7 +136,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_update_issue_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
-        expected_message = u"Tomasz Kolek updated [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
+        expected_message = u"Tomasz Kolek updated [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_updated',
@@ -147,7 +147,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_close_issue_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
-        expected_message = u"Tomasz Kolek closed [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
+        expected_message = u"Tomasz Kolek closed [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_closed',
@@ -158,7 +158,7 @@ class GitlabHookTests(WebhookTestCase):
 
     def test_reopen_issue_event_message(self) -> None:
         expected_subject = u"my-awesome-project / Issue #1 Issue title_new"
-        expected_message = u"Tomasz Kolek reopened [Issue #1](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
+        expected_message = u"Tomasz Kolek reopened [Issue #1 Issue title_new](https://gitlab.com/tomaszkolek0/my-awesome-project/issues/1)"
 
         self.send_and_test_stream_message(
             'issue_reopened',
