@@ -17,10 +17,17 @@
 
         <div class="page-content">
             <div class="main">
+                {% if error_message %}
+                <div class="alert alert-danger" id="error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
                 <h1>{% trans %}Upgrade to {{ plan }}{% endtrans %}</h1>
                 <form method="post">
                     {{ csrf_input }}
                     <input type="hidden" name="seat_count" value="{{ seat_count }}">
+                    <input type="hidden" name="signed_seat_count" value="{{ signed_seat_count }}">
+                    <input type="hidden" name="salt" value="{{ salt }}">
                     <div class="payment-schedule">
                         <h3>{{ _("Payment schedule") }}</h3>
                         <label>
