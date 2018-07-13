@@ -123,7 +123,9 @@ class APIArgumentsTablePreprocessor(Preprocessor):
             # be added for this.
             table.append(tr.format(
                 argument=argument.get('argument') or argument.get('name'),
-                example=argument['example'],
+                # Show this as JSON to avoid changing the quoting style, which
+                # may cause problems with JSON encoding.
+                example=ujson.dumps(argument['example']),
                 required='Yes' if argument.get('required') else 'No',
                 description=md_engine.convert(description),
             ))
