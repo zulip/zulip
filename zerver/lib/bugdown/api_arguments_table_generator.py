@@ -39,48 +39,50 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 loc = lines.index(line)
                 match = REGEXP.search(line)
 
-                if match:
-                    filename = match.group(1)
-                    doc_name = match.group(2)
-                    filename = os.path.expanduser(filename)
+                if not match:
+                    continue
 
-                    is_openapi_format = filename.endswith('.yaml')
+                filename = match.group(1)
+                doc_name = match.group(2)
+                filename = os.path.expanduser(filename)
 
-                    if not os.path.isabs(filename):
-                        parent_dir = self.base_path
-                        filename = os.path.normpath(os.path.join(parent_dir, filename))
+                is_openapi_format = filename.endswith('.yaml')
 
-                    if is_openapi_format:
-                        endpoint, method = doc_name.rsplit(':', 1)
-                        arguments = []  # type: List[Dict[str, Any]]
+                if not os.path.isabs(filename):
+                    parent_dir = self.base_path
+                    filename = os.path.normpath(os.path.join(parent_dir, filename))
 
-                        try:
-                            arguments = get_openapi_parameters(endpoint, method)
-                        except KeyError as e:
-                            # Don't raise an exception if the "parameters"
-                            # field is missing; we assume that's because the
-                            # endpoint doesn't accept any parameters
-                            if e.args != ('parameters',):
-                                raise e
-                    else:
-                        with open(filename, 'r') as fp:
-                            json_obj = ujson.load(fp)
-                            arguments = json_obj[doc_name]
+                if is_openapi_format:
+                    endpoint, method = doc_name.rsplit(':', 1)
+                    arguments = []  # type: List[Dict[str, Any]]
 
-                    if arguments:
-                        text = self.render_table(arguments)
-                    else:
-                        text = ['This endpoint does not consume any arguments.']
-                    # The line that contains the directive to include the macro
-                    # may be preceded or followed by text or tags, in that case
-                    # we need to make sure that any preceding or following text
-                    # stays the same.
-                    line_split = REGEXP.split(line, maxsplit=0)
-                    preceding = line_split[0]
-                    following = line_split[-1]
-                    text = [preceding] + text + [following]
-                    lines = lines[:loc] + text + lines[loc+1:]
-                    break
+                    try:
+                        arguments = get_openapi_parameters(endpoint, method)
+                    except KeyError as e:
+                        # Don't raise an exception if the "parameters"
+                        # field is missing; we assume that's because the
+                        # endpoint doesn't accept any parameters
+                        if e.args != ('parameters',):
+                            raise e
+                else:
+                    with open(filename, 'r') as fp:
+                        json_obj = ujson.load(fp)
+                        arguments = json_obj[doc_name]
+
+                if arguments:
+                    text = self.render_table(arguments)
+                else:
+                    text = ['This endpoint does not consume any arguments.']
+                # The line that contains the directive to include the macro
+                # may be preceded or followed by text or tags, in that case
+                # we need to make sure that any preceding or following text
+                # stays the same.
+                line_split = REGEXP.split(line, maxsplit=0)
+                preceding = line_split[0]
+                following = line_split[-1]
+                text = [preceding] + text + [following]
+                lines = lines[:loc] + text + lines[loc+1:]
+                break
             else:
                 done = True
         return lines
