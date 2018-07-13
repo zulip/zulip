@@ -12,7 +12,7 @@ from zerver.models import Recipient, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
     allocate_client_descriptor, process_message_event, clear_client_event_queues_for_testing, \
     get_client_descriptor, missedmessage_hook
-from zerver.tornado.views import get_events_backend
+from zerver.tornado.views import get_events
 
 class MissedMessageNotificationsTest(ZulipTestCase):
     """Tests the logic for when missed-message notifications
@@ -175,7 +175,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         email = user_profile.email
         self.login(email)
 
-        result = self.tornado_call(get_events_backend, user_profile,
+        result = self.tornado_call(get_events, user_profile,
                                    {"apply_markdown": ujson.dumps(True),
                                     "client_gravatar": ujson.dumps(True),
                                     "event_types": ujson.dumps(["message"]),

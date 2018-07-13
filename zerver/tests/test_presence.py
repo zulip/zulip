@@ -316,7 +316,7 @@ class UserPresenceTests(ZulipTestCase):
         UserActivity.objects.get_or_create(
             user_profile=user_profile,
             client=client,
-            query='get_events_backend',
+            query='get_events',
             count=2,
             last_visit=last_visit
         )

@@ -340,7 +340,7 @@ v1_api_and_json_patterns = [
 
     # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
-        {'GET': 'zerver.tornado.views.get_events_backend',
+        {'GET': 'zerver.tornado.views.get_events',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
 
     # report -> zerver.views.report

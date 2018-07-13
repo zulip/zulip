@@ -35,6 +35,9 @@ def cleanup_event_queue(request: HttpRequest, user_profile: UserProfile,
     return json_success()
 
 @asynchronous
+def get_events(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler):
+    return get_events_backend(request, user_profile, handler)
+
 @has_request_variables
 def get_events_backend(request: HttpRequest, user_profile: UserProfile, handler: BaseHandler,
                        user_client: Optional[Client]=REQ(converter=get_client, default=None),

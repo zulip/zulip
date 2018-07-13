@@ -32,7 +32,7 @@ from zerver.tornado.application import create_tornado_application
 from zerver.tornado import event_queue
 from zerver.tornado.event_queue import fetch_events, \
     allocate_client_descriptor, process_event
-from zerver.tornado.views import get_events_backend
+from zerver.tornado.views import get_events
 
 from http.cookies import SimpleCookie
 import urllib.parse
@@ -256,7 +256,7 @@ class TornadoTestCase(WebSocketBaseTestCase):
                 }
             ])
         self.assertEqual(msg_resp[0], 'a')
-        result = self.tornado_call(get_events_backend, profile,
+        result = self.tornado_call(get_events, profile,
                                    {"queue_id": queue_events_data['response']['queue_id'],
                                     "user_client": "website",
                                     "last_event_id": -1,
