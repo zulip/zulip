@@ -3,6 +3,8 @@ import os
 from typing import Any
 import ujson
 
+from django.core import signing
+
 import stripe
 from stripe.api_resources.list_object import ListObject
 
@@ -13,7 +15,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count, extract_current_subscription
+    get_seat_count, extract_current_subscription, sign_string, unsign_string
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -245,6 +247,14 @@ class StripeTest(ZulipTestCase):
         customer_with_subscription = stripe.Customer.retrieve()
         subscription = extract_current_subscription(customer_with_subscription)
         self.assertEqual(subscription["id"][:4], "sub_")
+
+    def test_sign_string(self) -> None:
+        string = "abc"
+        signed_string, salt = sign_string(string)
+        self.assertEqual(string, unsign_string(signed_string, salt))
+
+        with self.assertRaises(signing.BadSignature):
+            unsign_string(signed_string, "randomsalt")
 
 class BillingUpdateTest(ZulipTestCase):
     def setUp(self) -> None:
