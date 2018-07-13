@@ -3178,6 +3178,11 @@ nav ul li.active::after {
             -webkit-box-shadow: none;
          }
     }
+
+    #error-message-box {
+        margin-top: 10px;
+        font-weight: 600;
+    }
 }
 
 @keyframes box-shadow-pulse {
