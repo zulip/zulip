@@ -5,9 +5,11 @@
 {% block portico_content %}
 <div class="app help api-docs terms-page inline-block">
     <div class="sidebar">
-        <h1 class="no-arrow"><a href="/api/" class="no-underline">Home</a></h1>
-        {{ render_markdown_path("zerver/api/sidebar.md", api_uri_context) }}
-        <h1 class="home-link"><a href="/" class="no-underline">Back to Home</a></h1>
+        <div class="content">
+            <h1 class="no-arrow"><a href="/api/" class="no-underline">Home</a></h1>
+            {{ render_markdown_path("zerver/api/sidebar.md", api_uri_context) }}
+            <h1 class="home-link"><a href="/" class="no-underline">Back to Home</a></h1>
+        </div>
     </div>
 
     <svg height="32px" class="hamburger" style="enable-background:new 0 0 32 32;" version="1.1" viewBox="0 0 32 32" width="32px" xml:space="preserve" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">

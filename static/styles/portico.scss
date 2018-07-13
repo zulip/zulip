@@ -2,6 +2,11 @@ body {
     background-color: #fafafa;
 }
 
+.noscroll {
+    overflow: hidden;
+    position: fixed;
+}
+
 .container-fluid {
     padding: 0px;
     min-height: 100%;
@@ -113,11 +118,13 @@ body {
     display: block;
 }
 
+.help .app-main {
+    padding: 0;
+    margin-top: 59px;
+}
+
 .app.help {
-    position: fixed;
-    width: 100vw;
-    height: calc(100vh - 59px);
-    left: 0px;
+    display: inline-flex;
 
     box-shadow: 0px -20px 50px rgba(0, 0, 0, 0.04);
     overflow: auto;
@@ -127,12 +134,9 @@ body {
 
 .help .sidebar {
     width: 300px;
-
-    position: fixed;
     z-index: 1;
     /* 100vh - navbar - paddingTop - paddingBottom - bottomNav */
-    height: calc(100vh - 59px - 10px - 10px);
-    padding: 10px 20px 10px 20px;
+    height: calc(100vh - 59px);
 
     border-right: 1px solid hsl(219, 10%, 97%);
     overflow: auto;
@@ -141,6 +145,10 @@ body {
     color: hsl(0, 0%, 100%);
 
     -webkit-overflow-scrolling: touch;
+}
+
+.help .sidebar .content {
+    padding: 10px 20px;
 }
 
 .help .sidebar h1,
@@ -1503,19 +1511,14 @@ input.new-organization-button {
 
 /* -- markdown styling -- */
 .markdown {
-    position: absolute;
-    right: 0px;
-    /* 100vw - sidebar width - paddingTop - paddingBottom */
-    width: calc(100vw - 340px - 30px);
-    padding: 0px 30px 0px 30px;
-
-    height: calc(100vh - 59px);
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
 
     background-color: #fff;
 
+    width: calc(100vw - 300px);
+    height: calc(100vh - 59px);
     overflow: auto;
 
     -webkit-font-smoothing: antialiased;
@@ -1523,11 +1526,6 @@ input.new-organization-button {
 
 .markdown .content {
     padding: 30px;
-    max-width: 768px;
-    margin-left: 0px;
-
-    min-height: calc(100% - 60px);
-
     background: #fff;
 }
 
@@ -1774,16 +1772,14 @@ input.new-organization-button {
     margin-bottom: 25px !important;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 800px) {
     .app.help .markdown {
-        width: calc(100vw - 50px);
-        height: calc(100vh - 59px);
-        left: 50px;
-        padding: 0px;
+        width: 100vw;
     }
 
     .app.help .markdown .content {
         max-width: none;
+        margin-left: 50px;
     }
 
     .app.help .hamburger {
@@ -1794,45 +1790,50 @@ input.new-organization-button {
         fill: hsl(0, 0%, 100%);
         z-index: 2;
 
-
         transition: all 0.3s ease;
         cursor: pointer;
     }
 
     .app.help .sidebar {
+        position: fixed;
+        top: 59px;
         right: calc(100vw - 50px);
-        padding-right: 80px;
+
+        width: 100%;
+        min-width: unset;
+        height: calc(100vh - 59px);
+
+        pointer-events: none;
+        overflow: hidden;
         transform: translateX(0);
         transition: all 0.3s ease;
-        overflow: hidden;
-        height: 100vh;
     }
 
     .app.help .sidebar.show {
-        padding-right: 20px;
-        transform: translateX(280px);
+        pointer-events: initial;
+        transform: translateX(calc(100% - 50px));
+        overflow: auto;
     }
 
     .app.help .sidebar.show + .hamburger {
-        transform: translateX(280px);
+        transform: translateX(calc(100vw - 50px));
     }
 
     .app.help .sidebar.show ~ .markdown {
         -webkit-filter: brightness(0.7);
     }
 
-    .app.help .sidebar:not(.show) .ps__rail-y {
-        display: none; /* Hide y-scrollbar on collapsed sidebar view */
-    }
-}
-
-@media (max-width: 950px) {
-    .footer-main {
-        text-align: center;
+    .app-main,
+    .header-main {
+        min-width: auto;
     }
 
-    .footer-navigation {
-        margin-left: 0px;
+    .app-main {
+        padding: 0;
+    }
+
+    .help .sidebar:not(.show) a.highlighted {
+        background-color: transparent;
     }
 }
 
@@ -1906,13 +1907,31 @@ input.new-organization-button {
 }
 
 @media (max-width: 500px) {
+    .help .app-main {
+        margin-top: 39px;
+    }
+
+    .app.help .sidebar {
+        top: 39px;
+        height: calc(100vh - 39px);
+    }
+
+    .app.help .hamburger {
+        top: 50px;
+    }
+
     .error_page .lead {
         font-size: 1.5em;
         margin-bottom: 10px;
     }
 
+    .markdown {
+        height: calc(100vh - 39px);
+        width: 100%;
+    }
+
     .markdown .content {
-        padding: 30px 10px 80px 10px;
+        padding: 10px;
     }
 
     .brand.logo .light {
@@ -1923,60 +1942,17 @@ input.new-organization-button {
         display: block;
     }
 
-    .app.help {
-        position: absolute;
-        height: calc(100vh - 40px);
-    }
-
-    .app.help .sidebar {
-        width: calc(100% - 40px);
-        height: calc(100vh - 40px - 10px - 9px);
-    }
-
-    .app.help .sidebar.show {
-        transform: translateX(calc(100% - 50px));
-    }
-
-    .app.help .sidebar.show + .hamburger {
-        transform: translateX(calc(100vw - 50px));
-    }
-
-    .app.help .hamburger {
-        top: 50px;
-    }
-
-    .app.help .markdown {
-        height: 100%;
-    }
-
-    .app.help .footer-main {
-        padding: 0;
-    }
-
-    .app-main,
-    .header-main,
-    .footer-main {
-        min-width: auto;
-    }
-
-    .app-main {
-        padding: 0px;
-    }
-
     .header {
         padding: 4px 0px 6px 0px;
     }
 
     .header-main {
         max-width: 100vw;
+        padding: 0 10px;
     }
 
     .markdown ol {
         margin-left: 0px;
-    }
-
-    .footer-navigation {
-        font-size: 12px;
     }
 
     .markdown a {

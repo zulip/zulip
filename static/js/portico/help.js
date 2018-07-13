@@ -1,5 +1,5 @@
 /* eslint indent: "off" */
-import PerfectScrollbar from 'perfect-scrollbar';
+import SimpleBar from 'simplebar';
 
 function registerCodeSection($codeSection) {
     const $li = $codeSection.find("ul.nav li");
@@ -78,10 +78,12 @@ function render_code_sections() {
 
 function scrollToHash(container) {
     var hash = window.location.hash;
+    var simplebar = new SimpleBar(container).getScrollElement();
     if (hash !== '') {
-        container.scrollTop = $(hash).position().top - $('.markdown .content').position().top;
+        var position = $(hash).position().top - $(container).position().top;
+        simplebar.scrollTop = position;
     } else {
-        container.scrollTop = 0;
+        simplebar.scrollTop = 0;
     }
 }
 
@@ -91,12 +93,7 @@ function scrollToHash(container) {
         name: null,
     };
 
-    var markdownPS = new PerfectScrollbar($(".markdown")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
+    var markdownSB = new SimpleBar($(".markdown")[0]);
 
     var fetch_page = function (path, callback) {
         $.get(path, function (res) {
@@ -111,7 +108,7 @@ function scrollToHash(container) {
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
             render_code_sections();
-            markdownPS.update();
+            markdownSB.recalculate();
             scrollToHash(container);
         } else {
             loading.name = path;
@@ -119,18 +116,13 @@ function scrollToHash(container) {
                 html_map[path] = res;
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
-                markdownPS.update();
+                markdownSB.recalculate();
                 scrollToHash(container);
             });
         }
     };
 
-    new PerfectScrollbar($(".sidebar")[0], {
-        suppressScrollX: true,
-        useKeyboard: false,
-        wheelSpeed: 0.68,
-        scrollingThreshold: 50,
-    });
+    new SimpleBar($(".sidebar")[0]);
 
     $(".sidebar.slide h2").click(function (e) {
         var $next = $(e.target).next();
@@ -140,7 +132,7 @@ function scrollToHash(container) {
             $('.sidebar ul').not($next).hide();
             // Toggle the heading
             $next.slideToggle("fast", "swing", function () {
-                markdownPS.update();
+                markdownSB.recalculate();
             });
         }
     });
@@ -199,7 +191,7 @@ function scrollToHash(container) {
     scrollToHash(container);
 
     window.onresize = function () {
-        markdownPS.update();
+        markdownSB.recalculate();
     };
 
     window.addEventListener("popstate", function () {
@@ -207,4 +199,5 @@ function scrollToHash(container) {
         update_page(html_map, path, container);
     });
 
+    $('body').addClass('noscroll');
 }());
