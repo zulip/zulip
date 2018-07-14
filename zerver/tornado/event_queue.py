@@ -702,8 +702,6 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     # notifications to match the model of push notifications
     # above.
     if idle and (private_message or mentioned):
-        # We require RabbitMQ to do this, as we can't call the email handler
-        # from the Tornado process. So if there's no rabbitmq support do nothing
         if private_message:
             notice['trigger'] = 'private_message'
         elif mentioned:
