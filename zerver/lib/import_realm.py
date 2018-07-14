@@ -26,7 +26,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot
+    UserHotspot, MutedTopic
 
 # Code from here is the realm import code path
 
@@ -63,6 +63,7 @@ id_maps = {
     'realmauditlog': {},
     'recipient_to_huddle_map': {},
     'userhotspot': {},
+    'mutedtopic': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -677,6 +678,13 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         re_map_foreign_keys(data, 'zerver_userhotspot', 'user', related_table='user_profile')
         update_model_ids(UserHotspot, data, 'zerver_userhotspot', 'userhotspot')
         bulk_import_model(data, UserHotspot, 'zerver_userhotspot')
+
+    if 'zerver_mutedtopic' in data:
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'user_profile', related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'stream', related_table='stream')
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
+        update_model_ids(MutedTopic, data, 'zerver_mutedtopic', 'mutedtopic')
+        bulk_import_model(data, MutedTopic, 'zerver_mutedtopic')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")

@@ -41,6 +41,10 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 
+from zerver.lib.topic_mutes import (
+    add_topic_mute,
+)
+
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
@@ -58,7 +62,9 @@ from zerver.models import (
     RealmAuditLog,
     Huddle,
     UserHotspot,
+    MutedTopic,
     get_active_streams,
+    get_stream,
     get_stream_recipient,
     get_personal_recipient,
     get_huddle_hash,
@@ -484,9 +490,19 @@ class ImportExportTest(ZulipTestCase):
         )
 
         # data to test import of hotspots
+        sample_user = self.example_user('hamlet')
+
         UserHotspot.objects.create(
-            user=self.example_user('hamlet'), hotspot='intro_streams'
+            user=sample_user, hotspot='intro_streams'
         )
+
+        # data to test import of muted topic
+        stream = get_stream(u'Verona', original_realm)
+        add_topic_mute(
+            user_profile=sample_user,
+            stream_id=stream.id,
+            recipient_id=get_stream_recipient(stream.id).id,
+            topic_name=u'Verona2')
 
         self._export_realm(original_realm)
 
@@ -627,6 +643,15 @@ class ImportExportTest(ZulipTestCase):
             return user_hotspots
 
         assert_realm_values(get_user_hotspots)
+
+        # test muted topics
+        def get_muted_topics(r: Realm) -> Set[str]:
+            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
+            muted_topics = MutedTopic.objects.filter(user_profile=user_profile)
+            topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
+            return topic_names
+
+        assert_realm_values(get_muted_topics)
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
