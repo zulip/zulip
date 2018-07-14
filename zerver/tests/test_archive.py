@@ -10,13 +10,13 @@ class GlobalPublicStreamTest(ZulipTestCase):
     def test_non_existant_stream_id(self) -> None:
         # Here we use a relatively big number as stream id assumming such an id
         # won't exist in the test DB.
-        result = self.client_get("/archive/streams/100000000/topic/TopicGlobal")
+        result = self.client_get("/archive/streams/100000000/topics/TopicGlobal")
         self.assert_in_success_response(["This stream does not exist."], result)
 
     def test_non_web_public_stream(self) -> None:
         test_stream = self.make_stream('Test Public Archives')
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topic/notpublicglobalstream"
+            "/archive/streams/" + str(test_stream.id) + "/topics/notpublicglobalstream"
         )
         self.assert_in_success_response(["This stream does not exist."], result)
 
@@ -24,7 +24,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
         test_stream = self.make_stream('Test Public Archives')
         do_change_stream_web_public(test_stream, True)
         result = self.client_get(
-            "/archive/streams/" + str(test_stream.id) + "/topic/nonexistenttopic"
+            "/archive/streams/" + str(test_stream.id) + "/topics/nonexistenttopic"
         )
         self.assert_in_success_response(["This topic does not exist."], result)
 
@@ -40,7 +40,7 @@ class GlobalPublicStreamTest(ZulipTestCase):
                 'TopicGlobal'
             )
             return self.client_get(
-                "/archive/streams/" + str(test_stream.id) + "/topic/TopicGlobal"
+                "/archive/streams/" + str(test_stream.id) + "/topics/TopicGlobal"
             )
 
         result = send_msg_and_get_result('Test Message 1')
@@ -80,3 +80,47 @@ class GlobalPublicStreamTest(ZulipTestCase):
         self.assert_length(public_subs, 1)
         self.assert_length(public_unsubs, 0)
         self.assert_length(public_neversubs, 0)
+
+class WebPublicTopicHistoryTest(ZulipTestCase):
+    def test_non_existant_stream_id(self) -> None:
+        result = self.client_get("/archive/streams/100000000/topics")
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual(history, [])
+
+    def test_non_web_public_stream(self) -> None:
+        test_stream = self.make_stream('Test Public Archives')
+
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message',
+            'TopicGlobal'
+        )
+
+        result = self.client_get(
+            "/archive/streams/" + str(test_stream.id) + "/topics"
+        )
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assertEqual(history, [])
+
+    def test_web_public_stream(self) -> None:
+        test_stream = self.make_stream('Test Public Archives')
+        do_change_stream_web_public(test_stream, True)
+
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message',
+            'TopicGlobal'
+        )
+
+        result = self.client_get(
+            "/archive/streams/" + str(test_stream.id) + "/topics"
+        )
+        self.assert_json_success(result)
+        history = result.json()['topics']
+        self.assert_length(history, 1)
+        self.assert_length(history[0], 2)
+        self.assertEqual(history[0]['name'], 'TopicGlobal')
