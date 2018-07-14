@@ -20,13 +20,14 @@ from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend
+from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic
+    UserHotspot, MutedTopic, Service
 
 # Code from here is the realm import code path
 
@@ -64,6 +65,7 @@ id_maps = {
     'recipient_to_huddle_map': {},
     'userhotspot': {},
     'mutedtopic': {},
+    'service': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -139,6 +141,14 @@ def create_subscription_events(data: TableData, table: TableName) -> None:
                                                    event_time=event_time,
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED))
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
+def fix_service_tokens(data: TableData, table: TableName) -> None:
+    """
+    The tokens in the services are created by 'random_api_key'.
+    As the tokens are unique, they should be re-created for the imports.
+    """
+    for item in data[table]:
+        item['token'] = random_api_key()
 
 def process_huddle_hash(data: TableData, table: TableName) -> None:
     """
@@ -685,6 +695,12 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
         update_model_ids(MutedTopic, data, 'zerver_mutedtopic', 'mutedtopic')
         bulk_import_model(data, MutedTopic, 'zerver_mutedtopic')
+
+    if 'zerver_service' in data:
+        re_map_foreign_keys(data, 'zerver_service', 'user_profile', related_table='user_profile')
+        fix_service_tokens(data, 'zerver_service')
+        update_model_ids(Service, data, 'zerver_service', 'service')
+        bulk_import_model(data, Service, 'zerver_service')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
