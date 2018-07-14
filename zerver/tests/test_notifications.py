@@ -39,10 +39,11 @@ class TestMissedMessages(ZulipTestCase):
     def _test_cases(self, tokens: List[str], msg_id: int, body: str, subject: str,
                     send_as_user: bool, verify_html_body: bool=False,
                     show_message_content: bool=True,
-                    verify_body_does_not_include: Optional[List[str]]=None) -> None:
+                    verify_body_does_not_include: Optional[List[str]]=None,
+                    trigger: str='') -> None:
         othello = self.example_user('othello')
         hamlet = self.example_user('hamlet')
-        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id}])
+        handle_missedmessage_emails(hamlet.id, [{'message_id': msg_id, 'trigger': trigger}])
         if settings.EMAIL_GATEWAY_PATTERN != "":
             reply_to_addresses = [settings.EMAIL_GATEWAY_PATTERN % (u'mm' + t) for t in tokens]
             reply_to_emails = [formataddr(("Zulip", address)) for address in reply_to_addresses]
@@ -113,7 +114,8 @@ class TestMissedMessages(ZulipTestCase):
                                             'Or just reply to this email.']
         self._test_cases(tokens, msg_id, body, subject, send_as_user,
                          show_message_content=show_message_content,
-                         verify_body_does_not_include=verify_body_does_not_include)
+                         verify_body_does_not_include=verify_body_does_not_include,
+                         trigger='mentioned')
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_missed_stream_messages_mention_two_senders(
@@ -128,7 +130,7 @@ class TestMissedMessages(ZulipTestCase):
             '@**King Hamlet**')
         body = 'Denmark > test Cordelia Lear 0 1 2 Othello, the Moor of Venice @**King Hamlet**'
         subject = 'Othello, the Moor of Venice mentioned you'
-        self._test_cases(tokens, msg_id, body, subject, send_as_user)
+        self._test_cases(tokens, msg_id, body, subject, send_as_user, trigger='mentioned')
 
     @patch('zerver.lib.email_mirror.generate_random_token')
     def _extra_context_in_personal_missed_stream_messages(self, send_as_user: bool,

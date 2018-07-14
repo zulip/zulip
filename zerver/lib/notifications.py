@@ -307,10 +307,16 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     context.update({
         'name': user_profile.full_name,
         'message_count': message_count,
-        'mention': missed_messages[0]['message'].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
         'show_message_content': user_profile.message_content_in_email_notifications,
+    })
+
+    triggers = list(message['trigger'] for message in missed_messages)
+    unique_triggers = set(triggers)
+    context.update({
+        'mention': 'mentioned' in unique_triggers,
+        'mention_count': triggers.count('mentioned'),
     })
 
     # If this setting (email mirroring integration) is enabled, only then
@@ -410,7 +416,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
 
 def handle_missedmessage_emails(user_profile_id: int,
                                 missed_email_events: Iterable[Dict[str, Any]]) -> None:
-    message_ids = [event.get('message_id') for event in missed_email_events]
+    message_ids = {event.get('message_id'): event.get('trigger') for event in missed_email_events}
 
     user_profile = get_user_profile_by_id(user_profile_id)
     if not receives_offline_email_notifications(user_profile):
@@ -458,6 +464,7 @@ def handle_missedmessage_emails(user_profile_id: int,
         for m in messages_by_recipient_subject[recipient_subject]:
             unique_messages[m.id] = dict(
                 message=m,
+                trigger=message_ids.get(m.id)
             )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
