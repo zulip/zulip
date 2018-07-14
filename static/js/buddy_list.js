@@ -28,11 +28,28 @@ var buddy_list = (function () {
         return user_id;
     };
 
+    self.get_data_from_keys = function (opts) {
+        var keys = opts.keys;
+        var data = buddy_data.get_items_for_users(keys);
+        return data;
+    };
+
     // Try to keep code below this line generic, so that we can
     // extract a widget.
 
+    self.keys = [];
+
     self.populate = function (opts) {
-        var html = self.items_to_html({items: opts.items});
+        // We rely on our caller to give us items
+        // in already-sorted order.
+        self.keys = _.map(opts.keys, function (k) {
+            return k.toString();
+        });
+
+        var items = self.get_data_from_keys({
+            keys: self.keys,
+        });
+        var html = self.items_to_html({items: items});
         self.container = $(self.container_sel);
         self.container.html(html);
     };
@@ -75,38 +92,71 @@ var buddy_list = (function () {
     };
 
     self.maybe_remove_key = function (opts) {
+        var pos = self.keys.indexOf(opts.key);
+
+        if (pos < 0) {
+            return;
+        }
+
+        self.keys.splice(pos, 1);
+
         var li = self.find_li({key: opts.key});
         li.remove();
     };
 
-    self.insert_or_move = function (opts) {
+    self.find_position = function (opts) {
         var key = opts.key;
+        var compare_function = opts.compare_function;
+        var i;
+
+        for (i = 0; i < self.keys.length; i += 1) {
+            var list_key = self.keys[i];
+
+            if (compare_function(key, list_key) < 0) {
+                return i;
+            }
+        }
+
+        return self.keys.length;
+    };
+
+    self.insert_new_html = function (opts) {
+        var other_key = opts.other_key;
+        var html = opts.html;
+
+        if (other_key === undefined) {
+            self.container.append(html);
+            return;
+        }
+
+        var li = self.find_li({key: other_key});
+        li.before(html);
+    };
+
+    self.insert_or_move = function (opts) {
+        var key = opts.key.toString();
         var item = opts.item;
         var compare_function = opts.compare_function;
 
         self.maybe_remove_key({key: key});
+
+        var pos = self.find_position({
+            key: key,
+            compare_function: compare_function,
+        });
+
+        // Order is important here--get the other_key
+        // before mutating our list.  An undefined value
+        // corresponds to appending.
+        var other_key = self.keys[pos];
+
+        self.keys.splice(pos, 0, key);
+
         var html = self.item_to_html({item: item});
-
-        var list_items = self.container.find(self.item_sel);
-
-        function insert() {
-            var i = 0;
-
-            for (i = 0; i < list_items.length; i += 1) {
-                var li = list_items.eq(i);
-
-                var list_key = self.get_key_from_li({li: li});
-
-                if (compare_function(key, list_key) < 0) {
-                    li.before(html);
-                    return;
-                }
-            }
-
-            self.container.append(html);
-        }
-
-        insert();
+        self.insert_new_html({
+            html: html,
+            other_key: other_key,
+        });
     };
 
     // This is a bit of a hack to make sure we at least have

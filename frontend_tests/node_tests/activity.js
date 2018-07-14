@@ -288,6 +288,12 @@ presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
 presence.presence_info[me.user_id] = { status: activity.ACTIVE };
 
+function clear_buddy_list() {
+    buddy_list.populate({
+        keys: [],
+    });
+}
+
 function reset_setup() {
     set_global('$', global.make_zjquery());
     activity.set_cursor_and_filter();
@@ -305,62 +311,19 @@ run_test('presence_list_full_update', () => {
     compose_state.recipient = () => fred.email;
     compose_fade.set_focused_recipient("private");
 
-    const users = activity.build_user_sidebar();
-    assert.deepEqual(users, [
-        {
-            name: 'Fred Flintstone',
-            href: '#narrow/pm-with/2-fred',
-            user_id: fred.user_id,
-            num_unread: 0,
-            type: 'active',
-            type_desc: 'is active',
-            faded: false,
-        },
-        {
-            name: 'Jill Hill',
-            href: '#narrow/pm-with/3-jill',
-            user_id: jill.user_id,
-            num_unread: 0,
-            type: 'active',
-            type_desc: 'is active',
-            faded: true,
-        },
-        {
-            name: 'Norbert Oswald',
-            href: '#narrow/pm-with/5-norbert',
-            user_id: norbert.user_id,
-            num_unread: 0,
-            type: 'active',
-            type_desc: 'is active',
-            faded: true,
-        },
-        {
-            name: 'Zoe Yang',
-            href: '#narrow/pm-with/6-zoe',
-            user_id: zoe.user_id,
-            num_unread: 0,
-            type: 'active',
-            type_desc: 'is active',
-            faded: true,
-        },
-        {
-            name: 'Alice Smith',
-            href: '#narrow/pm-with/1-alice',
-            user_id: alice.user_id,
-            num_unread: 0,
-            type: 'idle',
-            type_desc: 'is not active',
-            faded: true,
-        },
-        {
-            name: 'Marky Mark',
-            href: '#narrow/pm-with/4-mark',
-            user_id: mark.user_id,
-            num_unread: 0,
-            type: 'idle',
-            type_desc: 'is not active',
-            faded: true,
-        },
+    var user_ids = activity.build_user_sidebar();
+
+    user_ids = _.map(user_ids, function (user_id) {
+        return parseInt(user_id, 10);
+    });
+
+    assert.deepEqual(user_ids, [
+        fred.user_id,
+        jill.user_id,
+        norbert.user_id,
+        zoe.user_id,
+        alice.user_id,
+        mark.user_id,
     ]);
 });
 
@@ -600,89 +563,82 @@ run_test('filter_user_ids', () => {
 });
 
 run_test('insert_one_user_into_empty_list', () => {
-    const alice_li = $.create('alice list item');
-
     let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
-        buddy_list_add(alice.user_id, alice_li);
     };
 
-    var removed;
-    const remove_stub = {
-        remove: () => {
-            removed = true;
-        },
-    };
-    buddy_list_add(alice.user_id, remove_stub);
-
-    simulate_list_items([]);
+    clear_buddy_list();
     activity.insert_user_into_list(alice.user_id);
     assert(appended_html.indexOf('data-user-id="1"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
-    assert(removed);
 });
 
 reset_setup();
 
-run_test('insert_fred_after_alice', () => {
-    const alice_li = $.create('alice list item');
-    const fred_li = $.create('fred list item');
-
-    alice_li.attr('data-user-id', alice.user_id);
+run_test('insert_alice_then_fred', () => {
+    clear_buddy_list();
 
     let appended_html;
     $('#user_presences').append = function (html) {
         appended_html = html;
-        buddy_list_add(fred.user_id, fred_li);
     };
 
-    var removed;
-    const remove_stub = {
-        remove: () => {
-            removed = true;
-        },
-    };
-    buddy_list_add(fred.user_id, remove_stub);
-
-    simulate_list_items([alice_li]);
+    activity.insert_user_into_list(alice.user_id);
+    assert(appended_html.indexOf('data-user-id="1"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
 
     activity.insert_user_into_list(fred.user_id);
-
     assert(appended_html.indexOf('data-user-id="2"') > 0);
     assert(appended_html.indexOf('user_active') > 0);
-    assert(removed);
 });
 
 reset_setup();
 
-run_test('insert_fred_before_jill', () => {
-    const fred_li = $.create('fred-li');
-    const jill_li = $.create('jill-li');
+run_test('insert_fred_then_alice_then_rename', () => {
+    clear_buddy_list();
 
-    jill_li.attr('data-user-id', jill.user_id);
-
-    var before_html;
-    jill_li.before = function (html) {
-        before_html = html;
-        buddy_list_add(fred.user_id, fred_li);
+    let appended_html;
+    $('#user_presences').append = function (html) {
+        appended_html = html;
     };
-
-    var removed;
-    const remove_stub = {
-        remove: () => {
-            removed = true;
-        },
-    };
-    buddy_list_add(fred.user_id, remove_stub);
-
-    simulate_list_items([jill_li]);
 
     activity.insert_user_into_list(fred.user_id);
+    assert(appended_html.indexOf('data-user-id="2"') > 0);
+    assert(appended_html.indexOf('user_active') > 0);
 
-    assert(before_html.indexOf('data-user-id="2"') > 0);
-    assert(before_html.indexOf('user_active') > 0);
-    assert(removed);
+    var fred_stub = $.create('fred-first');
+    buddy_list_add(fred.user_id, fred_stub);
+
+    var inserted_html;
+    fred_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    activity.insert_user_into_list(alice.user_id);
+    assert(inserted_html.indexOf('data-user-id="1"') > 0);
+    assert(inserted_html.indexOf('user_active') > 0);
+
+    // Next rename fred to Aaron.
+    const fred_with_new_name = {
+        email: fred.email,
+        user_id: fred.user_id,
+        full_name: "Aaron",
+    };
+    people.add(fred_with_new_name);
+
+    var alice_stub = $.create('alice-first');
+    buddy_list_add(alice.user_id, alice_stub);
+
+    alice_stub.before = (html) => {
+        inserted_html = html;
+    };
+
+    activity.insert_user_into_list(fred_with_new_name.user_id);
+    assert(appended_html.indexOf('data-user-id="2"') > 0);
+
+    // restore old Fred data
+    people.add(fred);
 });
 
 // Reset jquery here.

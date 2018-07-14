@@ -100,11 +100,6 @@ exports.info_for = function (user_id) {
     var status = presence.get_status(user_id);
     var person = people.get_person_from_user_id(user_id);
 
-    // if the user is you or a bot, do not show in presence data.
-    if (person.is_bot || person.user_id === page_params.user_id) {
-        return;
-    }
-
     return {
         href: narrow.pm_with_uri(person.email),
         name: person.full_name,
@@ -160,15 +155,22 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
         user_ids = presence.get_user_ids();
     }
 
+    user_ids = _.filter(user_ids, function (user_id) {
+        var person = people.get_person_from_user_id(user_id);
+
+        if (person) {
+            // if the user is you or a bot, do not show in presence data.
+            if (person.is_bot || person.user_id === page_params.user_id) {
+                return false;
+            }
+        }
+        return true;
+    });
+
+
     user_ids = maybe_shrink_list(user_ids, filter_text);
 
     return exports.sort_users(user_ids);
-};
-
-exports.get_items = function (filter_text) {
-    var user_ids = exports.get_filtered_and_sorted_user_ids(filter_text);
-
-    return exports.get_items_for_users(user_ids);
 };
 
 exports.get_items_for_users = function (user_ids) {

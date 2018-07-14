@@ -235,15 +235,15 @@ exports.build_user_sidebar = function () {
 
     var filter_text = exports.get_filter_text();
 
-    var user_info = buddy_data.get_items(filter_text);
+    var user_ids = buddy_data.get_filtered_and_sorted_user_ids(filter_text);
 
     buddy_list.populate({
-        items: user_info,
+        keys: user_ids,
     });
 
     resize.resize_page_components();
 
-    return user_info; // for testing
+    return user_ids; // for testing
 };
 
 function do_update_users_for_search() {
