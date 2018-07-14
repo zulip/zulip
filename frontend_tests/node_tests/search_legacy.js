@@ -1,5 +1,5 @@
 set_global('page_params', {
-    search_pills_enabled: true,
+    search_pills_enabled: false,
 });
 zrequire('search');
 
