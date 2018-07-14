@@ -2,6 +2,10 @@ set_global('page_params', {
     search_pills_enabled: true,
 });
 zrequire('search');
+zrequire('search_pill');
+zrequire('util');
+zrequire('Filter', 'js/filter');
+zrequire('search_pill_widget');
 
 const noop = () => {};
 const return_true = () => true;
@@ -14,7 +18,8 @@ set_global('ui_util', {
     change_tab_to: noop,
 });
 set_global('narrow', {});
-set_global('Filter', {});
+
+search_pill.append_search_string = noop;
 
 global.patch_builtin('setTimeout', func => func());
 
@@ -105,20 +110,24 @@ run_test('initizalize', () => {
         {
             let operators;
             let is_blurred;
+            let is_append_search_string_called;
             search_query_box.blur = () => {
                 is_blurred = true;
+            };
+            search_pill.append_search_string = () => {
+                is_append_search_string_called = true;
             };
             /* Test updater */
             const _setup = (search_box_val) => {
                 is_blurred = false;
+                is_append_search_string_called = false;
                 search_query_box.val(search_box_val);
-                Filter.parse = (search_string) => {
-                    assert.equal(search_string, search_box_val);
-                    return operators;
-                };
                 narrow.activate = (raw_operators, options) => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: 'search'});
+                };
+                search_pill.get_search_string_for_current_filter = () => {
+                    return '';
                 };
             };
 
@@ -128,8 +137,9 @@ run_test('initizalize', () => {
                 operand: 'ver',
             }];
             _setup('ver');
-            assert.equal(opts.updater('ver'), 'ver');
+            opts.updater('ver');
             assert(is_blurred);
+            assert(is_append_search_string_called);
 
             operators = [{
                 negated: false,
@@ -137,13 +147,15 @@ run_test('initizalize', () => {
                 operand: 'Verona',
             }];
             _setup('stream:Verona');
-            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
+            opts.updater('stream:Verona');
             assert(is_blurred);
+            assert(is_append_search_string_called);
 
             search.is_using_input_method = true;
             _setup('stream:Verona');
-            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
+            opts.updater('stream:Verona');
             assert(!is_blurred);
+            assert(is_append_search_string_called);
         }
     };
 
@@ -177,22 +189,17 @@ run_test('initizalize', () => {
             is_blurred = false;
             search_button.prop('disabled', false);
             search_query_box.val(search_box_val);
-            Filter.parse = (search_string) => {
-                assert.equal(search_string, search_box_val);
-                return operators;
-            };
             narrow.activate = (raw_operators, options) => {
                 assert.deepEqual(raw_operators, operators);
                 assert.deepEqual(options, {trigger: 'search'});
             };
+            search_pill.get_search_string_for_current_filter = () => {
+                return '';
+            };
         };
 
 
-        operators = [{
-            negated: false,
-            operator: 'search',
-            operand: '',
-        }];
+        operators = [];
         _setup('');
 
         ev.which = 15;
@@ -215,7 +222,11 @@ run_test('initizalize', () => {
         assert(is_blurred);
         assert(search_button.prop('disabled'));
 
-
+        operators = [{
+            negated: false,
+            operator: 'search',
+            operand: 'ver',
+        }];
         _setup('ver');
         search.is_using_input_method = true;
         func(ev);
