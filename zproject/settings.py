@@ -221,6 +221,9 @@ DEFAULT_SETTINGS = {
     # in development mode.
     'ALWAYS_SEND_ALL_HOTSPOTS': False,
 
+    # In-development search pills feature.
+    'SEARCH_PILLS_ENABLED': False,
+
     # We use SubMessage for now-experimental features like
     # slash commands.
     'ALLOW_SUB_MESSAGES': DEVELOPMENT,
