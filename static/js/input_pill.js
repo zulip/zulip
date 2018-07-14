@@ -154,22 +154,25 @@ exports.create = function (opts) {
             }
         },
 
-        // this will remove the last pill in the container -- by defaulat tied
+        // this will remove the last pill in the container -- by default tied
         // to the "backspace" key when the value of the input is empty.
-        removeLastPill: function () {
+        // If quiet is a truthy value, the event handler associated with the
+        // pill will not be evaluated. This is useful when using clear to reset
+        // the pills.
+        removeLastPill: function (quiet) {
             var pill = store.pills.pop();
 
             if (pill) {
                 pill.$element.remove();
-                if (typeof store.removePillFunction === "function") {
+                if (!quiet && typeof store.removePillFunction === "function") {
                     store.removePillFunction(pill);
                 }
             }
         },
 
-        removeAllPills: function () {
+        removeAllPills: function (quiet) {
             while (store.pills.length > 0) {
-                this.removeLastPill();
+                this.removeLastPill(quiet);
             }
 
             this.clear(store.$input[0]);
