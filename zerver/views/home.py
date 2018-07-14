@@ -265,6 +265,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
                                'show_debug':
                                settings.DEBUG and ('show_debug' in request.GET),
                                'pipeline': settings.PIPELINE_ENABLED,
+                               'search_pills_enabled': settings.SEARCH_PILLS_ENABLED,
                                'show_invites': show_invites,
                                'is_admin': user_profile.is_realm_admin,
                                'is_guest': user_profile.is_guest,
