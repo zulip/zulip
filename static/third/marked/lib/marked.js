@@ -796,6 +796,10 @@ InlineLexer.prototype.output = function(src) {
       continue;
     }
 
+    // WARNING: Do not place any parsing logic below this comment.
+    // Any parsing logic place after the `text` block below will most
+    // likely be silently never executed.
+
     // text
     if (cap = this.rules.text.exec(src)) {
       src = src.substring(cap[0].length);
