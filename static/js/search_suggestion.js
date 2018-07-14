@@ -652,6 +652,126 @@ exports.get_suggestions = function (query) {
     };
 };
 
+exports.get_suggestions_legacy = function (query) {
+    // This method works in tandem with the typeahead library to generate
+    // search suggestions.  If you want to change its behavior, be sure to update
+    // the tests.  Its API is partly shaped by the typeahead library, which wants
+    // us to give it strings only, but we also need to return our caller a hash
+    // with information for subsequent callbacks.
+    var result = [];
+    var suggestion;
+    var base; //base, default suggestion
+    var suggestions;
+
+    // Add an entry for narrow by operators.
+    var operators = Filter.parse(query);
+    var last = {operator: '', operand: '', negated: false};
+    if (operators.length > 0) {
+        last = operators.slice(-1)[0];
+    }
+
+    var person_suggestion_ops = ['sender', 'pm-with', 'from', 'group-pm'];
+    var operators_len = operators.length;
+
+    // Handle spaces in person name in new suggestions only. Checks if the last operator is
+    // 'search' and the second last operator is one out of person_suggestion_ops.
+    // e.g for `sender:Ted sm`, initially last = {operator: 'search', operand: 'sm'....}
+    // and second last is {operator: 'sender', operand: 'sm'....}. If the second last operand
+    // is an email of a user, both of these operators remain unchanged. Otherwise search operator
+    // will be deleted and new last will become {operator:'sender', operand: 'Ted sm`....}.
+    if (operators_len > 1 &&
+        last.operator === 'search' &&
+        person_suggestion_ops.indexOf(operators[operators_len - 2].operator) !== -1) {
+        var person_op = operators[operators_len - 2];
+        if (!people.get_by_email(person_op.operand)) {
+            last = {
+                operator: person_op.operator,
+                operand: person_op.operand + ' ' + last.operand,
+                negated: person_op.negated,
+            };
+            operators[operators_len - 2] = last;
+            operators.splice(-1, 1);
+        }
+    }
+
+    // Display the default first
+    // `has` and `is` operators work only on predefined categories. Default suggestion
+    // is not displayed in that case. e.g. `messages with one or more abc` as
+    // a suggestion for `has:abc`does not make sense.
+    if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
+        suggestion = get_default_suggestion(operators);
+        result = [suggestion];
+    }
+
+    var base_operators = [];
+    if (operators.length > 1) {
+        base_operators = operators.slice(0, -1);
+    }
+    base = get_default_suggestion(base_operators);
+
+    // Get all individual suggestions, and then attach_suggestions
+    // mutates the list 'result' to add a properly-formatted suggestion
+    suggestions = get_is_filter_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_sent_by_me_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_stream_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    var persons = people.get_all_persons();
+
+    suggestions = get_person_suggestions(persons, last, base_operators, 'sender');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_person_suggestions(persons, last, base_operators, 'pm-with');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_person_suggestions(persons, last, base_operators, 'from');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_person_suggestions(persons, last, base_operators, 'group-pm-with');
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_group_suggestions(persons, last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_topic_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_operator_suggestions(last);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_has_filter_suggestions(last, base_operators);
+    attach_suggestions(result, base, suggestions);
+
+    suggestions = get_operator_subset_suggestions(operators);
+    result = result.concat(suggestions);
+
+    _.each(result, function (sug) {
+        var first = sug.description.charAt(0).toUpperCase();
+        sug.description = first + sug.description.slice(1);
+    });
+
+    // Typeahead expects us to give it strings, not objects, so we maintain our own hash
+    // back to our objects, and we also filter duplicates here.
+    var lookup_table = {};
+    var unique_suggestions = [];
+    _.each(result, function (obj) {
+        if (!lookup_table[obj.search_string]) {
+            lookup_table[obj.search_string] = obj;
+            unique_suggestions.push(obj);
+        }
+    });
+    var strings = _.map(unique_suggestions, function (obj) {
+        return obj.search_string;
+    });
+    return {
+        strings: strings,
+        lookup_table: lookup_table,
+    };
+};
 
 return exports;
 }());

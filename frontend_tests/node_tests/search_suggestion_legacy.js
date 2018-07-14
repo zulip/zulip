@@ -42,7 +42,7 @@ run_test('basic_get_suggestions', () => {
         return 'office';
     };
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
 
     var expected = [
         'fred',
@@ -61,7 +61,7 @@ run_test('subset_suggestions', () => {
         return;
     };
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
 
     var expected = [
         "stream:Denmark topic:Hamlet shakespeare",
@@ -99,7 +99,7 @@ run_test('private_suggestions', () => {
     people.add(alice);
 
     var query = 'is:private';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "is:private",
         "pm-with:alice@zulip.com",
@@ -109,7 +109,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:private al';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:private al",
         "is:private is:alerted",
@@ -121,7 +121,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'pm-with:t';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:t",
         "pm-with:ted@zulip.com",
@@ -129,7 +129,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-pm-with:t';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-pm-with:t",
         "is:private -pm-with:ted@zulip.com",
@@ -137,14 +137,14 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'pm-with:ted@zulip.com';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sender:ted",
         "sender:ted@zulip.com",
@@ -152,7 +152,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:te';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sender:te",
         "sender:ted@zulip.com",
@@ -160,7 +160,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-sender:te';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-sender:te",
         "-sender:ted@zulip.com",
@@ -168,14 +168,14 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted@zulip.com';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sender:ted@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:unread from:ted';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:unread from:ted",
         "is:unread from:ted@zulip.com",
@@ -187,7 +187,7 @@ run_test('private_suggestions', () => {
     // Users can enter bizarre queries, and if they do, we want to
     // be conservative with suggestions.
     query = 'is:private near:3';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:private near:3",
         "is:private",
@@ -195,7 +195,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'pm-with:ted@zulip.com near:3';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:ted@zulip.com near:3",
         "pm-with:ted@zulip.com",
@@ -204,7 +204,7 @@ run_test('private_suggestions', () => {
 
     // Make sure suggestions still work if preceding tokens
     query = 'is:alerted sender:ted@zulip.com';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:alerted sender:ted@zulip.com",
         "is:alerted",
@@ -212,7 +212,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:starred has:link is:private al';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:starred has:link is:private al",
         "is:starred has:link is:private is:alerted",
@@ -227,7 +227,7 @@ run_test('private_suggestions', () => {
 
     // Make sure it handles past context correctly
     query = 'stream:Denmark pm-with:';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'stream:Denmark pm-with:',
         'stream:Denmark',
@@ -235,7 +235,7 @@ run_test('private_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted@zulip.com sender:';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'sender:ted@zulip.com sender:',
         'sender:ted@zulip.com',
@@ -286,7 +286,7 @@ run_test('group_suggestions', () => {
     // Entering a comma in a pm-with query should immediately generate
     // suggestions for the next person.
     var query = 'pm-with:bob@zulip.com,';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "pm-with:bob@zulip.com,",
         "pm-with:bob@zulip.com,alice@zulip.com",
@@ -298,7 +298,7 @@ run_test('group_suggestions', () => {
     // Only the last part of a comma-separated pm-with query should be used to
     // generate suggestions.
     query = 'pm-with:bob@zulip.com,t';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:bob@zulip.com,t",
         "pm-with:bob@zulip.com,ted@zulip.com",
@@ -307,7 +307,7 @@ run_test('group_suggestions', () => {
 
     // Smit should also generate ted@zulip.com (Ted Smith) as a suggestion.
     query = 'pm-with:bob@zulip.com,Smit';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:bob@zulip.com,Smit",
         "pm-with:bob@zulip.com,ted@zulip.com",
@@ -316,7 +316,7 @@ run_test('group_suggestions', () => {
 
     // Do not suggest "bob@zulip.com" (the name of the current user)
     query = 'pm-with:ted@zulip.com,bo';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:ted@zulip.com,bo",
     ];
@@ -324,7 +324,7 @@ run_test('group_suggestions', () => {
 
     // No superfluous suggestions should be generated.
     query = 'pm-with:bob@zulip.com,red';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:bob@zulip.com,red",
     ];
@@ -334,7 +334,7 @@ run_test('group_suggestions', () => {
     // operator is negated.
 
     query = '-pm-with:bob@zulip.com,';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-pm-with:bob@zulip.com,",
         "is:private -pm-with:bob@zulip.com,alice@zulip.com",
@@ -344,7 +344,7 @@ run_test('group_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-pm-with:bob@zulip.com,t';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-pm-with:bob@zulip.com,t",
         "is:private -pm-with:bob@zulip.com,ted@zulip.com",
@@ -352,7 +352,7 @@ run_test('group_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-pm-with:bob@zulip.com,Smit';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-pm-with:bob@zulip.com,Smit",
         "is:private -pm-with:bob@zulip.com,ted@zulip.com",
@@ -360,7 +360,7 @@ run_test('group_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-pm-with:bob@zulip.com,red';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-pm-with:bob@zulip.com,red",
     ];
@@ -368,7 +368,7 @@ run_test('group_suggestions', () => {
 
     // Test multiple operators
     query = 'is:starred has:link pm-with:bob@zulip.com,Smit';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:starred has:link pm-with:bob@zulip.com,Smit",
         "is:starred has:link pm-with:bob@zulip.com,ted@zulip.com",
@@ -378,7 +378,7 @@ run_test('group_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'stream:Denmark has:link pm-with:bob@zulip.com,Smit';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "stream:Denmark has:link pm-with:bob@zulip.com,Smit",
         "stream:Denmark has:link",
@@ -394,7 +394,7 @@ run_test('group_suggestions', () => {
 
     // Simulate a past huddle which should now prioritize ted over alice
     query = 'pm-with:bob@zulip.com,';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:bob@zulip.com,",
         "pm-with:bob@zulip.com,ted@zulip.com",
@@ -405,7 +405,7 @@ run_test('group_suggestions', () => {
 
     // bob,ted,jeff is already an existing huddle, so prioritize this one
     query = 'pm-with:bob@zulip.com,ted@zulip.com,';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:bob@zulip.com,ted@zulip.com,",
         "pm-with:bob@zulip.com,ted@zulip.com,jeff@zulip.com",
@@ -416,7 +416,7 @@ run_test('group_suggestions', () => {
     // bob,ted,jeff is already an existing huddle, but if we start with just bob,
     // then don't prioritize ted over alice because it doesn't complete the full huddle.
     query = 'pm-with:jeff@zulip.com,';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "pm-with:jeff@zulip.com,",
         "pm-with:jeff@zulip.com,alice@zulip.com",
@@ -438,7 +438,7 @@ run_test('empty_query_suggestions', () => {
         return;
     };
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
 
     var expected = [
         "",
@@ -482,7 +482,7 @@ run_test('has_suggestions', () => {
         return;
     };
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "h",
         'has:link',
@@ -500,7 +500,7 @@ run_test('has_suggestions', () => {
     assert.equal(describe('has:attachment'), 'Messages with one or more attachment');
 
     query = '-h';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-h",
         '-has:link',
@@ -515,7 +515,7 @@ run_test('has_suggestions', () => {
     // operand suggestions follow.
 
     query = 'has:';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'has:link',
         'has:image',
@@ -524,21 +524,21 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'has:im';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-has:im';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         '-has:image',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'att';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'att',
         'has:attachment',
@@ -546,7 +546,7 @@ run_test('has_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'stream:Denmark is:alerted has:lin';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'stream:Denmark is:alerted has:link',
         'stream:Denmark is:alerted',
@@ -564,7 +564,7 @@ run_test('check_is_suggestions', () => {
         return;
     };
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         'i',
         'is:private',
@@ -587,7 +587,7 @@ run_test('check_is_suggestions', () => {
     assert.equal(describe('is:unread'), 'Unread messages');
 
     query = '-i';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         '-i',
         '-is:private',
@@ -607,7 +607,7 @@ run_test('check_is_suggestions', () => {
     // operand suggestions follow.
 
     query = 'is:';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'is:private',
         'is:starred',
@@ -618,21 +618,21 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:st';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'is:starred',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-is:st';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         '-is:starred',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'st';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'st',
         'is:starred',
@@ -641,7 +641,7 @@ run_test('check_is_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'stream:Denmark has:link is:sta';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'stream:Denmark has:link is:starred',
         'stream:Denmark has:link',
@@ -660,13 +660,13 @@ run_test('sent_by_me_suggestions', () => {
     };
 
     var query = '';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     assert(suggestions.strings.indexOf('sender:bob@zulip.com') !== -1);
     assert.equal(suggestions.lookup_table['sender:bob@zulip.com'].description,
                  'Sent by me');
 
     query = 'sender';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "sender",
         "sender:bob@zulip.com",
@@ -675,7 +675,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-sender';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-sender",
         "-sender:bob@zulip.com",
@@ -684,7 +684,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'from';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "from",
         "from:bob@zulip.com",
@@ -693,7 +693,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-from';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-from",
         "-from:bob@zulip.com",
@@ -702,21 +702,21 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:bob@zulip.com';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sender:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'from:bob@zulip.com';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "from:bob@zulip.com",
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sent';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sent",
         "sender:bob@zulip.com",
@@ -724,7 +724,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-sent';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-sent",
         "-sender:bob@zulip.com",
@@ -732,7 +732,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'stream:Denmark topic:Denmark1 sent';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "stream:Denmark topic:Denmark1 sent",
         "stream:Denmark topic:Denmark1 sender:bob@zulip.com",
@@ -742,7 +742,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'is:starred sender:m';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "is:starred sender:m",
         "is:starred sender:bob@zulip.com",
@@ -751,7 +751,7 @@ run_test('sent_by_me_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:alice@zulip.com sender:';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "sender:alice@zulip.com sender:",
         "sender:alice@zulip.com",
@@ -782,7 +782,7 @@ run_test('topic_suggestions', () => {
     };
 
     topic_data.reset();
-    suggestions = search.get_suggestions('te');
+    suggestions = search.get_suggestions_legacy('te');
     expected = [
         "te",
     ];
@@ -800,7 +800,7 @@ run_test('topic_suggestions', () => {
         });
     });
 
-    suggestions = search.get_suggestions('te');
+    suggestions = search.get_suggestions_legacy('te');
     expected = [
         "te",
         "stream:office topic:team",
@@ -814,14 +814,14 @@ run_test('topic_suggestions', () => {
     assert.equal(describe('te'), "Search for te");
     assert.equal(describe('stream:office topic:team'), "Stream office &gt; team");
 
-    suggestions = search.get_suggestions('topic:staplers stream:office');
+    suggestions = search.get_suggestions_legacy('topic:staplers stream:office');
     expected = [
         'topic:staplers stream:office',
         'topic:staplers',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('stream:devel topic:');
+    suggestions = search.get_suggestions_legacy('stream:devel topic:');
     expected = [
         'stream:devel topic:',
         'stream:devel topic:REXX',
@@ -829,7 +829,7 @@ run_test('topic_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('stream:devel -topic:');
+    suggestions = search.get_suggestions_legacy('stream:devel -topic:');
     expected = [
         'stream:devel -topic:',
         'stream:devel -topic:REXX',
@@ -837,7 +837,7 @@ run_test('topic_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('-topic:te');
+    suggestions = search.get_suggestions_legacy('-topic:te');
     expected = [
         '-topic:te',
         'stream:office -topic:team',
@@ -845,7 +845,7 @@ run_test('topic_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('is:alerted stream:devel is:starred topic:');
+    suggestions = search.get_suggestions_legacy('is:alerted stream:devel is:starred topic:');
     expected = [
         'is:alerted stream:devel is:starred topic:',
         'is:alerted stream:devel is:starred topic:REXX',
@@ -855,7 +855,7 @@ run_test('topic_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('is:private stream:devel topic:');
+    suggestions = search.get_suggestions_legacy('is:private stream:devel topic:');
     expected = [
         'is:private stream:devel topic:',
         'is:private stream:devel',
@@ -863,7 +863,7 @@ run_test('topic_suggestions', () => {
     ];
     assert.deepEqual(suggestions.strings, expected);
 
-    suggestions = search.get_suggestions('topic:REXX stream:devel topic:');
+    suggestions = search.get_suggestions_legacy('topic:REXX stream:devel topic:');
     expected = [
         'topic:REXX stream:devel topic:',
         'topic:REXX stream:devel',
@@ -885,7 +885,7 @@ run_test('whitespace_glitch', () => {
 
     topic_data.reset();
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
 
     var expected = [
         "stream:office",
@@ -906,7 +906,7 @@ run_test('stream_completion', () => {
     topic_data.reset();
 
     var query = 'stream:of';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "stream:of",
         "stream:office",
@@ -914,7 +914,7 @@ run_test('stream_completion', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-stream:of';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "-stream:of",
         "-stream:office",
@@ -922,7 +922,7 @@ run_test('stream_completion', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'hel';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "hel",
         "stream:dev+help",
@@ -965,7 +965,7 @@ run_test('people_suggestions', () => {
 
     topic_data.reset();
 
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
 
     var expected = [
         "te",
@@ -986,7 +986,7 @@ run_test('people_suggestions', () => {
     assert.equal(describe('sender:ted@zulip.com'),
                  "Sent by <strong>Te</strong>d Smith &lt;<strong>te</strong>d@zulip.com&gt;");
 
-    suggestions = search.get_suggestions('Ted '); // note space
+    suggestions = search.get_suggestions_legacy('Ted '); // note space
 
     expected = [
         "Ted",
@@ -1002,7 +1002,7 @@ run_test('people_suggestions', () => {
         'sender:ted+sm',
         'sender:ted@zulip.com',
     ];
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted@zulip.com new';
@@ -1010,28 +1010,28 @@ run_test('people_suggestions', () => {
         'sender:ted@zulip.com new',
         'sender:ted@zulip.com',
     ];
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'sender:ted@tulip.com new';
     expected = [
         'sender:ted@tulip.com+new',
     ];
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     assert.deepEqual(suggestions.strings, expected);
 });
 
 run_test('operator_suggestions', () => {
     // Completed operator should return nothing
     var query = 'stream:';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         'stream:',
     ];
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'st';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'st',
         'is:starred',
@@ -1040,7 +1040,7 @@ run_test('operator_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'group-';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'group-',
         'group-pm-with:',
@@ -1048,7 +1048,7 @@ run_test('operator_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = '-s';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         '-s',
         '-sender:bob@zulip.com',
@@ -1058,7 +1058,7 @@ run_test('operator_suggestions', () => {
     assert.deepEqual(suggestions.strings, expected);
 
     query = 'stream:Denmark is:alerted -f';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         'stream:Denmark is:alerted -f',
         'stream:Denmark is:alerted -from:bob@zulip.com',
@@ -1082,7 +1082,7 @@ run_test('queries_with_spaces', () => {
 
     // test allowing spaces with quotes surrounding operand
     var query = 'stream:"dev he"';
-    var suggestions = search.get_suggestions(query);
+    var suggestions = search.get_suggestions_legacy(query);
     var expected = [
         "stream:dev+he",
         "stream:dev+help",
@@ -1091,7 +1091,7 @@ run_test('queries_with_spaces', () => {
 
     // test mismatched quote
     query = 'stream:"dev h';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "stream:dev+h",
         "stream:dev+help",
@@ -1100,7 +1100,7 @@ run_test('queries_with_spaces', () => {
 
     // test extra space after operator still works
     query = 'stream: offi';
-    suggestions = search.get_suggestions(query);
+    suggestions = search.get_suggestions_legacy(query);
     expected = [
         "stream:offi",
         "stream:office",

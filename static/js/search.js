@@ -71,7 +71,12 @@ exports.initialize = function () {
 
     search_query_box.typeahead({
         source: function (query) {
-            var suggestions = search_suggestion.get_suggestions(query);
+            var suggestions;
+            if (page_params.search_pills_enabled) {
+                suggestions = search_suggestion.get_suggestions(query);
+            } else {
+                suggestions = search_suggestion.get_suggestions_legacy(query);
+            }
             // Update our global search_object hash
             search_object = suggestions.lookup_table;
             return suggestions.strings;

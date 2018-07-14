@@ -86,7 +86,7 @@ run_test('initizalize', () => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            search_suggestion.get_suggestions_legacy = () => search_suggestions;
             const expected_source_value = search_suggestions.strings;
             const source = opts.source('ver');
             assert.equal(source, expected_source_value);
