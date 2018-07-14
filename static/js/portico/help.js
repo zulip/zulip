@@ -76,14 +76,14 @@ function render_code_sections() {
     });
 }
 
-function scrollToHash(container) {
+function scrollToHash(simplebar) {
     var hash = window.location.hash;
-    var simplebar = new SimpleBar(container).getScrollElement();
+    var scrollbar = simplebar.getScrollElement();
     if (hash !== '') {
-        var position = $(hash).position().top - $(container).position().top;
-        simplebar.scrollTop = position;
+        var position = $(hash).position().top - $(simplebar.el).position().top;
+        scrollbar.scrollTop = position;
     } else {
-        simplebar.scrollTop = 0;
+        scrollbar.scrollTop = 0;
     }
 }
 
@@ -104,12 +104,12 @@ function scrollToHash(container) {
         });
     };
 
-    var update_page = function (html_map, path, container) {
+    var update_page = function (html_map, path) {
         if (html_map[path]) {
             $(".markdown .content").html(html_map[path]);
             render_code_sections();
             markdownSB.recalculate();
-            scrollToHash(container);
+            scrollToHash(markdownSB);
         } else {
             loading.name = path;
             fetch_page(path, function (res) {
@@ -117,7 +117,7 @@ function scrollToHash(container) {
                 $(".markdown .content").html(html_map[path]);
                 loading.name = null;
                 markdownSB.recalculate();
-                scrollToHash(container);
+                scrollToHash(markdownSB);
             });
         }
     };
@@ -141,7 +141,6 @@ function scrollToHash(container) {
         var path = $(this).attr("href");
         var path_dir = path.split('/')[1];
         var current_dir = window.location.pathname.split('/')[1];
-        var container = $(".markdown")[0];
 
         // Do not block redirecting to external URLs
         if (path_dir !== current_dir) {
@@ -154,7 +153,7 @@ function scrollToHash(container) {
 
         history.pushState({}, "", path);
 
-        update_page(html_map, path, container);
+        update_page(html_map, path);
 
         $(".sidebar").removeClass("show");
 
@@ -187,8 +186,7 @@ function scrollToHash(container) {
 
     // Finally, make sure if we loaded a window with a hash, we scroll
     // to the right place.
-    var container = $(".markdown")[0];
-    scrollToHash(container);
+    scrollToHash(markdownSB);
 
     window.onresize = function () {
         markdownSB.recalculate();
@@ -196,7 +194,7 @@ function scrollToHash(container) {
 
     window.addEventListener("popstate", function () {
         var path = window.location.pathname;
-        update_page(html_map, path, container);
+        update_page(html_map, path);
     });
 
     $('body').addClass('noscroll');
