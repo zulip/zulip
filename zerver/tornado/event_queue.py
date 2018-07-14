@@ -702,12 +702,14 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     # notifications to match the model of push notifications
     # above.
     if idle and (private_message or mentioned):
+        notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
         elif mentioned:
             notice['trigger'] = 'mentioned'
         else:
             raise AssertionError("Unknown notification trigger!")
+        notice['stream_name'] = stream_name
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
             notified['email_notified'] = True
