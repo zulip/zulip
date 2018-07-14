@@ -233,6 +233,15 @@ function get_default_suggestion(operators) {
     return format_as_suggestion(operators);
 }
 
+function get_default_suggestion_legacy(operators) {
+    // Here we return the canonical suggestion for the full query that the
+    // user typed.  (The caller passes us the parsed query as "operators".)
+    if (operators.length === 0) {
+        return {description: '', search_string: ''};
+    }
+    return format_as_suggestion(operators);
+}
+
 function get_topic_suggestions(last, operators) {
     var invalid = [
         {operator: 'pm-with'},
@@ -699,7 +708,7 @@ exports.get_suggestions_legacy = function (query) {
     // is not displayed in that case. e.g. `messages with one or more abc` as
     // a suggestion for `has:abc`does not make sense.
     if (last.operator !== '' && last.operator !== 'has' && last.operator !== 'is') {
-        suggestion = get_default_suggestion(operators);
+        suggestion = get_default_suggestion_legacy(operators);
         result = [suggestion];
     }
 
@@ -707,7 +716,7 @@ exports.get_suggestions_legacy = function (query) {
     if (operators.length > 1) {
         base_operators = operators.slice(0, -1);
     }
-    base = get_default_suggestion(base_operators);
+    base = get_default_suggestion_legacy(base_operators);
 
     // Get all individual suggestions, and then attach_suggestions
     // mutates the list 'result' to add a properly-formatted suggestion
