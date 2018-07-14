@@ -24,13 +24,13 @@ run_test('initialize', () => {
             check_emojis(false);
         }
     }
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-hashtag', 228);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-car', 177);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-hashtag', 181);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-smile-o', 260);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-thumbs-o-up', 6);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-car', 119);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-smile-o', 208);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-lightbulb-o', 170);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-leaf', 153);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cutlery', 86);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-lightbulb-o', 159);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cutlery', 89);
     assert_emoji_category(complete_emoji_catalog.pop(), 'fa-cog', 1);
-    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-soccer-ball-o', 67);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-leaf', 107);
+    assert_emoji_category(complete_emoji_catalog.pop(), 'fa-soccer-ball-o', 58);
 });

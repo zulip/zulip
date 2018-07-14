@@ -9,7 +9,8 @@ import ujson
 from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    generate_name_to_codepoint_map, emoji_names_for_picker, EMOJISETS
+    get_emoji_code, generate_name_to_codepoint_map, get_remapped_emojis_map, \
+    emoji_names_for_picker, EMOJISETS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -47,15 +48,22 @@ span.emoji
 {
     display: inline-block;
     background-image: url('sheet_%(emojiset)s_64.png');
-    -webkit-background-size: 4900%%;
-    -moz-background-size: 4900%%;
-    background-size: 4900%%;
+    -webkit-background-size: 5200%%;
+    -moz-background-size: 5200%%;
+    background-size: 5200%%;
     background-repeat: no-repeat;
 
     /* Hide the text. */
     text-indent: 100%%;
     white-space: nowrap;
     overflow: hidden;
+}
+
+.emoji-1f419
+{
+    background-image: url('images-google-64/1f419.png') !important;
+    background-position: 0%% 0%% !important;
+    background-size: contain !important;
 }
 
 %(emoji_positions)s
@@ -102,9 +110,9 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
             # ensure the spritesheet is setup to correctly display
             # those google emoji (in case anyone used them).
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                'codepoint': emoji['unified'].lower(),
-                'pos_x': (emoji["sheet_x"] * 100) / 48,
-                'pos_y': (emoji["sheet_y"] * 100) / 48,
+                'codepoint': get_emoji_code(emoji),
+                'pos_x': (emoji["sheet_x"] * 100) / 51,
+                'pos_y': (emoji["sheet_y"] * 100) / 51,
             }
 
     for emojiset in EMOJISETS:
@@ -136,27 +144,10 @@ def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
 
     generate_sprite_css_files(cache_path, emoji_data)
 
-def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
+def setup_old_emoji_farm(cache_path: str,
+                         emoji_map: Dict[str, str],
+                         emoji_data: List[Dict[str, Any]]) -> None:
     # Code for setting up old emoji farm.
-    # Some image files in the old emoji farm had a different name than in the new emoji
-    # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
-    # emoji farm to their name in the new emoji farm.
-    remapped_emojis = {
-        "0023": "0023-20e3",    # Hash
-        "0030": "0030-20e3",    # Zero
-        "0031": "0031-20e3",    # One
-        "0032": "0032-20e3",    # Two
-        "0033": "0033-20e3",    # Three
-        "0034": "0034-20e3",    # Four
-        "0035": "0035-20e3",    # Five
-        "0036": "0036-20e3",    # Six
-        "0037": "0037-20e3",    # Seven
-        "0038": "0038-20e3",    # Eight
-        "0039": "0039-20e3",    # Nine
-        "1f48f": "1f469-200d-2764-200d-1f48b-200d-1f468",    # Couple kiss
-        "1f491": "1f469-200d-2764-200d-1f468",  # Couple with heart
-    }
-
     os.chdir(cache_path)
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
     unicode_emoji_cache_path = os.path.join(cache_path, 'images', 'emoji', 'unicode')
@@ -172,6 +163,10 @@ def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
     unicode_symlink_path = os.path.join(unicode_emoji_cache_path, 'zulip.png')
     os.symlink(image_file_path, unicode_symlink_path)
 
+    # `remapped_emojis` is a mapping which helps in mapping `emoji_map`
+    # codepoints to corresponding images in new emoji farm.
+    remapped_emojis = get_remapped_emojis_map(emoji_data)
+
     for name, codepoint in emoji_map.items():
         mapped_codepoint = remapped_emojis.get(codepoint, codepoint)
         image_file_path = os.path.join(google_emoji_cache_path, '{}.png'.format(mapped_codepoint))
@@ -184,6 +179,13 @@ def setup_old_emoji_farm(cache_path: str, emoji_map: Dict[str, str]) -> None:
             os.symlink(image_file_path, unicode_symlink_path)
         except FileExistsError:
             pass
+
+    # We hardcode octopus emoji image to Google emojiset's old
+    # "cute octopus" image. Copy it to the emoji farms.
+    for emojiset in EMOJISETS:
+        input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, '1f419.png')
+        output_img_file = os.path.join(cache_path, 'images-' + emojiset + '-64', '1f419.png')
+        run(['cp', input_img_file, output_img_file])
 
 def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> None:
     # This function generates the various data files consumed by webapp, mobile apps, bugdown etc.
@@ -222,7 +224,7 @@ def dump_emojis(cache_path: str) -> None:
     # Setup emoji farms.
     run(['rm', '-rf', cache_path])
     setup_emoji_farm(cache_path, emoji_data)
-    setup_old_emoji_farm(cache_path, emoji_map)
+    setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
 
     # Generate various map files.
     generate_map_files(cache_path, emoji_catalog)

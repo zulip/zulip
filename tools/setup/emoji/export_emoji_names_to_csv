@@ -12,6 +12,8 @@ import os
 import re
 import ujson
 
+from emoji_setup_utils import get_emoji_code
+
 from typing import Any, Dict, List
 
 TOOLS_DIR_PATH = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -28,11 +30,11 @@ column_names = [
     'explanation',
 ]
 category_index = {
-    'People': '1',
-    'Nature': '2',
-    'Foods': '3',
-    'Activity': '4',
-    'Places': '5',
+    'Smileys & People': '1',
+    'Animals & Nature': '2',
+    'Food & Drink': '3',
+    'Activities': '4',
+    'Travel & Places': '5',
     'Objects': '6',
     'Symbols': '7',
     'Flags': '8',
@@ -50,7 +52,7 @@ def prepare_sorting_info() -> None:
         emoji_data = ujson.load(fp)
 
     for emoji_dict in emoji_data:
-        emoji_code = emoji_dict['unified'].lower()
+        emoji_code = get_emoji_code(emoji_dict)
         sort_order = str(emoji_dict['sort_order']).strip()
         sorting_info[emoji_code] = {
             'category': emoji_dict['category'],
