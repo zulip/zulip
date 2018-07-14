@@ -66,6 +66,13 @@ def check_html_templates(templates, all_dups):
             'send_confirm',
             'register',
             'footer',
+            # Temporary while we have searchbox forked
+            'search_exit',
+            'search_query',
+            'tab_bar',
+            'search_arrows',
+            'searchbox_form',
+            'searchbox',
         ]
         bad_ids_dict = {ids: fns for ids, fns in template_id_dict.items()
                         if (ids not in IGNORE_IDS) and len(fns) > 1}
