@@ -1554,11 +1554,6 @@ blockquote p {
     white-space: nowrap;
 }
 
-#searchbox {
-    width: 100%;
-    height: 40px;
-}
-
 #tab_bar {
     z-index: 2;
     padding-top: 0px;
@@ -1820,20 +1815,6 @@ blockquote p {
     }
 }
 
-#searchbox .input-append {
-    position: relative;
-    width: 100%;
-
-    .fa-search {
-        padding: 0px;
-        font-size: 20px;
-        position: absolute;
-        left: 10px;
-        top: 10px;
-        z-index: 5;
-    }
-}
-
 nav .column-left {
     text-align: center;
 }
@@ -1869,90 +1850,109 @@ nav a .no-style {
     text-decoration: none;
 }
 
-.navbar-search {
-    margin-top: 0px;
-    width: auto;
-    float: none;
-    overflow: hidden;
-    border-right: 1px solid hsl(0, 0%, 87.8%);
-    height: 40px;
-}
-
 .modal-bg {
     background: #f9f9f9;
 }
 
-#search_query {
+#searchbox {
     width: 100%;
-    font-size: 16px;
     height: 40px;
-    padding: 0px;
-    padding-left: 35px;
-    padding-right: 20px;
-    border: none;
-    border-radius: 0px;
-    font-family: 'Source Sans Pro';
-    font-weight: 300;
-    line-height: 27px;
-}
 
-#search_query:focus {
-    box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
-}
+    .navbar-search {
+        margin-top: 0px;
+        width: auto;
+        float: none;
+        overflow: hidden;
+        border-right: 1px solid hsl(0, 0%, 87.8%);
+        height: 40px;
+    }
 
-#searchbox .search_button,
-#searchbox .search_button[disabled]:hover {
-    position: absolute;
-    right: 2px;
-    top: 6px;
-    background: none;
-    border-radius: 0px;
-    border: none;
-    height: 30px;
-    text-align: center;
-    padding: 4px;
-    color: hsl(0, 0%, 80%);
-    font-size: 18px;
-    box-shadow: none;
-    -webkit-box-shadow: none;
-    -moz-box-shadow: none;
-    text-shadow: none;
-    z-index: 5;
-}
+    .input-append {
+        position: relative;
+        width: 100%;
 
-#searchbox .search_button:hover {
-    color: hsl(0, 0%, 0%);
-}
+        .fa-search {
+            padding: 0px;
+            font-size: 20px;
+            position: absolute;
+            left: 10px;
+            top: 10px;
+            z-index: 5;
+        }
+    }
 
-#searchbox .search_button[disabled] {
-    visibility: hidden;
-}
+    #search_query {
+        width: 100%;
+        font-size: 16px;
+        height: 40px;
+        padding: 0px;
+        padding-left: 35px;
+        padding-right: 20px;
+        border: none;
+        border-radius: 0px;
+        font-family: 'Source Sans Pro';
+        font-weight: 300;
+        line-height: 27px;
+    }
 
-#searchbox a.search_icon {
-    color: hsl(0, 0%, 80%);
-    text-decoration: none;
-    display: block;
-    width: 1px;
-    height: 1px;
-}
+    #search_query:focus {
+        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
+    }
 
-#searchbox a.search_icon:hover {
-    color: hsl(0, 0%, 0%);
-    text-decoration: none;
-}
+    .search_button,
+    .search_button[disabled]:hover {
+        position: absolute;
+        right: 2px;
+        top: 6px;
+        background: none;
+        border-radius: 0px;
+        border: none;
+        height: 30px;
+        text-align: center;
+        padding: 4px;
+        color: hsl(0, 0%, 80%);
+        font-size: 18px;
+        box-shadow: none;
+        -webkit-box-shadow: none;
+        -moz-box-shadow: none;
+        text-shadow: none;
+        z-index: 5;
+    }
 
-#search_arrows {
-    /* Bootstrap wants font-size: 0 to eliminate space between
+    .search_button:hover {
+        color: hsl(0, 0%, 0%);
+    }
+
+    .search_button[disabled] {
+        visibility: hidden;
+    }
+
+    a.search_icon {
+        color: hsl(0, 0%, 80%);
+        text-decoration: none;
+        display: block;
+        width: 1px;
+        height: 1px;
+    }
+
+    a.search_icon:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+
+    #search_arrows {
+        /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
        remove the button gap by adjusting "letter" spacing. */
-    font-size: 90%;
-    letter-spacing: -.3em;
-}
+        font-size: 90%;
+        letter-spacing: -.3em;
+    }
 
-#search_arrows input {
-    /* Chrome and Firefox do this already via default browser stylesheet;
+    #search_arrows input {
+        /* Chrome and Firefox do this already via default browser stylesheet;
        but Opera needs this to avoid smushed letters in the search box. */
-    letter-spacing: normal;
+        letter-spacing: normal;
+    }
 }
 
 div.floating_recipient {
