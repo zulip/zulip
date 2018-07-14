@@ -414,6 +414,12 @@ function stream_push_notifications_clicked(e) {
     exports.set_stream_property(sub, 'push_notifications', sub.push_notifications);
 }
 
+function stream_email_notifications_clicked(e) {
+    var sub = get_sub_for_target(e.target);
+    sub.email_notifications = !sub.email_notifications;
+    exports.set_stream_property(sub, 'email_notifications', sub.email_notifications);
+}
+
 function stream_pin_clicked(e) {
     var sub = get_sub_for_target(e.target);
     if (!sub) {
@@ -540,6 +546,8 @@ exports.initialize = function () {
                                  stream_audible_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_push_notifications_setting",
                                  stream_push_notifications_clicked);
+    $("#subscriptions_table").on("click", "#sub_email_notifications_setting",
+                                 stream_email_notifications_clicked);
     $("#subscriptions_table").on("click", "#sub_pin_setting",
                                  stream_pin_clicked);
 

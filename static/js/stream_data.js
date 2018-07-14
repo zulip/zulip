@@ -439,6 +439,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         desktop_notifications: page_params.enable_stream_desktop_notifications,
         audible_notifications: page_params.enable_stream_sounds,
         push_notifications: page_params.enable_stream_push_notifications,
+        email_notifications: page_params.enable_stream_email_notifications,
         description: '',
     });
 

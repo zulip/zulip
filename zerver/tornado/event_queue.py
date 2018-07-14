@@ -645,6 +645,7 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
         private_message = event['message']['type'] == 'private'
         # stream_push_notify is set in process_message_event.
         stream_push_notify = event.get('stream_push_notify', False)
+        stream_email_notify = event.get('stream_email_notify', False)
 
         stream_name = None
         if not private_message:
@@ -662,8 +663,8 @@ def missedmessage_hook(user_profile_id: int, client: ClientDescriptor, last_for_
             email_notified = event.get("email_notified", False),
         )
         maybe_enqueue_notifications(user_profile_id, message_id, private_message, mentioned,
-                                    stream_push_notify, stream_name, always_push_notify, idle,
-                                    already_notified)
+                                    stream_push_notify, stream_email_notify, stream_name,
+                                    always_push_notify, idle, already_notified)
 
 def receiver_is_off_zulip(user_profile_id: int) -> bool:
     # If a user has no message-receiving event queues, they've got no open zulip
@@ -674,16 +675,17 @@ def receiver_is_off_zulip(user_profile_id: int) -> bool:
     return off_zulip
 
 def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_message: bool,
-                                mentioned: bool, stream_push_notify: bool, stream_name: Optional[str],
+                                mentioned: bool, stream_push_notify: bool,
+                                stream_email_notify: bool, stream_name: Optional[str],
                                 always_push_notify: bool, idle: bool,
                                 already_notified: Dict[str, bool]) -> Dict[str, bool]:
     """This function has a complete unit test suite in
     `test_enqueue_notifications` that should be expanded as we add
     more features here."""
     notified = dict()  # type: Dict[str, bool]
+    notice = build_offline_notification(user_profile_id, message_id)
 
     if (idle or always_push_notify) and (private_message or mentioned or stream_push_notify):
-        notice = build_offline_notification(user_profile_id, message_id)
         if private_message:
             notice['trigger'] = 'private_message'
         elif mentioned:
@@ -701,9 +703,12 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
     # mention.  Eventually, we'll add settings to allow email
     # notifications to match the model of push notifications
     # above.
-    if idle and (private_message or mentioned):
+
+    if idle and (private_message or mentioned or stream_email_notify):
         # We require RabbitMQ to do this, as we can't call the email handler
         # from the Tornado process. So if there's no rabbitmq support do nothing
+        if stream_email_notify and not mentioned:
+            notice['trigger'] = 'stream_email_notify'
         if not already_notified.get("email_notified"):
             queue_json_publish("missedmessage_emails", notice, lambda notice: None)
             notified['email_notified'] = True
@@ -787,17 +792,19 @@ def process_message_event(event_template: Mapping[str, Any], users: Iterable[Map
         private_message = message_type == "private" and user_profile_id != sender_id
         mentioned = 'mentioned' in flags and 'read' not in flags
         stream_push_notify = user_data.get('stream_push_notify', False)
+        stream_email_notify = user_data.get('stream_email_notify', False)
 
         # We first check if a message is potentially mentionable,
         # since receiver_is_off_zulip is somewhat expensive.
-        if private_message or mentioned or stream_push_notify:
+        if private_message or mentioned or stream_push_notify or stream_email_notify:
             idle = receiver_is_off_zulip(user_profile_id) or (user_profile_id in presence_idle_user_ids)
             always_push_notify = user_data.get('always_push_notify', False)
             stream_name = event_template.get('stream_name')
             result = maybe_enqueue_notifications(user_profile_id, message_id, private_message,
-                                                 mentioned, stream_push_notify, stream_name,
-                                                 always_push_notify, idle, {})
+                                                 mentioned, stream_push_notify, stream_email_notify,
+                                                 stream_name, always_push_notify, idle, {})
             result['stream_push_notify'] = stream_push_notify
+            result['stream_email_notify'] = stream_email_notify
             extra_user_data[user_profile_id] = result
 
     for client_data in send_to_clients.values():
@@ -861,6 +868,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
     mention_user_ids = set(event_template.get('mention_user_ids', []))
     presence_idle_user_ids = set(event_template.get('presence_idle_user_ids', []))
     stream_push_user_ids = set(event_template.get('stream_push_user_ids', []))
+    stream_email_user_ids = set(event_template.get('stream_email_user_ids', []))
     push_notify_user_ids = set(event_template.get('push_notify_user_ids', []))
 
     stream_name = event_template.get('stream_name')
@@ -881,6 +889,7 @@ def process_message_update_event(event_template: Mapping[str, Any],
             mention_user_ids=mention_user_ids,
             presence_idle_user_ids=presence_idle_user_ids,
             stream_push_user_ids=stream_push_user_ids,
+            stream_email_user_ids=stream_email_user_ids,
             push_notify_user_ids=push_notify_user_ids,
         )
 
@@ -895,6 +904,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
                                                    mention_user_ids: Set[int],
                                                    presence_idle_user_ids: Set[int],
                                                    stream_push_user_ids: Set[int],
+                                                   stream_email_user_ids: Set[int],
                                                    push_notify_user_ids: Set[int]) -> None:
     private_message = (stream_name is None)
 
@@ -910,8 +920,9 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         return
 
     stream_push_notify = (user_profile_id in stream_push_user_ids)
+    stream_email_notify = (user_profile_id in stream_email_user_ids)
 
-    if stream_push_notify:
+    if stream_push_notify or stream_email_notify:
         # Currently we assume that if this flag is set to True, then
         # the user already was notified about the earlier message,
         # so we short circuit.  We may handle this more rigorously
@@ -933,6 +944,7 @@ def maybe_enqueue_notifications_for_message_update(user_profile_id: UserProfile,
         private_message=private_message,
         mentioned=mentioned,
         stream_push_notify=stream_push_notify,
+        stream_email_notify=stream_email_notify,
         stream_name=stream_name,
         always_push_notify=always_push_notify,
         idle=idle,
