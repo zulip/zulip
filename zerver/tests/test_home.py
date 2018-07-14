@@ -162,6 +162,7 @@ class HomeTest(ZulipTestCase):
             "realm_waiting_period_threshold",
             "root_domain_uri",
             "save_stacktraces",
+            "search_pills_enabled",
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",

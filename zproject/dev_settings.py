@@ -89,3 +89,5 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
+
+SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)
