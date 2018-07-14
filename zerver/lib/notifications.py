@@ -276,7 +276,7 @@ def build_message_list(user_profile: UserProfile, messages: List[Message]) -> Li
 
 @statsd_increment("missed_message_reminders")
 def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
-                                                missed_messages: List[Message],
+                                                missed_messages: List[Dict[str, Any]],
                                                 message_count: int) -> None:
     """
     Send a reminder email to a user if she's missed some PMs by being offline.
@@ -287,15 +287,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     from the email.
 
     `user_profile` is the user to send the reminder to
-    `missed_messages` is a list of Message objects to remind about they should
-                      all have the same recipient and subject
+    `missed_messages` is a list of dictionaries to Message objects and other data
+                      for a group of messages that share a recipient (and topic)
     """
     from zerver.context_processors import common_context
     # Disabled missedmessage emails internally
     if not user_profile.enable_offline_email_notifications:
         return
 
-    recipients = set((msg.recipient_id, msg.subject) for msg in missed_messages)
+    recipients = set((msg['message'].recipient_id, msg['message'].subject) for msg in missed_messages)
     if len(recipients) != 1:
         raise ValueError(
             'All missed_messages must have the same recipient and subject %r' %
@@ -307,7 +307,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
     context.update({
         'name': user_profile.full_name,
         'message_count': message_count,
-        'mention': missed_messages[0].is_stream_message(),
+        'mention': missed_messages[0]['message'].is_stream_message(),
         'unsubscribe_link': unsubscribe_link,
         'realm_name_in_notifications': user_profile.realm_name_in_notifications,
         'show_message_content': user_profile.message_content_in_email_notifications,
@@ -328,15 +328,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
 
     from zerver.lib.email_mirror import create_missed_message_address
-    reply_to_address = create_missed_message_address(user_profile, missed_messages[0])
+    reply_to_address = create_missed_message_address(user_profile, missed_messages[0]['message'])
     if reply_to_address == FromAddress.NOREPLY:
         reply_to_name = None
     else:
         reply_to_name = "Zulip"
 
-    senders = list(set(m.sender for m in missed_messages))
-    if (missed_messages[0].recipient.type == Recipient.HUDDLE):
-        display_recipient = get_display_recipient(missed_messages[0].recipient)
+    senders = list(set(m['message'].sender for m in missed_messages))
+    if (missed_messages[0]['message'].recipient.type == Recipient.HUDDLE):
+        display_recipient = get_display_recipient(missed_messages[0]['message'].recipient)
         # Make sure that this is a list of strings, not a string.
         assert not isinstance(display_recipient, str)
         other_recipients = [r['full_name'] for r in display_recipient
@@ -353,15 +353,15 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
             huddle_display_name = "%s, and %s others" % (
                 ', '.join(other_recipients[:2]), len(other_recipients) - 2)
             context.update({'huddle_display_name': huddle_display_name})
-    elif (missed_messages[0].recipient.type == Recipient.PERSONAL):
+    elif (missed_messages[0]['message'].recipient.type == Recipient.PERSONAL):
         context.update({'private_message': True})
     else:
         # Keep only the senders who actually mentioned the user
         #
         # TODO: When we add wildcard mentions that send emails, add
         # them to the filter here.
-        senders = list(set(m.sender for m in missed_messages if
-                           UserMessage.objects.filter(message=m, user_profile=user_profile,
+        senders = list(set(m['message'].sender for m in missed_messages if
+                           UserMessage.objects.filter(message=m['message'], user_profile=user_profile,
                                                       flags=UserMessage.flags.mentioned).exists()))
         context.update({'at_mention': True})
 
@@ -376,7 +376,7 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         })
     else:
         context.update({
-            'messages': build_message_list(user_profile, missed_messages),
+            'messages': build_message_list(user_profile, list(m['message'] for m in missed_messages)),
             'sender_str': ", ".join(sender.full_name for sender in senders),
             'realm_str': user_profile.realm.name,
         })
@@ -454,7 +454,11 @@ def handle_missedmessage_emails(user_profile_id: int,
 
     # Send an email per recipient subject pair
     for recipient_subject, ignored_max_id in recipient_subjects:
-        unique_messages = {m.id: m for m in messages_by_recipient_subject[recipient_subject]}
+        unique_messages = {}
+        for m in messages_by_recipient_subject[recipient_subject]:
+            unique_messages[m.id] = dict(
+                message=m,
+            )
         do_send_missedmessage_events_reply_in_zulip(
             user_profile,
             list(unique_messages.values()),
