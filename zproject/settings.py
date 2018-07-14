@@ -166,6 +166,8 @@ DEFAULT_SETTINGS = {
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',
     'S3_AVATAR_BUCKET': '',
+    'S3_AUTH_UPLOADS_BUCKET': '',
+    'S3_REGION': '',
     'LOCAL_UPLOADS_DIR': None,
     'MAX_FILE_UPLOAD_SIZE': 25,
 
