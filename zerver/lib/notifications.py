@@ -369,7 +369,6 @@ def do_send_missedmessage_events_reply_in_zulip(user_profile: UserProfile,
         senders = list(set(m['message'].sender for m in missed_messages if
                            UserMessage.objects.filter(message=m['message'], user_profile=user_profile,
                                                       flags=UserMessage.flags.mentioned).exists()))
-        context.update({'at_mention': True})
 
     # If message content is disabled, then flush all information we pass to email.
     if not user_profile.message_content_in_email_notifications:
