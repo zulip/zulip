@@ -62,33 +62,27 @@ var buddy_list = (function () {
     };
 
     self.first_key = function () {
-        var list_items = self.container.find(self.item_sel);
-        var li = list_items.first();
-        if (li.length === 0) {
-            return;
-        }
-        var key = self.get_key_from_li({li: li});
-        return key;
+        return self.keys[0];
     };
 
     self.prev_key = function (key) {
-        var li = self.find_li({key: key});
-        var prev_li = li.prev();
-        if (prev_li.length === 0) {
+        var i = self.keys.indexOf(key.toString());
+
+        if (i <= 0) {
             return;
         }
-        var prev_key = self.get_key_from_li({li: prev_li});
-        return prev_key;
+
+        return self.keys[i - 1];
     };
 
     self.next_key = function (key) {
-        var li = self.find_li({key: key});
-        var next_li = li.next();
-        if (next_li.length === 0) {
+        var i = self.keys.indexOf(key.toString());
+
+        if (i < 0) {
             return;
         }
-        var next_key = self.get_key_from_li({li: next_li});
-        return next_key;
+
+        return self.keys[i + 1];
     };
 
     self.maybe_remove_key = function (opts) {

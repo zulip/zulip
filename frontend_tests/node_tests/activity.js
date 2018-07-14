@@ -299,9 +299,7 @@ function reset_setup() {
     activity.set_cursor_and_filter();
 
     buddy_list.container = $('#user_presences');
-    const stub = $.create('first elem stub');
-    stub.first = () => [];
-    buddy_list.container.set_find_results('li.user_sidebar_entry', stub);
+    clear_buddy_list();
 }
 
 reset_setup();
@@ -339,20 +337,6 @@ function simulate_left_column_buddy_list() {
         assert.equal(selector, ".app-main [class^='column-']");
         return $.create('left-sidebar').addClass('column-left');
     };
-}
-
-function simulate_list_items(items) {
-    const list = {
-        length: items.length,
-        eq: (i) => items[i],
-        first: () => items[0] || {length: 0},
-    };
-    $('#user_presences').set_find_results('li.user_sidebar_entry', list);
-
-    _.each(items, (item, i) => {
-        item.next = () => items[i + 1] || {length: 0};
-        item.prev = () => items[i - 1] || {length: 0};
-    });
 }
 
 function buddy_list_add(user_id, stub) {
@@ -421,17 +405,22 @@ run_test('handlers', () => {
 
     const alice_li = $.create('alice stub');
     const fred_li = $.create('fred stub');
+    clear_buddy_list();
+    buddy_list_add(alice.user_id, alice_li);
+    buddy_list_add(fred.user_id, fred_li);
+
+    (function test_filter_keys() {
+        activity.user_cursor.go_to(alice.user_id);
+        filter_key_handlers.down_arrow();
+        filter_key_handlers.up_arrow();
+    }());
 
     (function test_click_filter() {
         const e = {
             stopPropagation: () => {},
         };
 
-        simulate_list_items([alice_li, fred_li]);
         const handler = $('.user-list-filter').get_on_handler('focus');
-        handler(e);
-
-        simulate_list_items([]);
         handler(e);
     }());
 
@@ -444,23 +433,6 @@ run_test('handlers', () => {
         handler(e);
         // and click again
         handler(e);
-    }());
-
-    (function test_filter_keys() {
-        simulate_list_items([alice_li, fred_li]);
-        buddy_list_add(alice.user_id, alice_li);
-        buddy_list_add(fred.user_id, fred_li);
-
-        activity.user_cursor.go_to(alice.user_id);
-        filter_key_handlers.down_arrow();
-        filter_key_handlers.up_arrow();
-        filter_key_handlers.up_arrow();
-        filter_key_handlers.down_arrow();
-        filter_key_handlers.down_arrow();
-
-        simulate_list_items([]);
-        filter_key_handlers.down_arrow();
-        filter_key_handlers.up_arrow();
     }());
 
     (function test_enter_key() {
@@ -512,6 +484,28 @@ presence.presence_info[jill.user_id] = { status: activity.ACTIVE };
 presence.presence_info[mark.user_id] = { status: activity.IDLE };
 presence.presence_info[norbert.user_id] = { status: activity.ACTIVE };
 presence.presence_info[zoe.user_id] = { status: activity.ACTIVE };
+
+reset_setup();
+
+run_test('first/prev/next', () => {
+    clear_buddy_list();
+
+    assert.equal(buddy_list.first_key(), undefined);
+    assert.equal(buddy_list.prev_key(alice.user_id), undefined);
+    assert.equal(buddy_list.next_key(alice.user_id), undefined);
+
+    buddy_list.container.append = () => {};
+
+    activity.insert_user_into_list(alice.user_id);
+    activity.insert_user_into_list(fred.user_id);
+
+    assert.equal(buddy_list.first_key(), alice.user_id);
+    assert.equal(buddy_list.prev_key(alice.user_id), undefined);
+    assert.equal(buddy_list.prev_key(fred.user_id), alice.user_id);
+
+    assert.equal(buddy_list.next_key(alice.user_id), fred.user_id);
+    assert.equal(buddy_list.next_key(fred.user_id), undefined);
+});
 
 reset_setup();
 
@@ -672,6 +666,7 @@ run_test('clear_search', () => {
 });
 
 run_test('escape_search', () => {
+    clear_buddy_list();
     $('.user-list-filter').val('somevalue');
     activity.escape_search();
     assert.equal($('.user-list-filter').val(), '');
