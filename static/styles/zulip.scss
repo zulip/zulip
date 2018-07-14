@@ -1941,22 +1941,6 @@ nav a .no-style {
     text-decoration: none;
 }
 
-.highlight {
-    background-color: hsl(51, 94%, 74%);
-}
-
-.highlight_text_inserted {
-    color: hsl(122, 72%, 30%);
-    background-color: hsl(120, 64%, 95%);
-}
-
-.highlight_text_deleted {
-    color: hsl(0, 0%, 73%);
-    text-decoration: line-through;
-    background-color: hsl(7, 90%, 92%);
-    word-break: break-all;
-}
-
 #search_arrows {
     /* Bootstrap wants font-size: 0 to eliminate space between
        the buttons.  We need to inherit the font size, so we
@@ -2085,6 +2069,22 @@ div.floating_recipient {
 .rtl .message_inline_image {
     margin-left: unset;
     margin-right: 5px;
+}
+
+.highlight {
+    background-color: hsl(51, 94%, 74%);
+}
+
+.highlight_text_inserted {
+    color: hsl(122, 72%, 30%);
+    background-color: hsl(120, 64%, 95%);
+}
+
+.highlight_text_deleted {
+    color: hsl(0, 0%, 73%);
+    text-decoration: line-through;
+    background-color: hsl(7, 90%, 92%);
+    word-break: break-all;
 }
 
 #message-edit-history .message_inline_image {
