@@ -5,13 +5,13 @@ zrequire('Filter', 'js/filter');
 zrequire('Handlebars', 'handlebars');
 
 var is_starred_item = {
-    display_value: 'starred messages',
-    search_string: 'is:starred',
+    display_value: 'is:starred',
+    description: 'starred messages',
 };
 
 var is_private_item = {
-    display_value: 'private messages',
-    search_string: 'is:private',
+    display_value: 'is:private',
+    description: 'private messages',
 };
 
 run_test('create_item', () => {
@@ -34,7 +34,7 @@ run_test('append', () => {
 
     function fake_append(search_string) {
         appended = true;
-        assert.equal(search_string, is_starred_item.search_string);
+        assert.equal(search_string, is_starred_item.display_value);
     }
 
     function fake_clear() {
@@ -46,7 +46,7 @@ run_test('append', () => {
         clear_text: fake_clear,
     };
 
-    search_pill.append_search_string(is_starred_item.search_string, pill_widget);
+    search_pill.append_search_string(is_starred_item.display_value, pill_widget);
 
     assert(appended);
     assert(cleared);
@@ -60,7 +60,7 @@ run_test('get_items', () => {
     };
 
     assert.deepEqual(search_pill.get_search_string_for_current_filter(pill_widget),
-                     is_starred_item.search_string + ' ' + is_private_item.search_string);
+                     is_starred_item.display_value + ' ' + is_private_item.display_value);
 });
 
 run_test('create_pills', () => {

@@ -1855,30 +1855,24 @@ nav a .no-style {
 }
 
 #searchbox {
+    display: flex;
     width: 100%;
     height: 40px;
+    border-right: 1px solid #e0e0e0;
 
     .navbar-search {
         margin-top: 0px;
-        width: auto;
+        width: calc(100% - 66px);
         float: none;
         overflow: hidden;
-        border-right: 1px solid hsl(0, 0%, 87.8%);
         height: 40px;
     }
 
     .input-append {
+        align-items: center;
+        display: flex;
         position: relative;
-        width: 100%;
-
-        .fa-search {
-            padding: 0px;
-            font-size: 20px;
-            position: absolute;
-            left: 10px;
-            top: 10px;
-            z-index: 5;
-        }
+        width: calc(100% - 28px);
     }
 
     #search_query {
@@ -1886,7 +1880,7 @@ nav a .no-style {
         font-size: 16px;
         height: 40px;
         padding: 0px;
-        padding-left: 35px;
+        padding-left: 5px;
         padding-right: 20px;
         border: none;
         border-radius: 0px;
@@ -1895,20 +1889,11 @@ nav a .no-style {
         line-height: 40px;
     }
 
-    #search_query:focus {
-        box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
-    }
-
     .search_button,
     .search_button[disabled]:hover {
-        position: absolute;
-        right: 2px;
-        top: 6px;
+        position: relative;
         background: none;
-        border-radius: 0px;
-        border: none;
-        height: 30px;
-        text-align: center;
+        height: 40px;
         padding: 4px;
         color: hsl(0, 0%, 80%);
         font-size: 18px;
@@ -1917,6 +1902,7 @@ nav a .no-style {
         -moz-box-shadow: none;
         text-shadow: none;
         z-index: 5;
+        float: right;
     }
 
     .search_button:hover {
@@ -1928,11 +1914,19 @@ nav a .no-style {
     }
 
     a.search_icon {
+        display: table;
+        height: 100%;
         color: hsl(0, 0%, 80%);
         text-decoration: none;
-        display: block;
-        width: 1px;
-        height: 1px;
+        padding: 0 10px;
+        font-size: 20px;
+        z-index: 5;
+        float: left;
+
+        i {
+            display: table-cell;
+            vertical-align: middle;
+        }
     }
 
     a.search_icon:hover {
@@ -1942,7 +1936,28 @@ nav a .no-style {
 
     #search_arrows {
         font-size: 90%;
-        letter-spacing: normal
+        letter-spacing: normal;
+        border: none;
+    }
+
+    @media (min-width: 500px) {
+        .pill {
+            padding: 2px 18px 2px 3px !important;
+            font-size: 14px;
+
+            .exit {
+                top: 2px !important; /* pill's top padding + border */
+            }
+        }
+    }
+    @media (max-width: 500px) {
+        #search_arrows .pill {
+            line-height: 20px;
+
+            .exit {
+                top: 0;
+            }
+        }
     }
 }
 
