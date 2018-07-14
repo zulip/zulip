@@ -112,8 +112,32 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         self.send_stream_message(
             self.example_email("iago"),
             "Test Public Archives",
+            'Test Message 3',
+            topic_name='first_topic'
+        )
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
             'Test Message',
-            'TopicGlobal'
+            topic_name='TopicGlobal'
+        )
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message 2',
+            topic_name='topicglobal'
+        )
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message 3',
+            topic_name='second_topic'
+        )
+        self.send_stream_message(
+            self.example_email("iago"),
+            "Test Public Archives",
+            'Test Message 4',
+            topic_name='TopicGlobal'
         )
 
         result = self.client_get(
@@ -121,6 +145,8 @@ class WebPublicTopicHistoryTest(ZulipTestCase):
         )
         self.assert_json_success(result)
         history = result.json()['topics']
-        self.assert_length(history, 1)
-        self.assert_length(history[0], 2)
+        self.assert_length(history, 3)
+        # Should be sorted with latest topic first
         self.assertEqual(history[0]['name'], 'TopicGlobal')
+        self.assertEqual(history[1]['name'], 'second_topic')
+        self.assertEqual(history[2]['name'], 'first_topic')
