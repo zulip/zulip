@@ -19,7 +19,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog, UserHotspot
+    RealmAuditLog, UserHotspot, MutedTopic
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -167,7 +167,6 @@ NON_EXPORTED_TABLES = {
     # The fact that these are not exported is a bug
     'zerver_botstoragedata',
     'zerver_botconfigdata',
-    'zerver_mutedtopic',
     'zerver_pushdevicetoken',
     'zerver_service',
     'zerver_usergroup',
@@ -591,6 +590,13 @@ def get_realm_config() -> Config:
         model=UserHotspot,
         normal_parent=user_profile_config,
         parent_key='user__in',
+    )
+
+    Config(
+        table='zerver_mutedtopic',
+        model=MutedTopic,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
     )
 
     # Some of these tables are intermediate "tables" that we
