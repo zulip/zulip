@@ -452,6 +452,7 @@ exports.setup_page = function (callback) {
     // Also, we'll always go back to the "Subscribed" tab.
     function initialize_components() {
         exports.toggler = components.toggle({
+            child_wants_focus: true,
             values: [
                 { label: i18n.t("Subscribed"), key: "subscribed" },
                 { label: i18n.t("All streams"), key: "all-streams" },
