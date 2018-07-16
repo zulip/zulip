@@ -43,7 +43,10 @@ var list_cursor = function (opts) {
             return;
         }
 
-        var li = opts.list.find_li({key: key});
+        var li = opts.list.find_li({
+            key: key,
+            force_render: true,
+        });
 
         if (li.length === 0) {
             return;
