@@ -15,7 +15,7 @@ function render_lightbox_list_images(preview_source) {
 
         images.forEach(function (img) {
             var src = img.getAttribute("src");
-            var className = preview_source.match(src) ? "image selected" : "image";
+            var className = preview_source === src ? "image selected" : "image";
 
             var node = $("<div></div>", {
                 class: className,
