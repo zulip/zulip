@@ -19,7 +19,7 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog, UserHotspot, MutedTopic
+    RealmAuditLog, UserHotspot, MutedTopic, Service
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -168,7 +168,6 @@ NON_EXPORTED_TABLES = {
     'zerver_botstoragedata',
     'zerver_botconfigdata',
     'zerver_pushdevicetoken',
-    'zerver_service',
     'zerver_usergroup',
     'zerver_usergroupmembership',
 }
@@ -595,6 +594,13 @@ def get_realm_config() -> Config:
     Config(
         table='zerver_mutedtopic',
         model=MutedTopic,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_service',
+        model=Service,
         normal_parent=user_profile_config,
         parent_key='user_profile__in',
     )
