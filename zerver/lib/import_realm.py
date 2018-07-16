@@ -274,6 +274,51 @@ def re_map_foreign_keys_internal(data_table: List[Record],
             else:
                 item[field_name] = new_id
 
+def re_map_foreign_keys_many_to_many(data: TableData,
+                                     table: TableName,
+                                     field_name: Field,
+                                     related_table: TableName,
+                                     verbose: bool=False) -> None:
+    """
+    We need to assign new ids to rows during the import/export
+    process.
+
+    The tricky part is making sure that foreign key references
+    are in sync with the new ids, and this wrapper function does
+    the re-mapping only for ManyToMany fields.
+    """
+    for item in data[table]:
+        old_id_list = item['field_name']
+        new_id_list = re_map_foreign_keys_many_to_many_internal(
+            table, field_name, related_table, old_id_list, verbose)
+        item[field_name] = new_id_list
+        del item[field_name]
+
+def re_map_foreign_keys_many_to_many_internal(table: TableName,
+                                              field_name: Field,
+                                              related_table: TableName,
+                                              old_id_list: List[int],
+                                              verbose: bool=False) -> List[int]:
+    """
+    This is an internal function for tables with ManyToMany fields,
+    which takes the old ID list of the ManyToMany relation and returns the
+    new updated ID list.
+    """
+    lookup_table = id_maps[related_table]
+    new_id_list = []
+    for old_id in old_id_list:
+        if old_id in lookup_table:
+            new_id = lookup_table[old_id]
+            if verbose:
+                logging.info('Remapping %s %s from %s to %s' % (table,
+                                                                field_name + '_id',
+                                                                old_id,
+                                                                new_id))
+        else:
+            new_id = old_id
+        new_id_list.append(new_id)
+    return new_id_list
+
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
         item[field_name] = item[field_name + '_mask']
