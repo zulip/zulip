@@ -168,6 +168,10 @@ exports.get_filtered_and_sorted_user_ids = function (filter_text) {
 exports.get_items = function (filter_text) {
     var user_ids = exports.get_filtered_and_sorted_user_ids(filter_text);
 
+    return exports.get_items_for_users(user_ids);
+};
+
+exports.get_items_for_users = function (user_ids) {
     var user_info = _.map(user_ids, exports.info_for).filter(function (person) {
         // filtered bots and yourself are set to "undefined" in the `info_for`
         // function.
