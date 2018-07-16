@@ -57,6 +57,7 @@ class HomeTest(ZulipTestCase):
             "debug_mode",
             "default_language",
             "default_language_name",
+            "delivery_email",
             "dense_mode",
             "development_environment",
             "email",
