@@ -9,7 +9,7 @@
                     <a id="change_email" {{#if page_params.is_admin}}href="#change_email"{{else}}{{#unless page_params.realm_email_changes_disabled}}href="#change_email"{{/unless}}{{/if}}>
                         <button type="button" class="button small rounded inline-block" id='email_value'
                           {{#unless page_params.is_admin}}{{#if page_params.realm_email_changes_disabled}}disabled="disabled"{{/if}}{{/unless}}>
-                            {{page_params.email}}
+                            {{page_params.delivery_email}}
                             <i class="fa fa-pencil"></i>
                         </button>
                     </a>
