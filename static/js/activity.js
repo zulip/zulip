@@ -218,7 +218,6 @@ exports.insert_user_into_list = function (user_id) {
     buddy_list.insert_or_move({
         key: user_id,
         item: info,
-        compare_function: buddy_data.compare_function,
     });
 
     exports.update_scrollbar.users();

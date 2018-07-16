@@ -34,6 +34,8 @@ var buddy_list = (function () {
         return data;
     };
 
+    self.compare_function = buddy_data.compare_function;
+
     // Try to keep code below this line generic, so that we can
     // extract a widget.
 
@@ -100,13 +102,12 @@ var buddy_list = (function () {
 
     self.find_position = function (opts) {
         var key = opts.key;
-        var compare_function = opts.compare_function;
         var i;
 
         for (i = 0; i < self.keys.length; i += 1) {
             var list_key = self.keys[i];
 
-            if (compare_function(key, list_key) < 0) {
+            if (self.compare_function(key, list_key) < 0) {
                 return i;
             }
         }
@@ -130,13 +131,11 @@ var buddy_list = (function () {
     self.insert_or_move = function (opts) {
         var key = opts.key.toString();
         var item = opts.item;
-        var compare_function = opts.compare_function;
 
         self.maybe_remove_key({key: key});
 
         var pos = self.find_position({
             key: key,
-            compare_function: compare_function,
         });
 
         // Order is important here--get the other_key

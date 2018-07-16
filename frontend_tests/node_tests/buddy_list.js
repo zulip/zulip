@@ -1,4 +1,5 @@
 set_global('$', global.make_zjquery());
+zrequire('buddy_data');
 zrequire('buddy_list');
 
 run_test('get_items', () => {
