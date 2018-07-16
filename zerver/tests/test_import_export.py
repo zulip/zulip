@@ -9,7 +9,8 @@ import io
 from PIL import Image
 
 from mock import patch, MagicMock
-from typing import Any, Dict, List, Set, Optional, Tuple, Callable
+from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
+    FrozenSet
 from boto.s3.connection import Location, S3Connection
 
 from zerver.lib.export import (
@@ -550,6 +551,37 @@ class ImportExportTest(ZulipTestCase):
             return custom_profile_field_names
 
         assert_realm_values(get_custom_profile_field_names)
+
+        def get_custom_profile_with_field_type_user(r: Realm) -> Tuple[Set[Any],
+                                                                       Set[Any],
+                                                                       Set[FrozenSet[str]]]:
+            fields = CustomProfileField.objects.filter(
+                field_type=CustomProfileField.USER,
+                realm=r)
+
+            def get_email(user_id: int) -> str:
+                return UserProfile.objects.get(id=user_id).email
+
+            def get_email_from_value(field_value: CustomProfileFieldValue) -> Set[str]:
+                user_id_list = ujson.loads(field_value.value)
+                return {get_email(user_id) for user_id in user_id_list}
+
+            def custom_profile_field_values_for(fields: List[CustomProfileField]) -> Set[FrozenSet[str]]:
+                user_emails = set()  # type: Set[FrozenSet[str]]
+                for field in fields:
+                    values = CustomProfileFieldValue.objects.filter(field=field)
+                    for value in values:
+                        user_emails.add(frozenset(get_email_from_value(value)))
+                return user_emails
+
+            field_names, field_hints = (set() for i in range(2))
+            for field in fields:
+                field_names.add(field.name)
+                field_hints.add(field.hint)
+
+            return (field_hints, field_names, custom_profile_field_values_for(fields))
+
+        assert_realm_values(get_custom_profile_with_field_type_user)
 
         # test realmauditlog
         def get_realm_audit_log_event_type(r: Realm) -> Set[str]:

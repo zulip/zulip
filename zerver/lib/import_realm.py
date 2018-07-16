@@ -159,6 +159,27 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
             huddle_id = id_maps['recipient_to_huddle_map'][subscription['recipient']]
             id_map_to_list['huddle_to_user_list'][huddle_id].append(subscription['user_profile_id'])
 
+def fix_customprofilefield(data: TableData) -> None:
+    """
+    In CustomProfileField with 'field_type' like 'USER', the IDs need to be
+    re-mapped.
+    """
+    field_type_USER_id_list = []
+    for item in data['zerver_customprofilefield']:
+        if item['field_type'] == CustomProfileField.USER:
+            field_type_USER_id_list.append(item['id'])
+
+    for item in data['zerver_customprofilefieldvalue']:
+        if item['field_id'] in field_type_USER_id_list:
+            old_user_id_list = ujson.loads(item['value'])
+
+            new_id_list = re_map_foreign_keys_many_to_many_internal(
+                table='zerver_customprofilefieldvalue',
+                field_name='value',
+                related_table='user_profile',
+                old_id_list=old_user_id_list)
+            item['value'] = ujson.dumps(new_id_list)
+
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
     Returns the ids present in the current table
@@ -678,6 +699,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                         related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'field',
                         related_table="customprofilefield")
+    fix_customprofilefield(data)
     update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefieldvalue',
                      related_table="customprofilefieldvalue")
     bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefieldvalue')
