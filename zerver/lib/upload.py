@@ -27,6 +27,7 @@ import base64
 import os
 import re
 from PIL import Image, ImageOps, ExifTags
+from PIL.GifImagePlugin import GifImageFile
 import io
 import random
 import logging
@@ -117,26 +118,39 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
     return out.getvalue()
 
 
+def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
+    frames = []
+    duration_info = []
+    # If 'loop' info is not set then loop for infinite number of times.
+    loop = im.info.get("loop", 0)
+    for frame_num in range(0, im.n_frames):
+        im.seek(frame_num)
+        new_frame = Image.new("RGBA", im.size)
+        new_frame.paste(im, (0, 0), im.convert("RGBA"))
+        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+        frames.append(new_frame)
+        duration_info.append(im.info['duration'])
+    out = io.BytesIO()
+    frames[0].save(out, save_all=True, optimize=True,
+                   format="GIF", append_images=frames[1:],
+                   duration=duration_info,
+                   loop=loop)
+    return out.getvalue()
+
 def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     try:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
-        im = exif_rotate(im)
-        if image_format == 'GIF' and im.is_animated:
-            if im.size[0] != im.size[1]:
-                raise JsonableError(
-                    _("Animated emoji must have the same width and height."))
-            elif im.size[0] > size:
-                raise JsonableError(
-                    _("Animated emoji can't be larger than 64px in width or height."))
-            else:
-                return image_data
-        im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+        if image_format == "GIF":
+            return resize_gif(im, size)
+        else:
+            im = exif_rotate(im)
+            im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
+            out = io.BytesIO()
+            im.save(out, format=image_format)
+            return out.getvalue()
     except IOError:
         raise BadImageError("Could not decode image; did you upload an image file?")
-    out = io.BytesIO()
-    im.save(out, format=image_format)
-    return out.getvalue()
 
 
 ### Common
