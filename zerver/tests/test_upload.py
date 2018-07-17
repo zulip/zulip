@@ -1013,26 +1013,21 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         destroy_uploads()
 
 class EmojiTest(UploadSerializeMixin, ZulipTestCase):
+    # While testing GIF resizing, we can't test if the final GIF has the same
+    # number of frames as the original one because PIL drops duplicate frames
+    # with a corresponding increase in the duration of the previous frame.
     def test_resize_emoji(self) -> None:
         # Test unequal width and height of animated GIF image
         animated_unequal_img_data = get_test_image_file('animated_unequal_img.gif').read()
-        with self.assertRaises(JsonableError):
-            resize_emoji(animated_unequal_img_data)
+        resized_img_data = resize_emoji(animated_unequal_img_data, size=50)
+        im = Image.open(io.BytesIO(resized_img_data))
+        self.assertEqual((50, 50), im.size)
 
         # Test for large animated image (128x128)
         animated_large_img_data = get_test_image_file('animated_large_img.gif').read()
-        with self.assertRaises(JsonableError):
-            resize_emoji(animated_large_img_data)
-
-        # Test for no resize case
-        animated_img_data = get_test_image_file('animated_img.gif').read()
-        self.assertEqual(animated_img_data, resize_emoji(animated_img_data))
-
-        # Test for resize case
-        img_data = get_test_image_file('img.gif').read()
-        resized_img_data = resize_emoji(img_data, size=80)
+        resized_img_data = resize_emoji(animated_large_img_data, size=50)
         im = Image.open(io.BytesIO(resized_img_data))
-        self.assertEqual((80, 80), im.size)
+        self.assertEqual((50, 50), im.size)
 
         # Test corrupt image exception
         corrupted_img_data = get_test_image_file('corrupt.gif').read()
