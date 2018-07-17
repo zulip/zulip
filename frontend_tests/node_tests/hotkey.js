@@ -70,12 +70,13 @@ run_test('mappings', () => {
         });
     }
 
-    function map_down(which, shiftKey, ctrlKey, metaKey) {
+    function map_down(which, shiftKey, ctrlKey, metaKey, altKey) {
         return hotkey.get_keydown_hotkey({
             which: which,
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
             metaKey: metaKey,
+            altKey: altKey,
         });
     }
 
@@ -101,6 +102,7 @@ run_test('mappings', () => {
     assert.equal(map_down(219, false, true).name, 'escape'); // ctrl + [
     assert.equal(map_down(75, false, true).name, 'search_with_k'); // ctrl + k
     assert.equal(map_down(83, false, true).name, 'star_message'); // ctrl + s
+    assert.equal(map_down(83, false, true, false, true).name, 'show_starred'); // ctrl + alt + s
 
     // More negative tests.
     assert.equal(map_down(47), undefined);
@@ -124,6 +126,7 @@ run_test('mappings', () => {
     assert.equal(map_down(75, true, true), undefined); // shift + ctrl + k
     assert.equal(map_down(83, true, true), undefined); // shift + ctrl + s
     assert.equal(map_down(219, true, true, false), undefined); // shift + ctrl + [
+    assert.equal(map_down(83, false, false, false, true), undefined); // alt + s
 
     // CMD tests for MacOS
     global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";

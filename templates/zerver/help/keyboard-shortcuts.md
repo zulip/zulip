@@ -76,6 +76,8 @@ below, and add more to your repertoire as needed.
 
 * **Narrow to all private messages**: `P`
 
+* **Narrow to starred messages**: `Ctrl` + `Alt` + `S`
+
 * **Cycle between stream narrows**: `A` (previous) and `D` (next)
 
 * **Narrow to all messages**: `Esc` or `Ctrl` + `[` — Shows all unmuted messages.

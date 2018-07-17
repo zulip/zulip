@@ -57,6 +57,10 @@ var keydown_cmd_or_ctrl_mappings = {
     83: {name: 'star_message', message_view_only: true}, // 's'
 };
 
+var keydown_alt_cmd_or_ctrl_mappings = {
+    83: {name: 'show_starred', message_view_only: true}, // 's'
+};
+
 var keydown_either_mappings = {
     // these can be triggered by key or shift + key
     // Note that codes for letters are still case sensitive!
@@ -112,13 +116,9 @@ var keypress_mappings = {
 };
 
 exports.get_keydown_hotkey = function (e) {
-    if (e.altKey) {
-        return;
-    }
-
     var hotkey;
 
-    if (e.ctrlKey && !e.shiftKey) {
+    if (e.ctrlKey && !e.shiftKey && !e.altKey) {
         hotkey = keydown_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
@@ -126,8 +126,14 @@ exports.get_keydown_hotkey = function (e) {
     }
 
     var isCmdOrCtrl = /Mac/i.test(navigator.userAgent) ? e.metaKey : e.ctrlKey;
-    if (isCmdOrCtrl && !e.shiftKey) {
+    if (isCmdOrCtrl && !e.shiftKey && !e.altKey) {
         hotkey = keydown_cmd_or_ctrl_mappings[e.which];
+        if (hotkey) {
+            return hotkey;
+        }
+        return;
+    } else if (isCmdOrCtrl && !e.shiftKey && e.altKey) {
+        hotkey = keydown_alt_cmd_or_ctrl_mappings[e.which];
         if (hotkey) {
             return hotkey;
         }
@@ -634,6 +640,9 @@ exports.process_hotkey = function (e, hotkey) {
         return true;
     case 'show_shortcuts': // Show keyboard shortcuts page
         info_overlay.maybe_show_keyboard_shortcuts();
+        return true;
+    case 'show_starred':
+        narrow.by('is', 'starred');
         return true;
     case 'stream_cycle_backward':
         narrow.stream_cycle_backward();
