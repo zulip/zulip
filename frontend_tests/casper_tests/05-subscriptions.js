@@ -31,6 +31,40 @@ casper.then(function () {
     casper.test.assertExists('#user-checkboxes [data-email="othello@zulip.com"]', 'Original user list contains Othello');
 });
 
+casper.waitUntilVisible("#copy-from-user-group-expand-collapse", function () {
+    casper.click('#copy-from-user-group-expand-collapse');
+});
+
+casper.waitUntilVisible("#user-group-checkboxes", function () {
+    casper.test.assertExists('#user-group-checkboxes [data-group-id="1"] input[value="hamletcharacters"]', 'Original user group list contains hamletcharacters');
+});
+
+casper.then(function () {
+    casper.test.info("Check subscribing users from user group");
+    casper.click('#user-group-checkboxes [data-group-id="1"] input[value="hamletcharacters"]');
+    casper.wait(100, function () {
+        casper.test.assert(casper.evaluate(function () {
+            return $('#user-checkboxes [value="cordelia@zulip.com"]')[0].checked;
+        }), "Cordelia is checked");
+        casper.test.assert(casper.evaluate(function () {
+            return !$('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
+        }), "Othello is unchecked");
+    });
+});
+
+casper.then(function () {
+    casper.test.info("Check unsubscribing users from user group");
+    casper.click('#user-group-checkboxes [data-group-id="1"] input[value="hamletcharacters"]');
+    casper.wait(100, function () {
+        casper.test.assert(casper.evaluate(function () {
+            return !$('#user-checkboxes [value="cordelia@zulip.com"]')[0].checked;
+        }), "Cordelia is unchecked");
+        casper.test.assert(casper.evaluate(function () {
+            return !$('#user-checkboxes [value="othello@zulip.com"]')[0].checked;
+        }), "Othello is unchecked");
+    });
+});
+
 casper.waitUntilVisible("#copy-from-stream-expand-collapse", function () {
     casper.click('#copy-from-stream-expand-collapse');
 });
@@ -59,6 +93,7 @@ casper.waitUntilVisible("#user-checkboxes", function () {
     casper.test.assertEquals(casper.visible('#stream-checkboxes [data-stream-name="Rome"]'),
                              true,
                              "Rome is visible");
+    casper.test.assertExists('#user-group-checkboxes [data-group-id="1"] input[value="hamletcharacters"]', 'hamletcharacters is visible');
 });
 casper.then(function () {
     casper.test.info("Check Uncheck only visible users for new stream");
