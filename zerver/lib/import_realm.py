@@ -28,7 +28,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
     Attachment, get_system_bot, email_to_username, get_huddle_hash, \
-    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership
+    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
+    BotStorageData, BotConfigData
 
 # Code from here is the realm import code path
 
@@ -69,6 +70,8 @@ id_maps = {
     'service': {},
     'usergroup': {},
     'usergroupmembership': {},
+    'botstoragedata': {},
+    'botconfigdata': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -684,6 +687,16 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
         update_model_ids(UserGroupMembership, data, 'zerver_usergroupmembership',
                          'usergroupmembership')
         bulk_import_model(data, UserGroupMembership, 'zerver_usergroupmembership')
+
+    if 'zerver_botstoragedata' in data:
+        re_map_foreign_keys(data, 'zerver_botstoragedata', 'bot_profile', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_botstoragedata', 'botstoragedata')
+        bulk_import_model(data, BotStorageData, 'zerver_botstoragedata')
+
+    if 'zerver_botconfigdata' in data:
+        re_map_foreign_keys(data, 'zerver_botconfigdata', 'bot_profile', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_botconfigdata', 'botconfigdata')
+        bulk_import_model(data, BotConfigData, 'zerver_botconfigdata')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
