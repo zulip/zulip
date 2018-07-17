@@ -268,6 +268,11 @@ function update_user_checkboxes(checked_prop, new_subscriber_ids) {
         var stream_subs = stream_data.get_sub_by_id(stream_id).subscribers.keys();
         already_checked_sub_ids = already_checked_sub_ids.concat(stream_subs);
     });
+    $("#user-group-checkboxes input:checkbox[name=user_group]:checked").each(function () {
+        var user_group_id = $(this).closest(".add-user-label").attr("data-group-id");
+        var user_group_subs = user_groups.get_user_group_from_id(user_group_id).members.keys();
+        already_checked_sub_ids = already_checked_sub_ids.concat(user_group_subs);
+    });
 
     for (var i = 0; i < new_subscriber_ids.length; i += 1) {
         var sub_id = new_subscriber_ids[i];
@@ -286,6 +291,7 @@ exports.show_new_stream_modal = function () {
     var html = render_new_stream_users({
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
+        user_groups: user_groups.get_realm_user_groups(),
         is_admin: page_params.is_admin,
     });
 
@@ -313,6 +319,16 @@ exports.show_new_stream_modal = function () {
         var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers.keys();
 
         update_user_checkboxes(checked, subscriber_ids);
+        e.preventDefault();
+    });
+
+    $("#user-group-checkboxes label.checkbox").on('change', function (e) {
+        var elem = $(this);
+        var group_id = elem.attr('data-group-id');
+        var checked = elem.find('input').prop('checked');
+        var group_ids = user_groups.get_user_group_from_id(group_id).members.keys();
+
+        update_user_checkboxes(checked, group_ids);
         e.preventDefault();
     });
 };
@@ -350,6 +366,12 @@ exports.create_handlers_for_users = function (container) {
     container.on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
+        e.preventDefault();
+    });
+
+    container.on('click', '#copy-from-user-group-expand-collapse', function (e) {
+        $('#user-group-checkboxes').toggle();
+        $("#copy-from-user-group-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
         e.preventDefault();
     });
 
