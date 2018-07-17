@@ -80,7 +80,7 @@ function scrollToHash(simplebar) {
     var hash = window.location.hash;
     var scrollbar = simplebar.getScrollElement();
     if (hash !== '') {
-        var position = $(hash).position().top - $(simplebar.el).position().top;
+        var position = $(hash).position().top - $(scrollbar.firstChild).position().top;
         scrollbar.scrollTop = position;
     } else {
         scrollbar.scrollTop = 0;
@@ -169,7 +169,8 @@ function scrollToHash(simplebar) {
 
     // Scroll to anchor link when clicked
     $(document).on('click', '.markdown .content h1, .markdown .content h2, .markdown .content h3', function () {
-        location.hash = $(this).attr("id");
+        window.location.hash = $(this).attr("id");
+        scrollToHash(markdownSB);
     });
 
     $(".hamburger").click(function () {
