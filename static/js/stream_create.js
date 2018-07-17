@@ -256,6 +256,7 @@ exports.show_new_stream_modal = function () {
     var html = templates.render('new_stream_users', {
         users: all_users,
         streams: stream_data.get_streams_for_settings_page(),
+        user_groups: user_groups.get_realm_user_groups(),
         is_admin: page_params.is_admin,
     });
 
@@ -287,6 +288,25 @@ exports.show_new_stream_modal = function () {
             var user_id = user_elem.attr('data-user-id');
 
             if (subscriber_ids.has(user_id)) {
+                user_elem.find('input').prop('checked', checked);
+            }
+        });
+
+        update_announce_stream_state();
+        e.preventDefault();
+    });
+
+    $("#user-group-checkboxes label.checkbox").on('change', function (e) {
+        var elem = $(this);
+        var group_id = elem.attr('data-group-id');
+        var checked = elem.find('input').prop('checked');
+        var group_ids = user_groups.get_user_group_from_id(group_id).members;
+
+        $('#user-checkboxes label.checkbox').each(function () {
+            var user_elem = $(this);
+            var user_id = user_elem.attr('data-user-id');
+
+            if (group_ids.has(user_id)) {
                 user_elem.find('input').prop('checked', checked);
             }
         });
@@ -329,6 +349,13 @@ exports.create_handlers_for_users = function (container) {
     container.on('click', '#copy-from-stream-expand-collapse', function (e) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
+        e.preventDefault();
+        update_announce_stream_state();
+    });
+
+    container.on('click', '#copy-from-user-group-expand-collapse', function (e) {
+        $('#user-group-checkboxes').toggle();
+        $("#copy-from-user-group-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
         e.preventDefault();
         update_announce_stream_state();
     });

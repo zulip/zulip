@@ -2230,20 +2230,24 @@ li .message_inline_image img {
     float: none;
 }
 
+#user-group-checkboxes,
 #stream-checkboxes {
     margin-top: 10px;
     display: none;
 }
 
+#user-group-checkboxes .checkbox,
 #stream-checkboxes .checkbox {
     display: block;
 }
 
+#user-group-checkboxes .checkbox input[type=checkbox],
 #stream-checkboxes .checkbox input[type=checkbox] {
     margin: 5px 0px;
     float: none;
 }
 
+#copy-from-user-group-expand-collapse,
 #copy-from-stream-expand-collapse {
     cursor: pointer;
 }

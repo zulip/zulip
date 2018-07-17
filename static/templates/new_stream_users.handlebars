@@ -17,6 +17,23 @@
     {{/each}}
 </div>
 
+<div id="copy-from-user-group-expand-collapse" class="add-user-label">
+    <i class="toggle fa fa-caret-right" aria-hidden="true"></i>
+    <span class="control-label">
+        {{t "Copy from user group" }}
+    </span>
+</div>
+
+<div id="user-group-checkboxes">
+    {{#each user_groups}}
+    <label class="checkbox add-user-label" data-group-id="{{this.id}}">
+        <input type="checkbox" name="user_group" value="{{this.name}}" />
+        <span></span>
+        {{this.name}} — {{this.description}}
+    </label>
+    {{/each}}
+</div>
+
 <br />
 <input class="add-user-list-filter" name="user_list_filter" type="text"
   autocomplete="off" placeholder="{{t "Filter" }}" />
