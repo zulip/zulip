@@ -2,31 +2,31 @@
 
 {!admin-only.md!}
 
+## Prevent users from changing their name
+
+By default, any user can [change their name](/help/change-your-name). You
+can instead prevent users from changing their name. Organization
+administrators can always [change anyone's name](/help/change-a-users-name).
+
+This setting is especially useful if user names are managed via an external
+source, and synced into Zulip via the [Zulip API](/api) or another method.
+
 {settings_tab|organization-permissions}
 
-# Prevent users from changing their email address
+2. Under the **User identity**, select **Prevent users from changing their name**.
 
-By default, any user can change their own email address by going
-through an email confirmation process that confirms they own both the
-account and new email address.
+{!save-changes.md!}
 
-For organizations that are using LDAP or another a Single Sign-On
-solution where a user's account is managed elsewhere, you can enable a
-setting that prevents them from changing their own email address via
-the Zulip UI.
+## Prevent all email changes
 
-2. Select the **Prevent users from changing their email address** checkbox
-under the **User identity** section.
+By default, any user can
+[change their email address](/help/change-your-email-address). However, you
+can instead prevent all email changes. This is especially useful for
+organizations that are self-hosting and using LDAP or another a Single
+Sign-On solution to manage user emails.
 
-{!save-changes.md!} organization settings.
+{settings_tab|organization-permissions}
 
-# Prevent users from changing their name
-
-By default, any user can change their name by going through the
-steps given [here](/help/change-your-name), but administrators can enable a
-setting that prevents them from changing their own names via the Zulip UI.
-
-2. Select the **Prevent users from changing their name** checkbox under the
-**User identity** section.
+2. Under **User identity**, select **Prevent users from changing their email address**.
 
 {!save-changes.md!}
