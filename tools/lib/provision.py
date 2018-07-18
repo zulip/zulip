@@ -73,7 +73,7 @@ if ram_gb < 1.5:
 
 try:
     UUID_VAR_PATH = get_dev_uuid_var_path(create_if_missing=True)
-    run(["mkdir", "-p", UUID_VAR_PATH])
+    os.makedirs(UUID_VAR_PATH, exist_ok=True)
     if os.path.exists(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink')):
         os.remove(os.path.join(VAR_DIR_PATH, 'zulip-test-symlink'))
     os.symlink(
@@ -220,11 +220,9 @@ def main(options):
     new_apt_dependencies_hash = sha_sum.hexdigest()
     last_apt_dependencies_hash = None
     apt_hash_file_path = os.path.join(UUID_VAR_PATH, "apt_dependencies_hash")
-    try:
-        with open(apt_hash_file_path, 'r') as hash_file:
-            last_apt_dependencies_hash = hash_file.read()
-    except IOError:
-        run(['touch', apt_hash_file_path])
+    with open(apt_hash_file_path, 'a+') as hash_file:
+        hash_file.seek(0)
+        last_apt_dependencies_hash = hash_file.read()
 
     if (new_apt_dependencies_hash != last_apt_dependencies_hash):
         try:
@@ -272,15 +270,15 @@ def main(options):
     run(["sudo", "cp", REPO_STOPWORDS_PATH, TSEARCH_STOPWORDS_PATH])
 
     # create log directory `zulip/var/log`
-    run(["mkdir", "-p", LOG_DIR_PATH])
+    os.makedirs(LOG_DIR_PATH, exist_ok=True)
     # create upload directory `var/uploads`
-    run(["mkdir", "-p", UPLOAD_DIR_PATH])
+    os.makedirs(UPLOAD_DIR_PATH, exist_ok=True)
     # create test upload directory `var/test_upload`
-    run(["mkdir", "-p", TEST_UPLOAD_DIR_PATH])
+    os.makedirs(TEST_UPLOAD_DIR_PATH, exist_ok=True)
     # create coverage directory`var/coverage`
-    run(["mkdir", "-p", COVERAGE_DIR_PATH])
+    os.makedirs(COVERAGE_DIR_PATH, exist_ok=True)
     # create linecoverage directory`var/node-coverage`
-    run(["mkdir", "-p", NODE_TEST_COVERAGE_DIR_PATH])
+    os.makedirs(NODE_TEST_COVERAGE_DIR_PATH, exist_ok=True)
 
     # `build_emoji` script requires `emoji-datasource` package which we install
     # via npm and hence it should be executed after we are done installing npm
