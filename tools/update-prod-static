@@ -5,6 +5,7 @@
 
 import os
 import argparse
+import shutil
 import sys
 
 # We need settings so we can figure out where the prod-static directory is.
@@ -30,7 +31,7 @@ prev_deploy = args.prev_deploy
 os.chdir(settings.DEPLOY_ROOT)
 
 # Redirect child processes' output to a log file (most recent run only).
-run(["mkdir", "-p", "var/log"])
+os.makedirs("var/log", exist_ok=True)
 fp = open('var/log/update-prod-static.log', 'w')
 
 # Install node packages
@@ -56,12 +57,11 @@ run(['./tools/minify-js'] + (['--prev-deploy', prev_deploy] if prev_deploy else 
     stdout=fp, stderr=fp)
 
 # Copy the KaTeX files outside node_modules
-run(['mkdir', '-p', os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/')],
-    stdout=fp, stderr=fp)
+os.makedirs(os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/'),
+            exist_ok=True)
 
-run(['cp', 'node_modules/katex/dist/katex.css',
-     os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/')],
-    stdout=fp, stderr=fp)
+shutil.copy('node_modules/katex/dist/katex.css',
+            os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/'))
 
 run(['cp', '-R', 'node_modules/katex/dist/fonts',
      os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/fonts')],
@@ -76,7 +76,8 @@ CSS_FILES = [
 
 # Copy CSS files in node_modules to prod-static/serve
 for css_file in CSS_FILES:
-    run(['cp', '--parents', css_file, settings.STATIC_ROOT])
+    os.makedirs(os.path.join(settings.STATIC_ROOT, os.path.dirname(css_file)), exist_ok=True)
+    shutil.copyfile(css_file, os.path.join(settings.STATIC_ROOT, css_file))
 
 # Collect the files that we're going to serve; this creates prod-static/serve.
 run(['./manage.py', 'collectstatic', '--no-default-ignore',
@@ -85,21 +86,20 @@ run(['./manage.py', 'collectstatic', '--no-default-ignore',
 
 if not settings.PRODUCTION:
     # When building a release tarball, we need to move staticfiles.json
-    run(['mv', 'prod-static/serve/staticfiles.json', 'staticfiles.json'],
-        stdout=fp, stderr=fp)
+    shutil.move('prod-static/serve/staticfiles.json', 'staticfiles.json')
 
 # Compile translation strings to generate `.mo` files.
 run(['./manage.py', 'compilemessages'], stdout=fp, stderr=fp)
 
 # Move the source maps out of the serve/ directory and into their
 # proper place.
-run(['rm', '-rf', 'prod-static/source-map'], stdout=fp, stderr=fp)
+if os.path.exists('prod-static/source-map'):
+    shutil.rmtree('prod-static/source-map')
 
 # Needed if PRODUCTION
-run(['mkdir', '-p', 'prod-static'], stdout=fp, stderr=fp)
+os.makedirs('prod-static', exist_ok=True)
 
-run(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map'],
-    stdout=fp, stderr=fp)
+shutil.move(os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map')
 
 # Move language_options.json to the production release
 run(['cp', '-aT', 'static/locale', os.path.join(settings.STATIC_ROOT, 'locale')],
