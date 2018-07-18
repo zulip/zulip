@@ -8,11 +8,14 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpResponse
+from django.shortcuts import render
+from oauth2client.crypt import AppIdentityError
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
+from social_core.pipeline.partial import partial
 from social_core.utils import handle_http_errors
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 from social_django.models import DjangoStorage
@@ -445,16 +448,44 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # Some social backends, like GitHubAuthBackend, don't guarantee that
         # the `details` data is validated.
         verified_emails = backend.get_verified_emails(*args, **kwargs)
-        if len(verified_emails) == 0:
+        verified_emails_length = len(verified_emails)
+        if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
             # for this case, rather than just logging a warning.
             logging.warning("Social auth (%s) failed because user has no verified emails" %
                             (backend.auth_backend_name,))
             return_data["email_not_verified"] = True
             return None
-        # TODO: ideally, we'd prompt the user for which email they
-        # want to use with another pipeline stage here.
-        validated_email = verified_emails[0]
+
+        if verified_emails_length == 1:
+            chosen_email = verified_emails[0]
+        else:
+            chosen_email = backend.strategy.request_data().get('email')
+
+        if not chosen_email:
+            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+                'primary_email': verified_emails[0],
+                'verified_non_primary_emails': verified_emails[1:],
+                'backend': 'github'
+            })
+
+        try:
+            validate_email(chosen_email)
+        except ValidationError:
+            return_data['invalid_email'] = True
+            return None
+
+        if chosen_email not in verified_emails:
+            # If a user edits the submit value for the choose email form, we might
+            # end up with a wrong email associated with the account. The below code
+            # takes care of that.
+            logging.warning("Social auth (%s) failed because user has no verified"
+                            " emails associated with the account" %
+                            (backend.auth_backend_name,))
+            return_data["email_not_associated"] = True
+            return None
+
+        validated_email = chosen_email
     else:  # nocoverage
         # This code path isn't used by GitHubAuthBackend
         validated_email = kwargs["details"].get("email")
@@ -462,11 +493,6 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if not validated_email:  # nocoverage
         # This code path isn't used with GitHubAuthBackend, but may be relevant for other
         # social auth backends.
-        return_data['invalid_email'] = True
-        return None
-    try:
-        validate_email(validated_email)
-    except ValidationError:
         return_data['invalid_email'] = True
         return None
 
@@ -483,16 +509,23 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
     return user_profile
 
+@partial
 def social_auth_associate_user(
         backend: BaseAuth,
         *args: Any,
         **kwargs: Any) -> Dict[str, Any]:
+    partial_token = backend.strategy.request_data().get('partial_token')
     return_data = {}  # type: Dict[str, Any]
     user_profile = social_associate_user_helper(
         backend, return_data, *args, **kwargs)
 
-    return {'user_profile': user_profile,
-            'return_data': return_data}
+    if type(user_profile) == HttpResponse:
+        return user_profile
+    else:
+        return {'user_profile': user_profile,
+                'return_data': return_data,
+                'partial_token': partial_token,
+                'partial_backend_name': backend}
 
 def social_auth_finish(backend: Any,
                        details: Dict[str, Any],
@@ -501,7 +534,6 @@ def social_auth_finish(backend: Any,
                        **kwargs: Any) -> Optional[UserProfile]:
     from zerver.views.auth import (login_or_register_remote_user,
                                    redirect_and_log_into_subdomain)
-
     user_profile = kwargs['user_profile']
     return_data = kwargs['return_data']
 
@@ -513,11 +545,13 @@ def social_auth_finish(backend: Any,
     invalid_subdomain = return_data.get('invalid_subdomain')
     invalid_email = return_data.get('invalid_email')
     auth_failed_reason = return_data.get("social_auth_failed_reason")
+    email_not_associated = return_data.get("email_not_associated")
 
     if invalid_realm:
         from zerver.views.auth import redirect_to_subdomain_login_url
         return redirect_to_subdomain_login_url()
-    if auth_backend_disabled or inactive_user or inactive_realm or no_verified_email:
+    if auth_backend_disabled or inactive_user or inactive_realm or no_verified_email \
+       or email_not_associated:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
         return None

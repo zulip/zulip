@@ -978,3 +978,30 @@ button.login-google-button {
     height: 45px;
     width: 325px;
 }
+
+#choose_email {
+    flex-direction: column;
+
+    form {
+        padding: 0;
+        margin: 0;
+    }
+
+    button {
+        color: black;
+        background-color: white;
+        width: 100%;
+        margin-top: 15px;
+        border: 1px solid hsl(0, 0%, 80%);
+        border-radius: 4px;
+    }
+
+    button:hover {
+        border-color: black;
+    }
+
+    button:active {
+        border-color: hsl(0, 0%, 60%);
+        background-color: hsl(0, 0%, 95%);
+    }
+}

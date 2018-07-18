@@ -1,0 +1,33 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="register-account flex full-page new-style" id="choose_email">
+
+    <div class="pitch">
+        {% trans %}
+        <h1>Select email</h1>
+        {% endtrans %}
+    </div>
+
+    <div>
+        <form method="post" class="form-horizontal" action="/complete/{{ backend }}/">
+            <div class='choose-email-box'>
+                <input type="hidden" name="email" value="{{ primary_email }}" />
+                <button type="submit" >
+                    {{ primary_email }}
+                </button>
+            </div>
+        </form>
+        {% for email in verified_non_primary_emails %}
+        <form method="post" class="form-horizontal" action="/complete/{{ backend }}/">
+            <div class='choose-email-box'>
+                <input type="hidden" name="email" value="{{ email }}" />
+                <button type="submit" >
+                    {{ email }}
+                </button>
+            </div>
+        </form>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

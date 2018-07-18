@@ -63,6 +63,7 @@ from zerver.views.auth import (maybe_send_to_registration,
 from version import ZULIP_VERSION
 
 from social_core.exceptions import AuthFailed, AuthStateForbidden
+from social_core.pipeline.partial import partial
 from social_django.strategy import DjangoStrategy
 from social_django.storage import BaseDjangoStorage
 from social_core.backends.github import GithubOrganizationOAuth2, GithubTeamOAuth2, \
@@ -345,7 +346,7 @@ class AuthBackendTest(ZulipTestCase):
             dict(email=account_data_dict["email"],
                  verified=True,
                  primary=True),
-            dict(email="nonprimary@example.com",
+            dict(email="nonprimary@zulip.com",
                  verified=True),
             dict(email="ignored@example.com",
                  verified=False),
@@ -378,6 +379,11 @@ class AuthBackendTest(ZulipTestCase):
             if 'subdomain' in kwargs:
                 backend.strategy.session_set("subdomain", kwargs["subdomain"])
                 del kwargs['subdomain']
+
+            def return_email() -> Dict[str, str]:
+                return {'email': account_data_dict["email"]}
+
+            backend.strategy.request_data = return_email
             result = orig_authenticate(backend, *args, **kwargs)
             return result
         backend.authenticate = patched_authenticate
@@ -477,7 +483,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
             # email list returned as social_associate_user_helper assumes the
             # first email as the primary email.
             email_data = [
-                dict(email="notprimary@example.com",
+                dict(email="nonprimary@zulip.com",
                      verified=True),
                 dict(email=account_data_dict["email"],
                      verified=True,
@@ -506,11 +512,35 @@ class GitHubAuthBackendTest(ZulipTestCase):
             status=200,
             body=json.dumps(email_data)
         )
+        httpretty.register_uri(
+            httpretty.GET,
+            "https://api.github.com/teams/zulip-webapp/members/None",
+            status=200,
+            body=json.dumps(email_data)
+        )
 
         parsed_url = urllib.parse.urlparse(result.url)
         csrf_state = urllib.parse.parse_qs(parsed_url.query)['state']
         result = self.client_get("/complete/github/",
                                  dict(state=csrf_state), **headers)
+
+        if (result.status_code == 200):
+            # When the pipeline goes to the partial step, the below given URL
+            # is called again in the same test. If the below URL is not
+            # registered again as done below, the URL returns emails from
+            # previous tests. e.g email = 'invalid' may be one of the emails
+            # in the list in a test function followed by it. This is probably
+            # a bug in httpretty.
+            httpretty.disable()
+            httpretty.enable()
+            httpretty.register_uri(
+                httpretty.GET,
+                "https://api.github.com/user/emails",
+                status=200,
+                body=json.dumps(email_data)
+            )
+            result = self.client_get("/complete/github/",
+                                     dict(state=csrf_state, email=account_data_dict['email']), **headers)
         httpretty.disable()
         return result
 
@@ -526,6 +556,56 @@ class GitHubAuthBackendTest(ZulipTestCase):
         account_data_dict = dict(email=self.email, name=self.name)
         result = self.github_oauth2_test(account_data_dict,
                                          subdomain='zulip', next='/user_uploads/image')
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], self.example_email("hamlet"))
+        self.assertEqual(data['name'], 'Hamlet')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_success_non_primary(self) -> None:
+        account_data_dict = dict(email='nonprimary@zulip.com', name="Non Primary")
+        email_data = [
+            dict(email=account_data_dict["email"],
+                 verified=True),
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+            dict(email="ignored@example.com",
+                 verified=False),
+        ]
+        result = self.github_oauth2_test(account_data_dict,
+                                         subdomain='zulip', email_data=email_data,
+                                         next='/user_uploads/image')
+        data = load_subdomain_token(result)
+        self.assertEqual(data['email'], 'nonprimary@zulip.com')
+        self.assertEqual(data['name'], 'Non Primary')
+        self.assertEqual(data['subdomain'], 'zulip')
+        self.assertEqual(data['next'], '/user_uploads/image')
+        self.assertEqual(result.status_code, 302)
+        parsed_url = urllib.parse.urlparse(result.url)
+        uri = "{}://{}{}".format(parsed_url.scheme, parsed_url.netloc,
+                                 parsed_url.path)
+        self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
+
+    def test_github_oauth2_success_single_email(self) -> None:
+        # If the user has a single email associated with its GitHub account,
+        # the choose email screen should not be shown and the first email
+        # should be used for user's signup/login.
+        account_data_dict = dict(email='not-hamlet@zulip.com', name=self.name)
+        email_data = [
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+        ]
+        result = self.github_oauth2_test(account_data_dict,
+                                         subdomain='zulip',
+                                         email_data=email_data,
+                                         next='/user_uploads/image')
         data = load_subdomain_token(result)
         self.assertEqual(data['email'], self.example_email("hamlet"))
         self.assertEqual(data['name'], 'Hamlet')
@@ -568,6 +648,24 @@ class GitHubAuthBackendTest(ZulipTestCase):
             self.assertEqual(result.url, "/login/")
             mock_warning.assert_called_once_with("Social auth (GitHub) failed "
                                                  "because user has no verified emails")
+
+    def test_github_oauth2_email_not_associated(self) -> None:
+        account_data_dict = dict(email='not-associated@zulip.com', name=self.name)
+        email_data = [
+            dict(email='nonprimary@zulip.com',
+                 verified=True,),
+            dict(email='hamlet@zulip.com',
+                 verified=True,
+                 primary=True),
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.github_oauth2_test(account_data_dict,
+                                             subdomain='zulip',
+                                             email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
+                                                 " emails associated with the account")
 
     @override_settings(SOCIAL_AUTH_GITHUB_TEAM_ID='zulip-webapp')
     def test_github_oauth2_github_team_not_member_failed(self) -> None:
