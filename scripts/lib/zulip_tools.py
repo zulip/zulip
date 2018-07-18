@@ -347,12 +347,13 @@ def file_or_package_hash_updated(paths, hash_name, is_force, package_versions=[]
 
     hash_path = os.path.join(get_dev_uuid_var_path(), hash_name)
     new_hash = sha1sum.hexdigest()
-    run(['touch', hash_path])
-    with open(hash_path, 'r') as hash_file:
+    with open(hash_path, 'a+') as hash_file:
+        hash_file.seek(0)
         last_hash = hash_file.read()
 
-    if is_force or (new_hash != last_hash):
-        with open(hash_path, 'w') as hash_file:
+        if is_force or (new_hash != last_hash):
+            hash_file.seek(0)
+            hash_file.truncate()
             hash_file.write(new_hash)
-        return True
+            return True
     return False
