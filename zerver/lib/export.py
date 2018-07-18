@@ -13,6 +13,8 @@ import os
 import ujson
 import subprocess
 import tempfile
+import shutil
+from scripts.lib.zulip_tools import overwrite_symlink
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, RealmFilter, Reaction, \
@@ -1159,7 +1161,7 @@ def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
         local_path = os.path.join(local_dir, attachment.path_id)
         output_path = os.path.join(output_dir, attachment.path_id)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        subprocess.check_call(["cp", "-a", local_path, output_path])
+        shutil.copy2(local_path, output_path)
         stat = os.stat(local_path)
         record = dict(realm_id=attachment.realm_id,
                       user_profile_id=attachment.owner.id,
@@ -1202,7 +1204,7 @@ def export_avatars_from_local(realm: Realm, local_dir: Path, output_dir: Path) -
             fn = os.path.relpath(local_path, local_dir)
             output_path = os.path.join(output_dir, fn)
             os.makedirs(str(os.path.dirname(output_path)), exist_ok=True)
-            subprocess.check_call(["cp", "-a", str(local_path), str(output_path)])
+            shutil.copy2(str(local_path), str(output_path))
             stat = os.stat(local_path)
             record = dict(realm_id=realm.id,
                           user_profile_id=user.id,
@@ -1234,7 +1236,7 @@ def export_emoji_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> 
         local_path = os.path.join(local_dir, emoji_path)
         output_path = os.path.join(output_dir, emoji_path)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
-        subprocess.check_call(["cp", "-a", local_path, output_path])
+        shutil.copy2(local_path, output_path)
         record = dict(realm_id=realm.id,
                       author=realm_emoji.author.id,
                       path=emoji_path,
@@ -1350,10 +1352,13 @@ def create_soft_link(source: Path, in_progress: bool=True) -> None:
     if in_progress:
         new_target = in_progress_link
     else:
-        subprocess.check_call(['rm', '-f', in_progress_link])
+        try:
+            os.remove(in_progress_link)
+        except FileNotFoundError:
+            pass
         new_target = done_link
 
-    subprocess.check_call(["ln", "-nsf", source, new_target])
+    overwrite_symlink(source, new_target)
     if is_done:
         logging.info('See %s for output files' % (new_target,))
 
