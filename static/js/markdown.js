@@ -297,6 +297,29 @@ function handleAvatar(email) {
            ' title="' + email + '">';
 }
 
+function handleTimestamp(time) {
+    let timeobject;
+    if (isNaN(time)) {
+        // Moment throws a large deprecation warning when it has to fallback
+        // to the Date() constructor. We needn't worry here and can let bugdown
+        // handle any dates that moment misses.
+        moment.suppressDeprecationWarnings = true;
+        timeobject = moment(time); // not a Unix timestamp
+    } else {
+        // JavaScript dates are in milliseconds, Unix timestamps are in seconds
+        timeobject = moment(time * 1000);
+    }
+    const istimevalid = !(timeobject === null || !timeobject.isValid());
+
+    // Generate HTML
+    let timestring = '<span class="timestamp"';
+    if (istimevalid) {
+        timestring += ' value="' + timeobject.unix() + '"';
+    }
+    timestring += '>' + _.escape(time) + '</span>';
+    return timestring;
+}
+
 function handleStream(stream_name) {
     const stream = helpers.get_stream_by_name(stream_name);
     if (stream === undefined) {
@@ -505,6 +528,7 @@ exports.initialize = function (realm_filters, helper_config) {
         streamTopicHandler: handleStreamTopic,
         realmFilterHandler: handleRealmFilter,
         texHandler: handleTex,
+        timestampHandler: handleTimestamp,
         renderer: r,
         preprocessors: [
             preprocess_code_blocks,
