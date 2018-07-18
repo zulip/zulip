@@ -17,7 +17,7 @@ from emoji_names import EMOJI_NAME_MAPS
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
 sys.path.append(ZULIP_PATH)
 
-from scripts.lib.zulip_tools import generate_sha1sum_emoji, run
+from scripts.lib.zulip_tools import generate_sha1sum_emoji
 
 TARGET_EMOJI_DUMP = os.path.join(ZULIP_PATH, 'static', 'generated', 'emoji')
 EMOJI_CACHE_PATH = "/srv/zulip-emoji-cache"
@@ -92,10 +92,11 @@ def main() -> None:
     if not os.path.exists(success_stamp):
         print("Dumping emojis ...")
         dump_emojis(source_emoji_dump)
-        run(['touch', success_stamp])
+        open(success_stamp, 'w').close()
 
     print("Using cached emojis from {}".format(source_emoji_dump))
-    run(['rm', '-rf', TARGET_EMOJI_DUMP])
+    if os.path.lexists(TARGET_EMOJI_DUMP):
+        os.remove(TARGET_EMOJI_DUMP)
     os.symlink(source_emoji_dump, TARGET_EMOJI_DUMP)
 
 def get_success_stamp() -> str:
@@ -169,7 +170,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         src_emoji_farm = os.path.join(
             NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', alt_name, '64')
         target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
-        run(['mkdir', '-p', target_emoji_farm])
+        os.makedirs(target_emoji_farm, exist_ok=True)
         print("Copying individual image files...")
         for emoji_dict in emoji_data:
             if emoji_dict['has_img_' + alt_name]:
@@ -180,20 +181,21 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
                         ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
-        zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
-        run(['cp', '-RPp', zulip_image, target_emoji_farm], shell=True)
+        zulip_image = os.path.join(ZULIP_PATH, 'static', 'assets', 'zulip-emoji')
+        for f in os.listdir(zulip_image):
+            shutil.copy2(os.path.join(zulip_image, f), target_emoji_farm, follow_symlinks=False)
 
         # Copy spritesheets.
         emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
         input_sprite_sheet = os.path.join(emoji_data_path, 'img', alt_name, 'sheets-256', '64.png')
         output_sprite_sheet = os.path.join(cache_path, 'sheet-%s-64.png' % (emojiset,))
-        run(['cp', input_sprite_sheet, output_sprite_sheet])
+        shutil.copyfile(input_sprite_sheet, output_sprite_sheet)
 
         # We hardcode octopus emoji image to Google emojiset's old
         # "cute octopus" image. Copy it to the emoji farms.
         input_img_file = os.path.join(EMOJI_SCRIPT_DIR_PATH, '1f419.png')
         output_img_file = os.path.join(cache_path, 'images-' + emojiset + '-64', '1f419.png')
-        run(['cp', input_img_file, output_img_file])
+        shutil.copyfile(input_img_file, output_img_file)
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset)
 
@@ -217,8 +219,8 @@ def setup_old_emoji_farm(cache_path: str,
     emoji_cache_path = os.path.join(cache_path, 'images', 'emoji')
     unicode_emoji_cache_path = os.path.join(cache_path, 'images', 'emoji', 'unicode')
     google_emoji_cache_path = os.path.join(cache_path, 'images-google-64')
-    run(['mkdir', '-p', emoji_cache_path])
-    run(['mkdir', '-p', unicode_emoji_cache_path])
+    os.makedirs(emoji_cache_path, exist_ok=True)
+    os.makedirs(unicode_emoji_cache_path, exist_ok=True)
 
     # Symlink zulip.png image file.
     image_file_path = os.path.join(google_emoji_cache_path, 'zulip.png')
@@ -281,7 +283,8 @@ def dump_emojis(cache_path: str) -> None:
     emoji_catalog = generate_emoji_catalog(emoji_data, EMOJI_NAME_MAPS)
 
     # Setup emoji farms.
-    run(['rm', '-rf', cache_path])
+    if os.path.exists(cache_path):
+        shutil.rmtree(cache_path)
     setup_emoji_farms(cache_path, emoji_data)
     setup_old_emoji_farm(cache_path, emoji_map, emoji_data)
 
