@@ -135,10 +135,11 @@ for js_group_filespec_pair in JS_SPECS.items():
     # supposed to work but failed.  Thus, minify the JS anew.
     # (N.B. we include STATIC_HEADER_FILE before the JavaScripts.
     #  This way it doesn't throw off the source map.)
-    cmd = '%s --language_in ECMASCRIPT5 --create_source_map %s %s %s' % (
-        CLOSURE_BINARY, map_file,
-        settings.STATIC_HEADER_FILE, ' '.join(in_files))
-    js = subprocess.check_output(cmd, shell=True)
+    cmd = [
+        CLOSURE_BINARY, '--language_in', 'ECMASCRIPT5',
+        '--create_source_map', map_file,
+        settings.STATIC_HEADER_FILE] + in_files
+    js = subprocess.check_output(cmd)
 
     # Write out the JS
     with open(out_file, 'wb') as fp:
