@@ -431,7 +431,7 @@ class GitHubAuthBackendTest(ZulipTestCase):
                            *, subdomain: Optional[str]=None,
                            mobile_flow_otp: Optional[str]=None,
                            is_signup: Optional[str]=None,
-                           email_not_verified: bool=False,
+                           email_data: Optional[List[Dict[str, Any]]]=None,
                            next: str='') -> HttpResponse:
         url = "/accounts/login/social/github"
         params = {}
@@ -470,13 +470,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
             'access_token': 'foobar',
             'token_type': 'bearer'
         }
-        if email_not_verified:
-            email_data = [
-                dict(email=account_data_dict["email"],
-                     verified=False,
-                     primary=True),
-            ]
-        else:
+
+        if not email_data:
             # Keeping a verified email before the primary email makes sure
             # get_verified_emails puts the primary email at the start of the
             # email list returned as social_associate_user_helper assumes the
@@ -560,10 +555,15 @@ class GitHubAuthBackendTest(ZulipTestCase):
 
     def test_github_oauth2_email_not_verified(self) -> None:
         account_data_dict = dict(email=self.email, name=self.name)
+        email_data = [
+            dict(email=account_data_dict["email"],
+                 verified=False,
+                 primary=True),
+        ]
         with mock.patch('logging.warning') as mock_warning:
             result = self.github_oauth2_test(account_data_dict,
                                              subdomain='zulip',
-                                             email_not_verified=True)
+                                             email_data=email_data)
             self.assertEqual(result.status_code, 302)
             self.assertEqual(result.url, "/login/")
             mock_warning.assert_called_once_with("Social auth (GitHub) failed "
