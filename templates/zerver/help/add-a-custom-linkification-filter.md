@@ -2,62 +2,44 @@
 
 {!admin-only.md!}
 
-Linkification filters are used to automatically translate syntax
-referring to an issue or support ticket in a message into a link to
-that issue or ticket on a third-party site. For instance, you can
-define a filter to automatically linkify #1234 to
-https://github.com/zulip/zulip/pulls/1234, Z1234 to link to that
-Zendesk ticket ID, or anything similar.
+Linkification filters make it easy to refer to issues or tickets in third
+party issue trackers, like GitHub, Salesforce, Zendesk, and others.
+For instance, you can add a filter that automatically turns `#2468`
+into a link to `https://github.com/zulip/zulip/issues/2468`.
 
 {settings_tab|filter-settings}
 
-5. In the green section labeled **Add a new filter**, find the **Regular expression**
-and **URL format string** fields.
+1. Under **Add a new filter**, enter a **Regular expression** and
+**URL format string**.
 
-    * In the **Regular expression** field, enter a
-[regular expression](http://www.regular-expressions.info) that searches and
-identifies the phrases you want to linkify.
+1. Click **Add filter**.
 
-        For example, if you want to linkify any numeric phrase that begins with
-a `#`, you could use the regular expression `#(?P<id>[0-9]+)` to find those
-phrases, where `id` is the variable that represents the phrase found by the
-search.
+!!! tip ""
 
-        Please note that all regular expressions used for custom linkification
-filters in your organization must be unique. In addition, the regular expression
-you enter must have a variable that gets identified by the URL format string.
+    If the pattern appears in a message topic, Zulip can't linkify the topic
+    itself, since clicking on a topic narrows to that topic. So Zulip
+    instead provides a little button to the right of the topic that links to
+    the appropriate URL.
 
-    * In the **URL format string** field, insert a URL that includes the regular
-expression variable you specified in the **Regular expression** field. The URL
-format string must be in the format of `https://example.com/%(\w+)s`.
+## Understanding linkification regular expressions
 
-        For example, if you want to use the variable `id` found by your regular
-expression to link to a corresponding GitHub pull request on the `zulip/zulip`
-repository, you could use the URL format string
-`https://github.com/zulip/zulip/pull/%(id)s`.
+This is best explained by example.
 
-6. After filling out the **Regular expression** and **URL format string**
-fields, click the **Add filter** button to add your custom linkification
-filter to your Zulip organization.
+Hash followed by a number of any length.
 
-7. Upon clicking the **Add filter** button, you will receive a notification
-labeled **Custom filter added!** in the **Custom linkification filters**
-section, confirming the success of the addition of your custom linkification
-filter to your organization.
+* Regular expression: `#(?P<id>[0-9]+)`
+* URL format string: `https://github.com/zulip/zulip/issues/%(id)s`
+* Original text: `#2468`
+* Automatically links to: `https://github.com/zulip/zulip/issues/2468`
 
-    ![Custom linkification filter success](/static/images/help/custom-filter-success.png)
+String of hexadecimal digits between 7 and 40 characters long.
 
-    The filter's information and settings will also be displayed above the **Add a new filter**
-section. You can choose to delete any custom linkification filters in your
-organization through this panel by pressing the **Delete** button next to
-the filter you want to delete.
+* Regular expression: `(?P<id>[0-9a-f]{7,40})`
+* URL format string: `https://github.com/zulip/zulip/commit/%(id)s`
+* Original text: `abdc123`
+* Automatically links to: `https://github.com/zulip/zulip/commit/abcd123`
 
-8. Users in your organization can now use your custom linkification filter in
-their messages.
-
-    ![Custom linkification filter demo](/static/images/help/custom-filter-demo.png)
-
-9. If the pattern appears in a message topic, Zulip can't linkify the
-   text in the topic itself (since clicking a topic narrows to that
-   topic), so Zulip instead provides a little button to the right of
-   the topic that you can click to go to the appropriate URL.
+Linkifiers can be very useful, but also complicated to set up. If you have
+any trouble setting these up, please email support@zulipchat.com with a few
+examples of "Original text" and "Automatically links to" and we'll be happy
+to help you out.
