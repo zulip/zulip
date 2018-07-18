@@ -16,6 +16,8 @@ set_global('location', {
     origin: 'http://zulip.zulipdev.com',
 });
 
+set_global('moment', require('moment-timezone'));
+
 set_global('page_params', {
     realm_users: [],
     realm_emoji: {

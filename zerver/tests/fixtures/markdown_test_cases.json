@@ -741,6 +741,38 @@
       "text_content": "!gravatar(username@example.com)"
     },
     {
+      "name": "timestamp_bugdown_only",
+      "input": "!time(Jun 5th 2017, 10:30PM)",
+      "expected_output": "<p><span class=\"timestamp\" value=\"1496701800\">Jun 5th 2017, 10:30PM</span></p>",
+      "marked_expected_output": "<p><span class=\"timestamp\">Jun 5th 2017, 10:30PM</span></p>"
+    },
+    {
+      "name": "timestamp_bugdown_and_marked",
+      "input": "!time(31 Dec 2017)",
+      "expected_output": "<p><span class=\"timestamp\" value=\"1514678400\">31 Dec 2017</span></p>"
+    },
+    {
+      "name": "timestamp_invalid_input",
+      "input": "!time(<alert(1)>)",
+      "expected_output": "<p><span class=\"timestamp\">&lt;alert(1</span>&gt;)</p>"
+    },
+    {
+      "name": "timestamp_timezone",
+      "input": "!time(31 Dec 2017 5:30 am IST)",
+      "expected_output": "<p><span class=\"timestamp\" value=\"1514678400\">31 Dec 2017 5:30 am IST</span></p>",
+      "marked_expected_output": "<p><span class=\"timestamp\">31 Dec 2017 5:30 am IST</span></p>"
+    },
+    {
+      "name": "timestamp_incorrect",
+      "input": "!time(hello world)",
+      "expected_output": "<p><span class=\"timestamp\">hello world</span></p>"
+    },
+    {
+      "name": "timestamp_unix",
+      "input": "!time(1496701800)",
+      "expected_output": "<p><span class=\"timestamp\" value=\"1496701800\">1496701800</span></p>"
+    },
+    {
       "name": "tex_inline",
       "input": "$$1 \\oplus 0 = 1$$",
       "expected_output": "<p><span class=\"katex\"><span class=\"katex-mathml\"><math xmlns=\"http://www.w3.org/1998/Math/MathML\"><semantics><mrow><mn>1</mn><mo>⊕</mo><mn>0</mn><mo>=</mo><mn>1</mn></mrow><annotation encoding=\"application/x-tex\">1 \\oplus 0 = 1</annotation></semantics></math></span><span aria-hidden=\"true\" class=\"katex-html\"><span class=\"base\"><span class=\"strut\" style=\"height:0.72777em;vertical-align:-0.08333em;\"></span><span class=\"mord\">1</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span><span class=\"mbin\">⊕</span><span class=\"mspace\" style=\"margin-right:0.2222222222222222em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">0</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span><span class=\"mrel\">=</span><span class=\"mspace\" style=\"margin-right:0.2777777777777778em;\"></span></span><span class=\"base\"><span class=\"strut\" style=\"height:0.64444em;vertical-align:0em;\"></span><span class=\"mord\">1</span></span></span></span></p>"

@@ -16,6 +16,9 @@ import html
 import time
 import functools
 from io import StringIO
+import dateutil.parser
+import dateutil.tz
+from datetime import datetime
 import xml.etree.cElementTree as etree
 from xml.etree.cElementTree import Element
 import ahocorasick
@@ -55,6 +58,7 @@ from zerver.models import (
 import zerver.lib.mention as mention
 from zerver.lib.tex import render_tex
 from zerver.lib.exceptions import BugdownRenderingException
+from zerver.lib.timezone import get_common_timezones
 
 ReturnT = TypeVar('ReturnT')
 
@@ -1212,6 +1216,26 @@ def possible_avatar_emails(content: str) -> Set[str]:
 
     return emails
 
+class Timestamp(markdown.inlinepatterns.Pattern):
+    def handleMatch(self, match: Match[str]) -> Optional[Element]:
+        span = markdown.util.etree.Element('span')
+        span.set('class', 'timestamp')
+        timestamp = None
+        try:
+            timestamp = dateutil.parser.parse(match.group('time'), tzinfos=get_common_timezones())
+        except ValueError:
+            try:
+                timestamp = datetime.fromtimestamp(float(match.group('time')))
+            except ValueError:
+                pass
+        if timestamp:
+            if timestamp.tzinfo:
+                timestamp = timestamp - timestamp.utcoffset()
+            span.set('value', timestamp.strftime("%s"))
+        # Set text to initial input, so even if parsing fails, the data remains intact.
+        span.text = markdown.util.AtomicString(match.group('time'))
+        return span
+
 # All of our emojis(non ZWJ sequences) belong to one of these unicode blocks:
 # \U0001f100-\U0001f1ff - Enclosed Alphanumeric Supplement
 # \U0001f200-\U0001f2ff - Enclosed Ideographic Supplement
@@ -1897,6 +1921,7 @@ class Bugdown(markdown.Markdown):
         reg.register(StreamTopicPattern(get_compiled_stream_topic_link_regex(), self), 'topic', 87)
         reg.register(StreamPattern(get_compiled_stream_link_regex(), self), 'stream', 85)
         reg.register(Avatar(AVATAR_REGEX, self), 'avatar', 80)
+        reg.register(Timestamp(r'!time\((?P<time>[^)]*)\)'), 'timestamp', 75)
         # Note that !gravatar syntax should be deprecated long term.
         reg.register(Avatar(GRAVATAR_REGEX, self), 'gravatar', 70)
         reg.register(UserGroupMentionPattern(mention.user_group_mentions, self), 'usergroupmention', 65)
