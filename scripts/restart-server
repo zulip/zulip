@@ -8,7 +8,7 @@ import logging
 import time
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from scripts.lib.zulip_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR
+from scripts.lib.zulip_tools import ENDC, OKGREEN, DEPLOYMENTS_DIR, overwrite_symlink
 
 logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s restart-server: %(message)s",
@@ -34,8 +34,8 @@ if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
 current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
 last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
 if os.readlink(current_symlink) != deploy_path:
-    subprocess.check_call(["ln", '-nsf', os.readlink(current_symlink), last_symlink])
-    subprocess.check_call(["ln", '-nsf', deploy_path, current_symlink])
+    overwrite_symlink(os.readlink(current_symlink), last_symlink)
+    overwrite_symlink(deploy_path, current_symlink)
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
