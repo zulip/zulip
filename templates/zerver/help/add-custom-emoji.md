@@ -1,42 +1,44 @@
 # Add custom emoji
 
-If enabled by your Zulip organization administrator, you can add custom
-emojis to your organization for other members to use.
+By default, anyone can add custom emoji to a Zulip organization. Added emoji
+are available to all users.
+
+Organization administrators can also
+[change who can add custom emoji](/help/only-allow-admins-to-add-emoji).
+
+## Add a custom emoji
 
 {settings_tab|emoji-settings}
 
-5. In the green section labeled **Add a new emoji**, find the **Emoji name** and
-**Emoji URL** fields.
+1. Under **Add a new emoji**, enter an **emoji name**.
 
-    * In the **Emoji name** field, enter a phrase for your emoji. Only
-      alphanumeric characters, dashes, and underscores are allowed,
-      but dashes and underscores cannot end an emoji phrase.
+    Emoji names can only contain `a-z`, `0-9`, dashes (`-`), and
+    spaces. Upper and lower case letters will be treated the same, and
+    underscores (`_`) will be treated the same as spaces.
 
-        Users will use the designated emoji phrase surrounded by
-        colons to insert your emoji into their messages.
+1. Click **Upload emoji** and add an image or GIF. The image will
+   automatically be scaled to 25x25 pixels.
 
-    * Click the **Upload emoji** button to upload and specify the image of your
-    custom emoji.
+1. Click **Add emoji**.
 
-        Please note that the image will be scaled down to 25x25 pixels
-        in users' messages.
+## Replace a default emoji
 
-6. After filling out the **Emoji name** field and uploading the emoji image,
-click the **Add emoji** button to add your custom emoji to your
-Zulip organization.
+You can replace a default emoji by adding a custom emoji of the same
+name. If an emoji has several names, you must use the emoji's primary name
+to replace it. You can find the primary name of an emoji by hovering over it
+in the [emoji picker](/help/add-emoji), while the search box is empty (you
+may have to scroll down a bit to find it).
 
-7. Upon clicking the **Add emoji** button, you will receive a notification
-labeled **Custom emoji added!** in the **Add a new emoji** section, confirming
-the success of the addition of your custom emoji to your organization.
+## Delete a custom emoji
 
-    ![Custom emoji success](/static/images/help/custom-emoji-success.png)
+{settings_tab|emoji-settings}
 
-    The emoji's information and settings will also be displayed above the
-    **Add a new emoji** section. You can also delete a custom emoji in
-    your organization through this panel by clicking the trash (<i
-    class="icon-vector-trash"></i>) icon to the right of the icon you wish to
-    delete.
+1. Click the trash icon next to the emoji that you would like to delete.
 
-Users in your organization can now use your emoji in their messages.
+Deleting an emoji will not affect any existing messages or emoji
+reactions. Anyone can delete custom emoji they added, and organization
+administrators can delete anyone's custom emoji.
 
-![Custom emoji demo](/static/images/help/custom-emoji-demo.png)
+## Related articles
+
+* [Change who can add custom emoji](/help/only-allow-admins-to-add-emoji)
