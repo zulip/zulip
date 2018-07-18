@@ -11,7 +11,6 @@ Django ORM.
 import sys
 import argparse
 import random
-import subprocess
 import time
 import traceback
 import os
@@ -100,7 +99,7 @@ def report(state, timestamp=None, msg=None):
         state_file_path = "/var/lib/nagios_state/check_send_receive_state"
     with open(state_file_path + ".tmp", 'w') as f:
         f.write("%s|%s|%s|%s\n" % (now, states[state], state, msg))
-    subprocess.check_call(["mv", state_file_path + ".tmp", state_file_path])
+    os.rename(state_file_path + ".tmp", state_file_path)
     print("%s: %s" % (state, msg))
     exit(states[state])
 
