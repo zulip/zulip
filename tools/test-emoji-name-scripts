@@ -4,6 +4,7 @@ import difflib
 import filecmp
 import os
 import subprocess
+import shutil
 
 TOOLS_DIR = os.path.abspath(os.path.dirname(__file__))
 TMP_DIR = "/var/tmp"
@@ -12,7 +13,7 @@ def generate_files(source_file: str) -> None:
     # Copy the source CSV file to out temporary test directory.
     input_file_path = source_file
     output_file_path = os.path.join(TMP_DIR, "CSV_A")
-    subprocess.check_call(['cp', input_file_path, output_file_path])
+    shutil.copyfile(input_file_path, output_file_path)
 
     # Generate the name map file in the temporary directory.
     input_file_path = output_file_path
