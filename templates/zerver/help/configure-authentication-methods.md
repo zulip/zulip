@@ -2,33 +2,26 @@
 
 {!admin-only.md!}
 
-You can configure your organization settings to allow users to authenticate
-themselves using passwords, Google/GitHub OAuth, LDAP (currently on premises
-only), and/or various other SSO methods (also currently on premises only).
+By default, Zulip allows logging in via email/password, your Google account,
+or your GitHub account. You can restrict users to logging in via only a
+subset of these methods.
 
-!!! tip ""
-    If you are unsure about what these mean, don't worry! Zulip
-    allows logging in via email and password by default.
+LDAP and other SSO login methods are currently restricted to self-hosted
+Zulips only, though contact us at support@zulipchat.com if that is a
+blocker.
+
+**Note:** If you are running your own server,
+[read this](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)
+first. Server configuration is needed for several of the authentication
+methods listed above.
 
 {settings_tab|auth-methods}
 
-2. Toggle the checkboxes next to the following options to configure your organization's authentication methods:
-
-     * **Email** - Use an email and password created on Zulip to log in.
-
-     * **GitHub** - Use [GitHub](https://github.com/) accounts to log in.
-
-     * **Google** - Use [Google](https://google.com/) accounts to log in.
-
-     * **LDAP** - Use a [LDAP](https://en.wikipedia.org/wiki/Lightweight_Directory_Access_Protocol)
-     username and password to log in.
-
-     * **RemoteUser** - Use a [Single-Sign-On](https://en.wikipedia.org/wiki/Single_sign-on)
-     system to log in.
-
-        !!! tip ""
-            Not all methods will show up by default. To enable more methods,
-            modify the `AUTHENTICATION_BACKENDS` list in the
-            `/etc/zulip/settings.py` file.
+2. Toggle the checkboxes next to the available login options.
 
 {!save-changes.md!}
+
+## Related articles
+
+* [Configuring authentication methods](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html)
+  for server administrators (self-hosted only)
