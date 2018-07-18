@@ -11,13 +11,11 @@ zrequire('presence');
 var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
 
-zrequire('popovers');
 
 set_global('current_msg_list', {});
 set_global('page_params', {
     custom_profile_fields: [],
 });
-set_global('rows', {});
 set_global('templates', {});
 
 
@@ -53,6 +51,20 @@ var me = {
     timezone: 'US/Pacific',
 };
 
+var message = {
+    id: 999,
+    sender_id: alice.user_id,
+};
+
+var proxyquire =  require('proxyquire').noCallThru();
+// See https://github.com/tleunen/babel-plugin-module-resolver/issues/241
+// for why we need resolvePath
+var resolvePath = global.resolvePath;
+global.popovers = proxyquire('js/popovers.js', {
+    [resolvePath('js/rows')]: {
+        id: () => message.id,
+    },
+}).default;
 function initialize_people() {
     people.init();
     people.add_in_realm(me);
@@ -96,11 +108,6 @@ run_test('sender_hover', () => {
         stopPropagation: noop,
     };
 
-    var message = {
-        id: 999,
-        sender_id: alice.user_id,
-    };
-
     var target = $.create('click target');
 
     target.offset = () => {
@@ -109,7 +116,6 @@ run_test('sender_hover', () => {
         };
     };
 
-    rows.id = () => message.id;
 
     current_msg_list.get = (msg_id) => {
         assert.equal(msg_id, message.id);

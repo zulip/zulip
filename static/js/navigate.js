@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var navigate = (function () {
 
 var exports = {};
@@ -143,7 +145,5 @@ exports.maybe_scroll_to_selected = function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = navigate;
-}
+export default navigate;
 window.navigate = navigate;

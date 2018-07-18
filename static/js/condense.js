@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var condense = (function () {
 
 var exports = {};
@@ -213,7 +215,5 @@ exports.initialize = function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = condense;
-}
+export default condense;
 window.condense = condense;

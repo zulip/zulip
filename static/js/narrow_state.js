@@ -362,7 +362,6 @@ exports.is_for_stream_id = function (stream_id) {
 return exports;
 
 }());
-if (typeof module !== 'undefined') {
-    module.exports = narrow_state;
-}
+
+export default narrow_state;
 window.narrow_state = narrow_state;

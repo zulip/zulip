@@ -1,3 +1,4 @@
+import rows from 'js/rows';
 function MessageListView(list, table_name, collapse_messages) {
     this.list = list;
     this.collapse_messages = collapse_messages;
@@ -1059,7 +1060,5 @@ MessageListView.prototype = {
 
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = MessageListView;
-}
+export default MessageListView;
 window.MessageListView = MessageListView;

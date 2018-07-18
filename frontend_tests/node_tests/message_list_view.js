@@ -6,10 +6,26 @@ zrequire('XDate', 'node_modules/xdate/src/xdate');
 zrequire('Filter', 'js/filter');
 zrequire('FetchStatus', 'js/fetch_status');
 zrequire('MessageListData', 'js/message_list_data');
-zrequire('MessageListView', 'js/message_list_view');
-zrequire('message_list');
 
 var noop = function () {};
+var proxyquire =  require('proxyquire').noCallThru();
+// See https://github.com/tleunen/babel-plugin-module-resolver/issues/241
+// for why we need resolvePath
+var resolvePath = global.resolvePath;
+global.MessageListView = proxyquire('js/message_list_view.js', {
+    [resolvePath('js/rows')]: {
+        get_table: function () {
+            return {
+                children: function () {
+                    return {
+                        detach: noop,
+                    };
+                },
+            };
+        },
+    },
+}).default;
+zrequire('message_list');
 
 set_global('page_params', {
     twenty_four_hour_time: false,
@@ -31,18 +47,6 @@ set_global('timerender', {
             return time.toString('HH:mm');
         }
         return time.toString('h:mm TT');
-    },
-});
-
-set_global('rows', {
-    get_table: function () {
-        return {
-            children: function () {
-                return {
-                    detach: noop,
-                };
-            },
-        };
     },
 });
 

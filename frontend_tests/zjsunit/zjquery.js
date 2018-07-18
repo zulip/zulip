@@ -354,7 +354,6 @@ exports.make_new_elem = function (selector, opts) {
     }
 
     self[0] = 'you-must-set-the-child-yourself';
-
     self.selector = selector;
 
     return self;

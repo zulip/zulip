@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var message_viewport = (function () {
 var exports = {};
 
@@ -410,7 +412,5 @@ exports.initialize = function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = message_viewport;
-}
+export default message_viewport;
 window.message_viewport = message_viewport;

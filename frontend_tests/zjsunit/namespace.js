@@ -25,6 +25,10 @@ exports.zrequire = function (name, fn) {
     }
     delete require.cache[require.resolve(fn)];
     var obj = require(fn);
+    // This is for compatibility with with ESM style modules
+    if (obj.default) {
+        obj = obj.default;
+    }
     requires.push(fn);
     set_global(name, obj);
     return obj;

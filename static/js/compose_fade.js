@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var compose_fade = (function () {
 
 var exports = {};
@@ -258,7 +260,5 @@ return exports;
 
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = compose_fade;
-}
+export default compose_fade;
 window.compose_fade = compose_fade;

@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var copy_and_paste = (function () {
 
 var exports = {};
@@ -235,7 +237,5 @@ exports.initialize = function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = copy_and_paste;
-}
+export default copy_and_paste;
 window.copy_and_paste = copy_and_paste;

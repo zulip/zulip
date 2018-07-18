@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var floating_recipient_bar = (function () {
 
 var exports = {};
@@ -108,7 +110,5 @@ exports.update = function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = floating_recipient_bar;
-}
+export default floating_recipient_bar;
 window.floating_recipient_bar = floating_recipient_bar;

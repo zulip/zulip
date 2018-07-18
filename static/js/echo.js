@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var echo = (function () {
 
 var exports = {};
@@ -271,7 +273,6 @@ exports.initialize = function () {
 return exports;
 
 }());
-if (typeof module !== 'undefined') {
-    module.exports = echo;
-}
+
+export default echo;
 window.echo = echo;

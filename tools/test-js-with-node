@@ -122,22 +122,35 @@ individual_files = options.args
 # reports.  Running under nyc is slower and creates funny
 # tracebacks, so you generally want to get coverage reports only
 # after making sure tests will pass.
-node_tests_cmd = ['node', '--stack-trace-limit=100', INDEX_JS]
-node_tests_cmd += individual_files
+cross_env = os.path.join(ROOT_DIR, 'node_modules/.bin/cross-env')
+
 if options.coverage:
     coverage_dir = os.path.join(ROOT_DIR, 'var/node-coverage')
     coverage_lcov_file = os.path.join(coverage_dir, 'lcov.info')
 
     nyc = os.path.join(ROOT_DIR, 'node_modules/.bin/nyc')
-    command = [nyc, '--report-dir', coverage_dir]
+    command = [cross_env, 'NODE_ENV=testCoverage', nyc, '--report-dir', coverage_dir]
     command += ['--temp-directory', coverage_dir, '-r=text-summary']
-    command += node_tests_cmd
-    command += ['&&', 'nyc', 'report', '-r=lcov', '-r=json']
+    command += [
+        'node',
+        '--stack-trace-limit=100',
+        INDEX_JS
+    ]
+    command += individual_files
+    command += ['&&', nyc, 'report', '-r=lcov', '-r=json']
     command += ['>', coverage_lcov_file]
 else:
     # Normal testing, no coverage analysis.
     # Run the index.js test runner, which runs all the other tests.
-    command = node_tests_cmd
+    command = [
+        cross_env, 'NODE_ENV=test',
+        cross_env, 'BABEL_DISABLE_CACHE=1',
+        'node',
+        '-r', 'babel-register',
+        '--stack-trace-limit=100',
+        INDEX_JS
+    ]
+    command += individual_files
 
 print('Starting node tests...')
 

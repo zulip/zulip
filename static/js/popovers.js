@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var popovers = (function () {
 
 var exports = {};
@@ -1000,7 +1002,5 @@ exports.compute_placement = function (elt, popover_height, popover_width,
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = popovers;
-}
+export default popovers;
 window.popovers = popovers;

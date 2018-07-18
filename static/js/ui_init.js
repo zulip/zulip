@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 (function () {
 
 // This is where most of our initialization takes place.

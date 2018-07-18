@@ -7,8 +7,14 @@
   "dependencies": {
     "@types/node": "8.0.34",
     "@types/webpack": "4.4.0",
+    "babel-plugin-istanbul": "4.1.6",
+    "babel-plugin-module-resolver": "3.1.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "6.6.0",
+    "babel-plugin-transform-object-rest-spread": "6.26.0",
+    "babel-register": "6.26.0",
     "blueimp-md5": "2.10.0",
     "clipboard": "2.0.1",
+    "cross-env": "5.2.0",
     "css-hot-loader": "1.3.9",
     "css-loader": "0.28.11",
     "emoji-datasource-apple": "4.0.4",
@@ -32,12 +38,14 @@
     "node-sass": "4.9.0",
     "perfect-scrollbar": "1.3.0",
     "plotly.js": "1.37.1",
+    "proxyquire": "2.0.1",
     "sass-loader": "7.0.1",
     "script-loader": "0.7.2",
     "simplebar": "^2.6.1",
     "sortablejs": "^1.7.0",
     "sorttable": "1.0.2",
     "source-map-loader": "0.2.3",
+    "source-map-support": "0.5.6",
     "source-sans-pro": "2.20.2",
     "string.prototype.codepointat": "0.2.1",
     "string.prototype.endswith": "0.2.0",
@@ -82,5 +90,12 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/zulip/zulip.git"
+  },
+  "nyc": {
+    "sourceMap": false,
+    "instrument": false,
+    "require": [
+      "babel-register"
+    ]
   }
 }

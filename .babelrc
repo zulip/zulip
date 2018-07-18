@@ -1,0 +1,45 @@
+{
+    "env": {
+       "test": {
+           "plugins": [
+             ["transform-es2015-modules-commonjs", {
+                 "strict": false
+             }],
+             "transform-object-rest-spread",
+             ["module-resolver", {
+                 "alias": {
+                   "js": "./static/js"
+                 },
+               "transformFunctions": [
+                   "proxyquire",
+                   "resolvePath"
+               ]
+             }]
+            ]
+       },
+       "testCoverage": {
+           "plugins": [
+             ["transform-es2015-modules-commonjs", {
+                 "strict": false
+             }],
+             "transform-object-rest-spread",
+             ["module-resolver", {
+                 "alias": {
+                   "js": "./static/js"
+                 },
+               "transformFunctions": [
+                   "proxyquire",
+                   "resolvePath"
+               ]
+             }],
+             ["istanbul", {
+                "exclude": [
+                    "**frontend_tests/**",
+                    "**/third/**"
+                ]
+             }]
+            ],
+            "sourceMaps": "inline",
+       }
+     }
+}

@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var click_handlers = (function () {
 
 // We don't actually export anything yet; this is just for consistency.
@@ -738,7 +740,5 @@ return exports;
 
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = click_handlers;
-}
+export default click_handlers;
 window.click_handlers = click_handlers;

@@ -31,7 +31,6 @@ exports.create = function (opts) {
         blueslip.error('Pill needs get_text_from_item');
         return;
     }
-
     // a stateful object of this `pill_container` instance.
     // all unique instance information is stored in here.
     var store = {

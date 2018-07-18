@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var emoji_picker = (function () {
 
 var exports = {};
@@ -718,7 +720,5 @@ return exports;
 
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = emoji_picker;
-}
+export default emoji_picker;
 window.emoji_picker = emoji_picker;

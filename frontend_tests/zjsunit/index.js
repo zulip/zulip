@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
+
 var path = require('path');
 var fs = require('fs');
-
 global.assert = require('assert');
 require('node_modules/string.prototype.codepointat/codepointat.js');
 
@@ -18,6 +19,7 @@ global.window = _.extend({}, windowObj, {
 });
 
 global.Dict = require('js/dict');
+global.resolvePath = x => x;
 
 // Create a helper function to avoid sneaky delays in tests.
 function immediate(f) {

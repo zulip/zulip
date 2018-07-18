@@ -1,3 +1,5 @@
+import rows from 'js/rows';
+
 var message_edit = (function () {
 var exports = {};
 var currently_editing_messages = {};
@@ -594,7 +596,5 @@ $(document).on('narrow_deactivated.zulip', function () {
 return exports;
 }());
 
-if (typeof module !== 'undefined') {
-    module.exports = message_edit;
-}
+export default message_edit;
 window.message_edit = message_edit;
