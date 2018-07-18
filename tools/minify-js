@@ -7,6 +7,7 @@ import os
 import subprocess
 import argparse
 import sys
+import shutil
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--prev-deploy', metavar='DIR',
@@ -97,7 +98,8 @@ if not os.path.exists(CLOSURE_BINARY):
 # Where to put minified JS and source maps
 MIN_DIR = os.path.join(STATIC_PATH, 'min/')
 MAP_DIR = os.path.join(STATIC_PATH, 'source-map/')
-subprocess.check_call(['mkdir', '-p', MIN_DIR, MAP_DIR])
+os.makedirs(MIN_DIR, exist_ok=True)
+os.makedirs(MAP_DIR, exist_ok=True)
 
 for js_group_filespec_pair in JS_SPECS.items():
     # JS_SPECS is not typed, so forcefully type keys and values being read from JS_SPECS
@@ -124,7 +126,7 @@ for js_group_filespec_pair in JS_SPECS.items():
                 src = os.path.join(prev_deploy, dest)
                 os.path.getsize(src)  # Just to throw error if it doesn't exist.
                 if os.path.abspath(src) != os.path.abspath(dest):
-                    subprocess.check_call(['cp', src, dest])
+                    shutil.copyfile(src, dest)
             continue  # Copy succeeded, so go on to next file.
         except (subprocess.CalledProcessError, OSError):
             pass  # Copy failed, so fall through to minification instead.
