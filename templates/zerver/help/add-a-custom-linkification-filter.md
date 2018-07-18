@@ -6,58 +6,30 @@ Linkification filters are used to automatically translate syntax
 referring to an issue or support ticket in a message into a link to
 that issue or ticket on a third-party site. For instance, you can
 define a filter to automatically linkify #1234 to
-https://github.com/zulip/zulip/pulls/1234, Z1234 to link to that
-Zendesk ticket ID, or anything similar.
+https://github.com/zulip/zulip/pulls/1234.
 
 {settings_tab|filter-settings}
 
-5. In the green section labeled **Add a new filter**, find the **Regular expression**
-and **URL format string** fields.
+5. Under **Add a new filter**, in the **Regular expression** field, enter a
+[regular expression](http://www.regular-expressions.info) that matches the
+phrases you want to linkify. The regular expression you enter must have a
+variable that gets used by the URL format string. Each regular expression used
+for custom linkification filters in your organization must be unique. For
+example, if you want to linkify any numeric phrase that begins with a `#`, you
+could use the regular expression `#(?P<id>[0-9]+)`. `id` is the variable that
+represents the phrase found by the search.
 
-    * In the **Regular expression** field, enter a
-[regular expression](http://www.regular-expressions.info) that searches and
-identifies the phrases you want to linkify.
+6. In the **URL format string** field, insert a URL that includes the regular
+expression variable you specified in the **Regular expression** field.
+For example, if you want to use the variable `id` to link to a corresponding
+GitHub pull request on the `zulip/zulip` repository, you would use the URL
+format string `https://github.com/zulip/zulip/pull/%(id)s`.
 
-        For example, if you want to linkify any numeric phrase that begins with
-a `#`, you could use the regular expression `#(?P<id>[0-9]+)` to find those
-phrases, where `id` is the variable that represents the phrase found by the
-search.
+6. Click **Add filter**.
 
-        Please note that all regular expressions used for custom linkification
-filters in your organization must be unique. In addition, the regular expression
-you enter must have a variable that gets identified by the URL format string.
+8. Users in your organization can use your custom linkification filter in
+their messages by typing strings that match the specified regular expression.
 
-    * In the **URL format string** field, insert a URL that includes the regular
-expression variable you specified in the **Regular expression** field. The URL
-format string must be in the format of `https://example.com/%(\w+)s`.
-
-        For example, if you want to use the variable `id` found by your regular
-expression to link to a corresponding GitHub pull request on the `zulip/zulip`
-repository, you could use the URL format string
-`https://github.com/zulip/zulip/pull/%(id)s`.
-
-6. After filling out the **Regular expression** and **URL format string**
-fields, click the **Add filter** button to add your custom linkification
-filter to your Zulip organization.
-
-7. Upon clicking the **Add filter** button, you will receive a notification
-labeled **Custom filter added!** in the **Custom linkification filters**
-section, confirming the success of the addition of your custom linkification
-filter to your organization.
-
-    ![Custom linkification filter success](/static/images/help/custom-filter-success.png)
-
-    The filter's information and settings will also be displayed above the **Add a new filter**
-section. You can choose to delete any custom linkification filters in your
-organization through this panel by pressing the **Delete** button next to
-the filter you want to delete.
-
-8. Users in your organization can now use your custom linkification filter in
-their messages.
-
-    ![Custom linkification filter demo](/static/images/help/custom-filter-demo.png)
-
-9. If the pattern appears in a message topic, Zulip can't linkify the
-   text in the topic itself (since clicking a topic narrows to that
-   topic), so Zulip instead provides a little button to the right of
-   the topic that you can click to go to the appropriate URL.
+!!! tip """
+  If the pattern appears in a message topic, Zulip provides a button to the right of
+  the topic that links to the appropriate URL.
