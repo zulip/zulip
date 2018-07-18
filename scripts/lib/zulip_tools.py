@@ -7,6 +7,7 @@ import logging
 import os
 import pwd
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -153,7 +154,7 @@ def release_deployment_lock():
 def run(args, **kwargs):
     # type: (Sequence[str], **Any) -> None
     # Output what we're doing in the `set -x` style
-    print("+ %s" % (" ".join(args)))
+    print("+ %s" % (" ".join(map(shlex.quote, args)),))
 
     if kwargs.get('shell'):
         # With shell=True we can only pass string to Popen
@@ -163,7 +164,8 @@ def run(args, **kwargs):
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
         print()
-        print(WHITEONRED + "Error running a subcommand of %s: %s" % (sys.argv[0], " ".join(args)) +
+        print(WHITEONRED + "Error running a subcommand of %s: %s" %
+              (sys.argv[0], " ".join(map(shlex.quote, args))) +
               ENDC)
         print(WHITEONRED + "Actual error output for the subcommand is just above this." +
               ENDC)

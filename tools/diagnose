@@ -2,6 +2,7 @@
 
 import os
 import platform
+import shlex
 import sys
 import subprocess
 
@@ -26,7 +27,7 @@ def run(check_func):
 
 def run_command(args):
     # type: (List[str]) -> None
-    print(' '.join(args))
+    print(' '.join(map(shlex.quote, args)))
     subprocess.check_call(args)
 
 @run
