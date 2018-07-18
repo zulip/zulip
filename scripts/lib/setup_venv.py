@@ -1,5 +1,6 @@
 
 import os
+import shutil
 import subprocess
 from scripts.lib.zulip_tools import run, ENDC, WARNING, parse_lsb_release
 from scripts.lib.hash_reqs import expand_reqs
@@ -201,7 +202,7 @@ def create_log_entry(target_log, parent, copied_packages, new_packages):
 def copy_parent_log(source_log, target_log):
     # type: (str, str) -> None
     if os.path.exists(source_log):
-        run('cp {} {}'.format(source_log, target_log).split())
+        shutil.copyfile(source_log, target_log)
 
 def do_patch_activate_script(venv_path):
     # type: (str) -> None
@@ -237,7 +238,7 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     success_stamp = os.path.join(cached_venv_path, "success-stamp")
     if not os.path.exists(success_stamp):
         do_setup_virtualenv(cached_venv_path, requirements_file, virtualenv_args or [])
-        run(["touch", success_stamp])
+        open(success_stamp, 'w').close()
 
     print("Using cached Python venv from %s" % (cached_venv_path,))
     if target_venv_path is not None:
