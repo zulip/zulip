@@ -61,10 +61,11 @@ if not args.skip_puppet:
     subprocess.check_call(["apt-get", "update"])
     subprocess.check_call(["apt-get", "-y", "upgrade"])
 
-if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings"))):
-    # For upgrading from <1.4.0.  See discussion in commit 586b23637.
-    subprocess.check_call(["ln", "-nsf", "/etc/zulip/settings.py",
-                           os.path.join(deploy_path, "zproject/prod_settings.py")])
+if not os.path.exists((os.path.join(deploy_path, "zproject/prod_settings.py"))):
+    # This is normally done in unpack-zulip, but for upgrading from
+    # zulip<1.4.0, we need to do it.  See discussion in commit 586b23637.
+    os.symlink("/etc/zulip/settings.py",
+               os.path.join(deploy_path, "zproject/prod_settings.py"))
 
 # Now we should have an environment setup where we can run our tools;
 # first, creating the production venv.
