@@ -38,7 +38,7 @@ def check_python_version():
 @run
 def pwd():
     # type: () -> bool
-    subprocess.check_call('pwd')
+    print(os.getcwd())
     return True
 
 @run
