@@ -21,7 +21,7 @@ if not os.path.exists("/etc/puppet/hiera.yaml"):
     codename = parse_lsb_release()['DISTRIB_CODENAME']
     if codename in ["trusty", "stretch", "xenial"]:
         # Suppress warnings in old puppet about hiera.yaml not existing.
-        subprocess.check_call(["touch", "/etc/puppet/hiera.yaml"])
+        open("/etc/puppet/hiera.yaml", "a").close()
 
 puppet_config = """
 Exec { path => "/usr/sbin:/usr/bin:/sbin:/bin" }
