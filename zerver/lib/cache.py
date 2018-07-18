@@ -11,7 +11,6 @@ from django.core.cache.backends.base import BaseCache
 from typing import cast, Any, Callable, Dict, Iterable, List, Optional, Union, Set, TypeVar, Tuple
 
 from zerver.lib.utils import statsd, statsd_key, make_safe_digest
-import subprocess
 import time
 import base64
 import random
@@ -65,7 +64,7 @@ def get_or_create_key_prefix() -> str:
         return 'django_tests_unused:'
 
     # directory `var` should exist in production
-    subprocess.check_call(["mkdir", "-p", os.path.join(settings.DEPLOY_ROOT, "var")])
+    os.makedirs(os.path.join(settings.DEPLOY_ROOT, "var"), exist_ok=True)
 
     filename = os.path.join(settings.DEPLOY_ROOT, "var", "remote_cache_prefix")
     try:
