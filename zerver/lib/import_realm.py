@@ -3,7 +3,6 @@ import logging
 import os
 import ujson
 import shutil
-import subprocess
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -355,8 +354,7 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
             path_maps['attachment_path'][record['path']] = s3_file_name
 
         orig_file_path = os.path.join(import_dir, record['path'])
-        if not os.path.exists(os.path.dirname(file_path)):
-            subprocess.check_call(["mkdir", "-p", os.path.dirname(file_path)])
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         shutil.copy(orig_file_path, file_path)
 
     if processing_avatars:
