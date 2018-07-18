@@ -35,11 +35,13 @@ exports.make_event_store = (selector) => {
 
         get_on_handler: function (name, child_selector) {
             var funcs = self.get_on_handlers(name, child_selector);
+            var handler_name = name + ' with ' + child_selector;
             if (funcs.length === 0) {
-                throw Error('Could not find handler for ' + name);
+                throw Error('Could not find handler for ' + handler_name);
             }
             if (funcs.length > 1) {
-                throw Error('Found too many handlers for ' + name);
+                var remedy = "\nMaybe clear zjquery between tests?";
+                throw Error('Found too many handlers for ' + handler_name + remedy);
             }
             return funcs[0];
         },

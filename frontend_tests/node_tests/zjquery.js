@@ -135,8 +135,13 @@ run_test('events', () => {
     var value;
 
     function initialize_handler() {
-        $('#my-parent').on('input', '.some-child-class', function (e) {
-            value = 42; // just a dummy side effect
+        $('#my-parent').on('click', '.button-red', function (e) {
+            value = 'red'; // just a dummy side effect
+            e.stopPropagation();
+        });
+
+        $('#my-parent').on('click', '.button-blue', function (e) {
+            value = 'blue';
             e.stopPropagation();
         });
     }
@@ -147,7 +152,7 @@ run_test('events', () => {
 
     // We want to call the inner function, so first let's get it using the
     // get_on_handler() helper from zjquery.
-    var handler_func = $('#my-parent').get_on_handler('input', '.some-child-class');
+    var red_handler_func = $('#my-parent').get_on_handler('click', '.button-red');
 
     // Set up a stub event so that stopPropagation doesn't explode on us.
     var stub_event = {
@@ -155,10 +160,15 @@ run_test('events', () => {
     };
 
     // Now call the hander.
-    handler_func(stub_event);
+    red_handler_func(stub_event);
 
     // And verify it did what it was supposed to do.
-    assert.equal(value, 42);
+    assert.equal(value, 'red');
+
+    // Test we can have multiple click handlers in the parent.
+    var blue_handler_func = $('#my-parent').get_on_handler('click', '.button-blue');
+    blue_handler_func(stub_event);
+    assert.equal(value, 'blue');
 });
 
 run_test('create', () => {
