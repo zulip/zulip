@@ -71,6 +71,7 @@ set -x
 ZULIP_PATH="$(readlink -f $(dirname $0)/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
+locale-gen en_US.UTF-8
 export LC_ALL="en_US.UTF-8"
 
 # Check for a supported OS release.
