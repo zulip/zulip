@@ -12,11 +12,11 @@ from typing import Any, Dict, List, Optional, Union, cast
 from mypy_extensions import TypedDict
 
 import os
+import shutil
 import sys
 import argparse
 from time import sleep
 from datetime import date
-import subprocess
 
 import requests
 import json
@@ -147,7 +147,7 @@ def copy_fixture() -> None:
     Copy test fixture file from zerver/tests/fixtures. This is used to avoid
     constantly fetching data from Github during testing.
     """
-    subprocess.check_call(['cp', FIXTURE_FILE, settings.CONTRIBUTORS_DATA])
+    shutil.copyfile(FIXTURE_FILE, settings.CONTRIBUTORS_DATA)
 
 
 if args.use_fixture:
