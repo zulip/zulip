@@ -564,9 +564,7 @@ exports.validate = function () {
     return validate_stream_message();
 };
 
-exports.handle_keydown = function (event) {
-    var textarea = $("#compose-textarea").expectOne();
-
+exports.handle_keydown = function (event, textarea) {
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea(textarea);
 
@@ -605,7 +603,7 @@ exports.handle_keydown = function (event) {
             // ctrl + l: Insert a link to selected text
             wrap_text_with_markdown("[", "](url)");
             var position = textarea.caret();
-            var txt = document.getElementById("compose-textarea");
+            var txt = document.getElementById(textarea[0].id);
 
             // Include selected text in between [] parantheses and insert '(url)'
             // where "url" should be automatically selected.
@@ -675,7 +673,10 @@ exports.needs_subscribe_warning = function (email) {
 exports.initialize = function () {
     $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
     $('#stream,#subject,#private_message_recipient').on('change', update_fade);
-    $('#compose-textarea').on('keydown', exports.handle_keydown);
+    $('#compose-textarea').on('keydown', function (event) {
+        var textarea = $("#compose-textarea").expectOne();
+        exports.handle_keydown(event, textarea);
+    });
 
     $("#compose form").on("submit", function (e) {
         e.preventDefault();

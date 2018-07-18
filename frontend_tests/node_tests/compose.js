@@ -347,7 +347,7 @@ run_test('markdown_rtl', () => {
     assert.equal(textarea.hasClass('rtl'), false);
 
     textarea.val('```quote foo');
-    compose.handle_keydown(event);
+    compose.handle_keydown(event, $("#compose-textarea"));
 
     assert.equal(textarea.hasClass('rtl'), true);
 });
@@ -365,7 +365,7 @@ run_test('markdown_ltr', () => {
 
     assert.equal(textarea.hasClass('rtl'), true);
     textarea.val('```quote foo');
-    compose.handle_keydown(event);
+    compose.handle_keydown(event, textarea);
 
     assert.equal(textarea.hasClass('rtl'), false);
 });
@@ -414,7 +414,7 @@ run_test('markdown_shortcuts', () => {
         event.which = 73;
         event.metaKey = isCmd;
         event.ctrlKey = isCtrl;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("i", $('#compose-textarea').val());
     }
 
@@ -433,13 +433,13 @@ run_test('markdown_shortcuts', () => {
         event.keyCode = 66;
         event.ctrlKey = isCtrl;
         event.metaKey = isCmd;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("Any **text**.", $('#compose-textarea').val());
         // Test if no text is selected.
         range_start = 0;
         // Change cursor to first position.
         range_length = 0;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("****Any **text**.", $('#compose-textarea').val());
 
         // Test italic:
@@ -450,13 +450,13 @@ run_test('markdown_shortcuts', () => {
         range_length = selected_word.length;
         event.keyCode = 73;
         event.shiftKey = false;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("Any *text*.", $('#compose-textarea').val());
         // Test if no text is selected.
         range_length = 0;
         // Change cursor to first position.
         range_start = 0;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("**Any *text*.", $('#compose-textarea').val());
 
         // Test link insertion:
@@ -468,11 +468,11 @@ run_test('markdown_shortcuts', () => {
         event.keyCode = 76;
         event.which = undefined;
         event.shiftKey = true;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal("Any [text](url).", $('#compose-textarea').val());
         // Test if exec command is not enabled in browser.
         queryCommandEnabled = false;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
     }
 
     // This function cross tests the cmd/ctrl + markdown shortcuts in
@@ -490,17 +490,17 @@ run_test('markdown_shortcuts', () => {
         event.ctrlKey = isCtrl;
 
         event.keyCode = 66;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $('#compose-textarea').val());
 
         event.keyCode = 73;
         event.shiftKey = false;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $('#compose-textarea').val());
 
         event.keyCode = 76;
         event.shiftKey = true;
-        compose.handle_keydown(event);
+        compose.handle_keydown(event, $("#compose-textarea"));
         assert.equal(input_text, $('#compose-textarea').val());
     }
 
