@@ -134,10 +134,6 @@
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 
-
-## Server settings
-* [Add a link preview](/help/add-a-link-preview)
-
 ## Users & bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
