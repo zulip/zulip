@@ -24,6 +24,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
@@ -31,6 +32,7 @@ from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, 
 from social_core.backends.azuread import AzureADOAuth2
 from social_core.backends.base import BaseAuth
 from social_core.backends.oauth import BaseOAuth2
+from social_core.pipeline.partial import partial
 from social_core.exceptions import AuthFailed, SocialAuthBaseException
 
 from zerver.lib.actions import do_create_user, do_reactivate_user, do_deactivate_user, \
@@ -667,16 +669,44 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
         # custom per-backend code to properly fetch only verified
         # email addresses from the appropriate third-party API.
         verified_emails = backend.get_verified_emails(*args, **kwargs)
-        if len(verified_emails) == 0:
+        verified_emails_length = len(verified_emails)
+        if verified_emails_length == 0:
             # TODO: Provide a nice error message screen to the user
             # for this case, rather than just logging a warning.
             logging.warning("Social auth (%s) failed because user has no verified emails" %
                             (backend.auth_backend_name,))
             return_data["email_not_verified"] = True
             return None
-        # TODO: ideally, we'd prompt the user for which email they
-        # want to use with another pipeline stage here.
-        validated_email = verified_emails[0]
+
+        if verified_emails_length == 1:
+            chosen_email = verified_emails[0]
+        else:
+            chosen_email = backend.strategy.request_data().get('email')
+
+        if not chosen_email:
+            return render(backend.strategy.request, 'zerver/social_auth_select_email.html', context = {
+                'primary_email': verified_emails[0],
+                'verified_non_primary_emails': verified_emails[1:],
+                'backend': 'github'
+            })
+
+        try:
+            validate_email(chosen_email)
+        except ValidationError:
+            return_data['invalid_email'] = True
+            return None
+
+        if chosen_email not in verified_emails:
+            # If a user edits the submit value for the choose email form, we might
+            # end up with a wrong email associated with the account. The below code
+            # takes care of that.
+            logging.warning("Social auth (%s) failed because user has no verified"
+                            " emails associated with the account" %
+                            (backend.auth_backend_name,))
+            return_data["email_not_associated"] = True
+            return None
+
+        validated_email = chosen_email
     else:  # nocoverage
         # This code path isn't used by GitHubAuthBackend
         validated_email = kwargs["details"].get("email")
@@ -684,11 +714,6 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
     if not validated_email:  # nocoverage
         # This code path isn't used with GitHubAuthBackend, but may be relevant for other
         # social auth backends.
-        return_data['invalid_email'] = True
-        return None
-    try:
-        validate_email(validated_email)
-    except ValidationError:
         return_data['invalid_email'] = True
         return None
 
@@ -705,22 +730,29 @@ def social_associate_user_helper(backend: BaseAuth, return_data: Dict[str, Any],
 
     return user_profile
 
+@partial
 def social_auth_associate_user(
         backend: BaseAuth,
         *args: Any,
-        **kwargs: Any) -> Dict[str, Any]:
+        **kwargs: Any) -> Union[HttpResponse, Dict[str, Any]]:
     """A simple wrapper function to reformat the return data from
     social_associate_user_helper as a dictionary.  The
     python-social-auth infrastructure will then pass those values into
     later stages of settings.SOCIAL_AUTH_PIPELINE, such as
     social_auth_finish, as kwargs.
     """
+    partial_token = backend.strategy.request_data().get('partial_token')
     return_data = {}  # type: Dict[str, Any]
     user_profile = social_associate_user_helper(
         backend, return_data, *args, **kwargs)
 
-    return {'user_profile': user_profile,
-            'return_data': return_data}
+    if type(user_profile) == HttpResponse:
+        return user_profile
+    else:
+        return {'user_profile': user_profile,
+                'return_data': return_data,
+                'partial_token': partial_token,
+                'partial_backend_name': backend}
 
 def social_auth_finish(backend: Any,
                        details: Dict[str, Any],
@@ -747,6 +779,7 @@ def social_auth_finish(backend: Any,
     invalid_realm = return_data.get('invalid_realm')
     invalid_email = return_data.get('invalid_email')
     auth_failed_reason = return_data.get("social_auth_failed_reason")
+    email_not_associated = return_data.get("email_not_associated")
 
     if invalid_realm:
         from zerver.views.auth import redirect_to_subdomain_login_url
@@ -755,7 +788,7 @@ def social_auth_finish(backend: Any,
     if inactive_user:
         return redirect_deactivated_user_to_login()
 
-    if auth_backend_disabled or inactive_realm or no_verified_email:
+    if auth_backend_disabled or inactive_realm or no_verified_email or email_not_associated:
         # Redirect to login page. We can't send to registration
         # workflow with these errors. We will redirect to login page.
         return None
@@ -869,9 +902,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             emails = []
 
         verified_emails = []  # type: List[str]
-        for email_obj in emails:
-            if not email_obj.get("verified"):
-                continue
+        for email_obj in self.filter_usable_emails(emails):
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
             if email_obj.get("primary"):
@@ -880,6 +911,18 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
                 verified_emails.append(email_obj["email"])
 
         return verified_emails
+
+    def filter_usable_emails(self, emails: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        # We only let users login using email addresses that are verified
+        # by GitHub, because the whole point is for the user to
+        # demonstrate that they control the target email address.  We also
+        # disallow the @noreply.github.com email addresses, because
+        # structurally, we only want to allow email addresses that can
+        # receive emails, and those cannot.
+        return [
+            email for email in emails
+            if email.get('verified') and not email["email"].endswith("@noreply.github.com")
+        ]
 
     def user_data(self, access_token: str, *args: Any, **kwargs: Any) -> Dict[str, str]:
         """This patched user_data function lets us combine together the 3
