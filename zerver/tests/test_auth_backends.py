@@ -633,6 +633,29 @@ class GitHubAuthBackendTest(ZulipTestCase):
                                  parsed_url.path)
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
+    def test_github_oauth2_email_no_reply_dot_github_dot_com(self) -> None:
+        # As emails ending with `noreply.github.com` are excluded from
+        # verified_emails, choosing it as an email should raise a `email
+        # not associated` warning.
+        account_data_dict = dict(email="hamlet@noreply.github.com", name=self.name)
+        email_data = [
+            dict(email="notprimary@zulip.com",
+                 verified=True),
+            dict(email="hamlet@zulip.com",
+                 verified=True,
+                 primary=True),
+            dict(email=account_data_dict["email"],
+                 verified=True),
+        ]
+        with mock.patch('logging.warning') as mock_warning:
+            result = self.github_oauth2_test(account_data_dict,
+                                             subdomain='zulip',
+                                             email_data=email_data)
+            self.assertEqual(result.status_code, 302)
+            self.assertEqual(result.url, "/login/")
+            mock_warning.assert_called_once_with("Social auth (GitHub) failed because user has no verified"
+                                                 " emails associated with the account")
+
     def test_github_oauth2_email_not_verified(self) -> None:
         account_data_dict = dict(email=self.email, name=self.name)
         email_data = [

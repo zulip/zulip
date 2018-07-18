@@ -619,6 +619,12 @@ class SocialAuthMixin(ZulipAuthMixin):
             logging.warning(str(e))
             return None
 
+def github_eligible_emails(emails: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return [
+        email for email in emails
+        if email.get('verified') and not email["email"].endswith("noreply.github.com")
+    ]
+
 class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
     auth_backend_name = "GitHub"
 
@@ -633,9 +639,7 @@ class GitHubAuthBackend(SocialAuthMixin, GithubOAuth2):
             emails = []
 
         verified_emails = []  # type: List[str]
-        for email_obj in emails:
-            if not email_obj.get("verified"):
-                continue
+        for email_obj in github_eligible_emails(emails):
             # social_associate_user_helper assumes that the first email in
             # verified_emails is primary.
             if email_obj.get("primary"):
