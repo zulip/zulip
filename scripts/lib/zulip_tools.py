@@ -174,10 +174,6 @@ def run(args, **kwargs):
     # Output what we're doing in the `set -x` style
     print("+ %s" % (" ".join(map(shlex.quote, args)),))
 
-    if kwargs.get('shell'):
-        # With shell=True we can only pass string to Popen
-        args = " ".join(args)
-
     try:
         subprocess.check_call(args, **kwargs)
     except subprocess.CalledProcessError:
