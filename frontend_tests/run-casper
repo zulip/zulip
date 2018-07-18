@@ -62,9 +62,10 @@ if not options.force:
 
 os.chdir(ZULIP_PATH)
 
-subprocess.check_call(['mkdir', '-p', 'var/casper'])
+os.makedirs('var/casper', exist_ok=True)
 
-subprocess.check_call(['rm', '-f'] + glob.glob('var/casper/casper-failure*.png'))
+for f in glob.glob('var/casper/casper-failure*.png'):
+    os.remove(f)
 
 def run_tests(files: Iterable[str], external_host: str) -> None:
     test_dir = os.path.join(ZULIP_PATH, 'frontend_tests/casper_tests')
