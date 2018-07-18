@@ -12,7 +12,12 @@ only), and/or various other SSO methods (also currently on premise only).
 
 {settings_tab|auth-methods}
 
-2. Toggle the checkboxes next to the following options to configure your organization's authentication methods:
+2. Toggle the checkboxes next to the available login options to enable your
+organization's authentication methods. Not all methods will show up by
+default. To enable more methods, contact your server administrator at
+{{support_email}} and ask them to add more authentication backends by
+configuring the server with
+[these instructions](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html).
 
      * **Email** - Use an email and password created on Zulip to log in.
 
@@ -26,9 +31,5 @@ only), and/or various other SSO methods (also currently on premise only).
      * **RemoteUser** - Use a [Single-Sign-On](https://en.wikipedia.org/wiki/Single_sign-on)
      system to log in.
 
-        !!! tip ""
-            Not all methods will show up by default. To enable more methods,
-            modify the `AUTHENTICATION_BACKENDS` list in the
-            `/etc/zulip/settings.py` file.
 
 {!save-changes.md!}
