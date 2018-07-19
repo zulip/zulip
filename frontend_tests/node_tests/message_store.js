@@ -4,7 +4,6 @@ zrequire('people');
 zrequire('message_store');
 
 var noop = function () {};
-var with_overrides = global.with_overrides;
 var people = global.people;
 
 set_global('$', global.make_zjquery());
@@ -101,33 +100,18 @@ run_test('add_message_metadata', () => {
         sender_email: 'me@example.com',
         sender_id: me.user_id,
         type: 'stream',
-        display_recipient: [me, cindy],
-        stream: 'Zoolippy',
+        display_recipient: 'Zoolippy',
         topic: 'cool thing',
         subject: 'the_subject',
         id: 2068,
     };
 
-    // test stream properties
-    with_overrides(function (override) {
-        override('compose.empty_topic_placeholder', function () {
-            return 'the_subject';
-        });
-        global.with_stub(function (stub) {
-            set_global('composebox_typeahead', {add_topic: stub.f});
-            message_store.set_message_booleans(message);
-            message_store.add_message_metadata(message);
-            var typeahead_added = stub.get_args('stream', 'subject');
-            assert.deepEqual(typeahead_added.stream, [me, cindy]);
-            assert.equal(message.subject, typeahead_added.subject);
-        });
-
-        assert.deepEqual(message.stream, [me, cindy]);
-        assert.equal(message.reply_to, 'me@example.com');
-        assert.deepEqual(message.flags, undefined);
-        assert.equal(message.alerted, false);
-    });
-
+    message_store.set_message_booleans(message);
+    message_store.add_message_metadata(message);
+    assert.deepEqual(message.stream, message.display_recipient);
+    assert.equal(message.reply_to, 'me@example.com');
+    assert.deepEqual(message.flags, undefined);
+    assert.equal(message.alerted, false);
 });
 
 run_test('errors', () => {

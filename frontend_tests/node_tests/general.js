@@ -89,10 +89,8 @@ const messages = {
 const noop = () => undefined;
 
 set_global('alert_words', {});
-set_global('composebox_typeahead', {});
 
 alert_words.process_message = noop;
-composebox_typeahead.add_topic = noop;
 
 // We can also bring in real code:
 zrequire('recent_senders');
