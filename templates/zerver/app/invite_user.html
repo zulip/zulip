@@ -13,18 +13,18 @@
                     <div class="controls">
                         <textarea rows="2" id="invitee_emails" name="invitee_emails" placeholder="{{ _('One or more email addresses...') }}"></textarea>
                     </div>
-                    {% if is_admin %}
-                    <label class="control-label" for"invite_as_admin">{{ _('User(s) join as') }}</label>
-                    <div class="controls" id="invite_as_admin">
-                        <label class="radio">
-                            <input type="radio" name="invite_as_admin" value="false" checked/>{{ _('Regular users') }}
-                        </label>
-                        <label class="radio">
-                            <input type="radio" name="invite_as_admin" value="true"/>{{ _('Organization administrators') }}
-                        </label>
-                    </div>
-                    {% endif %}
                 </div>
+                {% if is_admin %}
+                <div class="control-group">
+                    <label class="control-label" for="invite_as">{{ _('User(s) join as') }}</label>
+                    <div class="controls">
+                        <select id="invite_as">
+                            <option name="invite_as" value="normal">{{ _('Members') }}</option>
+                            <option name="invite_as" value="admin">{{ _('Organization administrators') }}</option>
+                        </select>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="alert" id="invite_status"></div>
                 {% if development_environment %}
                 <div class="alert" id="dev_env_msg"></div>

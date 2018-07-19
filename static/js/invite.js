@@ -57,9 +57,10 @@ exports.launch = function () {
     invitee_emails.focus().autosize();
 
     $("#submit-invitation").on("click", function () {
+        var invite_as = $('#invite_as').val();
         var data = {
             invitee_emails: $("#invitee_emails").val(),
-            invite_as_admin: $("#invite_as_admin input:checked").val(),
+            invite_as_admin: invite_as === 'admin',
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
         };
         var streams = [];
