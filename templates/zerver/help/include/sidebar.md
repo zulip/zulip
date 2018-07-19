@@ -117,6 +117,7 @@
 * [Restrict new users by email domain](/help/restrict-user-email-addresses-to-certain-domains)
 * [Allow joining without an invitation](/help/allow-anyone-to-join-without-an-invitation)
 * [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
+* [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [GDPR Compliance](/help/gdpr-compliance)
