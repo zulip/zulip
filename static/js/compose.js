@@ -565,7 +565,7 @@ exports.validate = function () {
 };
 
 exports.handle_keydown = function (event) {
-    var textarea = $("#compose-textarea");
+    var textarea = $("#compose-textarea").expectOne();
 
     // Set the rtl class if the text has an rtl direction, remove it otherwise
     rtl.set_rtl_class_for_textarea(textarea);
@@ -580,33 +580,30 @@ exports.handle_keydown = function (event) {
 
     if ((isBold || isItalic || isLink) && isCmdOrCtrl) {
         var range = textarea.range();
-
-        function add_markdown(markdown) {
-            var textarea = $("#compose-textarea");
-            var range = textarea.range();
-            if (!document.execCommand('insertText', false, markdown)) {
-                textarea.range(range.start, range.end).range(markdown);
+        function wrap_text_with_markdown(prefix, suffix) {
+            if (!document.execCommand('insertText', false, prefix + range.text + suffix)) {
+                textarea.range(range.start, range.end).range(prefix + range.text + suffix);
             }
             event.preventDefault();
         }
 
         if (isBold) {
             // ctrl + b: Convert selected text to bold text
-            add_markdown("**" + range.text + "**");
+            wrap_text_with_markdown("**", "**");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 2);
             }
         }
         if (isItalic) {
             // ctrl + i: Convert selected text to italic text
-            add_markdown("*" + range.text + "*");
+            wrap_text_with_markdown("*", "*");
             if (!range.length) {
                 textarea.caret(textarea.caret() - 1);
             }
         }
         if (isLink) {
             // ctrl + l: Insert a link to selected text
-            add_markdown("[" + range.text + "](url)");
+            wrap_text_with_markdown("[", "](url)");
             var position = textarea.caret();
             var txt = document.getElementById("compose-textarea");
 
