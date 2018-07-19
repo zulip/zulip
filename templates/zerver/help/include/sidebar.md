@@ -114,7 +114,6 @@
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import data from Slack](/help/import-data-from-slack)
 * [Import or export a Zulip organization](/help/import-or-export-a-zulip-organization)
-* [Manage who can send invitations](/help/only-allow-admins-to-invite-new-users)
 * [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
 * [Deactivate your organization](/help/deactivate-your-organization)
