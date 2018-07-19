@@ -125,7 +125,7 @@
 * [Block image and link previews](/help/allow-image-link-previews)
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
-* [Manage editing of old messages](/help/restrict-editing-of-old-messages-and-topics)
+* [Manage editing of old messages](/help/configure-message-editing-and-deletion)
 * [Require topics in stream messages](/help/require-users-to-include-topics-in-stream-messages)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)

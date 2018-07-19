@@ -17,4 +17,4 @@ also disable viewing of message edit history more generally.
 
 ## Related articles
 
-* [Restrict message editing](/help/restrict-editing-of-old-messages-and-topics)
+* [Restrict message editing](/help/configure-message-editing-and-deletion)
