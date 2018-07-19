@@ -6,9 +6,10 @@ great start with Zulip.
 
 ## Configure your Zulip organization
 
-Review and potentially
-[tweak the organization settings](/help/change-your-organization-settings)
-to match your organization’s needs.
+Review and potentially tweak the organization settings to match your
+organization’s needs. You can find your organization settings by clicking on
+the gear icon (<i class="icon-vector-cog"></i>) in the top right corner of the
+main page, and clicking on **Organization settings**.
 
 - Set a policy for who can join the organization.  If you’re setting
   up Zulip for your company, you can restrict new users to those from
