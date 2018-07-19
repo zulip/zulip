@@ -8,10 +8,12 @@ invite new users.
 
 {settings_tab|organization-permissions}
 
-2. Select the **Users need an invitation to join** and **Only admins can invite new users**
-checkboxes under the **Joining the organization** section.
-
-    If this option is enabled, only administrators in your organization can send
-    email invitations to new users.
+2. Under the **Joining the organization** section, under
+**Are invitations required for joining the organization?**,
+select **Yes, and only admins can send invitations**.
 
 {!save-changes.md!}
+
+## Related articles
+
+[Restrict new users by email domain](/help/restrict-user-email-addresses-to-certain-domains)
