@@ -13,30 +13,13 @@ var composebox_typeahead = (function () {
 
 var exports = {};
 
-var seen_topics = new Dict();
-
-exports.add_topic = function (uc_stream, uc_topic) {
-    // For Denmark/FooBar, we set
-    // seen_topics['denmark']['foobar'] to 'FooBar',
-    // where seen_topics is a Dict of Dicts
-    var stream = uc_stream.toLowerCase();
-    var topic = uc_topic.toLowerCase();
-
-    if (!seen_topics.has(stream)) {
-        seen_topics.set(stream, new Dict());
+exports.topics_seen_for = function (stream_name) {
+    var stream_id = stream_data.get_stream_id(stream_name);
+    if (!stream_id) {
+        return [];
     }
-    var topic_dict = seen_topics.get(stream);
-    if (!topic_dict.has(topic)) {
-        topic_dict.set(topic, uc_topic);
-    }
-};
-
-exports.topics_seen_for = function (stream) {
-    stream = stream.toLowerCase();
-    if (seen_topics.has(stream)) {
-        return seen_topics.get(stream).values().sort();
-    }
-    return [];
+    var topic_names = topic_data.get_recent_names(stream_id);
+    return topic_names;
 };
 
 function query_matches_language(query, lang) {
@@ -619,7 +602,7 @@ exports.initialize = function () {
 
     $("#subject").typeahead({
         source: function () {
-            var stream_name = $("#stream").val();
+            var stream_name = compose_state.stream_name();
             return exports.topics_seen_for(stream_name);
         },
         items: 3,
