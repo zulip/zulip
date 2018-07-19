@@ -496,6 +496,9 @@ class ImportExportTest(ZulipTestCase):
         def assert_realm_values(f: Callable[[Realm], Any], equal: bool=True) -> None:
             orig_realm_result = f(original_realm)
             imported_realm_result = f(imported_realm)
+            # orig_realm_result should be truthy and have some values, otherwise
+            # the test is kind of meaningless
+            assert(orig_realm_result)
             if equal:
                 self.assertEqual(orig_realm_result, imported_realm_result)
             else:
