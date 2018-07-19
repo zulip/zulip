@@ -2,9 +2,9 @@
 
 By default, Zulip organizations require an invitation to join.
 
-Organization administrators can
-[allow anyone to join without an invitation](allow-anyone-to-join-without-an-invitation), and/or
-[restrict user email addresses to a company domain](restrict-user-email-addresses-to-certain-domains).
+Organization administrators can also allow anyone to join without an
+invitation, and/or restrict user email addresses to a company domain. See
+[manage who can join and invite](/help/manage-who-can-join-and-invite).
 
 ## See if you need an invitation to join
 
