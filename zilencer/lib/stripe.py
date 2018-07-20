@@ -122,7 +122,7 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
     return stripe_customer
 
 @catch_stripe_errors
-def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: int,
+def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
     # TODO: check that there are no existing live Stripe subscriptions
     # (canceled subscriptions are ok)
