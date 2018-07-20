@@ -141,6 +141,7 @@
 ## Users & bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Configure who can add bots](/help/configure-who-can-add-bots)
 * [Make a user an administrator](/help/make-a-user-an-administrator)
 * [Change a user's name](/help/change-a-users-name)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)

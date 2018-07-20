@@ -33,3 +33,7 @@ bot that you want to reactivate.
 5. After clicking the **Reactivate** button, the button will transform into a
 **Deactivate** button, and the **Name** and **Email** of the bot will be cleared
 of strikethrough, confirming the success of the bot's reactivation.
+
+## Related articles
+
+[Configure who can add bots](/help/configure-who-can-add-bots)
