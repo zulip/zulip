@@ -158,7 +158,6 @@ def run():
         lint_functions[name] = run_linter
 
     external_linter('add_class', ['tools/find-add-class'], ['js'])
-    external_linter('css', ['tools/check-css'], ['css'])
     external_linter('eslint', ['node', 'node_modules/.bin/eslint', '--quiet', '--cache'], ['js'])
     external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
                                'static/ts/tslint.json'], ['ts'])
@@ -166,6 +165,9 @@ def run():
     external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
     external_linter('urls', ['tools/check-urls'], ['py'])
     external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
+
+    # Note that check-css no longer runs due to the SCSS conversion.
+    # See #8894 for more details.
 
     # Disabled check for imperative mood until it is stabilized
     if not args.no_gitlint:
