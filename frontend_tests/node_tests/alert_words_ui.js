@@ -92,3 +92,26 @@ run_test('add_alert_word', () => {
     assert(alert_word_status.visible());
 });
 
+run_test('add_alert_word_keypress', () => {
+    var word_list = $('#alert_words_list');
+    var keypress_func = word_list.get_on_handler('keypress', '#create_alert_word_name');
+
+    var new_alert_word = $('#create_alert_word_name');
+    new_alert_word.val('zot');
+
+    var event = {
+        preventDefault: () => {},
+        which: 13,
+        target: '#create_alert_word_name',
+    };
+
+    var called = false;
+    channel.post = (opts) => {
+        assert.deepEqual(opts.data, {alert_words: '["zot"]'});
+        called = true;
+    };
+
+    keypress_func(event);
+    assert(called);
+});
+
