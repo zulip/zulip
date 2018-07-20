@@ -161,20 +161,28 @@ exports.render_emoji = function (item) {
     return exports.render_typeahead_item(args);
 };
 
-// manipulate prefix_sort to select popular emojis first
-// This is kinda a hack and so probably not our long-term solution.
+
+// Manipulate prefix_sort to sort in the order:
+// 1: Complete matches
+// 2: Popular emojis
+// 3: Rest of the results.
 function emoji_prefix_sort(query, objs, get_item) {
     var prefix_sort = util.prefix_sort(query, objs, get_item);
+    var complete_matches = [];
     var popular_emoji_matches = [];
     var other_emoji_matches = [];
+    query = query.toLowerCase();
     prefix_sort.matches.forEach(function (obj) {
-        if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
+        if (obj.display_name.toLowerCase() === query) {
+            complete_matches.push(obj);
+        } else if (emoji.frequently_used_emojis_list.indexOf(obj.emoji_code) !== -1) {
             popular_emoji_matches.push(obj);
         } else {
             other_emoji_matches.push(obj);
         }
     });
-    return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
+    var matches = complete_matches.concat(popular_emoji_matches).concat(other_emoji_matches);
+    return { matches: matches, rest: prefix_sort.rest };
 }
 
 exports.sorter = function (query, objs, get_item) {
