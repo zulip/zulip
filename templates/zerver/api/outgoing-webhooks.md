@@ -174,17 +174,17 @@ webhook expects:
 The above data is posted as list of tuples (not JSON), here's an example:
 
 ```
-[('token', 'abcdef'),
+[('token', 'v9fpCdldZIej2bco3uoUvGp06PowKFOf'),
  ('team_id', 'zulip'),
  ('team_domain', 'zulip.com'),
  ('channel_id', '123'),
  ('channel_name', 'integrations'),
- ('timestamp', 123456),
+ ('timestamp', 1532078950),
  ('user_id', 21),
  ('user_name', 'Sample User'),
  ('text', '@**test**'),
  ('trigger_word', 'mention'),
- ('service_id', None)]
+ ('service_id', 27)]
 ```
 
 * For successful request, if data is returned, it returns that data,
