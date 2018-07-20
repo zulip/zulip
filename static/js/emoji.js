@@ -18,18 +18,6 @@ var zulip_emoji = {
     deactivated: false,
 };
 
-// Emoticons, and which emoji they should become (without colons). Duplicate
-// emoji are allowed. Changes here should be mimicked in `zerver/lib/emoji.py`
-// and `templates/zerver/help/enable-emoticon-translations.md`.
-exports.EMOTICON_CONVERSIONS = {
-    ':)': 'smiley',
-    '(:': 'smiley',
-    ':(': 'slight_frown',
-    '<3': 'heart',
-    ':|': 'expressionless',
-    ':/': 'confused',
-};
-
 exports.update_emojis = function update_emojis(realm_emojis) {
     // exports.all_realm_emojis is emptied before adding the realm-specific emoji
     // to it. This makes sure that in case of deletion, the deleted realm_emojis
@@ -148,9 +136,9 @@ exports.translate_emoticons_to_names = function translate_emoticons_to_names(tex
         return match;
     };
 
-    for (var emoticon in exports.EMOTICON_CONVERSIONS) {
-        if (exports.EMOTICON_CONVERSIONS.hasOwnProperty(emoticon)) {
-            replacement_text = ':' + exports.EMOTICON_CONVERSIONS[emoticon] + ':';
+    for (var emoticon in emoji_codes.emoticon_conversions) {
+        if (emoji_codes.emoticon_conversions.hasOwnProperty(emoticon)) {
+            replacement_text = emoji_codes.emoticon_conversions[emoticon];
             var emoticon_regex = new RegExp('(' + util.escape_regexp(emoticon) + ')', 'g');
             translated = translated.replace(emoticon_regex, emoticon_replacer);
         }

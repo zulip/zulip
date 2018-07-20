@@ -50,6 +50,7 @@ run_test('get_canonical_name', () => {
     var canonical_name = emoji.get_canonical_name('realm_emoji');
     assert.equal(canonical_name, 'realm_emoji');
 
+    var orig_emoji_codes = global.emoji_codes;
     global.emoji_codes = {
         name_to_codepoint: {
             '+1': '1f44d',
@@ -71,6 +72,7 @@ run_test('get_canonical_name', () => {
     emoji.get_canonical_name('non_existent');
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
+    global.emoji_codes = orig_emoji_codes;
 });
 
 run_test('translate_emoticons_to_names', () => {
@@ -95,9 +97,9 @@ run_test('translate_emoticons_to_names', () => {
         {name: 'between symbols', original: 'Hello.<original>! World.', expected: 'Hello.<original>! World.'},
         {name: 'before end of sentence', original: 'Hello <original>!', expected: 'Hello <converted>!'},
     ];
-    _.each(emoji.EMOTICON_CONVERSIONS, (full_name, shortcut) => {
+    _.each(emoji_codes.emoticon_conversions, (full_name, shortcut) => {
         _.each(testcases, (t) => {
-            var converted_value = ':' + full_name + ':';
+            var converted_value = full_name;
             var original = t.original;
             var expected = t.expected;
             original = original.replace(/(<original>)/g, shortcut);

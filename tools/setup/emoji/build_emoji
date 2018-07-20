@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_emoji_code, generate_name_to_codepoint_map, get_remapped_emojis_map, \
-    emoji_names_for_picker, EMOJISETS
+    emoji_names_for_picker, EMOJISETS, EMOTICON_CONVERSIONS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -34,6 +34,8 @@ exports.name_to_codepoint = %(name_to_codepoint)s;
 exports.codepoint_to_name = %(codepoint_to_name)s;
 
 exports.emoji_catalog = %(emoji_catalog)s;
+
+exports.emoticon_conversions = %(emoticon_conversions)s;
 
 return exports;
 }());
@@ -200,6 +202,7 @@ def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> 
             'name_to_codepoint': name_to_codepoint,
             'codepoint_to_name': codepoint_to_name,
             'emoji_catalog': emoji_catalog,
+            'emoticon_conversions': EMOTICON_CONVERSIONS,
         })
 
     NAME_TO_CODEPOINT_PATH = os.path.join(cache_path, 'name_to_codepoint.json')
@@ -209,6 +212,10 @@ def generate_map_files(cache_path: str, emoji_catalog: Dict[str, List[str]]) -> 
     CODEPOINT_TO_NAME_PATH = os.path.join(cache_path, 'codepoint_to_name.json')
     with open(CODEPOINT_TO_NAME_PATH, 'w') as codepoint_to_name_file:
         codepoint_to_name_file.write(ujson.dumps(codepoint_to_name))
+
+    EMOTICON_CONVERSIONS_PATH = os.path.join(cache_path, 'emoticon_conversions.json')
+    with open(EMOTICON_CONVERSIONS_PATH, 'w') as emoticon_conversions_file:
+        emoticon_conversions_file.write(ujson.dumps(EMOTICON_CONVERSIONS))
 
 def dump_emojis(cache_path: str) -> None:
     with open('emoji_map.json') as emoji_map_file:

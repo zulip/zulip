@@ -35,6 +35,17 @@ remapped_emojis = {
     "1f1fa": "1f1fa-1f1f8",      # us
 }
 
+# Emoticons and which emoji they should become. Duplicate emoji are allowed.
+# Changes here should be mimicked in `templates/zerver/help/enable-emoticon-translations.md`.
+EMOTICON_CONVERSIONS = {
+    ':)': ':smiley:',
+    '(:': ':smiley:',
+    ':(': ':slight_frown:',
+    '<3': ':heart:',
+    ':|': ':expressionless:',
+    ':/': ':confused:',
+}
+
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names = []  # type: List[str]
     for emoji_code, name_info in emoji_name_maps.items():
