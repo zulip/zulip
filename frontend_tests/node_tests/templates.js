@@ -693,7 +693,7 @@ run_test('emoji_popover_content', () => {
                         has_reacted: false,
                         is_realm_emoji: false,
                         name: '100',
-                        css_class: '100',
+                        emoji_code: '100',
                     },
                 ],
             },
@@ -733,13 +733,13 @@ run_test('emoji_popover_search_results', () => {
                 has_reacted: false,
                 is_realm_emoji: false,
                 name: 'test-1',
-                css_class: 'test-1',
+                emoji_code: 'test-1',
             },
             {
                 has_reacted: true,
                 is_realm_emoji: false,
                 name: 'test-2',
-                css_class: 'test-2',
+                emoji_code: 'test-2',
             },
         ],
     };
@@ -756,7 +756,7 @@ run_test('emoji_showcase', () => {
         emoji_dict: {
             name: "thumbs_up",
             is_realm_emoji: false,
-            css_class: "1f44d",
+            emoji_code: "1f44d",
             has_reacted: false,
         },
     };

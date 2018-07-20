@@ -100,7 +100,7 @@ exports.build_emoji_data = function (realm_emojis) {
                         name: emoji_name,
                         aliases: emoji.default_emoji_aliases[codepoint],
                         is_realm_emoji: false,
-                        css_class: codepoint,
+                        emoji_code: codepoint,
                         has_reacted: false,
                     };
                     exports.emojis_by_name[emoji_name] = emoji_dict;
