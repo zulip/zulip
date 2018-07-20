@@ -131,6 +131,7 @@ NON_EXPORTED_TABLES = {
     'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
+    'zerver_pushdevicetoken',
     'zerver_scheduledemail',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
@@ -164,9 +165,6 @@ NON_EXPORTED_TABLES = {
     'analytics_realmcount',
     'analytics_streamcount',
     'analytics_usercount',
-
-    # The fact that these are not exported is a bug
-    'zerver_pushdevicetoken',
 }
 
 IMPLICIT_TABLES = {
