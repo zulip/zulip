@@ -159,3 +159,23 @@ run_test('remove_alert_word', () => {
     assert(alert_word_status.visible());
 });
 
+run_test('close_status_message', () => {
+    var alert_word_settings = $('#alert-word-settings');
+    var close = alert_word_settings.get_on_handler('click', '.close-alert-word-status');
+
+    var alert = $('.alert');
+    var close_btn = $('.close-alert-word-status');
+    close_btn.set_parents_result('.alert', alert);
+
+    alert.show();
+
+    var event = {
+        preventDefault: () => {},
+        currentTarget: '.close-alert-word-status',
+    };
+
+    assert(alert.visible());
+    close(event);
+    assert(!alert.visible());
+});
+

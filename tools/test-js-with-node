@@ -26,6 +26,7 @@ USAGE = '''
 enforce_fully_covered = {
     'static/js/activity.js',
     'static/js/alert_words.js',
+    'static/js/alert_words_ui.js',
     'static/js/bot_data.js',
     'static/js/buddy_data.js',
     'static/js/buddy_list.js',
