@@ -771,15 +771,9 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     timezone = models.CharField(max_length=40, default=u'')  # type: str
 
     # Emojisets
-    APPLE_EMOJISET      = u'apple'
-    EMOJIONE_EMOJISET   = u'emojione'
     GOOGLE_EMOJISET     = u'google'
-    TWITTER_EMOJISET    = u'twitter'
     TEXT_EMOJISET       = u'text'
     EMOJISET_CHOICES    = ((GOOGLE_EMOJISET, "Google"),
-                           (APPLE_EMOJISET, "Apple"),
-                           (TWITTER_EMOJISET, "Twitter"),
-                           (EMOJIONE_EMOJISET, "EmojiOne"),
                            (TEXT_EMOJISET, "Plain text"))
     emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)  # type: str
 

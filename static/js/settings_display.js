@@ -33,7 +33,9 @@ exports.set_up = function () {
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
-    $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+
+    // $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+    $("#translate_emoji_to_text").prop('checked', page_params.emojiset === "text");
 
     $("#default_language_modal [data-dismiss]").click(function () {
         overlays.close_modal('default_language_modal');
@@ -107,7 +109,12 @@ exports.set_up = function () {
         change_display_setting(data, '#time-settings-status');
     });
 
-    $(".emojiset_choice").click(function () {
+    /* Due to copyright issues with Apple emojiset and iamcal removing support
+       for emojione emojiset, we have disabled support for changing emojiset.
+       All the users have been migrated to default google emojiset. We have
+       added an additional checkbox for users to still allow them to change to
+       plain text option.
+     $(".emojiset_choice").click(function () {
         var emojiset = $(this).val();
         var data = {};
         data.emojiset = JSON.stringify(emojiset);
@@ -120,9 +127,21 @@ exports.set_up = function () {
             success: function () {
             },
             error: function (xhr) {
-                ui_report.error(settings_ui.strings.failure, xhr, $('#emoji-settings-status').expectOne());
+                ui_report.error(settings_ui.strings.failure, xhr,
+                                $('#emoji-settings-status').expectOne());
             },
         });
+    }); */
+
+    $("#translate_emoji_to_text").change(function () {
+        var data = {};
+        var is_checked = $("#translate_emoji_to_text").is(":checked");
+        if (is_checked) {
+            data.emojiset = JSON.stringify("text");
+        } else {
+            data.emojiset = JSON.stringify("google");
+        }
+        change_display_setting(data, '#emoji-settings-status');
     });
 
     $("#translate_emoticons").change(function () {
@@ -169,6 +188,7 @@ exports.update_page = function () {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
+    $("#translate_emoji_to_text").prop('checked', page_params.emojiset === "text");
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);
     // TODO: Set emojiset selector here.
