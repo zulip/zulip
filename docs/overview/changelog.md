@@ -66,6 +66,9 @@ Zulip 1.9; it is generally updated in bursts.
   thousands of users and hundreds of bot users.
 - Optimized production release tarballs to save about 40MB of size.
 - Upgraded to the latest version of the Google emoji set.
+- Dropped, at least for now, support for user-configured alternative
+  emoji sets.  This was largely motivated by
+  [EmojiOne requesting removal from the emoji-data project](https://github.com/iamcal/emoji-data/pull/142)
 - Removed the "Delete streams" administration page; one can delete
   streams directly on "Manage streams".
 - Removed support code for the (long-deprecated) legacy desktop app.

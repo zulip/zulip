@@ -33,7 +33,9 @@ exports.set_up = function () {
     $("#display-settings-status").hide();
 
     $("#user_timezone").val(page_params.timezone);
-    $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+
+    // $(".emojiset_choice[value=" + page_params.emojiset + "]").prop("checked", true);
+    $("#translate_emoji_to_text").prop('checked', page_params.emojiset === "text");
 
     $("#default_language_modal [data-dismiss]").click(function () {
         overlays.close_modal('default_language_modal');
@@ -107,22 +109,15 @@ exports.set_up = function () {
         change_display_setting(data, '#time-settings-status');
     });
 
-    $(".emojiset_choice").click(function () {
-        var emojiset = $(this).val();
+    $("#translate_emoji_to_text").change(function () {
         var data = {};
-        data.emojiset = JSON.stringify(emojiset);
-        var spinner = $("#emoji-settings-status").expectOne();
-        loading.make_indicator(spinner, {text: settings_ui.strings.saving });
-
-        channel.patch({
-            url: '/json/settings/display',
-            data: data,
-            success: function () {
-            },
-            error: function (xhr) {
-                ui_report.error(settings_ui.strings.failure, xhr, $('#emoji-settings-status').expectOne());
-            },
-        });
+        var is_checked = $("#translate_emoji_to_text").is(":checked");
+        if (is_checked) {
+            data.emojiset = JSON.stringify("text");
+        } else {
+            data.emojiset = JSON.stringify("google");
+        }
+        change_display_setting(data, '#emoji-settings-status');
     });
 
     $("#translate_emoticons").change(function () {
@@ -134,25 +129,8 @@ exports.set_up = function () {
 };
 
 exports.report_emojiset_change = function () {
-    // TODO: Clean up how this works so we can use
-    // change_display_setting.  The challenge is that we don't want to
-    // report success before the server_events request returns that
-    // causes the actual sprite sheet to change.  The current
-    // implementation is wrong, though, in that it displays the UI
-    // update in all active browser windows.
-    function emoji_success() {
-        if ($("#emoji-settings-status").length) {
-            loading.destroy_indicator($("#emojiset_spinner"));
-            $("#emojiset_select").val(page_params.emojiset);
-            ui_report.success(i18n.t("Emojiset changed successfully!"),
-                              $('#emoji-settings-status').expectOne());
-            var spinner = $("#emoji-settings-status").expectOne();
-            settings_ui.display_checkmark(spinner);
-        }
-    }
-
+    // This function still has full support for multiple emojiset options.
     if (page_params.emojiset === 'text') {
-        emoji_success();
         return;
     }
 
@@ -160,7 +138,6 @@ exports.report_emojiset_change = function () {
     sprite.onload = function () {
         var sprite_css_href = "/static/generated/emoji/" + page_params.emojiset + "_sprite.css";
         $("#emoji-spritesheet").attr('href', sprite_css_href);
-        emoji_success();
     };
     sprite.src = "/static/generated/emoji/sheet_" + page_params.emojiset + "_64.png";
 };
@@ -169,9 +146,9 @@ exports.update_page = function () {
     $("#twenty_four_hour_time").prop('checked', page_params.twenty_four_hour_time);
     $("#left_side_userlist").prop('checked', page_params.left_side_userlist);
     $("#default_language_name").text(page_params.default_language_name);
+    $("#translate_emoji_to_text").prop('checked', page_params.emojiset === "text");
     $("#translate_emoticons").prop('checked', page_params.translate_emoticons);
     $("#night_mode").prop('checked', page_params.night_mode);
-    // TODO: Set emojiset selector here.
     // Longer term, we'll want to automate this function
 };
 

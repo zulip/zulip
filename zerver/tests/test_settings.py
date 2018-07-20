@@ -225,7 +225,7 @@ class ChangeSettingsTest(ZulipTestCase):
 
         test_changes = dict(
             default_language = 'de',
-            emojiset = 'apple',
+            emojiset = 'google',
             timezone = 'US/Mountain',
         )  # type: Dict[str, Any]
 
@@ -259,6 +259,26 @@ class ChangeSettingsTest(ZulipTestCase):
         user_settings = (s for s in UserProfile.property_types if UserProfile.property_types[s] is not bool)
         for setting in user_settings:
             self.do_test_change_user_display_setting(setting)
+
+    def do_change_emojiset(self, emojiset: str) -> HttpResponse:
+        email = self.example_email('hamlet')
+        self.login(email)
+        data = {'emojiset': ujson.dumps(emojiset)}
+        result = self.client_patch("/json/settings/display", data)
+        return result
+
+    def test_emojiset(self) -> None:
+        """Test banned emojisets are not accepted."""
+        banned_emojisets = ['apple', 'emojione', 'twitter']
+        valid_emojisets = ['google', 'text']
+
+        for emojiset in banned_emojisets:
+            result = self.do_change_emojiset(emojiset)
+            self.assert_json_error(result, "Invalid emojiset '%s'" % (emojiset))
+
+        for emojiset in valid_emojisets:
+            result = self.do_change_emojiset(emojiset)
+            self.assert_json_success(result)
 
 
 class UserChangesTest(ZulipTestCase):
