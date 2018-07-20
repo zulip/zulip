@@ -356,8 +356,7 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
 
 * **Contents:**
     ```md
-    1. Hover over a message to replace the message's timestamp with its message
-    actions, represented by three icons. From the icons that appear, select the
+    1. Hover over the message to reveal three icons on the right. Select the
     ```
 
 * **Example usage and rendering:**
@@ -366,8 +365,7 @@ to click a specific icon, such as the [**Down chevron** macro](#down-chevron-dow
     {!down-chevron.md!}
     ```
     ```md
-    1. Hover over a message to replace the message's timestamp with its message
-    actions, represented by three icons. From the icons that appear, select the
+    1. Hover over the message to reveal three icons on the right. Select the
     down chevron (<i class="fa fa-chevron-down"></i>) icon to reveal an actions dropdown.
     ```
 
