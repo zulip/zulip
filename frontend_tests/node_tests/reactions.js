@@ -5,10 +5,6 @@ zrequire('people');
 zrequire('reactions');
 
 set_global('emoji', {
-    emojis_by_name: {
-        alien: '1f47d',
-        smile: '1f604',
-    },
     all_realm_emojis: {
         991: {
             id: '991',

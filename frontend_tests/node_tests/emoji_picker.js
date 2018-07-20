@@ -8,7 +8,7 @@ run_test('initialize', () => {
 
     var complete_emoji_catalog = _.sortBy(emoji_picker.complete_emoji_catalog, 'name');
     assert.equal(complete_emoji_catalog.length, 9);
-    assert.equal(_.keys(emoji_picker.emoji_collection).length, 1037);
+    assert.equal(_.keys(emoji.emojis_by_name).length, 1037);
 
     function assert_emoji_category(ele, icon, num) {
         assert.equal(ele.icon, icon);

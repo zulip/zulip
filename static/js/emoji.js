@@ -2,10 +2,14 @@ var emoji = (function () {
 
 var exports = {};
 
+// `emojis_by_name` is the central data source that is supposed to be
+// used by every widget in the webapp for gathering data for displaying
+// emojis. Emoji picker uses this data to derive data for its own use.
+exports.emojis_by_name = {};
+
 exports.emojis = [];
 exports.all_realm_emojis = {};
 exports.active_realm_emojis = {};
-exports.emojis_by_name = {};
 exports.default_emoji_aliases = {};
 
 var default_emojis = [];
@@ -48,10 +52,7 @@ exports.update_emojis = function update_emojis(realm_emojis) {
     exports.all_realm_emojis.zulip = zulip_emoji;
     exports.active_realm_emojis.zulip = zulip_emoji;
 
-    exports.emojis_by_name = {};
-    _.each(default_emojis, function (emoji) {
-        exports.emojis_by_name[emoji.emoji_name] = emoji.emoji_url;
-    });
+    exports.build_emoji_data(exports.active_realm_emojis);
 };
 
 exports.initialize = function initialize() {
@@ -74,6 +75,39 @@ exports.initialize = function initialize() {
     // can cache it for later use.
     var sprite = new Image();
     sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_64.png';
+};
+
+exports.build_emoji_data = function (realm_emojis) {
+    exports.emojis_by_name = {};
+    var emoji_dict;
+    _.each(realm_emojis, function (realm_emoji, realm_emoji_name) {
+        emoji_dict = {
+            name: realm_emoji_name,
+            aliases: [realm_emoji_name],
+            is_realm_emoji: true,
+            url: realm_emoji.emoji_url,
+            has_reacted: false,
+        };
+        exports.emojis_by_name[realm_emoji_name] = emoji_dict;
+    });
+
+    _.each(emoji_codes.emoji_catalog, function (codepoints) {
+        _.each(codepoints, function (codepoint) {
+            if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
+                var emoji_name = emoji_codes.codepoint_to_name[codepoint];
+                if (!exports.emojis_by_name.hasOwnProperty(emoji_name)) {
+                    emoji_dict = {
+                        name: emoji_name,
+                        aliases: emoji.default_emoji_aliases[codepoint],
+                        is_realm_emoji: false,
+                        css_class: codepoint,
+                        has_reacted: false,
+                    };
+                    exports.emojis_by_name[emoji_name] = emoji_dict;
+                }
+            }
+        });
+    });
 };
 
 exports.build_emoji_upload_widget = function () {
