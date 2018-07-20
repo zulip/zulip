@@ -226,7 +226,8 @@ def build_custom_checkers(by_lang):
                          'tools/generate-custom-icon-webfont']),
          'description': 'console.log and similar should not be used in webapp'},
         {'pattern': r'''[.]text\(["'][a-zA-Z]''',
-         'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization'},
+         'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization',
+         'exclude': set(['frontend_tests/node_tests/'])},
         {'pattern': r'''compose_error\(["']''',
          'description': 'Argument to compose_error should be a literal string enclosed '
                         'by i18n.t()'},
