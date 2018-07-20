@@ -115,3 +115,47 @@ run_test('add_alert_word_keypress', () => {
     assert(called);
 });
 
+run_test('remove_alert_word', () => {
+    var word_list = $('#alert_words_list');
+    var remove_func = word_list.get_on_handler('click', '.remove-alert-word');
+
+    var remove_alert_word = $('.remove-alert-word');
+    var list_item = $('li.alert-word-item');
+    var val_item = $('span.value');
+    val_item.text(i18n.t('zot'));
+
+    remove_alert_word.set_parents_result('li', list_item);
+    list_item.set_find_results('.value', val_item);
+
+    var event = {
+        currentTarget: '.remove-alert-word',
+    };
+
+    var success_func;
+    var fail_func;
+    channel.del = (opts) => {
+        assert.equal(opts.url, '/json/users/me/alert_words');
+        assert.deepEqual(opts.data, {alert_words: '["translated: zot"]'});
+        success_func = opts.success;
+        fail_func = opts.error;
+    };
+
+    remove_func(event);
+
+    var alert_word_status = $('#alert_word_status');
+    var alert_word_status_text = $('.alert_word_status_text');
+    alert_word_status.set_find_results('.alert_word_status_text', alert_word_status_text);
+
+    // test failure
+    fail_func();
+    assert(alert_word_status.hasClass('alert-danger'));
+    assert.equal(alert_word_status_text.text(), "translated: Error removing alert word!");
+    assert(alert_word_status.visible());
+
+    // test success
+    success_func();
+    assert(alert_word_status.hasClass('alert-success'));
+    assert.equal(alert_word_status_text.text(), "translated: Alert word removed successfully!");
+    assert(alert_word_status.visible());
+});
+
