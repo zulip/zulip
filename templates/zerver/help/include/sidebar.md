@@ -139,6 +139,7 @@
 ## Users & bots
 * [Deactivate or reactivate a user](/help/deactivate-or-reactivate-a-user)
 * [Deactivate or reactivate a bot](/help/deactivate-or-reactivate-a-bot)
+* [Restrict bot creation](/help/restrict-bot-creation)
 * [Make a user an administrator](/help/make-a-user-an-administrator)
 * [Change a user's name](/help/change-a-users-name)
 * [View all bots in your organization](/help/view-all-bots-in-your-organization)
