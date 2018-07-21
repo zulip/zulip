@@ -1,3 +1,4 @@
+// See https://zulip.readthedocs.io/en/latest/subsystems/input-pills.html
 var input_pill = (function () {
 
 var exports = {};
