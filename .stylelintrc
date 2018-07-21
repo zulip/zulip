@@ -1,0 +1,25 @@
+{
+    "rules": {
+        # Stylistic rules for CSS.
+        "declaration-colon-space-after": "always-single-line",
+        "declaration-colon-space-before": "never",
+        "declaration-block-semicolon-newline-after": "always",
+        "declaration-block-semicolon-space-before": "never",
+        "declaration-block-trailing-semicolon": "always",
+
+        "block-closing-brace-newline-after": "always",
+        "block-closing-brace-newline-before": "always",
+        "block-opening-brace-newline-after": "always",
+        "block-opening-brace-space-before": "always",
+
+        "selector-descendant-combinator-no-non-space": true,
+        "selector-list-comma-newline-after": "always",
+        "selector-list-comma-space-before": "never",
+
+        "media-query-list-comma-newline-after": "always",
+        "media-query-list-comma-space-before": "never",
+
+        "comment-whitespace-inside": "always",
+        "indentation": 4,
+    }
+}
