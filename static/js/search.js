@@ -61,6 +61,7 @@ exports.update_button_visibility = function () {
 exports.initialize = function () {
     var search_query_box = $('#search_query');
     var searchbox_form = $('#searchbox_form');
+    var searchbox = $('#searchbox');
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
@@ -183,6 +184,18 @@ exports.initialize = function () {
             exports.update_button_visibility();
         }, 100);
     });
+
+    if (page_params.search_pills_enabled) {
+        // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
+        // while we want to add box-shadow to `#searchbox`. This could have been done
+        // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
+        searchbox.on('focusin', function () {
+            searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+        });
+        searchbox.on('focusout', function () {
+            searchbox.css({"box-shadow": "unset"});
+        });
+    }
 };
 
 exports.focus_search = function () {
