@@ -1256,10 +1256,18 @@ class Message(AbstractMessage):
             timestamp         = datetime_to_timestamp(self.pub_date))
 
     def sent_by_human(self) -> bool:
+        """Used to determine whether a message was sent by a full Zulip UI
+        style client (and thus whether the message should be treated
+        as sent by a human and automatically marked as read for the
+        sender).  The purpose of this distinction is to ensure that
+        message sent to the user by e.g. a Google Calendar integration
+        using the user's own API key don't get marked as read
+        automatically.
+        """
         sending_client = self.sending_client.name.lower()
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
-                                   'zulipmobile', 'zulipelectron', 'snipe',
+                                   'zulipmobile', 'zulipelectron', 'zulipterminal', 'snipe',
                                    'website', 'ios', 'android')) or (
                                        'desktop app' in sending_client)
 
