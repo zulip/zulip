@@ -1394,9 +1394,11 @@ run_test('on_events', () => {
         page_params.jitsi_server_url = 'https://meet.jit.si';
 
         var syntax_to_insert;
+        var called = false;
 
         compose_ui.insert_syntax_and_focus = function (syntax) {
             syntax_to_insert = syntax;
+            called = true;
         };
 
         var handler = $("#compose").get_on_handler("click", "#video_link");
@@ -1407,6 +1409,20 @@ run_test('on_events', () => {
         // video link ids consist of 15 random digits
         var video_link_regex = /\[Click to join video call\]\(https:\/\/meet.jit.si\/\d{15}\)/;
         assert(video_link_regex.test(syntax_to_insert));
+
+        page_params.realm_video_chat_provider = 'Google Hangouts';
+        page_params.realm_google_hangouts_domain = 'zulip';
+
+        handler(event);
+
+        video_link_regex = /\[Click to join video call\]\(https:\/\/hangouts.google.com\/hangouts\/\_\/zulip\/\d{15}\)/;
+        assert(video_link_regex.test(syntax_to_insert));
+
+        page_params.jitsi_server_url = null;
+        called = false;
+
+        handler(event);
+        assert(!called);
     }());
 
     (function test_markdown_preview_compose_clicked() {
