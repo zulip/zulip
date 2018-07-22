@@ -1260,7 +1260,7 @@ class Message(AbstractMessage):
 
         return (sending_client in ('zulipandroid', 'zulipios', 'zulipdesktop',
                                    'zulipmobile', 'zulipelectron', 'snipe',
-                                   'website', 'ios', 'android')) or (
+                                   'website', 'ios', 'android', 'zulipterminal')) or (
                                        'desktop app' in sending_client)
 
     @staticmethod
