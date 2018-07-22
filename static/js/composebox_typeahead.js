@@ -44,6 +44,37 @@ function query_matches_language(query, lang) {
     return lang.indexOf(query) !== -1;
 }
 
+function query_matches_string(query, source_str, split_char) {
+    // If query doesn't contain a separator, we just want an exact
+    // match where query is a substring of one of the target characers.
+    if (query.indexOf(split_char) > 0) {
+        // If there's a whitespace character in the query, then we
+        // require a perfect prefix match (e.g. for 'ab cd ef',
+        // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
+        // ef', etc.).
+        var queries = query.split(split_char);
+        var sources = source_str.split(split_char);
+        var i;
+
+        for (i = 0; i < queries.length - 1; i += 1) {
+            if (sources[i] !== queries[i]) {
+                return false;
+            }
+        }
+
+        // This block is effectively a final iteration of the last
+        // loop.  What differs is that for the last word, a
+        // partial match at the beginning of the word is OK.
+        if (sources[i] === undefined) {
+            return false;
+        }
+        return sources[i].indexOf(queries[i]) === 0;
+    }
+
+    // For a single token, the match can be anywhere in the string.
+    return source_str.indexOf(query) !== -1;
+}
+
 // This function attempts to match a query with source's attributes.
 // * query is the user-entered search query
 // * Source is the object we're matching from, e.g. a user object
@@ -52,36 +83,9 @@ function query_matches_language(query, lang) {
 // account, there might be 2 attrs: their full name and their email.
 // * split_char is the separator for this syntax (e.g. ' ').
 function query_matches_source_attrs(query, source, match_attrs, split_char) {
-    // If query doesn't contain a separator, we just want an exact
-    // match where query is a substring of one of the target characers.
     return _.any(match_attrs, function (attr) {
         var source_str = source[attr].toLowerCase();
-        if (query.indexOf(split_char) > 0) {
-            // If there's a whitespace character in the query, then we
-            // require a perfect prefix match (e.g. for 'ab cd ef',
-            // query needs to be e.g. 'ab c', not 'cd ef' or 'b cd
-            // ef', etc.).
-            var queries = query.split(split_char);
-            var sources = source_str.split(split_char);
-            var i;
-
-            for (i = 0; i < queries.length - 1; i += 1) {
-                if (sources[i] !== queries[i]) {
-                    return false;
-                }
-            }
-
-            // This block is effectively a final iteration of the last
-            // loop.  What differs is that for the last word, a
-            // partial match at the beginning of the word is OK.
-            if (sources[i] === undefined) {
-                return false;
-            }
-            return sources[i].indexOf(queries[i]) === 0;
-        }
-
-        // For a single token, the match can be anywhere in the string.
-        return source_str.indexOf(query) !== -1;
+        return query_matches_string(query, source_str, split_char);
     });
 }
 
