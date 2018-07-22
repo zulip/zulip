@@ -15,7 +15,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 method=webroot
-args="$(getopt -o '' --long help,hostname:,email:,method:,no-zulip-conf -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,hostname:,email:,method:,deploy-hook:,no-zulip-conf,agree-tos -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
@@ -32,6 +32,15 @@ while true; do
         --method)
             method="$2"
             shift
+            shift
+            ;;
+        --deploy-hook)
+            deploy_hook=(--deploy-hook "$2")
+            shift
+            shift
+            ;;
+        --agree-tos)
+            agree_tos=--agree-tos
             shift
             ;;
         --no-zulip-conf)
@@ -84,7 +93,11 @@ chmod a+x "$CERTBOT_PATH"
 # to agree to the Let's Encrypt Subscriber Agreement (aka ToS).
 # Passing --force-interactive suppresses a warning, but also brings up
 # an annoying prompt we stifle with --no-eff-email.
-"$CERTBOT_PATH" certonly "${method_args[@]}" -d "$DOMAIN" -m "$EMAIL" --force-interactive --no-eff-email
+"$CERTBOT_PATH" certonly "${method_args[@]}" \
+                -d "$DOMAIN" -m "$EMAIL" \
+                $agree_tos --force-renewal \
+                "${deploy_hook[@]}" \
+                --force-interactive --no-eff-email
 
 symlink_with_backup() {
     if [ -e "$2" ]; then
@@ -96,9 +109,13 @@ symlink_with_backup() {
     ln -nsf "$1" "$2"
 }
 
-CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
-symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
-symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+if [ -z "$deploy_hook" ]; then
+    # If no deploy hook was specified, assume we're deploying to the default
+    # location Zulip wants.
+    CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
+    symlink_with_backup "$CERT_DIR"/privkey.pem /etc/ssl/private/zulip.key
+    symlink_with_backup "$CERT_DIR"/fullchain.pem /etc/ssl/certs/zulip.combined-chain.crt
+fi
 
 case "$method" in
     webroot)
