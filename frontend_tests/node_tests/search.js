@@ -60,6 +60,7 @@ run_test('initizalize', () => {
     const search_query_box = $('#search_query');
     const searchbox_form = $('#searchbox_form');
     const search_button = $('.search_button');
+    const searchbox = $('#searchbox');
 
     searchbox_form.on = (event, func) => {
         assert.equal(event, 'compositionend');
@@ -257,6 +258,18 @@ run_test('initizalize', () => {
             narrow_state.search_string = () => 'ver';
             callback();
             assert.equal(search_query_box.val(), 'ver');
+        }
+    };
+
+    searchbox.on = (event, callback) => {
+        if (event === 'focusin') {
+            searchbox.css({"box-shadow": "unset"});
+            callback();
+            assert.deepEqual(searchbox.css(), {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+        } else if (event === 'focusout') {
+            searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+            callback();
+            assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
         }
     };
 

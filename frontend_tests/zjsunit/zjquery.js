@@ -129,6 +129,7 @@ exports.make_new_elem = function (selector, opts) {
     var html = 'never-been-set';
     var text = 'never-been-set';
     var value;
+    var css;
     var shown = false;
     var focused = false;
     var find_results = new Dict();
@@ -164,7 +165,6 @@ exports.make_new_elem = function (selector, opts) {
             event_store.generic_event('click', arg);
             return self;
         },
-        css: noop,
         data: noop,
         debug: function () {
             return {
@@ -200,6 +200,14 @@ exports.make_new_elem = function (selector, opts) {
         focus: function () {
             focused = true;
             return self;
+        },
+        focusin: function () {
+            focused = true;
+            return self;
+        },
+        focusout: function () {
+            focused = false;
+            return ;
         },
         get: function (idx) {
             // We have some legacy code that does $('foo').get(0).
@@ -327,6 +335,13 @@ exports.make_new_elem = function (selector, opts) {
                 return value || '';
             }
             value = arguments[0];
+            return self;
+        },
+        css: function () {
+            if (arguments.length === 0) {
+                return css || {};
+            }
+            css = arguments[0];
             return self;
         },
         visible: function () {
