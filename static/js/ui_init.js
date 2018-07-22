@@ -284,7 +284,6 @@ $(function () {
     click_handlers.initialize();
     copy_and_paste.initialize();
     overlays.initialize();
-    invite.initialize();
     timerender.initialize();
     if (!page_params.search_pills_enabled) {
         tab_bar.initialize();

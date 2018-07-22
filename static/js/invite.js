@@ -34,12 +34,6 @@ exports.get_invite_streams = function () {
     return streams;
 };
 
-function update_subscription_checkboxes() {
-    var data = {streams: exports.get_invite_streams()};
-    var html = templates.render('invite_subscription', data);
-    $('#streams_to_add').html(html);
-}
-
 function reset_error_messages() {
     var invite_status = $('#invite_status');
     var invitee_emails = $("#invitee_emails");
@@ -52,11 +46,6 @@ function reset_error_messages() {
     }
 }
 
-function prepare_form_to_be_shown() {
-    update_subscription_checkboxes();
-    reset_error_messages();
-}
-
 exports.launch = function () {
     ui.set_up_scrollbar($("#invite_user_form .modal-body"));
     var invite_status = $('#invite_status');
@@ -64,7 +53,10 @@ exports.launch = function () {
     var invitee_emails_group = invitee_emails.closest('.control-group');
 
     $('#submit-invitation').button();
-    prepare_form_to_be_shown();
+    var pill_container = $('.streams_to_add_container .pill-container');
+    var pills = invite_stream_pill.initialize_pill(pill_container);
+    reset_error_messages();
+
     invitee_emails.focus().autosize();
 
     $("#submit-invitation").on("click", function () {
@@ -74,11 +66,8 @@ exports.launch = function () {
             invite_as_admin: invite_as === 'admin',
             csrfmiddlewaretoken: $('input[name="csrfmiddlewaretoken"]').attr('value'),
         };
-        var streams = [];
-        $.each($("#invite-stream-checkboxes input:checked"), function () {
-            streams.push($(this).val());
-        });
-        data.stream = streams;
+
+        data.stream = _.pluck(pills.items(), 'display_value');
 
         channel.post({
             url: "/json/invites",
@@ -146,19 +135,8 @@ exports.launch = function () {
         overlay: $('#invite-user'),
         on_close: function () {
             hashchange.exit_overlay();
+            pills.clear();
         },
-    });
-};
-
-exports.initialize = function () {
-    $(document).on('click', '.invite_check_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', true);
-        e.preventDefault();
-    });
-
-    $(document).on('click', '.invite_uncheck_all_button', function (e) {
-        $('#streams_to_add :checkbox').prop('checked', false);
-        e.preventDefault();
     });
 };
 

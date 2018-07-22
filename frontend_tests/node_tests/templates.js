@@ -820,23 +820,6 @@ run_test('intro_reply_hotspot', () => {
     assert($(html).hasClass('hotspot-message'));
 });
 
-run_test('invite_subscription', () => {
-    var args = {
-        streams: [
-            {
-                name: "devel",
-            },
-            {
-                name: "social",
-            },
-        ],
-    };
-    var html = render('invite_subscription', args);
-
-    var input = $(html).find("label:first");
-    assert.equal(input.text().trim(), "devel");
-});
-
 run_test('single_message', () => {
     var message =  {
         msg: {

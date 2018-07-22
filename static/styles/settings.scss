@@ -1091,6 +1091,11 @@ input[type=checkbox].inline-block {
     outline: none;
 }
 
+#invite_user_form .streams_to_add_container .pill-container {
+    display: block;
+}
+
+#invite_user_form .streams_to_add_container .pill-container .input:first-child:empty::after,
 #user-groups .user-group .pill-container .input[contenteditable]:empty::after {
     content: attr(data-placeholder);
     opacity: 0.5;

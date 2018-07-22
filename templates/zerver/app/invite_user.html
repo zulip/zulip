@@ -31,7 +31,11 @@
                 {% endif %}
                 <div class="control-group">
                     <label class="control-label">{{ _('Streams they should join') }}</label>
-                    <div class="controls" id="streams_to_add"></div>
+                    <div class="streams_to_add_container controls">
+                        <div class="pill-container">
+                            <div class="input" contenteditable="true" id="streams_to_add" data-placeholder ="Add stream names..."></div>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
