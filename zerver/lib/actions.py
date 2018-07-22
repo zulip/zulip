@@ -2837,7 +2837,7 @@ def do_change_password(user_profile: UserProfile, password: str, commit: bool=Tr
         user_profile.save(update_fields=["password"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
-                                 modified_user=user_profile, event_type=RealmAuditLog.USER_CHANGE_PASSWORD,
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_PASSWORD_CHANGED,
                                  event_time=event_time)
 
 def do_change_full_name(user_profile: UserProfile, full_name: str,
@@ -2875,7 +2875,7 @@ def do_change_bot_owner(user_profile: UserProfile, bot_owner: UserProfile,
     user_profile.save()  # Can't use update_fields because of how the foreign key works.
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
-                                 modified_user=user_profile, event_type=RealmAuditLog.BOT_OWNER_CHANGED,
+                                 modified_user=user_profile, event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
                                  event_time=event_time)
 
     update_users = bot_owner_user_ids(user_profile)
@@ -2942,7 +2942,7 @@ def do_change_avatar_fields(user_profile: UserProfile, avatar_source: str) -> No
     user_profile.save(update_fields=["avatar_source", "avatar_version"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, modified_user=user_profile,
-                                 event_type=RealmAuditLog.USER_CHANGE_AVATAR_SOURCE,
+                                 event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
                                  extra_data={'avatar_source': avatar_source},
                                  event_time=event_time)
 

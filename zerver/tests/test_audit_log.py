@@ -36,7 +36,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         password = 'test1'
         do_change_password(user, password)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_CHANGE_PASSWORD,
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_PASSWORD_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertIsNone(validate_password(password, user))
 
@@ -58,7 +58,7 @@ class TestRealmAuditLog(ZulipTestCase):
         user = self.example_user('hamlet')
         avatar_source = u'G'
         do_change_avatar_fields(user, avatar_source)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_CHANGE_AVATAR_SOURCE,
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_AVATAR_SOURCE_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(avatar_source, user.avatar_source)
 
@@ -88,7 +88,7 @@ class TestRealmAuditLog(ZulipTestCase):
         bot = self.notification_bot()
         bot_owner = self.example_user('hamlet')
         do_change_bot_owner(bot, bot_owner, admin)
-        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.BOT_OWNER_CHANGED,
+        self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_BOT_OWNER_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(bot_owner, bot.bot_owner)
 
