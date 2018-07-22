@@ -73,6 +73,12 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
             # Dev-only message; no translation needed.
             raise StripeError(
                 "Missing Stripe config. See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
+
+        if not Plan.objects.exists():
+            # Dev-only message; no translation needed.
+            raise StripeError(
+                "Plan objects not created. Please run ./manage.py setup_stripe")
+
         try:
             return func(*args, **kwargs)
         except stripe.error.StripeError as e:
