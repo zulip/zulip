@@ -69,7 +69,7 @@ run_test('scroll_element_into_container', () => {
     }());
 
     const elem1 = {
-        height: () => 25,
+        innerHeight: () => 25,
         position: () => {
             return {
                 top: 0,
@@ -80,7 +80,7 @@ run_test('scroll_element_into_container', () => {
     assert.equal(container.scrollTop(), 3);
 
     const elem2 = {
-        height: () => 15,
+        innerHeight: () => 15,
         position: () => {
             return {
                 top: 250,
