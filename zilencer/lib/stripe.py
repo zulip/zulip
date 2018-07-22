@@ -112,9 +112,10 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
     event_time = timestamp_to_datetime(stripe_customer.created)
     RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_START, event_time=event_time)
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.REALM_STRIPE_INITIALIZED,
+        event_time=event_time)
     RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.CARD_ADDED, event_time=event_time)
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.REALM_CARD_ADDED, event_time=event_time)
     Customer.objects.create(
         realm=realm,
         stripe_customer_id=stripe_customer.id,
@@ -144,7 +145,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         RealmAuditLog.objects.create(
             realm=customer.realm,
             acting_user=customer.billing_user,
-            event_type=RealmAuditLog.PLAN_START,
+            event_type=RealmAuditLog.REALM_PLAN_STARTED,
             event_time=timestamp_to_datetime(stripe_subscription.created),
             extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count}))
 
@@ -152,7 +153,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         if seat_count != current_seat_count:
             RealmAuditLog.objects.create(
                 realm=customer.realm,
-                event_type=RealmAuditLog.PLAN_UPDATE_QUANTITY,
+                event_type=RealmAuditLog.PLAN_QUANTITY_UPDATED,
                 event_time=timestamp_to_datetime(stripe_subscription.created),
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
