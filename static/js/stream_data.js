@@ -312,6 +312,12 @@ exports.set_realm_default_streams = function (realm_default_streams) {
     });
 };
 
+exports.get_default_stream_names = function () {
+    var streams = _.map(default_stream_ids.keys(), exports.get_sub_by_id);
+    var default_stream_names = _.pluck(streams, 'name');
+    return default_stream_names;
+};
+
 exports.get_default_status = function (stream_name) {
     var stream_id = exports.get_stream_id(stream_name);
 

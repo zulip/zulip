@@ -407,7 +407,7 @@ run_test('stream_settings', () => {
 
 });
 
-run_test('get_non_default_stream_names', () => {
+run_test('default_stream_names', () => {
     var announce = {
         stream_id: 101,
         name: 'announce',
@@ -427,14 +427,25 @@ run_test('get_non_default_stream_names', () => {
         invite_only: true,
     };
 
+    var general = {
+        stream_id: 104,
+        name: 'general',
+        subscribed: true,
+        invite_only: false,
+    };
+
     stream_data.clear_subscriptions();
-    stream_data.set_realm_default_streams([announce]);
+    stream_data.set_realm_default_streams([announce, general]);
     stream_data.add_sub('announce', announce);
     stream_data.add_sub('public_stream', public_stream);
     stream_data.add_sub('private_stream', private_stream);
+    stream_data.add_sub('general', general);
 
     var names = stream_data.get_non_default_stream_names();
     assert.deepEqual(names, ['public', 'private']);
+
+    names = stream_data.get_default_stream_names();
+    assert.deepEqual(names, ['announce', 'general']);
 });
 
 run_test('delete_sub', () => {
