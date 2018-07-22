@@ -218,6 +218,18 @@ class StripeTest(ZulipTestCase):
 
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    def test_upgrade_with_tampered_plan(self) -> None:
+        self.login(self.user.email)
+        result = self.client_post("/upgrade/", {
+            'stripeToken': self.token,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': "invalid"
+        })
+        self.assert_in_success_response(["Something went wrong. Please contact"], result)
+
+    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
