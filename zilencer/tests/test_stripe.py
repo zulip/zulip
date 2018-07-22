@@ -117,9 +117,9 @@ class StripeTest(ZulipTestCase):
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=self.user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_START, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.CARD_ADDED, timestamp_to_datetime(self.customer_created)),
-            (RealmAuditLog.PLAN_START, timestamp_to_datetime(self.subscription_created)),
+            (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created)),
+            (RealmAuditLog.REALM_CARD_ADDED, timestamp_to_datetime(self.customer_created)),
+            (RealmAuditLog.REALM_PLAN_STARTED, timestamp_to_datetime(self.subscription_created)),
         ])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
@@ -183,19 +183,19 @@ class StripeTest(ZulipTestCase):
             }],
             prorate=True,
             tax_percent=0)
-        # Check that we have the PLAN_UPDATE_QUANTITY entry, and that we
+        # Check that we have the PLAN_QUANTITY_UPDATED entry, and that we
         # correctly handled the requires_billing_update field
         audit_log_entries = list(RealmAuditLog.objects.order_by('-id')
                                  .values_list('event_type', 'event_time',
                                               'requires_billing_update')[:4])[::-1]
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.STRIPE_START, timestamp_to_datetime(self.customer_created), False),
-            (RealmAuditLog.CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
-            (RealmAuditLog.PLAN_START, timestamp_to_datetime(self.subscription_created), False),
-            (RealmAuditLog.PLAN_UPDATE_QUANTITY, timestamp_to_datetime(self.subscription_created), True),
+            (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created), False),
+            (RealmAuditLog.REALM_CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
+            (RealmAuditLog.REALM_PLAN_STARTED, timestamp_to_datetime(self.subscription_created), False),
+            (RealmAuditLog.PLAN_QUANTITY_UPDATED, timestamp_to_datetime(self.subscription_created), True),
         ])
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.PLAN_UPDATE_QUANTITY).values_list('extra_data', flat=True).first()),
+            event_type=RealmAuditLog.PLAN_QUANTITY_UPDATED).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")

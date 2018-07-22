@@ -1984,10 +1984,10 @@ class RealmAuditLog(models.Model):
     requires_billing_update = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
-    STRIPE_START = 'stripe_start'
-    CARD_ADDED = 'card_added'
-    PLAN_START = 'plan_start'
-    PLAN_UPDATE_QUANTITY = 'plan_update_quantity'
+    REALM_STRIPE_INITIALIZED = 'realm_stripe_initialized'
+    REALM_CARD_ADDED = 'realm_card_added'
+    REALM_PLAN_STARTED = 'realm_plan_started'
+    PLAN_QUANTITY_UPDATED = 'plan_quantity_updated'
 
     USER_CREATED = 'user_created'
     USER_ACTIVATED = 'user_activated'
@@ -1995,17 +1995,17 @@ class RealmAuditLog(models.Model):
     USER_REACTIVATED = 'user_reactivated'
     USER_SOFT_ACTIVATED = 'user_soft_activated'
     USER_SOFT_DEACTIVATED = 'user_soft_deactivated'
-    USER_CHANGE_PASSWORD = 'user_change_password'
-    USER_CHANGE_AVATAR_SOURCE = 'user_change_avatar_source'
+    USER_PASSWORD_CHANGED = 'user_password_changed'
+    USER_AVATAR_SOURCE_CHANGED = 'user_avatar_source_changed'
     USER_FULL_NAME_CHANGED = 'user_full_name_changed'
     USER_EMAIL_CHANGED = 'user_email_changed'
     USER_TOS_VERSION_CHANGED = 'user_tos_version_changed'
     USER_API_KEY_CHANGED = 'user_api_key_changed'
+    USER_BOT_OWNER_CHANGED = 'user_bot_owner_changed'
 
     REALM_DEACTIVATED = 'realm_deactivated'
     REALM_REACTIVATED = 'realm_reactivated'
 
-    BOT_OWNER_CHANGED = 'bot_owner_changed'
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'
     SUBSCRIPTION_DEACTIVATED = 'subscription_deactivated'
