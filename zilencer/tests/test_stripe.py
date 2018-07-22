@@ -83,6 +83,14 @@ class StripeTest(ZulipTestCase):
         with self.assertRaisesRegex(StripeError, "Missing Stripe config."):
             foo()
 
+    def test_no_plan_objects(self) -> None:
+        Plan.objects.all().delete()
+        @catch_stripe_errors
+        def foo() -> None:
+            pass  # nocoverage
+        with self.assertRaisesRegex(StripeError, "Plan objects not created. Please run ./manage.py"):
+            foo()
+
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
