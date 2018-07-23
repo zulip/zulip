@@ -3,6 +3,19 @@
         "./node_modules/sorttable/sorttable.js",
         "./static/styles/activity.scss"
     ],
+    "archive": [
+        "./node_modules/xdate/src/xdate.js",
+        "./node_modules/perfect-scrollbar/dist/perfect-scrollbar.js",
+        "./node_modules/handlebars/dist/handlebars.runtime.js",
+        "./static/js/archive.js",
+        "./static/js/colorspace.js",
+        "./static/js/floating_recipient_bar.js",
+        "./static/js/timerender.js",
+        "./static/js/templates.js",
+        "./static/js/stream_color.js",
+        "./static/js/scroll_bar.js",
+        "./static/templates/compiled.js"
+    ],
     "portico": [
         "./static/js/portico/header.js",
         "./static/styles/portico-styles.scss"
