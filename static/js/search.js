@@ -21,7 +21,7 @@ function narrow_or_search_for_term(search_string) {
         // from the typeahead. base_query stores the query
         // corresponding to the existing pills.
         var base_query = search_pill.get_search_string_for_current_filter(
-            search_pill_widget.my_pill);
+            search_pill_widget.widget);
         var base_operators = Filter.parse(base_query);
         var suggestion_operator = Filter.parse(search_string);
         operators = base_operators.concat(suggestion_operator);
@@ -75,7 +75,7 @@ exports.initialize = function () {
             var suggestions;
             if (page_params.search_pills_enabled) {
                 var base_query = search_pill.get_search_string_for_current_filter(
-                    search_pill_widget.my_pill);
+                    search_pill_widget.widget);
                 suggestions = search_suggestion.get_suggestions(base_query, query);
             } else {
                 suggestions = search_suggestion.get_suggestions_legacy(query);
@@ -107,7 +107,7 @@ exports.initialize = function () {
             var result = narrow_or_search_for_term(search_string);
             if (page_params.search_pills_enabled) {
                 search_pill.append_search_string(search_string,
-                                                 search_pill_widget.my_pill);
+                                                 search_pill_widget.widget);
                 $("#search_query").focus();
             } else {
                 return result;

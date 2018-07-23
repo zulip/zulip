@@ -7,10 +7,10 @@ exports.initialize = function () {
         return;
     }
     var container = $('#search_arrows');
-    exports.my_pill = search_pill.create_pills(container);
+    exports.widget = search_pill.create_pills(container);
 
-    exports.my_pill.onPillRemove(function () {
-        var base_query = search_pill.get_search_string_for_current_filter(exports.my_pill);
+    exports.widget.onPillRemove(function () {
+        var base_query = search_pill.get_search_string_for_current_filter(exports.widget);
         var operators = Filter.parse(base_query);
         narrow.activate(operators, {trigger: 'search'});
     });
