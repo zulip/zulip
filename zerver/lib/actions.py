@@ -3986,7 +3986,7 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
     return round_to_2_significant_digits(average_weekly_traffic)
 
 def is_old_stream(stream_date_created: datetime.datetime) -> bool:
-    return (datetime.date.today() - stream_date_created.date()).days \
+    return (timezone_now() - stream_date_created).days \
         >= STREAM_TRAFFIC_CALCULATION_MIN_AGE_DAYS
 
 def encode_email_address(stream: Stream) -> str:
