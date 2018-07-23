@@ -17,6 +17,9 @@ set_global('md5', function (s) {
     return 'md5-' + s;
 });
 
+set_global('topic_data', {
+});
+
 var ct = composebox_typeahead;
 var noop = function () {};
 
@@ -92,6 +95,9 @@ var netherland_stream = {
     description: 'The Netherlands, city of dream.',
     stream_id: 3,
 };
+
+stream_data.add_sub('Sweden', sweden_stream);
+stream_data.add_sub('Denmark', denmark_stream);
 
 set_global('$', global.make_zjquery());
 
@@ -174,20 +180,17 @@ user_pill.get_user_ids = function () {
     return [];
 };
 
-run_test('add_topic', () => {
-    ct.add_topic('Denmark', 'civil fears');
-    ct.add_topic('devel', 'fading');
-    ct.add_topic('denmark', 'acceptance');
-    ct.add_topic('denmark', 'Acceptance');
-    ct.add_topic('Denmark', 'With Twisted Metal');
+run_test('topics_seen_for', () => {
+    topic_data.get_recent_names = (stream_id) => {
+        assert.equal(stream_id, denmark_stream.stream_id);
+        return ['With Twisted Metal', 'acceptance', 'civil fears'];
+    };
 
     assert.deepEqual(
         ct.topics_seen_for('Denmark'),
         ['With Twisted Metal', 'acceptance', 'civil fears']
     );
-});
 
-run_test('topics_seen_for', () => {
     // Test when the stream doesn't exist (there are no topics)
     assert.deepEqual(ct.topics_seen_for('non-existing-stream'), []);
 });
@@ -400,14 +403,12 @@ run_test('initialize', () => {
 
     var subject_typeahead_called = false;
     $('#subject').typeahead = function (options) {
-        // options.source()
-        ct.add_topic('Sweden', 'furniture');
-        ct.add_topic('Sweden', 'kronor');
-        ct.add_topic('Sweden', 'ice');
-        ct.add_topic('Sweden', 'more ice');
-        ct.add_topic('Sweden', 'even more ice');
-        ct.add_topic('Sweden', '<&>');
         var topics = ['<&>', 'even more ice', 'furniture', 'ice', 'kronor', 'more ice'];
+        topic_data.get_recent_names = (stream_id) => {
+            assert.equal(stream_id, sweden_stream.stream_id);
+            return topics;
+        };
+
         $('#stream').val('Sweden');
         var actual_value = options.source();
         // Topics should be sorted alphabetically, not by addition order.
@@ -435,7 +436,7 @@ run_test('initialize', () => {
         //
         // Notice that alphabetical sorting isn't managed by this sorter,
         // it is a result of the topics already being sorted after adding
-        // them with ct.add_topic().
+        // them with add_topic().
         options.query = 'furniture';
         actual_value = options.sorter(['furniture']);
         expected_value = ['furniture'];
@@ -909,6 +910,8 @@ run_test('initialize', () => {
     assert(focus_handler_called);
     assert(stream_one_called);
 });
+
+stream_data.clear_subscriptions();
 
 run_test('begins_typeahead', () => {
 
