@@ -158,6 +158,27 @@ def get_huddles_from_subscription(data: TableData, table: TableName) -> None:
             huddle_id = id_maps['recipient_to_huddle_map'][subscription['recipient']]
             id_map_to_list['huddle_to_user_list'][huddle_id].append(subscription['user_profile_id'])
 
+def fix_customprofilefield(data: TableData) -> None:
+    """
+    In CustomProfileField with 'field_type' like 'USER', the IDs need to be
+    re-mapped.
+    """
+    field_type_USER_id_list = []
+    for item in data['zerver_customprofilefield']:
+        if item['field_type'] == CustomProfileField.USER:
+            field_type_USER_id_list.append(item['id'])
+
+    for item in data['zerver_customprofilefieldvalue']:
+        if item['field_id'] in field_type_USER_id_list:
+            old_user_id_list = ujson.loads(item['value'])
+
+            new_id_list = re_map_foreign_keys_many_to_many_internal(
+                table='zerver_customprofilefieldvalue',
+                field_name='value',
+                related_table='user_profile',
+                old_id_list=old_user_id_list)
+            item['value'] = ujson.dumps(new_id_list)
+
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
     Returns the ids present in the current table
@@ -273,6 +294,51 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 item[field_name] = str(new_id)
             else:
                 item[field_name] = new_id
+
+def re_map_foreign_keys_many_to_many(data: TableData,
+                                     table: TableName,
+                                     field_name: Field,
+                                     related_table: TableName,
+                                     verbose: bool=False) -> None:
+    """
+    We need to assign new ids to rows during the import/export
+    process.
+
+    The tricky part is making sure that foreign key references
+    are in sync with the new ids, and this wrapper function does
+    the re-mapping only for ManyToMany fields.
+    """
+    for item in data[table]:
+        old_id_list = item['field_name']
+        new_id_list = re_map_foreign_keys_many_to_many_internal(
+            table, field_name, related_table, old_id_list, verbose)
+        item[field_name] = new_id_list
+        del item[field_name]
+
+def re_map_foreign_keys_many_to_many_internal(table: TableName,
+                                              field_name: Field,
+                                              related_table: TableName,
+                                              old_id_list: List[int],
+                                              verbose: bool=False) -> List[int]:
+    """
+    This is an internal function for tables with ManyToMany fields,
+    which takes the old ID list of the ManyToMany relation and returns the
+    new updated ID list.
+    """
+    lookup_table = id_maps[related_table]
+    new_id_list = []
+    for old_id in old_id_list:
+        if old_id in lookup_table:
+            new_id = lookup_table[old_id]
+            if verbose:
+                logging.info('Remapping %s %s from %s to %s' % (table,
+                                                                field_name + '_id',
+                                                                old_id,
+                                                                new_id))
+        else:
+            new_id = old_id
+        new_id_list.append(new_id)
+    return new_id_list
 
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
@@ -631,6 +697,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                         related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'field',
                         related_table="customprofilefield")
+    fix_customprofilefield(data)
     update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefieldvalue',
                      related_table="customprofilefieldvalue")
     bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefieldvalue')
