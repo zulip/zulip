@@ -3969,7 +3969,7 @@ def get_average_weekly_stream_traffic(stream_id: int, stream_date_created: datet
     try:
         stream_traffic = recent_traffic[stream_id]
     except KeyError:
-        return 0
+        stream_traffic = 0
 
     stream_age = (timezone_now() - stream_date_created).days
 
