@@ -2069,16 +2069,20 @@ class EventsRegisterTest(ZulipTestCase):
             ('is_announcement_only', check_bool),
             ('in_home_view', check_bool),
             ('name', check_string),
+            ('audible_notifications', check_bool),
+            ('email_notifications', check_bool),
             ('desktop_notifications', check_bool),
             ('push_notifications', check_bool),
-            ('audible_notifications', check_bool),
             ('stream_id', check_int),
             ('history_public_to_subscribers', check_bool),
+            ('pin_to_top', check_bool),
+            ('stream_weekly_traffic', check_none_or(check_int)),
+            ('is_old_stream', check_bool),
         ]
         if include_subscribers:
             subscription_fields.append(('subscribers', check_list(check_int)))  # type: ignore
         subscription_schema_checker = check_list(
-            check_dict(subscription_fields),  # TODO: Can this be converted to check_dict_only?
+            check_dict_only(subscription_fields),
         )
         stream_create_schema_checker = self.check_events_dict([
             ('type', equals('stream')),
