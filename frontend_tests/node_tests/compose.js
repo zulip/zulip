@@ -213,7 +213,9 @@ run_test('validate', () => {
     initialize_pm_pill();
     add_content_to_compose_box();
 
+    // test validating private messages
     compose_state.set_message_type('private');
+
     compose_state.recipient('');
     assert(!compose.validate());
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify at least one valid recipient'));
@@ -234,6 +236,10 @@ run_test('validate', () => {
     people.add_in_realm(bob);
     compose_state.recipient('bob@example.com');
     assert(compose.validate());
+
+    page_params.realm_is_zephyr_mirror_realm = true;
+    assert(compose.validate());
+    page_params.realm_is_zephyr_mirror_realm = false;
 
     compose_state.set_message_type('stream');
     compose_state.stream_name('');
