@@ -335,8 +335,6 @@ function stream_matches_query(query, sub, attr) {
                     sub.data_temp_view === "true");
     return flag;
 }
-exports.stream_name_match_stream_ids = [];
-exports.stream_description_match_stream_ids = [];
 
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
@@ -348,8 +346,8 @@ exports.filter_table = function (query) {
         sub_row.addClass("active");
     }
 
-    exports.stream_name_match_stream_ids = [];
-    exports.stream_description_match_stream_ids = [];
+    var stream_name_match_stream_ids = [];
+    var stream_description_match_stream_ids = [];
     var others = [];
     var stream_id_to_stream_name = {};
     var widgets = {};
@@ -369,14 +367,14 @@ exports.filter_table = function (query) {
             $(row).removeClass("notdisplayed");
 
             stream_id_to_stream_name[sub.stream_id] = sub.name;
-            exports.stream_name_match_stream_ids.push(sub.stream_id);
+            stream_name_match_stream_ids.push(sub.stream_id);
 
             widgets[sub.stream_id] = $(row).detach();
         } else if (stream_matches_query(query, sub, 'description')) {
             $(row).removeClass("notdisplayed");
 
             stream_id_to_stream_name[sub.stream_id] = sub.name;
-            exports.stream_description_match_stream_ids.push(sub.stream_id);
+            stream_description_match_stream_ids.push(sub.stream_id);
 
             widgets[sub.stream_id] = $(row).detach();
         } else {
@@ -391,14 +389,14 @@ exports.filter_table = function (query) {
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
-    exports.stream_name_match_stream_ids.sort(sort_by_stream_name);
-    exports.stream_description_match_stream_ids.sort(sort_by_stream_name);
+    stream_name_match_stream_ids.sort(sort_by_stream_name);
+    stream_description_match_stream_ids.sort(sort_by_stream_name);
 
-    _.each(exports.stream_name_match_stream_ids, function (stream_id) {
+    _.each(stream_name_match_stream_ids, function (stream_id) {
         $('#subscriptions_table .streams-list').append(widgets[stream_id]);
     });
 
-    _.each(exports.stream_description_match_stream_ids, function (stream_id) {
+    _.each(stream_description_match_stream_ids, function (stream_id) {
         $('#subscriptions_table .streams-list').append(widgets[stream_id]);
     });
 
