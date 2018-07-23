@@ -14,7 +14,20 @@ function narrow_or_search_for_term(search_string) {
         return search_query_box.val();
     }
     ui_util.change_tab_to('#home');
-    var operators = Filter.parse(search_string);
+
+    var operators;
+    if (page_params.search_pills_enabled) {
+        // search_string only contains the suggestion selected
+        // from the typeahead. base_query stores the query
+        // corresponding to the existing pills.
+        var base_query = search_pill.get_search_string_for_current_filter(
+            search_pill_widget.widget);
+        var base_operators = Filter.parse(base_query);
+        var suggestion_operator = Filter.parse(search_string);
+        operators = base_operators.concat(suggestion_operator);
+    } else {
+        operators = Filter.parse(search_string);
+    }
     narrow.activate(operators, {trigger: 'search'});
 
     // It's sort of annoying that this is not in a position to
@@ -48,6 +61,7 @@ exports.update_button_visibility = function () {
 exports.initialize = function () {
     var search_query_box = $('#search_query');
     var searchbox_form = $('#searchbox_form');
+    var searchbox = $('#searchbox');
 
     // Data storage for the typeahead.
     // This maps a search string to an object with a "description" field.
@@ -58,7 +72,14 @@ exports.initialize = function () {
 
     search_query_box.typeahead({
         source: function (query) {
-            var suggestions = search_suggestion.get_suggestions(query);
+            var suggestions;
+            if (page_params.search_pills_enabled) {
+                var base_query = search_pill.get_search_string_for_current_filter(
+                    search_pill_widget.widget);
+                suggestions = search_suggestion.get_suggestions(base_query, query);
+            } else {
+                suggestions = search_suggestion.get_suggestions_legacy(query);
+            }
             // Update our global search_object hash
             search_object = suggestions.lookup_table;
             return suggestions.strings;
@@ -74,10 +95,28 @@ exports.initialize = function () {
         matcher: function () {
             return true;
         },
-        updater: narrow_or_search_for_term,
+        updater: function (search_string) {
+            // Order is important here. narrow_or_search_for_term
+            // gets a search string from existing pills and obtains
+            // existing operators. Newly selected suggestion is added
+            // to those operators. If narrow_or_search_for_term was
+            // called after append_search_string, the existing search
+            // pills at the time for calling that function would also
+            // have the newly selected suggestion, and appending it again
+            // would cause duplication.
+            var result = narrow_or_search_for_term(search_string);
+            if (page_params.search_pills_enabled) {
+                search_pill.append_search_string(search_string,
+                                                 search_pill_widget.widget);
+                $("#search_query").focus();
+            } else {
+                return result;
+            }
+        },
         sorter: function (items) {
             return items;
         },
+        stopAdvance: page_params.search_pills_enabled,
     });
 
     searchbox_form.on('compositionend', function () {
@@ -145,6 +184,18 @@ exports.initialize = function () {
             exports.update_button_visibility();
         }, 100);
     });
+
+    if (page_params.search_pills_enabled) {
+        // Uses jquery instead of pure css as the `:focus` event occurs on `#search_query`,
+        // while we want to add box-shadow to `#searchbox`. This could have been done
+        // with `:focus-within` CSS selector, but it is not supported in IE or Opera.
+        searchbox.on('focusin', function () {
+            searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
+        });
+        searchbox.on('focusout', function () {
+            searchbox.css({"box-shadow": "unset"});
+        });
+    }
 };
 
 exports.focus_search = function () {
@@ -153,7 +204,11 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
-    $('#search_query').select();
+    if (page_params.search_pills_enabled) {
+        $('#search_query').focus();
+    } else {
+        $('#search_query').select();
+    }
 };
 
 exports.clear_search = function () {

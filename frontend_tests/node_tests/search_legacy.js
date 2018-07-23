@@ -1,11 +1,7 @@
 set_global('page_params', {
-    search_pills_enabled: true,
+    search_pills_enabled: false,
 });
 zrequire('search');
-zrequire('search_pill');
-zrequire('util');
-zrequire('Filter', 'js/filter');
-zrequire('search_pill_widget');
 
 const noop = () => {};
 const return_true = () => true;
@@ -18,8 +14,7 @@ set_global('ui_util', {
     change_tab_to: noop,
 });
 set_global('narrow', {});
-
-search_pill.append_search_string = noop;
+set_global('Filter', {});
 
 global.patch_builtin('setTimeout', func => func());
 
@@ -60,17 +55,12 @@ run_test('initizalize', () => {
     const search_query_box = $('#search_query');
     const searchbox_form = $('#searchbox_form');
     const search_button = $('.search_button');
-    const searchbox = $('#searchbox');
 
     searchbox_form.on = (event, func) => {
         assert.equal(event, 'compositionend');
         search.is_using_input_method = false;
         func();
         assert(search.is_using_input_method);
-    };
-
-    search_pill.get_search_string_for_current_filter = function () {
-        return 'is:starred';
     };
 
     search_query_box.typeahead = (opts) => {
@@ -96,7 +86,7 @@ run_test('initizalize', () => {
             };
 
             /* Test source */
-            search_suggestion.get_suggestions = () => search_suggestions;
+            search_suggestion.get_suggestions_legacy = () => search_suggestions;
             const expected_source_value = search_suggestions.strings;
             const source = opts.source('ver');
             assert.equal(source, expected_source_value);
@@ -115,24 +105,20 @@ run_test('initizalize', () => {
         {
             let operators;
             let is_blurred;
-            let is_append_search_string_called;
             search_query_box.blur = () => {
                 is_blurred = true;
-            };
-            search_pill.append_search_string = () => {
-                is_append_search_string_called = true;
             };
             /* Test updater */
             const _setup = (search_box_val) => {
                 is_blurred = false;
-                is_append_search_string_called = false;
                 search_query_box.val(search_box_val);
+                Filter.parse = (search_string) => {
+                    assert.equal(search_string, search_box_val);
+                    return operators;
+                };
                 narrow.activate = (raw_operators, options) => {
                     assert.deepEqual(raw_operators, operators);
                     assert.deepEqual(options, {trigger: 'search'});
-                };
-                search_pill.get_search_string_for_current_filter = () => {
-                    return '';
                 };
             };
 
@@ -142,9 +128,8 @@ run_test('initizalize', () => {
                 operand: 'ver',
             }];
             _setup('ver');
-            opts.updater('ver');
+            assert.equal(opts.updater('ver'), 'ver');
             assert(is_blurred);
-            assert(is_append_search_string_called);
 
             operators = [{
                 negated: false,
@@ -152,15 +137,13 @@ run_test('initizalize', () => {
                 operand: 'Verona',
             }];
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
             assert(is_blurred);
-            assert(is_append_search_string_called);
 
             search.is_using_input_method = true;
             _setup('stream:Verona');
-            opts.updater('stream:Verona');
+            assert.equal(opts.updater('stream:Verona'), 'stream:Verona');
             assert(!is_blurred);
-            assert(is_append_search_string_called);
         }
     };
 
@@ -194,17 +177,22 @@ run_test('initizalize', () => {
             is_blurred = false;
             search_button.prop('disabled', false);
             search_query_box.val(search_box_val);
+            Filter.parse = (search_string) => {
+                assert.equal(search_string, search_box_val);
+                return operators;
+            };
             narrow.activate = (raw_operators, options) => {
                 assert.deepEqual(raw_operators, operators);
                 assert.deepEqual(options, {trigger: 'search'});
             };
-            search_pill.get_search_string_for_current_filter = () => {
-                return '';
-            };
         };
 
 
-        operators = [];
+        operators = [{
+            negated: false,
+            operator: 'search',
+            operand: '',
+        }];
         _setup('');
 
         ev.which = 15;
@@ -227,11 +215,7 @@ run_test('initizalize', () => {
         assert(is_blurred);
         assert(search_button.prop('disabled'));
 
-        operators = [{
-            negated: false,
-            operator: 'search',
-            operand: 'ver',
-        }];
+
         _setup('ver');
         search.is_using_input_method = true;
         func(ev);
@@ -261,18 +245,6 @@ run_test('initizalize', () => {
         }
     };
 
-    searchbox.on = (event, callback) => {
-        if (event === 'focusin') {
-            searchbox.css({"box-shadow": "unset"});
-            callback();
-            assert.deepEqual(searchbox.css(), {"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-        } else if (event === 'focusout') {
-            searchbox.css({"box-shadow": "inset 0px 0px 0px 2px hsl(204, 20%, 74%)"});
-            callback();
-            assert.deepEqual(searchbox.css(), {"box-shadow": "unset"});
-        }
-    };
-
     $('#search_exit').on = (event, callback) => {
         assert.equal(event, 'click');
         let is_deactivated = false;
@@ -292,10 +264,10 @@ run_test('initizalize', () => {
 });
 
 run_test('initiate_search', () => {
-    let is_searchbox_focused = false;
-    $('#search_query').focus = () => {
-        is_searchbox_focused = true;
+    let is_searchbox_selected = false;
+    $('#search_query').select = () => {
+        is_searchbox_selected = true;
     };
     search.initiate_search();
-    assert(is_searchbox_focused);
+    assert(is_searchbox_selected);
 });

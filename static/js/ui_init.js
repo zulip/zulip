@@ -286,10 +286,13 @@ $(function () {
     overlays.initialize();
     invite.initialize();
     timerender.initialize();
-    tab_bar.initialize();
+    if (!page_params.search_pills_enabled) {
+        tab_bar.initialize();
+    }
     server_events.initialize();
     people.initialize();
     compose_pm_pill.initialize();
+    search_pill_widget.initialize();
     reload.initialize();
     user_groups.initialize();
     unread.initialize();

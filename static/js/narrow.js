@@ -245,6 +245,14 @@ exports.activate = function (raw_operators, opts) {
         hashchange.save_narrow(operators);
     }
 
+    if (page_params.search_pills_enabled && opts.trigger !== 'search') {
+        search_pill_widget.widget.clear(true);
+        _.each(operators, function (operator) {
+            var search_string = Filter.unparse([operator]);
+            search_pill.append_search_string(search_string, search_pill_widget.widget);
+        });
+    }
+
     // Put the narrow operators in the search bar.
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
@@ -654,6 +662,11 @@ exports.deactivate = function () {
     }
 
     compose_fade.update_message_list();
+
+    // clear existing search pills
+    if (page_params.search_pills_enabled) {
+        search_pill_widget.widget.clear(true);
+    }
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
