@@ -1,5 +1,5 @@
 .pill-container {
-    display: inline-block;
+    display: inline-flex;
 
     padding: 2px;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
@@ -11,12 +11,11 @@
 }
 
 .pill-container .pill {
-    position: relative;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
 
     height: 20px;
-    padding: 0px 18px 0px 3px;
-    margin: 1px 1px;
+    margin: 1px 2px;
 
     color: inherit;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
@@ -63,15 +62,14 @@
     outline: none;
 }
 
+.pill-container .pill .pill-value {
+    margin: 0 5px;
+}
+
 .pill-container .pill .exit {
-    content: "\D7";
-    position: absolute;
-    top: 0px;
-    right: 3px;
-
     opacity: 0.5;
-
     font-size: 1.3em;
+    margin-right: 3px;
 }
 
 .pill-container .pill:hover .exit {
@@ -86,14 +84,7 @@
 }
 
 .pm_recipient .pill-container {
-    position: relative;
-    width: 100%;
     padding: 0px 2px;
-
-    /* this is because the pills have a margin-bottom of 2px, so we want to negate
-       the height of the bottom row. */
-    margin: -1px 0px;
-
     border: none;
 
     display: flex;
@@ -116,12 +107,8 @@
 }
 
 .pill-image {
-    position: relative;
-    left: -3px;
     height: 20px;
     width: 20px;
-    margin-right: 2px;
-    bottom: 1px;
     border-radius: 4px 0 0 4px;
 }
 

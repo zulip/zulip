@@ -2,8 +2,8 @@
     {{#if has_image}}
     <img class="pill-image" src={{img_src}} />
     {{/if}}
-    {{ display_value }}
-    <div class='exit'>
-        &times;
+    <span class="pill-value">{{ display_value }}</span>
+    <div class="exit" aria-label="{{t Remove pill }}">
+        <span aria-hidden="true">&times;</span>
     </div>
 </div>
