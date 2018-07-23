@@ -11,11 +11,10 @@
         }
     </style>
 
-    {{ minified_js('archive', csp_nonce)|safe }}
     {{ render_bundle('translations', attrs='nonce="%s"' % (csp_nonce)) }}
     {{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
     {{ render_bundle('portico') }}
-    {{ render_bundle('archive-styles') }}
+    {{ render_bundle('archive') }}
 
 {% endblock %}
 
