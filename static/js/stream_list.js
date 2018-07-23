@@ -2,6 +2,8 @@ var stream_list = (function () {
 
 var exports = {};
 
+var has_scrolled = false;
+
 exports.update_count_in_dom = function (unread_count_elem, count) {
     var count_span = unread_count_elem.find('.count');
     var value_span = count_span.find('.value');
@@ -523,6 +525,13 @@ exports.initialize = function () {
         exports.toggle_filter_displayed(e);
     });
 
+    // check for user scrolls on streams list for first time
+    $('#stream-filters-container').on('scroll', function () {
+        has_scrolled = true;
+        // remove listener once user has scrolled
+        $(this).off('scroll');
+    });
+
     exports.stream_cursor = list_cursor({
         list: {
             container: $('#stream-filters-container'),
@@ -629,6 +638,36 @@ exports.scroll_stream_into_view = function (stream_li) {
     }
 
     scroll_util.scroll_element_into_container(stream_li, container);
+};
+
+exports.maybe_scroll_narrow_into_view = function () {
+    // we don't want to interfere with user scrolling once the page loads
+    if (has_scrolled) {
+        return;
+    }
+
+    var stream_li = stream_list.get_current_stream_li();
+    if (stream_li) {
+        stream_list.scroll_stream_into_view(stream_li);
+    }
+};
+
+exports.get_current_stream_li = function () {
+    var stream_id = topic_list.active_stream_id();
+
+    if (!stream_id) {
+        // stream_id is undefined in non-stream narrows
+        return;
+    }
+
+    var stream_li = stream_list.get_stream_li(stream_id);
+
+    if (!stream_li) {
+        blueslip.warn('No active stream_li found for defined id');
+        return;
+    }
+
+    return stream_li;
 };
 
 return exports;
