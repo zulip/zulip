@@ -85,7 +85,6 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
         if event['message']['type'] == 'private':
             raise NotImplementedError("Private messaging service not supported.")
 
-        service = get_service_profile(event['user_profile_id'], str(self.service_name))
         request_data = [("token", self.token),
                         ("team_id", event['message']['sender_realm_str']),
                         ("team_domain", email_to_domain(event['message']['sender_email'])),
@@ -96,7 +95,7 @@ class SlackOutgoingWebhookService(OutgoingWebhookServiceInterface):
                         ("user_name", event['message']['sender_full_name']),
                         ("text", event['command']),
                         ("trigger_word", event['trigger']),
-                        ("service_id", service.id),
+                        ("service_id", event['user_profile_id']),
                         ]
 
         return rest_operation, request_data

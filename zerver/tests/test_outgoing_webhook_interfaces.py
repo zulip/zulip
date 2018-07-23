@@ -76,8 +76,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
                                                    user_profile=None,
                                                    service_name='test-service')
 
-    @mock.patch('zerver.lib.outgoing_webhook.get_service_profile', return_value=mock_service)
-    def test_process_event(self, mock_get_service_profile: mock.Mock) -> None:
+    def test_process_event(self) -> None:
         rest_operation, request_data = self.handler.process_event(self.event)
 
         self.assertEqual(rest_operation['base_url'], 'http://example.domain.com')
@@ -92,7 +91,7 @@ class TestSlackOutgoingWebhookService(ZulipTestCase):
         self.assertEqual(request_data[7][1], "Sample User")  # user_name
         self.assertEqual(request_data[8][1], "@**test**")  # text
         self.assertEqual(request_data[9][1], "mention")  # trigger_word
-        self.assertEqual(request_data[10][1], mock_service.id)  # service_id
+        self.assertEqual(request_data[10][1], 12)  # user_profile_id
 
     def test_process_success(self) -> None:
         response = mock.Mock(spec=Response)
