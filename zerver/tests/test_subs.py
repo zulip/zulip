@@ -3348,7 +3348,7 @@ class StreamTrafficTest(ZulipTestCase):
             get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=10), {42: (98*10+9) // 7}), 98)
         # stream less than 7 days old
         self.assertEqual(
-            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=5), {42: 100}), -1)
+            get_average_weekly_stream_traffic(42, timezone_now() - timedelta(days=5), {42: 100}), None)
 
         # average traffic between 0 and 1
         self.assertEqual(
