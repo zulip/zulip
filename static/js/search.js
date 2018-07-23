@@ -204,7 +204,11 @@ exports.focus_search = function () {
 };
 
 exports.initiate_search = function () {
-    $('#search_query').select();
+    if (page_params.search_pills_enabled) {
+        $('#search_query').focus();
+    } else {
+        $('#search_query').select();
+    }
 };
 
 exports.clear_search = function () {
