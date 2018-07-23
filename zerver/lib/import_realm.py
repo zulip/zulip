@@ -20,12 +20,15 @@ from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend
+from zerver.lib.create_user import random_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
-    Attachment, get_system_bot, email_to_username, get_huddle_hash
+    Attachment, get_system_bot, email_to_username, get_huddle_hash, \
+    UserHotspot, MutedTopic, Service, UserGroup, UserGroupMembership, \
+    BotStorageData, BotConfigData
 
 # Code from here is the realm import code path
 
@@ -61,6 +64,13 @@ id_maps = {
     'attachment': {},
     'realmauditlog': {},
     'recipient_to_huddle_map': {},
+    'userhotspot': {},
+    'mutedtopic': {},
+    'service': {},
+    'usergroup': {},
+    'usergroupmembership': {},
+    'botstoragedata': {},
+    'botconfigdata': {},
 }  # type: Dict[str, Dict[int, int]]
 
 id_map_to_list = {
@@ -136,6 +146,14 @@ def create_subscription_events(data: TableData, table: TableName) -> None:
                                                    event_time=event_time,
                                                    event_type=RealmAuditLog.SUBSCRIPTION_CREATED))
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
+
+def fix_service_tokens(data: TableData, table: TableName) -> None:
+    """
+    The tokens in the services are created by 'random_api_key'.
+    As the tokens are unique, they should be re-created for the imports.
+    """
+    for item in data[table]:
+        item['token'] = random_api_key()
 
 def process_huddle_hash(data: TableData, table: TableName) -> None:
     """
@@ -227,7 +245,7 @@ def re_map_foreign_keys_internal(data_table: List[Record],
     '''
     We occasionally need to assign new ids to rows during the
     import/export process, to accommodate things like existing rows
-    already being in tables.  See bulk_import_client for more context.
+    already being in tables. See bulk_import_client for more context.
 
     The tricky part is making sure that foreign key references
     are in sync with the new ids, and this fixer function does
@@ -273,6 +291,36 @@ def re_map_foreign_keys_internal(data_table: List[Record],
                 item[field_name] = str(new_id)
             else:
                 item[field_name] = new_id
+
+def re_map_foreign_keys_many_to_many(data: TableData,
+                                     table: TableName,
+                                     field_name: Field,
+                                     related_table: TableName,
+                                     verbose: bool=False) -> None:
+    """
+    We need to assign new ids to rows during the import/export
+    process.
+
+    The tricky part is making sure that foreign key references
+    are in sync with the new ids, and this fixer function does
+    the re-mapping only for ManyToMany fields.
+    """
+    lookup_table = id_maps[related_table]
+    for item in data[table]:
+        new_id_list = []
+        for old_id in item[field_name]:
+            if old_id in lookup_table:
+                new_id = lookup_table[old_id]
+                if verbose:
+                    logging.info('Remapping %s %s from %s to %s' % (table,
+                                                                    field_name + '_id',
+                                                                    old_id,
+                                                                    new_id))
+            else:
+                new_id = old_id
+            new_id_list.append(new_id)
+        item[field_name] = new_id_list
+        del item[field_name]
 
 def fix_bitfield_keys(data: TableData, table: TableName, field_name: Field) -> None:
     for item in data[table]:
@@ -603,6 +651,50 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
         bulk_import_model(data, Huddle, 'zerver_huddle')
+
+    if 'zerver_userhotspot' in data:
+        fix_datetime_fields(data, 'zerver_userhotspot')
+        re_map_foreign_keys(data, 'zerver_userhotspot', 'user', related_table='user_profile')
+        update_model_ids(UserHotspot, data, 'zerver_userhotspot', 'userhotspot')
+        bulk_import_model(data, UserHotspot, 'zerver_userhotspot')
+
+    if 'zerver_mutedtopic' in data:
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'user_profile', related_table='user_profile')
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'stream', related_table='stream')
+        re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
+        update_model_ids(MutedTopic, data, 'zerver_mutedtopic', 'mutedtopic')
+        bulk_import_model(data, MutedTopic, 'zerver_mutedtopic')
+
+    if 'zerver_service' in data:
+        re_map_foreign_keys(data, 'zerver_service', 'user_profile', related_table='user_profile')
+        fix_service_tokens(data, 'zerver_service')
+        update_model_ids(Service, data, 'zerver_service', 'service')
+        bulk_import_model(data, Service, 'zerver_service')
+
+    if 'zerver_usergroup' in data:
+        re_map_foreign_keys(data, 'zerver_usergroup', 'realm', related_table='realm')
+        re_map_foreign_keys_many_to_many(data, 'zerver_usergroup',
+                                         'members', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_usergroup', 'usergroup')
+        bulk_import_model(data, UserGroup, 'zerver_usergroup')
+
+        re_map_foreign_keys(data, 'zerver_usergroupmembership',
+                            'user_group', related_table='usergroup')
+        re_map_foreign_keys(data, 'zerver_usergroupmembership',
+                            'user_profile', related_table='user_profile')
+        update_model_ids(UserGroupMembership, data, 'zerver_usergroupmembership',
+                         'usergroupmembership')
+        bulk_import_model(data, UserGroupMembership, 'zerver_usergroupmembership')
+
+    if 'zerver_botstoragedata' in data:
+        re_map_foreign_keys(data, 'zerver_botstoragedata', 'bot_profile', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_botstoragedata', 'botstoragedata')
+        bulk_import_model(data, BotStorageData, 'zerver_botstoragedata')
+
+    if 'zerver_botconfigdata' in data:
+        re_map_foreign_keys(data, 'zerver_botconfigdata', 'bot_profile', related_table='user_profile')
+        update_model_ids(UserGroup, data, 'zerver_botconfigdata', 'botconfigdata')
+        bulk_import_model(data, BotConfigData, 'zerver_botconfigdata')
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")

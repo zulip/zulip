@@ -19,7 +19,8 @@ from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     RealmDomain, Recipient, DefaultStream, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, CustomProfileField, \
     CustomProfileFieldValue, get_display_recipient, Attachment, get_system_bot, \
-    RealmAuditLog
+    RealmAuditLog, UserHotspot, MutedTopic, Service, UserGroup, \
+    UserGroupMembership, BotStorageData, BotConfigData
 from zerver.lib.parallel import run_parallel
 from typing import Any, Callable, Dict, List, Optional, Set, Tuple, \
     Iterable, Union
@@ -130,6 +131,7 @@ NON_EXPORTED_TABLES = {
     'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
+    'zerver_pushdevicetoken',
     'zerver_scheduledemail',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
@@ -163,16 +165,6 @@ NON_EXPORTED_TABLES = {
     'analytics_realmcount',
     'analytics_streamcount',
     'analytics_usercount',
-
-    # The fact that these are not exported is a bug
-    'zerver_botstoragedata',
-    'zerver_botconfigdata',
-    'zerver_mutedtopic',
-    'zerver_pushdevicetoken',
-    'zerver_service',
-    'zerver_usergroup',
-    'zerver_usergroupmembership',
-    'zerver_userhotspot',
 }
 
 IMPLICIT_TABLES = {
@@ -202,6 +194,7 @@ DATE_FIELDS = {
     'zerver_userpresence': ['timestamp'],
     'zerver_userprofile': ['date_joined', 'last_login', 'last_reminder'],
     'zerver_realmauditlog': ['event_time'],
+    'zerver_userhotspot': ['timestamp'],
 }  # type: Dict[TableName, List[Field]]
 
 def sanity_check_output(data: TableData) -> None:
@@ -544,6 +537,20 @@ def get_realm_config() -> Config:
     )
 
     Config(
+        table='zerver_usergroup',
+        model=UserGroup,
+        normal_parent=realm_config,
+        parent_key='realm__in',
+    )
+
+    Config(
+        table='zerver_usergroupmembership',
+        model=UserGroupMembership,
+        normal_parent=user_profile_config,
+        parent_key='user_group__in',
+    )
+
+    Config(
         custom_tables=[
             'zerver_userprofile_crossrealm',
         ],
@@ -584,6 +591,41 @@ def get_realm_config() -> Config:
         model=RealmAuditLog,
         normal_parent=user_profile_config,
         parent_key='modified_user__in',
+    )
+
+    Config(
+        table='zerver_userhotspot',
+        model=UserHotspot,
+        normal_parent=user_profile_config,
+        parent_key='user__in',
+    )
+
+    Config(
+        table='zerver_mutedtopic',
+        model=MutedTopic,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_service',
+        model=Service,
+        normal_parent=user_profile_config,
+        parent_key='user_profile__in',
+    )
+
+    Config(
+        table='zerver_botstoragedata',
+        model=BotStorageData,
+        normal_parent=user_profile_config,
+        parent_key='bot_profile__in',
+    )
+
+    Config(
+        table='zerver_botconfigdata',
+        model=BotConfigData,
+        normal_parent=user_profile_config,
+        parent_key='bot_profile__in',
     )
 
     # Some of these tables are intermediate "tables" that we

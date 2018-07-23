@@ -40,6 +40,19 @@ from zerver.lib.test_helpers import (
     use_s3_backend,
 )
 
+from zerver.lib.topic_mutes import (
+    add_topic_mute,
+)
+from zerver.lib.bot_lib import (
+    StateHandler,
+)
+from zerver.lib.bot_config import (
+    set_bot_config
+)
+from zerver.lib.actions import (
+    do_create_user,
+)
+
 from zerver.lib.test_runner import slow
 
 from zerver.models import (
@@ -56,7 +69,14 @@ from zerver.models import (
     CustomProfileFieldValue,
     RealmAuditLog,
     Huddle,
+    UserHotspot,
+    MutedTopic,
+    UserGroup,
+    UserGroupMembership,
+    BotStorageData,
+    BotConfigData,
     get_active_streams,
+    get_stream,
     get_stream_recipient,
     get_personal_recipient,
     get_huddle_hash,
@@ -481,6 +501,35 @@ class ImportExportTest(ZulipTestCase):
             self.example_email('cordelia'), huddle, 'test huddle message'
         )
 
+        # data to test import of hotspots
+        sample_user = self.example_user('hamlet')
+
+        UserHotspot.objects.create(
+            user=sample_user, hotspot='intro_streams'
+        )
+
+        # data to test import of muted topic
+        stream = get_stream(u'Verona', original_realm)
+        add_topic_mute(
+            user_profile=sample_user,
+            stream_id=stream.id,
+            recipient_id=get_stream_recipient(stream.id).id,
+            topic_name=u'Verona2')
+
+        # data to test import of botstoragedata and botconfigdata
+        bot_profile = do_create_user(
+            email="bot-1@zulip.com",
+            password="test",
+            realm=original_realm,
+            full_name="bot",
+            short_name="bot",
+            bot_type=UserProfile.EMBEDDED_BOT,
+            bot_owner=sample_user)
+        storage = StateHandler(bot_profile)
+        storage.put('some key', 'some value')
+
+        set_bot_config(bot_profile, 'entry 1', 'value 1')
+
         self._export_realm(original_realm)
 
         with patch('logging.info'):
@@ -580,6 +629,52 @@ class ImportExportTest(ZulipTestCase):
 
         assert_realm_values(get_huddle_message)
         self.assertEqual(get_huddle_message(imported_realm), 'test huddle message')
+
+        # test userhotspot
+        def get_user_hotspots(r: str) -> Set[str]:
+            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
+            hotspots = UserHotspot.objects.filter(user=user_profile)
+            user_hotspots = {hotspot.hotspot for hotspot in hotspots}
+            return user_hotspots
+
+        assert_realm_values(get_user_hotspots)
+
+        # test muted topics
+        def get_muted_topics(r: Realm) -> Set[str]:
+            user_profile = UserProfile.objects.get(realm=r, short_name='hamlet')
+            muted_topics = MutedTopic.objects.filter(user_profile=user_profile)
+            topic_names = {muted_topic.topic_name for muted_topic in muted_topics}
+            return topic_names
+
+        assert_realm_values(get_muted_topics)
+
+        # test usergroups
+        assert_realm_values(
+            lambda r: {group.name for group in UserGroup.objects.filter(realm=r)}
+        )
+
+        def get_user_membership(r: str) -> Set[str]:
+            usergroup = UserGroup.objects.get(realm=r, name='hamletcharacters')
+            usergroup_membership = UserGroupMembership.objects.filter(user_group=usergroup)
+            users = {membership.user_profile.email for membership in usergroup_membership}
+            return users
+
+        assert_realm_values(get_user_membership)
+
+        # test botstoragedata and botconfigdata
+        def get_botstoragedata(r: Realm) -> Dict[str, Any]:
+            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_storage_data = BotStorageData.objects.get(bot_profile=bot_profile)
+            return {'key': bot_storage_data.key, 'data': bot_storage_data.value}
+
+        assert_realm_values(get_botstoragedata)
+
+        def get_botconfigdata(r: Realm) -> Dict[str, Any]:
+            bot_profile = UserProfile.objects.get(full_name="bot", realm=r)
+            bot_config_data = BotConfigData.objects.get(bot_profile=bot_profile)
+            return {'key': bot_config_data.key, 'data': bot_config_data.value}
+
+        assert_realm_values(get_botconfigdata)
 
         # test messages
         def get_stream_messages(r: Realm) -> Message:
