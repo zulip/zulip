@@ -26,7 +26,7 @@ set_global('top_left_corner', {});
 set_global('ui_util', {});
 set_global('unread_ops', {});
 set_global('search_pill_widget', {
-    my_pill: {
+    widget: {
         clear: function () {return true;},
         appendValue: function () {return true;},
     },

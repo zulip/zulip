@@ -122,7 +122,7 @@ run_test('pills', () => {
     });
 
     compose_pm_pill.initialize();
-    assert(compose_pm_pill.my_pill);
+    assert(compose_pm_pill.widget);
 
     compose_pm_pill.set_from_typeahead(othello);
     compose_pm_pill.set_from_typeahead(hamlet);
@@ -139,7 +139,7 @@ run_test('pills', () => {
     test_create_item(create_item_handler);
 
     compose_pm_pill.set_from_emails('othello@example.com');
-    assert(compose_pm_pill.my_pill);
+    assert(compose_pm_pill.widget);
 
     assert(get_person_from_user_id_called);
     assert(pills_cleared);

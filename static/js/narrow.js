@@ -246,10 +246,10 @@ exports.activate = function (raw_operators, opts) {
     }
 
     if (page_params.search_pills_enabled && opts.trigger !== 'search') {
-        search_pill_widget.my_pill.clear(true);
+        search_pill_widget.widget.clear(true);
         _.each(operators, function (operator) {
             var search_string = Filter.unparse([operator]);
-            search_pill.append_search_string(search_string, search_pill_widget.my_pill);
+            search_pill.append_search_string(search_string, search_pill_widget.widget);
         });
     }
 
@@ -665,7 +665,7 @@ exports.deactivate = function () {
 
     // clear existing search pills
     if (page_params.search_pills_enabled) {
-        search_pill_widget.my_pill.clear(true);
+        search_pill_widget.widget.clear(true);
     }
 
     top_left_corner.handle_narrow_deactivated();
