@@ -345,6 +345,38 @@ exports.populate_stream_settings_left_panel = function () {
     $('#subscriptions_table .streams-list').html(html);
 };
 
+exports.get_filtered_and_sorted_stream_ids = function (query) {
+    // We may not be using this yet.  If we are, please remove
+    // this comment. :)
+    var sub_rows = stream_data.get_streams_for_settings_page();
+
+    var name_ids = [];
+    var desc_ids = [];
+    var names = {};
+
+    function sort_by_stream_name(a, b) {
+        var stream_a_name = names[a].toLocaleLowerCase();
+        var stream_b_name = names[b].toLocaleLowerCase();
+        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
+    }
+
+    _.each(sub_rows, function (sub) {
+        if (stream_matches_query(query, sub, 'name')) {
+            names[sub.stream_id] = sub.name;
+            name_ids.push(sub.stream_id);
+        } else if (stream_matches_query(query, sub, 'description')) {
+            names[sub.stream_id] = sub.name;
+            desc_ids.push(sub.stream_id);
+        }
+    });
+
+    name_ids.sort(sort_by_stream_name);
+    desc_ids.sort(sort_by_stream_name);
+
+    var stream_ids = name_ids.concat(desc_ids);
+    return stream_ids;
+};
+
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
