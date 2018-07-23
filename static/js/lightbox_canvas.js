@@ -158,6 +158,8 @@ var LightboxCanvas = (function () {
                 } else if (e.key === "z" || e.key === '-') {
                     funcs.setZoom(meta, '-');
                     funcs.displayImage(canvas, context, meta);
+                } else if (e.key === 'v') {
+                    overlays.close_overlay('lightbox');
                 }
                 e.preventDefault();
                 e.stopPropagation();
