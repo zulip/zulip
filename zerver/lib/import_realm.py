@@ -327,7 +327,7 @@ def re_map_foreign_keys_many_to_many(data: TableData,
     the re-mapping only for ManyToMany fields.
     """
     for item in data[table]:
-        old_id_list = item['field_name']
+        old_id_list = item[field_name]
         new_id_list = re_map_foreign_keys_many_to_many_internal(
             table, field_name, related_table, old_id_list, verbose)
         item[field_name] = new_id_list
