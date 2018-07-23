@@ -758,7 +758,7 @@ def build_custom_checkers(by_lang):
          'strip': '\n',
          'exclude': set(['zerver/webhooks/']),
          'description': 'Fix tab-based whitespace'},
-        {'pattern': r':["\[\{]',
+        {'pattern': r'":["\[\{]',
          'exclude': set(['zerver/webhooks/', 'zerver/tests/fixtures/']),
          'description': 'Require space after : in JSON'},
     ]  # type: RuleList
