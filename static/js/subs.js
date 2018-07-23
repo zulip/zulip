@@ -573,29 +573,11 @@ exports.change_state = (function () {
             // if the first argument is a valid number.
             } else if (/\d+/.test(hash.arguments[0])) {
                 var stream_row = row_for_stream_id(hash.arguments[0]);
-                var streams_list = $(".streams-list")[0];
 
                 get_active_data().row.removeClass("active");
                 stream_row.addClass("active");
 
-                if ($(".stream-row:not(.notdisplayed):first")[0] === stream_row[0]) {
-                    streams_list.scrollTop = 0;
-                }
-
-                if ($(".stream-row:not(.notdisplayed):last")[0] === stream_row[0]) {
-                    streams_list.scrollTop = streams_list.scrollHeight - $(".streams-list").height();
-                }
-
-                if (stream_row.position().top < 70) {
-                    streams_list.scrollTop -= streams_list.clientHeight / 2;
-                }
-
-                var dist_from_top = stream_row.position().top;
-                var total_dist = dist_from_top + stream_row[0].clientHeight;
-                var dist_from_bottom = streams_list.clientHeight - total_dist;
-                if (dist_from_bottom < -4) {
-                    streams_list.scrollTop += streams_list.clientHeight / 2;
-                }
+                scroll_util.scroll_element_into_container(stream_row, stream_row.parent());
 
                 setTimeout(function () {
                     if (hash.arguments[0] === get_active_data().id) {
