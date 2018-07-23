@@ -123,48 +123,72 @@ ALL_ZULIP_TABLES = {
 }
 
 NON_EXPORTED_TABLES = {
-    # These are known to either be altogether obsolete or
-    # simply inappropriate for exporting (e.g. contains transient
-    # data).
+    # These invitation/confirmation flow tables don't make sense to
+    # export, since invitations links will be broken by the server URL
+    # change anyway:
     'zerver_emailchangestatus',
     'zerver_multiuseinvite',
     'zerver_multiuseinvite_streams',
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
+
+    # When switching servers, clients will need to re-login and
+    # reregister for push notifications anyway.
     'zerver_pushdevicetoken',
-    'zerver_scheduledemail',
+
+    # We don't use these generated Django tables
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
-    # These are for unfinished features
-    'zerver_defaultstreamgroup',
-    'zerver_defaultstreamgroup_streams',
+
+    # These is used for scheduling future activity; it could make
+    # sense to export, but is relatively low value.
+    'zerver_scheduledemail',
     'zerver_scheduledmessage',
-    'zerver_submessage',
+
+    # These tables are related to a user's 2FA authentication
+    # configuration, which will need to be re-setup on the new server.
     'two_factor_phonedevice',
     'otp_static_staticdevice',
     'otp_static_statictoken',
     'otp_totp_totpdevice',
-    # These archive tables probably should not be exported (they are for internal correctness)
+
+    # These archive tables should not be exported (they are to support
+    # restoring content accidentally deleted due to software bugs in
+    # the retention policy feature)
     'zerver_archivedmessage',
     'zerver_archivedusermessage',
     'zerver_archivedattachment',
     'zerver_archivedattachment_messages',
 
-    # Social auth tables are not needed post-export
+    # Social auth tables are not needed post-export, since we don't
+    # use any of this state outside of a direct authentication flow.
     'social_auth_association',
     'social_auth_code',
     'social_auth_nonce',
     'social_auth_partial',
     'social_auth_usersocialauth',
 
-    # We will likely never want to migrate these tables
-    'analytics_fillstate',
+    # We will likely never want to migrate this table, since it's a
+    # total of all the realmcount values on the server.  Might need to
+    # recompute it after a fillstate import.
     'analytics_installationcount',
+
     # These analytics tables, however, should ideally be in the export.
-    'analytics_anomaly',
     'analytics_realmcount',
     'analytics_streamcount',
     'analytics_usercount',
+    # Fillstate will require some cleverness to do the right partial export.
+    'analytics_fillstate',
+    # This table isn't yet used for anything.
+    'analytics_anomaly',
+
+    # These are for unfinished features; we'll want to add them ot the
+    # export before they reach full production status.
+    'zerver_defaultstreamgroup',
+    'zerver_defaultstreamgroup_streams',
+    'zerver_submessage',
+
+    # For any tables listed below here, it's a bug that they are not present in the export.
 }
 
 IMPLICIT_TABLES = {
