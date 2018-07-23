@@ -11,6 +11,7 @@ import glob
 import logging
 import os
 import ujson
+import shutil
 import subprocess
 import tempfile
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
@@ -110,6 +111,7 @@ ALL_ZULIP_TABLES = {
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_userdataexport',
     'zerver_usergroup',
     'zerver_usergroupmembership',
     'zerver_userhotspot',
@@ -131,6 +133,7 @@ NON_EXPORTED_TABLES = {
     'zerver_preregistrationuser',
     'zerver_preregistrationuser_streams',
     'zerver_scheduledemail',
+    'zerver_userdataexport',
     'zerver_userprofile_groups',
     'zerver_userprofile_user_permissions',
     # These are for unfinished features
@@ -1305,6 +1308,19 @@ def do_export_user(user_profile: UserProfile, output_dir: Path) -> None:
     write_data_to_file(output_file=export_file, data=response)
     logging.info("Exporting messages")
     export_messages_single_user(user_profile, output_dir)
+
+def do_export_user_tarball(user_profile: UserProfile) -> Path:
+    output_dir = tempfile.mkdtemp(prefix="/tmp/zulip-export-")
+    do_export_user(user_profile, output_dir)
+    logging.info("Finished exporting to %s; tarring", output_dir)
+    tarball_path = output_dir.rstrip('/') + '.tar.gz'
+    subprocess.check_call(
+        ["tar", "-czf", tarball_path, os.path.basename(output_dir)],
+        cwd=os.path.dirname(output_dir)
+    )
+    logging.info("Tarball written to %s", tarball_path)
+    shutil.rmtree(output_dir)
+    return tarball_path
 
 def export_single_user(user_profile: UserProfile, response: TableData) -> None:
 

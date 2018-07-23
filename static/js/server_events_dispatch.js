@@ -441,6 +441,9 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_user_groups.reload();
         break;
+
+    case 'export_status':
+        settings_account.update_export_status(event.status);
     }
 };
 

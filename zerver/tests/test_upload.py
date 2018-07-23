@@ -1191,6 +1191,18 @@ class LocalStorageTest(UploadSerializeMixin, ZulipTestCase):
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assertEqual(len(b'zulip!'), uploaded_file.size)
 
+    def test_file_upload_local_from_path(self) -> None:
+        user_profile = self.example_user('hamlet')
+        path = os.path.abspath(__file__)
+
+        uri = zerver.lib.upload.upload_file_from_path(path, user_profile)
+        path_id = re.sub('/user_uploads/', '', uri)
+        file_path = os.path.join(settings.LOCAL_UPLOADS_DIR, 'files', path_id)
+        self.assertTrue(os.path.isfile(file_path))
+
+        uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
+        self.assertEqual(os.path.getsize(path), uploaded_file.size)
+
     def test_delete_message_image_local(self) -> None:
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")

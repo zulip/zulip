@@ -1686,6 +1686,30 @@ class UserActivityInterval(models.Model):
     start = models.DateTimeField('start time', db_index=True)  # type: datetime.datetime
     end = models.DateTimeField('end time', db_index=True)  # type: datetime.datetime
 
+class UserDataExport(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
+    start = models.DateTimeField('start', db_index=True, auto_now_add=True)  # type: datetime.datetime
+    end = models.DateTimeField('start', null=True, db_index=True)  # type: Optional[datetime.datetime]
+    file_path = models.TextField(db_index=True, null=True, unique=True)  # type: Optional[str]
+
+    @staticmethod
+    def export_running(user_id: int) -> bool:
+        user_data_export = UserDataExport.objects.filter(user_profile_id=user_id, end=None)
+        # FIXME: Do we want to automatically mark super stale exports as done?
+        # Can we sometimes reach a state where end time fails to get updated?
+        return user_data_export.exists()
+
+    @staticmethod
+    def export_finished(user_id: int, file_path: Optional[str]=None) -> None:
+        user_data_export = UserDataExport.objects.filter(user_profile_id=user_id).latest('start')
+        user_data_export.file_path = file_path
+        user_data_export.end = timezone_now()
+        user_data_export.save()
+
+    @staticmethod
+    def log_new_export(user_id: int) -> None:
+        UserDataExport.objects.create(user_profile_id=user_id)
+
 
 class UserPresence(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile

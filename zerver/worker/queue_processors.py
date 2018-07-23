@@ -4,7 +4,6 @@ from typing import Any, Callable, Dict, List, Mapping, Optional, cast, TypeVar, 
 import copy
 import signal
 from functools import wraps
-
 import smtplib
 import socket
 
@@ -14,9 +13,11 @@ from django.core.handlers.wsgi import WSGIRequest
 from django.core.handlers.base import BaseHandler
 from zerver.models import \
     get_client, get_system_bot, ScheduledEmail, PreregistrationUser, \
-    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile
+    get_user_profile_by_id, Message, Realm, Service, UserMessage, UserProfile, \
+    UserDataExport
 from zerver.lib.context_managers import lockfile
 from zerver.lib.error_notify import do_report_error
+from zerver.lib.export import do_export_user_tarball
 from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
@@ -24,8 +25,9 @@ from zerver.lib.notifications import handle_missedmessage_emails
 from zerver.lib.push_notifications import handle_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
-    internal_send_message, check_send_message, extract_recipients, \
-    render_incoming_message, do_update_embedded_data, do_mark_stream_messages_as_read
+    internal_send_message, internal_send_private_message, check_send_message, \
+    extract_recipients, render_incoming_message, do_update_embedded_data, \
+    do_mark_stream_messages_as_read
 from zerver.lib.url_preview import preview as url_preview
 from zerver.lib.digest import handle_digest_email
 from zerver.lib.send_email import send_future_email, send_email_from_dict, \
@@ -33,6 +35,7 @@ from zerver.lib.send_email import send_future_email, send_email_from_dict, \
 from zerver.lib.email_mirror import process_message as mirror_email
 from zerver.lib.streams import access_stream_by_id
 from zerver.decorator import JsonableError
+from zerver.tornado.event_queue import send_event
 from zerver.tornado.socket import req_redis_key, respond_send_message
 from confirmation.models import Confirmation, create_confirmation_link
 from zerver.lib.db import reset_queries
@@ -40,6 +43,7 @@ from zerver.lib.redis_utils import get_redis_client
 from zerver.lib.str_utils import force_str
 from zerver.context_processors import common_context
 from zerver.lib.outgoing_webhook import do_rest_call, get_outgoing_webhook_service_handler
+from zerver.lib.upload import upload_file_from_path
 from zerver.models import get_bot_services
 from zulip import Client
 from zulip_bots.lib import extract_query_without_mention
@@ -530,3 +534,31 @@ class DeferredWorker(QueueProcessingWorker):
                 (stream, recipient, sub) = access_stream_by_id(user_profile, stream_id,
                                                                require_active=False)
                 do_mark_stream_messages_as_read(user_profile, stream)
+
+        elif event['type'] == 'export_user_messages':
+            try:
+                user_profile = get_user_profile_by_id(event['user_profile_id'])
+                send_event({"type": "export_status", "status": "started"},
+                           [user_profile.id])
+
+                # Create export
+                tarball_path = do_export_user_tarball(user_profile)
+                upload_path = upload_file_from_path(tarball_path, user_profile)
+                os.remove(tarball_path)
+                # Notify user
+                content = """Your data has been exported and uploaded [here]({})""".format(upload_path)
+                internal_send_private_message(user_profile.realm,
+                                              get_system_bot(settings.NOTIFICATION_BOT),
+                                              user_profile,
+                                              content)
+
+            except Exception:
+                UserDataExport.export_finished(user_profile.id)
+                send_event({"type": "export_status", "status": "failure"},
+                           [user_profile.id])
+                raise
+
+            else:
+                UserDataExport.export_finished(user_profile.id, upload_path)
+                send_event({"type": "export_status", "status": "success"},
+                           [user_profile.id])

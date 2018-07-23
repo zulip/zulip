@@ -218,7 +218,23 @@
             </div>
         </div>
         <div class="inline-block">
-            <h3>{{t "Deactivate account" }}</h3>
+            <h3>{{t "Account options" }}</h3>
+            <form class="grid">
+                <div class="input-group">
+                    <p>
+                        Exports can potentially take a while to run. Clicking
+                        this button will start a new export of your messages.
+                        Once the export completes, you will be sent a link to
+                        the export file in a private message.
+                    </p>
+                    <div>
+                        <button type="submit" class="button rounded w-200 input-size" id="user_export_data">
+                            {{t 'Export my message history' }}
+                        </button>
+                        <div id="user_export_data_message" class="alert-notification"></div>
+                    </div>
+                </div>
+            </form>
             <form class="deactivate_account grid">
                 <div class="input-group">
                     <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
