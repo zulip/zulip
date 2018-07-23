@@ -256,9 +256,13 @@ exports.process_escape_key = function (e) {
             return true;
         }
 
+        if (page_params.search_pills_enabled && $('#searchbox').has(':focus')) {
+            $('#searchbox .pill').blur();
+            $('#searchbox #search_query').blur();
+        }
+
         // We pressed Esc and something was focused, and the composebox
         // wasn't open. In that case, we should blur the input.
-        // (this is almost certainly the searchbar)
         $("input:focus,textarea:focus").blur();
         return true;
     }
