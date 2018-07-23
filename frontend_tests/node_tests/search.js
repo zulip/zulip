@@ -292,10 +292,10 @@ run_test('initizalize', () => {
 });
 
 run_test('initiate_search', () => {
-    let is_searchbox_selected = false;
-    $('#search_query').select = () => {
-        is_searchbox_selected = true;
+    let is_searchbox_focused = false;
+    $('#search_query').focus = () => {
+        is_searchbox_focused = true;
     };
     search.initiate_search();
-    assert(is_searchbox_selected);
+    assert(is_searchbox_focused);
 });
