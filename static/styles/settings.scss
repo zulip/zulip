@@ -1,6 +1,12 @@
-#settings {
-    margin-top: 55px;
-    margin-left: 15px;
+#settings_page .modal-bg {
+    position: relative;
+    height: 95%;
+    border-radius: 4px;
+    padding: 0px;
+    width: 85%;
+    overflow: hidden;
+    max-width: 1200px;
+    max-height: 1000px;
 }
 
 label {
@@ -1147,7 +1153,7 @@ input[type=checkbox].inline-block {
 }
 
 /* -- new settings overlay -- */
-#settings_page {
+#settings_page .modal-page {
     height: 95vh;
     width: 97vw;
     max-width: 1024px;
@@ -1182,10 +1188,6 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .content-wrapper {
-    position: absolute;
-    left: 251px;
-    /* the width of the settings sidbar this is right of is 250px + 1px border. */
-    width: calc(100% - 250px - 1px);
     height: 100%;
     overflow: hidden;
 }
@@ -1342,9 +1344,6 @@ input[type=checkbox].inline-block {
 }
 
 #settings_page .sidebar .header {
-    height: auto;
-    position: relative;
-    width: calc(100% - 20px);
     padding: 10px;
     text-align: center;
     text-transform: uppercase;

@@ -131,22 +131,8 @@
     opacity: 1;
 }
 
-@media (max-width: 1130px) {
-    .drafts-container {
-        max-width: 60%;
-    }
-}
-
 @media (max-width: 500px) {
     .draft-row .draft-info-box .draft_controls {
         right: 0px;
-    }
-}
-
-@media (max-width: 700px) {
-    #draft_overlay .drafts-container {
-        height: 95%;
-        max-width: none;
-        width: 90%;
     }
 }
