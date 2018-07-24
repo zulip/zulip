@@ -3,11 +3,6 @@
 Zulip supports importing data from Gitter, including users, channels,
 messages, attachments, and avatars.
 
-!!! warn ""
-    These instructions require shell access to the Zulip server. If you'd like
-    to import a Gitter organization into the hosted zulipchat.com service,
-    contact support@zulipchat.com.
-
 First, you need to do some things in Gitter to setup the export:
 
 1. [Export your Gitter data](https://github.com/minrk/archive-gitter). You will
@@ -19,6 +14,10 @@ First, you need to do some things in Gitter to setup the export:
         **Note:** You'll need a gitter API token to export data. You can get
         this token by following the instructions in the
         [gitter documentation](https://developer.gitter.im/docs/).
+
+### Import into zulipchat.com
+
+Email support@zulipchat.com with `gitter_data.zip`.
 
 ### Import into a new Zulip server
 
