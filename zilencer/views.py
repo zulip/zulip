@@ -26,7 +26,7 @@ from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_stripe_customer, get_upcoming_invoice, payment_source, \
-    get_seat_count
+    get_seat_count, extract_current_subscription
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -205,25 +205,28 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context = {'admin_access': True}
 
     stripe_customer = get_stripe_customer(customer.stripe_customer_id)
+    subscription = extract_current_subscription(stripe_customer)
 
-    if stripe_customer.subscriptions:
-        subscription = stripe_customer.subscriptions.data[0]
+    if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
         seat_count = subscription.quantity
         # Need user's timezone to do this properly
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
+        upcoming_invoice = get_upcoming_invoice(customer.stripe_customer_id)
         renewal_amount = subscription.plan.amount * subscription.quantity / 100.
-    else:
-        plan_name = "Zulip Free"  # nocoverage -- no way to get here yet
-        renewal_date = ''  # nocoverage -- no way to get here yet
-        renewal_amount = 0  # nocoverage -- no way to get here yet
-
-    prorated_credits = 0
-    prorated_charges = get_upcoming_invoice(customer.stripe_customer_id).amount_due / 100. - renewal_amount
-    if prorated_charges < 0:
-        prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
-        prorated_charges = 0  # nocoverage -- no way to get here yet
+        prorated_credits = 0
+        prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
+        if prorated_charges < 0:
+            prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
+            prorated_charges = 0  # nocoverage
+    else:  # nocoverage -- no way to get here yet
+        plan_name = "Zulip Free"
+        renewal_date = ''
+        renewal_amount = 0
+        prorated_credits = 0
+        prorated_charges = 0
+        seat_count = 0
 
     payment_method = None
     source = payment_source(stripe_customer)

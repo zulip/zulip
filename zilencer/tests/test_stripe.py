@@ -13,7 +13,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count
+    get_seat_count, extract_current_subscription
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -232,6 +232,42 @@ class StripeTest(ZulipTestCase):
         # Test that inactive users aren't counted
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(self.realm), initial_count)
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_extract_current_subscription(self, mock_upcoming_invoice: mock.Mock,
+                                          mock_create_customer: mock.Mock) -> None:
+        customer_without_subscription = stripe.Customer.create()
+        self.assertIsNone(extract_current_subscription(customer_without_subscription))
+
+        customer_with_subscription = stripe.Customer.retrieve()
+        subscription = extract_current_subscription(customer_with_subscription)
+        self.assertEqual(subscription["id"], "sub_D7OTT8FZbOPxah")
+
+    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    def test_subscribe_customer_to_plan(self, mock_create_subscription: mock.Mock,
+                                        mock_create_customer: mock.Mock,
+                                        mock_retrieve_customer: mock.Mock) -> None:
+        customer_without_subscription = stripe.Customer.create()
+        Customer.objects.create(stripe_customer_id=customer_without_subscription.id,
+                                realm=self.user.realm, billing_user=self.user)
+        do_subscribe_customer_to_plan(customer_without_subscription, self.stripe_plan_id,
+                                      self.quantity, 0)
+
+        self.assertEqual(1, Customer.objects.filter(realm=self.realm,
+                                                    stripe_customer_id=customer_without_subscription.id,
+                                                    billing_user=self.user).count())
+        realm = get_realm("zulip")
+        self.assertTrue(realm.has_seat_based_plan)
+
+        customer_with_subscription = stripe.Customer.retrieve()
+        with self.assertRaisesRegex(AssertionError, "Customer already has a subscription."):
+            do_subscribe_customer_to_plan(customer_with_subscription, self.stripe_plan_id,
+                                          self.quantity, 0)
 
 class BillingUpdateTest(ZulipTestCase):
     def setUp(self) -> None:
