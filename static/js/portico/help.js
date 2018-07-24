@@ -20,13 +20,17 @@ function registerCodeSection($codeSection) {
 
 function highlight_current_article() {
     $('.help .sidebar a').removeClass('highlighted');
-    var path = window.location.href.match(/\/(help|api)\/.*/);
+    var path = window.location.pathname;
 
     if (!path) {
         return;
     }
 
-    var article = $('.help .sidebar a[href="' + path[0] + '"]');
+    var hash = window.location.hash;
+    var article = $('.help .sidebar a[href="' + path + hash + '"]');
+    if (!article.length) {
+        article = $('.help .sidebar a[href="' + path + '"]');
+    }
     // Highlight current article link and the heading of the same
     article.closest('ul').css('display', 'block');
     article.addClass('highlighted');
