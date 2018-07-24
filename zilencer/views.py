@@ -1,7 +1,9 @@
 from typing import Any, Dict, Optional, Union, cast
+import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
+from django.core import signing
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils import timezone
@@ -26,9 +28,11 @@ from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_stripe_customer, get_upcoming_invoice, payment_source, \
-    get_seat_count
+    get_seat_count, sign_string, unsign_string
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
+
+billing_logger = logging.getLogger('zilencer.stripe')
 
 def validate_entity(entity: Union[UserProfile, RemoteZulipServer]) -> None:
     if not isinstance(entity, RemoteZulipServer):
@@ -158,33 +162,55 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
     user = request.user
+    error_message = ""
+
     if Customer.objects.filter(realm=user.realm).exists():
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
-        stripe_customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
-        # TODO: the current way this is done is subject to tampering by the user.
-        seat_count = int(request.POST['seat_count'])
-        if seat_count < 1:
-            raise AssertionError('seat_count is less than 1')
-        do_subscribe_customer_to_plan(
-            stripe_customer=stripe_customer,
-            stripe_plan_id=Plan.objects.get(nickname=request.POST['plan']).stripe_plan_id,
-            seat_count=seat_count,
-            # TODO: billing address details are passed to us in the request;
-            # use that to calculate taxes.
-            tax_percent=0)
-        # TODO: check for errors and raise/send to frontend
-        return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
+        signed_seat_count = request.POST['signed_seat_count']
+        salt = request.POST['salt']
+        plan = request.POST['plan']
+
+        if plan not in ["annual", "monthly"]:
+            billing_logger.warning("Tampered plan during realm upgrade. User: %s, Realm: %s."
+                                   % (user.id, user.realm.id))
+            error_message = "Something went wrong. Please contact support@zulipchat.com"
+
+        try:
+            seat_count = int(unsign_string(signed_seat_count, salt))
+        except signing.BadSignature:
+            billing_logger.warning("Tampered seat count during realm upgrade. User: %s, Realm: %s."
+                                   % (user.id, user.realm.id))
+            error_message = "Something went wrong. Please contact support@zulipchat.com"
+
+        if not error_message:
+            stripe_customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
+            do_subscribe_customer_to_plan(
+                stripe_customer=stripe_customer,
+                stripe_plan_id=Plan.objects.get(nickname=plan).stripe_plan_id,
+                seat_count=seat_count,
+                # TODO: billing address details are passed to us in the request;
+                # use that to calculate taxes.
+                tax_percent=0)
+            # TODO: check for errors and raise/send to frontend
+            return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
+
+    seat_count = get_seat_count(user.realm)
+    signed_seat_count, salt = sign_string(str(seat_count))
 
     context = {
         'publishable_key': STRIPE_PUBLISHABLE_KEY,
         'email': user.email,
-        'seat_count': get_seat_count(user.realm),
+        'seat_count': seat_count,
+        'signed_seat_count': signed_seat_count,
+        'salt': salt,
         'plan': "Zulip Premium",
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
     }  # type: Dict[str, Any]
+    if error_message:
+        context["error_message"] = error_message
     return render(request, 'zilencer/upgrade.html', context=context)
 
 PLAN_NAMES = {

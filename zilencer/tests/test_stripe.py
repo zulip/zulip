@@ -3,6 +3,8 @@ import os
 from typing import Any
 import ujson
 
+from django.core import signing
+
 import stripe
 from stripe.api_resources.list_object import ListObject
 
@@ -13,7 +15,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count
+    get_seat_count, sign_string, unsign_string
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -42,6 +44,7 @@ class StripeTest(ZulipTestCase):
         self.stripe_plan_id = 'plan_D7Nh2BtpTvIzYp'
         self.subscription_created = 1529990751
         self.quantity = 8
+        self.signed_seat_count, self.salt = sign_string(str(self.quantity))
         Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=self.stripe_plan_id)
 
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
@@ -94,7 +97,8 @@ class StripeTest(ZulipTestCase):
         # Click "Make payment" in Stripe Checkout
         response = self.client_post("/upgrade/", {
             'stripeToken': self.token,
-            'seat_count': self.quantity,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
             'plan': Plan.CLOUD_ANNUAL})
         # Check that we created a customer and subscription in stripe
         mock_create_customer.assert_called_once_with(
@@ -146,7 +150,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
         # Check that non-admins can sign up and pay
         self.client_post("/upgrade/", {'stripeToken': self.token,
-                                       'seat_count': self.quantity,
+                                       'signed_seat_count': self.signed_seat_count,
+                                       'salt': self.salt,
                                        'plan': Plan.CLOUD_ANNUAL})
         # Check that the non-admin hamlet can still access /billing
         response = self.client_get("/billing/")
@@ -171,7 +176,8 @@ class StripeTest(ZulipTestCase):
         # Change the seat count while the user is going through the upgrade flow
         with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
             self.client_post("/upgrade/", {'stripeToken': self.token,
-                                           'seat_count': self.quantity,
+                                           'signed_seat_count': self.signed_seat_count,
+                                           'salt': self.salt,
                                            'plan': Plan.CLOUD_ANNUAL})
         # Check that the subscription call used the old quantity, not new_seat_count
         mock_create_subscription.assert_called_once_with(
@@ -197,6 +203,30 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.PLAN_QUANTITY_UPDATED).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
+
+    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    def test_upgrade_with_tampered_seat_count(self) -> None:
+        self.login(self.user.email)
+        result = self.client_post("/upgrade/", {
+            'stripeToken': self.token,
+            'signed_seat_count': "randomsalt",
+            'salt': self.salt,
+            'plan': Plan.CLOUD_ANNUAL
+        })
+        self.assert_in_success_response(["Something went wrong. Please contact"], result)
+
+    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
+    def test_upgrade_with_tampered_plan(self) -> None:
+        self.login(self.user.email)
+        result = self.client_post("/upgrade/", {
+            'stripeToken': self.token,
+            'signed_seat_count': self.signed_seat_count,
+            'salt': self.salt,
+            'plan': "invalid"
+        })
+        self.assert_in_success_response(["Something went wrong. Please contact"], result)
 
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
@@ -232,6 +262,14 @@ class StripeTest(ZulipTestCase):
         # Test that inactive users aren't counted
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(self.realm), initial_count)
+
+    def test_sign_string(self) -> None:
+        string = "123"
+        signed_string, salt = sign_string(string)
+        self.assertEqual(string, unsign_string(signed_string, salt))
+
+        with self.assertRaises(signing.BadSignature):
+            unsign_string(signed_string, "randomsalt")
 
 class BillingUpdateTest(ZulipTestCase):
     def setUp(self) -> None:

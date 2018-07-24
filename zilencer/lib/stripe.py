@@ -2,12 +2,13 @@ import datetime
 from functools import wraps
 import logging
 import os
-from typing import Any, Callable, Optional, TypeVar
+from typing import Any, Callable, Optional, TypeVar, Tuple
 import ujson
 
 from django.conf import settings
 from django.db import transaction
 from django.utils.translation import ugettext as _
+from django.core.signing import Signer
 import stripe
 
 from zerver.lib.exceptions import JsonableError
@@ -16,6 +17,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from zilencer.models import Customer, Plan
 from zproject.settings import get_secret
+from confirmation.models import generate_key
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
 stripe.api_key = get_secret('stripe_secret_key')
@@ -51,6 +53,15 @@ CallableT = TypeVar('CallableT', bound=Callable[..., Any])
 
 def get_seat_count(realm: Realm) -> int:
     return UserProfile.objects.filter(realm=realm, is_active=True, is_bot=False).count()
+
+def sign_string(string: str) -> Tuple[str, str]:
+    salt = generate_key()
+    signer = Signer(salt=salt)
+    return signer.sign(string), salt
+
+def unsign_string(signed_string: str, salt: str) -> str:
+    signer = Signer(salt=salt)
+    return signer.unsign(signed_string)
 
 class StripeError(JsonableError):
     pass
