@@ -80,8 +80,9 @@ class RemoveUnminifiedFilesMixin:
 
 class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
     def hashed_name(self, name: str, content: Optional[str]=None, filename: Optional[str]=None) -> str:
+        ext = os.path.splitext(name)[1]
         if (name.startswith("webpack-bundles") and
-                os.path.splitext(name)[1] in ['.js', '.css', '.map']):
+                ext in ['.js', '.css', '.map']):
             # Hack to avoid renaming already-hashnamed webpack bundles
             # when minifying; this was causing every bundle to have
             # two hashes appended to its name, one by webpack and one
@@ -90,6 +91,19 @@ class IgnoreBundlesManifestStaticFilesStorage(ManifestStaticFilesStorage):
             # manifest for django_webpack_loader to work.  So, we just
             # use a no-op hash function for these already-hashed
             # assets.
+            return name
+        if ext in ['.png', '.gif', '.jpg', '.svg']:
+            # Similarly, don't hash-rename image files; we only serve
+            # the original file paths (not the hashed file paths), and
+            # so the only effect of hash-renaming these is to increase
+            # the size of release tarballs with duplicate copies of thesex.
+            #
+            # One could imagine a future world in which we instead
+            # used the hashed paths for these; in that case, though,
+            # we should instead be removing the non-hashed paths.
+            return name
+        if ext in ['json', 'po', 'mo', 'mp3', 'ogg', 'html']:
+            # And same story for translation files, sound files, etc.
             return name
         return super().hashed_name(name, content, filename)
 
