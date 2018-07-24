@@ -894,41 +894,6 @@ PIPELINE = {
     'JAVASCRIPT': {},
 }
 
-# Useful reading on how this works is in
-# https://zulip.readthedocs.io/en/latest/subsystems/front-end-build-process.html
-JS_SPECS = {
-    # One of the main reason we are treating the following bundles separately
-    # from webpack is we want to reduce the webpack compile time since These
-    # files are very large in size and are already minified or being minified
-    # in the pipeline itself
-    # We also want to minify sockjs separately for the sockjs iframe transport
-    'sockjs': {
-        'source_filenames': ['third/sockjs/sockjs-0.3.4.js'],
-        'output_filename': 'min/sockjs-0.3.4.min.js'
-    },
-    # Even though we've moved the main KaTeX copy into Webpack, we
-    # also need KaTeX to be runnable directly via Node (Called from
-    # zerver/lib/tex.py which calls static/third/katex/cli.js.  Since
-    # our Webpack setup doesn't provide a good way to name the current
-    # version of a module, we use the legacy django-pipeline system
-    # for bundling KaTeX.
-    'katex': {
-        'source_filenames': [
-            'node_modules/katex/dist/katex.js',
-        ],
-        'output_filename': 'min/katex.js',
-    },
-    # The same legacy treatment is required for zxcvbn, in order to
-    # support the settings_account.js use case (where we don't have a
-    # good way to look up the path to the file).
-    'zxcvbn': {
-        'source_filenames': [
-            'node_modules/zxcvbn/dist/zxcvbn.js',
-        ],
-        'output_filename': 'min/zxcvbn.js'
-    },
-}
-
 if DEVELOPMENT:
     WEBPACK_STATS_FILE = os.path.join('var', 'webpack-stats-dev.json')
 else:
