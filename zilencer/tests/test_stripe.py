@@ -246,12 +246,6 @@ class StripeTest(ZulipTestCase):
         subscription = extract_current_subscription(customer_with_subscription)
         self.assertEqual(subscription["id"][:4], "sub_")
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
-    def test_subscribe_customer_to_second_plan(self, mock_retrieve_customer: mock.Mock) -> None:
-        with self.assertRaisesRegex(AssertionError, "Customer already has an active subscription."):
-            do_subscribe_customer_to_plan(stripe.Customer.retrieve(), self.stripe_plan_id,
-                                          self.quantity, 0)
-
 class BillingUpdateTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user = self.example_user("hamlet")
