@@ -3405,3 +3405,7 @@ class SpamTests(ZulipTestCase):
         admin_messages = get_user_messages(iago)
         self.assertEqual(notification_bot, spam_report_msg.sender)
         self.assertIn('spam_test', admin_messages[-1].content)
+
+        # Assert that spammer has been deactivated:
+        hamlet = self.example_user('hamlet')
+        self.assertFalse(hamlet.is_active)

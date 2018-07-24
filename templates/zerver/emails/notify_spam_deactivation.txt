@@ -1,0 +1,10 @@
+{{ _("Hi,") }}
+
+{% trans %}
+We just wanted to let you know that messages sent from your account were reported
+as spam and thus your Zulip account has been deactivated. If you have any questions,
+please contact us at  <{{ support_email }}>.
+{% endtrans %}
+
+{{ _("Best,") }}
+{{ _("Team Zulip") }}
