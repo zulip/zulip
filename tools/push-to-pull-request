@@ -30,6 +30,18 @@ if [ -z "$pr_id" ]; then
     usage
 fi
 
+if ! jq --version >/dev/null 2>&1; then
+    cat >&2 <<EOF
+error: not found: jq
+
+push-to-pull-request requires the \`jq\` utility; you should install it.
+Try:
+
+  sudo apt install jq
+EOF
+    exit 1
+fi
+
 remote_url="$(git config remote."$remote".url)"
 repo_fq="$(echo "$remote_url" | perl -lne 'print $1 if (
     m, ^ git\@github\.com:
