@@ -68,7 +68,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 
 ```
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
+sudo apt-get install libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev \
     python-dev python-virtualenv hunspell-en-us git \
@@ -132,7 +132,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 ```
 sudo add-apt-repository ppa:tabbott/zulip
 sudo apt-get update
-sudo apt-get install closure-compiler libfreetype6-dev libffi-dev \
+sudo apt-get install libfreetype6-dev libffi-dev \
     memcached rabbitmq-server libldap2-dev redis-server \
     postgresql-server-dev-all libmemcached-dev python3-dev python-dev \
     hunspell-en-us git yui-compressor \
@@ -158,7 +158,7 @@ git remote add -f upstream https://github.com/zulip/zulip.git
 sudo dnf install libffi-devel memcached rabbitmq-server \
     openldap-devel python-devel redis postgresql-server \
     postgresql-devel postgresql libmemcached-devel freetype-devel \
-    yuicompressor closure-compiler gettext
+    yuicompressor gettext
 ```
 
 Now continue with the [Common to Fedora/CentOS](#common-to-fedora-centos-instructions) instructions below.
@@ -200,8 +200,7 @@ sudo yum install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noa
 sudo yum install libffi-devel memcached rabbitmq-server openldap-devel \
     python-devel redis postgresql-server postgresql-devel postgresql \
     libmemcached-devel wget python-pip openssl-devel freetype-devel \
-    libjpeg-turbo-devel zlib-devel yuicompressor \
-    closure-compiler gettext
+    libjpeg-turbo-devel zlib-devel yuicompressor gettext
 
 # We need these packages to compile tsearch-extras
 sudo yum groupinstall "Development Tools"
