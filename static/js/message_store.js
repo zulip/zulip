@@ -70,7 +70,6 @@ exports.set_message_booleans = function (message) {
     message.mentioned_me_directly =  convert_flag('mentioned');
     message.collapsed = convert_flag('collapsed');
     message.alerted = convert_flag('has_alert_word');
-
     // Once we have set boolean flags here, the `flags` attribute is
     // just a distraction, so we delete it.  (All the downstream code
     // uses booleans.)
@@ -160,6 +159,7 @@ exports.add_message_metadata = function (message) {
         message.reactions = [];
     }
     stored_messages[message.id] = message;
+    message.spam_status = message.spam_type;
     return message;
 };
 

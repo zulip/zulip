@@ -344,8 +344,11 @@ exports.toggle_actions_popover = function (element, id) {
         var should_display_quote_and_reply = message.content !== '<p>(deleted)</p>';
         var sent_by_admin = people.get_person_from_user_id(message.sender_id).is_admin;
         var sent_by_bot = people.get_person_from_user_id(message.sender_id).is_bot;
-        var should_display_report_spam = page_params.report_spam_enabled && message.content !== '<p>(deleted)</p>' &&
-                !message.sent_by_me && !sent_by_admin && !sent_by_bot;
+        var should_display_report_spam = page_params.report_spam_enabled && !page_params.is_admin &&
+                message.content !== '<p>(deleted)</p>' && !message.sent_by_me && !sent_by_admin &&
+                !sent_by_bot && message.spam_status !== 2;
+        var should_display_confirm_spam = page_params.report_spam_enabled && page_params.is_admin &&
+                !sent_by_bot && !message.sent_by_me && message.spam_status !== 2;
 
         var should_display_delete_option = message_edit.get_deletability(message);
         var args = {
@@ -365,6 +368,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_edit_and_view_source: should_display_edit_and_view_source,
             should_display_quote_and_reply: should_display_quote_and_reply,
             should_display_report_spam: should_display_report_spam,
+            should_display_confirm_spam: should_display_confirm_spam,
         };
 
         var ypos = elt.offset().top;
@@ -888,7 +892,17 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.report_spam', function (e) {
         var msgid = $(e.currentTarget).data('message-id');
         popovers.hide_actions_popover();
-        message_edit.report_spam(msgid);
+        var message = message_store.get(msgid);
+        var message_link = narrow.by_conversation_and_time_uri(message, true);
+        message_edit.report_spam(message_link, msgid);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
+    $('body').on('click', '.confirm_spam', function (e) {
+        var msgid = $(e.currentTarget).data('message-id');
+        popovers.hide_actions_popover();
+        message_edit.confirm_spam(msgid);
         e.stopPropagation();
         e.preventDefault();
     });

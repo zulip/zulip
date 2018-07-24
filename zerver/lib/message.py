@@ -222,6 +222,7 @@ class MessageDict:
             recipient_type_id = message.recipient.type_id,
             reactions = Reaction.get_raw_db_rows([message.id]),
             submessages = SubMessage.get_raw_db_rows([message.id]),
+            spam_type=message.spam_type,
         )
 
     @staticmethod
@@ -243,6 +244,7 @@ class MessageDict:
             'sender_id',
             'sending_client__name',
             'sender__realm_id',
+            'spam_type',
         ]
         messages = Message.objects.filter(id__in=needed_ids).values(*fields)
 
@@ -276,6 +278,7 @@ class MessageDict:
             recipient_type_id = row['recipient__type_id'],
             reactions=row['reactions'],
             submessages=row['submessages'],
+            spam_type=row['spam_type'],
         )
 
     @staticmethod
@@ -296,7 +299,8 @@ class MessageDict:
             recipient_type: int,
             recipient_type_id: int,
             reactions: List[Dict[str, Any]],
-            submessages: List[Dict[str, Any]]
+            submessages: List[Dict[str, Any]],
+            spam_type: int,
     ) -> Dict[str, Any]:
 
         obj = dict(
@@ -361,6 +365,7 @@ class MessageDict:
         obj['reactions'] = [ReactionDict.build_dict_from_raw_db_row(reaction)
                             for reaction in reactions]
         obj['submessages'] = submessages
+        obj['spam_type'] = spam_type
         return obj
 
     @staticmethod

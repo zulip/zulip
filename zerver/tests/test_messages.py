@@ -3375,7 +3375,11 @@ class SpamTests(ZulipTestCase):
 
     @override_settings(SPAM_COUNT_THRESHOLD=2, SPAM_REGISTERED_THRESHOLD=30)
     def report_spam(self, message_id: int) -> HttpResponse:
-        return self.client_post("/json/messages/" + str(message_id) + "/report_spam")
+        data = {'message_link': 'link', 'message_id': str(message_id)}  # type: Dict[str, Any]
+        return self.client_post("/json/messages/report_spam", info=data)
+
+    def confirm_spam(self, message_id: int) -> HttpResponse:
+        return self.client_post('/json/messages/' + str(message_id) + '/confirm_spam')
 
     def test_report_spam(self) -> None:
 
@@ -3409,3 +3413,21 @@ class SpamTests(ZulipTestCase):
         # Assert that spammer has been deactivated:
         hamlet = self.example_user('hamlet')
         self.assertFalse(hamlet.is_active)
+
+    def test_confirm_spam(self) -> None:
+
+        stream_name = 'spam_stream'
+        user_names = ['hamlet', 'prospero', 'cordelia', 'iago']
+        non_admin_user_profiles = (self.example_user(name) for name in user_names if name != 'iago')
+        hamlet, prospero, cordelia, iago = (self.example_user(name) for name in user_names)
+        for user_profile in non_admin_user_profiles:
+            self.subscribe(user_profile, stream_name)
+            user_profile.save()
+
+        message_id = self.send_stream_message(hamlet.email, stream_name, 'spam_test')
+
+        self.login(iago.email)
+        result = self.confirm_spam(message_id)
+        self.assert_json_success(result)
+        msg = self.get_last_message()
+        self.assertEqual('(Deleted as spam)', msg.content)

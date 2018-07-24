@@ -429,6 +429,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         ui.remove_message(msg_id);
         break;
 
+    case 'spam_update':
+        message_edit.update_spam_status(event);
+        break;
+
     case 'user_group':
         if (event.op === 'add') {
             user_groups.add(event.group);

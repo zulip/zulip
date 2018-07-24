@@ -1,0 +1,16 @@
+<div id="confirm_spam_modal" class="modal modal-bg hide new-style" tabindex="-1" role="dialog" aria-labelledby="confirm_spam_modal_label" aria-hidden="true">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="{{ _('Close') }}"><span aria-hidden="true">&times;</span></button>
+        <h3 id="confirm_spam_modal_label">{{ _("Confirm spam") }} </h3>
+    </div>
+    <div class="modal-body">
+        <div class="content">
+            <p><strong>{{ _("Are you sure you want to confirm spam?") }}</strong></p>
+        </div>
+        <div id="confirm-spam-error"></div>
+    </div>
+    <div class="modal-footer">
+        <button class="button rounded" data-dismiss="modal">{{ _("Cancel") }}</button>
+        <button class="button rounded btn-danger" id="do_confirm_spam_button">{{ _("Yes, confirm spam") }}</button>
+    </div>
+</div>

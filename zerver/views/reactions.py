@@ -6,7 +6,8 @@ from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
 from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy, \
     do_remove_reaction, do_remove_reaction_legacy, internal_send_private_message, \
-    do_deactivate_user, do_add_spam_report
+    do_deactivate_user, do_add_spam_report, get_user_info_for_message_updates, \
+    render_incoming_message, do_update_message, do_confirm_spam
 from zerver.lib.emoji import check_emoji_request, check_valid_emoji, \
     emoji_name_to_emoji_code
 from zerver.lib.message import access_message
@@ -170,15 +171,18 @@ def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
 
 @has_request_variables
 def report_spam(request: HttpRequest, user_profile: UserProfile,
+                message_link: str=REQ(),
                 message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
 
     (message, user_message) = access_message(user_profile, message_id)
     realm = user_profile.realm
     report_spam_message_content = 'Hello, spam has been reported by {0}.\n\n' \
                                   'Sender: {1}\n\n' \
+                                  'Link to message: {2}\n\n' \
                                   'Message content: \n\n' \
-                                  '```quote\n{2}\n```'.format(user_profile.email,
+                                  '```quote\n{3}\n```'.format(user_profile.email,
                                                               message.sender.email,
+                                                              message_link,
                                                               message.content)
     for admin in realm.get_admin_users():
         internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT), admin,
@@ -197,5 +201,25 @@ def report_spam(request: HttpRequest, user_profile: UserProfile,
         send_email('zerver/emails/notify_spam_deactivation', to_user_id=message.sender.id,
                    from_name="Zulip Account Security", from_address=FromAddress.SUPPORT,
                    context=context)
+
+    return json_success()
+
+@has_request_variables
+def confirm_spam(request: HttpRequest, user_profile: UserProfile,
+                 message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+
+    (message, user_message) = access_message(user_profile, message_id)
+
+    do_confirm_spam(user_profile=user_profile, message=message)
+    content = "(Deleted as spam)"
+    user_info = get_user_info_for_message_updates(message.id)
+    prior_mention_user_ids = user_info['mention_user_ids']
+    rendered_content = render_incoming_message(message,
+                                               content,
+                                               user_info['message_user_ids'],
+                                               user_profile.realm)
+    mention_user_ids = message.mentions_user_ids
+    do_update_message(user_profile, message, None, "change_one", content, rendered_content,
+                      prior_mention_user_ids, mention_user_ids)
 
     return json_success()

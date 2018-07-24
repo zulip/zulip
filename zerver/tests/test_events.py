@@ -646,6 +646,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('submessages', check_list(None)),
                     ('timestamp', check_int),
                     ('type', check_string),
+                    ('spam_type', check_int),
                 ])),
             ])
             return schema_checker

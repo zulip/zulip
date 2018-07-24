@@ -1557,6 +1557,24 @@ def notify_reaction_update(user_profile: UserProfile, message: Message,
     ums = UserMessage.objects.filter(message=message.id)
     send_event(event, [um.user_profile_id for um in ums])
 
+
+def notify_spam_update(user_profile: UserProfile, message: Message) -> None:
+
+    user_dict = {'user_id': user_profile.id,
+                 'email': user_profile.email,
+                 'full_name': user_profile.full_name}
+
+    event = {'type': 'spam_update',
+             'user': user_dict,
+             'spam_type': message.spam_type,
+             'message_id': message.id}  # type: Dict[str, Any]
+
+    # Update the cached message since new spam report is added.
+    update_to_dict_cache([message])
+
+    ums = UserMessage.objects.filter(message=message.id)
+    send_event(event, [um.user_profile_id for um in ums])
+
 def do_add_reaction_legacy(user_profile: UserProfile, message: Message, emoji_name: str) -> None:
     (emoji_code, reaction_type) = emoji_name_to_emoji_code(user_profile.realm, emoji_name)
     reaction = Reaction(user_profile=user_profile, message=message,
@@ -1592,6 +1610,15 @@ def do_remove_reaction(user_profile: UserProfile, message: Message,
 def do_add_spam_report(user_profile: UserProfile, message: Message) -> None:
     report = SpamReport(reporter=user_profile, message=message)
     report.save()
+    if message.spam_type == 0:
+        message.spam_type = 1
+        message.save()
+    notify_spam_update(user_profile, message)
+
+def do_confirm_spam(user_profile: UserProfile, message: Message) -> None:
+    message.spam_type = 2
+    message.save()
+    notify_spam_update(user_profile, message)
 
 def do_send_typing_notification(notification: Dict[str, Any]) -> None:
     recipient_user_profiles = get_typing_user_profiles(notification['recipient'],

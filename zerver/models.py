@@ -1298,6 +1298,19 @@ class AbstractMessage(models.Model):
     has_image = models.BooleanField(default=False, db_index=True)  # type: bool
     has_link = models.BooleanField(default=False, db_index=True)  # type: bool
 
+    SPAM_NOT_REPORTED = 0
+    SPAM_REPORTED = 1
+    SPAM_CONFIRMED = 2
+
+    SPAM_TYPES = (
+        (SPAM_NOT_REPORTED, 'spam_not_reported'),
+        (SPAM_REPORTED, 'spam_reported'),
+        (SPAM_CONFIRMED, 'spam_confirmed'),
+    )
+
+    spam_type = models.PositiveSmallIntegerField(choices=SPAM_TYPES,
+                                                 default=SPAM_NOT_REPORTED)  # type: int
+
     class Meta:
         abstract = True
 

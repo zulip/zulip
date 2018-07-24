@@ -52,6 +52,10 @@ function get_editability(message, edit_limit_seconds_buffer) {
         return editability_types.NO;
     }
 
+    if (message.spam_type === 2) {
+        return editability_types.NO;
+    }
+
     if (page_params.realm_message_content_edit_limit_seconds === 0 && message.sent_by_me) {
         return editability_types.FULL;
     }
@@ -582,14 +586,16 @@ exports.delete_message = function (msg_id) {
     });
 };
 
-exports.report_spam = function (msg_id) {
+exports.report_spam = function (message_link, msg_id) {
     $("#report-spam-error").html('');
     $('#report_spam_modal').modal("show");
     $('#do_report_spam_button').off().on('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
         channel.post({
-            url: "/json/messages/" + msg_id + "/report_spam",
+            url: "/json/messages/report_spam",
+            data: {message_link: message_link,
+                   message_id: msg_id},
             success: function () {
                 $('#report_spam_modal').modal("hide");
             },
@@ -600,6 +606,31 @@ exports.report_spam = function (msg_id) {
         });
 
     });
+};
+
+exports.confirm_spam = function (msg_id) {
+    $("#confirm-spam-error").html('');
+    $('#confirm_spam_modal').modal("show");
+    $('#do_confirm_spam_button').off().on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        channel.post({
+            url: "/json/messages/" + msg_id + "/confirm_spam",
+            success: function () {
+                $('#confirm_spam_modal').modal("hide");
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error confirming spam"), xhr,
+                                $("#confirm-spam-error"));
+            },
+        });
+
+    });
+};
+
+exports.update_spam_status = function (event) {
+    var message = message_store.get(event.message_id);
+    message.spam_status = event.spam_type;
 };
 
 $(document).on('narrow_deactivated.zulip', function () {
