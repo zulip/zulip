@@ -27,8 +27,8 @@ from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_stripe_customer, get_upcoming_invoice, payment_source, \
-    get_seat_count, extract_current_subscription, sign_string, unsign_string
+    get_stripe_customer, get_upcoming_invoice, get_seat_count, \
+    extract_current_subscription, sign_string, unsign_string
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -249,9 +249,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         prorated_charges = 0
 
     payment_method = None
-    source = payment_source(stripe_customer)
-    if source is not None:
-        payment_method = "Card ending in %(last4)s" % {'last4': source.last4}
+    if stripe_customer.default_source is not None:
+        payment_method = "Card ending in %(last4)s" % {'last4': stripe_customer.default_source.last4}
 
     context.update({
         'plan_name': plan_name,

@@ -91,7 +91,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
 
 @catch_stripe_errors
 def get_stripe_customer(stripe_customer_id: str) -> stripe.Customer:
-    stripe_customer = stripe.Customer.retrieve(stripe_customer_id)
+    stripe_customer = stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"retrieve_customer": ', str(stripe_customer), ',']))  # nocoverage
     return stripe_customer
@@ -112,15 +112,6 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
         if stripe_subscription.status != "canceled":
             return stripe_subscription
     return None
-
-@catch_stripe_errors
-def payment_source(stripe_customer: stripe.Customer) -> Optional[stripe.Card]:
-    if stripe_customer.default_source is None:
-        return None  # nocoverage -- no way to get here yet
-    for source in stripe_customer.sources.data:
-        if source.id == stripe_customer.default_source:
-            return source
-    raise AssertionError("Default source not in sources.")
 
 @catch_stripe_errors
 def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
