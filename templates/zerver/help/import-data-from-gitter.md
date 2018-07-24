@@ -12,12 +12,12 @@ First, you need to do some things in Gitter to setup the export:
 
 1. [Export your Gitter data](https://github.com/minrk/archive-gitter). You will
    receive json files of the public rooms that you are a part of.
-   Select the file, `gitter_data.json`, of the room which you want to import to the
-   Zulip server.
+   Select the `gitter_data.json` file of the room which you want to import into
+   Zulip.
 
     !!! warn ""
-        **Note:** You need the gitter API token to export data. You can get the
-        this token by following the instructions mentioned in the
+        **Note:** You'll need a gitter API token to export data. You can get
+        this token by following the instructions in the
         [gitter documentation](https://developer.gitter.im/docs/).
 
 ### Import into a new Zulip server
@@ -64,3 +64,5 @@ you'd like for your imported Zulip organization.
 - This tool doesn't do any translation of the Gitter markdown into
   Zulip format markdown; additionally, Gitter's "issue mentions"
   aren't translated into anything yet.
+
+[upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
