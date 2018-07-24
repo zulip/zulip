@@ -14,6 +14,8 @@ os.environ["PYTHONUNBUFFERED"] = "y"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 os.environ["LC_ALL"] = "en_US.UTF-8"
+os.environ["LANG"] = "en_US.UTF-8"
+os.environ["LANGUAGE"] = "en_US.UTF-8"
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
