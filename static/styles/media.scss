@@ -167,7 +167,7 @@
         margin-left: 7px;
     }
 
-    #searchbox {
+    #searchbox, #searchbox_legacy {
         margin-left: 42px;
     }
 
@@ -219,6 +219,7 @@
     .navbar-search,
     #tab_bar,
     #searchbox,
+    #searchbox_legacy,
     #search_query,
     #tab_list li,
     #tab_list,
@@ -243,13 +244,15 @@
         margin-right: 115px;
     }
 
-    #searchbox .input-append .fa-search {
-        top: 5px;
-    }
+    #searchbox, #searchbox_legacy {
+        .input-append .fa-search {
+            top: 5px;
+        }
 
-    #searchbox .search_button,
-    #searchbox .search_button[disabled]:hover {
-        top: 2px;
+        .search_button,
+        .search_button[disabled]:hover {
+            top: 2px;
+        }
     }
 
     #tab_bar_underpadding {
