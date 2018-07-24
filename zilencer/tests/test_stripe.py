@@ -269,18 +269,18 @@ class StripeTest(ZulipTestCase):
                                           mock_retrieve_customer: mock.Mock) -> None:
         # Only the most basic test. In particular, doesn't include testing with a
         # canceled subscription, because we don't have a fixture for it.
-        customer_without_subscription = stripe.Customer.create()
+        customer_without_subscription = stripe.Customer.create()  # type: ignore # Mocked out function call
         self.assertIsNone(extract_current_subscription(customer_without_subscription))
 
-        customer_with_subscription = stripe.Customer.retrieve()
+        customer_with_subscription = stripe.Customer.retrieve()  # type: ignore # Mocked out function call
         subscription = extract_current_subscription(customer_with_subscription)
         self.assertEqual(subscription["id"][:4], "sub_")
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     def test_subscribe_customer_to_second_plan(self, mock_retrieve_customer: mock.Mock) -> None:
         with self.assertRaisesRegex(AssertionError, "Customer already has an active subscription."):
-            do_subscribe_customer_to_plan(stripe.Customer.retrieve(), self.stripe_plan_id,
-                                          self.quantity, 0)
+            do_subscribe_customer_to_plan(stripe.Customer.retrieve(),  # type: ignore # Mocked out function call
+                                          self.stripe_plan_id, self.quantity, 0)
 
     def test_sign_string(self) -> None:
         string = "abc"
