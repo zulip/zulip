@@ -4,11 +4,6 @@ Starting with Zulip 1.8, Zulip supports importing data from Slack,
 including users, channels, messages, attachments, avatars, custom
 emoji, and emoji reactions.
 
-!!! warn ""
-    These instructions require shell access to the Zulip server. If you'd like
-    to import a Slack organization into the hosted zulipchat.com service,
-    contact support@zulipchat.com.
-
 First, you need to do some things in Slack to setup the export:
 
 1. [Export your Slack data](https://my.slack.com/services/export). You will
@@ -21,6 +16,11 @@ First, you need to do some things in Slack to setup the export:
         for more information.
 
 2. [Generate a Slack API token](https://api.slack.com/custom-integrations/legacy-tokens).
+
+### Import into zulipchat.com
+
+Email support@zulipchat.com with `slack_data.zip` and the Slack API token
+generated above.
 
 ### Import into a new Zulip server
 
