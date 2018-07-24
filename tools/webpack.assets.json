@@ -14,11 +14,7 @@
         "./static/js/templates.js",
         "./static/js/stream_color.js",
         "./static/js/scroll_bar.js",
-        "./static/templates/compiled.js",
-        "./node_modules/katex/dist/katex.css",
-        "./static/styles/zulip.scss",
-        "./static/styles/media.scss",
-        "./static/styles/archive.scss"
+        "./static/templates/compiled.js"
     ],
     "portico": [
         "./static/js/portico/header.js",
@@ -74,5 +70,11 @@
     ],
     "translations": "./static/js/translations.js",
     "zxcvbn": "./node_modules/zxcvbn/dist/zxcvbn.js",
-    "app": "./static/js/bundles/app.js"
+    "app": "./static/js/bundles/app.js",
+    "archive-styles": [
+        "./node_modules/katex/dist/katex.css",
+        "./static/styles/zulip.scss",
+        "./static/styles/media.scss",
+        "./static/styles/archive.scss"
+    ]
 }
