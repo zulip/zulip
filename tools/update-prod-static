@@ -20,12 +20,9 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--prev-deploy', metavar='DIR',
-                    help='a previous deploy from which to reuse files if possible')
 parser.add_argument('--authors-not-required', action='store_true', default=False,
                     help='Authors files need not be updated')
 args = parser.parse_args()
-prev_deploy = args.prev_deploy
 
 os.chdir(settings.DEPLOY_ROOT)
 
@@ -52,8 +49,7 @@ run(['./tools/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
 run(['./tools/setup/build_pygments_data'], stdout=fp, stderr=fp)
 
 # Compile Handlebars templates and minify JavaScript.
-run(['./tools/minify-js'] + (['--prev-deploy', prev_deploy] if prev_deploy else []),
-    stdout=fp, stderr=fp)
+run(['./tools/minify-js'], stdout=fp, stderr=fp)
 
 # Copy the KaTeX files outside node_modules
 run(['mkdir', '-p', os.path.join(settings.STATIC_ROOT, 'node_modules/katex/dist/')],
@@ -97,9 +93,6 @@ run(['rm', '-rf', 'prod-static/source-map'], stdout=fp, stderr=fp)
 
 # Needed if PRODUCTION
 run(['mkdir', '-p', 'prod-static'], stdout=fp, stderr=fp)
-
-run(['mv', os.path.join(settings.STATIC_ROOT, 'source-map'), 'prod-static/source-map'],
-    stdout=fp, stderr=fp)
 
 # Move language_options.json to the production release
 run(['cp', '-aT', 'static/locale', os.path.join(settings.STATIC_ROOT, 'locale')],
