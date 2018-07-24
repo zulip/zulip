@@ -1257,6 +1257,14 @@ run_test('subscription_stream_privacy_modal', () => {
 
 
 run_test('subscription_table_body', () => {
+    // We are mostly deprecating template tests,
+    // but we try to make sure rendering does not
+    // crash.
+    render('subscription_table_body', {});
+});
+
+
+run_test('subscriptions', () => {
     var args = {
         subscriptions: [
             {
@@ -1280,8 +1288,8 @@ run_test('subscription_table_body', () => {
     };
 
     var html = '';
-    html += '<div id="subscriptions_table">';
-    html += render('subscription_table_body', args);
+    html += '<div>';
+    html += render('subscriptions', args);
     html += '</div>';
 
     var span = $(html).find(".stream-name:first");

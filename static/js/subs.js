@@ -336,6 +336,15 @@ function stream_matches_query(query, sub, attr) {
     return flag;
 }
 
+exports.populate_stream_settings_left_panel = function () {
+    var sub_rows = stream_data.get_streams_for_settings_page();
+    var template_data = {
+        subscriptions: sub_rows,
+    };
+    var html = templates.render('subscriptions', template_data);
+    $('#subscriptions_table .streams-list').html(html);
+};
+
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
@@ -482,13 +491,11 @@ exports.setup_page = function (callback) {
     }
 
     function populate_and_fill() {
-        var sub_rows = stream_data.get_streams_for_settings_page();
 
         $('#subscriptions_table').empty();
 
         var template_data = {
             can_create_streams: page_params.can_create_streams,
-            subscriptions: sub_rows,
             hide_all_streams: !should_list_all_streams(),
             max_name_length: page_params.stream_name_max_length,
             max_description_length: page_params.stream_description_max_length,
@@ -496,6 +503,8 @@ exports.setup_page = function (callback) {
 
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
+
+        exports.populate_stream_settings_left_panel();
         initialize_components();
         exports.actually_filter_streams();
         stream_create.set_up_handlers();
