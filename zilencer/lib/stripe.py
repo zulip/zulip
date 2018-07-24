@@ -108,7 +108,7 @@ def get_upcoming_invoice(stripe_customer_id: str) -> stripe.Invoice:
 def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
     if not stripe_customer.subscriptions:
         return None
-    for stripe_subscription in stripe_customer.subscriptions.data:
+    for stripe_subscription in stripe_customer.subscriptions:
         if stripe_subscription.status != "canceled":
             return stripe_subscription
     return None
