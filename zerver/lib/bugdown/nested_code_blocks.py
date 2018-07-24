@@ -41,10 +41,11 @@ class NestedCodeBlocksRendererTreeProcessor(markdown.treeprocessors.Treeprocesso
             parent = code_tag.family.parent  # type: Any
             grandparent = code_tag.family.grandparent  # type: Any
             if parent.tag == "p" and grandparent.tag == "li":
-                # if the parent (<p>) has no text, that means that the <code>
-                # element inside is its only child and thus, we can confidently
-                # say that this is a nested code block
-                if parent.text is None:
+                # if the parent (<p>) has no text, and no children,
+                # that means that the <code> element inside is its
+                # only thing inside the bullet, we can confidently say
+                # that this is a nested code block
+                if parent.text is None and len(list(parent)) == 1 and len(list(parent.itertext())) == 1:
                     nested_code_blocks.append(code_tag)
 
         return nested_code_blocks
