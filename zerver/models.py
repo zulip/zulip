@@ -1405,9 +1405,9 @@ class Reaction(models.Model):
       https://zulip.readthedocs.io/en/latest/subsystems/emoji.html
     """
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    message = models.ForeignKey(Message, on_delete=CASCADE)  # type:
+    message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
-    # Message The user-facing name for an emoji reaction.  With emoji
+    # The user-facing name for an emoji reaction.  With emoji
     # aliases, there may be multiple accepted names for a given glyph;
     # this field encodes which one the user selected.
     emoji_name = models.TextField()  # type: str
@@ -1614,12 +1614,12 @@ def get_old_unclaimed_attachments(weeks_ago: int) -> Sequence[Attachment]:
 
 class Subscription(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type:
-    # Recipient Whether the user has since unsubscribed.  We mark
-    # Subscription objects as inactive, rather than deleting them,
-    # when a user unsubscribes, so we can preseve user customizations
-    # like notification settings, stream color, etc., if the user
-    # later resubscribes.
+    recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
+    # Whether the user has since unsubscribed.  We mark Subscription
+    # objects as inactive, rather than deleting them, when a user
+    # unsubscribes, so we can preseve user customizations like
+    # notification settings, stream color, etc., if the user later
+    # resubscribes.
     active = models.BooleanField(default=True)  # type: bool
     # Whether the stream is muted.  TODO: Remove to !muted.
     in_home_view = models.NullBooleanField(default=True)  # type: Optional[bool]
