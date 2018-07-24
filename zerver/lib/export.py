@@ -106,6 +106,7 @@ ALL_ZULIP_TABLES = {
     'zerver_scheduledemail',
     'zerver_scheduledmessage',
     'zerver_service',
+    'zerver_spamreport',
     'zerver_stream',
     'zerver_submessage',
     'zerver_subscription',
@@ -144,6 +145,8 @@ NON_EXPORTED_TABLES = {
     # sense to export, but is relatively low value.
     'zerver_scheduledemail',
     'zerver_scheduledmessage',
+    'zerver_spamreport',
+    'zerver_submessage',
 
     # These tables are related to a user's 2FA authentication
     # configuration, which will need to be re-setup on the new server.
@@ -204,6 +207,7 @@ MESSAGE_TABLES = {
     # message tables get special treatment, because they're so big
     'zerver_message',
     'zerver_usermessage',
+    'zerver_spamreport',
     # zerver_reaction belongs here, since it's added late
     'zerver_reaction',
 }
@@ -212,6 +216,7 @@ DATE_FIELDS = {
     'zerver_attachment': ['create_time'],
     'zerver_message': ['last_edit_time', 'pub_date'],
     'zerver_realm': ['date_created'],
+    'zerver_spamreport': ['timestamp'],
     'zerver_stream': ['date_created'],
     'zerver_useractivity': ['last_visit'],
     'zerver_useractivityinterval': ['start', 'end'],

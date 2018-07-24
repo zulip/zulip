@@ -161,6 +161,7 @@ class HomeTest(ZulipTestCase):
             "realm_users",
             "realm_video_chat_provider",
             "realm_waiting_period_threshold",
+            "report_spam_enabled",
             "root_domain_uri",
             "save_stacktraces",
             "search_pills_enabled",

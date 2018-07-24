@@ -582,6 +582,26 @@ exports.delete_message = function (msg_id) {
     });
 };
 
+exports.report_spam = function (msg_id) {
+    $("#report-spam-error").html('');
+    $('#report_spam_modal').modal("show");
+    $('#do_report_spam_button').off().on('click', function (e) {
+        e.stopPropagation();
+        e.preventDefault();
+        channel.post({
+            url: "/json/messages/" + msg_id + "/report_spam",
+            success: function () {
+                $('#report_spam_modal').modal("hide");
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error reporting spam"), xhr,
+                                $("#report-spam-error"));
+            },
+        });
+
+    });
+};
+
 $(document).on('narrow_deactivated.zulip', function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {

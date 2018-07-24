@@ -92,6 +92,14 @@
         </a>
     </li>
 
+    {{#if should_display_report_spam}}
+    <li>
+        <a href="#" class="report_spam" data-message-id="{{message.id}}">
+            <i class="fa fa-exclamation" aria-hidden="true"></i> {{t "Report spam" }}
+        </a>
+    </li>
+    {{/if}}
+
     {{#if message.historical}}
     <li class="small">({{t "Message sent when you were not subscribed" }})</li>
     {{/if}}

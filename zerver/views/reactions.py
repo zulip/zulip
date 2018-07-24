@@ -1,16 +1,22 @@
 from django.http import HttpRequest, HttpResponse
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now as timezone_now
 
 from zerver.decorator import \
     has_request_variables, REQ, to_non_negative_int
 from zerver.lib.actions import do_add_reaction, do_add_reaction_legacy, \
-    do_remove_reaction, do_remove_reaction_legacy
+    do_remove_reaction, do_remove_reaction_legacy, internal_send_private_message, \
+    do_deactivate_user, do_add_spam_report
 from zerver.lib.emoji import check_emoji_request, check_valid_emoji, \
     emoji_name_to_emoji_code
 from zerver.lib.message import access_message
 from zerver.lib.request import JsonableError
 from zerver.lib.response import json_success
-from zerver.models import Message, Reaction, UserMessage, UserProfile
+from zerver.lib.send_email import send_email, FromAddress
+from zerver.models import Message, Reaction, UserMessage, UserProfile, \
+    get_system_bot, SpamReport
+from django.conf import settings
+import datetime
 
 from typing import Optional
 
@@ -159,5 +165,25 @@ def remove_reaction_legacy(request: HttpRequest, user_profile: UserProfile,
         raise JsonableError(_("Reaction does not exist"))
 
     do_remove_reaction_legacy(user_profile, message, emoji_name)
+
+    return json_success()
+
+@has_request_variables
+def report_spam(request: HttpRequest, user_profile: UserProfile,
+                message_id: int=REQ(converter=to_non_negative_int)) -> HttpResponse:
+
+    (message, user_message) = access_message(user_profile, message_id)
+    realm = user_profile.realm
+    report_spam_message_content = 'Hello, spam has been reported by {0}.\n\n' \
+                                  'Sender: {1}\n\n' \
+                                  'Message content: \n\n' \
+                                  '```quote\n{2}\n```'.format(user_profile.email,
+                                                              message.sender.email,
+                                                              message.content)
+    for admin in realm.get_admin_users():
+        internal_send_private_message(realm, get_system_bot(settings.NOTIFICATION_BOT), admin,
+                                      report_spam_message_content)
+
+    do_add_spam_report(user_profile=user_profile, message=message)
 
     return json_success()
