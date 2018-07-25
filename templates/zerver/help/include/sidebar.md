@@ -113,7 +113,7 @@
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import from Slack](/help/import-from-slack)
-* [Import data from Gitter](/help/import-data-from-gitter)
+* [Import from Gitter](/help/import-from-gitter)
 * [Import or export a Zulip organization](/help/import-or-export-a-zulip-organization)
 * [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)

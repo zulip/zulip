@@ -1,4 +1,4 @@
-# Import data from Gitter (beta)
+# Import from Gitter (beta)
 
 Zulip supports importing data from Gitter, including users, channels,
 messages, attachments, and avatars.
