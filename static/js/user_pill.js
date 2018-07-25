@@ -120,6 +120,7 @@ exports.set_up_typeahead_on_pills = function (input, pills, update_func) {
         },
         matcher: function (item) {
             var query = this.query.toLowerCase();
+            query = query.replace(/\u00A0/g, String.fromCharCode(32));
             return item.email.toLowerCase().indexOf(query) !== -1
                     || item.full_name.toLowerCase().indexOf(query) !== -1;
         },

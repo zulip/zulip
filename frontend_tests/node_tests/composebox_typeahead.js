@@ -539,6 +539,13 @@ run_test('initialize', () => {
         expected_value = [];
         assert.deepEqual(actual_value, expected_value);
 
+        // Adds a `no break-space` at the end. This should fail
+        // if there wasn't any logic replacing `no break-space`
+        // with normal space.
+        options.query = 'cordelia' + String.fromCharCode(160);
+        assert.equal(options.matcher(cordelia), true);
+        assert.equal(options.matcher(othello), false);
+
         var event = {
             target: '#doesnotmatter',
         };
