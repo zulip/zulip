@@ -60,7 +60,8 @@
 }
 
 @keyframes bounce {
-    0%, 100% {
+    0%,
+    100% {
         -webkit-transform: translateY(0px);
     }
 
@@ -276,5 +277,5 @@
 #hotspot_intro_reply_icon {
     position: relative;
     top: 50%;
-    transform: perspective(1px) translateY(-75%)
+    transform: perspective(1px) translateY(-75%);
 }

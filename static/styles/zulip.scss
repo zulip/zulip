@@ -1103,10 +1103,10 @@ td.pointer {
 
 .selected_message .messagebox-content {
     box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
-                     -1px -1px 0px 0px hsl(215, 47%, 50%),
-                      1px 1px 0px 0px hsl(215, 47%, 50%),
-                     -1px 1px 0px 0px hsl(215, 47%, 50%),
-                      1px -1px 0px 0px hsl(215, 47%, 50%);
+        -1px -1px 0px 0px hsl(215, 47%, 50%),
+        1px 1px 0px 0px hsl(215, 47%, 50%),
+        -1px 1px 0px 0px hsl(215, 47%, 50%),
+        1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
 .message_sender {
@@ -2005,7 +2005,7 @@ nav a .no-style {
 
     #search_query:focus {
         box-shadow: inset 0px 0px 0px 2px hsl(204, 20%, 74%);
-    }        
+    }
 
     .search_button,
     .search_button[disabled]:hover {
