@@ -1,5 +1,6 @@
 .pill-container {
     display: inline-flex;
+    flex-wrap: wrap;
 
     padding: 2px;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
@@ -87,9 +88,7 @@
     padding: 0px 2px;
     border: none;
 
-    display: flex;
     align-content: center;
-    flex-wrap: wrap;
 }
 
 .pm_recipient .pill-container .input {
