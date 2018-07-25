@@ -161,6 +161,9 @@ def remote_server_notify_push(request: HttpRequest, entity: Union[UserProfile, R
 
 @zulip_login_required
 def initial_upgrade(request: HttpRequest) -> HttpResponse:
+    if not settings.DEVELOPMENT:
+        return render(request, "404.html")
+
     user = request.user
     error_message = ""
 
