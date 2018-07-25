@@ -17,7 +17,9 @@ First, you need to do some things in Gitter to setup the export:
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with `gitter_data.zip`.
+Email support@zulipchat.com with `gitter_data.zip` and your desired
+subdomain. Your imported organization will be hosted at
+`<subdomain>.zulipchat.com`.
 
 ### Import into a new Zulip server
 

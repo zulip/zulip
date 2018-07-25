@@ -19,8 +19,9 @@ First, you need to do some things in Slack to setup the export:
 
 ### Import into zulipchat.com
 
-Email support@zulipchat.com with `slack_data.zip` and the Slack API token
-generated above.
+Email support@zulipchat.com with `slack_data.zip`, the Slack API token
+generated above, and your desired subdomain. Your imported organization will
+be hosted at `<subdomain>.zulipchat.com`.
 
 ### Import into a new Zulip server
 
