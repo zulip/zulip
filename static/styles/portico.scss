@@ -422,7 +422,8 @@ a.title:hover {
 }
 
 img.screenshot {
-    /* This makes it so screenshots are still shown if they are larger than their span.*/
+    /* This makes it so screenshots are still shown
+    even if they are larger than their span. */
     max-width: 100%;
 }
 
@@ -1890,7 +1891,7 @@ input.new-organization-button {
     }
 
     .line-break-desktop {
-    	display: none;
+        display: none;
     }
 }
 
