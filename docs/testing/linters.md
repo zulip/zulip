@@ -22,6 +22,7 @@ below will direct you to the official documentation for these projects.
 - [puppet](https://puppet.com/) (puppet provides its own mechanism for
   validating manifests)
 - [pyflakes](https://pypi.python.org/pypi/pyflakes)
+- [stylelint](https://github.com/stylelint/stylelint)
 
 Zulip also uses some home-grown code to perform tasks like validating
 indentation in template files, enforcing coding standards that are unique
@@ -90,7 +91,7 @@ following checks:
 - Check non-Python code for custom Zulip rules.
 - Check puppet manifests with the puppet validator.
 - Check HTML templates for matching tags and indentations.
-- Check CSS for parsability.
+- Check CSS for parsability and formatting.
 - Check JavaScript code for addClass calls.
 
 The remaining lint checks occur in `./tools/run-mypy`.  It is probably somewhat
@@ -204,19 +205,10 @@ clean those files up eventually.
 
 #### CSS
 
-Zulip does not currently lint its CSS for any kind of semantic correctness,
-but that is definitely a goal moving forward.
-
-We do ensure that our home-grown CSS parser can at least parse the CSS code.
-This is a slightly more strict check than checking that the CSS is
-compliant to the official spec, as our parser will choke on unusual
-constructs that we probably want to avoid in our code, anyway.  (When
-the parser chokes, the lint check will fail.)
-
-You can find the code here:
-
-- driver: [check-css](https://github.com/zulip/zulip/blob/master/tools/check-css)
-- engine: [lib/css_parser.py](https://github.com/zulip/zulip/blob/master/tools/lib/css_parser.py)
+Zulip uses [stylelint](https://github.com/stylelint/stylelint) to lint
+its CSS; see our
+[configuration](https://github.com/zulip/zulip/blob/master/.stylelintrc)
+for the rules we currently enforce.
 
 #### Markdown, shell scripts, JSON fixtures
 
