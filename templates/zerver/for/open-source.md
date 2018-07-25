@@ -32,6 +32,11 @@ Allow (or require) users to
 email address.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
 
+### Import from Slack or Gitter
+
+Import your existing organization from [Slack](/help/import-from-slack) or
+[Gitter](/help/import-from-gitter).
+
 ### Syntax highlighting
 
 [Full Markdown support](/help/format-your-message-using-markdown), including
