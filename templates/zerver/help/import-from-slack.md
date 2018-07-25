@@ -4,7 +4,13 @@ Starting with Zulip 1.8, Zulip supports importing data from Slack,
 including users, channels, messages, attachments, avatars, custom
 emoji, and emoji reactions.
 
-First, you need to do some things in Slack to setup the export:
+**Note:** You can only import a Slack workspace as a new Zulip
+organization. In particular, you cannot use this tool to import from Slack
+into an existing Zulip organization.
+
+## Import from Slack
+
+First, export your data from Slack.
 
 1. [Export your Slack data](https://my.slack.com/services/export). You will
    receive a zip file `slack_data.zip`.

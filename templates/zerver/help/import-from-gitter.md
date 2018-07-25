@@ -3,7 +3,13 @@
 Zulip supports importing data from Gitter, including users, channels,
 messages, attachments, and avatars.
 
-First, you need to do some things in Gitter to setup the export:
+**Note:** You can only import a Gitter room as a new Zulip organization. In
+particular, this tool you cannot use this tool to import from Gitter into an
+existing Zulip organization.
+
+## Import from Gitter
+
+First, export your data from Gitter.
 
 1. [Export your Gitter data](https://github.com/minrk/archive-gitter). You will
    receive json files of the public rooms that you are a part of.
