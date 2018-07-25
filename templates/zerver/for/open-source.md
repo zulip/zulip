@@ -18,14 +18,6 @@ meetups, hackathons, conference committees, and more. If you’re not sure
 whether your organization qualifies, send us an email at
 support@zulipchat.com.
 
-### Scale to thousands of users
-
-For those running Zulip at home, we’ve done a lot of work to ensure that
-drive-by members of the community don’t consume too many disk or CPU
-resources. A Zulip server with 1000 active members and 10000 inactive
-members takes about as many resources as a Zulip server with 1000 active
-members.
-
 ### Join without an invitation
 
 Allow anyone to
@@ -39,11 +31,6 @@ Allow (or require) users to
 [authenticate with their GitHub account][github-auth], instead of with their
 email address.
 [github-auth]: https://github.com/zulip/zulip/blob/7e9926233/zproject/prod_settings_template.py#L112
-
-### Quality data export
-
-Our high quality export and import tools ensure you can always move from
-[zulipchat.com](https://zulipchat.com) hosting to your own servers.
 
 ### Syntax highlighting
 
@@ -75,6 +62,19 @@ any time.
 Get events from GitHub, Travis CI, JIRA, and
 [hundreds of other tools](/integrations) right in Zulip. Topics give each
 issue its own place for discussion.
+
+### Quality data export
+
+Our high quality export and import tools ensure you can always move from
+[zulipchat.com](https://zulipchat.com) hosting to your own servers.
+
+### Scale to thousands of users
+
+For those running Zulip at home, we’ve done a lot of work to ensure that
+drive-by members of the community don’t consume too many disk or CPU
+resources. A Zulip server with 1000 active members and 10000 inactive
+members takes about as many resources as a Zulip server with 1000 active
+members.
 
 ### Free and open source
 
