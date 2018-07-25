@@ -46,7 +46,6 @@ class StripeTest(ZulipTestCase):
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
         Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=self.stripe_plan_id)
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.lib.stripe.billing_logger.error")
     def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
@@ -80,19 +79,19 @@ class StripeTest(ZulipTestCase):
         @catch_stripe_errors
         def foo() -> None:
             pass  # nocoverage
-        with self.assertRaisesRegex(StripeError, "Missing Stripe config."):
-            foo()
+        with self.settings(TEST_SUITE=False):
+            with self.assertRaisesRegex(StripeError, "Missing Stripe config."):
+                foo()
 
     def test_no_plan_objects(self) -> None:
         Plan.objects.all().delete()
+
         @catch_stripe_errors
         def foo() -> None:
             pass  # nocoverage
         with self.assertRaisesRegex(StripeError, "Plan objects not created. Please run ./manage.py"):
             foo()
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_initial_upgrade(self, mock_create_subscription: mock.Mock,
@@ -142,8 +141,6 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/billing/', response.url)
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
@@ -174,8 +171,6 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: mock.Mock,
@@ -213,8 +208,6 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.REALM_PLAN_QUANTITY_UPDATED).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     def test_upgrade_with_tampered_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/upgrade/", {
@@ -225,8 +218,6 @@ class StripeTest(ZulipTestCase):
         })
         self.assert_in_success_response(["Something went wrong. Please contact"], result)
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     def test_upgrade_with_tampered_plan(self) -> None:
         self.login(self.example_email("hamlet"))
         result = self.client_post("/upgrade/", {
@@ -237,8 +228,6 @@ class StripeTest(ZulipTestCase):
         })
         self.assert_in_success_response(["Something went wrong. Please contact"], result)
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
-    @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: mock.Mock,

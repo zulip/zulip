@@ -69,7 +69,7 @@ class StripeError(JsonableError):
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
-        if STRIPE_PUBLISHABLE_KEY is None:
+        if not settings.TEST_SUITE and STRIPE_PUBLISHABLE_KEY is None:
             # Dev-only message; no translation needed.
             raise StripeError(
                 "Missing Stripe config. See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
