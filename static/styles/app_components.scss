@@ -277,20 +277,6 @@
     pointer-events: all;
 }
 
-.overlay .overlay-content {
-    -webkit-transform: scale(0.5);
-    transform: scale(0.5);
-
-    z-index: 102;
-
-    transition: transform 0.3s ease;
-}
-
-.overlay.show .overlay-content {
-    -webkit-transform: scale(1);
-    transform: scale(1);
-}
-
 .input-append {
     font-size: 90%;
     letter-spacing: -.3em;
