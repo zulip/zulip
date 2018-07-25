@@ -1270,6 +1270,15 @@ def get_stream_recipients(stream_ids: List[int]) -> List[Recipient]:
 class AbstractMessage(models.Model):
     sender = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
     recipient = models.ForeignKey(Recipient, on_delete=CASCADE)  # type: Recipient
+
+    # The message's topic.
+    #
+    # Early versions of Zulip called this concept a "subject", as in an email
+    # "subject line", before changing to "topic" in 2013 (commit dac5a46fa).
+    # UI and user documentation now consistently say "topic".  New APIs and
+    # new code should generally also say "topic".
+    #
+    # See also the `topic_name` method on `Message`.
     subject = models.CharField(max_length=MAX_SUBJECT_LENGTH, db_index=True)  # type: str
 
     content = models.TextField()  # type: str
@@ -1280,6 +1289,9 @@ class AbstractMessage(models.Model):
     sending_client = models.ForeignKey(Client, on_delete=CASCADE)  # type: Client
 
     last_edit_time = models.DateTimeField(null=True)  # type: Optional[datetime.datetime]
+
+    # A JSON-encoded list of objects describing any past edits to this
+    # message, oldest first.
     edit_history = models.TextField(null=True)  # type: Optional[str]
 
     has_attachment = models.BooleanField(default=False, db_index=True)  # type: bool
