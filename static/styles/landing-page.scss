@@ -1333,7 +1333,7 @@ nav ul li.active::after {
     z-index: 1;
 }
 
-.carousel.carousel-fade .carousel-inner .item-inner{
+.carousel.carousel-fade .carousel-inner .item-inner {
     position: relative;
 }
 
@@ -1433,7 +1433,7 @@ nav ul li.active::after {
     max-width: 100%;
 }
 
-.tour  .carousel-inner img {
+.tour .carousel-inner img {
     border: 1px solid #f2f3f4;
 }
 
@@ -1451,7 +1451,7 @@ nav ul li.active::after {
 .tour .carousel-inner .mobile-show,
 .tour .carousel-inner img.mobile-show,
 .tour .carousel-inner img.centered-image.mobile-show {
-  display: none;
+    display: none;
 }
 
 .tour .carousel-inner .comparison-slack img {
@@ -1597,13 +1597,13 @@ nav ul li.active::after {
 }
 
 .carousel-indicators li::before {
-	 position: absolute;
-	 top: -10px;
-	 left: 0;
- 	 display: inline-block;
-	 width: 100%;
-	 height: 10px;
-	 content: "";
+    position: absolute;
+    top: -10px;
+    left: 0;
+    display: inline-block;
+    width: 100%;
+    height: 10px;
+    content: "";
 }
 
 .carousel-indicators li::after {
@@ -3171,12 +3171,12 @@ nav ul li.active::after {
     }
 
     .stripe-button-el:active {
-         background: rgb(25, 139, 118);
-         span {
+        background: rgb(25, 139, 118);
+        span {
             background: 0;
             box-shadow: none;
             -webkit-box-shadow: none;
-         }
+        }
     }
 
     #error-message-box {
@@ -3256,7 +3256,8 @@ nav ul li.active::after {
     }
 }
 
-@media (min-width: 1295px), (max-width: 986px) and (min-width: 684px) {
+@media (min-width: 1295px),
+    (max-width: 986px) and (min-width: 684px) {
     /* while there are nine, show only two rows of four. */
     .portico-landing.hello .testimonials .company-box > div:last-of-type {
         display: none;
@@ -3295,10 +3296,10 @@ nav ul li.active::after {
     .tour .carousel-inner img.zulip-topic,
     .tour .carousel-inner img.slack-overwhelming,
     .tour .carousel-inner img.zulip-easy {
-       width: 85%;
-       left: 0;
-       margin-left: auto;
-       margin-right: auto;
+        width: 85%;
+        left: 0;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .tour .carousel-inner .tour-item-header {
@@ -3306,7 +3307,7 @@ nav ul li.active::after {
     }
 
     .tour .carousel-control.right {
-       right: 20px;
+        right: 20px;
     }
 
     .tour .carousel-control.left {
@@ -3314,17 +3315,17 @@ nav ul li.active::after {
     }
 
     .tour .carousel-inner .zulip-slack-comparison {
-		 width: 650px;
-		 max-width: 100%;
-	}
+        width: 650px;
+        max-width: 100%;
+    }
 
-	.tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-		 width: 450px;
-	}
+    .tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
+        width: 450px;
+    }
 
-	.tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-		 width: 200px;
-	}
+    .tour .carousel-inner .zulip-slack-comparison .comparison-slack {
+        width: 200px;
+    }
 }
 
 @media (max-width: 1024px) {
@@ -3493,9 +3494,9 @@ nav ul li.active::after {
 
     .tour .carousel-inner img.slack-overwhelming,
     .tour .carousel-inner img.zulip-easy {
-		 width: 80%;
-		 left: 0;
-	}
+        width: 80%;
+        left: 0;
+    }
 }
 
 @media (max-width: 906px) {
@@ -3621,20 +3622,20 @@ nav ul li.active::after {
     }
 
     .portico-landing.hello .apps .left-side .platform-icons .group {
-    		margin: 50px 30px;
-    		display: block;
+        margin: 50px 30px;
+        display: block;
     }
 
     .portico-landing.hello .tour .carousel-inner .item-container {
-       width: 85%;
+        width: 85%;
     }
 
     .tour .carousel-control {
         font-size: 1.2em;
     }
 
-   .tour .carousel-control.right {
-       right: -10px;
+    .tour .carousel-control.right {
+        right: -10px;
     }
 
     .tour .carousel-control.left {
@@ -3642,24 +3643,24 @@ nav ul li.active::after {
     }
 
     .tour .carousel-inner .zulip-slack-comparison {
-		 width: 100%;
-	}
+        width: 100%;
+    }
 
-	.tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
-		 width: 65%;
-	}
+    .tour .carousel-inner .zulip-slack-comparison .comparison-zulip {
+        width: 65%;
+    }
 
-	.tour .carousel-inner .zulip-slack-comparison .comparison-slack {
-		 width: 35%;
-	}
+    .tour .carousel-inner .zulip-slack-comparison .comparison-slack {
+        width: 35%;
+    }
 
-	.tour .carousel-inner .comparison-slack img.slack-unreads {
-	    margin-left: 0;
-	}
+    .tour .carousel-inner .comparison-slack img.slack-unreads {
+        margin-left: 0;
+    }
 
-	.tour .carousel-inner .tour-item-header {
-       font-size: 1.1em;
-   }
+    .tour .carousel-inner .tour-item-header {
+        font-size: 1.1em;
+    }
 }
 
 @media (max-width: 768px) {
@@ -3688,7 +3689,7 @@ nav ul li.active::after {
     }
 
     .portico-landing.hello .open-source .il-block {
-        width: 75%
+        width: 75%;
     }
 
     .portico-landing.integrations .main,
@@ -3720,13 +3721,13 @@ nav ul li.active::after {
     }
 
     .portico-landing.why-page .testimonials .carousel-quotes {
-	     width: 90%;
-	 }
+        width: 90%;
+    }
 
-	 .portico-landing.why-page .testimonials .quote-container {
-	     padding-left: 4%;
-	     font-size: 1em;
-	 }
+    .portico-landing.why-page .testimonials .quote-container {
+        padding-left: 4%;
+        font-size: 1em;
+    }
 
     #integration-instruction-block .integration-lozenge {
         display: none !important;
@@ -4023,8 +4024,8 @@ nav ul li.active::after {
         font-size: 1.1em;
     }
 
-   .tour .carousel-control.right {
-       right: -30px;
+    .tour .carousel-control.right {
+        right: -30px;
     }
 
     .tour .carousel-control.left {
@@ -4120,7 +4121,7 @@ nav ul li.active::after {
         text-align: left;
     }
 
-   .billing-upgrade-page {
+    .billing-upgrade-page {
         .payment-schedule {
             .box {
                 width: 100px;
