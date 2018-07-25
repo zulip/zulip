@@ -580,6 +580,9 @@ class EventsRegisterTest(ZulipTestCase):
 
     def check_events_dict(self, required_keys: List[Tuple[str, Validator]]) -> Validator:
         required_keys.append(('id', check_int))
+        # Raise AssertionError if `required_keys` contains duplicate items.
+        keys = [key[0] for key in required_keys]
+        self.assertEqual(len(keys), len(set(keys)), 'Duplicate items found in required_keys.')
         return check_dict_only(required_keys)
 
     def test_mentioned_send_message_events(self) -> None:
