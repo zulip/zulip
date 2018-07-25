@@ -119,6 +119,14 @@ exports.render_user_group = function (user_group) {
     return html;
 };
 
+exports.render_person_or_user_group = function (item) {
+    if (user_groups.is_user_group(item)) {
+        return typeahead_helper.render_user_group(item);
+    }
+
+    return typeahead_helper.render_person(item);
+};
+
 exports.render_stream = function (stream) {
     var desc = stream.description;
     var short_desc = desc.substring(0, 35);
@@ -362,6 +370,26 @@ exports.sort_recipientbox_typeahead = function (query, matches, current_stream) 
     var cleaned = exports.get_cleaned_pm_recipients(query);
     query = cleaned[cleaned.length - 1];
     return exports.sort_recipients(matches, query, current_stream);
+};
+
+exports.sort_people_and_user_groups = function (query, matches) {
+    var users = [];
+    var groups = [];
+    _.each(matches, function (match) {
+        if (user_groups.is_user_group(match)) {
+            groups.push(match);
+        } else {
+            users.push(match);
+        }
+    });
+
+    var recipients = typeahead_helper.sort_recipients(
+        users,
+        query,
+        compose_state.stream_name(),
+        compose_state.subject(),
+        groups);
+    return recipients;
 };
 
 return exports;
