@@ -40,7 +40,7 @@ settings.
   the message content. This is different from proper message deletion in two
   ways: the original content will still show up in
   [message edit history](view-a-messages-edit-history), and will be included
-  in exports. Deletion
+  in [exports](/help/export-your-organization). Deletion
   permanently (and irretrievably) removes the message from Zulip.
 
 You can access the message editing and deletion settings as follows.

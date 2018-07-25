@@ -70,7 +70,7 @@ issue its own place for discussion.
 
 ### Quality data export
 
-Our high quality export and
+Our high quality [export](/help/export-your-organization) and
 [import](https://zulip.readthedocs.io/en/latest/production/export-and-import.html)
 tools ensure you can always move from
 [zulipchat.com](https://zulipchat.com) hosting to your own servers.
