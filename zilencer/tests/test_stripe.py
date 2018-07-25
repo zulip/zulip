@@ -35,8 +35,6 @@ def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> ListObject:
 
 class StripeTest(ZulipTestCase):
     def setUp(self) -> None:
-        self.user = self.example_user("hamlet")
-        self.realm = self.user.realm
         self.token = 'token'
         # The values below should be copied from stripe_fixtures.json
         self.stripe_customer_id = 'cus_D7OT2jf5YAtZQL'
@@ -91,10 +89,11 @@ class StripeTest(ZulipTestCase):
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_initial_upgrade(self, mock_create_subscription: mock.Mock,
                              mock_create_customer: mock.Mock) -> None:
-        self.login(self.user.email)
+        user = self.example_user("hamlet")
+        self.login(user.email)
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
-        self.assertFalse(self.realm.has_seat_based_plan)
+        self.assertFalse(user.realm.has_seat_based_plan)
         # Click "Make payment" in Stripe Checkout
         response = self.client_post("/upgrade/", {
             'stripeToken': self.token,
@@ -105,7 +104,7 @@ class StripeTest(ZulipTestCase):
         # Check that we created a customer and subscription in stripe
         mock_create_customer.assert_called_once_with(
             description="zulip (Zulip Dev)",
-            metadata={'realm_id': self.realm.id, 'realm_str': 'zulip'},
+            metadata={'realm_id': user.realm.id, 'realm_str': 'zulip'},
             source=self.token)
         mock_create_subscription.assert_called_once_with(
             customer=self.stripe_customer_id,
@@ -117,10 +116,10 @@ class StripeTest(ZulipTestCase):
             prorate=True,
             tax_percent=0)
         # Check that we correctly populated Customer and RealmAuditLog in Zulip
-        self.assertEqual(1, Customer.objects.filter(realm=self.realm,
+        self.assertEqual(1, Customer.objects.filter(realm=user.realm,
                                                     stripe_customer_id=self.stripe_customer_id,
-                                                    billing_user=self.user).count())
-        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=self.user)
+                                                    billing_user=user).count())
+        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
             (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created)),
@@ -173,7 +172,7 @@ class StripeTest(ZulipTestCase):
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_upgrade_with_outdated_seat_count(self, mock_create_subscription: mock.Mock,
                                               mock_create_customer: mock.Mock) -> None:
-        self.login(self.user.email)
+        self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
         with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
@@ -209,7 +208,7 @@ class StripeTest(ZulipTestCase):
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     def test_upgrade_with_tampered_seat_count(self) -> None:
-        self.login(self.user.email)
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/upgrade/", {
             'stripeToken': self.token,
             'signed_seat_count': "randomsalt",
@@ -221,7 +220,7 @@ class StripeTest(ZulipTestCase):
     @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     @mock.patch("zilencer.views.STRIPE_PUBLISHABLE_KEY", "stripe_publishable_key")
     def test_upgrade_with_tampered_plan(self) -> None:
-        self.login(self.user.email)
+        self.login(self.example_email("hamlet"))
         result = self.client_post("/upgrade/", {
             'stripeToken': self.token,
             'signed_seat_count': self.signed_seat_count,
@@ -236,14 +235,15 @@ class StripeTest(ZulipTestCase):
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
                           mock_retrieve_customer: mock.Mock) -> None:
-        self.login(self.user.email)
+        user = self.example_user("hamlet")
+        self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
         response = self.client_get("/billing/")
         self.assertEqual(response.status_code, 302)
         self.assertEqual('/upgrade/', response.url)
 
         Customer.objects.create(
-            realm=self.realm, stripe_customer_id=self.stripe_customer_id, billing_user=self.user)
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user)
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
@@ -251,19 +251,20 @@ class StripeTest(ZulipTestCase):
             self.assert_in_response(substring, response)
 
     def test_get_seat_count(self) -> None:
-        initial_count = get_seat_count(self.realm)
-        user1 = UserProfile.objects.create(realm=self.realm, email='user1@zulip.com', pointer=-1)
-        user2 = UserProfile.objects.create(realm=self.realm, email='user2@zulip.com', pointer=-1)
-        self.assertEqual(get_seat_count(self.realm), initial_count + 2)
+        realm = get_realm("zulip")
+        initial_count = get_seat_count(realm)
+        user1 = UserProfile.objects.create(realm=realm, email='user1@zulip.com', pointer=-1)
+        user2 = UserProfile.objects.create(realm=realm, email='user2@zulip.com', pointer=-1)
+        self.assertEqual(get_seat_count(realm), initial_count + 2)
 
         # Test that bots aren't counted
         user1.is_bot = True
         user1.save(update_fields=['is_bot'])
-        self.assertEqual(get_seat_count(self.realm), initial_count + 1)
+        self.assertEqual(get_seat_count(realm), initial_count + 1)
 
         # Test that inactive users aren't counted
         do_deactivate_user(user2)
-        self.assertEqual(get_seat_count(self.realm), initial_count)
+        self.assertEqual(get_seat_count(realm), initial_count)
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_retrieve_customer)
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
@@ -287,25 +288,24 @@ class StripeTest(ZulipTestCase):
             unsign_string(signed_string, "randomsalt")
 
 class BillingUpdateTest(ZulipTestCase):
-    def setUp(self) -> None:
-        self.user = self.example_user("hamlet")
-        self.realm = self.user.realm
-
     def test_activity_change_requires_seat_update(self) -> None:
         # Realm doesn't have a seat based plan
-        self.assertFalse(activity_change_requires_seat_update(self.user))
-        self.realm.has_seat_based_plan = True
-        self.realm.save(update_fields=['has_seat_based_plan'])
+        self.assertFalse(activity_change_requires_seat_update(self.example_user("hamlet")))
+        realm = get_realm("zulip")
+        realm.has_seat_based_plan = True
+        realm.save(update_fields=['has_seat_based_plan'])
         # seat based plan + user not a bot
-        self.assertTrue(activity_change_requires_seat_update(self.user))
-        self.user.is_bot = True
-        self.user.save(update_fields=['is_bot'])
+        user = self.example_user("hamlet")
+        self.assertTrue(activity_change_requires_seat_update(user))
+        user.is_bot = True
+        user.save(update_fields=['is_bot'])
         # seat based plan but user is a bot
-        self.assertFalse(activity_change_requires_seat_update(self.user))
+        self.assertFalse(activity_change_requires_seat_update(user))
 
     def test_requires_billing_update_for_is_active_changes(self) -> None:
         count = RealmAuditLog.objects.count()
-        user1 = do_create_user('user1@zulip.com', 'password', self.realm, 'full name', 'short name')
+        realm = get_realm("zulip")
+        user1 = do_create_user('user1@zulip.com', 'password', realm, 'full name', 'short name')
         do_deactivate_user(user1)
         do_reactivate_user(user1)
         # Not a proper use of do_activate_user, but it's fine to call it like this for this test
@@ -313,9 +313,9 @@ class BillingUpdateTest(ZulipTestCase):
         self.assertEqual(count + 4,
                          RealmAuditLog.objects.filter(requires_billing_update=False).count())
 
-        self.realm.has_seat_based_plan = True
-        self.realm.save(update_fields=['has_seat_based_plan'])
-        user2 = do_create_user('user2@zulip.com', 'password', self.realm, 'full name', 'short name')
+        realm.has_seat_based_plan = True
+        realm.save(update_fields=['has_seat_based_plan'])
+        user2 = do_create_user('user2@zulip.com', 'password', realm, 'full name', 'short name')
         do_deactivate_user(user2)
         do_reactivate_user(user2)
         do_activate_user(user2)
