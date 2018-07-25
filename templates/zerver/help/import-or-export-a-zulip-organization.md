@@ -6,7 +6,8 @@ servers, move data from one Zulip server to another, do backups or
 compliance work, etc.
 
 The import half of these tools also powers our
-[Slack import feature](/help/import-from-slack).
+[Slack](/help/import-from-slack) and [Gitter](/help/import-from-gitter)
+import feature.
 
 !!! warn ""
     These instructions currently require shell access to the Zulip
