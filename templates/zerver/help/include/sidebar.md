@@ -112,7 +112,7 @@
 * [Create your organization profile](/help/create-your-organization-profile)
 * [Update your organization's settings](/help/change-your-organization-settings)
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
-* [Import data from Slack](/help/import-data-from-slack)
+* [Import from Slack](/help/import-from-slack)
 * [Import data from Gitter](/help/import-data-from-gitter)
 * [Import or export a Zulip organization](/help/import-or-export-a-zulip-organization)
 * [Manage who can join](/help/manage-who-can-join-and-invite)

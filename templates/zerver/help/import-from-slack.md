@@ -1,4 +1,4 @@
-# Import data from Slack (beta)
+# Import from Slack (beta)
 
 Starting with Zulip 1.8, Zulip supports importing data from Slack,
 including users, channels, messages, attachments, avatars, custom
