@@ -483,8 +483,10 @@ def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
 
     sub = dict(
         recipient=recipient_id,
-        notifications=False,
         color=random.choice(stream_colors),
+        audible_notifications=True,
+        push_notifications=False,
+        email_notifications=False,
         desktop_notifications=True,
         pin_to_top=False,
         in_home_view=True,
@@ -500,8 +502,10 @@ def build_subscription(channel_members: List[str], zerver_subscription: List[Zer
     for member in channel_members:
         sub = dict(
             recipient=recipient_id,
-            notifications=False,
             color=random.choice(stream_colors),
+            audible_notifications=True,
+            push_notifications=False,
+            email_notifications=False,
             desktop_notifications=True,
             pin_to_top=False,
             in_home_view=True,
