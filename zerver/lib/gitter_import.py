@@ -210,8 +210,10 @@ def build_subscription(recipient_id: int, user_id: int,
                        subscription_id: int) -> ZerverFieldsT:
     subscription = dict(
         recipient=recipient_id,
-        notifications=False,
         color=random.choice(stream_colors),
+        audible_notifications=True,
+        push_notifications=False,
+        email_notifications=False,
         desktop_notifications=True,
         pin_to_top=False,
         in_home_view=True,
