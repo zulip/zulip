@@ -503,7 +503,6 @@ exports.setup_page = function (callback) {
                 { label: i18n.t("Subscribed"), key: "subscribed" },
                 { label: i18n.t("All streams"), key: "all-streams" },
             ],
-            selected: 0,
             callback: function (value, key) {
                 // if you aren't on a particular stream (`streams/:id/:name`)
                 // then redirect to `streams/all` when you click "all-streams".
