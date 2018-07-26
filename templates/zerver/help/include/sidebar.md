@@ -95,6 +95,8 @@
 * [Display emoji as text](/help/display-emoji-as-text)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
+* [Connect through a proxy](/help/connect-through-a-proxy)
+* [Add a custom certificate](/help/custom-certificates)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
