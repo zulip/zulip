@@ -375,15 +375,20 @@ def fix_realm_authentication_bitfield(data: TableData, table: TableName, field_n
         values_as_int = int(values_as_bitstring, 2)
         item[field_name] = values_as_int
 
-def update_model_ids(model: Any, data: TableData, table: TableName, related_table: TableName) -> None:
+def get_db_table(model_class: Any) -> str:
+    """E.g. (RealmDomain -> 'zerver_realmdomain')"""
+    return model_class._meta.db_table
+
+def update_model_ids(model: Any, data: TableData, related_table: TableName) -> None:
+    table = get_db_table(model)
     old_id_list = current_table_ids(data, table)
     allocated_id_list = allocate_ids(model, len(data[table]))
     for item in range(len(data[table])):
         update_id_map(related_table, old_id_list[item], allocated_id_list[item])
     re_map_foreign_keys(data, table, 'id', related_table=related_table, id_field=True)
 
-def bulk_import_model(data: TableData, model: Any, table: TableName,
-                      dump_file_id: Optional[str]=None) -> None:
+def bulk_import_model(data: TableData, model: Any, dump_file_id: Optional[str]=None) -> None:
+    table = get_db_table(model)
     # TODO, deprecate dump_file_id
     model.objects.bulk_create(model(**item) for item in data[table])
     if dump_file_id is None:
@@ -583,7 +588,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
-    update_model_ids(Stream, data, 'zerver_stream', 'stream')
+    update_model_ids(Stream, data, 'stream')
     re_map_foreign_keys(data, 'zerver_realm', 'notifications_stream', related_table="stream")
 
     fix_datetime_fields(data, 'zerver_realm')
@@ -591,7 +596,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     data['zerver_realm'][0]['string_id'] = subdomain
     data['zerver_realm'][0]['name'] = subdomain
     fix_realm_authentication_bitfield(data, 'zerver_realm', 'authentication_methods')
-    update_model_ids(Realm, data, 'zerver_realm', 'realm')
+    update_model_ids(Realm, data, 'realm')
 
     realm = Realm(**data['zerver_realm'][0])
     if realm.notifications_stream_id is not None:
@@ -606,7 +611,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     # Stream objects are created by Django.
     fix_datetime_fields(data, 'zerver_stream')
     re_map_foreign_keys(data, 'zerver_stream', 'realm', related_table="realm")
-    bulk_import_model(data, Stream, 'zerver_stream')
+    bulk_import_model(data, Stream)
 
     realm.notifications_stream_id = notifications_stream_id
     realm.save()
@@ -627,7 +632,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     update_message_foreign_keys(import_dir)
 
     fix_datetime_fields(data, 'zerver_userprofile')
-    update_model_ids(UserProfile, data, 'zerver_userprofile', 'user_profile')
+    update_model_ids(UserProfile, data, 'user_profile')
     re_map_foreign_keys(data, 'zerver_userprofile', 'realm', related_table="realm")
     re_map_foreign_keys(data, 'zerver_userprofile', 'bot_owner', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userprofile', 'default_sending_stream',
@@ -652,11 +657,11 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")
     for (table, model, related_table) in realm_tables:
         re_map_foreign_keys(data, table, 'realm', related_table="realm")
-        update_model_ids(model, data, table, related_table)
-        bulk_import_model(data, model, table)
+        update_model_ids(model, data, related_table)
+        bulk_import_model(data, model)
 
     if 'zerver_huddle' in data:
-        update_model_ids(Huddle, data, 'zerver_huddle', 'huddle')
+        update_model_ids(Huddle, data, 'huddle')
 
     re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="stream",
                         recipient_field=True, id_field=True)
@@ -664,14 +669,14 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                         recipient_field=True, id_field=True)
     re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="huddle",
                         recipient_field=True, id_field=True)
-    update_model_ids(Recipient, data, 'zerver_recipient', 'recipient')
-    bulk_import_model(data, Recipient, 'zerver_recipient')
+    update_model_ids(Recipient, data, 'recipient')
+    bulk_import_model(data, Recipient)
 
     re_map_foreign_keys(data, 'zerver_subscription', 'user_profile', related_table="user_profile")
     get_huddles_from_subscription(data, 'zerver_subscription')
     re_map_foreign_keys(data, 'zerver_subscription', 'recipient', related_table="recipient")
-    update_model_ids(Subscription, data, 'zerver_subscription', 'subscription')
-    bulk_import_model(data, Subscription, 'zerver_subscription')
+    update_model_ids(Subscription, data, 'subscription')
+    bulk_import_model(data, Subscription)
 
     if 'zerver_realmauditlog' in data:
         fix_datetime_fields(data, 'zerver_realmauditlog')
@@ -682,91 +687,86 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                             related_table='user_profile')
         re_map_foreign_keys(data, 'zerver_realmauditlog', 'modified_stream',
                             related_table="stream")
-        update_model_ids(RealmAuditLog, data, 'zerver_realmauditlog',
-                         related_table="realmauditlog")
-        bulk_import_model(data, RealmAuditLog, 'zerver_realmauditlog')
+        update_model_ids(RealmAuditLog, data, related_table="realmauditlog")
+        bulk_import_model(data, RealmAuditLog)
     else:
         create_subscription_events(data, 'zerver_subscription')
 
     if 'zerver_huddle' in data:
         process_huddle_hash(data, 'zerver_huddle')
-        bulk_import_model(data, Huddle, 'zerver_huddle')
+        bulk_import_model(data, Huddle)
 
     if 'zerver_userhotspot' in data:
         fix_datetime_fields(data, 'zerver_userhotspot')
         re_map_foreign_keys(data, 'zerver_userhotspot', 'user', related_table='user_profile')
-        update_model_ids(UserHotspot, data, 'zerver_userhotspot', 'userhotspot')
-        bulk_import_model(data, UserHotspot, 'zerver_userhotspot')
+        update_model_ids(UserHotspot, data, 'userhotspot')
+        bulk_import_model(data, UserHotspot)
 
     if 'zerver_mutedtopic' in data:
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'user_profile', related_table='user_profile')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'stream', related_table='stream')
         re_map_foreign_keys(data, 'zerver_mutedtopic', 'recipient', related_table='recipient')
-        update_model_ids(MutedTopic, data, 'zerver_mutedtopic', 'mutedtopic')
-        bulk_import_model(data, MutedTopic, 'zerver_mutedtopic')
+        update_model_ids(MutedTopic, data, 'mutedtopic')
+        bulk_import_model(data, MutedTopic)
 
     if 'zerver_service' in data:
         re_map_foreign_keys(data, 'zerver_service', 'user_profile', related_table='user_profile')
         fix_service_tokens(data, 'zerver_service')
-        update_model_ids(Service, data, 'zerver_service', 'service')
-        bulk_import_model(data, Service, 'zerver_service')
+        update_model_ids(Service, data, 'service')
+        bulk_import_model(data, Service)
 
     if 'zerver_usergroup' in data:
         re_map_foreign_keys(data, 'zerver_usergroup', 'realm', related_table='realm')
         re_map_foreign_keys_many_to_many(data, 'zerver_usergroup',
                                          'members', related_table='user_profile')
-        update_model_ids(UserGroup, data, 'zerver_usergroup', 'usergroup')
-        bulk_import_model(data, UserGroup, 'zerver_usergroup')
+        update_model_ids(UserGroup, data, 'usergroup')
+        bulk_import_model(data, UserGroup)
 
         re_map_foreign_keys(data, 'zerver_usergroupmembership',
                             'user_group', related_table='usergroup')
         re_map_foreign_keys(data, 'zerver_usergroupmembership',
                             'user_profile', related_table='user_profile')
-        update_model_ids(UserGroupMembership, data, 'zerver_usergroupmembership',
-                         'usergroupmembership')
-        bulk_import_model(data, UserGroupMembership, 'zerver_usergroupmembership')
+        update_model_ids(UserGroupMembership, data, 'usergroupmembership')
+        bulk_import_model(data, UserGroupMembership)
 
     if 'zerver_botstoragedata' in data:
         re_map_foreign_keys(data, 'zerver_botstoragedata', 'bot_profile', related_table='user_profile')
-        update_model_ids(BotStorageData, data, 'zerver_botstoragedata', 'botstoragedata')
-        bulk_import_model(data, BotStorageData, 'zerver_botstoragedata')
+        update_model_ids(BotStorageData, data, 'botstoragedata')
+        bulk_import_model(data, BotStorageData)
 
     if 'zerver_botconfigdata' in data:
         re_map_foreign_keys(data, 'zerver_botconfigdata', 'bot_profile', related_table='user_profile')
-        update_model_ids(BotConfigData, data, 'zerver_botconfigdata', 'botconfigdata')
-        bulk_import_model(data, BotConfigData, 'zerver_botconfigdata')
+        update_model_ids(BotConfigData, data, 'botconfigdata')
+        bulk_import_model(data, BotConfigData)
 
     fix_datetime_fields(data, 'zerver_userpresence')
     re_map_foreign_keys(data, 'zerver_userpresence', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_userpresence', 'client', related_table='client')
-    update_model_ids(UserPresence, data, 'zerver_userpresence', 'user_presence')
-    bulk_import_model(data, UserPresence, 'zerver_userpresence')
+    update_model_ids(UserPresence, data, 'user_presence')
+    bulk_import_model(data, UserPresence)
 
     fix_datetime_fields(data, 'zerver_useractivity')
     re_map_foreign_keys(data, 'zerver_useractivity', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_useractivity', 'client', related_table='client')
-    update_model_ids(UserActivity, data, 'zerver_useractivity', 'useractivity')
-    bulk_import_model(data, UserActivity, 'zerver_useractivity')
+    update_model_ids(UserActivity, data, 'useractivity')
+    bulk_import_model(data, UserActivity)
 
     fix_datetime_fields(data, 'zerver_useractivityinterval')
     re_map_foreign_keys(data, 'zerver_useractivityinterval', 'user_profile', related_table="user_profile")
-    update_model_ids(UserActivityInterval, data, 'zerver_useractivityinterval',
-                     'useractivityinterval')
-    bulk_import_model(data, UserActivityInterval, 'zerver_useractivityinterval')
+    update_model_ids(UserActivityInterval, data, 'useractivityinterval')
+    bulk_import_model(data, UserActivityInterval)
 
     re_map_foreign_keys(data, 'zerver_customprofilefield', 'realm', related_table="realm")
-    update_model_ids(CustomProfileField, data, 'zerver_customprofilefield',
-                     related_table="customprofilefield")
-    bulk_import_model(data, CustomProfileField, 'zerver_customprofilefield')
+    update_model_ids(CustomProfileField, data, related_table="customprofilefield")
+    bulk_import_model(data, CustomProfileField)
 
     re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'user_profile',
                         related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_customprofilefieldvalue', 'field',
                         related_table="customprofilefield")
     fix_customprofilefield(data)
-    update_model_ids(CustomProfileFieldValue, data, 'zerver_customprofilefieldvalue',
-                     related_table="customprofilefieldvalue")
-    bulk_import_model(data, CustomProfileFieldValue, 'zerver_customprofilefieldvalue')
+    update_model_ids(CustomProfileFieldValue, data, related_table="customprofilefieldvalue")
+    bulk_import_model(data, CustomProfileFieldValue)
 
     # Import uploaded files and avatars
     import_uploads(os.path.join(import_dir, "avatars"), processing_avatars=True)
@@ -785,8 +785,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     re_map_foreign_keys(data, 'zerver_reaction', 'user_profile', related_table="user_profile")
     re_map_foreign_keys(data, 'zerver_reaction', 'emoji_code', related_table="realmemoji", id_field=True,
                         reaction_field=True)
-    update_model_ids(Reaction, data, 'zerver_reaction', 'reaction')
-    bulk_import_model(data, Reaction, 'zerver_reaction')
+    update_model_ids(Reaction, data, 'reaction')
+    bulk_import_model(data, Reaction)
 
     # Do attachments AFTER message data is loaded.
     # TODO: de-dup how we read these json files.
@@ -831,7 +831,7 @@ def update_message_foreign_keys(import_dir: Path) -> None:
         with open(message_filename) as f:
             data = ujson.load(f)
 
-        update_model_ids(Message, data, 'zerver_message', 'message')
+        update_model_ids(Message, data, 'message')
         dump_file_id += 1
 
 def import_message_data(import_dir: Path) -> None:
@@ -853,7 +853,7 @@ def import_message_data(import_dir: Path) -> None:
         fix_upload_links(data, 'zerver_message')
 
         re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
-        bulk_import_model(data, Message, 'zerver_message')
+        bulk_import_model(data, Message)
 
         # Due to the structure of these message chunks, we're
         # guaranteed to have already imported all the Message objects
@@ -861,8 +861,8 @@ def import_message_data(import_dir: Path) -> None:
         re_map_foreign_keys(data, 'zerver_usermessage', 'message', related_table="message")
         re_map_foreign_keys(data, 'zerver_usermessage', 'user_profile', related_table="user_profile")
         fix_bitfield_keys(data, 'zerver_usermessage', 'flags')
-        update_model_ids(UserMessage, data, 'zerver_usermessage', 'usermessage')
-        bulk_import_model(data, UserMessage, 'zerver_usermessage')
+        update_model_ids(UserMessage, data, 'usermessage')
+        bulk_import_model(data, UserMessage)
         dump_file_id += 1
 
 def import_attachments(data: TableData) -> None:
@@ -887,7 +887,7 @@ def import_attachments(data: TableData) -> None:
     parent_id = 'attachment_id'
     child_id = 'message_id'
 
-    update_model_ids(parent_model, data, parent_db_table_name, 'attachment')
+    update_model_ids(parent_model, data, 'attachment')
     # First, build our list of many-to-many (m2m) rows.
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
@@ -915,7 +915,7 @@ def import_attachments(data: TableData) -> None:
         attachment['path_id'] = path_maps['attachment_path'][attachment['path_id']]
 
     # Next, load the parent rows.
-    bulk_import_model(data, parent_model, parent_db_table_name)
+    bulk_import_model(data, parent_model)
 
     # Now, go back to our m2m rows.
     # TODO: Do this the kosher Django way.  We may find a
