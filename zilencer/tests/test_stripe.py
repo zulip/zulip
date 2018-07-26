@@ -35,6 +35,12 @@ def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> strip
     customer.subscriptions.data[0].canceled_at = 1532602160
     return customer
 
+def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
+    customer = mock_customer_with_active_subscription()
+    customer.subscriptions.data[0].canceled_at = 1532602243
+    customer.subscriptions.data[0].cancel_at_period_end = True
+    return customer
+
 def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
 
@@ -254,9 +260,17 @@ class StripeTest(ZulipTestCase):
         self.assertIsNone(extract_current_subscription(mock_create_customer()))
         subscription = extract_current_subscription(mock_customer_with_active_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
-        self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
+        self.assertEqual(subscription["status"], "active")
+        self.assertEqual(subscription["cancel_at_period_end"], False)
+        self.assertIsNone(subscription["canceled_at"])
 
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
+
+        subscription = extract_current_subscription(mock_customer_with_cancel_at_period_end_subscription())
+        self.assertEqual(subscription["id"][:4], "sub_")
+        self.assertEqual(subscription["status"], "active")
+        self.assertEqual(subscription["cancel_at_period_end"], True)
+        self.assertIsNotNone(subscription["canceled_at"])
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
     def test_subscribe_customer_to_second_plan(self, mock_customer_with_active_subscription: mock.Mock) -> None:
