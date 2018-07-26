@@ -35,12 +35,6 @@ def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> strip
     customer.subscriptions.data[0].canceled_at = 1532602160
     return customer
 
-def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    customer = mock_customer_with_active_subscription()
-    customer.subscriptions.data[0].canceled_at = 1532602243
-    customer.subscriptions.data[0].cancel_at_period_end = True
-    return customer
-
 def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
 
@@ -260,6 +254,8 @@ class StripeTest(ZulipTestCase):
         self.assertIsNone(extract_current_subscription(mock_create_customer()))
         subscription = extract_current_subscription(mock_customer_with_active_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
+        self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
+
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
