@@ -156,8 +156,8 @@
 }
 
 /* arrows */
-.hotspot-popover:after,
-.hotspot-popover:before {
+.hotspot-popover::after,
+.hotspot-popover::before {
     border: solid transparent;
     content: '';
     height: 0;
@@ -166,74 +166,74 @@
     pointer-events: none;
 }
 
-.hotspot-popover:after {
+.hotspot-popover::after {
     border-width: 12px;
 }
 
-.hotspot-popover:before {
+.hotspot-popover::before {
     border-width: 13px;
 }
 
-.hotspot-popover.arrow-top:before,
-.hotspot-popover.arrow-top:after {
+.hotspot-popover.arrow-top::before,
+.hotspot-popover.arrow-top::after {
     bottom: 100%;
     right: 50%;
 }
 
-.hotspot-popover.arrow-top:after {
+.hotspot-popover.arrow-top::after {
     border-bottom-color: hsl(164, 44%, 47%);
     margin-right: -12px;
 }
 
-.hotspot-popover.arrow-top:before {
+.hotspot-popover.arrow-top::before {
     border-bottom-color: hsl(0, 0%, 80%);
     margin-right: -13px;
 }
 
-.hotspot-popover.arrow-left:before,
-.hotspot-popover.arrow-left:after {
+.hotspot-popover.arrow-left::before,
+.hotspot-popover.arrow-left::after {
     right: 100%;
     top: 50%;
 }
 
-.hotspot-popover.arrow-left:after {
+.hotspot-popover.arrow-left::after {
     border-right-color: hsl(0, 0%, 100%);
     margin-top: -12px;
 }
 
-.hotspot-popover.arrow-left:before {
+.hotspot-popover.arrow-left::before {
     border-right-color: hsl(0, 0%, 80%);
     margin-top: -13px;
 }
 
-.hotspot-popover.arrow-bottom:before,
-.hotspot-popover.arrow-bottom:after {
+.hotspot-popover.arrow-bottom::before,
+.hotspot-popover.arrow-bottom::after {
     top: 100%;
     right: 50%;
 }
 
-.hotspot-popover.arrow-bottom:after {
+.hotspot-popover.arrow-bottom::after {
     border-top-color: hsl(0, 0%, 100%);
     margin-right: -12px;
 }
 
-.hotspot-popover.arrow-bottom:before {
+.hotspot-popover.arrow-bottom::before {
     border-top-color: hsl(0, 0%, 80%);
     margin-right: -13px;
 }
 
-.hotspot-popover.arrow-right:before,
-.hotspot-popover.arrow-right:after {
+.hotspot-popover.arrow-right::before,
+.hotspot-popover.arrow-right::after {
     left: 100%;
     top: 50%;
 }
 
-.hotspot-popover.arrow-right:after {
+.hotspot-popover.arrow-right::after {
     border-left-color: hsl(0, 0%, 100%);
     margin-top: -12px;
 }
 
-.hotspot-popover.arrow-right:before {
+.hotspot-popover.arrow-right::before {
     border-left-color: hsl(0, 0%, 80%);
     margin-top: -13px;
 }
