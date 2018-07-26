@@ -244,17 +244,12 @@ class StripeTest(ZulipTestCase):
         do_deactivate_user(user2)
         self.assertEqual(get_seat_count(realm), initial_count)
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
-    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
-    def test_extract_current_subscription(self, mock_create_customer: mock.Mock,
-                                          mock_customer_with_active_subscription: mock.Mock) -> None:
+    def test_extract_current_subscription(self) -> None:
         # Only the most basic test. In particular, doesn't include testing with a
         # canceled subscription, because we don't have a fixture for it.
-        customer_without_subscription = stripe.Customer.create()  # type: ignore # Mocked out function call
-        self.assertIsNone(extract_current_subscription(customer_without_subscription))
+        self.assertIsNone(extract_current_subscription(mock_create_customer()))
 
-        customer_with_subscription = stripe.Customer.retrieve()  # type: ignore # Mocked out function call
-        subscription = extract_current_subscription(customer_with_subscription)
+        subscription = extract_current_subscription(mock_customer_with_active_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
