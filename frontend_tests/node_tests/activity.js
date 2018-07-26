@@ -56,6 +56,9 @@ const _resize = {
     resize_page_components: () => {},
 };
 
+set_global('padded_widget', {
+    update_padding: () => {},
+});
 set_global('channel', _channel);
 set_global('compose_state', _compose_state);
 set_global('document', _document);

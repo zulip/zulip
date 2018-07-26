@@ -5,6 +5,10 @@ zrequire('buddy_list');
 
 set_global('blueslip', global.make_zblueslip());
 
+set_global('padded_widget', {
+    update_padding: () => {},
+});
+
 function init_simulated_scrolling() {
     set_global('message_viewport', {
         height: () => 550,
@@ -16,6 +20,8 @@ function init_simulated_scrolling() {
     };
 
     $('#buddy_list_wrapper')[0] = elem;
+
+    $('#buddy_list_wrapper_padding').height = () => 0;
 
     return elem;
 }

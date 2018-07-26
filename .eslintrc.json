@@ -152,6 +152,7 @@
         "presence": false,
         "user_search": false,
         "buddy_data": false,
+        "padded_widget": false,
         "buddy_list": false,
         "list_cursor": false,
         "activity": false,
