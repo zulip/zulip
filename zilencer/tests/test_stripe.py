@@ -223,8 +223,8 @@ class StripeTest(ZulipTestCase):
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
-                          mock_customer_with_active_subscription: mock.Mock) -> None:
+    def test_billing_home_with_active_subscription(self, mock_upcoming_invoice: mock.Mock,
+                                                   mock_customer_with_active_subscription: mock.Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -238,6 +238,25 @@ class StripeTest(ZulipTestCase):
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
                           'Card ending in 4242']:
+            self.assert_in_response(substring, response)
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_cancel_at_period_end_subscription)
+    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
+    def test_billing_home_with_canceled_subscription_going_to_end(self, mock_upcoming_invoice: mock.Mock,
+                                                                  mock_retrieve_customer: mock.Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        # No Customer yet; check that we are redirected to /upgrade
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/upgrade/', response.url)
+
+        Customer.objects.create(
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user)
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        for substring in ['for Zulip Premium is ending on <strong>June 26, 2019',
+                          'downgraded to Zulip Free when the subscription']:
             self.assert_in_response(substring, response)
 
     def test_get_seat_count(self) -> None:
