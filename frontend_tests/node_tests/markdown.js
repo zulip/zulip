@@ -321,7 +321,7 @@ run_test('marked', () => {
         {input: ':)',
          expected: '<p>:)</p>'},
         {input: ':)',
-         expected: '<p><span class="emoji emoji-1f603" title="smiley">:smiley:</span></p>',
+         expected: '<p><span class="emoji emoji-1f642" title="slight smile">:slight_smile:</span></p>',
          translate_emoticons: true},
         // Test HTML Escape in Custom Zulip Rules
         {input: '@**<h1>The Rogue One</h1>**',
