@@ -316,7 +316,6 @@ html {
 
     border: none;
     color: hsl(0, 44%, 54%);
-
 }
 
 .new-style .right-side .alert {
@@ -575,7 +574,6 @@ html {
     z-index: -1;
 
     border-bottom: 2px solid hsl(0, 0%, 86%);
-
 }
 
 .portico-page .or span {
@@ -620,7 +618,7 @@ button.login-google-button {
     background-image: url(/static/images/landing-page/logos/google-icon.png);
 }
 
-.github-wrapper:before {
+.github-wrapper::before {
     content: "\f09b";
     position: absolute;
 

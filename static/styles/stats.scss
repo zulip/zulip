@@ -196,7 +196,7 @@ hr {
     }
 }
 
-.spinner:before {
+.spinner::before {
     content: '';
     box-sizing: border-box;
     position: absolute;

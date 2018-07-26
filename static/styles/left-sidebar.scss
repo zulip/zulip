@@ -33,7 +33,7 @@
     margin-right: 10px;
 }
 
-.hashtag:empty:after {
+.hashtag:empty::after {
     content: "#";
     font-size: 1.3rem;
     font-weight: 800;
