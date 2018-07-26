@@ -140,10 +140,7 @@ def get_members(client):
 
     # {code_example|start}
     # You may pass the `client_gravatar` query parameter as follows:
-    result = client.call_endpoint(
-        url='users?client_gravatar=true',
-        method='GET',
-    )
+    result = client.get_members({'client_gravatar': True})
     # {code_example|end}
 
     validate_against_openapi_schema(result, '/users', 'get', '200')
