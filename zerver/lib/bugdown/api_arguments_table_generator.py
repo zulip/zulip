@@ -115,11 +115,17 @@ class APIArgumentsTablePreprocessor(Preprocessor):
         md_engine = markdown.Markdown(extensions=[])
 
         for argument in arguments:
+            description = argument['description']
+
             oneof = ['`' + item + '`'
                      for item in argument.get('schema', {}).get('enum', [])]
-            description = argument['description']
             if oneof:
                 description += '\nMust be one of: {}.'.format(', '.join(oneof))
+
+            default = argument.get('schema', {}).get('default')
+            if default is not None:
+                description += '\nDefaults to `{}`.'.format(ujson.dumps(default))
+
             # TODO: Swagger allows indicating where the argument goes
             # (path, querystring, form data...). A column in the table should
             # be added for this.
