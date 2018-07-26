@@ -45,7 +45,7 @@ body {
     height: 29px;
 
     background-color: #fff;
-    box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
 
     z-index: 100;
 }
@@ -254,23 +254,23 @@ body {
     display: none;
 }
 
-.markdown h1[id]:before,
-.markdown h2[id]:before,
-.markdown h3[id]:before,
-.markdown h4[id]:before {
+.markdown h1[id]::before,
+.markdown h2[id]::before,
+.markdown h3[id]::before,
+.markdown h4[id]::before {
     display: block;
     content: " ";
     visibility: hidden;
 }
 
-.markdown h1[id]:before {
+.markdown h1[id]::before {
     margin-top: -30px;
     height: 30px;
 }
 
-.markdown h2[id]:before,
-.markdown h3[id]:before,
-.markdown h4[id]:before {
+.markdown h2[id]::before,
+.markdown h3[id]::before,
+.markdown h4[id]::before {
     margin-top: -10px;
     height: 10px;
 }
@@ -295,8 +295,8 @@ body {
     margin-bottom: 5px;
 }
 
-.markdown ol > li:before,
-.portico-landing.integrations ol > li:before {
+.markdown ol > li::before,
+.portico-landing.integrations ol > li::before {
     content: counter(item);
     display: inline-block;
     vertical-align: top;
@@ -348,7 +348,7 @@ li div.codehilite {
     padding-left: 20px;
 }
 
-.markdown ul > li:before {
+.markdown ul > li::before {
     content: none;
 }
 
@@ -451,7 +451,7 @@ img.screenshot {
     position: relative;
 }
 
-.show-integral:hover:after {
+.show-integral:hover::after {
     content: "dx";
     font-weight: normal;
     font-style: italic;
@@ -479,7 +479,7 @@ img.screenshot {
     margin-top: 20px;
 }
 
-.def:before {
+.def::before {
     content: " - ";
 }
 
@@ -736,7 +736,7 @@ input.text-error {
 }
 
 .portico-header .dropdown ul li:hover {
-    background: linear-gradient(to bottom,#08c,#0077b3);
+    background: linear-gradient(to bottom, #08c, #0077b3);
     transition: none;
 }
 
@@ -761,7 +761,7 @@ input.text-error {
 }
 
 .portico-header .dropdown-pill {
-    border: 1px solid rgba(0,0,0,0.2);
+    border: 1px solid rgba(0, 0, 0, 0.2);
     border-radius: 4px;
     font-weight: 400;
     cursor: pointer;
@@ -872,7 +872,7 @@ a.bottom-signup-button {
 
 .table.table-striped {
     background: #fff;
-    box-shadow: 0px 0px 4px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 4px rgba(0, 0, 0, 0.1);
 }
 
 .team-profiles {
@@ -904,7 +904,7 @@ a.bottom-signup-button {
     margin: 10px;
 }
 
-.team .bdfl .profile-picture>img {
+.team .bdfl .profile-picture > img {
     height: auto;
     border-radius: 5px;
 }
@@ -1565,9 +1565,9 @@ input.new-organization-button {
     cursor: pointer;
 }
 
-.markdown h1:hover:after,
-.markdown h2:hover:after,
-.markdown h3:hover:after {
+.markdown h1:hover::after,
+.markdown h2:hover::after,
+.markdown h3:hover::after {
     display: inline-block;
     font: normal normal normal 16px/1 FontAwesome;
     text-rendering: auto;
@@ -1696,7 +1696,7 @@ input.new-organization-button {
 
 .markdown .indicator.orange {
     border: 1px solid hsl(29, 84%, 51%);
-    background: linear-gradient(to bottom,hsla(0, 0%, 100%, 0.0) 50%,hsla(29, 84%, 51%, 1.0) 50%);
+    background: linear-gradient(to bottom, hsla(0, 0%, 100%, 0.0) 50%, hsla(29, 84%, 51%, 1.0) 50%);
 }
 
 .markdown .indicator.green {
@@ -1742,10 +1742,10 @@ input.new-organization-button {
 
 .error_page .errorbox {
     margin: auto;
-    border: 2px solid #44A98C;
+    border: 2px solid #44a98c;
     max-width: 500px;
     background-color: white;
-    box-shadow: 0 0 4px #44A98C;
+    box-shadow: 0 0 4px #44a98c;
     font-size: 18px;
 }
 
@@ -2068,7 +2068,7 @@ input.new-organization-button {
     font-weight: 400;
 
     background-color: hsl(207, 55%, 53%);
-    color: #FFF;
+    color: #fff;
     outline: none;
     border: none;
     border-radius: 2px;
