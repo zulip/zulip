@@ -61,6 +61,11 @@ def run_test():
                 "publicPath": "http://localhost:3000/webpack-stub/%s-stubentry.js" % (entry,),
                 "path": "/stubfolder/%s-stubfile.js" % (entry,)
             }]
+        entries['runtime'] = [{
+            "name": "runtime.js",
+            "publicPath": "http://localhost:3000/webpack-stub/runtime-stubentry.js",
+            "path": "/stubfolder/runtime-stubfile.js"
+        }]
     stat_data = {
         "status": "done",
         "chunks": entries
@@ -70,7 +75,6 @@ def run_test():
         os.makedirs(directory)
     with open(os.path.join(directory, 'webpack-stats-test.json'), 'w') as outfile:
         json.dump(stat_data, outfile)
-
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--test',

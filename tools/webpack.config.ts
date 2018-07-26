@@ -5,7 +5,6 @@ import { getExposeLoaders, getImportLoaders } from './webpack-helpers';
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const assets = require('./webpack.assets.json');
-
 // Adds on css-hot-loader in dev mode
 function getHotCSS(bundle:any[], isProd:boolean) {
     if(isProd) {
@@ -104,6 +103,11 @@ export default (env?: string) : webpack.Configuration => {
         // We prefer it over eval since eval has trouble setting
         // breakpoints in chrome.
         devtool: production ? 'source-map' : 'cheap-module-source-map',
+        optimization: {
+          runtimeChunk: {
+              name: 'runtime'
+          }
+        }
     };
 
     // Add variables within modules
@@ -154,8 +158,8 @@ export default (env?: string) : webpack.Configuration => {
                     }
                     return '[name].[contenthash].css';
                 },
-                chunkFilename: "[chunkhash].css"
-            })
+                chunkFilename: "[name].[chunkhash].css"
+            }),
         ];
     } else {
         // Out JS debugging tools
@@ -170,8 +174,8 @@ export default (env?: string) : webpack.Configuration => {
             new webpack.LoaderOptionsPlugin({debug: true}),
             // Extract CSS from files
             new MiniCssExtractPlugin({
-                filename: "[name].css",
-                chunkFilename: "[chunkhash].css"
+                filename: "[name].[contenthash].css",
+                chunkFilename: "[name].[chunkhash].css"
             }),
         ];
         config.devServer = {

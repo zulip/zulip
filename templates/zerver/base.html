@@ -28,6 +28,7 @@
         This allows pages requiring common files via webpack to override
         this block -->
         {% block commonjs %}
+        {{ render_bundle('runtime', attrs='nonce="%s"' % (csp_nonce)) }}
         {{ render_bundle('common', attrs='nonce="%s"' % (csp_nonce)) }}
         {% endblock %}
         {% block customhead %}

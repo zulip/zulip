@@ -11,12 +11,10 @@
 </script>
 {% endblock %}
 
-{% block commonjs %}
-{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce)) }}
-{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
-{% endblock %}
 
 {% block customhead %}
+{{ render_bundle('app', attrs='nonce="%s"' % (csp_nonce)) }}
+{{ render_bundle('katex', attrs='nonce="%s"' % (csp_nonce)) }}
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link href="/static/images/logo/apple-touch-icon-precomposed.png" rel="apple-touch-icon-precomposed">
 <link id="emoji-spritesheet" href="/static/generated/emoji/{{ emojiset }}_sprite.css" rel="stylesheet" type="text/css">
