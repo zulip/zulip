@@ -42,7 +42,7 @@ a:visited {
     font-weight: 500;
 }
 
-a.arrow:after {
+a.arrow::after {
     content: " ";
     display: inline-block;
     position: relative;
@@ -453,7 +453,7 @@ nav ul li.active::after {
 .portico-landing.features-app section.hero .image {
     height: 400px;
     width: 40%;
-    background-color: rgba(0,0,0,0.05);
+    background-color: rgba(0, 0, 0, 0.05);
 }
 
 .portico-landing.features-app section.keyboard-shortcuts {
@@ -545,7 +545,7 @@ nav ul li.active::after {
     background-color: #fff;
     border-radius: 10px;
 
-    box-shadow: 10px 20px 80px rgba(0,0,0,0.15);
+    box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
 }
 
 .portico-landing.features-app section.notifications .envelope {
@@ -613,7 +613,7 @@ nav ul li.active::after {
     width: 400px;
     height: 280px;
 
-    background: linear-gradient(135deg, rgba(0,0,0,0.05), rgba(0,0,0,0.2));
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.05), rgba(0, 0, 0, 0.2));
     border-radius: 4px;
 
     background-image: url(/static/images/landing-page/notifications.jpg);
@@ -751,7 +751,6 @@ nav ul li.active::after {
     background-color: hsla(0, 67%, 57%, 0.9);
 
     animation-duration: 18s;
-
 }
 
 .portico-landing.hello .hero .waves .wave.light-green {
@@ -811,7 +810,7 @@ nav ul li.active::after {
     font-size: 3em;
     font-weight: 400;
 
-    text-shadow: 0px 0px 20px rgba(255,255,255,0.2);
+    text-shadow: 0px 0px 20px rgba(255, 255, 255, 0.2);
 }
 
 .portico-landing.hello .hero header p {
@@ -820,7 +819,7 @@ nav ul li.active::after {
     font-size: 1.5em;
     font-weight: 300;
     line-height: 1.4;
-    text-shadow: 0px 0px 5px rgba(10, 66, 51, 0.3), 0px 0px 20px rgba(255,255,255,0.2);
+    text-shadow: 0px 0px 5px rgba(10, 66, 51, 0.3), 0px 0px 20px rgba(255, 255, 255, 0.2);
 }
 
 .portico-landing.hello .hero header a {
@@ -840,17 +839,17 @@ nav ul li.active::after {
     font-weight: 500;
     color: #679f81;
 
-    box-shadow: 0px 3px 10px rgba(0,0,0,0.2);
+    box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.2);
 
     transition: all 0.2s ease;
 }
 
 .portico-landing.hello .hero header button:hover {
-    box-shadow: 0px 3px 10px rgba(255,255,255,0.2);
+    box-shadow: 0px 3px 10px rgba(255, 255, 255, 0.2);
 }
 
 .portico-landing.hello .hero header button:active {
-    box-shadow: 0px 3px 20px rgba(255,255,255,0.5);
+    box-shadow: 0px 3px 20px rgba(255, 255, 255, 0.5);
 }
 
 .portico-landing.hello .hero header .download-button {
@@ -1705,7 +1704,7 @@ nav ul li.active::after {
     width: 60%;
     margin: 0 auto;
     border: none;
-    border-bottom: 1px solid rgba(255,255,255,0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .portico-landing.hello .testimonials .company-container {
@@ -1925,7 +1924,6 @@ nav ul li.active::after {
     position: relative;
     padding: 125px 100px 0px 100px;
     margin-top: 0px;
-
 }
 
 .portico-landing.hello .call-to-action-bottom button {
@@ -2036,7 +2034,7 @@ nav ul li.active::after {
 }
 
 .portico-landing.apps .hero .info .cta {
-    text-shadow: 0px 0px 60px rgba(0,0,0,0.3);
+    text-shadow: 0px 0px 60px rgba(0, 0, 0, 0.3);
     max-width: 600px;
 }
 
@@ -2511,9 +2509,9 @@ nav ul li.active::after {
 }
 
 .portico-landing.integrations .searchbar input {
-    -webkit-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
-    -moz-box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
-    box-shadow: 0px 0px 7px 2px rgba(0,0,0,0.03);
+    -webkit-box-shadow: 0px 0px 7px 2px rgba(0, 0, 0, 0.03);
+    -moz-box-shadow: 0px 0px 7px 2px rgba(0, 0, 0, 0.03);
+    box-shadow: 0px 0px 7px 2px rgba(0, 0, 0, 0.03);
 
     font-size: 1em;
     font-family: inherit;
@@ -2790,7 +2788,7 @@ nav ul li.active::after {
     width: 300px;
     height: 500px;
 
-    box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
 
 
     text-align: left;
@@ -2960,7 +2958,7 @@ nav ul li.active::after {
 .pricing-overlay.pricing-model.active {
     opacity: 1;
     pointer-events: all;
-    background-color: rgba(0,0,0,0.6);
+    background-color: rgba(0, 0, 0, 0.6);
 }
 
 .pricing-overlay.pricing-model .price-box {
@@ -3540,8 +3538,8 @@ nav ul li.active::after {
     }
 
     .portico-landing.integrations .integration-categories-dropdown h4 {
-        border-left: 1px solid #E4EDF5;
-        border-right: 1px solid #E4EDF5;
+        border-left: 1px solid #e4edf5;
+        border-right: 1px solid #e4edf5;
         transition: all 0.3s ease;
         font-size: .9em;
     }
@@ -3804,7 +3802,6 @@ nav ul li.active::after {
             font-size: 1em;
         }
     }
-
 }
 
 @media (max-width: 686px) {
@@ -3904,7 +3901,7 @@ nav ul li.active::after {
         float: right;
     }
 
-    .portico-header .content > ul:before {
+    .portico-header .content > ul::before {
         content: "Zulip";
         display: block;
         margin-top: 20px;
@@ -3985,9 +3982,9 @@ nav ul li.active::after {
         color: hsl(0, 0%, 27%) !important;
     }
 
-    nav ul li.active:after {
+    nav ul li.active::after {
         content: ">";
-        transform: scale(1,1);
+        transform: scale(1, 1);
         bottom: auto;
         left: -25px;
         font-weight: 400;
@@ -4226,7 +4223,6 @@ nav ul li.active::after {
     .gradients .gradient.sunburst {
         background: linear-gradient(5deg, transparent 20%, #e8d275 80%);
     }
-
 }
 
 @media (max-width: 375px) {
