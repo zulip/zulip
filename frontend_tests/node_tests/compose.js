@@ -294,11 +294,6 @@ run_test('validate_stream_message', () => {
         assert.equal(data.count, 16);
         return 'compose_all_everyone_stub';
     };
-    $('#compose-all-everyone').is = function (sel) {
-        if (sel === ':visible') {
-            return $('#compose-all-everyone').visible();
-        }
-    };
     var compose_content;
     $('#compose-all-everyone').append = function (data) {
         compose_content = data;
