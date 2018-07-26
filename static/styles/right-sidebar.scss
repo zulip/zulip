@@ -14,12 +14,21 @@
     z-index: 1;
 }
 
-#user_presences,
+#buddy_list_wrapper,
 #group-pms {
     position: relative;
-    list-style-position: inside; /* Draw the bullets inside our box */
     margin-left: 0;
     overflow: auto;
+}
+
+#user_presences {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+#user_presences,
+#group-pms {
+    list-style-position: inside; /* Draw the bullets inside our box */
 }
 
 #user_presences:hover,

@@ -15,7 +15,7 @@ function init_simulated_scrolling() {
         scrollHeight: 0,
     };
 
-    $('#user_presences')[0] = elem;
+    $('#buddy_list_wrapper')[0] = elem;
 
     return elem;
 }

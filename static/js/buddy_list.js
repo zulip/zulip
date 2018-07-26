@@ -4,7 +4,7 @@ var buddy_list = (function () {
     var self = {};
 
     self.container_sel = '#user_presences';
-    self.scroll_container_sel = '#user_presences';
+    self.scroll_container_sel = '#buddy_list_wrapper';
     self.item_sel = 'li.user_sidebar_entry';
 
     self.items_to_html = function (opts) {
