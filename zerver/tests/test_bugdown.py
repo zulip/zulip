@@ -1287,10 +1287,12 @@ class BugdownErrorTests(ZulipTestCase):
                 self.send_stream_message(self.example_email("othello"), "Denmark", message)
 
     def test_ultra_long_rendering(self) -> None:
-        """A message with an ultra-long rendering throws an exception"""
-        msg = u'* a\n' * MAX_MESSAGE_LENGTH  # Rendering is >100K characters
+        """A rendered message with an ultra-long lenght (> 10 * MAX_MESSAGE_LENGTH)
+        throws an exception"""
+        msg = u'mock rendered message\n' * MAX_MESSAGE_LENGTH
 
-        with self.simulated_markdown_failure():
+        with mock.patch('zerver.lib.bugdown.timeout', return_value=msg), \
+                mock.patch('zerver.lib.bugdown.bugdown_logger'):
             with self.assertRaises(BugdownRenderingException):
                 bugdown_convert(msg)
 

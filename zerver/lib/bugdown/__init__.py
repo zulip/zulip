@@ -81,6 +81,8 @@ STREAM_LINK_REGEX = r"""
                      \*\*                         # ends by double asterisks
                     """
 
+bugdown_logger = logging.getLogger()
+
 def rewrite_local_links_to_relative(link: str) -> str:
     """ If the link points to a local destination we can just switch to that
     instead of opening a new tab. """
@@ -308,8 +310,8 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
             tweet = timeout(3, api.GetStatus, tweet_id)
             res = tweet.AsDict()
         except AttributeError:
-            logging.error('Unable to load twitter api, you may have the wrong '
-                          'library installed, see https://github.com/zulip/zulip/issues/86')
+            bugdown_logger.error('Unable to load twitter api, you may have the wrong '
+                                 'library installed, see https://github.com/zulip/zulip/issues/86')
             return None
         except TimeoutExpired:
             # We'd like to try again later and not cache the bad result,
@@ -334,7 +336,7 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
                 # but for now it seems reasonable to log at error
                 # level (so that we get notified), but then cache the
                 # failure to proceed with our usual work
-                logging.error(traceback.format_exc())
+                bugdown_logger.error(traceback.format_exc())
                 return None
     return res
 
@@ -741,7 +743,7 @@ class InlineInterestingLinkProcessor(markdown.treeprocessors.Treeprocessor):
             # We put this in its own try-except because it requires external
             # connectivity. If Twitter flakes out, we don't want to not-render
             # the entire message; we just want to not show the Twitter preview.
-            logging.warning(traceback.format_exc())
+            bugdown_logger.warning(traceback.format_exc())
             return None
 
     def get_url_data(self, e: Element) -> Optional[Tuple[str, str]]:
@@ -1747,7 +1749,7 @@ def log_bugdown_error(msg: str) -> None:
     order to prevent AdminNotifyHandler from sending the santized
     original markdown formatting into another Zulip message, which
     could cause an infinite exception loop."""
-    logging.getLogger('').error(msg)
+    bugdown_logger.error(msg)
 
 def get_email_info(realm_id: int, emails: Set[str]) -> Dict[str, FullNameInfo]:
     if not emails:
@@ -1965,14 +1967,9 @@ def do_convert(content: str,
         return rendered_content
     except Exception:
         cleaned = privacy_clean_markdown(content)
-
-        # Output error to log as well as sending a zulip and email
-        log_bugdown_error('Exception in Markdown parser: %sInput (sanitized) was: %s'
-                          % (traceback.format_exc(), cleaned))
-        subject = "Markdown parser failure on %s" % (platform.node(),)
-        mail.mail_admins(
-            subject, "Failed message: %s\n\n%s\n\n" % (cleaned, traceback.format_exc()),
-            fail_silently=False)
+        exception_message = ('Exception in Markdown parser: %sInput (sanitized) was: %s'
+                             % (traceback.format_exc(), cleaned))
+        bugdown_logger.exception(exception_message)
 
         raise BugdownRenderingException()
     finally:
