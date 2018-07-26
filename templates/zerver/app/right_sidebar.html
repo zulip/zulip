@@ -18,7 +18,9 @@
                     <i class="fa fa-remove" aria-hidden="true"></i>
                 </button>
             </div>
-            <ul id="user_presences" class="filters scrolling_list"></ul>
+            <div id="buddy_list_wrapper" class="scrolling_list">
+                <ul id="user_presences" class="filters"></ul>
+            </div>
             {% if show_invites %}
             <a id="invite-user-link" href="#invite"><i class="fa fa-plus-circle" aria-hidden="true"></i>{{ _('Invite more users') }}</a>
             {% endif %}

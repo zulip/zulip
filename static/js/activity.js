@@ -27,15 +27,15 @@ exports.new_user_input = true;
 var huddle_timestamps = new Dict();
 
 exports.update_scrollbar = (function () {
-    var $user_presences = $("#user_presences");
+    var $buddy_list_wrapper = $("#buddy_list_wrapper");
     var $group_pms = $("#group-pms");
 
     return {
         users: function () {
-            if (!$user_presences.length) {
-                $user_presences = $("#user_presences");
+            if (!$buddy_list_wrapper.length) {
+                $buddy_list_wrapper = $("#buddy_list_wrapper");
             }
-            ui.update_scrollbar($user_presences);
+            ui.update_scrollbar($buddy_list_wrapper);
         },
         group_pms: function () {
             if (!$group_pms.length) {
@@ -376,7 +376,7 @@ exports.initialize = function () {
 
     setInterval(get_full_presence_list_update, ACTIVE_PING_INTERVAL_MS);
 
-    ui.set_up_scrollbar($("#user_presences"));
+    ui.set_up_scrollbar($("#buddy_list_wrapper"));
     ui.set_up_scrollbar($("#group-pms"));
 };
 
