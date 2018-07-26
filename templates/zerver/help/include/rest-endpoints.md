@@ -7,12 +7,12 @@
 #### Streams
 
 * [Get all streams](/api/get-all-streams)
-* [Get stream ID](/api/get-stream-id)
 * [Get subscribed streams](/api/get-subscribed-streams)
 * [Add subscriptions](/api/add-subscriptions)
 * [Remove subscriptions](/api/remove-subscriptions)
 * [Get topics in a stream](/api/get-stream-topics)
 * [Create a stream](/api/create-stream)
+* [Get stream ID](/api/get-stream-id)
 
 #### Users
 
