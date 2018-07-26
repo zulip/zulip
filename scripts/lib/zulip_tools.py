@@ -11,6 +11,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 import json
 import uuid
@@ -37,6 +38,23 @@ YELLOW = '\x1b[33m'
 BLUE = '\x1b[34m'
 MAGENTA = '\x1b[35m'
 CYAN = '\x1b[36m'
+
+def overwrite_symlink(src, dst):
+    # type: (str, str) -> None
+    while True:
+        tmp = tempfile.mktemp(
+            prefix='.' + os.path.basename(dst) + '.',
+            dir=os.path.dirname(dst))
+        try:
+            os.symlink(src, tmp)
+        except FileExistsError:
+            continue
+        break
+    try:
+        os.rename(tmp, dst)
+    except Exception:
+        os.remove(tmp)
+        raise
 
 def parse_cache_script_args(description):
     # type: (str) -> argparse.Namespace
