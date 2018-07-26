@@ -26,6 +26,10 @@ set_global('ui', {
     update_scrollbar: function () {},
 });
 
+set_global('padded_widget', {
+    update_padding: () => {},
+});
+
 zrequire('compose_fade');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');

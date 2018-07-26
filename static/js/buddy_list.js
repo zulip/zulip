@@ -6,6 +6,7 @@ var buddy_list = (function () {
     self.container_sel = '#user_presences';
     self.scroll_container_sel = '#buddy_list_wrapper';
     self.item_sel = 'li.user_sidebar_entry';
+    self.padding_sel = '#buddy_list_wrapper_padding';
 
     self.items_to_html = function (opts) {
         var user_info = opts.items;
@@ -94,6 +95,7 @@ var buddy_list = (function () {
         // as rendered.
 
         self.render_count += more_keys.length;
+        self.update_padding();
     };
 
     self.get_items = function () {
@@ -140,6 +142,7 @@ var buddy_list = (function () {
             self.render_count -= 1;
             var li = self.find_li({key: opts.key});
             li.remove();
+            self.update_padding();
         }
     };
 
@@ -220,6 +223,7 @@ var buddy_list = (function () {
             if (pos === self.render_count) {
                 self.render_count += 1;
                 self.container.append(html);
+                self.update_padding();
             }
             return;
         }
@@ -228,6 +232,7 @@ var buddy_list = (function () {
             self.render_count += 1;
             var li = self.find_li({key: other_key});
             li.before(html);
+            self.update_padding();
         }
     };
 
@@ -265,7 +270,8 @@ var buddy_list = (function () {
         height_to_fill += 10;
 
         while (self.render_count < self.keys.length) {
-            var bottom_offset = elem.scrollHeight - elem.scrollTop;
+            var padding_height = $(self.padding_sel).height();
+            var bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
             if (bottom_offset > height_to_fill) {
                 break;
@@ -290,6 +296,15 @@ var buddy_list = (function () {
 
         scroll_container.scroll(function () {
             self.fill_screen_with_content();
+        });
+    };
+
+    self.update_padding = function () {
+        padded_widget.update_padding({
+            shown_rows: self.render_count,
+            total_rows: self.keys.length,
+            content_sel: self.container_sel,
+            padding_sel: self.padding_sel,
         });
     };
 
