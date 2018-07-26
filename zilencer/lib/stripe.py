@@ -69,15 +69,14 @@ class StripeError(JsonableError):
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
-        if not settings.TEST_SUITE and STRIPE_PUBLISHABLE_KEY is None:
-            # Dev-only message; no translation needed.
-            raise StripeError(
-                "Missing Stripe config. See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
-
-        if not Plan.objects.exists():
-            # Dev-only message; no translation needed.
-            raise StripeError(
-                "Plan objects not created. Please run ./manage.py setup_stripe")
+        if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
+            if STRIPE_PUBLISHABLE_KEY is None:
+                raise AssertionError(
+                    "Missing Stripe config. "
+                    "See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
+            if not Plan.objects.exists():
+                raise AssertionError(
+                    "Plan objects not created. Please run ./manage.py setup_stripe")
 
         try:
             return func(*args, **kwargs)

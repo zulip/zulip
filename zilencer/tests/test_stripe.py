@@ -74,24 +74,6 @@ class StripeTest(ZulipTestCase):
             raise_exception()
         mock_billing_logger_error.assert_called()
 
-    @mock.patch("zilencer.lib.stripe.STRIPE_PUBLISHABLE_KEY", None)
-    def test_no_stripe_keys(self) -> None:
-        @catch_stripe_errors
-        def foo() -> None:
-            pass  # nocoverage
-        with self.settings(TEST_SUITE=False):
-            with self.assertRaisesRegex(StripeError, "Missing Stripe config."):
-                foo()
-
-    def test_no_plan_objects(self) -> None:
-        Plan.objects.all().delete()
-
-        @catch_stripe_errors
-        def foo() -> None:
-            pass  # nocoverage
-        with self.assertRaisesRegex(StripeError, "Plan objects not created. Please run ./manage.py"):
-            foo()
-
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_initial_upgrade(self, mock_create_subscription: mock.Mock,
