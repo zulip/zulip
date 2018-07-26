@@ -29,6 +29,12 @@ def mock_create_subscription(*args: Any, **kwargs: Any) -> stripe.Subscription:
 def mock_customer_with_active_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
     return stripe.util.convert_to_stripe_object(fixture_data["customer_with_active_subscription"])
 
+def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
+    customer = mock_customer_with_active_subscription()
+    customer.subscriptions.data[0].status = "canceled"
+    customer.subscriptions.data[0].canceled_at = 1532602160
+    return customer
+
 def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
 
@@ -245,12 +251,10 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(get_seat_count(realm), initial_count)
 
     def test_extract_current_subscription(self) -> None:
-        # Only the most basic test. In particular, doesn't include testing with a
-        # canceled subscription, because we don't have a fixture for it.
         self.assertIsNone(extract_current_subscription(mock_create_customer()))
-
         subscription = extract_current_subscription(mock_customer_with_active_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
+        self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
     def test_subscribe_customer_to_second_plan(self, mock_customer_with_active_subscription: mock.Mock) -> None:
