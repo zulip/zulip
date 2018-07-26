@@ -1692,10 +1692,6 @@ class Subscription(models.Model):
     push_notifications = models.BooleanField(default=False)  # type: bool
     email_notifications = models.BooleanField(default=False)  # type: bool
 
-    # Combination desktop + audible notifications superseded by the
-    # above.
-    notifications = models.BooleanField(default=False)  # type: bool
-
     class Meta:
         unique_together = ("user_profile", "recipient")
 

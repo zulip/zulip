@@ -145,7 +145,7 @@ class Command(BaseCommand):
                 len(markup_messages), sum([elt["count"] for elt in markup_messages])))
 
             # Notifications for stream messages
-            notifications = active_user_subs.filter(notifications=True).values(
+            notifications = active_user_subs.filter(desktop_notifications=True).values(
                 "user_profile").annotate(count=Count("user_profile"))
             print("%d users receive desktop notifications for %d streams" % (
                 len(notifications), sum([elt["count"] for elt in notifications])))
