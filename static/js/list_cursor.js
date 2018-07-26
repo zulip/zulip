@@ -4,7 +4,7 @@ var list_cursor = function (opts) {
     var config_ok =
         opts.highlight_class &&
         opts.list &&
-        opts.list.container &&
+        opts.list.scroll_container_sel &&
         opts.list.find_li &&
         opts.list.first_key &&
         opts.list.prev_key &&
@@ -64,7 +64,8 @@ var list_cursor = function (opts) {
     };
 
     self.adjust_scroll = function (li) {
-        scroll_util.scroll_element_into_container(li, opts.list.container);
+        var scroll_container = $(opts.list.scroll_container_sel);
+        scroll_util.scroll_element_into_container(li, scroll_container);
     };
 
     self.redraw = function () {
