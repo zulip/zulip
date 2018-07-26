@@ -318,7 +318,7 @@ body.night-mode .mention .messagebox {
 
 body.night-mode .user-mention,
 body.night-mode .user-group-mention {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
     background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
     background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
     background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
@@ -374,7 +374,7 @@ body.night-mode .alert-box .alert.alert-error::before {
 /* Popover: */
 
 body.night-mode .hotspot.overlay .hotspot-popover {
-    border-color: hsla(0, 0%, 0%, 0.2)!important;
+    border-color: hsla(0, 0%, 0%, 0.2) !important;
 
     /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
@@ -456,10 +456,10 @@ body.night-mode .highlight_text_deleted {
     background-color: hsla(7, 54%, 62%, 0.38);
 }
 
-body.night-mode .sub-unsub-message span:before,
-body.night-mode .sub-unsub-message span:after,
-body.night-mode .date_row span:before,
-body.night-mode .date_row span:after {
+body.night-mode .sub-unsub-message span::before,
+body.night-mode .sub-unsub-message span::after,
+body.night-mode .date_row span::before,
+body.night-mode .date_row span::after {
     opacity: 0.2;
 }
 
@@ -476,7 +476,7 @@ body.night-mode .email_tooltip {
     background-color: #404c59;
 }
 
-body.night-mode .email_tooltip:after {
+body.night-mode .email_tooltip::after {
     border-bottom-color: #404c59 !important;
 }
 

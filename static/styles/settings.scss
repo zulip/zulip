@@ -365,7 +365,7 @@ input[type=checkbox] + .inline-block {
 
 #settings_page .icon-button {
     border-radius: 5px;
-    border: 1px solid hsl(0,0%,80%);
+    border: 1px solid hsl(0, 0%, 80%);
     font-size: 14px;
     padding: 3px 14px 4px 11px;
     text-decoration: none;
@@ -474,9 +474,9 @@ input[type=checkbox].inline-block {
 }
 
 .remove-attachment {
-    margin-right: 5px       !important;
-    font-size: 1.1em        !important;
-    padding-left: 0px       !important;
+    margin-right: 5px !important;
+    font-size: 1.1em !important;
+    padding-left: 0px !important;
 }
 
 #download_attachment {
@@ -1255,7 +1255,7 @@ input[type=checkbox].inline-block {
     transform: translateY(-50%);
 }
 
-#settings_page .table-striped thead th.active:after {
+#settings_page .table-striped thead th.active::after {
     content: " \f0d8";
     white-space: pre;
     display: inline-block;
@@ -1266,7 +1266,7 @@ input[type=checkbox].inline-block {
     -moz-osx-font-smoothing: grayscale;
 }
 
-#settings_page .table-striped thead th.active.descend:after {
+#settings_page .table-striped thead th.active.descend::after {
     content: " \f0d7";
 }
 

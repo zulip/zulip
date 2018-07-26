@@ -628,11 +628,11 @@ td.pointer {
     @include prefixed-user-select(none);
 }
 
-.include-sender .message_edit_notice:before {
+.include-sender .message_edit_notice::before {
     content: "(";
 }
 
-.include-sender .message_edit_notice:after {
+.include-sender .message_edit_notice::after {
     content: ")";
 }
 
@@ -774,7 +774,7 @@ td.pointer {
     text-decoration: none;
 }
 
-.stream_label:after {
+.stream_label::after {
     left: 100%;
     top: 50%;
     content: " ";
@@ -790,7 +790,7 @@ td.pointer {
     -moz-transform: scale(.9999);
 }
 
-.stream_label:before {
+.stream_label::before {
     left: 100%;
     top: 50%;
     content: " ";
@@ -861,7 +861,8 @@ td.pointer {
 
 .summary_row.last_message .message_header {
     border-bottom-right-radius: 3px;
-    box-shadow: inset 0px 2px 1px -2px hsl(0, 0%, 20%),
+    box-shadow:
+        inset 0px 2px 1px -2px hsl(0, 0%, 20%),
         inset -2px 0px 1px -2px hsl(0, 0%, 20%),
         inset 0px -2px 1px -2px hsl(0, 0%, 20%);
 }
@@ -928,7 +929,6 @@ td.pointer {
 @-ms-keyframes rotate {
     from {
         -ms-transform: rotate(0deg);
-
     }
 
     to {
@@ -1102,7 +1102,8 @@ td.pointer {
 }
 
 .selected_message .messagebox-content {
-    box-shadow: inset 0px 0px 0px 2px hsl(215, 47%, 50%),
+    box-shadow:
+        inset 0px 0px 0px 2px hsl(215, 47%, 50%),
         -1px -1px 0px 0px hsl(215, 47%, 50%),
         1px 1px 0px 0px hsl(215, 47%, 50%),
         -1px 1px 0px 0px hsl(215, 47%, 50%),
@@ -1333,7 +1334,7 @@ div.focused_table {
 
 .message_edit_content {
     line-height: 18px;
-    resize: vertical!important;
+    resize: vertical !important;
     max-height: 24em;
 }
 
@@ -1599,7 +1600,7 @@ blockquote p {
     color: hsl(0, 0%, 100%);
 }
 
-#tab_list li.inactive:before {
+#tab_list li.inactive::before {
     left: 100%;
     top: 50%;
     content: " ";
@@ -1771,7 +1772,7 @@ blockquote p {
     text-align: center;
 }
 
-.nav .dropdown-menu:after {
+.nav .dropdown-menu::after {
     position: absolute;
     width: 0px;
     height: 0px;
@@ -1830,7 +1831,6 @@ nav .column-left .nav-logo {
     margin-top: 8px;
     width: 25px;
     height: 25px;
-
 }
 
 nav .column-left .company-name {
@@ -2611,10 +2611,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
     text-transform: none;
 }
 
-.sub-unsub-message span:before,
-.sub-unsub-message span:after,
-.date_row span:before,
-.date_row span:after {
+.sub-unsub-message span::before,
+.sub-unsub-message span::after,
+.date_row span::before,
+.date_row span::after {
     display: inline-block;
     position: relative;
     content: " ";
@@ -2625,14 +2625,14 @@ div.topic_edit_spinner .loading_indicator_spinner {
     border-bottom: 1px solid #fff;
 }
 
-.sub-unsub-message span:before,
-.date_row span:before {
+.sub-unsub-message span::before,
+.date_row span::before {
     right: 0.5em;
     margin-left: -50%;
 }
 
-.sub-unsub-message span:after,
-.date_row span:after {
+.sub-unsub-message span::after,
+.date_row span::after {
     left: 0.5em;
     margin-right: -50%;
 }
@@ -2714,7 +2714,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-left: 2px;
     white-space: nowrap;
     background: -moz-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,hsla(0, 0%, 0%, 0.1)), color-stop(100%,hsla(0, 0%, 0%, 0.0)));
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
     background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
     background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.1) 0%, hsla(0, 0%, 0%, 0.0) 100%);
