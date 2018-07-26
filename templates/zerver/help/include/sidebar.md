@@ -95,6 +95,7 @@
 * [Display emoji as text](/help/display-emoji-as-text)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
+* [View organization settings](/help/view-your-organizations-settings-as-a-non-admin)
 
 ## Apps
 * [Desktop installation guides](/help/desktop-app-install-guide)
