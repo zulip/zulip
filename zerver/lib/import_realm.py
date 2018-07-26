@@ -588,6 +588,9 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     with open(realm_data_filename) as f:
         data = ujson.load(f)
 
+    # We don't import the Stream model yet, since it depends on Realm,
+    # which isn't imported yet.  But we need the Stream model IDs for
+    # notifications_stream.
     update_model_ids(Stream, data, 'stream')
     re_map_foreign_keys(data, 'zerver_realm', 'notifications_stream', related_table="stream")
 
@@ -662,6 +665,10 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
 
     if 'zerver_huddle' in data:
         update_model_ids(Huddle, data, 'huddle')
+        # We don't import Huddle yet, since we don't have the data to
+        # compute huddle hashes until we've imported some of the
+        # tables below.
+        # TODO: double-check this.
 
     re_map_foreign_keys(data, 'zerver_recipient', 'type_id', related_table="stream",
                         recipient_field=True, id_field=True)
@@ -888,6 +895,9 @@ def import_attachments(data: TableData) -> None:
     child_id = 'message_id'
 
     update_model_ids(parent_model, data, 'attachment')
+    # We don't bulk_import_model yet, because we need to first compute
+    # the many-to-many for this table.
+
     # First, build our list of many-to-many (m2m) rows.
     # We do this in a slightly convoluted way to anticipate
     # a future where we may need to call re_map_foreign_keys.
