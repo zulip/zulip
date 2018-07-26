@@ -78,7 +78,7 @@ run_test('get_canonical_name', () => {
 run_test('translate_emoticons_to_names', () => {
     // Simple test
     var test_text = 'Testing :)';
-    var expected = 'Testing :smiley:';
+    var expected = 'Testing :slight_smile:';
     var result = emoji.translate_emoticons_to_names(test_text);
     assert.equal(expected, result);
 

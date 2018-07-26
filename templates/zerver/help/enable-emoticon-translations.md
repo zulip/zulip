@@ -3,14 +3,14 @@
 If you use emoticons like `:)` or `:/`, you can have them translated into
 emoji equivalents like
 <img
-    src="/static/generated/emoji/images/emoji/smile.png"
-    alt="smiley"
+    src="/static/generated/emoji/images-google-64/1f642.png"
+    alt="slight_smile"
     style="width: 3%;"
 />
 or
 <img
-    src="/static/generated/emoji/images/emoji/slightly_frowning_face.png"
-    alt="slightly_frowning_face"
+    src="/static/generated/emoji/images-google-64/1f641.png"
+    alt="slight_frown"
     style="width: 3%;"
 />
 automatically by Zulip.
@@ -34,8 +34,8 @@ automatically by Zulip.
             <td align="center"><code>:)</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/smiley.png"
-                    alt="smiley"
+                    src="/static/generated/emoji/images-google-64/1f642.png"
+                    alt="slight_smile"
                     style="width: 30%;">
             </td>
         </tr>
@@ -43,8 +43,8 @@ automatically by Zulip.
             <td align="center"><code>(:</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/smiley.png"
-                    alt="smiley"
+                    src="/static/generated/emoji/images-google-64/1f642.png"
+                    alt="slight_smile"
                     style="width: 30%;">
             </td>
         </tr>
@@ -52,8 +52,8 @@ automatically by Zulip.
             <td align="center"><code>:(</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/slightly_frowning_face.png"
-                    alt="slightly_frowning_face"
+                    src="/static/generated/emoji/images-google-64/1f641.png"
+                    alt="frown"
                     style="width: 30%;">
             </td>
         </tr>
@@ -61,7 +61,7 @@ automatically by Zulip.
             <td align="center"><code>&lt;3</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/heart.png"
+                    src="/static/generated/emoji/images-google-64/2764-fe0f.png"
                     alt="heart"
                     style="width: 30%;">
             </td>
@@ -70,7 +70,7 @@ automatically by Zulip.
             <td align="center"><code>:|</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/expressionless.png"
+                    src="/static/generated/emoji/images-google-64/1f611.png"
                     alt="expressionless"
                     style="width: 30%;">
             </td>
@@ -79,7 +79,7 @@ automatically by Zulip.
             <td align="center"><code>:/</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images/emoji/confused.png"
+                    src="/static/generated/emoji/images-google-64/1f615.png"
                     alt="confused"
                     style="width: 30%;">
             </td>

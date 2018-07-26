@@ -360,15 +360,15 @@
     {
       "name": "translate_emoticons_enabled",
       "input": ":)",
-      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span></p>",
-      "text_content": "\ud83d\ude03",
+      "expected_output": "<p><span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span></p>",
+      "text_content": "\ud83d\ude42",
       "translate_emoticons": true
     },
     {
       "name": "translate_emoticons",
-      "input":  ":) foo :( bar <3 with space : ) real emoji :smiley:",
-      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> foo <span class=\"emoji emoji-1f641\" title=\"slight frown\">:slight_frown:</span> bar <span class=\"emoji emoji-2764\" title=\"heart\">:heart:</span> with space : ) real emoji <span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span></p>",
-      "text_content": "\ud83d\ude03 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude03",
+      "input":  ":) foo :( bar <3 with space : ) real emoji :slight_smile:",
+      "expected_output": "<p><span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span> foo <span class=\"emoji emoji-1f641\" title=\"frown\">:frown:</span> bar <span class=\"emoji emoji-2764\" title=\"heart\">:heart:</span> with space : ) real emoji <span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span></p>",
+      "text_content": "\ud83d\ude42 foo \ud83d\ude41 bar \u2764 with space : ) real emoji \ud83d\ude42",
       "translate_emoticons": true
     },
     {
@@ -381,8 +381,8 @@
     {
       "name": "translate_emoticons_newline",
       "input":  ":) test\n:) test",
-      "expected_output": "<p><span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> test<br>\n<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span> test</p>",
-      "text_content": "\ud83d\ude03 test\n\ud83d\ude03 test",
+      "expected_output": "<p><span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span> test<br>\n<span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span> test</p>",
+      "text_content": "\ud83d\ude42 test\n\ud83d\ude42 test",
       "translate_emoticons": true
     },
     {
@@ -395,16 +395,16 @@
     {
       "name": "translate_emoticons_at_sentence_end",
       "input": "Translate this :).",
-      "expected_output": "<p>Translate this <span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span>.</p>",
-      "text_content": "Translate this \ud83d\ude03.",
+      "expected_output": "<p>Translate this <span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span>.</p>",
+      "text_content": "Translate this \ud83d\ude42.",
       "translate_emoticons": true
     },
     {
       "name": "translate_emoticons_between_symbols",
       "input": "Translate this !:)?",
-      "expected_output": "<p>Translate this !<span class=\"emoji emoji-1f603\" title=\"smiley\">:smiley:</span>?</p>",
+      "expected_output": "<p>Translate this !<span class=\"emoji emoji-1f642\" title=\"slight smile\">:slight_smile:</span>?</p>",
       "marked_expected_output": "<p>Translate this !:)?</p>",
-      "text_content": "Translate this !\ud83d\ude03?",
+      "text_content": "Translate this !\ud83d\ude42?",
       "translate_emoticons": true
     },
     {
