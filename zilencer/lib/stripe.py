@@ -98,7 +98,7 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
 def get_stripe_customer(stripe_customer_id: str) -> stripe.Customer:
     stripe_customer = stripe.Customer.retrieve(stripe_customer_id, expand=["default_source"])
     if PRINT_STRIPE_FIXTURE_DATA:
-        print(''.join(['"retrieve_customer": ', str(stripe_customer), ',']))  # nocoverage
+        print(''.join(['"customer_with_active_subscription": ', str(stripe_customer), ',']))  # nocoverage
     return stripe_customer
 
 @catch_stripe_errors
