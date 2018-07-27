@@ -1558,6 +1558,12 @@ class AbstractUserMessage(models.Model):
 class UserMessage(AbstractUserMessage):
     message = models.ForeignKey(Message, on_delete=CASCADE)  # type: Message
 
+def get_usermessage_by_message_id(user_profile: UserProfile, message_id: int) -> Optional[UserMessage]:
+    try:
+        return UserMessage.objects.select_related().get(user_profile=user_profile,
+                                                        message__id=message_id)
+    except UserMessage.DoesNotExist:
+        return None
 
 class ArchivedUserMessage(AbstractUserMessage):
     """Used as a temporary holding place for deleted UserMessages objects

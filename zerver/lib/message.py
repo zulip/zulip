@@ -41,7 +41,8 @@ from zerver.models import (
     Subscription,
     UserProfile,
     UserMessage,
-    Reaction
+    Reaction,
+    get_usermessage_by_message_id,
 )
 
 from typing import Any, Dict, List, Optional, Set, Tuple, Union
@@ -475,7 +476,7 @@ class ReactionDict:
                          'full_name': row['user_profile__full_name']}}
 
 
-def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, UserMessage]:
+def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message, Optional[UserMessage]]:
     """You can access a message by ID in our APIs that either:
     (1) You received or have previously accessed via starring
         (aka have a UserMessage row for).
@@ -489,11 +490,7 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
     except Message.DoesNotExist:
         raise JsonableError(_("Invalid message(s)"))
 
-    try:
-        user_message = UserMessage.objects.select_related().get(user_profile=user_profile,
-                                                                message=message)
-    except UserMessage.DoesNotExist:
-        user_message = None
+    user_message = get_usermessage_by_message_id(user_profile, message_id)
 
     if user_message is None:
         if message.recipient.type != Recipient.STREAM:
