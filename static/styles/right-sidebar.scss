@@ -11,6 +11,7 @@
 #user_presences li:hover,
 #user_presences li.highlighted_user {
     background-color: hsl(93, 19%, 88%);
+    z-index: 1;
 }
 
 #user_presences,
