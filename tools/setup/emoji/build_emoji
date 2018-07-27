@@ -123,6 +123,10 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
             # those google emoji (in case anyone used them).
             emoji_positions += get_emoji_info_template(emoji)
 
+        if skin_variations_are_universal(emoji):
+            for skin_tone, skin_dict in emoji['skin_variations'].items():
+                emoji_positions += get_emoji_info_template(skin_dict)
+
     for emojiset in EMOJISETS:
         SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
         sprite_css_file = open(SPRITE_CSS_PATH, 'w')
