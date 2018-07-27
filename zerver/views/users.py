@@ -70,6 +70,7 @@ def reactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
     target = access_user_by_id(user_profile, user_id, allow_deactivated=True, allow_bots=True)
     if target.is_bot:
+        assert target.bot_type is not None
         check_bot_creation_policy(user_profile, target.bot_type)
     do_reactivate_user(target, acting_user=user_profile)
     return json_success()
