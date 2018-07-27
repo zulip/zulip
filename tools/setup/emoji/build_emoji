@@ -104,6 +104,13 @@ def get_success_stamp() -> str:
     sha1_hexdigest = generate_sha1sum_emoji(ZULIP_PATH)
     return os.path.join(EMOJI_CACHE_PATH, sha1_hexdigest, 'emoji', '.success-stamp')
 
+def get_emoji_info_template(emoji_dict: Dict[str, Any]) -> str:
+    return EMOJI_POS_INFO_TEMPLATE % {
+        'codepoint': get_emoji_code(emoji_dict),
+        'pos_x': (emoji_dict["sheet_x"] * 100) / 51,
+        'pos_y': (emoji_dict["sheet_y"] * 100) / 51,
+    }
+
 def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
     # Spritesheet CSS generation code.
     emoji_positions = ""
@@ -114,11 +121,7 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
             # Google emoji (not just the universal ones), we need to
             # ensure the spritesheet is setup to correctly display
             # those google emoji (in case anyone used them).
-            emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
-                'codepoint': get_emoji_code(emoji),
-                'pos_x': (emoji["sheet_x"] * 100) / 51,
-                'pos_y': (emoji["sheet_y"] * 100) / 51,
-            }
+            emoji_positions += get_emoji_info_template(emoji)
 
     for emojiset in EMOJISETS:
         SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
