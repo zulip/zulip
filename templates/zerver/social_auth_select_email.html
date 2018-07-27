@@ -1,0 +1,33 @@
+{% extends "zerver/portico_signup.html" %}
+
+{% block portico_content %}
+<div class="register-account flex full-page">
+    <div class="center-block new-style" style="padding: 20px 0px">
+
+        <div class="pitch">
+            {% trans %}
+            <h1>You're almost there.</h1>
+            <p>We just need you to do one last thing.</p>
+            {% endtrans %}
+        </div>
+
+        <form method="post" class="form-horizontal white-box" id="registration" action="/complete/{{ backend }}/">
+            <div class="input-group m-10 inline-block">
+                <label for="default_stream_group">{{ _('select email') }}</label>
+                <div class="input-group radio">
+                    <input class="inline-block" type="radio" name="email" value="{{ primary_email }}" />
+                    <label for="id_radio_{{ primary_email }}" class="inline-block">{{ primary_email }}</label>
+                {% for email in verified_non_primary_emails %}
+                    <input class="inline-block" type="radio" name="email" value="{{ email }}" />
+                    <label for="id_radio_{{ email }}" class="inline-block">{{ email }}</label>
+                {% endfor %}
+                </div>
+                <div class="register-button-box">
+                        <button class="register-button" type="submit">{{ _('submit') }}</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+{% endblock %}
