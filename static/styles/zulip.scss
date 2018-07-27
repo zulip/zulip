@@ -3036,4 +3036,30 @@ div.message_content button.tictactoe-square:disabled {
     .message_controls {
         right: -40px;
     }
+
+    .user-status-indicator.popover_user_presence {
+        top: 0;
+    }
+
+    .popover_info {
+        .user_active {
+            padding-top: 10px;
+        }
+        .user_popover_email {
+            padding-bottom: 10px;
+        }
+    }
+
+    .nav .dropdown-menu {
+        font-size: 16px;
+        li {
+            padding: 2px 0;
+            i {
+                margin-right: 5px;
+            }
+        }
+        li.divider {
+            padding: 0;
+        }
+    }
 }

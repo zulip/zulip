@@ -345,3 +345,14 @@
     background-color: hsl(0, 0%, 100%);
     border: 1px solid hsl(0, 0%, 86%);
 }
+
+.less_dense_mode {
+    .popover-content {
+        font-size: 16px;
+
+        li {
+            padding-top: 2px;
+            padding-bottom: 2px;
+        }
+    }
+}
