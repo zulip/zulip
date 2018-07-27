@@ -50,8 +50,8 @@ Kandra Labs also acts as a data processor to deliver the
 [Mobile Push Notification Service][mobile-push], which uses the same
 hosting infrastructure and terms of service as Zulip Cloud.
 
-The [on-premise section](#gdpr-compliance-on-premise) of this page
-discusses how the Zulip on-premise software works in relation to GDPR
+The [on-premises section](#gdpr-compliance-on-premises) of this page
+discusses how the Zulip on-premises software works in relation to GDPR
 compliance.
 
 [mobile-push](https://zulip.readthedocs.io/en/latest/production/mobile-push-notifications.html)
@@ -118,14 +118,14 @@ GDPR:
 Contact [support@zulipchat.com](mailto:support@zulipchat.com) for
 any assistance related to this topic.
 
-## GDPR compliance on-premise
+## GDPR compliance on-premises
 
-Compliance is often simpler when running software on-premise, since
+Compliance is often simpler when running software on-premises, since
 you can have complete control over how your organization uses the data
 you collect.
 
 In addition to the features described above that are available in
-Zulip Cloud (which are also available on-premise), the following tools
+Zulip Cloud (which are also available on-premises), the following tools
 may be useful:
 
 * The Zulip server comes with a command-line tool, `manage.py

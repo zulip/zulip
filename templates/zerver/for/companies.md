@@ -20,10 +20,10 @@ If you haven't read [why Zulip](/why-zulip), read that first. We've also
 collected a list of features we think will be of particular interest for
 companies using Zulip.
 
-### On-premise and in the cloud
+### On-premises and in the cloud
 
 High quality export and import tools make it easy to start with Zulip in the
-cloud, knowing that you can move to a on-premise deployment (or back) if
+cloud, knowing that you can move to a on-premises deployment (or back) if
 your budget or security needs change.
 
 ### No vendor lock-in
