@@ -45,7 +45,7 @@ from zerver.models import (
     get_usermessage_by_message_id,
 )
 
-from typing import Any, Dict, List, Optional, Set, Tuple, Union
+from typing import Any, Dict, List, Optional, Set, Tuple, Union, Sequence
 from mypy_extensions import TypedDict
 
 RealmAlertWords = Dict[int, List[str]]
@@ -533,6 +533,15 @@ def has_message_access(user_profile: UserProfile, message: Message,
             pass
 
     return True
+
+def bulk_access_messages(user_profile: UserProfile, messages: Sequence[Message]) -> List[Message]:
+    filtered_messages = []
+
+    for message in messages:
+        user_message = get_usermessage_by_message_id(user_profile, message.id)
+        if has_message_access(user_profile, message, user_message):
+            filtered_messages.append(message)
+    return filtered_messages
 
 def render_markdown(message: Message,
                     content: str,
