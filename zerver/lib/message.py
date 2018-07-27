@@ -492,19 +492,26 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
 
     user_message = get_usermessage_by_message_id(user_profile, message_id)
 
+    if has_message_access(user_profile, message, user_message):
+        return (message, user_message)
+    raise JsonableError(_("Invalid message(s)"))
+
+def has_message_access(user_profile: UserProfile, message: Message,
+                       user_message: Optional[UserMessage]) -> bool:
     if user_message is None:
         if message.recipient.type != Recipient.STREAM:
             # You can't access private messages you didn't receive
-            raise JsonableError(_("Invalid message(s)"))
+            return False
+
         stream = Stream.objects.get(id=message.recipient.type_id)
         if stream.realm != user_profile.realm:
             # You can't access public stream messages in other realms
-            raise JsonableError(_("Invalid message(s)"))
+            return False
 
         if not stream.is_history_public_to_subscribers():
             # You can't access messages you didn't directly receive
             # unless history is public to subscribers.
-            raise JsonableError(_("Invalid message(s)"))
+            return False
 
         if not stream.is_public():
             # This stream is an invite-only stream where message
@@ -512,19 +519,20 @@ def access_message(user_profile: UserProfile, message_id: int) -> Tuple[Message,
             # you're subscribed.
             if not Subscription.objects.filter(user_profile=user_profile, active=True,
                                                recipient=message.recipient).exists():
-                raise JsonableError(_("Invalid message(s)"))
+                return False
 
             # You are subscribed, so let this fall through to the public stream case.
         elif user_profile.is_guest:
             # Guest users don't get automatic access to public stream messages
             if not Subscription.objects.filter(user_profile=user_profile, active=True,
                                                recipient=message.recipient).exists():
-                raise JsonableError(_("Invalid message(s)"))
+                return False
         else:
             # Otherwise, the message was sent to a public stream in
             # your realm, so return the message, user_message pair
             pass
-    return (message, user_message)
+
+    return True
 
 def render_markdown(message: Message,
                     content: str,
