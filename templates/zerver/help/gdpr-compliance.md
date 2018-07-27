@@ -110,7 +110,7 @@ GDPR:
   etc.
 * For complying with access requests, you'll want to start with that
   user's Zulip profile, which you can access from the right sidebar.
-* The [Zulip export tools](/help/import-or-export-a-zulip-organization) support exporting
+* The [Zulip Cloud export](/help/export-your-organization) supports exporting
   all the data related to a Zulip user or organization.
 * The [Zulip REST API](https://zulipchat.com/api/rest) lets you
   automate your processes for handling GDPR requests.
@@ -129,8 +129,9 @@ Zulip Cloud (which are also available on-premises), the following tools
 may be useful:
 
 * The Zulip server comes with a command-line tool, `manage.py
-  export_single_user`, which is a variant of the main Zulip export
-  tools that exports a single Zulip user's account details,
+  export_single_user`, which is a variant of the main server
+  [export tool](https://zulip.readthedocs.io/en/latest/production/export-and-import.html),
+  that exports a single Zulip user's account details,
   preferences, stream subscriptions, and message history in a
   structured JSON format.
 * The Django management shell (`manage.py shell`) and database shell

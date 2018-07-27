@@ -116,9 +116,9 @@
 * [Link to your Zulip from the web](/help/join-zulip-chat-badge)
 * [Import from Slack](/help/import-from-slack)
 * [Import from Gitter](/help/import-from-gitter)
-* [Import or export a Zulip organization](/help/import-or-export-a-zulip-organization)
 * [Manage who can join](/help/manage-who-can-join-and-invite)
 * [Set the default language for new users](/help/change-the-default-language-for-your-organization)
+* [Export your organization](/help/export-your-organization)
 * [Deactivate your organization](/help/deactivate-your-organization)
 * [GDPR Compliance](/help/gdpr-compliance)
 
