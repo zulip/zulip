@@ -1,6 +1,7 @@
 # Stream privacy settings
 
-There are three types of streams in Zulip.
+Streams are similar to chatrooms, IRC channels, or email lists in that they
+determine who receives a message. There are three types of streams in Zulip.
 
 * **Public**: Anyone can join, and anyone can view the complete message
   history without joining.
