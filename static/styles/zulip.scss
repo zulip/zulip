@@ -602,55 +602,36 @@ td.pointer {
     @include prefixed-transition(all, 3s, ease-in-out);
 }
 
-.include-sender .message_edit_notice {
-    display: inline-block;
-    vertical-align: top;
-    line-height: 14px;
-    margin-left: 0px;
-    position: static;
-    padding: 0px;
-    width: auto;
-}
-
-.sender-status .message_edit_notice {
-    line-height: 18px;
-}
-
 .message_edit_notice {
     font-size: 10px;
+    line-height: 14px;
+    text-transform: uppercase;
     opacity: 0.5;
-    line-height: 0px;
-    text-align: right;
-    width: 45px;
-    position: absolute;
-    left: 0px;
-    top: 16px;
     @include prefixed-user-select(none);
 }
 
-.include-sender .message_edit_notice:before {
-    content: "(";
+.status-message .message_edit_notice {
+    min-width: 55px;
+    line-height: 16px;
+    word-break: break-word;
 }
 
-.include-sender .message_edit_notice:after {
-    content: ")";
-}
-
-.include-sender .message_time {
-    top: -4px;
+.prev_is_same_sender .message_edit_notice {
+    width: 50px;
+    text-align: center;
+    position: absolute;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    margin-top: 3px;
+    margin-left: -6px;
+    line-height: 17px;
 }
 
 .message_time {
-    display: block;
+    min-width: 45px;
     font-size: 12px;
-    opacity: 0.4;
-    vertical-align: middle;
-    padding: 1px;
-    font-weight: 400;
-    position: absolute;
-    right: -105px;
-    line-height: 20px;
-    text-align: right;
+    opacity: .4;
     @include prefixed-transition(background-color, 1.5s, ease-in, color 1.5s ease-in);
 }
 
@@ -662,15 +643,16 @@ td.pointer {
    z-index is kinda hacky, and requires some annoying color-matching,
    but it works. */
 .alert-msg {
-    position: absolute;
-    right: -110px;
-    font-size: 14px;
+    font-size: 12px;
     color: hsl(170, 47%, 54%);
     background-color: hsl(0, 0%, 100%);
+    outline: hsl(170, 47%, 54%);
+    border-radius: 2px;
+    padding: 0 2px;
     z-index: 999;
-    padding-left: 20px;
-    padding-right: 40px;
     font-weight: 400;
+    position: absolute;
+    right: 10px;
     display: none;
 }
 
@@ -678,20 +660,10 @@ td.pointer {
     background-color: hsl(192, 19%, 95%);
 }
 
-.include-sender .alert-msg {
-    top: -3px;
-}
-
-.status-time {
-    top: 8px !important;
-}
-
 .message_controls {
-    display: inline-block;
-    position: absolute;
-    top: 2px;
-    right: -56px;
-    z-index: 1;
+    min-width: 55px;
+    margin-left: auto;
+    margin-right: 8px;
 }
 
 .message_controls > div {
@@ -708,10 +680,6 @@ td.pointer {
 
 .message_controls > div {
     padding: 0px 1px;
-}
-
-.include-sender .message_controls {
-    top: -3px;
 }
 
 .message_data {
@@ -1053,10 +1021,6 @@ td.pointer {
     background-color: hsl(8, 94%, 94%);
 }
 
-.messagebox .message_top_line {
-    position: relative;
-}
-
 .recipient_row .message_row:first-child .unread_marker {
     top: 0px;
 }
@@ -1109,45 +1073,39 @@ td.pointer {
         1px -1px 0px 0px hsl(215, 47%, 50%);
 }
 
-.message_sender {
-    height: 0px;
-    vertical-align: top;
-    position: relative;
-}
-
-.sender_name {
-    display: inline-block;
+.sender_name,
+.sender_name-in-status {
+    height: 14px;
+    margin-right: 3px;
+    line-height: 14px;
     font-weight: 700;
-    vertical-align: top;
-    line-height: 12px;
-    font-size: 14px;
-    margin-left: -3px;
 }
 
 .sender-status {
-    display: inline-block;
-    margin: 8px 0px 8px -3px;
-    /* this normalizes the margin of the emoji reactions with normal messages. */
-    padding-bottom: 5px;
-    vertical-align: middle;
-    line-height: 18px;
-    font-size: 14px;
-    position: relative;
-    max-width: calc(100% - 50px);
+    display: flex;
+    align-items: baseline;
+    flex-flow: wrap;
 }
 
-.message_controls.sender-status-controls {
-    top: 10px;
-}
-
-.sender_name-in-status {
-    margin-right: 3px;
-    font-weight: 700;
+.status-message {
+    word-break: break-all;
+    line-height: 14px;
 }
 
 .sender_name_hovered .sender_name,
 .sender_name_hovered .sender_name-in-status {
     color: hsl(200, 100%, 40%);
+}
+
+.message_sender {
+    display: flex;
+    height: 0;
+}
+
+.has_status .message_sender {
+    height: auto;
+    align-items: center;
+    max-width: calc(100% - 55px);
 }
 
 .message_sender i.zulip-icon.bot,
@@ -1159,10 +1117,11 @@ td.pointer {
 
 .message_sender i.zulip-icon.bot {
     font-size: 12px;
+    line-height: 14px;
 }
 
 .popover_info i.zulip-icon.bot {
-    margin-top: 3px;
+    line-height: 20px;
 }
 
 .actions_hover:hover {
@@ -1252,8 +1211,9 @@ a.dark_background:hover,
 }
 
 .message_top_line {
+    display: flex;
+    height: 0;
     pointer-events: none;
-    position: relative;
 }
 
 .message_top_line * {
@@ -1261,7 +1221,13 @@ a.dark_background:hover,
 }
 
 .include-sender .message_top_line {
-    margin-top: 6px;
+    margin-top: 5px;
+    height: auto;
+}
+
+.has_status .message_top_line {
+    margin-top: 3px;
+    margin-bottom: 5px;
 }
 
 .small {
@@ -1310,15 +1276,12 @@ div.focused_table {
     display: block;
 }
 
-.include-sender .message_content:not(:empty) {
-    margin-top: -16px;
-}
-
 .message_content {
     line-height: 17px;
     min-height: 17px;
     font-size: 14px;
     margin-left: 46px;
+    margin-right: 115px;
     display: block;
     position: relative;
 }
@@ -1361,6 +1324,10 @@ div.focused_table {
 #inline_topic_edit,
 #message_edit_topic {
     margin-bottom: 5px;
+}
+
+#message_edit_topic {
+    max-width: calc(100% - 75px);
 }
 
 #inline_topic_edit.header-v {
@@ -1471,7 +1438,7 @@ blockquote p {
 }
 
 .messagebox-content {
-    padding: 4px 115px 1px 10px;
+    padding: 4px 10px 1px 10px;
 }
 
 #message-edit-history .messagebox-content {
@@ -1524,13 +1491,13 @@ blockquote p {
 }
 
 .inline_profile_picture {
-    display: inline-block;
+    min-width: 35px;
     width: 35px;
     height: 35px;
     margin-right: 11px;
-    vertical-align: top;
     border-radius: 4px;
     overflow: hidden;
+    display: inline-block;
 }
 
 .home-error-bar {
@@ -1673,7 +1640,6 @@ blockquote p {
     white-space: nowrap;
     margin-left: 15px;
     margin-top: 7px;
-    display: inline-block;
     float: right;
 }
 
@@ -2635,10 +2601,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
 .date_row span:after {
     left: 0.5em;
     margin-right: -50%;
-}
-
-.include-sender .message_edit {
-    margin-top: -14px;
 }
 
 .message_edit {

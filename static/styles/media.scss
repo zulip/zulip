@@ -261,39 +261,15 @@
         top: 30px;
     }
 
-    .messagebox-content {
-        padding-right: 15px;
-    }
-
     .message_time {
-        right: auto;
-        left: -3px;
+        margin-left: auto;
     }
 
     .message_controls {
-        width: 56px;
-        right: -10px;
-        top: 0px;
-    }
-
-    .message_hovered .message_controls {
-        z-index: 10;
-    }
-
-    .include-sender .message_controls {
-        background: none !important;
-        padding: none !important;
-        border: none !important;
-        top: -3px;
-    }
-
-    .message_time {
-        left: auto;
-        right: -5px;
-    }
-
-    .message_controls {
-        right: 40px;
+        z-index: 1;
+        position: absolute;
+        top: 24px;
+        right: 0;
     }
 
     .sender_name {
@@ -317,7 +293,7 @@
     }
 
     .message_content {
-        padding-right: 50px;
+        margin-right: 55px;
     }
 }
 
