@@ -2,29 +2,14 @@
 
 {!admin-only.md!}
 
-By default, everyone in an organization is a user; this limits them from
-modifying organization-wide settings, such as changing the organization name,
-activating or deactivating users, deleting streams, etc. Follow the following steps to
-give any user in your organization administrative rights.
+Organization administrators have access to organization-wide settings,
+including permission settings.
 
 {settings_tab|user-list-admin}
 
-4. Click on the **Make admin** button for the user that you wish to make an
-administrator.
-
-    After clicking the **Make admin** button, the selected user's browser will
-reload and the user will gain administrative privileges immediately.
-
-## Revoke administrative rights from a user
-
-Administrators can also revoke the administrative rights given to a user.
-
-{settings_tab|user-list-admin}
-
-2. Click on the **Remove admin** button.
-
-    The selected user's browser will reload automatically, and the user will no
-longer have access to the **Organization** page.
+4. Find the user that you would like to manage administrator rights and click
+**Make admin** or **Remove admin** next to the name. The selected user's
+browser will reload and the new rights will take effect immediately.
 
 !!! tip ""
     Users can revoke their own administrative privileges if there is at least
