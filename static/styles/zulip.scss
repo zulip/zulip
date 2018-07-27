@@ -1865,12 +1865,14 @@ nav a .no-style {
         width: calc(100% - 66px);
         float: none;
         overflow: hidden;
-        height: 40px;
+        height: 100%;
     }
 
     .input-append {
+        height: 100%;
         align-items: center;
         display: flex;
+        flex-wrap: nowrap;
         position: relative;
         width: calc(100% - 28px);
     }
@@ -1943,12 +1945,8 @@ nav a .no-style {
 
     @media (min-width: 500px) {
         .pill {
-            padding: 2px 18px 2px 3px !important;
+            padding: 2px 0px 2px 0px !important;
             font-size: 14px;
-
-            .exit {
-                top: 2px !important; /* pill's top padding + border */
-            }
         }
     }
     @media (max-width: 500px) {
