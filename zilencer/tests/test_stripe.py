@@ -14,7 +14,8 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count, extract_current_subscription, sign_string, unsign_string
+    get_seat_count, extract_current_subscription, sign_string, unsign_string, \
+    BillingError
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -264,7 +265,7 @@ class StripeTest(ZulipTestCase):
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
     def test_subscribe_customer_to_second_plan(self, mock_customer_with_active_subscription: mock.Mock) -> None:
-        with self.assertRaisesRegex(AssertionError, "Customer already has an active subscription."):
+        with self.assertRaisesRegex(BillingError, "Your organization has an existing active subscription."):
             do_subscribe_customer_to_plan(stripe.Customer.retrieve(),  # type: ignore # Mocked out function call
                                           self.stripe_plan_id, self.quantity, 0)
 

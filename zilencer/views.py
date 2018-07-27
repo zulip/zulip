@@ -26,7 +26,8 @@ from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
     get_stripe_customer, get_upcoming_invoice, get_seat_count, \
-    extract_current_subscription, process_initial_upgrade, sign_string
+    extract_current_subscription, process_initial_upgrade, sign_string, \
+    BillingError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -169,10 +170,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
-        error_message = process_initial_upgrade(user, request.POST['plan'],
-                                                request.POST['signed_seat_count'],
-                                                request.POST['salt'], request.POST['stripeToken']) or ""
-        if not error_message:
+        try:
+            process_initial_upgrade(user, request.POST['plan'], request.POST['signed_seat_count'],
+                                    request.POST['salt'], request.POST['stripeToken'])
+        except (BillingError, StripeError) as e:
+            error_message = str(e)
+        except Exception:
+            error_message = "Something went wrong. Please contact support@zulipchat.com."
+        else:
             return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     seat_count = get_seat_count(user.realm)
