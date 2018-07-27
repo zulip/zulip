@@ -487,7 +487,7 @@ body:
                                status_code=401)
 
 class RateLimitTestCase(TestCase):
-    def errors_disallowed(self) -> mock:
+    def errors_disallowed(self) -> Any:
         # Due to what is probably a hack in rate_limit(),
         # some tests will give a false positive (or succeed
         # for the wrong reason), unless we complain
