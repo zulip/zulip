@@ -2365,9 +2365,7 @@ class MirroredMessageUsersTest(ZulipTestCase):
         bob = get_user(self.nonreg_email('bob'), sender.realm)
         self.assertTrue(bob.is_mirror_dummy)
 
-class StarTests(ZulipTestCase):
-    """This is also the main test for access_message"""
-
+class MessageAccessTests(ZulipTestCase):
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
