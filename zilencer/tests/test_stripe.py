@@ -21,16 +21,16 @@ from zilencer.models import Customer, Plan
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
 
-def mock_create_customer(*args: Any, **kwargs: Any) -> ListObject:
+def mock_create_customer(*args: Any, **kwargs: Any) -> stripe.Customer:
     return stripe.util.convert_to_stripe_object(fixture_data["create_customer"])
 
-def mock_create_subscription(*args: Any, **kwargs: Any) -> ListObject:
+def mock_create_subscription(*args: Any, **kwargs: Any) -> stripe.Subscription:
     return stripe.util.convert_to_stripe_object(fixture_data["create_subscription"])
 
-def mock_customer_with_active_subscription(*args: Any, **kwargs: Any) -> ListObject:
+def mock_customer_with_active_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
     return stripe.util.convert_to_stripe_object(fixture_data["customer_with_active_subscription"])
 
-def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> ListObject:
+def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
 
 class StripeTest(ZulipTestCase):
