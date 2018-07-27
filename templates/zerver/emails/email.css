@@ -167,7 +167,7 @@ a.button:hover {
 
 .illustration {
     pointer-events: none;
-    cursor: default!important;
+    cursor: default !important;
     z-index: 100;
 }
 

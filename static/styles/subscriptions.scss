@@ -496,11 +496,11 @@ form#add_new_subscription {
     border-bottom: 1px solid hsl(0, 0%, 86%);
 }
 
-.subscriptions-container .display-type.preview:after {
+.subscriptions-container .display-type.preview::after {
     content: "Preview";
 }
 
-.subscriptions-container .display-type.preferences:after {
+.subscriptions-container .display-type.preferences::after {
     content: "Preferences";
 }
 
@@ -721,8 +721,8 @@ form#add_new_subscription {
     line-height: 1.5;
 }
 
-#subscription_overlay .stream-description .stream-description-editable:empty:after,
-.stream-row .sub-info-box .description:empty:after {
+#subscription_overlay .stream-description .stream-description-editable:empty::after,
+.stream-row .sub-info-box .description:empty::after {
     content: attr(data-no-description);
     font-style: italic;
     color: hsl(0, 0%, 66%);
@@ -865,7 +865,7 @@ form#add_new_subscription {
     transition: all 0.3s ease;
 }
 
-#subscription_overlay .editable:empty:before {
+#subscription_overlay .editable:empty::before {
     content: "\f040";
     font-family: "FontAwesome";
     font-size: 0.8rem;
