@@ -479,7 +479,7 @@ paths:
 
                        * `realm_name`:
 
-                       * `realm_restricted_to_domain`:
+                       * `realm_emails_restricted_to_domains`:
 
                        * `realm_users`:
 
@@ -1016,7 +1016,7 @@ definitions:
         format: int64
       realm_name:
         type: string
-      realm_restricted_to_domain:
+      realm_emails_restricted_to_domains:
         type: boolean
       realm_users:
         type: array

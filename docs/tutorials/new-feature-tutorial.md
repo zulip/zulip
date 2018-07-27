@@ -170,7 +170,7 @@ boolean field, `mandatory_topics`, to the Realm model in
 
 class Realm(models.Model):
     # ...
-    restricted_to_domain = models.BooleanField(default=True) # type: bool
+    emails_restricted_to_domains = models.BooleanField(default=True) # type: bool
     invite_required = models.BooleanField(default=False) # type: bool
 +   mandatory_topics = models.BooleanField(default=False) # type: bool
 ```
@@ -498,7 +498,7 @@ function _setup_page() {
     var options = {
         realm_name: page_params.realm_name,
         realm_description: page_params.realm_description,
-        realm_restricted_to_domain: page_params.realm_restricted_to_domain,
+        realm_emails_restricted_to_domains: page_params.realm_emails_restricted_to_domains,
         realm_invite_required: page_params.realm_invite_required,
         // ...
 +       realm_mandatory_topics: page_params.mandatory_topics,

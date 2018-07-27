@@ -89,7 +89,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             notifications_stream_id: noop,
             send_welcome_emails: noop,
             signup_notifications_stream_id: noop,
-            restricted_to_domain: noop,
+            emails_restricted_to_domains: noop,
             video_chat_provider: noop,
             waiting_period_threshold: noop,
         };

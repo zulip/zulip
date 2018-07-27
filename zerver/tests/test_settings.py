@@ -120,7 +120,7 @@ class ChangeSettingsTest(ZulipTestCase):
         self.login(email)
         realm = get_realm("zulip")
         realm.disallow_disposable_email_addresses = True
-        realm.restricted_to_domain = False
+        realm.emails_restricted_to_domains = False
         realm.save()
 
         json_result = self.client_patch("/json/settings",

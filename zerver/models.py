@@ -159,9 +159,8 @@ class Realm(models.Model):
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    # Whether email addresses are restricted to a given domain or domains.
     # See RealmDomain for the domains that apply for a given organization.
-    restricted_to_domain = models.BooleanField(default=False)  # type: bool
+    emails_restricted_to_domains = models.BooleanField(default=False)  # type: bool
 
     invite_required = models.BooleanField(default=True)  # type: bool
     invite_by_admins_only = models.BooleanField(default=False)  # type: bool
@@ -258,7 +257,7 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
-        restricted_to_domain=bool,
+        emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
         video_chat_provider=str,
         waiting_period_threshold=int,
@@ -406,7 +405,7 @@ def name_changes_disabled(realm: Optional[Realm]) -> bool:
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmDomain(models.Model):
-    """For an organization with restricted_to_domain enabled, the list of
+    """For an organization with emails_restricted_to_domains enabled, the list of
     allowed domains"""
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     # should always be stored lowercase
@@ -443,7 +442,7 @@ class EmailContainsPlusError(Exception):
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    if not realm.restricted_to_domain:
+    if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
                 is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
