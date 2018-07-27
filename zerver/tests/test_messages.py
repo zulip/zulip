@@ -38,6 +38,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
     maybe_update_first_visible_message_id,
     get_raw_unread_data,
+    bulk_access_messages
 )
 
 from zerver.lib.test_helpers import (
@@ -2614,6 +2615,83 @@ class MessageAccessTests(ZulipTestCase):
         self.login(guest_user.email)
         result = self.change_star(message_id)
         self.assert_json_success(result)
+
+    def test_bulk_access_messages_private_stream(self) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+
+        stream_name = "private_stream"
+        stream = self.make_stream(stream_name, invite_only=True,
+                                  history_public_to_subscribers=False)
+
+        self.subscribe(user, stream_name)
+        # Send a message before subscribing a new user to stream
+        message_one_id = self.send_stream_message(user.email,
+                                                  stream_name, "Message one")
+
+        later_subscribed_user = self.example_user("cordelia")
+        # Subscribe a user to private-protected history stream
+        self.subscribe(later_subscribed_user, stream_name)
+
+        # Send a message after subscribing a new user to stream
+        message_two_id = self.send_stream_message(user.email,
+                                                  stream_name, "Message two")
+
+        message_ids = [message_one_id, message_two_id]
+        messages = [Message.objects.select_related().get(id=message_id)
+                    for message_id in message_ids]
+
+        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+
+        # Message sent before subscribing wouldn't be accessible by later
+        # subscribed user as stream has protected history
+        self.assertEqual(len(filtered_messages), 1)
+        self.assertEqual(filtered_messages[0].id, message_two_id)
+
+        do_change_stream_invite_only(stream, True, history_public_to_subscribers=True)
+
+        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+
+        # Message sent before subscribing are accessible by 8user as stream
+        # don't have protected history
+        self.assertEqual(len(filtered_messages), 2)
+
+        # Testing messages accessiblity for an unsubscribed user
+        unsubscribed_user = self.example_user("ZOE")
+
+        filtered_messages = bulk_access_messages(unsubscribed_user, messages)
+
+        self.assertEqual(len(filtered_messages), 0)
+
+    def test_bulk_access_messages_public_stream(self) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+
+        # Testing messages accessiblity including a public stream message
+        stream_name = "public_stream"
+        self.subscribe(user, stream_name)
+        message_one_id = self.send_stream_message(user.email,
+                                                  stream_name, "Message one")
+
+        later_subscribed_user = self.example_user("cordelia")
+        self.subscribe(later_subscribed_user, stream_name)
+
+        # Send a message after subscribing a new user to stream
+        message_two_id = self.send_stream_message(user.email,
+                                                  stream_name, "Message two")
+
+        message_ids = [message_one_id, message_two_id]
+        messages = [Message.objects.select_related().get(id=message_id)
+                    for message_id in message_ids]
+
+        # All public stream messages are always accessible
+        filtered_messages = bulk_access_messages(later_subscribed_user, messages)
+        self.assertEqual(len(filtered_messages), 2)
+
+        unsubscribed_user = self.example_user("ZOE")
+        filtered_messages = bulk_access_messages(unsubscribed_user, messages)
+
+        self.assertEqual(len(filtered_messages), 2)
 
 class AttachmentTest(ZulipTestCase):
     def test_basics(self) -> None:
