@@ -3,7 +3,6 @@ import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from django.core import signing
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils import timezone
@@ -26,9 +25,8 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
-    do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_stripe_customer, get_upcoming_invoice, get_seat_count, \
-    extract_current_subscription, sign_string, unsign_string
+    extract_current_subscription, process_initial_upgrade, sign_string
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -171,28 +169,10 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
-        plan = request.POST['plan']
-        if plan not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
-            billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
-                                   % (user.id, user.realm.id, user.realm.string_id))
-            error_message = "Something went wrong. Please contact support@zulipchat.com"
-        try:
-            seat_count = int(unsign_string(request.POST['signed_seat_count'], request.POST['salt']))
-        except signing.BadSignature:
-            billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
-                                   % (user.id, user.realm.id, user.realm.string_id))
-            error_message = "Something went wrong. Please contact support@zulipchat.com"
-
+        error_message = process_initial_upgrade(user, request.POST['plan'],
+                                                request.POST['signed_seat_count'],
+                                                request.POST['salt'], request.POST['stripeToken']) or ""
         if not error_message:
-            stripe_customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
-            do_subscribe_customer_to_plan(
-                stripe_customer=stripe_customer,
-                stripe_plan_id=Plan.objects.get(nickname=plan).stripe_plan_id,
-                seat_count=seat_count,
-                # TODO: billing address details are passed to us in the request;
-                # use that to calculate taxes.
-                tax_percent=0)
-            # TODO: check for errors and raise/send to frontend
             return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     seat_count = get_seat_count(user.realm)
