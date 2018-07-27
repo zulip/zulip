@@ -1,124 +1,126 @@
-<div id="settings_page" class="new-style overlay-content modal-bg">
-    <div class="settings-header mobile">
-        <i class="fa fa-chevron-left" aria-hidden="true"></i>
-        <h1>{{ _('Settings') }}<span class="section"></span></h1>
-        <div class="exit">
-            <span class="exit-sign">&times;</span>
-        </div>
-        <div class="clear-float"></div>
-    </div>
-    <div class="sidebar left">
-        <div class="sidebar-list dark-grey small-text">
-            <div class="center tab-container"></div>
-            <ul class="normal-settings-list">
-                <li tabindex="0" data-section="your-account">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{ _('Your account') }}</div>
-                </li>
-                <li tabindex="0" data-section="display-settings">
-                    <i class="icon fa fa-clock-o" aria-hidden="true"></i>
-                    <div class="text">{{ _('Display settings') }}</div>
-                </li>
-                <li tabindex="0" data-section="notifications">
-                    <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
-                    <div class="text">{{ _('Notifications') }}</div>
-                </li>
-                <li tabindex="0" data-section="your-bots">
-                    <i class="icon fa fa-github" aria-hidden="true"></i>
-                    <div class="text">{{ _('Your bots') }}</div>
-                </li>
-                <li tabindex="0" data-section="alert-words">
-                    <i class="icon fa fa-book" aria-hidden="true"></i>
-                    <div class="text">{{ _('Alert words') }}</div>
-                </li>
-                <li tabindex="0" data-section="uploaded-files">
-                    <i class="icon fa fa-paperclip" aria-hidden="true"></i>
-                    <div class="text">{{ _('Uploaded files') }}</div>
-                </li>
-                <li tabindex="0" data-section="muted-topics">
-                    <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
-                    <div class="text">{{ _('Muted topics') }}</div>
-                </li>
-            </ul>
-
-            <ul class="org-settings-list">
-                <li tabindex="0" data-section="organization-profile">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
-                    <div class="text">{{ _('Organization profile') }}</div>
-                </li>
-                <li tabindex="0" data-section="organization-settings">
-                    <i class="icon fa fa-flask" aria-hidden="true"></i>
-                    <div class="text">{{ _('Organization settings') }}</div>
-                </li>
-                <li tabindex="0" data-section="organization-permissions">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
-                    <div class="text">{{ _('Organization permissions') }}</div>
-                </li>
-                <li tabindex="0" data-section="emoji-settings">
-                    <i class="icon fa fa-smile-o" aria-hidden="true"></i>
-                    <div class="text">{{ _('Custom emoji') }}</div>
-                </li>
-                <li tabindex="0" data-section="user-groups-admin">
-                    <i class="icon fa fa-group" aria-hidden="true"></i>
-                    <div class="text">{{ _('User groups') }}</div>
-                </li>
-                <li tabindex="0" data-section="auth-methods">
-                    <i class="icon fa fa-lock" aria-hidden="true"></i>
-                    <div class="text">{{ _('Authentication methods') }}</div>
-                </li>
-                <li tabindex="0" data-section="user-list-admin">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{ _('Users') }}</div>
-                </li>
-                {% if is_admin %}
-                <li tabindex="0" data-section="deactivated-users-admin">
-                    <i class="icon fa fa-trash-o" aria-hidden="true"></i>
-                    <div class="text">{{ _('Deactivated users') }}</div>
-                </li>
-                {% endif %}
-                <li tabindex="0" data-section="bot-list-admin">
-                    <i class="icon fa fa-github" aria-hidden="true"></i>
-                    <div class="text">{{ _('Bots') }}</div>
-                </li>
-                <li tabindex="0" data-section="default-streams-list">
-                    <i class="icon fa fa-exchange" aria-hidden="true"></i>
-                    <div class="text">{{ _('Default streams') }}</div>
-                </li>
-                <li tabindex="0" data-section="filter-settings">
-                    <i class="icon fa fa-font" aria-hidden="true"></i>
-                    <div class="text">{{ _('Filter settings') }}</div>
-                </li>
-                {% if custom_profile_fields_enabled %}
-                <li tabindex="0" data-section="profile-field-settings">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{ _('Custom profile fields') }}</div>
-                </li>
-                {% endif %}
-                {% if is_admin %}
-                <li tabindex="0" data-section="invites-list-admin">
-                    <i class="icon fa fa-user" aria-hidden="true"></i>
-                    <div class="text">{{ _('Invitations') }}</div>
-                </li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-    <div class="content-wrapper right">
-        <div class="settings-header">
+<div id="settings_page" class="new-style overlay-content flex">
+    <div class="modal-bg">
+        <div class="settings-header mobile">
+            <i class="fa fa-chevron-left" aria-hidden="true"></i>
             <h1>{{ _('Settings') }}<span class="section"></span></h1>
             <div class="exit">
                 <span class="exit-sign">&times;</span>
             </div>
+            <div class="clear-float"></div>
         </div>
-        <div id="settings_content">
-            <div class="organization-box organization">
+        <div class="sidebar left">
+            <div class="sidebar-list dark-grey small-text">
+                <div class="center tab-container"></div>
+                <ul class="normal-settings-list">
+                    <li tabindex="0" data-section="your-account">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{ _('Your account') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="display-settings">
+                        <i class="icon fa fa-clock-o" aria-hidden="true"></i>
+                        <div class="text">{{ _('Display settings') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="notifications">
+                        <i class="icon fa fa-exclamation-triangle" aria-hidden="true"></i>
+                        <div class="text">{{ _('Notifications') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="your-bots">
+                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <div class="text">{{ _('Your bots') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="alert-words">
+                        <i class="icon fa fa-book" aria-hidden="true"></i>
+                        <div class="text">{{ _('Alert words') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="uploaded-files">
+                        <i class="icon fa fa-paperclip" aria-hidden="true"></i>
+                        <div class="text">{{ _('Uploaded files') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="muted-topics">
+                        <i class="icon fa fa-eye-slash" aria-hidden="true"></i>
+                        <div class="text">{{ _('Muted topics') }}</div>
+                    </li>
+                </ul>
 
-            </div>
-            <div class="settings-box">
-
+                <ul class="org-settings-list">
+                    <li tabindex="0" data-section="organization-profile">
+                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                        <div class="text">{{ _('Organization profile') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="organization-settings">
+                        <i class="icon fa fa-flask" aria-hidden="true"></i>
+                        <div class="text">{{ _('Organization settings') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="organization-permissions">
+                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                        <div class="text">{{ _('Organization permissions') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="emoji-settings">
+                        <i class="icon fa fa-smile-o" aria-hidden="true"></i>
+                        <div class="text">{{ _('Custom emoji') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="user-groups-admin">
+                        <i class="icon fa fa-group" aria-hidden="true"></i>
+                        <div class="text">{{ _('User groups') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="auth-methods">
+                        <i class="icon fa fa-lock" aria-hidden="true"></i>
+                        <div class="text">{{ _('Authentication methods') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="user-list-admin">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{ _('Users') }}</div>
+                    </li>
+                    {% if is_admin %}
+                    <li tabindex="0" data-section="deactivated-users-admin">
+                        <i class="icon fa fa-trash-o" aria-hidden="true"></i>
+                        <div class="text">{{ _('Deactivated users') }}</div>
+                    </li>
+                    {% endif %}
+                    <li tabindex="0" data-section="bot-list-admin">
+                        <i class="icon fa fa-github" aria-hidden="true"></i>
+                        <div class="text">{{ _('Bots') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="default-streams-list">
+                        <i class="icon fa fa-exchange" aria-hidden="true"></i>
+                        <div class="text">{{ _('Default streams') }}</div>
+                    </li>
+                    <li tabindex="0" data-section="filter-settings">
+                        <i class="icon fa fa-font" aria-hidden="true"></i>
+                        <div class="text">{{ _('Filter settings') }}</div>
+                    </li>
+                    {% if custom_profile_fields_enabled %}
+                    <li tabindex="0" data-section="profile-field-settings">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{ _('Custom profile fields') }}</div>
+                    </li>
+                    {% endif %}
+                    {% if is_admin %}
+                    <li tabindex="0" data-section="invites-list-admin">
+                        <i class="icon fa fa-user" aria-hidden="true"></i>
+                        <div class="text">{{ _('Invitations') }}</div>
+                    </li>
+                    {% endif %}
+                </ul>
             </div>
         </div>
+        <div class="content-wrapper right">
+            <div class="settings-header">
+                <h1>{{ _('Settings') }}<span class="section"></span></h1>
+                <div class="exit">
+                    <span class="exit-sign">&times;</span>
+                </div>
+            </div>
+            <div id="settings_content">
+                <div class="organization-box organization">
 
-        {% include "zerver/app/settings_sidebar.html" %}
+                </div>
+                <div class="settings-box">
+
+                </div>
+            </div>
+
+            {% include "zerver/app/settings_sidebar.html" %}
+        </div>
     </div>
 </div>
