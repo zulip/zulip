@@ -3,8 +3,8 @@
 {!admin-only.md!}
 
 You can configure your organization settings to allow users to authenticate
-themselves using passwords, Google/GitHub OAuth, LDAP (currently on premise
-only), and/or various other SSO methods (also currently on premise only).
+themselves using passwords, Google/GitHub OAuth, LDAP (currently on premises
+only), and/or various other SSO methods (also currently on premises only).
 
 !!! tip ""
     If you are unsure about what these mean, don't worry! Zulip
