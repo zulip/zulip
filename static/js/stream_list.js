@@ -181,11 +181,11 @@ function zoom_in(options) {
 function zoom_out(options) {
     popovers.hide_all();
     topic_list.zoom_out();
+    exports.show_all_streams();
 
     if (options.stream_li) {
         exports.scroll_stream_into_view(options.stream_li);
     }
-    exports.show_all_streams();
 }
 
 exports.show_all_streams = function () {
