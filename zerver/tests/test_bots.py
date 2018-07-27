@@ -622,6 +622,24 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         profile = get_user(bot_email, bot_realm)
         self.assertEqual(profile.bot_type, UserProfile.INCOMING_WEBHOOK_BOT)
 
+    def test_no_generic_bot_reactivation_allowed_for_non_admins(self) -> None:
+        self.login(self.example_email('hamlet'))
+        self.create_bot(bot_type=UserProfile.DEFAULT_BOT)
+
+        bot_realm = get_realm('zulip')
+        bot_realm.bot_creation_policy = Realm.BOT_CREATION_LIMIT_GENERIC_BOTS
+        bot_realm.save(update_fields=['bot_creation_policy'])
+
+        bot_email = 'hambot-bot@zulip.testserver'
+        bot_user = get_user(bot_email, bot_realm)
+        do_deactivate_user(bot_user)
+
+        # A regular user cannot reactivate a generic bot
+        self.assert_num_bots_equal(0)
+        result = self.client_post("/json/users/%s/reactivate" % (bot_user.id,))
+        self.assert_json_error(result, 'Must be an organization administrator')
+        self.assert_num_bots_equal(0)
+
     def test_no_generic_bots_allowed_for_admins(self) -> None:
         bot_email = 'hambot-bot@zulip.testserver'
         bot_realm = get_realm('zulip')
