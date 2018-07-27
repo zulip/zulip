@@ -191,10 +191,10 @@ var event_fixtures = {
         value: 'new_realm_name',
     },
 
-    realm__update__restricted_to_domain: {
+    realm__update__emails_restricted_to_domains: {
         type: 'realm',
         op: 'update',
-        property: 'restricted_to_domain',
+        property: 'emails_restricted_to_domains',
         value: false,
     },
 
@@ -688,8 +688,8 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.realm_name, 'new_realm_name');
 
-    event = event_fixtures.realm__update__restricted_to_domain;
-    test_realm_boolean(event, 'realm_restricted_to_domain');
+    event = event_fixtures.realm__update__emails_restricted_to_domains;
+    test_realm_boolean(event, 'realm_emails_restricted_to_domains');
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');

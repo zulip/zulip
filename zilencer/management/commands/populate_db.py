@@ -140,19 +140,19 @@ class Command(BaseCommand):
             # Could in theory be done via zerver.lib.actions.do_create_realm, but
             # welcome-bot (needed for do_create_realm) hasn't been created yet
             zulip_realm = Realm.objects.create(
-                string_id="zulip", name="Zulip Dev", restricted_to_domain=True,
+                string_id="zulip", name="Zulip Dev", emails_restricted_to_domains=True,
                 description="The Zulip development environment default organization."
                             "  It's great for testing!",
                 invite_required=False, org_type=Realm.CORPORATE)
             RealmDomain.objects.create(realm=zulip_realm, domain="zulip.com")
             if options["test_suite"]:
                 mit_realm = Realm.objects.create(
-                    string_id="zephyr", name="MIT", restricted_to_domain=True,
+                    string_id="zephyr", name="MIT", emails_restricted_to_domains=True,
                     invite_required=False, org_type=Realm.CORPORATE)
                 RealmDomain.objects.create(realm=mit_realm, domain="mit.edu")
 
                 lear_realm = Realm.objects.create(
-                    string_id="lear", name="Lear & Co.", restricted_to_domain=False,
+                    string_id="lear", name="Lear & Co.", emails_restricted_to_domains=False,
                     invite_required=False, org_type=Realm.CORPORATE)
 
             # Create test Users (UserProfiles are automatically created,

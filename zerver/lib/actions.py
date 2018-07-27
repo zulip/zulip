@@ -3167,14 +3167,15 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     )
     send_event(event, can_access_stream_user_ids(stream))
 
-def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None) -> Realm:
+def do_create_realm(string_id: str, name: str,
+                    emails_restricted_to_domains: Optional[bool]=None) -> Realm:
     existing_realm = get_realm(string_id)
     if existing_realm is not None:
         raise AssertionError("Realm %s already exists!" % (string_id,))
 
     kwargs = {}  # type: Dict[str, Any]
-    if restricted_to_domain is not None:
-        kwargs['restricted_to_domain'] = restricted_to_domain
+    if emails_restricted_to_domains is not None:
+        kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -3192,7 +3193,7 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     # Log the event
     log_event({"type": "realm_created",
                "string_id": string_id,
-               "restricted_to_domain": restricted_to_domain})
+               "emails_restricted_to_domains": emails_restricted_to_domains})
 
     # Send a notification to the admin realm (if configured)
     if settings.NOTIFICATION_BOT is not None:
@@ -4634,12 +4635,12 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
-    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
+    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:
         # If this was the last realm domain, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
-        do_set_realm_property(realm, 'restricted_to_domain', False)
+        do_set_realm_property(realm, 'emails_restricted_to_domains', False)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm.id))
 

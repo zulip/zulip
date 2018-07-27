@@ -155,7 +155,7 @@ function get_property_value(property_name) {
     }
 
     if (property_name === 'realm_org_join_restrictions') {
-        if (page_params.realm_restricted_to_domain) {
+        if (page_params.realm_emails_restricted_to_domains) {
             return "only_selected_domain";
         }
         if (page_params.realm_disallow_disposable_email_addresses) {
@@ -450,7 +450,7 @@ exports.sync_realm_settings = function (property) {
         property = 'create_stream_permission';
     } else if (property === 'allow_message_editing') {
         property = 'msg_edit_limit_setting';
-    } else if (property === 'restricted_to_domain' || property === 'disallow_disposable_email_addresses') {
+    } else if (property === 'emails_restricted_to_domains' || property === 'disallow_disposable_email_addresses') {
         property = 'org_join_restrictions';
     } else if (property === 'message_content_delete_limit_seconds') {
         property = 'message_content_delete_limit_minutes';
@@ -707,14 +707,14 @@ exports.set_up = function () {
 
             var org_join_restrictions = $('#id_realm_org_join_restrictions').val();
             if (org_join_restrictions === "only_selected_domain") {
-                opts.data.restricted_to_domain = true;
+                opts.data.emails_restricted_to_domains = true;
                 opts.data.disallow_disposable_email_addresses = false;
             } else if (org_join_restrictions === "no_disposable_email") {
-                opts.data.restricted_to_domain = false;
+                opts.data.emails_restricted_to_domains = false;
                 opts.data.disallow_disposable_email_addresses = true;
             } else if (org_join_restrictions === "no_restriction") {
                 opts.data.disallow_disposable_email_addresses = false;
-                opts.data.restricted_to_domain = false;
+                opts.data.emails_restricted_to_domains = false;
             }
 
             var user_invite_restriction = $('#id_realm_user_invite_restriction').val();
