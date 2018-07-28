@@ -35,7 +35,7 @@ from zerver.lib.camo import get_camo_url
 from zerver.lib.emoji import translate_emoticons, emoticon_regex
 from zerver.lib.mention import possible_mentions, \
     possible_user_group_mentions, extract_user_group
-from zerver.lib.notifications import encode_stream
+from zerver.lib.url_encoding import encode_stream
 from zerver.lib.thumbnail import is_thumbor_enabled
 from zerver.lib.timeout import timeout, TimeoutExpired
 from zerver.lib.cache import cache_with_key, NotFoundInCache

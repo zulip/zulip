@@ -15,8 +15,8 @@ from django.utils.translation import ugettext as _
 from zerver.models import Realm, UserProfile, get_user_profile_by_id, get_client, \
     GENERIC_INTERFACE, Service, SLACK_INTERFACE, email_to_domain, get_service_profile
 from zerver.lib.actions import check_send_message
-from zerver.lib.notifications import encode_stream
 from zerver.lib.queue import retry_event
+from zerver.lib.url_encoding import encode_stream
 from zerver.lib.validator import check_dict, check_string
 from zerver.decorator import JsonableError
 

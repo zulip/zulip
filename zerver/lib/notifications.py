@@ -9,6 +9,7 @@ from django.utils.translation import ugettext as _
 from zerver.decorator import statsd_increment
 from zerver.lib.send_email import send_future_email, FromAddress
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.url_encoding import pm_narrow_url, stream_narrow_url, topic_narrow_url
 from zerver.models import (
     Recipient,
     ScheduledEmail,
@@ -31,7 +32,6 @@ import lxml.html
 import re
 import subprocess
 import ujson
-import urllib
 from collections import defaultdict
 import pytz
 
@@ -43,33 +43,6 @@ def one_click_unsubscribe_link(user_profile: UserProfile, email_type: str) -> st
     return create_confirmation_link(user_profile, user_profile.realm.host,
                                     Confirmation.UNSUBSCRIBE,
                                     url_args = {'email_type': email_type})
-
-def hash_util_encode(string: str) -> str:
-    # Do the same encoding operation as hash_util.encodeHashComponent on the
-    # frontend.
-    # `safe` has a default value of "/", but we want those encoded, too.
-    return urllib.parse.quote(
-        string.encode("utf-8"), safe=b"").replace(".", "%2E").replace("%", ".")
-
-def encode_stream(stream_id: int, stream_name: str) -> str:
-    # We encode streams for urls as something like 99-Verona.
-    stream_name = stream_name.replace(' ', '-')
-    return str(stream_id) + '-' + hash_util_encode(stream_name)
-
-def pm_narrow_url(realm: Realm, participants: List[str]) -> str:
-    participants.sort()
-    base_url = "%s/#narrow/pm-with/" % (realm.uri,)
-    return base_url + hash_util_encode(",".join(participants))
-
-def stream_narrow_url(realm: Realm, stream: Stream) -> str:
-    base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return base_url + encode_stream(stream.id, stream.name)
-
-def topic_narrow_url(realm: Realm, stream: Stream, topic: str) -> str:
-    base_url = "%s/#narrow/stream/" % (realm.uri,)
-    return "%s%s/topic/%s" % (base_url,
-                              encode_stream(stream.id, stream.name),
-                              hash_util_encode(topic))
 
 def relative_to_full_url(base_url: str, content: str) -> str:
     # Convert relative URLs to absolute URLs.

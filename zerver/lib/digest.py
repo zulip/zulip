@@ -10,9 +10,9 @@ from django.template import loader
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.notifications import build_message_list, encode_stream, \
-    one_click_unsubscribe_link
+from zerver.lib.notifications import build_message_list, one_click_unsubscribe_link
 from zerver.lib.send_email import send_future_email, FromAddress
+from zerver.lib.url_encoding import encode_stream
 from zerver.models import UserProfile, UserMessage, Recipient, Stream, \
     Subscription, UserActivity, get_active_streams, get_user_profile_by_id, \
     Realm
