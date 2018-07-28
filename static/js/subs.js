@@ -305,17 +305,7 @@ exports.update_settings_for_unsubscribed = function (sub) {
         sub_row.addClass("notdisplayed");
     }
 
-    row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
-
-// these streams are miscategorized so they don't jump off the page when being
-// unsubscribed from, but should be cleared and sorted when you apply an actual
-// filter.
-function remove_temporarily_miscategorized_streams() {
-    $("[data-temp-view]").removeAttr("data-temp-view", "false");
-}
-
-exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
 function stream_matches_query(query, sub, attr) {
     var search_terms = query.input.toLowerCase().split(",").map(function (s) {
@@ -336,8 +326,10 @@ function stream_matches_query(query, sub, attr) {
     return flag;
 }
 
-exports.populate_stream_settings_left_panel = function () {
-    var sub_rows = stream_data.get_streams_for_settings_page();
+exports.populate_stream_settings_left_panel = function (query) {
+    var stream_ids = exports.get_filtered_and_sorted_stream_ids(query);
+    var sub_rows = _.map(stream_ids, stream_data.get_sub_by_id);
+
     var template_data = {
         subscriptions: sub_rows,
     };
@@ -345,9 +337,51 @@ exports.populate_stream_settings_left_panel = function () {
     $('#subscriptions_table .streams-list').html(html);
 };
 
+exports.get_filtered_and_sorted_stream_ids = function (query) {
+    // We may not be using this yet.  If we are, please remove
+    // this comment. :)
+    var sub_rows = stream_data.get_streams_for_settings_page();
+
+    var name_ids = [];
+    var desc_ids = [];
+    var names = {};
+
+    function sort_by_stream_name(a, b) {
+        var stream_a_name = names[a].toLocaleLowerCase();
+        var stream_b_name = names[b].toLocaleLowerCase();
+        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
+    }
+
+    _.each(sub_rows, function (sub) {
+        if (stream_matches_query(query, sub, 'name')) {
+            names[sub.stream_id] = sub.name;
+            name_ids.push(sub.stream_id);
+        } else if (stream_matches_query(query, sub, 'description')) {
+            names[sub.stream_id] = sub.name;
+            desc_ids.push(sub.stream_id);
+        }
+    });
+
+    name_ids.sort(sort_by_stream_name);
+    desc_ids.sort(sort_by_stream_name);
+
+    var stream_ids = name_ids.concat(desc_ids);
+    return stream_ids;
+};
+
 // query is now an object rather than a string.
 // Query { input: String, subscribed_only: Boolean }
 exports.filter_table = function (query) {
+    // Save scroll position before we redraw stuff.
+    var streams_list_scrolltop = $(".streams-list").scrollTop();
+
+    exports.populate_stream_settings_left_panel(query);
+    exports.post_process_stream_list();
+
+    $(".streams-list").scrollTop(streams_list_scrolltop);
+};
+
+exports.post_process_stream_list = function () {
     var selected_row = get_hash_safe().split(/\//)[1];
 
     if (parseFloat(selected_row)) {
@@ -355,42 +389,7 @@ exports.filter_table = function (query) {
         sub_row.addClass("active");
     }
 
-    var stream_name_match_stream_ids = [];
-    var stream_description_match_stream_ids = [];
-    var others = [];
-    var stream_id_to_stream_name = {};
-    var widgets = {};
-    var streams_list_scrolltop = $(".streams-list").scrollTop();
-
-    function sort_by_stream_name(a, b) {
-        var stream_a_name = stream_id_to_stream_name[a].toLocaleLowerCase();
-        var stream_b_name = stream_id_to_stream_name[b].toLocaleLowerCase();
-        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
-    }
-
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
-        sub.data_temp_view = $(row).attr("data-temp-view");
-
-        if (stream_matches_query(query, sub, 'name')) {
-            $(row).removeClass("notdisplayed");
-
-            stream_id_to_stream_name[sub.stream_id] = sub.name;
-            stream_name_match_stream_ids.push(sub.stream_id);
-
-            widgets[sub.stream_id] = $(row).detach();
-        } else if (stream_matches_query(query, sub, 'description')) {
-            $(row).removeClass("notdisplayed");
-
-            stream_id_to_stream_name[sub.stream_id] = sub.name;
-            stream_description_match_stream_ids.push(sub.stream_id);
-
-            widgets[sub.stream_id] = $(row).detach();
-        } else {
-            $(row).addClass("notdisplayed");
-            others.push($(row).detach());
-        }
-
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
             placement: 'left', animation: false,
         });
@@ -398,27 +397,12 @@ exports.filter_table = function (query) {
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
-    stream_name_match_stream_ids.sort(sort_by_stream_name);
-    stream_description_match_stream_ids.sort(sort_by_stream_name);
-
-    _.each(stream_name_match_stream_ids, function (stream_id) {
-        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
-    });
-
-    _.each(stream_description_match_stream_ids, function (stream_id) {
-        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
-    });
-
-    $('#subscriptions_table .streams-list').append(others);
-
-    if ($(".stream-row.active").hasClass("notdisplayed")) {
+    if ($(".stream-row.active").length === 0) {
         $(".right .settings").hide();
         $(".nothing-selected").show();
         $(".stream-row.active").removeClass("active");
     }
 
-    // this puts the scrollTop back to what it was before the list was updated again.
-    $(".streams-list").scrollTop(streams_list_scrolltop);
 };
 
 var subscribed_only = true;
@@ -477,7 +461,6 @@ exports.setup_page = function (callback) {
                 }
 
                 exports.actually_filter_streams();
-                remove_temporarily_miscategorized_streams();
             },
         });
 
@@ -504,13 +487,11 @@ exports.setup_page = function (callback) {
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
 
-        exports.populate_stream_settings_left_panel();
         initialize_components();
         exports.actually_filter_streams();
         stream_create.set_up_handlers();
 
         $("#add_new_subscription input[type='text']").on("input", function () {
-            remove_temporarily_miscategorized_streams();
             // Debounce filtering in case a user is typing quickly
             filter_streams();
         });
@@ -615,7 +596,6 @@ exports.launch = function (hash) {
 
 exports.close = function () {
     hashchange.exit_overlay();
-    subs.remove_miscategorized_streams();
 };
 
 exports.switch_rows = function (event) {
