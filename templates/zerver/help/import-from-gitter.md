@@ -17,8 +17,8 @@ First, export your data from Gitter.
    Zulip.
 
     !!! warn ""
-        **Note:** You'll need a gitter API token to export data. You can get
-        this token by following the instructions in the
+        **Note:** You'll need a gitter API token to export data. You can get this
+        token by following the instructions in the "**Getting Started**" section of the
         [gitter documentation](https://developer.gitter.im/docs/).
 
 ### Import into zulipchat.com
@@ -63,13 +63,25 @@ you'd like for your imported Zulip organization.
 
 {!import-login.md!}
 
+## Create organization administrators
+
+Gitter API doesn't include the admin data of the organization.
+Use the instructions mentioned in the
+[documentation](
+https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#grant-administrator-access)
+to grant administrative access to a user.
+
 ## Caveats
 
 - The [Gitter data export](https://github.com/minrk/archive-gitter)
   that powers this doesn't support exporting private gitter rooms.
 
+- The [Gitter API](https://developer.gitter.im/docs/user-resource)
+  doesn't include the admin data of the organization.
+
 - This tool doesn't do any translation of the Gitter markdown into
-  Zulip format markdown; additionally, Gitter's "issue mentions"
+  Zulip format markdown; additionally, Gitter's
+  [issue mentions](https://gitter.zendesk.com/hc/en-us/articles/200176692-Issue-and-Pull-Request-mentions)
   aren't translated into anything yet.
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
