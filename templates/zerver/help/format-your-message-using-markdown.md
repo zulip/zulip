@@ -171,7 +171,7 @@ You can display mathematical symbols, expressions and equations using Zulip's
 based on [KaTeX](https://github.com/Khan/KaTeX).
 
 !!! tip ""
-    Visit the [KaTeX Wiki](https://github.com/Khan/KaTeX/wiki/Function-Support-in-KaTeX)
+    Visit the [KaTeX Wiki](https://khan.github.io/KaTeX/docs/supported.html)
     to view a complete of compatible commands.
 
 Surround elements in valid TeX syntax with `$$two dollar signs$$` to display it
