@@ -548,6 +548,39 @@ def get_gcm_payload(user_profile: UserProfile, message: Message) -> Dict[str, An
     })
     return data
 
+def handle_remove_push_notification(user_profile_id: int, remove_message: Dict[str, Any]) -> None:
+    """This should be called when a message that had previously had a
+    mobile push executed is read.  This triggers a mobile push notifica
+    mobile app when the message is read on the server, to remove the
+    message from the notification.
+
+    """
+    user_profile = get_user_profile_by_id(user_profile_id)
+    message = access_message(user_profile, remove_message['message_id'])[0]
+    gcm_payload = get_common_payload(message)
+    gcm_payload.update({
+        'event': 'remove',
+        'zulip_message_id': remove_message['message_id'],  # message_id is reserved for CCS
+    })
+
+    if uses_notification_bouncer():
+        try:
+            send_notifications_to_bouncer(user_profile_id,
+                                          {},
+                                          gcm_payload)
+        except requests.ConnectionError:  # nocoverage
+            def failure_processor(event: Dict[str, Any]) -> None:
+                logging.warning(
+                    "Maximum retries exceeded for trigger:%s event:push_notification" % (
+                        event['user_profile_id']))
+        return
+
+    android_devices = list(PushDeviceToken.objects.filter(user=user_profile,
+                                                          kind=PushDeviceToken.GCM))
+
+    if android_devices:
+        send_android_push_notification(android_devices, gcm_payload)
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
