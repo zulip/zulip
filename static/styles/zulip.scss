@@ -1372,6 +1372,7 @@ div.focused_table {
 }
 
 #tab_bar {
+    width: 100%;
     z-index: 2;
     padding-top: 0px;
     overflow: hidden;
@@ -1379,96 +1380,155 @@ div.focused_table {
     float: left;
     letter-spacing: normal;
     height: 40px;
-
     #tab_list {
         list-style: none;
+        display: flex;
+        align-content: flex-start;
+        flex-wrap: nowrap;
         margin: 0px 0px 0px 0px;
         height: 40px;
         line-height: 40px;
         font-size: 16px;
         border: none;
         white-space: nowrap;
-
-        li {
+        width: calc(100% - 1px);
+        cursor: default;
+        .hidden {
+            display: none;
+        }
+        span {
+            // flex: 0 1 auto;
             white-space: nowrap;
             list-style-type: none;
             display: inline-block;
+            vertical-align: top;
             position: relative;
-            font-weight: 300;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 16px;
             background-color: hsl(0, 0%, 98%);
-            margin: 0px;
-            padding: 0px;
+            margin: 0 -4px 0 0;
             text-overflow: ellipsis;
-            padding: 0 5px;
+            padding: 12px 5px;
+            background: 0;
+            @media (max-width: 500px) {
+                padding: 8px 5px;
+            }
+            i {
+                margin-right: 3px;
+            }
+            .fa:not(.fa-icon) {
+                margin: 0px 3px 0px 5px;
+                .fa-envelope {
+                    font-size: 14px;
+                    margin: 0px 5px 0px 5px;
+                }
+                .fa-hashtag {
+                    font-size: 1.2rem;
+                    // font-weight: 800;
+                    margin: 0px 2px 0px 5px;
+                }
+            }
         }
 
-        li.private_message a {
-            color: hsl(0, 0%, 100%);
-        }
-
-        a {
-            text-decoration: none;
-            color: inherit;
-            border-color: inherit;
-            width: 100%;
-            display: inline-block;
-            padding: 0px 5px;
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        li.active {
-            background-color: hsl(0, 0%, 88%);
-            max-width: 150px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        li.private_message {
-            border-top-color: hsla(0, 0%, 0%, 0.0);
-            border-right-color: hsla(0, 0%, 0%, 0.0);
-            border-bottom-color: hsla(0, 0%, 0%, 0.0);
-            background-color: hsl(0, 0%, 27%);
-            border-left-color: hsl(0, 0%, 27%);
-            color: hsl(0, 0%, 100%);
+        .private_message {
             border-width: 0px;
         }
 
         .root {
-            border-color: hsl(0, 0%, 88%);
-            background-color: hsl(0, 0%, 88%);
+            // just enough to render properly to not overflow
+            // on search icon when both name and description
+            // are at max width
+            flex-shrink: 0.1;
+            text-overflow: ellipsis;
+            overflow: hidden;
             margin: 0px;
+            // flex: 3 auto;
+            // white-space: nowrap;
             a {
+                text-overflow: ellipsis;
                 color: hsl(0, 0%, 52%);
                 padding-right: 2px;
                 &:hover {
                     color: hsl(0, 0%, 0%);
                 }
             }
+            .settings_link {
+                text-overflow: ellipsis;
+                overflow: hidden;
+                color: inherit;
+            }
         }
-
-        li.inactive {
-            border-width: 0px;
-            margin-right: -4px;
-            font-size: 14px;
-            &::before {
-                left: 100%;
-                top: 50%;
-                content: " ";
-                height: 0px;
-                width: 0px;
-                position: absolute;
-                pointer-events: none;
-                z-index: 1;
-                transform: scale(.9999);
+        .stream {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            a {
+                color: inherit;
+                text-decoration: none;
             }
         }
 
-        li.active.root {
-            padding: 0px 10px;
+        .sub_count,
+        .narrow_description {
+            background: none;
+            font-size: 14px;
+            color: hsl(0, 0%, 40%);
+            font-weight: 400;
+            line-height: 20px;
+        }
+        .sub_count {
+            margin-left: 10px;
+            margin-right: 10px;
+            .fa.fa-user-o {
+                margin-left: 0px;
+            }
+            &::before {
+                content: "";
+                position: absolute;
+                left: -5px;
+                top: 25%;
+                width: 1px;
+                height: 50%;
+                background: hsl(0, 0%, 88%);
+                @media (max-width: 500px) {
+                    top: 10%;
+                }
+            }
+            &::after {
+                content: "";
+                position: absolute;
+                right: -5px;
+                top: 25%;
+                width: 1px;
+                height: 50%;
+                background: hsl(0, 0%, 88%);
+                @media (max-width: 500px) {
+                    top: 10%;
+                }
+            }
+        }
+
+        .narrow_description {
+            // flex: 5 auto;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            .emoji {
+                width: 15px;
+                height: 15px;
+                padding-bottom: 1px;
+            }
+        }
+
+        .search_closed {
+            flex: 0;
+            // aligns search icon to right end of box
+            margin-left: auto;
+            padding-left: 15px;
+            // 27 = 12 (gets icon inside border) + 15 (margin against border)
+            margin-right: 27px;
+            // display: block;
+            // float: right;
         }
     }
 }
@@ -1576,16 +1636,54 @@ div.focused_table {
     }
 }
 
+.search_closed {
+    cursor: pointer;
+    height: 40px !important;
+    vertical-align: text-bottom;
+    display: table;
+    color: hsl(0, 0%, 80%);
+    // float: right;
+
+    // so that icon is same size as when nav bar is expanded
+    letter-spacing: -.236em;
+    i {
+        display: table-cell;
+        vertical-align: middle;
+    }
+
+    .fa-search {
+        padding: 0px;
+        font-size: 20px;
+        // position: absolute;
+        right: 25px;
+        top: 10px;
+        z-index: 5;
+    }
+
+    &:hover {
+        color: hsl(0, 0%, 0%);
+        text-decoration: none;
+    }
+}
+
 #searchbox_legacy {
     width: 100%;
     height: 40px;
 
-    .navbar-search {
-        margin-top: 0px;
-        width: auto;
-        float: none;
+    .navbar-search:not(.expanded) {
+        display: none;
+    }
+
+    .navbar-search.expanded {
         overflow: hidden;
-        height: 40px;
+        margin-top: 0px;
+        right: 2;
+        width: calc(100% - 2px);
+        position: absolute;
+        .search_button {
+            display: inline;
+            margin-right: 16px;
+        }
     }
 
     .input-append {
@@ -1600,6 +1698,10 @@ div.focused_table {
             top: 10px;
             z-index: 5;
         }
+
+        .fa-search:not(.deactivated) {
+            cursor: pointer;
+        }
     }
 
     #search_query {
@@ -1608,7 +1710,7 @@ div.focused_table {
         height: 40px;
         padding: 0px;
         padding-left: 35px;
-        padding-right: 20px;
+        padding-right: 40px;
         border: none;
         border-radius: 0px;
         font-family: 'Source Sans Pro';
@@ -1701,7 +1803,7 @@ div.focused_table {
     left: 0px;
     text-align: center;
     vertical-align: middle;
-    border-right: 2px solid hsl(204, 20%, 74%);
+    // border-right: 2px solid hsl(204, 20%, 74%);
 }
 
 #streamlist-toggle-button {
@@ -2515,17 +2617,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
         width: 30px;
     }
 
-    #top_navbar.rightside-userlist .navbar-search {
-        margin-right: 100px;
-    }
-
     #top_navbar.rightside-userlist #navbar-buttons {
         margin-right: 41px;
     }
 
-    .navbar-search {
-        margin-right: 60px;
-    }
 
     .nav .dropdown-menu {
         min-width: 180px;
@@ -2538,6 +2633,25 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .column-middle {
         margin-right: 7px;
+    }
+
+    .top-navbar-container,
+    #searchbox_legacy .navbar-search.expanded {
+        width: calc(100% - 91px);
+    }
+
+    .search_closed .fa-search {
+        right: 115px;
+    }
+
+    #top_navbar:not(.rightside-userlist) {
+        .search_closed .fa-search {
+            right: 72px;
+        }
+        .top-navbar-border,
+        #searchbox_legacy .navbar-search.expanded {
+            width: calc(100% - 50px);
+        }
     }
 }
 
@@ -2604,17 +2718,34 @@ div.topic_edit_spinner .loading_indicator_spinner {
         display: block;
     }
 
-    #searchbox,
-    #searchbox_legacy {
-        margin-left: 42px;
+    .top-navbar-border {
+        margin-left: 40px;
     }
 
-    #top_navbar.rightside-userlist .navbar-search {
-        margin-right: 127px;
+    .top-navbar-border {
+        width: calc(100% - 116px);
+    }
+    // todo: Figure out why this has to be different
+    // from above at this width and resolve it
+    // #searchbox_legacy .navbar-search.expanded,
+    #searchbox_legacy .navbar-search.expanded {
+        width: calc(100% - 131px);
     }
 
-    .navbar-search {
-        margin-right: 81px;
+    .search_closed .fa-search {
+        right: 115px;
+    }
+
+    #top_navbar:not(.rightside-userlist) {
+        // .search_closed .fa-search {
+        //     right: 115px;
+        // }
+        .top-navbar-border {
+            width: calc(100% - 75px);
+        }
+        #searchbox_legacy .navbar-search.expanded {
+            width: calc(100% - 90px);
+        }
     }
 }
 
@@ -2634,6 +2765,10 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
     .column-left.expanded .narrows_panel {
         margin-top: 10px;
+    }
+
+    .search_closed .fa-search {
+        top: 5px;
     }
 
     #streamlist-toggle,
@@ -2665,10 +2800,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
         top: -5px;
     }
 
-    #top_navbar.rightside-userlist .navbar-search {
-        margin-right: 115px;
-    }
-
     #searchbox,
     #searchbox_legacy {
         .input-append .fa-search {
@@ -2677,7 +2808,7 @@ div.topic_edit_spinner .loading_indicator_spinner {
 
         .search_button,
         .search_button[disabled]:hover {
-            top: 2px;
+            top: 0px;
         }
     }
 

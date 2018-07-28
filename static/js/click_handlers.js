@@ -922,6 +922,28 @@ exports.initialize = function () {
         $("#settings_page").find(".right").removeClass("show");
         $(this).parent().removeClass("slide-left");
     });
+
+    // register navbar click handlers
+    $('#search_exit').on("click", function (e) {
+        tab_bar.exit_search();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+
+    $(".search_open").on("click", function (e) {
+        $('#search_query').typeahead('lookup').focus();
+        e.preventDefault();
+        e.stopPropagation();
+    });
+};
+
+exports.bind_handler_for_opening_searchbox = function () {
+    $(".search_closed").on("click", function (e) {
+        tab_bar.open_search_bar_and_close_narrow_description();
+        $('#search_query').select();
+        e.preventDefault();
+        e.stopPropagation();
+    });
 };
 
 window.click_handlers = exports;
