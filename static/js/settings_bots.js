@@ -389,9 +389,7 @@ exports.set_up = function () {
         var li = $(e.currentTarget).closest('li');
         var bot_id = li.find('.bot_info').attr('data-user-id').valueOf();
         var bot = bot_data.get(bot_id);
-        var users_list = people.get_realm_persons().filter(function (person)  {
-            return !person.is_bot;
-        });
+        var users_list = people.get_active_human_persons();
         $("#edit_bot").empty();
         $("#edit_bot").append(templates.render('edit_bot', {bot: bot,
                                                             users_list: users_list}));
