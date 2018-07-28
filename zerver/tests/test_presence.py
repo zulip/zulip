@@ -4,7 +4,7 @@ from datetime import timedelta
 from django.http import HttpResponse
 from django.test import override_settings
 from django.utils.timezone import now as timezone_now
-from mock import mock
+import mock
 
 from typing import Any, Dict
 from zerver.lib.actions import do_deactivate_user
