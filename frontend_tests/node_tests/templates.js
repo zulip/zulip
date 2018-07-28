@@ -1317,7 +1317,7 @@ run_test('tab_bar', () => {
     var html = render('tab_bar', args);
 
     var a = $(html).find("li:first");
-    assert.equal(a.text().trim(), 'Home');
+    assert.equal(a.text().trim(), '#  Home');
 });
 
 run_test('topic_edit_form', () => {

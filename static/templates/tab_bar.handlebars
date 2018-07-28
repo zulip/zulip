@@ -6,14 +6,16 @@
         {{/if}}
         {{! Most tabs are links, but some are not since we don't have a narrow for them (e.g. Search) }}
         {{#if hash}}
-            <a href="{{hash}}">{{title}}</a>
+            <a href="{{hash}}"><span class="hash">#</span> <i class="fa fa-lock"></i> {{title}}</a>
         {{else}}
             {{#if home}}
             <i class="fa fa-home" aria-hidden="true"></i>
             {{else}}
-            {{title}}
+            <span class="hash">#</span> <i class="fa fa-lock"></i> {{title}}
             {{/if}}
         {{/if}}
     </li>
     {{/each}}
+    <li class="number_of_users"><i class="fa fa-user-o"></i> 50</li>
+    <li class="stream_description">This is the stream description.</li>
 </ul>
