@@ -10,10 +10,18 @@ if ! git diff-index --quiet HEAD; then
 fi
 
 remote_default="$(git config zulip.zulipRemote || echo upstream)"
+pseudo_remote="$(git config zulip.prPseudoRemote || echo)"
 
 request_id="$1"
 remote=${2:-"$remote_default"}
 
-set -x
-git fetch "$remote" "pull/$request_id/head"
-git reset --hard FETCH_HEAD
+if [ -z "$pseudo_remote" ]; then
+    set -x
+    git fetch "$remote" "pull/$request_id/head"
+    git reset --hard FETCH_HEAD
+else
+    target_ref=refs/remotes/"$pseudo_remote"/"$request_id"
+    set -x
+    git fetch "$remote" +"pull/$request_id/head":"$target_ref"
+    git reset --hard "$target_ref"
+fi
