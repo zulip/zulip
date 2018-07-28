@@ -110,6 +110,10 @@ not_yet_fully_covered = {
     'zerver/webhooks/teamcity/view.py',
     'zerver/webhooks/travis/view.py',
     'zerver/webhooks/zapier/view.py',
+    # Temporarily put here until we are able to use test_migrations again
+    'zerver/lib/migrate.py',
+    'zerver/lib/test_helpers.py',
+    'zerver/lib/test_classes.py',
 }
 
 enforce_fully_covered = sorted(target_fully_covered - not_yet_fully_covered)
