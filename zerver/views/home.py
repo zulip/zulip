@@ -15,7 +15,7 @@ from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
     Recipient, Realm, UserMessage, DefaultStream, RealmEmoji, RealmDomain, \
     RealmFilter, PreregistrationUser, UserActivity, \
     UserPresence, get_stream_recipient, name_changes_disabled, email_to_username, \
-    get_realm_domains
+    get_realm_domains, get_usermessage_by_message_id
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import update_user_presence, do_change_tos_version, \
     do_update_pointer, realm_user_count
@@ -157,13 +157,10 @@ def home_real(request: HttpRequest) -> HttpResponse:
     if user_profile.pointer == -1:
         latest_read = None
     else:
-        try:
-            latest_read = UserMessage.objects.get(user_profile=user_profile,
-                                                  message__id=user_profile.pointer)
-        except UserMessage.DoesNotExist:
+        latest_read = get_usermessage_by_message_id(user_profile, user_profile.pointer)
+        if latest_read is None:
             # Don't completely fail if your saved pointer ID is invalid
             logging.warning("%s has invalid pointer %s" % (user_profile.email, user_profile.pointer))
-            latest_read = None
 
     # We pick a language for the user as follows:
     # * First priority is the language in the URL, for debugging.

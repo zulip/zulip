@@ -551,6 +551,45 @@ class TestMissedMessages(ZulipTestCase):
         self.assertEqual(mail.outbox[0].subject, subject)
 
     @patch('zerver.lib.email_mirror.generate_random_token')
+    def test_message_access_in_emails(self, mock_random_token: MagicMock) -> None:
+        # Messages sent to a protected history-private stream shouldn't be
+        # accessible/available in emails before subscribing
+        tokens = self._get_tokens()
+        mock_random_token.side_effect = tokens
+
+        stream_name = "private_stream"
+        self.make_stream(stream_name, invite_only=True,
+                         history_public_to_subscribers=False)
+        user = self.example_user('iago')
+        self.subscribe(user, stream_name)
+        late_subscribed_user = self.example_user('hamlet')
+
+        self.send_stream_message(user.email,
+                                 stream_name,
+                                 'Before subscribing')
+
+        self.subscribe(late_subscribed_user, stream_name)
+
+        self.send_stream_message(user.email,
+                                 stream_name,
+                                 "After subscribing")
+
+        mention_msg_id = self.send_stream_message(user.email,
+                                                  stream_name,
+                                                  '@**King Hamlet**')
+
+        handle_missedmessage_emails(late_subscribed_user.id, [
+            {'message_id': mention_msg_id, "trigger": "mentioned"},
+        ])
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, 'Iago mentioned you')
+        email_text = mail.outbox[0].message().as_string()
+        self.assertNotIn('Before subscribing', email_text)
+        self.assertIn('After subscribing', email_text)
+        self.assertIn('@**King Hamlet**', email_text)
+
+    @patch('zerver.lib.email_mirror.generate_random_token')
     def test_stream_mentions_multiple_people(self, mock_random_token: MagicMock) -> None:
         """A mention should take precedence over regular stream messages for email subjects.
 

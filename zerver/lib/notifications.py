@@ -446,10 +446,14 @@ def handle_missedmessage_emails(user_profile_id: int,
         for recipient_subject, msgs in messages_by_recipient_subject.items()
     }
 
+    from zerver.lib.message import bulk_access_messages
+
     for msg_list in messages_by_recipient_subject.values():
         msg = min(msg_list, key=lambda msg: msg.pub_date)
         if msg.is_stream_message():
-            msg_list.extend(get_context_for_message(msg))
+            context_messages = get_context_for_message(msg)
+            filtered_context_messages = bulk_access_messages(user_profile, context_messages)
+            msg_list.extend(filtered_context_messages)
 
     # Sort emails by least recently-active discussion.
     recipient_subjects = []  # type: List[Tuple[Tuple[int, str], int]]
