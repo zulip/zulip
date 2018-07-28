@@ -7,6 +7,6 @@
 #
 # For details, see requirements/README.md .
 #
-git+https://github.com/python/mypy.git@6a934d32124991a77ea433856cf2d62871ceb632#egg=mypy==0.610+dev.6a934d32124991a77ea433856cf2d62871ceb632
-typed-ast==1.1.0
+mypy==0.620
+typed-ast==1.1.0          # via mypy
 typing==3.6.4
