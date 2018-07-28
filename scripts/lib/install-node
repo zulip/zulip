@@ -16,16 +16,16 @@ yarn_version=1.7.0
 export HOME=/root
 
 current_node_version="none"
-if hash node 2>/dev/null; then
+if node_wrapper_path="$(type -p node)"; then
     current_node_version="$(node --version)"
 fi
 
-if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ]; then
+if [ "$($YARN_BIN --version 2>/dev/null)" = "$yarn_version" ] && [ "$current_node_version" = "v$node_version" ] && [ -L "$node_wrapper_path" ]; then
     echo "Node version $node_version and yarn version $yarn_version are already installed."
     exit 0
 fi
 
-if [ "$current_node_version" != "v$node_version" ]; then
+if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
     export NVM_DIR=/usr/local/nvm
     if ! [ -e "$NVM_DIR/nvm.sh" ]; then
         wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
@@ -41,9 +41,8 @@ if [ "$current_node_version" != "v$node_version" ]; then
     chown -R root:root "$n"
     chmod -R go-w "$n"
 
-    # Install node wrapper to /usr/local/bin
-    cp "$ZULIP_PATH/scripts/setup/node-wrapper" /usr/local/bin/node
-    sed -i "s|NODE_PATH|$NODE_BIN|" /usr/local/bin/node
+    # Install node symlink to /usr/local/bin
+    ln -nsf "$NODE_BIN" /usr/local/bin/node
 fi
 
 # Work around the fact that apparently sudo doesn't clear the HOME
