@@ -152,6 +152,8 @@ exports.update_stream_name = function (sub, new_name) {
     if (compose_state.stream_name() === old_name) {
         compose_state.stream_name(new_name);
     }
+    // Update the top navbar
+    tab_bar.update_stream_name(new_name);
 };
 
 exports.update_stream_description = function (sub, description, rendered_description) {

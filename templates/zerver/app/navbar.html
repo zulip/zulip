@@ -42,10 +42,10 @@
                     </a>
                 </div>
                 {% if search_pills_enabled %}
-                <div id="searchbox" class="searchbox-rightmargin">
+                <div id="searchbox" class="searchbox-rightmargin {% if is_left_side_userlist %} user-list-off {% endif %}">
                     <div id="tab_bar" class="notdisplayed">
                     </div>
-                    <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                    <span class="search_icon" ><i class="fa fa-search" aria-hidden="true"></i></span>
                     <form id="searchbox_form" class="form-search navbar-search">
                         <div id="search_arrows" class="pill-container input-append">
                             <div contenteditable="true" class="input search-query input-block-level" id="search_query" type="text" placeholder="{{ _('Search') }}"
@@ -56,7 +56,7 @@
                     <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
                 </div>
                 {% else %}
-                <div id="searchbox_legacy" class="searchbox-rightmargin">
+                <div id="searchbox_legacy" class="searchbox-rightmargin {% if is_left_side_userlist %} user-list-off {% endif %}">
                     <div id="tab_bar" class="notdisplayed">
                     </div>
                     <form id="searchbox_form" class="form-search navbar-search">
@@ -65,7 +65,7 @@
                               autocomplete="off" aria-label="{{ _('Search') }}" title="{{ _('Search') }} (/)"/>
                             {# Start the button off disabled since there is no active search #}
                             <button class="btn search_button" type="button" id="search_exit" disabled="disabled" aria-label="{{ _('Exit search') }}"><i class="fa fa-remove" aria-hidden="true"></i></button>
-                            <a class="search_icon" href="#search-operators" data-overlay-trigger="search-operators" title="{{ _('Search help') }}"><i class="fa fa-search" aria-hidden="true"></i></a>
+                            <span class="search_icon" ><i class="fa fa-search" aria-hidden="true"></i></span>
                         </div>
                     </form>
                 </div>
@@ -81,7 +81,7 @@
             <div id="navbar-buttons" {%if embedded %} style="visibility: hidden"{% endif %}>
                 <ul class="nav" role="navigation">
                     <li class="dropdown actual-dropdown-menu" id="gear-menu">
-                        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
+                        <a id="settings-dropdown" href="#" role="button" class="dropdown-toggle {% if is_left_side_userlist %} user-list-off {% endif %}" data-target="nada" data-toggle="dropdown" title="{{ _('Menu') }} (g)">
                             <i class="fa fa-cog" aria-hidden="true"></i><i class="fa fa-caret-down settings-dropdown-caret" aria-hidden="true"></i>
                         </a>
                         <ul class="dropdown-menu" role="menu" aria-labelledby="settings-dropdown">

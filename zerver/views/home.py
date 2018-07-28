@@ -276,9 +276,9 @@ def home_real(request: HttpRequest) -> HttpResponse:
         emojiset = UserProfile.GOOGLE_BLOB_EMOJISET
 
     navbar_logo_url = compute_navbar_logo_url(page_params)
-
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
+                               'is_left_side_userlist': page_params['left_side_userlist'],
                                'emojiset': emojiset,
                                'page_params': page_params,
                                'csp_nonce': csp_nonce,

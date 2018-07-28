@@ -6,6 +6,7 @@ zrequire('search_pill');
 zrequire('util');
 zrequire('Filter', 'js/filter');
 zrequire('search_pill_widget');
+zrequire('tab_bar');
 
 const noop = () => {};
 const return_true = () => true;
@@ -38,13 +39,6 @@ run_test('clear_search_form', () => {
 run_test('update_button_visibility', () => {
     const search_query = $('#search_query');
     const search_button = $('.search_button');
-
-    search_query.is = return_false;
-    search_query.val('');
-    narrow_state.active = return_false;
-    search_button.prop('disabled', false);
-    search.update_button_visibility();
-    assert(search_button.prop('disabled'));
 
     search_query.is = return_true;
     search_query.val('');
@@ -239,7 +233,6 @@ run_test('initizalize', () => {
         search_query_box.is = return_true;
         func(ev);
         assert(is_blurred);
-        assert(search_button.prop('disabled'));
 
         operators = [{
             negated: false,
@@ -271,7 +264,7 @@ run_test('initizalize', () => {
             search_query_box.val("test string");
             narrow_state.search_string = () => 'ver';
             callback();
-            assert.equal(search_query_box.val(), 'ver');
+            assert.equal(search_query_box.val(), 'test string');
         }
     };
 
@@ -287,17 +280,7 @@ run_test('initizalize', () => {
         }
     };
 
-    let is_deactivated;
-    narrow.deactivate = () => {
-        is_deactivated = true;
-    };
-
     search.initialize();
-
-    const search_exit_callback = $('#search_exit').get_on_handler('click');
-
-    search_exit_callback();
-    assert(is_deactivated);
 });
 
 run_test('initiate_search', () => {
@@ -307,4 +290,22 @@ run_test('initiate_search', () => {
     };
     search.initiate_search();
     assert(is_searchbox_focused);
+
+    // testing the typeahead lookup
+    page_params.search_pills_enabled = false;
+    let typeahead_forced_open = false;
+    $('#search_query').select = noop;
+    $('#search_query').typeahead = (lookup) => {
+        if (lookup === "lookup") {
+            return {
+                focus: () => {
+                    typeahead_forced_open = true;
+                },
+            };
+        }
+    };
+    // open typeahead when navbar is open
+    $(".navbar-search").hasClass = () => true;
+    search.initiate_search();
+    assert(typeahead_forced_open);
 });

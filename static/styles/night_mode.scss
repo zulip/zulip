@@ -79,9 +79,8 @@ body.night-mode {
 
     /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
-    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
-    #tab_list li.stream:not(.dark_background) {
-        color: hsl(212, 28%, 18%) !important;
+    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover {
+        color: hsl(212, 28%, 18%);
     }
 
     /* these are converting grey things to "new grey" */
@@ -199,8 +198,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .message-header-contents,
-    .message_header_private_message .message-header-contents,
-    #tab_bar #tab_list li.active {
+    .message_header_private_message .message-header-contents {
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 
@@ -218,8 +216,27 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
+    .search_closed {
+        border-right-style: none;
+    }
+
+    #tab_bar #tab_list li.sub_count::before {
+        background: hsla(0, 0%, 100%, 0.5);
+    }
+    #tab_bar #tab_list li.sub_count::after {
+        background: hsla(0, 0%, 100%, 0.5);
+    }
+
     #searchbox_legacy {
+        #tab_bar #tab_list li.sub_count,
+        #tab_bar #tab_list li.narrow_description {
+            color: hsla(0, 0%, 90%, 1);
+        }
         border-color: hsla(0, 0%, 0%, 0.6);
+        .navbar-search {
+            border-left-style: none;
+            border-right-style: none;
+        }
     }
 
     .overlay,
@@ -350,7 +367,7 @@ on a dark background, and don't change the dark labels dark either. */
 
     thead,
     #searchbox,
-    #searchbox_legacy,
+    .search_icon.search_closed,
     .drafts-container .drafts-header,
     .nav > li > a:hover,
     .subscriptions-container .subscriptions-header,
@@ -371,6 +388,10 @@ on a dark background, and don't change the dark labels dark either. */
 
     .table-striped tbody tr:nth-child(odd) td {
         background-color: hsl(212, 28%, 18%);
+    }
+
+    #searchbox_legacy {
+        border-color: hsla(0, 0%, 0%, 0.2);
     }
 
     .modal-footer {
@@ -663,5 +684,31 @@ on a dark background, and don't change the dark labels dark either. */
 @-moz-document url-prefix() {
     body.night-mode #settings_page select {
         background-color: hsla(0, 0%, 0%, 0.2);
+    }
+}
+
+@media (max-width: 775px) {
+    body.night-mode {
+        #searchbox,
+        #searchbox_legacy {
+            // prevents overlap with streamlist toggle button.
+            position: relative;
+        }
+        .search_closed {
+            .fa-search {
+                // prevents overlap of search icon with gear icon caused by position:relative of search box
+                right: 129px;
+            }
+        }
+        #searchbox_legacy {
+            #search_query {
+                // prevents overlap of dark search background color with gear icon when search is open
+                width: calc(100% - 35px);
+            }
+            .navbar-search.expanded .search_button {
+                // aligns "x" icon with search box (and prevents overlap with gear icon)
+                margin-right: 45px;
+            }
+        }
     }
 }

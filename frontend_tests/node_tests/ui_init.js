@@ -165,6 +165,9 @@ $(".top_left_starred_messages").set_find_results('.count', count_stub);
 
 $("#tab_list .stream").length = 0;
 
+$(".search_icon").off = () => {};
+$("#search_exit").off = () => {};
+
 run_test('initialize_everything', () => {
     ui_init.initialize_everything();
 });

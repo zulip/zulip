@@ -260,6 +260,7 @@ exports.handler = function () {
         popovers.hide_all();
     }
     exports.resize_page_components();
+    tab_bar.set_max_width_of_descriptions();
 
     // Re-compute and display/remove [More] links to messages
     condense.condense_and_collapse($("div.message_row"));
