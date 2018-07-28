@@ -609,23 +609,44 @@ exports.initialize = function () {
     });
 
     $("#private_message_recipient").typeahead({
-        source: compose_pm_pill.get_typeahead_items,
+        source: function () {
+            var people = compose_pm_pill.get_typeahead_items();
+            var groups = user_groups.get_realm_user_groups();
+            return people.concat(groups);
+        },
         items: 5,
         dropup: true,
         fixed: true,
         highlighter: function (item) {
-            return typeahead_helper.render_person(item);
+            return typeahead_helper.render_person_or_user_group(item);
         },
         matcher: function (item) {
-            return query_matches_person(this.query, item);
+            return query_matches_person_or_user_group(this.query, item);
         },
         sorter: function (matches) {
-            // var current_stream = compose_state.stream_name();
-            return typeahead_helper.sort_recipientbox_typeahead(
-                this.query, matches, "");
+            return typeahead_helper.sort_people_and_user_groups(this.query, matches);
         },
         updater: function (item) {
-            compose_pm_pill.set_from_typeahead(item);
+            if (user_groups.is_user_group(item)) {
+                _.chain(item.members.keys())
+                    .map(function (user_id) {
+                        return people.get_person_from_user_id(user_id);
+                    }).filter(function (user) {
+                        // filter out inserted users and current user from pill insertion
+                        var inserted_users = user_pill.get_user_ids(compose_pm_pill.widget);
+                        var current_user = people.is_current_user(user.email);
+                        return inserted_users.indexOf(user.user_id) === -1 && !current_user;
+                    }).each(function (user) {
+                        compose_pm_pill.set_from_typeahead(user);
+                    });
+                // clear input pill in the event no pills were added
+                var pill_widget = compose_pm_pill.widget;
+                if (pill_widget.clear_text !== undefined) {
+                    pill_widget.clear_text();
+                }
+            } else {
+                compose_pm_pill.set_from_typeahead(item);
+            }
         },
         stopAdvance: true, // Do not advance to the next field on a tab or enter
     });

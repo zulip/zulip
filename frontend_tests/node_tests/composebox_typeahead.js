@@ -1,4 +1,5 @@
 set_global('i18n', global.stub_i18n);
+zrequire('dict');
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
@@ -13,6 +14,7 @@ zrequire('stream_data');
 zrequire('user_pill');
 zrequire('compose_pm_pill');
 zrequire('composebox_typeahead');
+zrequire('recent_senders');
 set_global('md5', function (s) {
     return 'md5-' + s;
 });
@@ -22,6 +24,9 @@ set_global('topic_data', {
 
 var ct = composebox_typeahead;
 var noop = function () {};
+
+set_global('blueslip', {});
+blueslip.warn = noop;
 
 var emoji_stadium = {
     emoji_name: 'stadium',
@@ -163,7 +168,7 @@ var hamletcharacters = {
     name: "hamletcharacters",
     id: 1,
     description: "Characters of Hamlet",
-    members: [],
+    members: [100, 104],
 };
 
 var backend = {
@@ -470,7 +475,7 @@ run_test('initialize', () => {
     $('#private_message_recipient').typeahead = function (options) {
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [hamlet, othello, cordelia, lear];
+        var expected_value = [hamlet, othello, cordelia, lear, hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
@@ -531,7 +536,7 @@ run_test('initialize', () => {
         // A literal match at the beginning of an element puts it at the top.
         options.query = 'co';  // Matches everything ("x@zulip.COm")
         actual_value = options.sorter([othello, deactivated_user, cordelia]);
-        expected_value = [cordelia, deactivated_user, othello];
+        expected_value = [cordelia, othello, deactivated_user];
         assert.deepEqual(actual_value, expected_value);
 
         options.query = 'non-existing-user';
@@ -570,6 +575,29 @@ run_test('initialize', () => {
         $('#private_message_recipient').blur();
         actual_value = options.updater(othello, click_event);
         assert.equal(appended_name, 'Othello, the Moor of Venice');
+
+        var appended_names = [];
+        people.get_person_from_user_id = function (user_id) {
+            var users = {100: hamlet, 104: lear};
+            return users[user_id];
+        };
+        people.my_current_email = function () {
+            return 'hamlet@zulip.com';
+        };
+        compose_pm_pill.set_from_typeahead = function (item) {
+            appended_names.push(item.full_name);
+        };
+
+        var cleared = false;
+        function fake_clear() {
+            cleared = true;
+        }
+        compose_pm_pill.widget = {clear_text: fake_clear};
+
+        options.query = 'hamletchar';
+        options.updater(hamletcharacters, event);
+        assert.deepEqual(appended_names, ['King Lear']);
+        assert(cleared);
 
         pm_recipient_typeahead_called = true;
     };
