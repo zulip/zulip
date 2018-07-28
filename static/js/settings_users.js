@@ -373,9 +373,7 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        var users_list = people.get_realm_persons().filter(function (person)  {
-            return !person.is_bot;
-        });
+        var users_list = people.get_active_human_persons();
         var user_id = $(e.currentTarget).attr("data-user-id");
         var user_info = get_user_info(user_id);
         var user_row = user_info.user_row;
