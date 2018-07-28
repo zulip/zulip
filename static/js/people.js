@@ -617,6 +617,13 @@ exports.get_realm_persons = function () {
     return active_user_dict.values();
 };
 
+exports.get_active_human_persons = function () {
+    var human_persons = exports.get_realm_persons().filter(function (person)  {
+        return !person.is_bot;
+    });
+    return human_persons;
+};
+
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
     return active_user_dict.keys();
