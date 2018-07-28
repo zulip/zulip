@@ -17,8 +17,8 @@ First, export your data from Gitter.
    Zulip.
 
     !!! warn ""
-        **Note:** You'll need a gitter API token to export data. You can get
-        this token by following the instructions in the
+        **Note:** You'll need a gitter API token to export data. You can get this
+        token by following the instructions in the "**Getting Started**" section of the
         [gitter documentation](https://developer.gitter.im/docs/).
 
 ### Import into zulipchat.com
@@ -63,13 +63,30 @@ you'd like for your imported Zulip organization.
 
 {!import-login.md!}
 
+## Create organization administrators
+
+The [Gitter API][gitter-api-user-data] don't contain data on which
+users are administrators of the Gitter channel.  As a result, all
+Gitter users are imported into Zulip as normal users.  You can follow
+the Zulip documentation on
+[making a user an administrator from the terminal][grant-admin-access]
+to mark the appropriate users as administrators.
+
+[grant-admin-access]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#grant-administrator-access)
+[gitter-api-user-data]: https://developer.gitter.im/docs/user-resource
+
 ## Caveats
 
-- The [Gitter data export](https://github.com/minrk/archive-gitter)
-  that powers this doesn't support exporting private gitter rooms.
+- The [Gitter data export tool](https://github.com/minrk/archive-gitter)
+  doesn't support exporting private gitter channels.
 
-- This tool doesn't do any translation of the Gitter markdown into
-  Zulip format markdown; additionally, Gitter's "issue mentions"
+- This tool doesn't yet support merging importing Gitter channels into
+  a single Zulip organization.
+
+- This tool doesn't translate Gitter's markdown format into Zulip
+  format markdown (there are a few corner cases where the syntax is
+  different).  Additionally, Gitter's
+  [issue mentions](https://gitter.zendesk.com/hc/en-us/articles/200176692-Issue-and-Pull-Request-mentions)
   aren't translated into anything yet.
 
 [upgrade-zulip-from-git]: https://zulip.readthedocs.io/en/latest/production/maintain-secure-upgrade.html#upgrading-from-a-git-repository
