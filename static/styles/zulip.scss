@@ -1563,103 +1563,139 @@ blockquote p {
     float: left;
     letter-spacing: normal;
     height: 40px;
-}
-
-#tab_list {
-    list-style: none;
-    margin: 0px 0px 0px 0px;
-    height: 40px;
-    line-height: 40px;
-    font-size: 16px;
-    border: none;
-    white-space: nowrap;
-}
-
-#tab_list li {
-    white-space: nowrap;
-    list-style-type: none;
-    display: inline-block;
-    position: relative;
-    font-weight: 300;
-    background-color: hsl(0, 0%, 97%);
-    margin: 0px;
-    padding: 0px;
-    text-overflow: ellipsis;
-    height: 40px;
-    padding: 0 5px;
-}
-
-#tab_list li.inactive {
-    background-color: hsl(0, 0%, 88%);
-    border-width: 0px;
-    margin-right: -4px;
-    font-size: 14px;
-}
-
-#tab_list li.private_message a {
-    color: hsl(0, 0%, 100%);
-}
-
-#tab_list li.inactive::before {
-    left: 100%;
-    top: 50%;
-    content: " ";
-    height: 0px;
-    width: 0px;
-    position: absolute;
-    pointer-events: none;
-    z-index: 1;
-    -moz-transform: scale(.9999);
-}
-
-#tab_list a {
-    text-decoration: none;
-    color: inherit;
-    border-color: inherit;
     width: 100%;
-    display: inline-block;
-    padding: 0px 5px;
-    max-width: 150px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
 
-#tab_list li.active {
-    background-color: hsl(0, 0%, 88%);
-    max-width: 150px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
+    #tab_list {
+        list-style: none;
+        margin: 0;
+        height: 40px;
+        line-height: 40px;
+        font-size: 16px;
+        border: none;
+        white-space: nowrap;
+        width: 100%;
 
-#tab_list li.active.root {
-    padding: 0px 10px;
-}
+        li {
+            white-space: nowrap;
+            list-style-type: none;
+            display: inline-block;
+            vertical-align: top;
+            position: relative;
+            font-weight: 600;
+            font-size: 16px;
+            line-height: 16px;
+            background-color: hsl(0, 0%, 97%);
+            margin: 0 -4px 0 0;
+            text-overflow: ellipsis;
+            padding: 12px 5px;
+            background: 0 !important; // Hack to override bg color that's set inline via js
+            @media (max-width: 500px) {
+                padding: 8px 5px;
+            }
+            .hash {
+                font-size: 1.2rem;
+            }
+            .hash,
+            i {
+                margin-right: 3px;
+            }
+        }
 
-#tab_list li.private_message {
-    border-top-color: hsla(0, 0%, 0%, 0.0);
-    border-right-color: hsla(0, 0%, 0%, 0.0);
-    border-bottom-color: hsla(0, 0%, 0%, 0.0);
-    background-color: hsl(0, 0%, 27%);
-    border-left-color: hsl(0, 0%, 27%);
-    color: hsl(0, 0%, 100%);
-    border-width: 0px;
-}
+        li.private_message a {
+            color: hsl(0, 0%, 100%);
+        }
 
-#tab_list .root {
-    border-color: hsl(0, 0%, 88%);
-    background-color: hsl(0, 0%, 88%);
-    margin: 0px;
-}
+        a {
+            text-decoration: none;
+            color: inherit;
+            border-color: inherit;
+            width: 100%;
+            display: inline-block;
+            padding: 0px 5px;
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-#tab_list li.root a {
-    color: hsl(0, 0%, 52%);
-    padding-right: 2px;
-}
+        li.active {
+            background-color: hsl(0, 0%, 88%);
+            max-width: 150px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
 
-#tab_list .root a:hover {
-    color: hsl(0, 0%, 0%);
+        li.private_message {
+            border-top-color: hsla(0, 0%, 0%, 0.0);
+            border-right-color: hsla(0, 0%, 0%, 0.0);
+            border-bottom-color: hsla(0, 0%, 0%, 0.0);
+            background-color: hsl(0, 0%, 27%);
+            border-left-color: hsl(0, 0%, 27%);
+            color: hsl(0, 0%, 100%);
+            border-width: 0px;
+        }
+
+        li.number_of_users,
+        li.stream_description {
+            background: none;
+            font-size: 14px;
+            color: hsl(0, 0%, 40%);
+            font-weight: 400;
+            line-height: 20px;
+            margin-left: 10px;
+        }
+
+        li.number_of_users {
+            &::before {
+                content: "";
+                position: absolute;
+                left: -5px;
+                top: 25%;
+                width: 1px;
+                height: 50%;
+                background: hsl(0, 0%, 88%);
+                @media (max-width: 500px) {
+                    top: 10%;
+                }
+            }
+            &::after {
+                content: "";
+                position: absolute;
+                right: -5px;
+                top: 25%;
+                width: 1px;
+                height: 50%;
+                background: hsl(0, 0%, 88%);
+                @media (max-width: 500px) {
+                    top: 10%;
+                }
+            }
+        }
+
+        li.stream_description {
+            max-width: calc(100% - 170px);
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            @media (max-width: 500px) {
+                display: none;
+            }
+        }
+
+        .root {
+            border-color: hsl(0, 0%, 88%);
+            background-color: hsl(0, 0%, 88%);
+            margin: 0px;
+            a {
+                color: hsl(0, 0%, 52%);
+                padding-right: 2px;
+                &:hover {
+                    color: hsl(0, 0%, 0%);
+                }
+            }
+        }
+    }
 }
 
 #tab_bar_underpadding {
@@ -1858,7 +1894,6 @@ nav a .no-style {
     display: flex;
     width: 100%;
     height: 40px;
-    border-left: 1px solid hsl(0, 0%, 88%);
     border-right: 1px solid hsl(0, 0%, 88%);
 
     .navbar-search {
@@ -1923,6 +1958,7 @@ nav a .no-style {
         text-decoration: none;
         padding: 0 10px;
         font-size: 20px;
+        border-left: 1px solid hsl(0, 0%, 88%);
         z-index: 5;
         float: left;
 
@@ -1965,14 +2001,29 @@ nav a .no-style {
     width: 100%;
     height: 40px;
     border-left: 1px solid hsl(0, 0%, 88%);
-    border-right: 1px solid hsl(0, 0%, 88%);
 
     .navbar-search {
+        position: absolute;
+        right: 0;
         margin-top: 0px;
-        width: auto;
-        float: none;
+        width: 40px;
         overflow: hidden;
-        height: 40px;
+        border-right: 1px solid hsl(0, 0%, 87.8%);
+        .search_button {
+            display: none;
+        }
+    }
+
+    .navbar-search.expanded {
+        width: 100%;
+        position: absolute;
+        border-left: 1px solid hsl(0, 0%, 87.8%);
+        .search_button {
+            display: inline;
+        }
+        @media (max-width: 1025px) {
+            width: calc(100% - 85px);
+        }
     }
 
     .input-append {
