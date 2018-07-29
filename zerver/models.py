@@ -901,13 +901,14 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return {row['id']: row['email'] for row in rows}
 
     def can_create_streams(self) -> bool:
-        diff = (timezone_now() - self.date_joined).days
         if self.is_realm_admin:
             return True
         if self.realm.create_stream_by_admins_only:
             return False
         if self.is_guest:
             return False
+
+        diff = (timezone_now() - self.date_joined).days
         if diff >= self.realm.waiting_period_threshold:
             return True
         return False
