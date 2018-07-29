@@ -358,15 +358,8 @@ exports.filter_table = function (query) {
     var stream_name_match_stream_ids = [];
     var stream_description_match_stream_ids = [];
     var other_stream_ids = [];
-    var stream_id_to_stream_name = {};
     var widgets = {};
     var streams_list_scrolltop = $(".streams-list").scrollTop();
-
-    function sort_by_stream_name(a, b) {
-        var stream_a_name = stream_id_to_stream_name[a].toLocaleLowerCase();
-        var stream_b_name = stream_id_to_stream_name[b].toLocaleLowerCase();
-        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
-    }
 
     _.each($("#subscriptions_table .stream-row"), function (row) {
         var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
@@ -383,7 +376,6 @@ exports.filter_table = function (query) {
             other_stream_ids.push(sub.stream_id);
         }
 
-        stream_id_to_stream_name[sub.stream_id] = sub.name;
         widgets[sub.stream_id] = $(row).detach();
 
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
@@ -393,8 +385,8 @@ exports.filter_table = function (query) {
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
-    stream_name_match_stream_ids.sort(sort_by_stream_name);
-    stream_description_match_stream_ids.sort(sort_by_stream_name);
+    stream_data.sort_for_stream_settings(stream_name_match_stream_ids);
+    stream_data.sort_for_stream_settings(stream_description_match_stream_ids);
 
     var all_stream_ids = [].concat(
         stream_name_match_stream_ids,

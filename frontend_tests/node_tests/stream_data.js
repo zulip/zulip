@@ -733,3 +733,10 @@ run_test('invite_streams', () => {
     expected_list.push('Inviter');
     assert.deepEqual(stream_data.invite_streams(), expected_list);
 });
+
+run_test('edge_cases', () => {
+    var bad_stream_ids = [555555, 99999];
+
+    // just make sure we don't explode
+    stream_data.sort_for_stream_settings(bad_stream_ids);
+});
