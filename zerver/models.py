@@ -913,6 +913,17 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
             return True
         return False
 
+    def can_subscribe_other_users(self) -> bool:
+        if self.is_realm_admin:
+            return True
+        if self.is_guest:
+            return False
+
+        diff = (timezone_now() - self.date_joined).days
+        if diff >= self.realm.waiting_period_threshold:
+            return True
+        return False
+
     def can_access_public_streams(self) -> bool:
         return not (self.is_guest or self.realm.is_zephyr_mirror_realm)
 
