@@ -352,6 +352,35 @@ function triage_stream(query, sub) {
     return 'rejected';
 }
 
+function get_stream_id_buckets(stream_ids, query) {
+    // When we simplify the settings UI, we can get
+    // rid of the "others" bucket.
+
+    var buckets = {
+        name: [],
+        desc: [],
+        other: [],
+    };
+
+    _.each(stream_ids, function (stream_id) {
+        var sub = stream_data.get_sub_by_id(stream_id);
+        var match_status = triage_stream(query, sub);
+
+        if (match_status === 'name_match') {
+            buckets.name.push(stream_id);
+        } else if (match_status === 'desc_match') {
+            buckets.desc.push(stream_id);
+        } else {
+            buckets.other.push(stream_id);
+        }
+    });
+
+    stream_data.sort_for_stream_settings(buckets.name);
+    stream_data.sort_for_stream_settings(buckets.desc);
+
+    return buckets;
+}
+
 exports.populate_stream_settings_left_panel = function () {
     var sub_rows = stream_data.get_streams_for_settings_page();
     var template_data = {
@@ -371,30 +400,38 @@ exports.filter_table = function (query) {
         sub_row.addClass("active");
     }
 
-    var stream_name_match_stream_ids = [];
-    var stream_description_match_stream_ids = [];
-    var other_stream_ids = [];
     var widgets = {};
     var streams_list_scrolltop = $(".streams-list").scrollTop();
 
+    var stream_ids = [];
     _.each($("#subscriptions_table .stream-row"), function (row) {
-        var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
+        var stream_id = $(row).attr('data-stream-id');
+        stream_ids.push(stream_id);
+
+        var sub = stream_data.get_sub_by_id(stream_id);
         sub.data_temp_view = $(row).attr("data-temp-view");
+    });
 
-        var match_status = triage_stream(query, sub);
+    var buckets = get_stream_id_buckets(stream_ids, query);
 
-        if (match_status === 'name_match') {
-            $(row).removeClass("notdisplayed");
-            stream_name_match_stream_ids.push(sub.stream_id);
-        } else if (match_status === 'desc_match') {
-            $(row).removeClass("notdisplayed");
-            stream_description_match_stream_ids.push(sub.stream_id);
+    // If we just re-built the DOM from scratch we wouldn't need
+    // all this hidden/notdisplayed logic.
+    var hidden_ids = {};
+    _.each(buckets.other, function (stream_id) {
+        hidden_ids[stream_id] = true;
+    });
+
+    _.each($("#subscriptions_table .stream-row"), function (row) {
+        var stream_id = $(row).attr('data-stream-id');
+
+        // Below code goes away if we don't do sort-DOM-in-place.
+        if (hidden_ids[stream_id]) {
+            $(row).addClass('notdisplayed');
         } else {
-            $(row).addClass("notdisplayed");
-            other_stream_ids.push(sub.stream_id);
+            $(row).removeClass('notdisplayed');
         }
 
-        widgets[sub.stream_id] = $(row).detach();
+        widgets[stream_id] = $(row).detach();
 
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
             placement: 'left', animation: false,
@@ -403,13 +440,10 @@ exports.filter_table = function (query) {
 
     ui.update_scrollbar($("#subscription_overlay .streams-list"));
 
-    stream_data.sort_for_stream_settings(stream_name_match_stream_ids);
-    stream_data.sort_for_stream_settings(stream_description_match_stream_ids);
-
     var all_stream_ids = [].concat(
-        stream_name_match_stream_ids,
-        stream_description_match_stream_ids,
-        other_stream_ids
+        buckets.name,
+        buckets.desc,
+        buckets.other
     );
 
     _.each(all_stream_ids, function (stream_id) {
