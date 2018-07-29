@@ -494,6 +494,27 @@ exports.get_streams_for_settings_page = function () {
     return all_subs;
 };
 
+exports.sort_for_stream_settings = function (stream_ids) {
+    // TODO: We may want to simply use util.strcmp here,
+    //       which uses Intl.Collator() when possible.
+
+    function name(stream_id) {
+        var sub = stream_data.get_sub_by_id(stream_id);
+        if (!sub) {
+            return '';
+        }
+        return sub.name.toLocaleLowerCase();
+    }
+
+    function by_stream_name(id_a, id_b) {
+        var stream_a_name = name(id_a);
+        var stream_b_name = name(id_b);
+        return String.prototype.localeCompare.call(stream_a_name, stream_b_name);
+    }
+
+    stream_ids.sort(by_stream_name);
+};
+
 exports.get_streams_for_admin = function () {
     // Sort and combine all our streams.
     function by_name(a,b) {

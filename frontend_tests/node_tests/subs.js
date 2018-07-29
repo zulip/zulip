@@ -1,7 +1,7 @@
 global.stub_out_jquery();
 
 set_global('ui', {});
-set_global('stream_data', {});
+zrequire('stream_data');
 global.patch_builtin('window', {
     location: {
         hash: "#streams/1/announce",
@@ -55,6 +55,10 @@ run_test('filter_table', () => {
         description: 'programming lang',
     };
 
+    _.each(sub_row_data, function (sub) {
+        stream_data.add_sub(sub.name, sub);
+    });
+
     var sub_stubs = [];
     _.each(sub_row_data, function (data) {
         var sub_row = ".stream-row-" + data.elem;
@@ -74,10 +78,6 @@ run_test('filter_table', () => {
             placement: 'left',
             animation: false,
         });
-    };
-
-    stream_data.get_sub_by_id = function (id) {
-        return sub_row_data[id];
     };
 
     $.stub_selector("#subscriptions_table .stream-row", sub_stubs);
