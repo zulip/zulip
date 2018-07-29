@@ -1936,6 +1936,27 @@ class SubscriptionAPITest(ZulipTestCase):
             result = self.common_subscribe_to_streams(self.test_email, ['stream2'])
             self.assert_json_success(result)
 
+    def test_can_create_streams(self) -> None:
+        othello = self.example_user('othello')
+        othello.is_realm_admin = True
+        self.assertTrue(othello.can_create_streams())
+
+        othello.is_realm_admin = False
+        othello.realm.create_stream_by_admins_only = True
+        self.assertFalse(othello.can_create_streams())
+
+        othello.realm.create_stream_by_admins_only = False
+        othello.is_guest = True
+        self.assertFalse(othello.can_create_streams())
+
+        othello.is_guest = False
+        othello.realm.waiting_period_threshold = 1000
+        othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold - 1))
+        self.assertFalse(othello.can_create_streams())
+
+        othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold + 1))
+        self.assertTrue(othello.can_create_streams())
+
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
         Calling POST /json/users/me/subscriptions on a stream whose name is invalid (as
