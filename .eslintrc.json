@@ -73,7 +73,10 @@
         "no-undef-init": "error",
         "no-unneeded-ternary": ["error", {"defaultAssignment": false}],
         "no-unused-expressions": "error",
-        "no-use-before-define": ["error", {"functions": false}],
+        "no-use-before-define": [
+            "error",
+            {"classes": false, "functions": false, "variables": false}
+        ],
         "no-useless-concat": "error",
         "no-useless-constructor": "error",
         "no-var": "error",
