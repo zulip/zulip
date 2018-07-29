@@ -102,6 +102,7 @@
         "Filter": false,
         "flatpickr": false,
         "pointer": false,
+        "search_util": false,
         "util": false,
         "rtl": false,
         "MessageListData": false,

@@ -33,6 +33,7 @@ import "js/feature_flags.js";
 import "js/loading.js";
 import 'js/schema.js';
 import "js/util.js";
+import "js/search_util.js";
 import "js/keydown_util.js";
 import "js/lightbox_canvas.js";
 import "js/rtl.js";

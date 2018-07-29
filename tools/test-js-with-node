@@ -60,6 +60,7 @@ enforce_fully_covered = {
     'static/js/scroll_util.js',
     'static/js/search.js',
     'static/js/search_suggestion.js',
+    'static/js/search_util.js',
     # Removed because we're migrating code from uncovered other settings pages to here.
     # 'static/js/settings_ui.js',
     'static/js/settings_muting.js',
