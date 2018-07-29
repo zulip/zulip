@@ -2,6 +2,8 @@ global.stub_out_jquery();
 
 set_global('ui', {});
 zrequire('stream_data');
+zrequire('search_util');
+
 global.patch_builtin('window', {
     location: {
         hash: "#streams/1/announce",

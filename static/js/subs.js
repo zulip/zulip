@@ -318,19 +318,14 @@ function remove_temporarily_miscategorized_streams() {
 exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
 function stream_matches_query(query, sub, attr) {
-    var search_terms = query.input.toLowerCase().split(",").map(function (s) {
-        return s.trim();
+    var search_terms = search_util.get_search_terms(query.input);
+    var val = sub[attr];
+
+    var flag = search_util.vanilla_match({
+        val: val,
+        search_terms: search_terms,
     });
 
-    var flag = true;
-    flag = flag && (function () {
-        var sub_attr = sub[attr].toLowerCase();
-        return _.any(search_terms, function (o) {
-            if (sub_attr.indexOf(o) !== -1) {
-                return true;
-            }
-        });
-    }());
     flag = flag && (sub.subscribed || !query.subscribed_only ||
                     sub.data_temp_view === "true");
     return flag;
