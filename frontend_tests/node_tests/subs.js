@@ -85,13 +85,7 @@ run_test('filter_table', () => {
     var sub_table = $('#subscriptions_table .streams-list');
     var sub_table_append = [];
     sub_table.append = function (rows) {
-        if (typeof rows === "string") {
-            sub_table_append.push(rows);
-        } else {
-            _.each(rows, function (row) {
-                sub_table_append.push(row);
-            });
-        }
+        sub_table_append.push(rows);
     };
 
     var ui_called = false;
