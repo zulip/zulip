@@ -357,7 +357,7 @@ exports.filter_table = function (query) {
 
     var stream_name_match_stream_ids = [];
     var stream_description_match_stream_ids = [];
-    var others = [];
+    var other_stream_ids = [];
     var stream_id_to_stream_name = {};
     var widgets = {};
     var streams_list_scrolltop = $(".streams-list").scrollTop();
@@ -374,22 +374,17 @@ exports.filter_table = function (query) {
 
         if (stream_matches_query(query, sub, 'name')) {
             $(row).removeClass("notdisplayed");
-
-            stream_id_to_stream_name[sub.stream_id] = sub.name;
             stream_name_match_stream_ids.push(sub.stream_id);
-
-            widgets[sub.stream_id] = $(row).detach();
         } else if (stream_matches_query(query, sub, 'description')) {
             $(row).removeClass("notdisplayed");
-
-            stream_id_to_stream_name[sub.stream_id] = sub.name;
             stream_description_match_stream_ids.push(sub.stream_id);
-
-            widgets[sub.stream_id] = $(row).detach();
         } else {
             $(row).addClass("notdisplayed");
-            others.push($(row).detach());
+            other_stream_ids.push(sub.stream_id);
         }
+
+        stream_id_to_stream_name[sub.stream_id] = sub.name;
+        widgets[sub.stream_id] = $(row).detach();
 
         $(row).find('.sub-info-box [class$="-bar"] [class$="-count"]').tooltip({
             placement: 'left', animation: false,
@@ -401,15 +396,15 @@ exports.filter_table = function (query) {
     stream_name_match_stream_ids.sort(sort_by_stream_name);
     stream_description_match_stream_ids.sort(sort_by_stream_name);
 
-    _.each(stream_name_match_stream_ids, function (stream_id) {
+    var all_stream_ids = [].concat(
+        stream_name_match_stream_ids,
+        stream_description_match_stream_ids,
+        other_stream_ids
+    );
+
+    _.each(all_stream_ids, function (stream_id) {
         $('#subscriptions_table .streams-list').append(widgets[stream_id]);
     });
-
-    _.each(stream_description_match_stream_ids, function (stream_id) {
-        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
-    });
-
-    $('#subscriptions_table .streams-list').append(others);
 
     if ($(".stream-row.active").hasClass("notdisplayed")) {
         $(".right .settings").hide();
