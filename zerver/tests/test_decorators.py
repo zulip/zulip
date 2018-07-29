@@ -1069,6 +1069,9 @@ class TestValidateApiKey(ZulipTestCase):
             validate_api_key(HostRequestMock(), self.webhook_bot.email, 'not_32_length')
 
         with self.assertRaises(JsonableError):
+            # We use default_bot's key but webhook_bot's email address to test
+            # the logic when an API key is passed and it doesn't belong to the
+            # user whose email address has been provided.
             validate_api_key(HostRequestMock(), self.webhook_bot.email, self.default_bot.api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self) -> None:
