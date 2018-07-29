@@ -318,17 +318,26 @@ function remove_temporarily_miscategorized_streams() {
 exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
 function stream_matches_query(query, sub, attr) {
+
+    if (query.subscribed_only) {
+        // reject non-subscribed streams
+        if (!sub.subscribed) {
+            // data_temp_view is a hack to prevent us
+            // from removing list items immediately after
+            // unsubscribing them
+            if (sub.data_temp_view !== 'true') {
+                return false;
+            }
+        }
+    }
+
     var search_terms = search_util.get_search_terms(query.input);
     var val = sub[attr];
 
-    var flag = search_util.vanilla_match({
+    return search_util.vanilla_match({
         val: val,
         search_terms: search_terms,
     });
-
-    flag = flag && (sub.subscribed || !query.subscribed_only ||
-                    sub.data_temp_view === "true");
-    return flag;
 }
 
 exports.populate_stream_settings_left_panel = function () {
