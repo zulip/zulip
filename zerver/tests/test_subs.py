@@ -1957,6 +1957,39 @@ class SubscriptionAPITest(ZulipTestCase):
         othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold + 1))
         self.assertTrue(othello.can_create_streams())
 
+    def test_user_settings_for_subscribing_other_users(self) -> None:
+        """
+        You can't subscribe other people to streams if you are a guest or your waiting period is not over.
+        """
+        invitee_email = self.example_email("cordelia")
+        with mock.patch('zerver.models.UserProfile.can_subscribe_other_users', return_value=False):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream1'], {"principals": ujson.dumps([invitee_email])})
+            self.assert_json_error(result, "Your account is too new to modify other users' subscriptions.")
+
+        with mock.patch('zerver.models.UserProfile.can_subscribe_other_users', return_value=True):
+            result = self.common_subscribe_to_streams(self.test_email, ['stream2'],  {"principals": ujson.dumps([invitee_email])})
+            self.assert_json_success(result)
+
+    def test_can_subscribe_other_users(self) -> None:
+        """
+        You can't subscribe other people to streams if you are a guest or your waiting period is not over.
+        """
+        othello = self.example_user('othello')
+        othello.is_realm_admin = True
+        self.assertTrue(othello.can_subscribe_other_users())
+
+        othello.is_realm_admin = False
+        othello.is_guest = True
+        self.assertFalse(othello.can_subscribe_other_users())
+
+        othello.is_guest = False
+        othello.realm.waiting_period_threshold = 1000
+        othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold - 1))
+        self.assertFalse(othello.can_subscribe_other_users())
+
+        othello.date_joined = timezone_now() - timedelta(days=(othello.realm.waiting_period_threshold + 1))
+        self.assertTrue(othello.can_subscribe_other_users())
+
     def test_subscriptions_add_invalid_stream(self) -> None:
         """
         Calling POST /json/users/me/subscriptions on a stream whose name is invalid (as
