@@ -317,8 +317,7 @@ function remove_temporarily_miscategorized_streams() {
 
 exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
-function stream_matches_query(query, sub, attr) {
-
+function triage_stream(query, sub) {
     if (query.subscribed_only) {
         // reject non-subscribed streams
         if (!sub.subscribed) {
@@ -326,18 +325,31 @@ function stream_matches_query(query, sub, attr) {
             // from removing list items immediately after
             // unsubscribing them
             if (sub.data_temp_view !== 'true') {
-                return false;
+                return 'rejected';
             }
         }
     }
 
     var search_terms = search_util.get_search_terms(query.input);
-    var val = sub[attr];
 
-    return search_util.vanilla_match({
-        val: val,
-        search_terms: search_terms,
-    });
+    function match(attr) {
+        var val = sub[attr];
+
+        return search_util.vanilla_match({
+            val: val,
+            search_terms: search_terms,
+        });
+    }
+
+    if (match('name')) {
+        return 'name_match';
+    }
+
+    if (match('description')) {
+        return 'desc_match';
+    }
+
+    return 'rejected';
 }
 
 exports.populate_stream_settings_left_panel = function () {
@@ -369,10 +381,12 @@ exports.filter_table = function (query) {
         var sub = stream_data.get_sub_by_id($(row).attr("data-stream-id"));
         sub.data_temp_view = $(row).attr("data-temp-view");
 
-        if (stream_matches_query(query, sub, 'name')) {
+        var match_status = triage_stream(query, sub);
+
+        if (match_status === 'name_match') {
             $(row).removeClass("notdisplayed");
             stream_name_match_stream_ids.push(sub.stream_id);
-        } else if (stream_matches_query(query, sub, 'description')) {
+        } else if (match_status === 'desc_match') {
             $(row).removeClass("notdisplayed");
             stream_description_match_stream_ids.push(sub.stream_id);
         } else {
