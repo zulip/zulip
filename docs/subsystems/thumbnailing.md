@@ -22,7 +22,8 @@ Thumbor is responsible for a few things in Zulip:
   content.
 * Minimizing potentially unnecessary bandwidth that might be used in
   communication between the Zulip server and clients.  Before we
-  introduced this feature,
+  introduced this feature, uploading large photos could result in a
+  bad experience for users with a slow network connection.
 
 Thumbor handles a lot of details for us, varying from signing of
 thumbnailing URLs, to caching for DoS prevention.
@@ -32,14 +33,6 @@ It is configured via the `THUMBOR_URL` setting in
 the Zulip server, or a remote server (which is better for isolation,
 since security bugs in image-processing libraries have in the past
 been a common attack vector).
-
-In order to avoid putting the raw Thumbor URLs (which have a complex
-encoding that we might want to change over time) into Zulip messages,
-we instead encoding in markdown URLs of the form
-`/thumbnail/?url=https://example.com/image.png&size=thumbnail` as the
-`src` in our image tags, and that URL serves a
-(configuration-dependent) redirect to the actual image hosted on
-thumbor.
 
 The thumbnailing system is used for any images that appear in the
 bodies of Zulip messages (i.e. both images linked to by users, as well
@@ -67,6 +60,19 @@ system should do the following:
   slick user experience where the user doesn't see a loading state,
   and instead just sees the image focus a few hundred milliseconds
   after clicking the image.
+
+## URL design
+
+The raw Thumbor URLs are ugly, and regardless, have the property that
+we might want to change them over time (a classic case is if one moves
+the thumbor installation to be hosted by a different server).  In
+order to avoid encoding these into Zulip messages, we encode in the
+[HTML rendered message content](../subsystems/markdown.html) URLs of
+the form
+`/thumbnail/?url=https://example.com/image.png&size=thumbnail` as the
+`src` in our image tags, and that URL serves a
+(configuration-dependent) redirect to the actual image hosted on
+thumbor.
 
 
 ## Avatars, realm icons, and custom emoji
