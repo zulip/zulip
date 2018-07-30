@@ -37,6 +37,7 @@ Subsystems Documentation
    documentation
    conversion
    input-pills
+   thumbnailing
    presence
    unread_messages
    billing
