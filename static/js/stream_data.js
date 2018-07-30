@@ -151,6 +151,20 @@ exports.get_unsorted_subs = function () {
     return stream_info.values();
 };
 
+exports.get_updated_unsorted_subs = function () {
+    // This function is expensive in terms of calculating
+    // some values (particularly stream counts) but avoids
+    // prematurely sorting subs.
+    var all_subs = stream_info.values();
+
+    // Add in admin options and stream counts.
+    _.each(all_subs, function (sub) {
+        exports.update_calculated_fields(sub);
+    });
+
+    return all_subs;
+};
+
 exports.subscribed_subs = function () {
     return _.where(stream_info.values(), {subscribed: true});
 };
@@ -478,6 +492,11 @@ exports.receives_audible_notifications = function (stream_name) {
 };
 
 exports.get_streams_for_settings_page = function () {
+    // TODO: This function is only used for copy-from-stream, so
+    //       the current name is slightly misleading now, plus
+    //       it's not entirely clear we need unsubscribed streams
+    //       for that.  Also we may be revisiting that UI.
+
     // Build up our list of subscribed streams from the data we already have.
     var subscribed_rows = exports.subscribed_subs();
     var unsubscribed_rows = exports.unsubscribed_subs();
