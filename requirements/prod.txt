@@ -98,7 +98,7 @@ pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
 python-ldap==3.0.0        # via django-auth-ldap
-python-twitter==3.4.1
+python-twitter==3.4.2
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.4
 pyyaml==3.12              # via yamole
