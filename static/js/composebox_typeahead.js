@@ -411,7 +411,7 @@ exports.compose_content_begins_typeahead = function (query) {
 
         this.completing = 'stream';
         this.token = current_token;
-        return stream_data.get_streams_for_settings_page();
+        return stream_data.get_unsorted_subs();
     }
     return false;
 };
