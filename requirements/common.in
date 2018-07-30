@@ -23,7 +23,7 @@ ipython==6.5.0
 Pillow==5.1.0
 
 # Needed for building complex DB queries
-SQLAlchemy==1.2.7
+SQLAlchemy==1.2.10
 
 # Needed for password hashing
 argon2-cffi==18.1.0
