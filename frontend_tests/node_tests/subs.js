@@ -199,16 +199,11 @@ run_test('filter_table', () => {
     assert(!$(".right .settings").visible());
     assert($(".nothing-selected").visible());
 
-    // data-temp-view condition
-    $(".stream-row-denmark").attr("data-temp-view", "true");
-
     subs.filter_table({input: "d", subscribed_only: true});
-    assert(!$(".stream-row-denmark").hasClass("notdisplayed"));
+    assert($(".stream-row-denmark").hasClass("notdisplayed"));
     assert(!$(".stream-row-poland").hasClass("notdisplayed"));
     assert($(".stream-row-pomona").hasClass("notdisplayed"));
     assert($(".stream-row-cpp").hasClass("notdisplayed"));
-
-    $(".stream-row-denmark").attr("data-temp-view", "false");
 
     subs.filter_table({input: "d", subscribed_only: true});
     assert($(".stream-row-denmark").hasClass("notdisplayed"));

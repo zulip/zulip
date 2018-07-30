@@ -304,29 +304,13 @@ exports.update_settings_for_unsubscribed = function (sub) {
         var sub_row = row_for_stream_id(sub.stream_id);
         sub_row.addClass("notdisplayed");
     }
-
-    row_for_stream_id(subs.stream_id).attr("data-temp-view", true);
 };
-
-// these streams are miscategorized so they don't jump off the page when being
-// unsubscribed from, but should be cleared and sorted when you apply an actual
-// filter.
-function remove_temporarily_miscategorized_streams() {
-    $("[data-temp-view]").removeAttr("data-temp-view", "false");
-}
-
-exports.remove_miscategorized_streams = remove_temporarily_miscategorized_streams;
 
 function triage_stream(query, sub) {
     if (query.subscribed_only) {
         // reject non-subscribed streams
         if (!sub.subscribed) {
-            // data_temp_view is a hack to prevent us
-            // from removing list items immediately after
-            // unsubscribing them
-            if (sub.data_temp_view !== 'true') {
-                return 'rejected';
-            }
+            return 'rejected';
         }
     }
 
@@ -407,9 +391,6 @@ exports.filter_table = function (query) {
     _.each($("#subscriptions_table .stream-row"), function (row) {
         var stream_id = $(row).attr('data-stream-id');
         stream_ids.push(stream_id);
-
-        var sub = stream_data.get_sub_by_id(stream_id);
-        sub.data_temp_view = $(row).attr("data-temp-view");
     });
 
     var buckets = get_stream_id_buckets(stream_ids, query);
@@ -515,7 +496,6 @@ exports.setup_page = function (callback) {
                 }
 
                 exports.actually_filter_streams();
-                remove_temporarily_miscategorized_streams();
             },
         });
 
@@ -548,7 +528,6 @@ exports.setup_page = function (callback) {
         stream_create.set_up_handlers();
 
         $("#add_new_subscription input[type='text']").on("input", function () {
-            remove_temporarily_miscategorized_streams();
             // Debounce filtering in case a user is typing quickly
             filter_streams();
         });
@@ -653,7 +632,6 @@ exports.launch = function (hash) {
 
 exports.close = function () {
     hashchange.exit_overlay();
-    subs.remove_miscategorized_streams();
 };
 
 exports.switch_rows = function (event) {
