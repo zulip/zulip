@@ -34,7 +34,7 @@ set_global('$', function () {
 });
 
 run_test('pan_and_zoom', () => {
-    lightbox.open('<img src="./image.png" data-original="./original.png">');
+    lightbox.open('<img src="./image.png" data-src-fullsize="./original.png">');
     assert.equal(blueslip.get_test_logs('error').length, 0);
     lightbox.open('<img src="./image.png">');
     assert.equal(blueslip.get_test_logs('error').length, 0);
