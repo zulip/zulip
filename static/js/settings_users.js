@@ -359,7 +359,6 @@ exports.on_load_success = function (realm_people_data) {
     });
 
     function open_user_info_form_modal(user_id, is_bot) {
-        var users_list = people.get_active_human_persons();
         var html = templates.render('user-info-form-modal', {
             user_id: user_id,
             full_name: people.get_full_name(user_id),
@@ -370,14 +369,15 @@ exports.on_load_success = function (realm_people_data) {
         modal_container.empty().append(user_info_form_modal);
         overlays.open_modal('user-info-form-modal');
 
-        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-
         if (is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
+            var users_list = people.get_active_human_persons();
+            var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
             owner_select.val(bot_data.get(user_id).owner || "");
             modal_container.find(".edit_bot_owner_container").append(owner_select);
         }
+
         return user_info_form_modal;
     }
 
