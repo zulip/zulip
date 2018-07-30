@@ -19,6 +19,9 @@ set_global('md5', function (s) {
     return 'md5-' + s;
 });
 
+// To be eliminated in next commit:
+stream_data.update_calculated_fields = () => {};
+
 set_global('topic_data', {
 });
 
@@ -82,7 +85,6 @@ var emoji_headphones = {
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
                   emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
                   emoji_heart, emoji_headphones];
-var stream_list = ['Denmark', 'Sweden', 'The Netherlands'];
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -99,10 +101,12 @@ var netherland_stream = {
     name: 'The Netherlands',
     description: 'The Netherlands, city of dream.',
     stream_id: 3,
+    subscribed: false,
 };
 
 stream_data.add_sub('Sweden', sweden_stream);
 stream_data.add_sub('Denmark', denmark_stream);
+stream_data.add_sub('The Netherlands', netherland_stream);
 
 set_global('$', global.make_zjquery());
 
@@ -121,14 +125,6 @@ set_global('pygments_data', {langs:
 });
 
 global.compile_template('typeahead_list_item');
-
-stream_data.get_streams_for_settings_page = function () {
-    return stream_list;
-};
-
-stream_data.subscribed_streams = function () {
-    return stream_list;
-};
 
 var hamlet = {
     email: 'hamlet@zulip.com',
@@ -361,21 +357,21 @@ run_test('content_typeahead_selected', () => {
     assert(document_stub_trigger2_called);
 });
 
+function sorted_names_from(subs) {
+    return _.pluck(subs, 'name').sort();
+}
+
 run_test('initialize', () => {
+    var expected_value;
+
     var stream_typeahead_called = false;
     $('#stream').typeahead = function (options) {
         // options.source()
         //
-        // We'll search through the streams in stream_list for the streams
-        // typeahead.
         var actual_value = options.source();
-        var expected_value = stream_list;
-        assert.deepEqual(actual_value, expected_value);
+        assert.deepEqual(actual_value.sort(), ['Denmark', 'Sweden']);
 
         // options.highlighter()
-
-        // Beginning of "Denmark", one of the streams
-        // provided in stream_list through .source().
         options.query = 'De';
         actual_value = options.highlighter('Denmark');
         expected_value = '<strong>Denmark</strong>';
@@ -627,8 +623,10 @@ run_test('initialize', () => {
         };
         fake_this.options = options;
         var actual_value = options.source.call(fake_this, 'test #s');
-        var expected_value = stream_list;
-        assert.deepEqual(actual_value, expected_value);
+        assert.deepEqual(
+            sorted_names_from(actual_value),
+            ['Denmark', 'Sweden', 'The Netherlands']
+        );
         assert(caret_called);
 
         // options.highlighter()
@@ -954,12 +952,21 @@ run_test('initialize', () => {
     assert(stream_one_called);
 });
 
-stream_data.clear_subscriptions();
-
 run_test('begins_typeahead', () => {
 
     var begin_typehead_this = {options: {completions: {
         emoji: true, mention: true, stream: true, syntax: true}}};
+
+    function get_values(input, rest) {
+        // Stub out split_at_cursor that uses $(':focus')
+        ct.split_at_cursor = function () {
+            return [input, rest];
+        };
+        var values = ct.compose_content_begins_typeahead.call(
+            begin_typehead_this, input
+        );
+        return values;
+    }
 
     function assert_typeahead_equals(input, rest, reference) {
         // Usage:
@@ -970,14 +977,19 @@ run_test('begins_typeahead', () => {
             reference = rest;
             rest = '';
         }
-        // Stub out split_at_cursor that uses $(':focus')
-        ct.split_at_cursor = function () {
-            return [input, rest];
-        };
-        var returned = ct.compose_content_begins_typeahead.call(
-            begin_typehead_this, input
+        var values = get_values(input, rest);
+        assert.deepEqual(values, reference);
+    }
+
+    function assert_stream_list(input, rest) {
+        if (rest === undefined) {
+            rest = '';
+        }
+        var values = get_values(input, rest);
+        assert.deepEqual(
+            sorted_names_from(values),
+            ['Denmark', 'Sweden', 'The Netherlands']
         );
-        assert.deepEqual(returned, reference);
     }
 
     var all_items = _.map(['all', 'everyone', 'stream'], function (mention) {
@@ -1003,7 +1015,7 @@ run_test('begins_typeahead', () => {
     // Make sure that the last token is the one we read.
     assert_typeahead_equals("~~~ @zulip", all_mentions);
     assert_typeahead_equals("@zulip :ta", emoji_list);
-    assert_typeahead_equals(":tada: #foo", stream_list);
+    assert_stream_list(":tada: #foo");
     assert_typeahead_equals("#foo\n~~~py", lang_list);
 
     assert_typeahead_equals("@", false);
@@ -1055,10 +1067,10 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("test #", false);
     assert_typeahead_equals("test # a", false);
     assert_typeahead_equals("test no#o", false);
-    assert_typeahead_equals("#s", stream_list);
-    assert_typeahead_equals(" #s", stream_list);
-    assert_typeahead_equals("test #D", stream_list);
-    assert_typeahead_equals("test #**v", stream_list);
+    assert_stream_list("#s");
+    assert_stream_list(" #s");
+    assert_stream_list("test #D");
+    assert_stream_list("test #**v");
 
     assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
@@ -1092,7 +1104,7 @@ run_test('begins_typeahead', () => {
     assert_typeahead_equals("~~~test", "ing", false);
     var terminal_symbols = ',.;?!()[] "\'\n\t';
     terminal_symbols.split().forEach(symbol => {
-        assert_typeahead_equals("#test", symbol, stream_list);
+        assert_stream_list("#test", symbol);
         assert_typeahead_equals("@test", symbol, all_mentions);
         assert_typeahead_equals(":test", symbol, emoji_list);
         assert_typeahead_equals("```test", symbol, lang_list);
