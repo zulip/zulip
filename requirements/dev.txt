@@ -30,6 +30,7 @@ beautifulsoup4==4.6.0
 boto3==1.7.11             # via moto
 boto==2.49.0
 botocore==1.10.11         # via boto3, moto, s3transfer
+cachetools==2.1.0         # via google-auth
 cchardet==2.1.1
 certifi==2018.4.16
 cffi==1.11.5
@@ -64,7 +65,9 @@ fakeldap==0.6.1
 first==2.0.1              # via pip-tools
 gitdb==0.6.4
 gitlint==0.10.0
-google-api-python-client==1.6.7
+google-api-python-client==1.7.4
+google-auth-httplib2==0.0.3  # via google-api-python-client
+google-auth==1.5.0        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
