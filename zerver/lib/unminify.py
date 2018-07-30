@@ -30,10 +30,10 @@ class SourceMap:
         out = ''  # type: str
         for ln in stacktrace.splitlines():
             out += ln + '\n'
-            match = re.search(r'/static/(?:webpack-bundles|min)/(.+)(\.[\.0-9a-f]+)\.js:(\d+):(\d+)', ln)
+            match = re.search(r'/static/(?:webpack-bundles|min)/(.+)(\.[\.0-9a-f]+\.js):(\d+):(\d+)', ln)
             if match:
                 # Get the appropriate source map for the minified file.
-                minified_src = match.groups()[0] + '.js'
+                minified_src = match.groups()[0] + match.groups()[1]
                 index = self._index_for(minified_src)
 
                 gen_line, gen_col = list(map(int, match.groups()[2:4]))
