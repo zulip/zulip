@@ -1,6 +1,8 @@
 global.stub_out_jquery();
 
+set_global('templates', {});
 set_global('ui', {});
+zrequire('util');
 zrequire('stream_data');
 zrequire('search_util');
 
@@ -13,6 +15,8 @@ global.patch_builtin('window', {
 zrequire('subs');
 
 set_global('$', global.make_zjquery());
+
+stream_data.update_calculated_fields = () => {};
 
 run_test('filter_table', () => {
     var stream_list = $(".streams-list");
@@ -61,8 +65,17 @@ run_test('filter_table', () => {
         stream_data.add_sub(sub.name, sub);
     });
 
+    var populated_subs;
+
+    templates.render = (fn, data) => {
+        assert.equal(fn, 'subscriptions');
+        populated_subs = data.subscriptions;
+    }
+
+    subs.populate_stream_settings_left_panel();
+
     var sub_stubs = [];
-    _.each(sub_row_data, function (data) {
+    _.each(populated_subs, function (data) {
         var sub_row = ".stream-row-" + data.elem;
         sub_stubs.push(sub_row);
 
