@@ -150,7 +150,7 @@ requests[security]==2.18.4  # via aws-xray-sdk, docker, moto, premailer, pyoembe
 responses==0.9.0          # via moto
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
-scrapy==1.5.0
+scrapy==1.5.1
 service-identity==17.0.0  # via scrapy
 sh==1.11                  # via gitlint
 simplegeneric==0.8.1      # via ipython
