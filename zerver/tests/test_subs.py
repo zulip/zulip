@@ -1823,7 +1823,7 @@ class SubscriptionAPITest(ZulipTestCase):
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
+        expected_msg = "@**%s** just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_successful_cross_realm_notification(self) -> None:
@@ -1861,8 +1861,8 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertEqual(msg.recipient.type, Recipient.STREAM)
         self.assertEqual(msg.sender_id, self.notification_bot().id)
         stream_id = Stream.objects.latest('id').id
-        expected_rendered_msg = '<p>%s just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s-%s">#%s</a>.</p>' % (
-            user.full_name, stream_id, stream_id, invite_streams[0], invite_streams[0])
+        expected_rendered_msg = '<p><span class="user-mention" data-user-id="%d">@%s</span> just created a new stream <a class="stream" data-stream-id="%d" href="/#narrow/stream/%s-%s">#%s</a>.</p>' % (
+            user.id, user.full_name, stream_id, stream_id, invite_streams[0], invite_streams[0])
         self.assertEqual(msg.rendered_content, expected_rendered_msg)
 
     def test_successful_subscriptions_notifies_with_escaping(self) -> None:
@@ -1890,7 +1890,7 @@ class SubscriptionAPITest(ZulipTestCase):
 
         msg = self.get_second_to_last_message()
         self.assertEqual(msg.sender_id, self.notification_bot().id)
-        expected_msg = "%s just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
+        expected_msg = "@**%s** just created a new stream #**%s**." % (invitee_full_name, invite_streams[0])
         self.assertEqual(msg.content, expected_msg)
 
     def test_non_ascii_stream_subscription(self) -> None:
@@ -2911,7 +2911,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_json_success(ret)
 
         msg = '''
-            Hi there! King Hamlet just subscribed you to the following streams:
+            Hi there! @**King Hamlet** just subscribed you to the following streams:
 
             * #**stream_0**
             * #**stream_1**
@@ -2945,7 +2945,7 @@ class GetSubscribersTest(ZulipTestCase):
         self.assert_json_success(ret)
 
         msg = '''
-            Hi there! King Hamlet just subscribed you to the stream #**stream_invite_only_1**.
+            Hi there! @**King Hamlet** just subscribed you to the stream #**stream_invite_only_1**.
             '''
         self.assert_user_got_subscription_notification(msg)
 

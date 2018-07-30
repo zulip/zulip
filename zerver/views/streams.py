@@ -259,10 +259,10 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
                                      stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
     if len(subscriptions) == 1:
-        return _("Hi there! %s just subscribed you to the stream #**%s**." %
+        return _("Hi there! @**%s** just subscribed you to the stream #**%s**." %
                  (acting_user.full_name, subscriptions[0]))
 
-    message = _("Hi there! %s just subscribed you to the following streams:" %
+    message = _("Hi there! @**%s** just subscribed you to the following streams:" %
                 (acting_user.full_name,))
     message += "\n\n"
     for stream_name in subscriptions:
@@ -371,7 +371,7 @@ def add_subscriptions_backend(
                 stream_msg = "the following streams: %s" % (stream_strs,)
             else:
                 stream_msg = "a new stream #**%s**." % created_streams[0].name
-            msg = ("%s just created %s" % (user_profile.full_name, stream_msg))
+            msg = ("@**%s** just created %s" % (user_profile.full_name, stream_msg))
 
             sender = get_system_bot(settings.NOTIFICATION_BOT)
             stream_name = notifications_stream.name
