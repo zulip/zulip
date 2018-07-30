@@ -70,7 +70,7 @@ run_test('filter_table', () => {
     templates.render = (fn, data) => {
         assert.equal(fn, 'subscriptions');
         populated_subs = data.subscriptions;
-    }
+    };
 
     subs.populate_stream_settings_left_panel();
 
