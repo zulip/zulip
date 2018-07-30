@@ -28,7 +28,7 @@ def backend_serve_thumbnail(request: HttpRequest, user_profile: UserProfile,
     size = None
     if size_requested == 'thumbnail':
         size = '0x100'
-    elif size_requested == 'original':
+    elif size_requested == 'full':
         size = '0x0'
 
     if size is None:

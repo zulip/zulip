@@ -233,7 +233,7 @@ def add_a(
         img.set("src", "/thumbnail?url={0}&size=thumbnail".format(
             urllib.parse.quote(url, safe='')
         ))
-        img.set('data-src-fullsize', "/thumbnail?url={0}&size=original".format(
+        img.set('data-src-fullsize', "/thumbnail?url={0}&size=full".format(
             urllib.parse.quote(url, safe='')
         ))
     else:
