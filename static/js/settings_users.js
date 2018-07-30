@@ -358,16 +358,12 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+    function open_user_info_form_modal(user_id, is_bot) {
         var users_list = people.get_active_human_persons();
-
-        var user_id = $(e.currentTarget).attr("data-user-id");
-        var person = people.get_person_from_user_id(user_id);
-
         var html = templates.render('user-info-form-modal', {
             user_id: user_id,
             full_name: people.get_full_name(user_id),
-            is_bot: person.is_bot,
+            is_bot: is_bot,
         });
         var user_info_form_modal = $(html);
         var modal_container = $('#user-info-form-modal-container');
@@ -376,14 +372,24 @@ exports.on_load_success = function (realm_people_data) {
 
         var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
 
-        if (!person) {
-            return;
-        } else if (person.is_bot) {
+        if (is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
             owner_select.val(bot_data.get(user_id).owner || "");
             modal_container.find(".edit_bot_owner_container").append(owner_select);
         }
+        return user_info_form_modal;
+    }
+
+    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+        var user_id = $(e.currentTarget).attr("data-user-id");
+        var person = people.get_person_from_user_id(user_id);
+
+        if (!person) {
+            return;
+        }
+
+        var user_info_form_modal = open_user_info_form_modal(user_id, person.is_bot);
 
         var url;
         var data;
@@ -395,15 +401,16 @@ exports.on_load_success = function (realm_people_data) {
             e.stopPropagation();
 
             if (person.is_bot) {
-                url = "/json/bots/" + encodeURIComponent(person.user_id);
+                url = "/json/bots/" + encodeURIComponent(user_id);
                 data = {
                     full_name: full_name.val(),
                 };
-                if (owner_select.val()) {
-                    data.bot_owner_id = people.get_by_email(owner_select.val()).user_id;
+                var owner_select_value = user_info_form_modal.find('.bot_owner_select').val();
+                if (owner_select_value) {
+                    data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
-                url = "/json/users/" + encodeURIComponent(person.user_id);
+                url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                 };
