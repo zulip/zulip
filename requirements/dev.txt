@@ -81,7 +81,7 @@ ijson==2.3
 imagesize==1.0.0
 incremental==17.5.0       # via twisted
 ipython-genutils==0.2.0   # via traitlets
-ipython==6.4.0
+ipython==6.5.0
 isort==4.3.4
 jedi==0.11.0              # via ipython
 jinja2==2.10
