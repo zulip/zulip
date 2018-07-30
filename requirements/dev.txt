@@ -72,7 +72,7 @@ h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9
 httplib2==0.11.3
-httpretty==0.9.4
+httpretty==0.9.5
 hyper==0.7.0              # via apns2
 hyperframe==3.2.0         # via h2, hyper
 hyperlink==17.3.1         # via twisted
