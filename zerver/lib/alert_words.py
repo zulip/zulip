@@ -21,7 +21,7 @@ def add_user_alert_words(user_profile: UserProfile, alert_words: Iterable[str]) 
 
     new_words = [w for w in alert_words if w not in words]
     words.extend(new_words)
-
+    words.sort(key=len, reverse=True)
     set_user_alert_words(user_profile, words)
 
     return words
