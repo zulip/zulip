@@ -2046,7 +2046,8 @@
           break
       }
 
-      if (this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13)) {
+      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13)) 
+          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }
     }
@@ -2082,7 +2083,8 @@
           this.lookup()
       }
 
-      if (this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13)) {
+      if ((this.options.stopAdvance || (e.keyCode != 9 && e.keyCode != 13))
+          && $.inArray(e.keyCode, this.options.advanceKeyCodes)) {
           e.stopPropagation()
       }
 
@@ -2133,6 +2135,7 @@
   , minLength: 1
   , stopAdvance: false
   , dropup: false
+  , advanceKeyCodes: []
   }
 
   $.fn.typeahead.Constructor = Typeahead
