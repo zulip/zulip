@@ -99,7 +99,7 @@ ndg-httpsclient==0.5.1
 pika==0.11.0
 
 # Needed to access our database
-psycopg2==2.7.4 --no-binary psycopg2
+psycopg2==2.7.5 --no-binary psycopg2
 
 pyasn1==0.4.3
 pyasn1-modules==0.2.1
