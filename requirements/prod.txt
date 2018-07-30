@@ -23,6 +23,7 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
 boto==2.49.0
+cachetools==2.1.0         # via google-auth
 cchardet==2.1.1
 certifi==2018.4.16
 cffi==1.11.5
@@ -46,7 +47,9 @@ django-webpack-loader==0.6.0
 django==1.11.14
 docopt==0.6.2
 gitdb==0.6.4
-google-api-python-client==1.6.7
+google-api-python-client==1.7.4
+google-auth-httplib2==0.0.3  # via google-api-python-client
+google-auth==1.5.0        # via google-api-python-client, google-auth-httplib2
 h2==2.6.2                 # via hyper
 hpack==3.0.0              # via h2
 html2text==2018.1.9

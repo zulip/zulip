@@ -68,7 +68,7 @@ python-gcm==0.4
 gitdb==0.6.4
 
 # Needed for Google Apps mobile auth
-google-api-python-client==1.6.7
+google-api-python-client==1.7.4
 
 # Needed for the email mirror
 html2text==2018.1.9
