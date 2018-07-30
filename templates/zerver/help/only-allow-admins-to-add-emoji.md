@@ -8,7 +8,7 @@ administrators to add new emoji.
 
 {settings_tab|organization-permissions}
 
-2. Select the **Prevent users from adding custom emoji** checkbox under the
-**Streams & custom emoji** section.
+2. Under **Other permissions**, under **Who can add custom emoji**, select
+**Admins only**.
 
 {!save-changes.md!}

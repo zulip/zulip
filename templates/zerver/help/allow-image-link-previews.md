@@ -8,8 +8,7 @@ images and links separately.
 
 {settings_tab|organization-settings}
 
-2. Select the **Show previews of uploaded and linked images** or the
-**Show previews of linked websites** checkbox under the **Message feed**
-section.
+2. Under **Message feed**, select **Show previews of uploaded and linked images** or
+**Show previews of linked websites**.
 
 {!save-changes.md!}

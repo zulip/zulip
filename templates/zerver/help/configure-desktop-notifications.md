@@ -80,3 +80,4 @@ to allow Zulip to send you desktop notifications.
 
 5. Paste the Zulip URL for your organization into the site field, and click
     **Add**.
+
