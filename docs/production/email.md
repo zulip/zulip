@@ -99,8 +99,7 @@ later set up a real SMTP provider!
 You can quickly test your outgoing email configuration using:
 
 ```
-su zulip
-/home/zulip/deployments/current/manage.py send_test_email username@example.com
+su zulip -c '/home/zulip/deployments/current/manage.py send_test_email user@example.com'
 ```
 
 If it doesn't throw an error, it probably worked; you can confirm by
