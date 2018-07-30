@@ -9,6 +9,7 @@ class zulip::dockervoyager {
   include zulip::app_frontend
   include zulip::supervisor
   include zulip::process_fts_updates
+  include zulip::thumbor
 
   file { '/etc/supervisor/conf.d/cron.conf':
     ensure  => file,
