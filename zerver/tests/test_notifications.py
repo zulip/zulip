@@ -701,7 +701,7 @@ class TestMissedMessages(ZulipTestCase):
         # somewhat more extensive surgery.
         test_data = '<div class="message_inline_image"><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
                     'target="_blank" title="https://www.google.com/images/srpr/logo4w.png">' + \
-                    '<img data-original="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" ' + \
+                    '<img data-src-fullsize="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x0" ' + \
                     'src="/thumbnail/https%3A//www.google.com/images/srpr/logo4w.png?size=0x100"></a></div>'
         actual_output = relative_to_full_url("http://example.com", test_data)
         expected_output = '<p><a href="https://www.google.com/images/srpr/logo4w.png" ' + \
