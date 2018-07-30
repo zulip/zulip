@@ -157,6 +157,9 @@ def try_to_copy_venv(venv_path, new_packages):
                                                     source=source_venv_path,
                                                     target=venv_path).split()
         try:
+            # TODO: We can probably remove this in a few months, now
+            # that we can expect that virtualenv-clone is present in
+            # all of our recent virtualenvs.
             run(cmd)
         except Exception:
             # Virtualenv-clone is not installed. Install it and try running

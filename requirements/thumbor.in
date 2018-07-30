@@ -13,3 +13,6 @@ backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 certifi==2018.1.18
 singledispatch==3.4.0.3
+
+# Needed for cloning virtual environments
+virtualenv-clone==0.3.0
