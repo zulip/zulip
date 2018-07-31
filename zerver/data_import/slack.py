@@ -21,6 +21,7 @@ from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm
 from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
@@ -29,7 +30,6 @@ from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 
 # stubs
-ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedRecipientsT = Dict[str, int]
@@ -56,7 +56,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     """
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Slack')  # type: List[ZerverFieldsT]
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -100,16 +100,6 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     added_recipient = channels_to_zerver_stream_fields[5]
 
     return realm, added_users, added_recipient, added_channels, avatars, emoji_url_map
-
-def build_zerver_realm(realm_id: int, realm_subdomain: str,
-                       time: float) -> List[ZerverFieldsT]:
-    realm = Realm(id=realm_id, date_created=time,
-                  name=realm_subdomain, string_id=realm_subdomain,
-                  description="Organization imported from Slack!")
-    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude='authentication_methods')
-    realm_dict['authentication_methods'] = auth_methods
-    return[realm_dict]
 
 def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                      realm_id: int) -> Tuple[List[ZerverFieldsT],

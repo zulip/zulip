@@ -5,7 +5,6 @@ from django.utils.timezone import now as timezone_now
 from zerver.data_import.slack import (
     rm_tree,
     get_slack_api_data,
-    build_zerver_realm,
     get_user_email,
     build_avatar_url,
     build_avatar,
@@ -23,6 +22,9 @@ from zerver.data_import.slack import (
     convert_slack_workspace_messages,
     do_convert_data,
     process_avatars,
+)
+from zerver.data_import.import_util import (
+    build_zerver_realm,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -96,7 +98,7 @@ class SlackImporter(ZulipTestCase):
         realm_id = 2
         realm_subdomain = "test-realm"
         time = float(timezone_now().timestamp())
-        test_realm = build_zerver_realm(realm_id, realm_subdomain, time)
+        test_realm = build_zerver_realm(realm_id, realm_subdomain, time, 'Slack')  # type: List[Dict[str, Any]]
         test_zerver_realm_dict = test_realm[0]
 
         self.assertEqual(test_zerver_realm_dict['id'], realm_id)
@@ -321,14 +323,12 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[2]['id'],
                          test_added_channels[zerver_stream[2]['name']][1])
 
-    @mock.patch("zerver.data_import.slack.build_zerver_realm", return_value=[{}])
     @mock.patch("zerver.data_import.slack.users_to_zerver_userprofile",
                 return_value=[[], [], {}, [], []])
     @mock.patch("zerver.data_import.slack.channels_to_zerver_stream",
                 return_value=[[], [], {}, [], [], {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
-                                      mock_users_to_zerver_userprofile: mock.Mock,
-                                      mock_build_zerver_realm: mock.Mock) -> None:
+                                      mock_users_to_zerver_userprofile: mock.Mock) -> None:
 
         realm_id = 1
         user_list = []  # type: List[Dict[str, Any]]
@@ -347,7 +347,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(realm['zerver_userpresence'], [])
         self.assertEqual(realm['zerver_stream'], [])
         self.assertEqual(realm['zerver_userprofile'], [])
-        self.assertEqual(realm['zerver_realm'], [{}])
+        self.assertEqual(realm['zerver_realm'][0]['description'], 'Organization imported from Slack!')
 
     def test_get_message_sending_user(self) -> None:
         message_with_file = {'subtype': 'file', 'type': 'message',
