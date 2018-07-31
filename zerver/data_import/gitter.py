@@ -18,10 +18,10 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
-ZerverFieldsT = Dict[str, Any]
 
 realm_id = 0
 
@@ -36,7 +36,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     3. user_map, which is a dictionary to map from gitter user id to zulip user id
     """
     NOW = float(timezone_now().timestamp())
-    zerver_realm = build_zerver_realm(realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')  # type: List[ZerverFieldsT]
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -70,15 +70,6 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     realm['zerver_subscription'] = zerver_subscription
 
     return realm, avatars, user_map
-
-def build_zerver_realm(realm_subdomain: str, time: float) -> List[ZerverFieldsT]:
-    realm = Realm(id=realm_id, date_created=time,
-                  name=realm_subdomain, string_id=realm_subdomain,
-                  description="Organization imported from Gitter!")
-    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude='authentication_methods')
-    realm_dict['authentication_methods'] = auth_methods
-    return[realm_dict]
 
 def build_userprofile(timestamp: Any, domain_name: str,
                       gitter_data: GitterDataT) -> Tuple[List[ZerverFieldsT],

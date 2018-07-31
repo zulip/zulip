@@ -36,6 +36,7 @@ target_fully_covered = {path for target in [
     'zproject/backends.py',
     'confirmation/*.py',
     'zerver/webhooks/*/*.py',
+    'zerver/data_import/import_util.py',
     # Once we have a nice negative tests system, we can add these:
     # 'zerver/webhooks/*/*.py',
     # 'zerver/webhooks/*/*/*.py',
