@@ -2,7 +2,7 @@
 from django.conf import settings
 from django.utils.timezone import now as timezone_now
 
-from zerver.lib.slack_data_to_zulip_data import (
+from zerver.data_import.slack import (
     rm_tree,
     get_slack_api_data,
     build_zerver_realm,
@@ -123,7 +123,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(get_user_timezone(user_timezone_none), "America/New_York")
         self.assertEqual(get_user_timezone(user_no_timezone), "America/New_York")
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
+    @mock.patch("zerver.data_import.slack.get_data_file")
     def test_users_to_zerver_userprofile(self, mock_get_data_file: mock.Mock) -> None:
         custom_profile_field_user1 = {"Xf06054BBB": {"value": "random1"},
                                       "Xf023DSCdd": {"value": "employee"}}
@@ -251,7 +251,7 @@ class SlackImporter(ZulipTestCase):
                          zerver_subscription[3]['recipient'])
         self.assertEqual(zerver_subscription[1]['pin_to_top'], False)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_data_file")
+    @mock.patch("zerver.data_import.slack.get_data_file")
     def test_channels_to_zerver_stream(self, mock_get_data_file: mock.Mock) -> None:
 
         added_users = {"U061A1R2R": 1, "U061A3E0G": 8, "U061A5N1G": 7, "U064KUGRJ": 5}
@@ -321,10 +321,10 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_stream[2]['id'],
                          test_added_channels[zerver_stream[2]['name']][1])
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_realm", return_value=[{}])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.users_to_zerver_userprofile",
+    @mock.patch("zerver.data_import.slack.build_zerver_realm", return_value=[{}])
+    @mock.patch("zerver.data_import.slack.users_to_zerver_userprofile",
                 return_value=[[], [], {}, [], []])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.channels_to_zerver_stream",
+    @mock.patch("zerver.data_import.slack.channels_to_zerver_stream",
                 return_value=[[], [], {}, [], [], {}])
     def test_slack_workspace_to_realm(self, mock_channels_to_zerver_stream: mock.Mock,
                                       mock_users_to_zerver_userprofile: mock.Mock,
@@ -385,7 +385,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_usermessage[3]['id'], 3)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_usermessage", return_value = 2)
+    @mock.patch("zerver.data_import.slack.build_zerver_usermessage", return_value = 2)
     def test_channel_message_to_zerver_message(self, mock_build_zerver_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
@@ -462,8 +462,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[0]['sender'], 43)
         self.assertEqual(zerver_message[3]['sender'], 24)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.channel_message_to_zerver_message")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_all_messages")
+    @mock.patch("zerver.data_import.slack.channel_message_to_zerver_message")
+    @mock.patch("zerver.data_import.slack.get_all_messages")
     def test_convert_slack_workspace_messages(self, mock_get_all_messages: mock.Mock,
                                               mock_message: mock.Mock) -> None:
         os.makedirs('var/test-slack-import', exist_ok=True)
@@ -504,12 +504,12 @@ class SlackImporter(ZulipTestCase):
 
         self.assertEqual(test_reactions, reactions)
 
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.process_uploads", return_value = [])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_zerver_attachment",
+    @mock.patch("zerver.data_import.slack.process_uploads", return_value = [])
+    @mock.patch("zerver.data_import.slack.build_zerver_attachment",
                 return_value = [])
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar_url")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.build_avatar")
-    @mock.patch("zerver.lib.slack_data_to_zulip_data.get_slack_api_data")
+    @mock.patch("zerver.data_import.slack.build_avatar_url")
+    @mock.patch("zerver.data_import.slack.build_avatar")
+    @mock.patch("zerver.data_import.slack.get_slack_api_data")
     def test_slack_import_to_existing_database(self, mock_get_slack_api_data: mock.Mock,
                                                mock_build_avatar_url: mock.Mock,
                                                mock_build_avatar: mock.Mock,

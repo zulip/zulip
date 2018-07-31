@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 
-from zerver.lib.slack_message_conversion import (
+from zerver.data_import.slack_message_conversion import (
     convert_to_zulip_markdown,
     get_user_full_name
 )
