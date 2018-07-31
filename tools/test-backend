@@ -72,7 +72,6 @@ not_yet_fully_covered = {
     'zerver/lib/export.py',
     'zerver/lib/feedback.py',
     'zerver/lib/fix_unreads.py',
-    'zerver/lib/gitter_import.py',
     'zerver/lib/html_diff.py',
     'zerver/lib/import_realm.py',
     'zerver/lib/logging_util.py',
@@ -98,6 +97,7 @@ not_yet_fully_covered = {
     'zerver/lib/widget.py',
     # Data import files
     'zerver/data_import/slack.py',
+    'zerver/data_import/gitter.py',
     # Webhook integrations with incomplete coverage
     'zerver/webhooks/beanstalk/view.py',
     'zerver/webhooks/bitbucket2/view.py',

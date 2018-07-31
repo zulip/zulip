@@ -18,7 +18,7 @@ from zerver.models import (
     Realm,
     get_realm,
 )
-from zerver.lib.gitter_import import (
+from zerver.data_import.gitter import (
     do_convert_data,
     get_usermentions,
 )
@@ -42,7 +42,7 @@ class GitterImporter(ZulipTestCase):
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
-    @mock.patch('zerver.lib.gitter_import.process_avatars', return_value=[])
+    @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
     def test_gitter_import_to_existing_database(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self._make_output_dir()
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')

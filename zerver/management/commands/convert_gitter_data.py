@@ -8,7 +8,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser, CommandError
 
-from zerver.lib.gitter_import import do_convert_data
+from zerver.data_import.gitter import do_convert_data
 
 class Command(BaseCommand):
     help = """Convert the Gitter data into Zulip data format."""
