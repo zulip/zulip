@@ -358,23 +358,23 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    function open_user_info_form_modal(user_id, is_bot) {
+    function open_user_info_form_modal(person) {
         var html = templates.render('user-info-form-modal', {
-            user_id: user_id,
-            full_name: people.get_full_name(user_id),
-            is_bot: is_bot,
+            user_id: person.user_id,
+            full_name: people.get_full_name(person.user_id),
+            is_bot: person.is_bot,
         });
         var user_info_form_modal = $(html);
         var modal_container = $('#user-info-form-modal-container');
         modal_container.empty().append(user_info_form_modal);
         overlays.open_modal('user-info-form-modal');
 
-        if (is_bot) {
+        if (person.is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
             var users_list = people.get_active_human_persons();
             var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-            owner_select.val(bot_data.get(user_id).owner || "");
+            owner_select.val(bot_data.get(person.user_id).owner || "");
             modal_container.find(".edit_bot_owner_container").append(owner_select);
         }
 
@@ -389,7 +389,7 @@ exports.on_load_success = function (realm_people_data) {
             return;
         }
 
-        var user_info_form_modal = open_user_info_form_modal(user_id, person.is_bot);
+        var user_info_form_modal = open_user_info_form_modal(person);
 
         var url;
         var data;
