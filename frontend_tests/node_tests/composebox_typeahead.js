@@ -181,10 +181,6 @@ var backend = {
 global.user_groups.add(hamletcharacters);
 global.user_groups.add(backend);
 
-user_pill.get_user_ids = function () {
-    return [];
-};
-
 run_test('topics_seen_for', () => {
     topic_data.get_recent_names = (stream_id) => {
         assert.equal(stream_id, denmark_stream.stream_id);
@@ -473,6 +469,11 @@ run_test('initialize', () => {
 
     var pm_recipient_typeahead_called = false;
     $('#private_message_recipient').typeahead = function (options) {
+        var inserted_users = [];
+        user_pill.get_user_ids = function () {
+            return inserted_users;
+        };
+
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
         var expected_value = [hamlet, othello, cordelia, lear, hamletcharacters, backend];
@@ -597,6 +598,13 @@ run_test('initialize', () => {
         options.query = 'hamletchar';
         options.updater(hamletcharacters, event);
         assert.deepEqual(appended_names, ['King Lear']);
+        assert(cleared);
+
+        inserted_users = [lear.user_id];
+        appended_names = [];
+        cleared = false;
+        options.updater(hamletcharacters, event);
+        assert.deepEqual(appended_names, []);
         assert(cleared);
 
         pm_recipient_typeahead_called = true;
