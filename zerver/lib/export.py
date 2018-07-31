@@ -743,15 +743,17 @@ def sanity_check_stream_data(response: TableData, config: Config, context: Conte
         realm=response["zerver_realm"][0]['id'])])
     streams_in_response = set([stream['name'] for stream in response['zerver_stream']])
 
-    if streams_in_response != actual_streams:
-        print(streams_in_response - actual_streams)
-        print(actual_streams - streams_in_response)
-        raise Exception('''
-            zerver_stream data does not match
-            Stream.objects.all().
-
-            Please investigate!
-            ''')
+    if len(streams_in_response - actual_streams) > 0:
+        print("Error: Streams not present in the realm were exported:")
+        print("   ", streams_in_response - actual_streams)
+        print("This is likely due to a bug in the export tool.")
+        raise AssertionError("Aborting!  Please investigate.")
+    if len(actual_streams - streams_in_response) > 0:
+        print("Error: Some streams present in the realm were not exported:")
+        print("    ", actual_streams - streams_in_response)
+        print("Usually, this is caused by a stream having been created that never had subscribers.")
+        print("(Due to a bug elsewhere in Zulip, not in the export tool)")
+        raise AssertionError("Aborting!  Please investigate.")
 
 def fetch_user_profile(response: TableData, config: Config, context: Context) -> None:
     realm = context['realm']
