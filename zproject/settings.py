@@ -161,7 +161,7 @@ DEFAULT_SETTINGS = {
     'BROWSER_ERROR_REPORTING': False,
     'LOGGING_SHOW_MODULE': False,
     'LOGGING_SHOW_PID': False,
-    'SLOW_QUERY_MESSAGES_ENABLED': True,
+    'SLOW_QUERY_LOGS_STREAM': None,
 
     # File uploads and avatars
     'DEFAULT_AVATAR_URI': '/static/images/default-avatar.png',

@@ -27,7 +27,7 @@ class SlowQueryTest(ZulipTestCase):
         self.assertFalse(is_slow_query(9, '/accounts/webathena_kerberos_login/'))
         self.assertTrue(is_slow_query(11, '/accounts/webathena_kerberos_login/'))
 
-    @override_settings(SLOW_QUERY_MESSAGES_ENABLED=True)
+    @override_settings(SLOW_QUERY_LOGS_STREAM="logs")
     @patch('logging.info')
     def test_slow_query_log(self, mock_logging_info: Mock) -> None:
         self.log_data['time_started'] = time.time() - self.SLOW_QUERY_TIME

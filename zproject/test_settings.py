@@ -155,6 +155,6 @@ TWO_FACTOR_AUTHENTICATION_ENABLED = False
 PUSH_NOTIFICATION_BOUNCER_URL = None
 
 # Disable messages from slow queries as they affect backend tests.
-SLOW_QUERY_MESSAGES_ENABLED = False
+SLOW_QUERY_LOGS_STREAM = None
 
 THUMBOR_URL = 'http://127.0.0.1:9995'

@@ -331,7 +331,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
         for query in slow_queries:
             logging.info("Slow query: %s" % (query))
 
-        if not settings.SLOW_QUERY_MESSAGES_ENABLED:
+        if settings.SLOW_QUERY_LOGS_STREAM is None:
             return
 
         if settings.ERROR_BOT is None:
@@ -346,7 +346,7 @@ class SlowQueryWorker(LoopQueueProcessingWorker):
 
             error_bot_realm = get_system_bot(settings.ERROR_BOT).realm
             internal_send_message(error_bot_realm, settings.ERROR_BOT,
-                                  "stream", "logs", topic, content)
+                                  "stream", settings.SLOW_QUERY_LOGS_STREAM, topic, content)
 
 @assign_queue("message_sender")
 class MessageSenderWorker(QueueProcessingWorker):
