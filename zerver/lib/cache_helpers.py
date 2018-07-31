@@ -1,3 +1,4 @@
+# See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 
 from typing import Any, Callable, Dict, List, Tuple
 

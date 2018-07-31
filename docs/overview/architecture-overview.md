@@ -183,10 +183,13 @@ guide](../subsystems/queuing.html).
 
 ### memcached
 
-memcached is used to cache database model objects. `zerver/lib/cache.py`
-and `zerver/lib/cache_helpers.py` manage putting things into memcached,
-and invalidating the cache when values change. The memcached
-configuration is in `puppet/zulip/files/memcached.conf`.
+memcached is used to cache database model
+objects. `zerver/lib/cache.py` and `zerver/lib/cache_helpers.py`
+manage putting things into memcached, and invalidating the cache when
+values change. The memcached configuration is in
+`puppet/zulip/files/memcached.conf`.  See our
+[caching guide](../subsystems/caching.html) to learn how this works in
+detail.
 
 ### Redis
 

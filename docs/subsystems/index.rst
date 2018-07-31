@@ -12,6 +12,7 @@ Subsystems Documentation
    custom-apps
    pointer
    markdown
+   caching
    realms
    management-commands
    front-end-build-process
