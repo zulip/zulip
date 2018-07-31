@@ -275,6 +275,11 @@ class TestCrossRealmPMs(ZulipTestCase):
                 JsonableError,
                 'Invalid email ')
 
+        def assert_invalid_id() -> Any:
+            return self.assertRaisesRegex(
+                JsonableError,
+                'Invalid User ID ')
+
         user1_email = 'user1@1.example.com'
         user1a_email = 'user1a@1.example.com'
         user2_email = 'user2@2.example.com'
@@ -350,6 +355,11 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_personal_message(user1_email, user2_email, sender_realm="1.example.com")
 
+        # Users on different realms cannot PM each other even when user IDs are used
+        # instead of emails
+        with assert_invalid_id():
+            self.send_personal_message_by_id(user1.id, user2.id, sender_realm="1.example.com")
+
         # Users on non-zulip realms can't PM "ordinary" Zulip users
         with assert_invalid_email():
             self.send_personal_message(user1_email, "hamlet@zulip.com", sender_realm="1.example.com")
@@ -381,6 +391,20 @@ class ExtractedRecipientsTest(TestCase):
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+    def test_extract_recipient_ids(self) -> None:
+        # JSON list w/dups
+        s = ujson.dumps([3, 3, 12])
+        self.assertEqual(sorted(extract_recipients(s)), [3, 12])
+
+        # bare comma-delimited string
+        s = '3, 12'
+        self.assertEqual(sorted(extract_recipients(s)), [3, 12])
+
+        # JSON-encoded, comma-delimited string
+        s = '"3,12"'
+        self.assertEqual(sorted(extract_recipients(s)), [3, 12])
+
 
 class PersonalMessagesTest(ZulipTestCase):
 
@@ -1127,6 +1151,62 @@ class MessagePOSTTest(ZulipTestCase):
                                                      "client": "test suite",
                                                      "to": self.example_email("othello")})
         self.assert_json_success(result)
+
+    def test_personal_message_to_valid_user_ids(self) -> None:
+        """
+        Sending a personal message to a valid user ID is successful.
+        """
+        self.login(self.example_email("hamlet"))
+        recipients = [self.example_user("othello").id,
+                      self.example_user("iago").id]
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "client": "test suite",
+                "to": ujson.dumps(recipients)
+            }
+        )
+        self.assert_json_success(result)
+
+    def test_personal_message_to_invalid_user_id(self) -> None:
+        """
+        Sending a personal message to an invalid user ID returns error JSON.
+        """
+        self.login(self.example_email("hamlet"))
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "client": "test suite",
+                "to": ujson.dumps([179])
+            }
+        )
+        self.assert_json_error(result, 'Invalid User ID 179')
+
+    def test_personal_message_to_user_ids_and_emails(self) -> None:
+        """
+        Sending a personal message using both user IDs and emails returns error JSON.
+        """
+        self.login(self.example_email("hamlet"))
+        recipients = [self.example_email("othello"),
+                      str(self.example_user("iago").id)]
+        result = self.client_post(
+            "/json/messages",
+            {
+                "type": "private",
+                "content": "Test message",
+                "client": "test suite",
+                "to": ujson.dumps(recipients)
+            }
+        )
+
+        self.assert_json_error(
+            result,
+            'Recipient list must contain either emails or IDs, but not both'
+        )
 
     def test_personal_message_copying_self(self) -> None:
         """
