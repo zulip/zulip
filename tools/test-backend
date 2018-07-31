@@ -93,7 +93,7 @@ not_yet_fully_covered = {
     'zerver/lib/test_fixtures.py',
     'zerver/lib/test_runner.py',
     'zerver/lib/api_test_helpers.py',
-    # Experimenatal
+    # Experimental
     'zerver/lib/widget.py',
     # Data import files
     'zerver/data_import/slack.py',
