@@ -40,8 +40,12 @@ class SourceMap:
                 # The sourcemap lib is 0-based, so subtract 1 from line and col.
                 try:
                     result = index.lookup(line=gen_line-1, column=gen_col-1)
+                    display_src = result.src
+                    webpack_prefix = "webpack:///"
+                    if display_src.startswith(webpack_prefix):
+                        display_src = display_src[len(webpack_prefix):]
                     out += ('       = %s line %d column %d\n' %
-                            (result.src, result.src_line+1, result.src_col+1))
+                            (display_src, result.src_line+1, result.src_col+1))
                 except IndexError:
                     out += '       [Unable to look up in source map]\n'
 
