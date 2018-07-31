@@ -478,7 +478,9 @@ def notify_created_user(user_profile: UserProfile) -> None:
                              avatar_url=avatar_url(user_profile),
                              timezone=user_profile.timezone,
                              date_joined=user_profile.date_joined.isoformat(),
-                             is_bot=user_profile.is_bot))
+                             is_bot=user_profile.is_bot))  # type: Dict[str, Any]
+    if not user_profile.is_bot:
+        event["person"]["profile_data"] = {}
     send_event(event, active_user_ids(user_profile.realm_id))
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
