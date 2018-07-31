@@ -193,7 +193,7 @@ class StripeTest(ZulipTestCase):
             }],
             prorate=True,
             tax_percent=0)
-        # Check that we have the REALM_PLAN_QUANTITY_UPDATED entry, and that we
+        # Check that we have the REALM_PLAN_QUANTITY_RESET entry, and that we
         # correctly handled the requires_billing_update field
         audit_log_entries = list(RealmAuditLog.objects.order_by('-id')
                                  .values_list('event_type', 'event_time',
@@ -202,10 +202,10 @@ class StripeTest(ZulipTestCase):
             (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.REALM_CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.REALM_PLAN_STARTED, timestamp_to_datetime(self.subscription_created), False),
-            (RealmAuditLog.REALM_PLAN_QUANTITY_UPDATED, timestamp_to_datetime(self.subscription_created), True),
+            (RealmAuditLog.REALM_PLAN_QUANTITY_RESET, timestamp_to_datetime(self.subscription_created), True),
         ])
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
-            event_type=RealmAuditLog.REALM_PLAN_QUANTITY_UPDATED).values_list('extra_data', flat=True).first()),
+            event_type=RealmAuditLog.REALM_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
