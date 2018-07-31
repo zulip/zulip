@@ -18,7 +18,8 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
+    build_avatar
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -93,7 +94,8 @@ def build_userprofile(timestamp: Any, domain_name: str,
             user_map[user_data['id']] = user_id
 
             email = get_user_email(user_data, domain_name)
-            build_avatar(user_id, realm_id, email, user_data, timestamp, avatar_list)
+            build_avatar(user_id, realm_id, email, user_data['avatarUrl'],
+                         timestamp, avatar_list)
 
             # Build userprofile object
             userprofile = UserProfile(
@@ -118,20 +120,6 @@ def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     # TODO Get user email from github
     email = ("%s@users.noreply.github.com" % user_data['username'])
     return email
-
-def build_avatar(user_id: int, realm_id: int, email: str, user_data: ZerverFieldsT,
-                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
-    avatar_url = user_data['avatarUrl']
-    avatar = dict(
-        path=avatar_url,  # Save the avatar url here, which is downloaded later
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=user_id,
-        last_modified=timestamp,
-        user_profile_email=email,
-        s3_path="",
-        size="")
-    avatar_list.append(avatar)
 
 def build_stream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
                                           List[ZerverFieldsT]]:
