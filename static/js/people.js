@@ -783,7 +783,7 @@ exports.report_late_add = function (user_id, email) {
     // types of realms.
     var msg = 'Added user late: user_id=' + user_id + ' email=' + email;
 
-    if (reload.is_in_progress) {
+    if (reload.is_in_progress()) {
         blueslip.log(msg);
     } else {
         blueslip.error(msg);
