@@ -31,7 +31,7 @@ def update_realm(
         request: HttpRequest, user_profile: UserProfile,
         name: Optional[str]=REQ(validator=check_string, default=None),
         description: Optional[str]=REQ(validator=check_string, default=None),
-        restricted_to_domain: Optional[bool]=REQ(validator=check_bool, default=None),
+        emails_restricted_to_domains: Optional[bool]=REQ(validator=check_bool, default=None),
         disallow_disposable_email_addresses: Optional[bool]=REQ(validator=check_bool, default=None),
         invite_required: Optional[bool]=REQ(validator=check_bool, default=None),
         invite_by_admins_only: Optional[bool]=REQ(validator=check_bool, default=None),
