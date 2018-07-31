@@ -15,3 +15,16 @@ def build_zerver_realm(realm_id: int, realm_subdomain: str, time: float,
     realm_dict = model_to_dict(realm, exclude='authentication_methods')
     realm_dict['authentication_methods'] = auth_methods
     return[realm_dict]
+
+def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
+                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
+    avatar = dict(
+        path=avatar_url,  # Save original avatar url here, which is downloaded later
+        realm_id=realm_id,
+        content_type=None,
+        user_profile_id=zulip_user_id,
+        last_modified=timestamp,
+        user_profile_email=email,
+        s3_path="",
+        size="")
+    avatar_list.append(avatar)

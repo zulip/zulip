@@ -21,7 +21,8 @@ from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
-from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
+    build_avatar
 from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
@@ -305,19 +306,6 @@ def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
     avatar_url = "https://ca.slack-edge.com/{}-{}-{}".format(team_id, slack_user_id,
                                                              avatar_hash)
     return avatar_url
-
-def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
-                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
-    avatar = dict(
-        path=avatar_url,  # Save slack's url here, which is used later while processing
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=zulip_user_id,
-        last_modified=timestamp,
-        user_profile_email=email,
-        s3_path="",
-        size="")
-    avatar_list.append(avatar)
 
 def get_admin(user: ZerverFieldsT) -> bool:
     admin = user.get('is_admin', False)
