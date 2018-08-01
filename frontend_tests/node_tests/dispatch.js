@@ -1015,7 +1015,7 @@ with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
     global.with_stub(function (stub) {
-        override('ui.update_starred', stub.f);
+        override('ui.update_starred_view', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id', 'new_value');
         assert_same(args.message_id, 99);

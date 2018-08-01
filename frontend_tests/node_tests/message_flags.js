@@ -12,7 +12,7 @@ run_test('starred', () => {
 
     var ui_updated;
 
-    ui.update_starred = () => {
+    ui.update_starred_view = () => {
         ui_updated = true;
     };
 

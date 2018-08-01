@@ -78,7 +78,7 @@ exports.find_message = function (message_id) {
     return message;
 };
 
-exports.update_starred = function (message_id, new_value) {
+exports.update_starred_view = function (message_id, new_value) {
     var starred = new_value;
 
     // Avoid a full re-render, but update the star in each message
