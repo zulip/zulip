@@ -544,15 +544,12 @@ class HandlePushNotificationTest(PushNotificationTest):
             message=message
         )
 
-        remove_message = {
-            'message_id': message.id,
-        }
         with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
                 mock.patch('zerver.lib.push_notifications'
                            '.send_notifications_to_bouncer') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_common_payload',
                            return_value={'gcm': True}):
-            apn.handle_remove_push_notification(user_profile.id, remove_message)
+            apn.handle_remove_push_notification(user_profile.id, message.id)
             mock_send_android.assert_called_with(user_profile.id, {},
                                                  {'gcm': True,
                                                   'event': 'remove',
@@ -575,15 +572,11 @@ class HandlePushNotificationTest(PushNotificationTest):
             PushDeviceToken.objects.filter(user=self.user_profile,
                                            kind=PushDeviceToken.GCM))
 
-        remove_message = {
-            'message_id': message.id,
-        }
-
         with mock.patch('zerver.lib.push_notifications'
                         '.send_android_push_notification') as mock_send_android, \
                 mock.patch('zerver.lib.push_notifications.get_common_payload',
                            return_value={'gcm': True}):
-            apn.handle_remove_push_notification(self.user_profile.id, remove_message)
+            apn.handle_remove_push_notification(self.user_profile.id, message.id)
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True,
                                                   'event': 'remove',
