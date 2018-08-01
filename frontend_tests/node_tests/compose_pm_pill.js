@@ -1,13 +1,16 @@
+set_global('$', global.make_zjquery());
+
+const _people = {
+    small_avatar_url_for_person: function () {
+        return 'http://example.com/example.png';
+    },
+};
+
+set_global('people', _people);
 zrequire('compose_pm_pill');
 zrequire('input_pill');
 zrequire('user_pill');
 
-set_global('$', global.make_zjquery());
-set_global('people', {
-    small_avatar_url_for_person: function () {
-        return 'http://example.com/example.png';
-    },
-});
 var pills = {
     pill: {},
 };
@@ -117,9 +120,7 @@ run_test('pills', () => {
         return pills;
     }
 
-    set_global('input_pill', {
-        create: input_pill_stub,
-    });
+    input_pill.create = input_pill_stub;
 
     compose_pm_pill.initialize();
     assert(compose_pm_pill.widget);

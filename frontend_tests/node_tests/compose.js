@@ -1,54 +1,62 @@
-set_global('$', global.make_zjquery());
-set_global('i18n', global.stub_i18n);
-
-set_global('page_params', {
-});
-set_global('navigator', {
-    userAgent: '',
-});
-
-set_global('document', {
-    getElementById: function () { return $('#compose-textarea'); },
-    execCommand: function () { return false; },
-    location: {},
-});
-set_global('transmit', {});
 global.patch_builtin('window', {
     bridge: false,
 });
-set_global('channel', {});
-set_global('templates', {});
-
-var noop = function () {};
 
 set_global('blueslip', global.make_zblueslip({
     error: false, // Ignore errors. We only check for warnings in this module.
 }));
-set_global('drafts', {
+
+var noop = function () {};
+
+set_global('$', global.make_zjquery());
+set_global('i18n', global.stub_i18n);
+
+const _navigator = {
+    userAgent: '',
+};
+
+const _document = {
+    getElementById: function () { return $('#compose-textarea'); },
+    execCommand: function () { return false; },
+    location: {},
+};
+
+const _drafts = {
     delete_draft_after_send: noop,
-});
-set_global('resize', {
+};
+const _resize = {
     resize_bottom_whitespace: noop,
-});
-set_global('feature_flags', {
-    resize_bottom_whitespace: noop,
-});
+};
+
+const _sent_messages = {
+    start_tracking_message: noop,
+};
+const _notifications = {
+    notify_above_composebox: noop,
+    clear_compose_notifications: noop,
+};
+const _reminder = {
+    is_deferred_delivery: noop,
+};
+
+set_global('document', _document);
+set_global('drafts', _drafts);
+set_global('navigator', _navigator);
+set_global('notifications', _notifications);
+set_global('reminder', _reminder);
+set_global('resize', _resize);
+set_global('sent_messages', _sent_messages);
+
+set_global('transmit', {});
+set_global('channel', {});
+set_global('templates', {});
 set_global('echo', {});
 set_global('stream_edit', {});
 set_global('markdown', {});
 set_global('loading', {});
-
-set_global('sent_messages', {
-    start_tracking_message: noop,
-});
-set_global('notifications', {
-    notify_above_composebox: noop,
-    clear_compose_notifications: noop,
-});
+set_global('page_params', {});
 set_global('subs', {});
-set_global('reminder', {
-    is_deferred_delivery: noop,
-});
+set_global('ui_util', {});
 
 // Setting these up so that we can test that links to uploads within messages are
 // automatically converted to server relative links.
@@ -120,7 +128,7 @@ run_test('validate_stream_message_address_info', () => {
     assert(!compose.validate_stream_message_address_info('social'));
     assert.equal($('#compose-error-msg').html(), 'compose_not_subscribed_stub');
 
-    global.page_params.narrow_stream = false;
+    page_params.narrow_stream = false;
     channel.post = function (payload) {
         assert.equal(payload.data.stream, 'social');
         payload.data.subscribed = true;
@@ -171,19 +179,15 @@ run_test('validate', () => {
 
         compose_pm_pill.initialize();
 
-        set_global('ui_util', {
-            place_caret_at_end: noop,
-        });
+        ui_util.place_caret_at_end = noop;
 
         $("#zephyr-mirror-error").is = noop;
         $("#private_message_recipient").select(noop);
 
-        set_global('templates', {
-            render: function (fn) {
-                assert.equal(fn, 'input_pill');
-                return '<div>pill-html</div>';
-            },
-        });
+        templates.render = function (fn) {
+            assert.equal(fn, 'input_pill');
+            return '<div>pill-html</div>';
+        };
     }
 
     function add_content_to_compose_box() {
@@ -253,7 +257,7 @@ run_test('validate', () => {
     assert.equal($('#compose-error-msg').html(), i18n.t('Please specify a stream'));
 
     compose_state.stream_name('Denmark');
-    global.page_params.realm_mandatory_topics = true;
+    page_params.realm_mandatory_topics = true;
     compose_state.subject('');
     $("#subject").select(noop);
     assert(!compose.validate());
@@ -266,8 +270,8 @@ run_test('get_invalid_recipient_emails', () => {
         user_id: 124,
         full_name: 'Feedback Bot',
     };
-    global.page_params.cross_realm_bots = [feedback_bot];
-    global.page_params.user_id = 30;
+    page_params.cross_realm_bots = [feedback_bot];
+    page_params.user_id = 30;
     people.initialize();
     compose_state.recipient('feedback@example.com');
     assert.deepEqual(compose.get_invalid_recipient_emails(), []);
@@ -278,7 +282,7 @@ run_test('validate_stream_message', () => {
     // primarily used to get coverage over functions called from validate()
     // we are separating it up in different test. Though their relative position
     // of execution should not be changed.
-    global.page_params.realm_mandatory_topics = false;
+    page_params.realm_mandatory_topics = false;
     var sub = {
         stream_id: 101,
         name: 'social',
@@ -294,7 +298,7 @@ run_test('validate_stream_message', () => {
         assert.equal(stream_name, 'social');
         return 16;
     };
-    global.templates.render = function (template_name, data) {
+    templates.render = function (template_name, data) {
         assert.equal(template_name, 'compose_all_everyone');
         assert.equal(data.count, 16);
         return 'compose_all_everyone_stub';
@@ -316,7 +320,7 @@ run_test('test_validate_stream_message_announcement_only', () => {
     // for better readabilty. Their relative position of execution should not be changed.
     // Although the position with respect to test_validate_stream_message does not matter
     // as `get_announcement_only` is reset at the end.
-    global.page_params.is_admin = false;
+    page_params.is_admin = false;
     var sub = {
         stream_id: 102,
         name: 'stream102',
@@ -521,7 +525,7 @@ run_test('markdown_shortcuts', () => {
     os_specific_markdown_test(false, true);
 
     // Setting following userAgent to test in mac env
-    global.navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
+    _navigator.userAgent = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.167 Safari/537.36";
 
     // Mac userAgent tests:
     test_i_typed(false, false);
@@ -531,7 +535,7 @@ run_test('markdown_shortcuts', () => {
     all_markdown_test(false, true);
 
     // Reset userAgent
-    global.navigator.userAgent = "";
+    _navigator.userAgent = "";
 });
 
 run_test('send_message_success', () => {

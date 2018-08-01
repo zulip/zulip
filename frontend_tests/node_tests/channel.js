@@ -1,8 +1,9 @@
+set_global('blueslip', global.make_zblueslip());
+set_global('$', {});
+
+set_global('reload', {});
 zrequire('channel');
 
-set_global('$', {});
-set_global('reload', {});
-set_global('blueslip', global.make_zblueslip());
 
 const default_stub_xhr = 'default-stub-xhr';
 

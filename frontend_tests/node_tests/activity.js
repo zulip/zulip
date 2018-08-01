@@ -1,30 +1,73 @@
 set_global('$', global.make_zjquery());
+set_global('blueslip', global.make_zblueslip());
 
-set_global('page_params', {
+var filter_key_handlers;
+
+const _page_params = {
     realm_users: [],
     user_id: 999,
-});
+};
 
-set_global('ui', {
-    set_up_scrollbar: function () {},
-});
+const _feature_flags = {};
 
-set_global('feature_flags', {});
-
-set_global('document', {
+const _document = {
     hasFocus: function () {
         return true;
     },
-});
+};
 
-set_global('blueslip', global.make_zblueslip());
-set_global('channel', {});
-set_global('compose_actions', {});
+const _channel = {};
 
-set_global('ui', {
+const _ui = {
     set_up_scrollbar: function () {},
     update_scrollbar: function () {},
-});
+};
+
+const _keydown_util = {
+    handle: (opts) => {
+        filter_key_handlers = opts.handlers;
+    },
+};
+
+const _compose_state = {};
+
+const _scroll_util = {
+    scroll_element_into_container: () => {},
+};
+
+const _popovers = {
+    hide_all: function () {},
+    show_userlist_sidebar: function () {
+        $('.column-right').addClass('expanded');
+    },
+};
+
+const _stream_popover = {
+    show_streamlist_sidebar: function () {
+        $('.column-left').addClass('expanded');
+    },
+};
+
+const _reload = {
+    is_in_progress: () => false,
+};
+
+const _resize = {
+    resize_page_components: () => {},
+};
+
+set_global('channel', _channel);
+set_global('compose_state', _compose_state);
+set_global('document', _document);
+set_global('feature_flags', _feature_flags);
+set_global('keydown_util', _keydown_util);
+set_global('page_params', _page_params);
+set_global('popovers', _popovers);
+set_global('reload', _reload);
+set_global('resize', _resize);
+set_global('scroll_util', _scroll_util);
+set_global('stream_popover', _stream_popover);
+set_global('ui', _ui);
 
 zrequire('compose_fade');
 zrequire('Handlebars', 'handlebars');
@@ -41,40 +84,6 @@ zrequire('buddy_list');
 zrequire('user_search');
 zrequire('list_cursor');
 zrequire('activity');
-
-var filter_key_handlers;
-set_global('keydown_util', {
-    handle: (opts) => {
-        filter_key_handlers = opts.handlers;
-    },
-});
-
-set_global('compose_state', {});
-
-set_global('scroll_util', {
-    scroll_element_into_container: () => {},
-});
-
-set_global('popovers', {
-    hide_all: function () {},
-    show_userlist_sidebar: function () {
-        $('.column-right').addClass('expanded');
-    },
-});
-
-set_global('stream_popover', {
-    show_streamlist_sidebar: function () {
-        $('.column-left').addClass('expanded');
-    },
-});
-
-
-set_global('reload', {
-    is_in_progress: () => false,
-});
-set_global('resize', {
-    resize_page_components: () => {},
-});
 
 const me = {
     email: 'me@zulip.com',
