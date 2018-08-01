@@ -744,6 +744,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -772,6 +773,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.subject,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -803,6 +805,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -829,6 +832,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -854,6 +858,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -878,6 +883,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -905,6 +911,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",

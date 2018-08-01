@@ -497,6 +497,7 @@ def get_common_payload(message: Message) -> Dict[str, Any]:
     # These will let the app support logging into multiple realms and servers.
     data['server'] = settings.EXTERNAL_HOST
     data['realm_id'] = message.sender.realm.id
+    data['realm_uri'] = message.sender.realm.uri
 
     # `sender_id` is preferred, but some existing versions use `sender_email`.
     data['sender_id'] = message.sender.id
