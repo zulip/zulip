@@ -397,7 +397,7 @@ def register_queue(client):
     # {code_example|start}
     # Register the queue
     result = client.register(
-        event_types=['messages', 'realm_emoji']
+        event_types=['message', 'realm_emoji']
     )
     # {code_example|end}
 
