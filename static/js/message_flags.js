@@ -80,7 +80,7 @@ exports.save_uncollapsed = function (message) {
 exports.update_starred_flag = function (message_id, new_value) {
     var message = message_store.get(message_id);
     message.starred = new_value;
-    ui.update_starred(message_id, new_value);
+    ui.update_starred_view(message_id, new_value);
 };
 
 exports.toggle_starred = function (message) {
@@ -95,7 +95,7 @@ exports.toggle_starred = function (message) {
     message.starred = !message.starred;
 
     unread_ops.notify_server_message_read(message);
-    ui.update_starred(message.id, message.starred);
+    ui.update_starred_view(message.id, message.starred);
 
     if (message.starred) {
         send_flag_update(message, 'starred', 'add');
