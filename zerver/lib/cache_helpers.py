@@ -2,9 +2,13 @@
 
 from typing import Any, Callable, Dict, List, Tuple
 
+import datetime
+import logging
+
 # This file needs to be different from cache.py because cache.py
 # cannot import anything from zerver.models or we'd have an import
 # loop
+from analytics.models import RealmCount
 from django.conf import settings
 from zerver.models import Message, UserProfile, Stream, get_stream_cache_key, \
     Recipient, get_recipient_cache_key, Client, get_client_cache_key, \
@@ -16,8 +20,8 @@ from zerver.lib.cache import cache_with_key, cache_set, \
 from zerver.lib.message import MessageDict
 from importlib import import_module
 from django.contrib.sessions.models import Session
-import logging
 from django.db.models import Q
+from django.utils.timezone import now as timezone_now
 
 MESSAGE_CACHE_SIZE = 75000
 
@@ -68,6 +72,36 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
     store = session_engine.SessionStore(session_key=session.session_key)  # type: ignore # import_module
     items_for_remote_cache[store.cache_key] = store.decode(session.session_data)
 
+def get_active_realm_ids() -> List[int]:
+    """For servers like zulipchat.com with a lot of realms, it only makes
+    sense to do cache-filling work for realms that have any currently
+    active users/clients.  Otherwise, we end up with every single-user
+    trial organization that has ever been created costing us N streams
+    worth of cache work (where N is the number of default streams for
+    a new organization).
+    """
+    date = timezone_now() - datetime.timedelta(days=2)
+    return RealmCount.objects.filter(
+        end_time__gte=date,
+        property="1day_actives::day",
+        value__gt=0).distinct("realm_id").values_list("realm_id", flat=True)
+
+def get_streams() -> List[Stream]:
+    return Stream.objects.select_related().filter(
+        realm__in=get_active_realm_ids()).exclude(
+            # We filter out Zephyr realms, because they can easily
+            # have 10,000s of streams with only 1 subscriber.
+            is_in_zephyr_realm=True)
+
+def get_recipients() -> List[Recipient]:
+    return Recipient.objects.select_related().filter(
+        type_id__in=get_streams().values_list("id", flat=True))  # type: ignore  # Should be QuerySet above
+
+def get_users() -> List[UserProfile]:
+    return UserProfile.objects.select_related().filter(
+        long_term_idle=False,
+        realm__in=get_active_realm_ids())
+
 # Format is (objects query, items filler function, timeout, batch size)
 #
 # The objects queries are put inside lambdas to prevent Django from
@@ -75,12 +109,10 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
 cache_fillers = {
-    'user': (lambda: UserProfile.objects.select_related().filter(
-        long_term_idle=False), user_cache_items, 3600*24*7, 10000),
+    'user': (get_users, user_cache_items, 3600*24*7, 10000),
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
-    'recipient': (lambda: Recipient.objects.select_related().filter(
-        type=Recipient.STREAM), recipient_cache_items, 3600*24*7, 10000),
-    'stream': (lambda: Stream.objects.select_related().all(), stream_cache_items, 3600*24*7, 10000),
+    'recipient': (get_recipients, recipient_cache_items, 3600*24*7, 10000),
+    'stream': (get_streams, stream_cache_items, 3600*24*7, 10000),
     # Message cache fetching disabled until we can fix the fact that it
     # does a bunch of inefficient memcached queries as part of filling
     # the display_recipient cache
