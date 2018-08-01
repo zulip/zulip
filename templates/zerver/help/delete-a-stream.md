@@ -2,23 +2,22 @@
 
 {!admin-only.md!}
 
-{!subscriptions.md!}
-{!filter-streams.md!}
+Deleting a stream will immediately unsubscribe all users from the stream,
+remove the stream from search and other typeaheads, and remove the stream's
+messages from **All messages**.
 
-    !!! tip ""
-    {!all-streams.md!}
+Deleting a stream does not delete a stream's messages. Users will still be
+able to find any given message by searching for it. However, links to
+messages and topics in the stream may or may not continue to work.
 
-2. Click on the stream that you want to delete; {!stream-settings.md!}
+In most cases, we recommend [renaming streams](/help/rename-a-stream) rather
+than deleting them.
 
-3. Click the **Delete** button to
-the right of the **Streams Settings** section.
+{!go-to-stream-via-all-streams.md!}
 
-4. Upon clicking on the **Delete** button, a confirmation window titled
-**Delete stream (stream name)** will appear. Click the **Yes, delete this stream**
-button to delete the stream.
+1. On the right, click **Delete**.
+
+1. Click **Yes, delete this stream**.
 
 !!! warn ""
-    **Warning:** Please be aware of the consequences of deleting a stream,
-    since this operation is irreversible. Deleting a stream will immediately
-    unsubscribe all users from the stream, and the stream's content will not be
-    recoverable.
+    Deleting a stream is irreversible.
