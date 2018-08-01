@@ -67,7 +67,11 @@ UnreadMessagesResult = TypedDict('UnreadMessagesResult', {
     'count': int,
 })
 
-MAX_UNREAD_MESSAGES = 5000
+# We won't try to fetch more unread message IDs from the database than
+# this limit.  The limit is super high, in large part because it means
+# client-side code mostly doesn't need to think about the case that a
+# user has more older unread messages that were cut off.
+MAX_UNREAD_MESSAGES = 50000
 
 def messages_for_ids(message_ids: List[int],
                      user_message_flags: Dict[int, List[str]],
