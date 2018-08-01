@@ -528,6 +528,11 @@ class HomeTest(ZulipTestCase):
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 5)
         cross_bots.sort(key=lambda d: d['email'])
+        for cross_bot in cross_bots:
+            # These are either nondeterministic or boring
+            del cross_bot['timezone']
+            del cross_bot['avatar_url']
+            del cross_bot['date_joined']
 
         notification_bot = self.notification_bot()
 
