@@ -67,7 +67,7 @@ def enqueue_emails(cutoff: datetime.datetime) -> None:
     if timezone_now().weekday() != VALID_DIGEST_DAY:
         return
 
-    for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+    for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
         if not should_process_digest(realm.string_id):
             continue
 

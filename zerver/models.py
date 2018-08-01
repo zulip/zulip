@@ -174,7 +174,7 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
 
     # Whether digest emails are enabled for the organization.
-    show_digest_email = models.BooleanField(default=True)  # type: bool
+    digest_emails_enabled = models.BooleanField(default=True)  # type: bool
 
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
 
