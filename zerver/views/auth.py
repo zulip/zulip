@@ -156,8 +156,9 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
+        api_key = get_api_key(user_profile)
         params = {
-            'otp_encrypted_api_key': otp_encrypt_api_key(user_profile, mobile_flow_otp),
+            'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
             'email': remote_username,
             'realm': user_profile.realm.uri,
         }

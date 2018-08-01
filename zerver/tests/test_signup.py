@@ -2950,14 +2950,13 @@ class MobileAuthOTPTest(ZulipTestCase):
         self.assertEqual(hex_to_ascii('5a63645231323334'), 'ZcdR1234')
 
     def test_otp_encrypt_api_key(self) -> None:
-        hamlet = self.example_user('hamlet')
-        hamlet.api_key = '12ac' * 8
+        api_key = '12ac' * 8
         otp = '7be38894' * 8
-        result = otp_encrypt_api_key(hamlet, otp)
+        result = otp_encrypt_api_key(api_key, otp)
         self.assertEqual(result, '4ad1e9f7' * 8)
 
         decryped = otp_decrypt_api_key(result, otp)
-        self.assertEqual(decryped, hamlet.api_key)
+        self.assertEqual(decryped, api_key)
 
 class FollowupEmailTest(ZulipTestCase):
     def test_followup_day2_email(self) -> None:
