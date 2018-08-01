@@ -77,7 +77,8 @@ def session_cache_items(items_for_remote_cache: Dict[str, str],
 # wrapper the below adds an extra 3ms or so to startup time for
 # anything importing this file).
 cache_fillers = {
-    'user': (lambda: UserProfile.objects.select_related().all(), user_cache_items, 3600*24*7, 10000),
+    'user': (lambda: UserProfile.objects.select_related().filter(
+        long_term_idle=False), user_cache_items, 3600*24*7, 10000),
     'client': (lambda: Client.objects.select_related().all(), client_cache_items, 3600*24*7, 10000),
     'recipient': (lambda: Recipient.objects.select_related().all(), recipient_cache_items, 3600*24*7, 10000),
     'stream': (lambda: Stream.objects.select_related().all(), stream_cache_items, 3600*24*7, 10000),
