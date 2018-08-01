@@ -304,13 +304,14 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    $(".admin_user_table").on("click", ".make-admin", function (e) {
+    var user_info_form_modal_container = $("#user-info-form-modal-container");
+
+    user_info_form_modal_container.on("click", ".make-admin", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the user_id data
-        var row = $(e.target).closest(".user_row");
-        var user_id = row.attr("data-user-id");
+        var user_id = user_info_form_modal_container.find('#user-name-form').attr("data-user-id");
 
         var url = "/json/users/" + encodeURIComponent(user_id);
         var data = {
@@ -321,7 +322,7 @@ exports.on_load_success = function (realm_people_data) {
             url: url,
             data: data,
             success: function () {
-                var button = row.find("button.make-admin");
+                var button = user_info_form_modal_container.find("button.make-admin");
                 button.addClass("btn-danger");
                 button.removeClass("btn-warning");
                 button.addClass("remove-admin");
@@ -335,13 +336,12 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    $(".admin_user_table").on("click", ".remove-admin", function (e) {
+    user_info_form_modal_container.on("click", ".remove-admin", function (e) {
         e.preventDefault();
         e.stopPropagation();
 
         // Go up the tree until we find the user row, then grab the user_id data
-        var row = $(e.target).closest(".user_row");
-        var user_id = row.attr("data-user-id");
+        var user_id = user_info_form_modal_container.find('#user-name-form').attr("data-user-id");
 
         var url = "/json/users/" + encodeURIComponent(user_id);
         var data = {
@@ -352,7 +352,7 @@ exports.on_load_success = function (realm_people_data) {
             url: url,
             data: data,
             success: function () {
-                var button = row.find("button.remove-admin");
+                var button = user_info_form_modal_container.find("button.remove-admin");
                 button.addClass("btn-warning");
                 button.removeClass("btn-danger");
                 button.addClass("make-admin");
@@ -370,6 +370,7 @@ exports.on_load_success = function (realm_people_data) {
         var html = templates.render('user-info-form-modal', {
             user_id: person.user_id,
             full_name: people.get_full_name(person.user_id),
+            is_admin: person.is_admin,
             is_bot: person.is_bot,
         });
         var user_info_form_modal = $(html);

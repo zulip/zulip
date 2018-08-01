@@ -4,7 +4,7 @@
         <h3 id="user-info-form-modal-label">{{t "Change user info and roles" }}</h3>
     </div>
     <div class="modal-body">
-        <div class="user-name-form" data-user-id="{{user_id}}">
+        <div id="user-name-form" data-user-id="{{user_id}}">
             <form class="form-horizontal name-setting">
                 <input type="hidden" name="is_full_name" value="true" />
                 <div class="input-group name_change_container">
@@ -14,6 +14,18 @@
                 {{#if is_bot}}
                 <div class="input-group edit_bot_owner_container">
                     <label for="bot_owner_select">{{t "Owner" }}</label>
+                </div>
+                {{else if is_admin}}
+                <div class="user-admin-settings">
+                    <button class="button rounded small remove-admin btn-danger">
+                        {{t "Remove admin" }}
+                    </button>
+                </div>
+                {{else}}
+                <div class="user-admin-settings">
+                    <button class="button rounded small make-admin btn-warning">
+                        {{t "Make admin" }}
+                    </button>
                 </div>
                 {{/if}}
             </form>
