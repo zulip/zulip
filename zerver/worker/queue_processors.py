@@ -22,7 +22,7 @@ from zerver.lib.feedback import handle_feedback
 from zerver.lib.queue import SimpleQueueClient, queue_json_publish, retry_event
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.lib.notifications import handle_missedmessage_emails
-from zerver.lib.push_notifications import handle_push_notification
+from zerver.lib.push_notifications import handle_push_notification, handle_remove_push_notification
 from zerver.lib.actions import do_send_confirmation_email, \
     do_update_user_activity, do_update_user_activity_interval, do_update_user_presence, \
     internal_send_message, check_send_message, extract_recipients, \
@@ -306,6 +306,8 @@ class MissedMessageSendingWorker(EmailSendingWorker):  # nocoverage
 @assign_queue('missedmessage_mobile_notifications')
 class PushNotificationsWorker(QueueProcessingWorker):  # nocoverage
     def consume(self, data: Mapping[str, Any]) -> None:
+        if data.get("type", "add") == "remove":
+            handle_remove_push_notification(data['user_profile_id'], data['message_id'])
         handle_push_notification(data['user_profile_id'], data)
 
 # We probably could stop running this queue worker at all if ENABLE_FEEDBACK is False

@@ -220,6 +220,11 @@ DEFAULT_SETTINGS = {
     'SEND_LOGIN_EMAILS': True,
     'EMBEDDED_BOTS_ENABLED': False,
 
+    # Temporary setting while we wait for app support for removing
+    # push notifications.  Controls whether the Zulip server sends
+    # cancellation notices for previously sent push notifications.
+    'SEND_REMOVE_PUSH_NOTIFICATIONS': False,
+
     # Two Factor Authentication is not yet implementation-complete
     'TWO_FACTOR_AUTHENTICATION_ENABLED': False,
 

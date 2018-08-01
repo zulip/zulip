@@ -3,6 +3,7 @@
 from typing import Any, Dict, List, Mapping
 
 from django.db import connection
+from django.test import override_settings
 
 from zerver.models import (
     get_realm,
@@ -13,6 +14,7 @@ from zerver.models import (
     Stream,
     Subscription,
     UserMessage,
+    UserProfile,
 )
 
 from zerver.lib.fix_unreads import (
@@ -471,3 +473,60 @@ class FixUnreadTests(ZulipTestCase):
         assert_unread(um_muted_stream_id)
         assert_unread(um_post_pointer_id)
         assert_read(um_unsubscribed_id)
+
+class PushNotificationMarkReadFlowsTest(ZulipTestCase):
+    def get_mobile_push_notification_ids(self, user_profile: UserProfile) -> List[int]:
+        return list(UserMessage.objects.filter(
+            user_profile=user_profile,
+            flags=UserMessage.flags.active_mobile_push_notification).order_by(
+                "message_id").values_list("message_id", flat=True))
+
+    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
+    def test_track_active_mobile_push_notifications(self) -> None:
+        self.login(self.example_email("hamlet"))
+        user_profile = self.example_user('hamlet')
+        stream = self.subscribe(user_profile, "test_stream")
+        second_stream = self.subscribe(user_profile, "second_stream")
+
+        property_name = "push_notifications"
+        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                   "value": True,
+                                                                   "stream_id": stream.id}])})
+        result = self.api_post(user_profile.email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                   "value": True,
+                                                                   "stream_id": second_stream.id}])})
+        self.assert_json_success(result)
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile), [])
+
+        message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "test_topic")
+        second_message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "other_topic")
+        third_message_id = self.send_stream_message(self.example_email("cordelia"), "second_stream", "hello", "test_topic")
+
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
+                         [message_id, second_message_id, third_message_id])
+
+        result = self.client_post("/json/mark_topic_as_read", {
+            "stream_id": str(stream.id),
+            "topic_name": "test_topic",
+        })
+
+        self.assert_json_success(result)
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
+                         [second_message_id, third_message_id])
+
+        result = self.client_post("/json/mark_stream_as_read", {
+            "stream_id": str(stream.id),
+            "topic_name": "test_topic",
+        })
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
+                         [third_message_id])
+
+        fourth_message_id = self.send_stream_message(self.example_email("cordelia"), "test_stream", "hello", "test_topic")
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
+                         [third_message_id, fourth_message_id])
+
+        result = self.client_post("/json/mark_all_as_read", {})
+        self.assertEqual(self.get_mobile_push_notification_ids(user_profile),
+                         [])

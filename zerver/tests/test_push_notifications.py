@@ -536,6 +536,7 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True})
 
+    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_send_remove_notifications_to_bouncer(self) -> None:
         user_profile = self.example_user('hamlet')
         message = self.get_message(Recipient.PERSONAL, type_id=1)
@@ -555,6 +556,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                                                   'event': 'remove',
                                                   'zulip_message_id': message.id})
 
+    @override_settings(SEND_REMOVE_PUSH_NOTIFICATIONS=True)
     def test_non_bouncer_push_remove(self) -> None:
         message = self.get_message(Recipient.PERSONAL, type_id=1)
         UserMessage.objects.create(

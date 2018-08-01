@@ -1535,6 +1535,8 @@ class AbstractUserMessage(models.Model):
         # Use this for Django ORM queries where we are getting lots
         # of rows.  This custom SQL plays nice with our partial indexes.
         # Grep the code for example usage.
+        #
+        # This optimization is only helpful for checking a flag being False.
         return 'flags & 1 = 0'
 
     def flags_list(self) -> List[str]:

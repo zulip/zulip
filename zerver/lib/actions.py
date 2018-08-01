@@ -3549,11 +3549,19 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
         # that will mark as read any messages up until the pointer
         # move; we expect to remove this feature entirely before long,
         # when we drop support for the old Android app entirely.
+        app_message_ids = UserMessage.objects.filter(
+            user_profile=user_profile,
+            flags=UserMessage.flags.active_mobile_push_notification,
+            message__id__gt=prev_pointer,
+            message__id__lte=pointer).extra(where=[
+                UserMessage.where_unread(),
+            ]).values_list("message_id", flat=True)
+
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
-                                   message__id__lte=pointer).extra(
-                                       where=[UserMessage.where_unread()]).update(
-                                           flags=F('flags').bitor(UserMessage.flags.read))
+                                   message__id__lte=pointer).extra(where=[UserMessage.where_unread()]) \
+                           .update(flags=F('flags').bitor(UserMessage.flags.read))
+        do_clear_mobile_push_notifications_for_ids(user_profile, app_message_ids)
 
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
@@ -3581,6 +3589,13 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     send_event(event, [user_profile.id])
 
     statsd.incr("mark_all_as_read", count)
+
+    all_push_message_ids = UserMessage.objects.filter(
+        user_profile=user_profile,
+        flags=UserMessage.flags.active_mobile_push_notification,
+    ).values_list("message_id", flat=True)
+    do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
+
     return count
 
 def do_mark_stream_messages_as_read(user_profile: UserProfile,
@@ -3617,9 +3632,23 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
         all=False,
     )
     send_event(event, [user_profile.id])
+    do_clear_mobile_push_notifications_for_ids(user_profile, message_ids)
 
     statsd.incr("mark_stream_as_read", count)
     return count
+
+def do_clear_mobile_push_notifications_for_ids(user_profile: UserProfile,
+                                               message_ids: List[int]) -> None:
+    for user_message in UserMessage.objects.filter(
+            message_id__in=message_ids,
+            flags=UserMessage.flags.active_mobile_push_notification,
+            user_profile=user_profile):
+        event = {
+            "user_profile_id": user_profile.id,
+            "message_id": user_message.message_id,
+            "type": "remove",
+        }
+        queue_json_publish("missedmessage_mobile_notifications", event)
 
 def do_update_message_flags(user_profile: UserProfile,
                             client: Client,
@@ -3664,6 +3693,9 @@ def do_update_message_flags(user_profile: UserProfile,
              'messages': messages,
              'all': False}
     send_event(event, [user_profile.id])
+
+    if flag == "read" and operation == "add":
+        do_clear_mobile_push_notifications_for_ids(user_profile, messages)
 
     statsd.incr("flags.%s.%s" % (flag, operation), count)
     return count

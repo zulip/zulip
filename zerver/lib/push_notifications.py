@@ -556,7 +556,17 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
 
     """
     user_profile = get_user_profile_by_id(user_profile_id)
-    message = access_message(user_profile, message_id)[0]
+    message, user_message = access_message(user_profile, message_id)
+
+    if not settings.SEND_REMOVE_PUSH_NOTIFICATIONS:
+        # It's a little annoying that we duplicate this flag-clearing
+        # code (also present below), but this block is scheduled to be
+        # removed in a few weeks, once the app has supported the
+        # feature for long enough.
+        user_message.flags.active_mobile_push_notification = False
+        user_message.save(update_fields=["flags"])
+        return
+
     gcm_payload = get_common_payload(message)
     gcm_payload.update({
         'event': 'remove',
@@ -581,6 +591,9 @@ def handle_remove_push_notification(user_profile_id: int, message_id: int) -> No
     if android_devices:
         send_android_push_notification(android_devices, gcm_payload)
 
+    user_message.flags.active_mobile_push_notification = False
+    user_message.save(update_fields=["flags"])
+
 @statsd_increment("push_notifications")
 def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any]) -> None:
     """
@@ -602,6 +615,12 @@ def handle_push_notification(user_profile_id: int, missed_message: Dict[str, Any
         # the `zerver/tornado/event_queue.py` logic?
         if user_message.flags.read:
             return
+
+        # Otherwise, we mark the message as having an active mobile
+        # push notification, so that we can send revocation messages
+        # later.
+        user_message.flags.active_mobile_push_notification = True
+        user_message.save(update_fields=["flags"])
     else:
         # Users should only be getting push notifications into this
         # queue for messages they haven't received if they're
