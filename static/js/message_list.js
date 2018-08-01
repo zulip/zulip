@@ -431,6 +431,14 @@ $(document).on('message_selected.zulip zuliphashchange.zulip wheel', function ()
     message_viewport.stop_auto_scrolling();
 });
 
+$(document).load(function () {
+    $('.emoji').each(function () {
+        if (!this.complete || typeof this.naturalWidth === "undefined" || this.naturalWidth === 0) {
+            $(this).css("image", "/static/images/logo/emoji_error_image_zulip.png");
+        }
+    });
+});
+
 return exports;
 
 }());
