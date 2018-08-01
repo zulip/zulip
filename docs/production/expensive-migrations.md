@@ -24,8 +24,12 @@ can run them manually before starting the upgrade:
         ON zerver_usermessage (user_profile_id, message_id)
         WHERE (flags & 2048) != 0;
 
-(This first migration, `zerver_usermessage_is_private_message_id`, is
-the only one new in Zulip 1.9).
+        CREATE INDEX CONCURRENTLY
+        zerver_usermessage_active_mobile_push_notification_id
+        ON zerver_usermessage (user_profile_id, message_id)
+        WHERE (flags & 4096) != 0;
+
+(These first migrations are the only new ones in Zulip 1.9).
 
         CREATE INDEX CONCURRENTLY
         zerver_usermessage_mentioned_message_id
