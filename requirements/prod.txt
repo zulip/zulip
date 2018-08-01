@@ -34,7 +34,7 @@ cssutils==1.0.2           # via premailer
 decorator==4.1.2          # via ipython, traitlets
 defusedxml==0.5.0
 disposable-email-domains==0.0.30
-django-auth-ldap==1.5.0
+django-auth-ldap==1.6.0
 django-formtools==2.1     # via django-two-factor-auth
 django-otp==0.4.1.1       # via django-two-factor-auth
 django-phonenumber-field==1.3.0  # via django-two-factor-auth
@@ -97,7 +97,7 @@ pyopenssl==17.3.0         # via ndg-httpsclient, requests
 pysocks==1.6.7            # via twilio
 python-dateutil==2.6.1
 python-gcm==0.4
-python-ldap==3.0.0        # via django-auth-ldap
+python-ldap==3.1.0        # via django-auth-ldap
 python-twitter==3.4.2
 python3-openid==3.1.0     # via social-auth-core
 pytz==2018.5
