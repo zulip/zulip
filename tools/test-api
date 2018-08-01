@@ -23,6 +23,7 @@ from zerver.lib.api_test_helpers import test_the_api, test_invalid_api_key, \
 os.environ['DJANGO_SETTINGS_MODULE'] = 'zproject.test_settings'
 django.setup()
 from zerver.lib.actions import do_create_user
+from zerver.lib.users import get_api_key
 from zerver.models import get_user, get_realm
 
 usage = """test-js-with-casper [options]"""
@@ -45,7 +46,8 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     # Prepare the admin client
     email = 'iago@zulip.com'  # Iago is an admin
     realm = get_realm("zulip")
-    api_key = get_user(email, realm).api_key
+    user = get_user(email, realm)
+    api_key = get_api_key(user)
     site = 'http://zulip.zulipdev.com:9981'
 
     client = Client(
@@ -58,7 +60,7 @@ with test_server_running(force=options.force, external_host='zulipdev.com:9981')
     email = 'guest@zulip.com'  # guest is not an admin
     guest_user = do_create_user('guest@zulip.com', 'secret',
                                 get_realm('zulip'), 'Mr. Guest', 'guest')
-    api_key = guest_user.api_key
+    api_key = get_api_key(guest_user)
     nonadmin_client = Client(
         email=email,
         api_key=api_key,

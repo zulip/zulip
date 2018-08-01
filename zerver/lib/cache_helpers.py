@@ -18,6 +18,7 @@ from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_cache_key, get_remote_cache_time, get_remote_cache_requests, \
     cache_set_many, to_dict_cache_key_id
 from zerver.lib.message import MessageDict
+from zerver.lib.users import get_all_api_keys
 from importlib import import_module
 from django.contrib.sessions.models import Session
 from django.db.models import Q
@@ -45,7 +46,8 @@ def message_cache_items(items_for_remote_cache: Dict[str, Tuple[bytes]],
 
 def user_cache_items(items_for_remote_cache: Dict[str, Tuple[UserProfile]],
                      user_profile: UserProfile) -> None:
-    items_for_remote_cache[user_profile_by_api_key_cache_key(user_profile.api_key)] = (user_profile,)
+    for api_key in get_all_api_keys(user_profile):
+        items_for_remote_cache[user_profile_by_api_key_cache_key(api_key)] = (user_profile,)
     items_for_remote_cache[user_profile_cache_key(user_profile.email, user_profile.realm)] = (user_profile,)
     # We have other user_profile caches, but none of them are on the
     # core serving path for lots of requests.

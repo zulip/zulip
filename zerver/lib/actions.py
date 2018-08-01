@@ -60,7 +60,12 @@ from zerver.lib.topic_mutes import (
     add_topic_mute,
     remove_topic_mute,
 )
-from zerver.lib.users import bulk_get_users, check_full_name, user_ids_to_users
+from zerver.lib.users import (
+    bulk_get_users,
+    check_full_name,
+    get_api_key,
+    user_ids_to_users
+)
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, Service, SubMessage, \
@@ -498,7 +503,7 @@ def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
                full_name=user_profile.full_name,
                bot_type=user_profile.bot_type,
                is_active=user_profile.is_active,
-               api_key=user_profile.api_key,
+               api_key=get_api_key(user_profile),
                default_sending_stream=default_sending_stream_name,
                default_events_register_stream=default_events_register_stream_name,
                default_all_public_streams=user_profile.default_all_public_streams,

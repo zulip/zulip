@@ -3,6 +3,7 @@ from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
 from zerver.lib.test_helpers import use_s3_backend, override_settings
+from zerver.lib.users import get_api_key
 
 from io import StringIO
 from boto.s3.connection import S3Connection
@@ -97,14 +98,15 @@ class ThumbnailTest(ZulipTestCase):
             # Test api endpoint with legacy API authentication.
             user_profile = self.example_user("hamlet")
             result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
-                quoted_url, user_profile.api_key))
+                quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
 
             # Test a second logged-in user; they should also be able to access it
             user_profile = self.example_user("iago")
-            result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (quoted_url, user_profile.api_key))
+            result = self.client_get("/thumbnail?url=%s&size=thumbnail&api_key=%s" % (
+                quoted_url, get_api_key(user_profile)))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/0x100/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
@@ -194,7 +196,7 @@ class ThumbnailTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         result = self.client_get(
             '/thumbnail?url=%s&size=full&api_key=%s' %
-            (quoted_uri, user_profile.api_key))
+            (quoted_uri, get_api_key(user_profile)))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)

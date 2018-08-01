@@ -36,6 +36,7 @@ from zerver.lib.actions import (
 )
 from zerver.lib.create_user import copy_user_settings
 from zerver.lib.request import JsonableError
+from zerver.lib.users import get_api_key
 from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
@@ -115,7 +116,7 @@ class FileUploadTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get(uri + "?api_key=" + "invalid")
         self.assertEqual(response.status_code, 400)
 
-        response = self.client_get(uri + "?api_key=" + user_profile.api_key)
+        response = self.client_get(uri + "?api_key=" + get_api_key(user_profile))
         self.assertEqual(response.status_code, 200)
         data = b"".join(response.streaming_content)
         self.assertEqual(b"zulip!", data)

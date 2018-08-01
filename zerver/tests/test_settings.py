@@ -10,6 +10,7 @@ from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import MockLDAP
+from zerver.lib.users import get_all_api_keys
 from zerver.models import get_realm, get_user, UserProfile
 
 class ChangeSettingsTest(ZulipTestCase):
@@ -286,10 +287,11 @@ class UserChangesTest(ZulipTestCase):
         user = self.example_user('hamlet')
         email = user.email
         self.login(email)
-        old_api_key = user.api_key
+        old_api_keys = get_all_api_keys(user)
         result = self.client_post('/json/users/me/api_key/regenerate')
         self.assert_json_success(result)
         new_api_key = result.json()['api_key']
-        self.assertNotEqual(old_api_key, new_api_key)
+        self.assertNotIn(new_api_key, old_api_keys)
         user = self.example_user('hamlet')
-        self.assertEqual(new_api_key, user.api_key)
+        current_api_keys = get_all_api_keys(user)
+        self.assertIn(new_api_key, current_api_keys)

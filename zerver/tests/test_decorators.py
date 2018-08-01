@@ -26,6 +26,7 @@ from zerver.lib.test_classes import (
     WebhookTestCase,
 )
 from zerver.lib.response import json_response
+from zerver.lib.users import get_api_key
 from zerver.lib.user_agent import parse_user_agent
 from zerver.lib.request import \
     REQ, has_request_variables, RequestVariableMissingError, \
@@ -249,7 +250,7 @@ class DecoratorTestCase(TestCase):
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
-        webhook_bot_api_key = webhook_bot.api_key
+        webhook_bot_api_key = get_api_key(webhook_bot)
         webhook_client_name = "ZulipClientNameWebhook"
 
         request = HostRequestMock()
@@ -369,7 +370,7 @@ class DecoratorLoggingTestCase(ZulipTestCase):
         webhook_bot_email = 'webhook-bot@zulip.com'
         webhook_bot_realm = get_realm('zulip')
         webhook_bot = get_user(webhook_bot_email, webhook_bot_realm)
-        webhook_bot_api_key = webhook_bot.api_key
+        webhook_bot_api_key = get_api_key(webhook_bot)
 
         request = HostRequestMock()
         request.method = 'POST'
@@ -470,7 +471,8 @@ body:
 
     def test_authenticated_rest_api_view_errors(self) -> None:
         user_profile = self.example_user("hamlet")
-        credentials = "%s:%s" % (user_profile.email, user_profile.api_key)
+        api_key = get_api_key(user_profile)
+        credentials = "%s:%s" % (user_profile.email, api_key)
         api_auth = 'Digest ' + base64.b64encode(credentials.encode('utf-8')).decode('utf-8')
         result = self.client_post('/api/v1/external/zendesk', {},
                                   HTTP_AUTHORIZATION=api_auth)
@@ -856,8 +858,8 @@ class DeactivatedRealmTest(ZulipTestCase):
         """
         do_deactivate_realm(get_realm("zulip"))
         user_profile = self.example_user("hamlet")
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
-            user_profile.api_key,)
+        api_key = get_api_key(user_profile)
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
@@ -1029,8 +1031,8 @@ class InactiveUserTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         do_deactivate_user(user_profile)
 
-        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (
-            user_profile.api_key,)
+        api_key = get_api_key(user_profile)
+        url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
@@ -1072,36 +1074,41 @@ class TestValidateApiKey(ZulipTestCase):
             # We use default_bot's key but webhook_bot's email address to test
             # the logic when an API key is passed and it doesn't belong to the
             # user whose email address has been provided.
-            validate_api_key(HostRequestMock(), self.webhook_bot.email, self.default_bot.api_key)
+            api_key = get_api_key(self.default_bot)
+            validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
 
     def test_validate_api_key_if_profile_is_not_active(self) -> None:
         self._change_is_active_field(self.default_bot, False)
         with self.assertRaises(JsonableError):
-            validate_api_key(HostRequestMock(), self.default_bot.email, self.default_bot.api_key)
+            api_key = get_api_key(self.default_bot)
+            validate_api_key(HostRequestMock(), self.default_bot.email, api_key)
         self._change_is_active_field(self.default_bot, True)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_unset(self) -> None:
         with self.assertRaises(JsonableError):
-            validate_api_key(HostRequestMock(), self.webhook_bot.email, self.webhook_bot.api_key)
+            api_key = get_api_key(self.webhook_bot)
+            validate_api_key(HostRequestMock(), self.webhook_bot.email, api_key)
 
     def test_validate_api_key_if_profile_is_incoming_webhook_and_is_webhook_is_set(self) -> None:
+        api_key = get_api_key(self.webhook_bot)
         profile = validate_api_key(HostRequestMock(host="zulip.testserver"),
-                                   self.webhook_bot.email, self.webhook_bot.api_key,
+                                   self.webhook_bot.email, api_key,
                                    is_webhook=True)
         self.assertEqual(profile.id, self.webhook_bot.id)
 
     def test_validate_api_key_if_email_is_case_insensitive(self) -> None:
-        profile = validate_api_key(HostRequestMock(host="zulip.testserver"), self.default_bot.email.upper(), self.default_bot.api_key)
+        api_key = get_api_key(self.default_bot)
+        profile = validate_api_key(HostRequestMock(host="zulip.testserver"), self.default_bot.email.upper(), api_key)
         self.assertEqual(profile.id, self.default_bot.id)
 
     def test_valid_api_key_if_user_is_on_wrong_subdomain(self) -> None:
         with self.settings(RUNNING_INSIDE_TORNADO=False):
+            api_key = get_api_key(self.default_bot)
             with mock.patch('logging.warning') as mock_warning:
                 with self.assertRaisesRegex(JsonableError,
                                             "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host=settings.EXTERNAL_HOST),
-                                     self.default_bot.email,
-                                     self.default_bot.api_key)
+                                     self.default_bot.email, api_key)
 
                 mock_warning.assert_called_with(
                     "User {} ({}) attempted to access API on wrong "
@@ -1111,8 +1118,7 @@ class TestValidateApiKey(ZulipTestCase):
                 with self.assertRaisesRegex(JsonableError,
                                             "Account is not associated with this subdomain"):
                     validate_api_key(HostRequestMock(host='acme.' + settings.EXTERNAL_HOST),
-                                     self.default_bot.email,
-                                     self.default_bot.api_key)
+                                     self.default_bot.email, api_key)
 
                 mock_warning.assert_called_with(
                     "User {} ({}) attempted to access API on wrong "

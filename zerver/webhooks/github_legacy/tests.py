@@ -3,6 +3,7 @@ from typing import Dict, Optional
 import ujson
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.users import get_api_key
 from zerver.lib.webhooks.git import COMMITS_LIMIT
 from zerver.models import Message
 
@@ -39,7 +40,7 @@ class GithubV1HookTests(WebhookTestCase):
         self.assertEqual(prior_count, after_count)
 
     def get_body(self, fixture_name: str) -> Dict[str, str]:
-        api_key = self.test_user.api_key
+        api_key = get_api_key(self.test_user)
         data = ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'v1_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
                      'api-key': api_key,
@@ -164,7 +165,7 @@ class GithubV2HookTests(WebhookTestCase):
         self.assertEqual(prior_count, after_count)
 
     def get_body(self, fixture_name: str) -> Dict[str, str]:
-        api_key = self.test_user.api_key
+        api_key = get_api_key(self.test_user)
         data = ujson.loads(self.webhook_fixture_data(self.FIXTURE_DIR_NAME, 'v2_' + fixture_name))
         data.update({'email': self.TEST_USER_EMAIL,
                      'api-key': api_key,

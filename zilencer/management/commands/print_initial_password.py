@@ -3,6 +3,7 @@ from typing import Any
 
 from zerver.lib.initial_password import initial_password
 from zerver.lib.management import ZulipBaseCommand
+from zerver.lib.users import get_api_key
 
 class Command(ZulipBaseCommand):
     help = "Print the initial password and API key for accounts as created by populate_db"
@@ -21,4 +22,5 @@ class Command(ZulipBaseCommand):
             if '@' not in email:
                 print('ERROR: %s does not look like an email address' % (email,))
                 continue
-            print(self.fmt % (email, initial_password(email), self.get_user(email, realm).api_key))
+            user = self.get_user(email, realm)
+            print(self.fmt % (email, initial_password(email), get_api_key(user)))

@@ -33,6 +33,7 @@ from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
 from zerver.lib.request import JsonableError
+from zerver.lib.users import get_all_api_keys
 from zerver.lib.initial_password import initial_password
 from zerver.lib.sessions import get_session_dict_user
 from zerver.lib.test_classes import (
@@ -676,8 +677,8 @@ class GitHubAuthBackendTest(ZulipTestCase):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        self.assertEqual(self.example_user('hamlet').api_key,
-                         otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
@@ -931,8 +932,8 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        self.assertEqual(self.example_user('hamlet').api_key,
-                         otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 
@@ -1446,7 +1447,8 @@ class DevFetchAPIKeyTest(ZulipTestCase):
         self.assert_json_success(result)
         data = result.json()
         self.assertEqual(data["email"], self.email)
-        self.assertEqual(data['api_key'], self.user_profile.api_key)
+        user_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(data['api_key'], user_api_keys)
 
     def test_invalid_email(self) -> None:
         email = 'hamlet'
@@ -1924,8 +1926,8 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
         self.assertEqual(query_params["email"], [self.example_email("hamlet")])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        self.assertEqual(self.example_user('hamlet').api_key,
-                         otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp))
+        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
 

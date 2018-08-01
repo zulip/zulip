@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from zerver.lib.test_classes import WebhookTestCase
+from zerver.lib.users import get_api_key
 
 class JiraHookTests(WebhookTestCase):
     STREAM_NAME = 'jira'
     URL_TEMPLATE = u"/api/v1/external/jira?api_key={api_key}&stream={stream}"
 
     def test_custom_stream(self) -> None:
-        api_key = self.test_user.api_key
+        api_key = get_api_key(self.test_user)
         url = "/api/v1/external/jira?api_key=%s&stream=jira_custom" % (api_key,)
         msg = self.send_json_payload(self.test_user,
                                      url,

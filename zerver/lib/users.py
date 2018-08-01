@@ -179,3 +179,10 @@ def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
              "full_name": profile.full_name,
              "avatar": avatar_url(profile)}
             for profile in profiles]
+
+def get_api_key(user_profile: UserProfile) -> str:
+    return user_profile.api_key
+
+def get_all_api_keys(user_profile: UserProfile) -> List[str]:
+    # Users can only have one API key for now
+    return [user_profile.api_key]

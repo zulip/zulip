@@ -27,6 +27,7 @@ from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
 from zerver.lib.streams import access_stream_by_name
 from zerver.lib.upload import upload_avatar_image
+from zerver.lib.users import get_api_key
 from zerver.lib.validator import check_bool, check_string, check_int, check_url, check_dict
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
@@ -317,8 +318,10 @@ def add_bot_backend(
 
     notify_created_bot(bot_profile)
 
+    api_key = get_api_key(bot_profile)
+
     json_result = dict(
-        api_key=bot_profile.api_key,
+        api_key=api_key,
         avatar_url=avatar_url(bot_profile),
         default_sending_stream=get_stream_name(bot_profile.default_sending_stream),
         default_events_register_stream=get_stream_name(bot_profile.default_events_register_stream),
@@ -337,10 +340,15 @@ def get_bots_backend(request: HttpRequest, user_profile: UserProfile) -> HttpRes
         default_sending_stream = get_stream_name(bot_profile.default_sending_stream)
         default_events_register_stream = get_stream_name(bot_profile.default_events_register_stream)
 
+        # Bots are supposed to have only one API key, at least for now.
+        # Therefore we can safely asume that one and only valid API key will be
+        # the first one.
+        api_key = get_api_key(bot_profile)
+
         return dict(
             username=bot_profile.email,
             full_name=bot_profile.full_name,
-            api_key=bot_profile.api_key,
+            api_key=api_key,
             avatar_url=avatar_url(bot_profile),
             default_sending_stream=default_sending_stream,
             default_events_register_stream=default_events_register_stream,

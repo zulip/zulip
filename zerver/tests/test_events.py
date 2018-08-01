@@ -119,6 +119,7 @@ from zerver.lib.validator import (
     equals, check_none_or, Validator, check_url
 )
 from zerver.lib.upload import upload_backend, attachment_url_to_path_id
+from zerver.lib.users import get_api_key
 
 from zerver.views.events_register import _default_all_public_streams, _default_narrow
 
@@ -2341,7 +2342,7 @@ class FetchInitialStateDataTest(ZulipTestCase):
         self.assert_length(result['realm_bots'], 0)
 
         # additionally the API key for a random bot is not present in the data
-        api_key = self.notification_bot().api_key
+        api_key = get_api_key(self.notification_bot())
         self.assertNotIn(api_key, str(result))
 
     # Admin users have access to all bots in the realm_bots field

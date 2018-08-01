@@ -20,6 +20,7 @@ from django.http import HttpRequest
 from two_factor.models import PhoneDevice
 from zerver.lib.initial_password import initial_password
 from zerver.lib.utils import is_remote_server
+from zerver.lib.users import get_api_key
 
 from zerver.lib.actions import (
     check_send_message, create_stream_if_needed, bulk_add_subscriptions,
@@ -370,7 +371,8 @@ class ZulipTestCase(TestCase):
             if is_remote_server(identifier):
                 api_key = get_remote_server_by_uuid(identifier).api_key
             else:
-                api_key = get_user(identifier, get_realm(realm)).api_key
+                user = get_user(identifier, get_realm(realm))
+                api_key = get_api_key(user)
             API_KEYS[identifier] = api_key
 
         credentials = "%s:%s" % (identifier, api_key)
@@ -707,7 +709,7 @@ class WebhookTestCase(ZulipTestCase):
     def build_webhook_url(self, *args: Any, **kwargs: Any) -> str:
         url = self.URL_TEMPLATE
         if url.find("api_key") >= 0:
-            api_key = self.test_user.api_key
+            api_key = get_api_key(self.test_user)
             url = self.URL_TEMPLATE.format(api_key=api_key,
                                            stream=self.STREAM_NAME)
         else:
