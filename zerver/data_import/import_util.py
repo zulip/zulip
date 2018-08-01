@@ -1,7 +1,9 @@
+import random
 from typing import List, Dict, Any
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm
+from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -28,3 +30,26 @@ def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
         s3_path="",
         size="")
     avatar_list.append(avatar)
+
+def build_subscription(recipient_id: int, user_id: int,
+                       subscription_id: int) -> ZerverFieldsT:
+    subscription = dict(
+        recipient=recipient_id,
+        color=random.choice(stream_colors),
+        audible_notifications=True,
+        push_notifications=False,
+        email_notifications=False,
+        desktop_notifications=True,
+        pin_to_top=False,
+        in_home_view=True,
+        active=True,
+        user_profile=user_id,
+        id=subscription_id)
+    return subscription
+
+def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
+    recipient = dict(
+        type_id=type_id,  # stream id
+        id=recipient_id,
+        type=type)
+    return recipient
