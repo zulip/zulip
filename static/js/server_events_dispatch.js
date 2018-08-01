@@ -404,7 +404,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         switch (event.flag) {
         case 'starred':
             _.each(event.messages, function (message_id) {
-                ui.update_starred(message_id, new_value);
+                message_flags.update_starred_flag(message_id, new_value);
             });
             break;
         case 'read':

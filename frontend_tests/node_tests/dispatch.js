@@ -1001,6 +1001,16 @@ with_overrides(function (override) {
     });
 });
 
+// notify_server_message_read requires message_store and these dependencies.
+zrequire('unread_ops');
+zrequire('unread');
+zrequire('topic_data');
+zrequire('stream_list');
+zrequire("message_flags");
+set_global('message_store', {
+    get: function () {return {};},
+});
+
 with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
@@ -1012,13 +1022,6 @@ with_overrides(function (override) {
         assert_same(args.new_value, true); // for 'add'
     });
 });
-
-// notify_server_message_read requires message_store and these dependencies.
-zrequire('unread_ops');
-zrequire('unread');
-zrequire('topic_data');
-zrequire('stream_list');
-set_global('message_store', {});
 
 with_overrides(function (override) {
     // delete_message
