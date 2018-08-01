@@ -33,19 +33,6 @@
             </button>
             {{/if}}
         </span>
-        <span class="user-admin-settings">
-            {{#if is_active_human}}
-                {{#if is_admin}}
-                <button class="button rounded small remove-admin btn-danger">
-                    {{t "Remove admin" }}
-                </button>
-                {{else}}
-                <button class="button rounded small make-admin btn-warning">
-                    {{t "Make admin" }}
-                </button>
-                {{/if}}
-            {{/if}}
-        </span>
         <button class="button rounded small btn-warning open-user-form{{#unless is_active}} display-none{{/unless}}" title="{{t 'Edit user' }}" data-user-id="{{user_id}}">
             <i class="fa fa-pencil" aria-hidden="true"></i>
         </button>

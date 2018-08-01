@@ -375,11 +375,8 @@ run_test('admin_user_list', () => {
     assert.equal($(buttons[0]).text().trim(), "translated: Deactivate");
     assert($(buttons[0]).hasClass("deactivate"));
 
-    assert.equal($(buttons[1]).text().trim(), "translated: Make admin");
-    assert($(buttons[1]).hasClass("make-admin"));
-
-    assert.equal($(buttons[2]).attr('title').trim(), "translated: Edit user");
-    assert($(buttons[2]).hasClass("open-user-form"));
+    assert.equal($(buttons[1]).attr('title').trim(), "translated: Edit user");
+    assert($(buttons[1]).hasClass("open-user-form"));
 
     // When the logged in user is not admin
     html = '<table>';
