@@ -52,7 +52,7 @@ function change_notification_setting(setting, setting_data, status_element) {
 }
 
 exports.set_up = function () {
-    if (!page_params.realm_show_digest_email) {
+    if (!page_params.realm_digest_emails_enabled) {
         $("#digest_container").hide();
     }
 
