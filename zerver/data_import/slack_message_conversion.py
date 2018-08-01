@@ -1,5 +1,5 @@
 import re
-from typing import Any, Dict, Tuple, List
+from typing import Any, Dict, Tuple, List, Optional
 
 # stubs
 ZerverFieldsT = Dict[str, Any]
@@ -113,10 +113,10 @@ def convert_to_zulip_markdown(text: str, users: List[ZerverFieldsT],
     return text, mentioned_users_id, message_has_link
 
 def get_user_mentions(token: str, users: List[ZerverFieldsT],
-                      added_users: AddedUsersT) -> Tuple[str, int]:
+                      added_users: AddedUsersT) -> Tuple[str, Optional[int]]:
     slack_usermention_match = re.search(SLACK_USERMENTION_REGEX, token, re.VERBOSE)
-    short_name = slack_usermention_match.group(4)
-    slack_id = slack_usermention_match.group(2)
+    short_name = slack_usermention_match.group(4)  # type: ignore # slack_usermention_match exists and is not None
+    slack_id = slack_usermention_match.group(2)  # type: ignore # slack_usermention_match exists and is not None
     for user in users:
         if (user['id'] == slack_id and user['name'] == short_name and short_name) or \
            (user['id'] == slack_id and short_name is None):
