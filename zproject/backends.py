@@ -1,4 +1,5 @@
 import logging
+import mock
 from typing import Any, Dict, List, Set, Tuple, Optional
 
 from apiclient.sample_tools import client as googleapiclient
@@ -26,6 +27,8 @@ from zerver.lib.users import check_full_name
 from zerver.models import UserProfile, Realm, get_user_profile_by_id, \
     remote_user_to_email, email_to_username, get_realm, get_user
 
+from fakeldap import MockLDAP
+
 def pad_method_dict(method_dict: Dict[str, bool]) -> Dict[str, bool]:
     """Pads an authentication methods dict to contain all auth backends
     supported by the software, regardless of whether they are
@@ -44,6 +47,7 @@ def auth_enabled_helper(backends_to_check: List[str], realm: Optional[Realm]) ->
         pad_method_dict(enabled_method_dict)
     for supported_backend in django.contrib.auth.get_backends():
         for backend_name in backends_to_check:
+            print(backend_name)
             backend = AUTH_BACKEND_NAME_MAP[backend_name]
             if enabled_method_dict[backend_name] and isinstance(supported_backend, backend):
                 return True
@@ -263,6 +267,7 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return set()
 
     def django_to_ldap_username(self, username: str) -> str:
+        print(settings.LDAP_APPEND_DOMAIN)
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
                 raise ZulipLDAPExceptionOutsideDomain("Username does not match LDAP domain.")
@@ -275,6 +280,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
         return username
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
+    ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+    mock_initialize = ldap_patcher.start()
+    mock_ldap = MockLDAP()
+    mock_initialize.return_value = mock_ldap
+    full_name = 'New LDAP fullname'
+    mock_ldap.directory = {
+        'uid=noname,ou=users,dc=zulip,dc=com': {
+            'userPassword': 'testing',
+            'cn': ['what',],
+            'email': 'noname@zulip.com'
+        }
+    }
     REALM_IS_NONE_ERROR = 1
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,

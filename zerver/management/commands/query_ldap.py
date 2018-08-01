@@ -7,8 +7,24 @@ from django.contrib.auth import get_backends
 from django.core.management.base import BaseCommand
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 
+import mock
+from fakeldap import MockLDAP
+
 # Quick tool to test whether you're correctly authenticating to LDAP
 def query_ldap(**options: str) -> None:
+    ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+    mock_initialize = ldap_patcher.start()
+    mock_ldap = MockLDAP()
+    mock_initialize.return_value = mock_ldap
+    full_name = 'New LDAP fullname'
+    mock_ldap.directory = {
+        'uid=hamlet,ou=users,dc=zulip,dc=com': {
+            'userPassword': 'testing',
+            'cn': ['what',],
+            'email': 'hamlet@zulip.com'
+        }
+    }
+
     email = options['email']
     for backend in get_backends():
         if isinstance(backend, LDAPBackend):

@@ -1595,3 +1595,8 @@ CROSS_REALM_BOT_EMAILS = {
 CONTRIBUTORS_DATA = os.path.join(STATIC_ROOT, 'generated/github-contributors.json')
 
 THUMBOR_KEY = get_secret('thumbor_key')
+
+LDAP_APPEND_DOMAIN = "zulip.com"
+AUTH_LDAP_BIND_PASSWORD=""
+AUTH_LDAP_USER_DN_TEMPLATE="uid=%(user)s,ou=users,dc=zulip,dc=com"
+LDAP_EMAIL_ATTR="email"

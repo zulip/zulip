@@ -36,10 +36,9 @@ ALLOWED_HOSTS = ['*']
 # Uncomment extra backends if you want to test with them.  Note that
 # for Google and GitHub auth you'll need to do some pre-setup.
 AUTHENTICATION_BACKENDS = (
-    'zproject.backends.DevAuthBackend',
-    'zproject.backends.EmailAuthBackend',
     'zproject.backends.GitHubAuthBackend',
     'zproject.backends.GoogleMobileOauth2Backend',
+    'zproject.backends.ZulipLDAPAuthBackend',
 )
 
 EXTERNAL_URI_SCHEME = "http://"
@@ -87,3 +86,10 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
+
+SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)
+
+LDAP_APPEND_DOMAIN = "zulip.com"
+AUTH_LDAP_BIND_PASSWORD="testing"
+AUTH_LDAP_USER_DN_TEMPLATE="uid=%(user)s,ou=users,dc=zulip,dc=com"
+LDAP_EMAIL_ATTR="email"
