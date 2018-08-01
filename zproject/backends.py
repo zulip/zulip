@@ -292,6 +292,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             return None
 
         return ZulipLDAPAuthBackendBase.authenticate(self,
+                                                     request=None,
                                                      username=username,
                                                      password=password)
 
