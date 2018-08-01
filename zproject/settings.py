@@ -355,7 +355,8 @@ DEFAULT_SETTINGS.update({
     'EMAIL_DELIVERER_DISABLED': False,
 
     # What domains to treat like the root domain
-    'ROOT_SUBDOMAIN_ALIASES': ["www"],
+    # "auth" is by default a reserved subdomain for the use by python-social-auth.
+    'ROOT_SUBDOMAIN_ALIASES': ["www", "auth"],
     # Whether the root domain is a landing page or can host a realm.
     'ROOT_DOMAIN_LANDING_PAGE': False,
 
