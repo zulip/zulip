@@ -77,6 +77,7 @@ exports.save_uncollapsed = function (message) {
     send_flag_update(message, 'collapsed', 'remove');
 };
 
+// This updates starred flag on the frontend side.
 exports.update_starred_flag = function (message_id, new_value) {
     var message = message_store.get(message_id);
     message.starred = new_value;
