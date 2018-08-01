@@ -13,13 +13,12 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 
-from zerver.models import Realm, UserProfile
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
+from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar
+    build_avatar, build_subscription, build_recipient
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -158,7 +157,7 @@ def build_recipient_and_subscription(
 
     # We have only one recipient, because we have only one stream
     # Hence 'recipient_id'=0 corresponds to 'stream_id'=0
-    recipient = build_recipient(0, recipient_id, 2)
+    recipient = build_recipient(0, recipient_id, Recipient.STREAM)
     zerver_recipient.append(recipient)
 
     for user in zerver_userprofile:
@@ -169,7 +168,7 @@ def build_recipient_and_subscription(
 
     # For users
     for user in zerver_userprofile:
-        recipient = build_recipient(user['id'], recipient_id, 1)
+        recipient = build_recipient(user['id'], recipient_id, Recipient.PERSONAL)
         subscription = build_subscription(recipient_id, user['id'], subscription_id)
         zerver_recipient.append(recipient)
         zerver_subscription.append(subscription)
@@ -177,29 +176,6 @@ def build_recipient_and_subscription(
         subscription_id += 1
 
     return zerver_recipient, zerver_subscription
-
-def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
-    recipient = dict(
-        type_id=type_id,  # stream id
-        id=recipient_id,
-        type=type)
-    return recipient
-
-def build_subscription(recipient_id: int, user_id: int,
-                       subscription_id: int) -> ZerverFieldsT:
-    subscription = dict(
-        recipient=recipient_id,
-        color=random.choice(stream_colors),
-        audible_notifications=True,
-        push_notifications=False,
-        email_notifications=False,
-        desktop_notifications=True,
-        pin_to_top=False,
-        in_home_view=True,
-        active=True,
-        user_profile=user_id,
-        id=subscription_id)
-    return subscription
 
 def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                       zerver_subscription: List[ZerverFieldsT],

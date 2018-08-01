@@ -12,8 +12,7 @@ from zerver.data_import.slack import (
     get_user_timezone,
     users_to_zerver_userprofile,
     build_defaultstream,
-    build_pm_recipient_sub_from_user,
-    build_subscription,
+    get_subscription,
     channels_to_zerver_stream,
     slack_workspace_to_realm,
     get_message_sending_user,
@@ -25,6 +24,8 @@ from zerver.data_import.slack import (
 )
 from zerver.data_import.import_util import (
     build_zerver_realm,
+    build_subscription,
+    build_recipient,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -39,6 +40,7 @@ from zerver.models import (
     Realm,
     get_realm,
     RealmAuditLog,
+    Recipient,
 )
 from zerver.lib import mdiff
 
@@ -221,12 +223,13 @@ class SlackImporter(ZulipTestCase):
         zulip_user_id = 3
         recipient_id = 5
         subscription_id = 7
-        recipient, sub = build_pm_recipient_sub_from_user(zulip_user_id, recipient_id, subscription_id)
+        sub = build_subscription(recipient_id, zulip_user_id, subscription_id)
+        recipient = build_recipient(zulip_user_id, recipient_id, Recipient.PERSONAL)
 
         self.assertEqual(recipient['id'], sub['recipient'])
         self.assertEqual(recipient['type_id'], sub['user_profile'])
 
-        self.assertEqual(recipient['type'], 1)
+        self.assertEqual(recipient['type'], Recipient.PERSONAL)
         self.assertEqual(recipient['type_id'], 3)
 
         self.assertEqual(sub['recipient'], 5)
@@ -239,9 +242,9 @@ class SlackImporter(ZulipTestCase):
         subscription_id_count = 0
         recipient_id = 12
         zerver_subscription = []  # type: List[Dict[str, Any]]
-        final_subscription_id = build_subscription(channel_members, zerver_subscription,
-                                                   recipient_id, added_users,
-                                                   subscription_id_count)
+        final_subscription_id = get_subscription(channel_members, zerver_subscription,
+                                                 recipient_id, added_users,
+                                                 subscription_id_count)
         # sanity checks
         self.assertEqual(final_subscription_id, 4)
         self.assertEqual(zerver_subscription[0]['recipient'], 12)

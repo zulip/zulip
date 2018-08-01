@@ -10,7 +10,6 @@ import re
 import logging
 import random
 import requests
-import random
 
 from django.conf import settings
 from django.db import connection
@@ -18,14 +17,13 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
+from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar
+    build_avatar, build_subscription, build_recipient
 from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
@@ -387,22 +385,15 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         zerver_stream.append(stream)
         added_channels[stream['name']] = (channel['id'], stream_id)
 
-        # construct the recipient object and append it to zerver_recipient
-        # type 1: private
-        # type 2: stream
-        # type 3: huddle
-        recipient = dict(
-            type_id=stream_id,
-            id=recipient_id,
-            type=2)
+        recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
         zerver_recipient.append(recipient)
         added_recipient[stream['name']] = recipient_id
         # TODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
-        subscription_id_count = build_subscription(channel['members'], zerver_subscription,
-                                                   recipient_id, added_users,
-                                                   subscription_id_count)
+        subscription_id_count = get_subscription(channel['members'], zerver_subscription,
+                                                 recipient_id, added_users,
+                                                 subscription_id_count)
         # TODO add zerver_subscription which correspond to
         # huddles type recipient
         # For huddles:
@@ -426,16 +417,14 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         #         ],
 
     for user in zerver_userprofile:
-        zulip_user_id = user['id']
         # this maps the recipients and subscriptions
         # related to private messages
-        recipient_id = recipient_id_count
-        subscription_id = subscription_id_count
+        recipient = build_recipient(user['id'], recipient_id_count, Recipient.PERSONAL)
+        sub = build_subscription(recipient_id_count, user['id'], subscription_id_count)
 
-        recipient, sub = build_pm_recipient_sub_from_user(zulip_user_id, recipient_id,
-                                                          subscription_id)
         zerver_recipient.append(recipient)
         zerver_subscription.append(sub)
+
         subscription_id_count += 1
         recipient_id_count += 1
 
@@ -451,45 +440,11 @@ def build_defaultstream(channel_name: str, realm_id: int, stream_id: int,
         id=defaultstream_id)
     return defaultstream
 
-def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
-                                     subscription_id: int) -> Tuple[ZerverFieldsT,
-                                                                    ZerverFieldsT]:
-    recipient = dict(
-        type_id=zulip_user_id,
-        id=recipient_id,
-        type=1)
-
-    sub = dict(
-        recipient=recipient_id,
-        color=random.choice(stream_colors),
-        audible_notifications=True,
-        push_notifications=False,
-        email_notifications=False,
-        desktop_notifications=True,
-        pin_to_top=False,
-        in_home_view=True,
-        active=True,
-        user_profile=zulip_user_id,
-        id=subscription_id)
-
-    return recipient, sub
-
-def build_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
-                       recipient_id: int, added_users: AddedUsersT,
-                       subscription_id: int) -> int:
+def get_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
+                     recipient_id: int, added_users: AddedUsersT,
+                     subscription_id: int) -> int:
     for member in channel_members:
-        sub = dict(
-            recipient=recipient_id,
-            color=random.choice(stream_colors),
-            audible_notifications=True,
-            push_notifications=False,
-            email_notifications=False,
-            desktop_notifications=True,
-            pin_to_top=False,
-            in_home_view=True,
-            active=True,
-            user_profile=added_users[member],
-            id=subscription_id)
+        sub = build_subscription(recipient_id, added_users[member], subscription_id)
         # The recipient corresponds to a stream for stream-readable message.
         zerver_subscription.append(sub)
         subscription_id += 1
