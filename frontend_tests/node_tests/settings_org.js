@@ -1,46 +1,76 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
-
-zrequire('stream_data');
-zrequire('settings_account');
-zrequire('settings_org');
-zrequire('settings_ui');
-zrequire('settings_ui');
+set_global('blueslip', global.make_zblueslip());
 
 const noop = () => {};
 
-set_global('blueslip', global.make_zblueslip());
+var form_data;
 
-set_global('loading', {
+const _jQuery = {
+    each: function (lst, f) {
+        _.each(lst, function (v, k) {
+            f(k, v);
+        });
+    },
+};
+
+const _FormData = function () {
+    return form_data;
+};
+
+const _loading = {
     make_indicator: noop,
     destroy_indicator: noop,
-});
+};
 
-set_global('page_params', {
+const _page_params = {
     is_admin: false,
     realm_domains: [
         { domain: 'example.com', allow_subdomains: true },
         { domain: 'example.org', allow_subdomains: false },
     ],
-});
+};
 
-set_global('realm_icon', {
-});
+const _realm_icon = {};
+const _channel = {};
 
-set_global('channel', {
-});
-
-set_global('templates', {
+const _templates = {
     render: function (name, data) {
         if (name === 'admin-realm-domains-list') {
             assert(data.realm_domain.domain);
             return 'stub-domains-list';
         }
     },
-});
+};
 
-set_global('overlays', {
-});
+const _overlays = {};
+
+const _ui_report = {
+    success: function (msg, elem) {
+        elem.val(msg);
+    },
+
+    error: function (msg, xhr, elem) {
+        elem.val(msg);
+    },
+};
+
+set_global('channel', _channel);
+set_global('csrf_token', 'token-stub');
+set_global('FormData', _FormData);
+set_global('jQuery', _jQuery);
+set_global('loading', _loading);
+set_global('overlays', _overlays);
+set_global('page_params', _page_params);
+set_global('realm_icon', _realm_icon);
+set_global('templates', _templates);
+set_global('ui_report', _ui_report);
+
+zrequire('stream_data');
+zrequire('settings_account');
+zrequire('settings_org');
+zrequire('settings_ui');
+zrequire('settings_ui');
 
 run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes
@@ -49,16 +79,6 @@ run_test('unloaded', () => {
     settings_org.reset();
     settings_org.populate_realm_domains();
     settings_org.populate_auth_methods();
-});
-
-set_global('ui_report', {
-    success: function (msg, elem) {
-        elem.val(msg);
-    },
-
-    error: function (msg, xhr, elem) {
-        elem.val(msg);
-    },
 });
 
 function simulate_auth_methods() {
@@ -276,24 +296,11 @@ function test_change_save_button_state() {
 }
 
 function test_upload_realm_icon(upload_realm_icon) {
-    var form_data = {
+    form_data = {
         append: function (field, val) {
             form_data[field] = val;
         },
     };
-
-    set_global('csrf_token', 'token-stub');
-    set_global('jQuery', {
-        each: function (lst, f) {
-            _.each(lst, function (v, k) {
-                f(k, v);
-            });
-        },
-    });
-
-    set_global('FormData', function () {
-        return form_data;
-    });
 
     var file_input = [
         {files: ['image1.png', 'image2.png']},

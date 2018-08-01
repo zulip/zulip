@@ -1,10 +1,8 @@
-set_global('page_params', {
+var _page_params = {
     alert_words: ['alertone', 'alerttwo', 'alertthree', 'al*rt.*s', '.+', 'emoji'],
-});
+};
 
-set_global('feature_flags', {
-    alert_words: true,
-});
+set_global('page_params', _page_params);
 
 zrequire('people');
 zrequire('alert_words');

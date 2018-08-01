@@ -1,17 +1,19 @@
-zrequire('people');
-zrequire('bot_data');
-
-set_global('settings_bots', {
+var _settings_bots = {
     render_bots: () => {},
-});
+};
 
-const page_params = {
+const _page_params = {
     realm_bots: [{email: 'bot0@zulip.com', user_id: 42, full_name: 'Bot 0'},
                  {email: 'outgoingwebhook@zulip.com', user_id: 314, full_name: "Outgoing webhook",
                   services: [{base_url: "http://foo.com", interface: 1}]}],
     is_admin: false,
 };
-set_global('page_params', page_params);
+
+set_global('page_params', _page_params);
+set_global('settings_bots', _settings_bots);
+
+zrequire('people');
+zrequire('bot_data');
 
 global.people.add({
     email: 'owner@zulip.com',

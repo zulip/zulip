@@ -1,3 +1,6 @@
+const _page_params = {};
+
+set_global('page_params', _page_params);
 zrequire('people');
 zrequire('presence');
 zrequire('util');
@@ -8,7 +11,6 @@ zrequire('buddy_data');
 // here.
 
 
-set_global('page_params', {});
 
 run_test('make_people', () => {
     _.each(_.range(1000, 2000), (i) => {
