@@ -23,7 +23,7 @@ run_test('starred', () => {
         posted_data = opts.data;
     };
 
-    message_flags.toggle_starred(message);
+    message_flags.toggle_starred_and_update_server(message);
 
     assert(ui_updated);
 
@@ -40,7 +40,7 @@ run_test('starred', () => {
 
     ui_updated = false;
 
-    message_flags.toggle_starred(message);
+    message_flags.toggle_starred_and_update_server(message);
 
     assert(ui_updated);
 

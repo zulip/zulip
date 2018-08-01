@@ -707,7 +707,7 @@ exports.process_hotkey = function (e, hotkey) {
     case 'message_actions':
         return popovers.open_message_menu(msg);
     case 'star_message':
-        message_flags.toggle_starred(msg);
+        message_flags.toggle_starred_and_update_server(msg);
         return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);

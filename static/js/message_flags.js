@@ -83,7 +83,7 @@ exports.update_starred_flag = function (message_id, new_value) {
     ui.update_starred_view(message_id, new_value);
 };
 
-exports.toggle_starred = function (message) {
+exports.toggle_starred_and_update_server = function (message) {
     if (message.locally_echoed) {
         // This is defensive code for when you hit the "*" key
         // before we get a server ack.  It's rare that somebody
