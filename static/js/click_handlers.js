@@ -181,7 +181,7 @@ exports.initialize = function () {
 
         var message_id = rows.id($(this).closest(".message_row"));
         var message = message_store.get(message_id);
-        message_flags.toggle_starred(message);
+        message_flags.update_server_starred_flag(message);
     });
 
     $("#main_div").on("click", ".message_reaction", function (e) {
