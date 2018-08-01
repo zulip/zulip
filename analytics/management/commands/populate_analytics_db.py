@@ -30,7 +30,7 @@ class Command(BaseCommand):
         user = UserProfile.objects.create(
             email=email, full_name=full_name, is_staff=is_staff,
             realm=realm, short_name=full_name, pointer=-1, last_pointer_updater='none',
-            api_key='42', date_joined=date_joined)
+            date_joined=date_joined)
         RealmAuditLog.objects.create(
             realm=realm, modified_user=user, event_type=RealmAuditLog.USER_CREATED,
             event_time=user.date_joined)

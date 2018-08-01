@@ -22,7 +22,8 @@ from zerver.lib.cache import cache_with_key, flush_user_profile, flush_realm, \
     get_stream_cache_key, realm_user_dicts_cache_key, \
     bot_dicts_in_realm_cache_key, realm_user_dict_fields, \
     bot_dict_fields, flush_message, flush_submessage, bot_profile_cache_key
-from zerver.lib.utils import make_safe_digest, generate_random_token
+from zerver.lib.utils import make_safe_digest, generate_api_key, \
+    generate_random_token
 from django.db import transaction
 from django.utils.timezone import now as timezone_now
 from django.contrib.sessions.models import Session
@@ -674,7 +675,6 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
 
     date_joined = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     tos_version = models.CharField(null=True, max_length=10)  # type: Optional[str]
-    api_key = models.CharField(max_length=API_KEY_LENGTH)  # type: str
 
     # pointer points to Message.id, NOT UserMessage.id.
     pointer = models.IntegerField()  # type: int
@@ -1770,7 +1770,10 @@ def get_user_profile_by_email(email: str) -> UserProfile:
 
 @cache_with_key(user_profile_by_api_key_cache_key, timeout=3600*24*7)
 def get_user_profile_by_api_key(api_key: str) -> UserProfile:
-    return UserProfile.objects.select_related().get(api_key=api_key)
+    user_api_key = UserAPIKey.objects.filter(api_key=api_key).first()
+    if user_api_key is None:
+        raise UserProfile.DoesNotExist()
+    return user_api_key.user_profile
 
 @cache_with_key(user_profile_cache_key, timeout=3600*24*7)
 def get_user(email: str, realm: Realm) -> UserProfile:
@@ -1890,7 +1893,7 @@ def get_huddle_backend(huddle_hash: str, id_list: List[int]) -> Huddle:
 def clear_database() -> None:  # nocoverage # Only used in populate_db
     pylibmc.Client(['127.0.0.1']).flush_all()
     model = None  # type: Any
-    for model in [Message, Stream, UserProfile, Recipient,
+    for model in [Message, Stream, UserAPIKey, UserProfile, Recipient,
                   Realm, Subscription, Huddle, UserMessage, Client,
                   DefaultStream]:
         model.objects.all().delete()
@@ -2110,6 +2113,14 @@ class UserPresence(models.Model):
             status_val = None
 
         return status_val
+
+class UserAPIKey(models.Model):
+    user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE,
+                                     db_index=True)
+    description = models.CharField(max_length=100)
+    date_created = models.DateTimeField(default=timezone_now)
+    api_key = models.CharField(max_length=UserProfile.API_KEY_LENGTH,
+                               default=generate_api_key)
 
 class DefaultStream(models.Model):
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm

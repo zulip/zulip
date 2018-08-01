@@ -8,7 +8,7 @@ from zerver.lib.cache import generic_bulk_cached_fetch, user_profile_cache_key_i
     user_profile_by_id_cache_key
 from zerver.lib.request import JsonableError
 from zerver.lib.avatar import avatar_url
-from zerver.models import UserProfile, Service, Realm, \
+from zerver.models import UserAPIKey, UserProfile, Service, Realm, \
     get_user_profile_by_id, query_for_ids, get_user_profile_by_id_in_realm, \
     CustomProfileField
 
@@ -196,11 +196,14 @@ def get_accounts_for_email(email: str) -> List[Dict[str, Optional[str]]]:
             for profile in profiles]
 
 def get_api_key(user_profile: UserProfile) -> str:
-    return user_profile.api_key
+    # In some cases we can assume a user has only one API keys (e.g. bots), or
+    # it isn't really relevant which API key to use (like in tests).
+    user_api_keys = UserAPIKey.objects.filter(user_profile=user_profile)
+    return getattr(user_api_keys.first(), 'api_key', None)
 
 def get_all_api_keys(user_profile: UserProfile) -> List[str]:
     # Users can only have one API key for now
-    return [user_profile.api_key]
+    return [row.api_key for row in UserAPIKey.objects.filter(user_profile=user_profile)]
 
 def validate_user_custom_profile_data(realm_id: int,
                                       profile_data: List[Dict[str, Union[int, str, List[int]]]]) -> None:

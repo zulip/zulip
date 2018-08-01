@@ -1,7 +1,7 @@
-
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
+from zerver.models import UserAPIKey, UserProfile, Recipient, Subscription, \
+    Realm, Stream
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
 from zerver.lib.utils import generate_api_key
@@ -69,8 +69,12 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 
     user_profile.set_password(password)
 
-    user_profile.api_key = generate_api_key()
     return user_profile
+
+def create_user_api_key(user_profile: UserProfile, description: str) -> UserAPIKey:
+    api_key = create_api_key(user_profile, description)
+    api_key.save()
+    return api_key
 
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
@@ -110,4 +114,10 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+
+    create_user_api_key(user_profile, description='Default API key')
+
     return user_profile
+
+def create_api_key(user_profile: UserProfile, description: str) -> UserAPIKey:
+    return UserAPIKey(user_profile=user_profile, description=description)

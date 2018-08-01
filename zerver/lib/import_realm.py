@@ -16,6 +16,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, \
 from zerver.lib.actions import UserMessageLite, bulk_insert_ums
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
+from zerver.lib.create_user import create_api_key
 from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
@@ -25,7 +26,7 @@ from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend, guess_type
 from zerver.lib.utils import generate_api_key, process_list_in_batches
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
-    UserMessage, Subscription, Message, RealmEmoji, \
+    UserAPIKey, UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
     UserPresence, UserActivity, UserActivityInterval, Reaction, \
     CustomProfileField, CustomProfileFieldValue, RealmAuditLog, \
@@ -783,7 +784,6 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                         related_table="message", id_field=True)
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
-        user_profile_dict['api_key'] = generate_api_key()
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
@@ -792,6 +792,8 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
     for user_profile in user_profiles:
         user_profile.set_unusable_password()
     UserProfile.objects.bulk_create(user_profiles)
+    UserAPIKey.objects.bulk_create([create_api_key(profile, 'Default API key')
+                                    for profile in user_profiles])
 
     re_map_foreign_keys(data, 'zerver_defaultstream', 'stream', related_table="stream")
     re_map_foreign_keys(data, 'zerver_realmemoji', 'author', related_table="user_profile")

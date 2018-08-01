@@ -7,7 +7,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_regenerate_api_key, do_change_full_name, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, get_client, get_realm
+from zerver.models import RealmAuditLog, UserAPIKey, get_client, get_realm
 from analytics.models import StreamCount
 
 from datetime import timedelta
@@ -99,7 +99,8 @@ class TestRealmAuditLog(ZulipTestCase):
         do_regenerate_api_key(user, user)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_API_KEY_CHANGED,
                                                       event_time__gte=now).count(), 1)
-        self.assertTrue(user.api_key)
+        api_keys = UserAPIKey.objects.filter(user_profile=user)
+        self.assertEqual(api_keys.count(), 1)
 
     def test_get_streams_traffic(self) -> None:
         realm = get_realm('zulip')

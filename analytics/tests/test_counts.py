@@ -22,6 +22,7 @@ from zerver.lib.actions import do_activate_user, do_create_user, \
     do_deactivate_user, do_reactivate_user, update_user_activity_interval, \
     do_invite_users, do_revoke_user_invite, do_resend_user_invite_email, \
     InvitationError
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.timestamp import TimezoneNotUTCException, floor_to_day
 from zerver.lib.topic import DB_TOPIC_NAME
 from zerver.models import Client, Huddle, Message, Realm, \
@@ -53,11 +54,13 @@ class AnalyticsTestCase(TestCase):
             'short_name': 'short_name',
             'pointer': -1,
             'last_pointer_updater': 'seems unused?',
-            'realm': self.default_realm,
-            'api_key': '42'}
+            'realm': self.default_realm}
         for key, value in defaults.items():
             kwargs[key] = kwargs.get(key, value)
-        return UserProfile.objects.create(**kwargs)
+        user_profile = UserProfile.objects.create(**kwargs)
+        create_user_api_key(user_profile, 'Test API key')
+
+        return user_profile
 
     def create_stream_with_recipient(self, **kwargs: Any) -> Tuple[Stream, Recipient]:
         self.name_counter += 1

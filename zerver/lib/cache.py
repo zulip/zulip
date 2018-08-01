@@ -340,7 +340,7 @@ bot_dict_fields = ['id', 'full_name', 'short_name', 'bot_type', 'email',
                    'is_active', 'default_sending_stream__name',
                    'realm_id',
                    'default_events_register_stream__name',
-                   'default_all_public_streams', 'api_key',
+                   'default_all_public_streams',
                    'bot_owner__email', 'avatar_source',
                    'avatar_version']  # type: List[str]
 

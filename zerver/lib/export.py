@@ -113,6 +113,7 @@ ALL_ZULIP_TABLES = {
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_userapikey',
     'zerver_usergroup',
     'zerver_usergroupmembership',
     'zerver_userhotspot',

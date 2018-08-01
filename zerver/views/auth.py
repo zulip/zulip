@@ -26,6 +26,7 @@ from confirmation.models import Confirmation, create_confirmation_link
 from zerver.context_processors import zulip_default_context, get_realm_from_request
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, ZulipPasswordResetForm, AuthenticationTokenForm
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
@@ -155,7 +156,7 @@ def login_or_register_remote_user(request: HttpRequest, remote_username: Optiona
     if mobile_flow_otp is not None:
         # For the mobile Oauth flow, we send the API key and other
         # necessary details in a redirect to a zulip:// URI scheme.
-        api_key = get_api_key(user_profile)
+        api_key = create_user_api_key(user_profile, 'Zulip mobile app').api_key
         params = {
             'otp_encrypted_api_key': otp_encrypt_api_key(api_key, mobile_flow_otp),
             'email': remote_username,
@@ -739,7 +740,8 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResp
         return json_error(_("This user is not registered."),
                           data={"reason": "unregistered"}, status=403)
     do_login(request, user_profile)
-    api_key = get_api_key(user_profile)
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, 'Created via REST API').api_key
     return json_success({"api_key": api_key, "email": user_profile.email})
 
 @csrf_exempt
@@ -803,7 +805,8 @@ def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=R
     process_client(request, user_profile)
     request._email = user_profile.email
 
-    api_key = get_api_key(user_profile)
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, 'Created via REST API').api_key
     return json_success({"api_key": api_key, "email": user_profile.email})
 
 def get_auth_backends_data(request: HttpRequest) -> Dict[str, Any]:
@@ -875,7 +878,8 @@ def json_fetch_api_key(request: HttpRequest, user_profile: UserProfile,
                             realm=realm):
             return json_error(_("Your username or password is incorrect."))
 
-    api_key = get_api_key(user_profile)
+    # Return a brand new API key
+    api_key = create_user_api_key(user_profile, 'Created via REST API').api_key
     return json_success({"api_key": api_key})
 
 @csrf_exempt
