@@ -119,6 +119,7 @@ ALL_ZULIP_TABLES = {
     'zerver_subscription',
     'zerver_useractivity',
     'zerver_useractivityinterval',
+    'zerver_userapikey',
     'zerver_usergroup',
     'zerver_usergroupmembership',
     'zerver_userhotspot',
@@ -176,6 +177,9 @@ NON_EXPORTED_TABLES = {
     'zerver_archivedreaction',
     'zerver_archivedsubmessage',
     'zerver_archivetransaction',
+
+    # We don't export API keys for security reasons.
+    'zerver_userapikey',
 
     # Social auth tables are not needed post-export, since we don't
     # use any of this state outside of a direct authentication flow.

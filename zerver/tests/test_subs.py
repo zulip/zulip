@@ -2402,7 +2402,7 @@ class SubscriptionAPITest(ZulipTestCase):
                     streams_to_sub,
                     dict(principals=ujson.dumps([user1.email, user2.email])),
                 )
-        self.assert_length(queries, 45)
+        self.assert_length(queries, 46)
 
         self.assert_length(events, 7)
         for ev in [x for x in events if x['event']['type'] not in ('message', 'stream')]:
@@ -2727,7 +2727,7 @@ class SubscriptionAPITest(ZulipTestCase):
         # Make sure Zephyr mirroring realms such as MIT do not get
         # any tornado subscription events
         self.assert_length(events, 0)
-        self.assert_length(queries, 9)
+        self.assert_length(queries, 10)
 
         events = []
         with tornado_redirected_to_list(events):
@@ -2753,7 +2753,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 dict(principals=ujson.dumps([self.test_email])),
             )
         # Make sure we don't make O(streams) queries
-        self.assert_length(queries, 21)
+        self.assert_length(queries, 22)
 
     def test_subscriptions_add_for_principal(self) -> None:
         """
@@ -3142,7 +3142,7 @@ class SubscriptionAPITest(ZulipTestCase):
                 [new_streams[0]],
                 dict(principals=ujson.dumps([user1.email, user2.email])),
             )
-        self.assert_length(queries, 45)
+        self.assert_length(queries, 46)
 
         # Test creating private stream.
         with queries_captured() as queries:

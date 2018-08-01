@@ -1,10 +1,9 @@
 from django.contrib.auth.models import UserManager
 from django.utils.timezone import now as timezone_now
-from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream, \
-    get_fake_email_domain
+from zerver.models import UserAPIKey, UserProfile, Recipient, Subscription, \
+    Realm, Stream, get_fake_email_domain
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
-from zerver.lib.utils import generate_api_key
 
 import ujson
 
@@ -72,8 +71,12 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
         # If emails are visible to everyone, we can set this here and save a DB query
         user_profile.email = get_display_email_address(user_profile, realm)
     user_profile.set_password(password)
-    user_profile.api_key = generate_api_key()
     return user_profile
+
+def create_user_api_key(user_profile: UserProfile, description: str) -> UserAPIKey:
+    api_key = UserAPIKey(user_profile=user_profile, description=description)
+    api_key.save()
+    return api_key
 
 def create_user(email: str, password: Optional[str], realm: Realm,
                 full_name: str, short_name: str, active: bool = True,
@@ -123,4 +126,6 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+
+    create_user_api_key(user_profile, UserAPIKey.LEGACY_API_KEY_DESCRIPTION).api_key
     return user_profile

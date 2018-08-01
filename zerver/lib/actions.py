@@ -90,7 +90,7 @@ from zerver.lib.user_status import (
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
 
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
-    RealmDomain, Service, SubMessage, \
+    UserAPIKey, RealmDomain, Service, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
     UserHotspot, MultiuseInvite, ScheduledMessage, UserStatus, \
     Client, DefaultStream, DefaultStreamGroup, UserPresence, \
@@ -132,8 +132,8 @@ from confirmation import settings as confirmation_settings
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.queue import queue_json_publish
-from zerver.lib.utils import generate_api_key
-from zerver.lib.create_user import create_user, get_display_email_address
+from zerver.lib.create_user import create_user, create_user_api_key, \
+    get_display_email_address
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
     user_profile_by_email_cache_key, \
@@ -3268,16 +3268,21 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
                                  event_time=event_time)
 
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> str:
-    old_api_key = user_profile.api_key
-    new_api_key = generate_api_key()
-    user_profile.api_key = new_api_key
-    user_profile.save(update_fields=["api_key"])
+    user_api_keys = UserAPIKey.objects.filter(user_profile=user_profile)
+    for user_api_key in user_api_keys:
+        # We need to explicitly delete the old API keys from our caches,
+        # because the on-save handler for flushing the UserProfile object
+        # in zerver/lib/cache.py only has access to the new API key.
+        cache_delete(user_profile_by_api_key_cache_key(user_api_key.api_key))
 
-    # We need to explicitly delete the old API key from our caches,
-    # because the on-save handler for flushing the UserProfile object
-    # in zerver/lib/cache.py only has access to the new API key.
-    cache_delete(user_profile_by_api_key_cache_key(old_api_key))
+        # Remove the already existing API keys for this user.
+        # This is done as a safety measure, since we don't have a way to revoke
+        # specific keys yet. Otherwise, there would be no way of deleting a
+        # compromised API key.
+        user_api_key.delete()
 
+    # Create a brand new API key and send the event.
+    new_api_key = create_user_api_key(user_profile, UserAPIKey.LEGACY_API_KEY_DESCRIPTION).api_key
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_API_KEY_CHANGED,
@@ -5621,13 +5626,19 @@ def get_owned_bot_dicts(user_profile: UserProfile,
     else:
         result = UserProfile.objects.filter(realm=user_profile.realm, is_bot=True,
                                             bot_owner=user_profile).values(*bot_dict_fields)
+
+    api_keys = {
+        api_key_row.user_profile_id: api_key_row.api_key
+        for api_key_row in UserAPIKey.objects.filter(
+            user_profile__in=[botdict['id'] for botdict in result])
+    }
     services_by_ids = get_service_dicts_for_bots(result, user_profile.realm)
     return [{'email': botdict['email'],
              'user_id': botdict['id'],
              'full_name': botdict['full_name'],
              'bot_type': botdict['bot_type'],
              'is_active': botdict['is_active'],
-             'api_key': botdict['api_key'],
+             'api_key': api_keys[botdict['id']],
              'default_sending_stream': botdict['default_sending_stream__name'],
              'default_events_register_stream': botdict['default_events_register_stream__name'],
              'default_all_public_streams': botdict['default_all_public_streams'],
