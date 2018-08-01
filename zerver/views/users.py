@@ -32,12 +32,11 @@ from zerver.lib.validator import check_bool, check_string, check_int, check_url,
 from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     check_full_name, check_short_name, check_valid_interface_type, check_valid_bot_config, \
     access_bot_by_id, add_service, access_user_by_id
-from zerver.lib.utils import generate_random_token
+from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
     get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
     EmailContainsPlusError
-from zerver.lib.create_user import random_api_key
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -310,7 +309,7 @@ def add_bot_backend(
                     user_profile=bot_profile,
                     base_url=payload_url,
                     interface=interface_type,
-                    token=random_api_key())
+                    token=generate_api_key())
 
     if bot_type == UserProfile.EMBEDDED_BOT:
         for key, value in config_data.items():

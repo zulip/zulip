@@ -7,6 +7,7 @@ import hashlib
 import heapq
 import itertools
 import os
+import string
 import sys
 from time import sleep
 from itertools import zip_longest
@@ -111,6 +112,12 @@ def log_statsd_event(name: str) -> None:
 
 def generate_random_token(length: int) -> str:
     return str(base64.b16encode(os.urandom(length // 2)).decode('utf-8').lower())
+
+def generate_api_key() -> str:
+    choices = string.ascii_letters + string.digits
+    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
+    api_key = base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
+    return api_key
 
 def query_chunker(queries: List[Any],
                   id_collector: Optional[Set[int]]=None,

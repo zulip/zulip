@@ -4,6 +4,7 @@ from django.utils.timezone import now as timezone_now
 from zerver.models import UserProfile, Recipient, Subscription, Realm, Stream
 from zerver.lib.upload import copy_avatar
 from zerver.lib.hotspots import copy_hotpots
+from zerver.lib.utils import generate_api_key
 
 import base64
 import ujson
@@ -11,11 +12,6 @@ import os
 import string
 
 from typing import Optional
-
-def random_api_key() -> str:
-    choices = string.ascii_letters + string.digits
-    altchars = ''.join([choices[ord(os.urandom(1)) % 62] for _ in range(2)]).encode("utf-8")
-    return base64.b64encode(os.urandom(24), altchars=altchars).decode("utf-8")
 
 def copy_user_settings(source_profile: UserProfile, target_profile: UserProfile) -> None:
     """Warning: Does not save, to avoid extra database queries"""
@@ -73,7 +69,7 @@ def create_user_profile(realm: Realm, email: str, password: Optional[str],
 
     user_profile.set_password(password)
 
-    user_profile.api_key = random_api_key()
+    user_profile.api_key = generate_api_key()
     return user_profile
 
 def create_user(email: str, password: Optional[str], realm: Realm,

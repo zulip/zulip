@@ -106,9 +106,9 @@ from confirmation.models import Confirmation, create_confirmation_link
 from confirmation import settings as confirmation_settings
 
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.lib.create_user import random_api_key
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.utils import generate_api_key
 from zerver.lib.create_user import create_user
 from zerver.lib import bugdown
 from zerver.lib.cache import cache_with_key, cache_set, \
@@ -2932,7 +2932,7 @@ def do_change_tos_version(user_profile: UserProfile, tos_version: str) -> None:
                                  event_time=event_time)
 
 def do_regenerate_api_key(user_profile: UserProfile, acting_user: UserProfile) -> None:
-    user_profile.api_key = random_api_key()
+    user_profile.api_key = generate_api_key()
     user_profile.save(update_fields=["api_key"])
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=acting_user,

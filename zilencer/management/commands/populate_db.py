@@ -16,7 +16,6 @@ from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS, check_add_realm_emoji, 
     do_change_is_admin, do_send_messages, do_update_user_custom_profile_data, \
     try_add_realm_custom_profile_field
 from zerver.lib.bulk_create import bulk_create_streams, bulk_create_users
-from zerver.lib.create_user import random_api_key
 from zerver.lib.cache import cache_set
 from zerver.lib.generate_test_data import create_test_data
 from zerver.lib.onboarding import create_if_missing_realm_internal_bots
@@ -24,6 +23,7 @@ from zerver.lib.upload import upload_backend
 from zerver.lib.users import add_service
 from zerver.lib.url_preview.preview import CACHE_NAME as PREVIEW_CACHE_NAME
 from zerver.lib.user_groups import create_user_group
+from zerver.lib.utils import generate_api_key
 from zerver.models import CustomProfileField, DefaultStream, Message, Realm, RealmAuditLog, \
     RealmDomain, RealmEmoji, Recipient, Service, Stream, Subscription, \
     UserMessage, UserPresence, UserProfile, clear_database, \
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                          bot_type=UserProfile.OUTGOING_WEBHOOK_BOT, bot_owner=aaron)
             outgoing_webhook = get_user("outgoing-webhook@zulip.com", zulip_realm)
             add_service("outgoing-webhook", user_profile=outgoing_webhook, interface=Service.GENERIC,
-                        base_url="http://127.0.0.1:5002", token=random_api_key())
+                        base_url="http://127.0.0.1:5002", token=generate_api_key())
 
             # Add the realm internl bots to each realm.
             create_if_missing_realm_internal_bots()

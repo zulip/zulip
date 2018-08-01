@@ -15,12 +15,11 @@ from typing import Any, Dict, List, Optional, Set, Tuple, \
 
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
-from zerver.lib.create_user import random_api_key
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend
-from zerver.lib.create_user import random_api_key
+from zerver.lib.utils import generate_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
     RealmDomain, Recipient, get_user_profile_by_id, \
@@ -149,11 +148,11 @@ def create_subscription_events(data: TableData, table: TableName) -> None:
 
 def fix_service_tokens(data: TableData, table: TableName) -> None:
     """
-    The tokens in the services are created by 'random_api_key'.
+    The tokens in the services are created by 'generate_api_key'.
     As the tokens are unique, they should be re-created for the imports.
     """
     for item in data[table]:
-        item['token'] = random_api_key()
+        item['token'] = generate_api_key()
 
 def process_huddle_hash(data: TableData, table: TableName) -> None:
     """
@@ -646,7 +645,7 @@ def do_import_realm(import_dir: Path, subdomain: str) -> Realm:
                         related_table="message", id_field=True)
     for user_profile_dict in data['zerver_userprofile']:
         user_profile_dict['password'] = None
-        user_profile_dict['api_key'] = random_api_key()
+        user_profile_dict['api_key'] = generate_api_key()
         # Since Zulip doesn't use these permissions, drop them
         del user_profile_dict['user_permissions']
         del user_profile_dict['groups']
