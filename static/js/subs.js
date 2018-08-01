@@ -5,6 +5,22 @@ var meta = {
 };
 var exports = {};
 
+exports.rebuild_stream_list = function () {
+    var streams_list_scrolltop = $(".streams-list").scrollTop();
+
+    var search_params = exports.get_search_params();
+    stream_settings_list.repopulate(search_params);
+    exports.show_active_stream_in_left_panel();
+    exports.add_tooltips_to_left_panel();
+    ui.update_scrollbar($("#subscription_overlay .streams-list"));
+    exports.maybe_reset_right_panel();
+
+    // this puts the scrollTop back to what it was before the list was updated again.
+    $(".streams-list").scrollTop(streams_list_scrolltop);
+};
+
+var eventually_rebuild_stream_list = _.throttle(exports.rebuild_stream_list, 50);
+
 exports.show_subs_pane = {
     nothing_selected: function () {
         $(".nothing-selected, #stream_settings_title").show();
@@ -327,130 +343,6 @@ exports.update_settings_for_unsubscribed = function (sub) {
     }
 };
 
-function triage_stream(query, sub) {
-    if (query.subscribed_only) {
-        // reject non-subscribed streams
-        if (!sub.subscribed) {
-            return 'rejected';
-        }
-    }
-
-    var search_terms = search_util.get_search_terms(query.input);
-
-    function match(attr) {
-        var val = sub[attr];
-
-        return search_util.vanilla_match({
-            val: val,
-            search_terms: search_terms,
-        });
-    }
-
-    if (match('name')) {
-        return 'name_match';
-    }
-
-    if (match('description')) {
-        return 'desc_match';
-    }
-
-    return 'rejected';
-}
-
-function get_stream_id_buckets(stream_ids, query) {
-    // When we simplify the settings UI, we can get
-    // rid of the "others" bucket.
-
-    var buckets = {
-        name: [],
-        desc: [],
-        other: [],
-    };
-
-    _.each(stream_ids, function (stream_id) {
-        var sub = stream_data.get_sub_by_id(stream_id);
-        var match_status = triage_stream(query, sub);
-
-        if (match_status === 'name_match') {
-            buckets.name.push(stream_id);
-        } else if (match_status === 'desc_match') {
-            buckets.desc.push(stream_id);
-        } else {
-            buckets.other.push(stream_id);
-        }
-    });
-
-    stream_data.sort_for_stream_settings(buckets.name);
-    stream_data.sort_for_stream_settings(buckets.desc);
-
-    return buckets;
-}
-
-exports.populate_stream_settings_left_panel = function () {
-    var sub_rows = stream_data.get_updated_unsorted_subs();
-    var template_data = {
-        subscriptions: sub_rows,
-    };
-    var html = templates.render('subscriptions', template_data);
-    $('#subscriptions_table .streams-list').html(html);
-};
-
-// query is now an object rather than a string.
-// Query { input: String, subscribed_only: Boolean }
-exports.filter_table = function (query) {
-    exports.show_active_stream_in_left_panel();
-
-    var widgets = {};
-    var streams_list_scrolltop = $(".streams-list").scrollTop();
-
-    var stream_ids = [];
-    _.each($("#subscriptions_table .stream-row"), function (row) {
-        var stream_id = $(row).attr('data-stream-id');
-        stream_ids.push(stream_id);
-    });
-
-    var buckets = get_stream_id_buckets(stream_ids, query);
-
-    // If we just re-built the DOM from scratch we wouldn't need
-    // all this hidden/notdisplayed logic.
-    var hidden_ids = {};
-    _.each(buckets.other, function (stream_id) {
-        hidden_ids[stream_id] = true;
-    });
-
-    _.each($("#subscriptions_table .stream-row"), function (row) {
-        var stream_id = $(row).attr('data-stream-id');
-
-        // Below code goes away if we don't do sort-DOM-in-place.
-        if (hidden_ids[stream_id]) {
-            $(row).addClass('notdisplayed');
-        } else {
-            $(row).removeClass('notdisplayed');
-        }
-
-        widgets[stream_id] = $(row).detach();
-    });
-
-    exports.add_tooltips_to_left_panel();
-
-    ui.update_scrollbar($("#subscription_overlay .streams-list"));
-
-    var all_stream_ids = [].concat(
-        buckets.name,
-        buckets.desc,
-        buckets.other
-    );
-
-    _.each(all_stream_ids, function (stream_id) {
-        $('#subscriptions_table .streams-list').append(widgets[stream_id]);
-    });
-
-    exports.maybe_reset_right_panel();
-
-    // this puts the scrollTop back to what it was before the list was updated again.
-    $(".streams-list").scrollTop(streams_list_scrolltop);
-};
-
 var subscribed_only = true;
 
 exports.get_search_params = function () {
@@ -470,13 +362,6 @@ exports.maybe_reset_right_panel = function () {
         $(".stream-row.active").removeClass("active");
     }
 };
-
-exports.actually_filter_streams = function () {
-    var search_params = exports.get_search_params();
-    exports.filter_table(search_params);
-};
-
-var filter_streams = _.throttle(exports.actually_filter_streams, 50);
 
 // Make it explicit that our toggler is not created right away.
 exports.toggler = undefined;
@@ -522,7 +407,7 @@ exports.setup_page = function (callback) {
                     subscribed_only = true;
                 }
 
-                exports.actually_filter_streams();
+                exports.rebuild_stream_list();
             },
         });
 
@@ -549,14 +434,14 @@ exports.setup_page = function (callback) {
         var rendered = templates.render('subscription_table_body', template_data);
         $('#subscriptions_table').append(rendered);
 
-        exports.populate_stream_settings_left_panel();
+        exports.rebuild_stream_list();
         initialize_components();
-        exports.actually_filter_streams();
+
         stream_create.set_up_handlers();
 
         $("#add_new_subscription input[type='text']").on("input", function () {
             // Debounce filtering in case a user is typing quickly
-            filter_streams();
+            eventually_rebuild_stream_list();
         });
 
         $(document).trigger($.Event('subs_page_loaded.zulip'));

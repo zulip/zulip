@@ -102,6 +102,7 @@ import "js/stream_muting.js";
 import "js/stream_events.js";
 import "js/stream_create.js";
 import "js/stream_edit.js";
+import "js/stream_settings_list.js";
 import "js/subs.js";
 import "js/message_edit.js";
 import "js/condense.js";

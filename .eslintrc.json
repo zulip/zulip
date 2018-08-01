@@ -164,6 +164,7 @@
         "stream_list": false,
         "stream_muting": false,
         "stream_popover": false,
+        "stream_settings_list": false,
         "stream_sort": false,
         "submessage": false,
         "subs": false,
