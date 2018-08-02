@@ -834,6 +834,17 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
                                  modified_user=user_profile, event_type=RealmAuditLog.USER_EMAIL_CHANGED,
                                  event_time=event_time)
 
+def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
+    delete_user_profile_caches([user_profile])
+
+    user_profile.delivery_email = new_email
+    user_profile.save(update_fields=["delivery_email"])
+
+    payload = dict(user_id=user_profile.id,
+                   new_delivery_email=new_email)
+    send_event(dict(type='realm_user', op='update', person=payload),
+               active_user_ids(user_profile.realm_id))
+
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
     old_email = user_profile.email
     obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
