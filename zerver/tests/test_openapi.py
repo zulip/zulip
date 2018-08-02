@@ -2,6 +2,7 @@
 
 from typing import Dict, Any
 
+import zerver.lib.openapi as openapi
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
     get_openapi_fixture, get_openapi_parameters,
@@ -85,6 +86,24 @@ class OpenAPIToolsTest(ZulipTestCase):
         good_content = {
             'msg': '',
             'result': 'success',
+        }
+        validate_against_openapi_schema(good_content,
+                                        TEST_ENDPOINT,
+                                        TEST_METHOD,
+                                        TEST_RESPONSE_SUCCESS)
+
+        # Overwrite the exception list with a mocked one
+        openapi.EXCLUDE_PROPERTIES = {
+            TEST_ENDPOINT: {
+                TEST_METHOD: {
+                    TEST_RESPONSE_SUCCESS: ['foo']
+                }
+            }
+        }
+        good_content = {
+            'msg': '',
+            'result': 'success',
+            'foo': 'bar'
         }
         validate_against_openapi_schema(good_content,
                                         TEST_ENDPOINT,

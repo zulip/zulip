@@ -1,68 +1,4 @@
 {
-    "register-queue.md": [
-        {
-            "argument": "apply_markdown",
-            "description": "Set to `True` if you would like the content to be rendered in HTML format (by default, the API returns the raw text that the user entered)",
-            "required": false,
-            "example": "`True` or `False`"
-        },
-        {
-            "argument": "client_gravatar",
-            "description": "The `client_gravatar` field is set to `True` if clients can compute their own gravatars. Default is `False`.",
-            "required": false,
-            "example": "`True` or `False`"
-        },
-        {
-            "argument": "event_types",
-            "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **message** (messages), <br/> * **subscription** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm) <br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
-            "required": false,
-            "example": "event_types=['message']"
-        },
-        {
-            "argument": "all_public_streams",
-            "description": "Set to `True` if you would like to receive events that occur within all public streams. Default is `None`.",
-            "required": false,
-            "example": "`True` or `False`"
-        },
-        {
-            "argument": "include_subscribers",
-            "description": "Set to `True` if you would like to receive events that include the subscribers for each stream. Default is `False`.",
-            "required": false,
-            "example": "`True` or `False`"
-        },
-        {
-            "argument": "fetch_event_types",
-            "description": "Same as the `event_types` argument except that the values in `fetch_event_types` are used to fetch initial data. If `fetch_event_types` is not provided, `event_types` is used and if `event_types` is not provided, this argument defaults to `None`.",
-            "required": false,
-            "example": "event_types=['message']"
-        },
-        {
-            "argument": "narrow",
-            "description": "A JSON-encoded array of length 2 indicating the narrow for which you'd like to receive events for. For instance, to receive events for the stream `Denmark`, you would specify `narrow=['stream', 'Denmark']`. Another example is `narrow=['is', 'private']` for private messages. Default is `[]`.",
-            "required": false,
-            "example": "narrow=['stream', 'Denmark']"
-        }
-    ],
-    "get-events-from-queue.md": [
-        {
-            "argument": "queue_id",
-            "description": "The ID of a queue that you registered via `POST /api/v1/register`(see [Register a queue](/api/register-queue)).",
-            "required": false,
-            "example": "1375801870:2942"
-        },
-        {
-            "argument": "last_event_id",
-            "description": "The highest event ID in this queue that you've received and wish to acknowledge. See the [code for `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py) in the [zulip Python module](https://github.com/zulip/python-zulip-api) for an example implementation of correctly processing each event exactly once.",
-            "required": false,
-            "example": "-1"
-        },
-        {
-            "argument": "dont_block",
-            "description": "Set to `True` if the client is requesting a nonblocking reply. If not specified, the request will block until either a new event is available or a few minutes have passed, in which case the server will send the client a heartbeat event. Default is `False`.",
-            "required": false,
-            "example": "`True` or `False`"
-        }
-    ],
     "call_on_each_event": [
         {
             "argument": "narrow",
@@ -75,14 +11,6 @@
             "description": "A JSON-encoded array indicating which types of events you're interested in. Values that you might find useful include: <br/> <br/> * **message** (messages), <br/> * **subscription** (changes in your subscriptions), <br/> * **realm_user** (changes in the list of users in your realm)<br/> <br/> If you do not specify this argument, you will receive all events, and have to filter out the events not relevant to your client in your client code. For most applications, one is only interested in messages, so one specifies: `event_types=['message']`",
             "required": false,
             "example": "event_types=['message']"
-        }
-    ],
-    "delete-queue.md": [
-        {
-            "argument": "queue_id",
-            "description": "The ID of a queue that you registered via `POST /api/v1/register`(see [Register a queue](/api/register-queue) and [Get events from queue](/api/get-events-from-queue)).",
-            "required": true,
-            "example": "1375801870:2942"
         }
     ],
     "update-message.md": [

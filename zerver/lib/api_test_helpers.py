@@ -397,14 +397,11 @@ def register_queue(client):
     # {code_example|start}
     # Register the queue
     result = client.register(
-        event_types=['messages', 'realm_emoji']
+        event_types=['message', 'realm_emoji']
     )
     # {code_example|end}
 
-    fixture = FIXTURES['register-queue']
-    test_against_fixture(result, fixture, check_if_equal=['msg', 'result'],
-                         check_if_exists=['last_event_id', 'queue_id'])
-
+    validate_against_openapi_schema(result, '/register', 'post', '200')
     return result['queue_id']
 
 def deregister_queue(client, queue_id):
@@ -416,14 +413,11 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     # {code_example|end}
 
-    fixture = FIXTURES['successful-response-empty']
-    test_against_fixture(result, fixture)
+    validate_against_openapi_schema(result, '/events', 'delete', '200')
 
     # Test "BAD_EVENT_QUEUE_ID" error
     result = client.deregister(queue_id)
-    fixture = FIXTURES['bad_event_queue_id_error']
-    test_against_fixture(result, fixture, check_if_equal=['code', 'result'],
-                         check_if_exists=['queue_id', 'msg'])
+    validate_against_openapi_schema(result, '/events', 'delete', '400')
 
 def upload_file(client):
     # type: (Client) -> None
@@ -485,8 +479,8 @@ TEST_FUNCTIONS = {
     'add-subscriptions': add_subscriptions,
     'remove-subscriptions': remove_subscriptions,
     '/users:get': get_members,
-    'register-queue': register_queue,
-    'delete-queue': deregister_queue,
+    '/register:post': register_queue,
+    '/events:delete': deregister_queue,
     'upload-file': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics
 }

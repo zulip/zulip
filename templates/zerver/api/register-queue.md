@@ -66,7 +66,7 @@ curl {{ api_url }}/v1/register \
 
 <div data-language="python" markdown="1">
 
-{generate_code_example(python)|register-queue|example}
+{generate_code_example(python)|/register:post|example}
 
 </div>
 
@@ -97,7 +97,7 @@ zulip(config).then((client) => {
 
 ## Arguments
 
-{generate_api_arguments_table|arguments.json|register-queue.md}
+{generate_api_arguments_table|zulip.yaml|/register:post}
 
 ## Response
 
@@ -111,4 +111,4 @@ zulip(config).then((client) => {
 
 A typical successful JSON response may look like:
 
-{generate_code_example|register-queue|fixture}
+{generate_code_example|/register:post|fixture(200)}

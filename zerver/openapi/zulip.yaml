@@ -24,6 +24,147 @@ servers:
 # Endpoint definitions
 #######################
 paths:
+  /events:
+    get:
+      description: Receive new events from
+        [a registered event queue](/api/register-queue).
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via
+          `POST /api/v1/register`
+          (see [Register a queue](/api/register-queue)).
+        schema:
+          type: string
+        example: 1375801870:2942
+      - name: last_event_id
+        in: query
+        description: The highest event ID in this queue that you've received
+          and wish to acknowledge. See the [code for `call_on_each_event`](https://github.com/zulip/python-zulip-api/blob/master/zulip/zulip/__init__.py)
+          in the [zulip Python module](https://github.com/zulip/python-zulip-api)
+          for an example implementation of correctly processing each event
+          exactly once.
+        schema:
+          type: integer
+        example: -1
+      - name: dont_block
+        in: query
+        description: Set to `true` if the client is requesting a nonblocking
+          reply. If not specified, the request will block until either a new
+          event is available or a few minutes have passed, in which case the
+          server will send the client a heartbeat event.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    events:
+                      type: array
+                      description: An array of `event` objects (possibly
+                        zero-length if `dont_block` is set) of events with
+                        IDs newer than `last_event_id`. Event IDs are
+                        guaranted to be increasing, but they are not
+                        guaranteed to be consecutive.
+                - example:
+                    {
+                        "events": [
+                            {
+                                "id": 0,
+                                "message": {
+                                    "avatar_url": "https://url/for/othello-bots/avatar",
+                                    "client": "website",
+                                    "content": "Something is rotten in the state of Denmark.",
+                                    "content_type": "text/x-markdown",
+                                    "display_recipient": "Denmark",
+                                    "id": 12345678,
+                                    "recipient_id": 12314,
+                                    "sender_email": "othello-bot@example.com",
+                                    "sender_full_name": "Othello Bot",
+                                    "sender_id": 13215,
+                                    "sender_realm_str": "example",
+                                    "sender_short_name": "othello-bot",
+                                    "subject": "Castle",
+                                    "subject_links": [],
+                                    "timestamp": 1375978403,
+                                    "type": "stream"
+                                },
+                                "type": "message"
+                            },
+                            {
+                                "id": 1,
+                                "message": {
+                                    "avatar_url": "https://url/for/othello-bots/avatar",
+                                    "client": "website",
+                                    "content": "I come not, friends, to steal away your hearts.",
+                                    "content_type": "text/x-markdown",
+                                    "display_recipient": [
+                                        {
+                                            "email": "hamlet@example.com",
+                                            "full_name": "Hamlet of Denmark",
+                                            "id": 31572,
+                                            "short_name": "hamlet"
+                                        }
+                                    ],
+                                    "id": 12345679,
+                                    "recipient_id": 18391,
+                                    "sender_email": "othello-bot@example.com",
+                                    "sender_full_name": "Othello Bot",
+                                    "sender_id": 13215,
+                                    "sender_realm_str": "example",
+                                    "sender_short_name": "othello-bot",
+                                    "subject": "",
+                                    "subject_links": [],
+                                    "timestamp": 1375978404,
+                                    "type": "private"
+                                },
+                                "type": "message"
+                            }
+                        ],
+                        "msg": "",
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadEventQueueIdError'
+    delete:
+      description: Delete a previously registered queue.
+      parameters:
+      - name: queue_id
+        in: query
+        description: The ID of a queue that you registered via
+          `POST /api/v1/register`(see [Register a queue](/api/register-queue).
+        schema:
+           type: string
+        example: 1375801870:2942
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BadEventQueueIdError'
   /get_stream_id:
     get:
       description: Get the unique ID of a given stream.
@@ -517,6 +658,121 @@ paths:
                             "private_stream"
                         ]
                     }
+  /register:
+    post:
+      description: This powerful endpoint can be used to register a Zulip
+        "event queue" (subscribed to certain types of "events", or updates to
+        the messages and other Zulip data the current user has access to), as
+        well as to fetch the current state of that data.
+      parameters:
+      - name: apply_markdown
+        in: query
+        description: Set to `true` if you would like the content to be
+          rendered in HTML format (by default, the API returns the raw text
+          that the user entered)
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: client_gravatar
+        in: query
+        description: The `client_gravatar` field is set to `true` if clients
+          can compute their own gravatars.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: event_types
+        in: query
+        description: "A JSON-encoded array indicating which types of events
+          you're interested in. Values that you might find useful include:
+          <br/> <br/>
+          * **message** (messages), <br/>
+          * **subscription** (changes in your subscriptions), <br/>
+          * **realm_user** (changes in the list of users in your realm)
+          <br/> <br/>
+          If you do not specify this argument, you will receive all events,
+          and have to filter out the events not relevant to your client in
+          your client code. For most applications, one is only interested in
+          messages, so one specifies: `event_types=['message']`"
+        schema:
+           type: string
+        example: event_types=['message']
+      - name: all_public_streams
+        in: query
+        description: Set to `True` if you would like to receive events that
+          occur within all public streams.
+        schema:
+           type: boolean
+           default: false
+        example: true
+      - name: include_subscribers
+        in: query
+        description: Set to `True` if you would like to receive events that
+          include the subscribers for each stream.
+        schema:
+           type: boolean
+           default : false
+        example: true
+      - name: fetch_event_types
+        in: query
+        description: Same as the `event_types` argument except that the values
+          in `fetch_event_types` are used to fetch initial data. If
+          `fetch_event_types` is not provided, `event_types` is used and if
+          `event_types` is not provided, this argument defaults to `None`.
+        schema:
+           type: string
+        example: event_types=['message']
+      - name: narrow
+        in: query
+        description: A JSON-encoded array of length 2 indicating the narrow
+          for which you'd like to receive events for. For instance, to
+          receive events for the stream `Denmark`, you would specify
+          `narrow=['stream', 'Denmark']`. Another example is
+          `narrow=['is', 'private']` for private messages.
+        schema:
+           type: string
+           default : narrow=[]
+        example: narrow=['stream', 'Denmark']
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    queue_id:
+                      type: string
+                      description: The ID of the queue that has been allocated
+                        for your client.
+                    last_event_id:
+                      type: integer
+                      description: The initial value of `last_event_id` to
+                        pass to `GET /api/v1/events`.
+                - example:
+                    {
+                        "last_event_id": -1,
+                        "msg": "",
+                        "queue_id": "1517975029:0",
+                        "realm_emoji": {
+                            "1": {
+                                "author": {
+                                    "email": "iago@zulip.com",
+                                    "full_name": "Iago",
+                                    "id": 5
+                                },
+                                "deactivated": false,
+                                "id": "1",
+                                "name": "green_tick",
+                                "source_url": "/user_avatars/1/emoji/images/1.png"
+                            }
+                        },
+                        "result": "success"
+                    }
   /streams:
     get:
       description: Get all streams that the user has access to.
@@ -680,6 +936,20 @@ components:
           code:
             type: string
             description: A string that identifies the error.
+    BadEventQueueIdError:
+      allOf:
+      - $ref: '#/components/schemas/CodedError'
+      - properties:
+          queue_id:
+            type: string
+            description: The string that identifies the invalid event queue.
+      - example:
+          {
+              "code": "BAD_EVENT_QUEUE_ID",
+              "msg": "Bad event queue id: 1518820930:1",
+              "queue_id": "1518820930:1",
+              "result": "error"
+          }
     AddSubscriptionsResponse:
       allOf:
       - $ref: '#/components/schemas/JsonSuccess'

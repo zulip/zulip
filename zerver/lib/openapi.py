@@ -14,6 +14,18 @@ with open(OPENAPI_SPEC_PATH) as file:
 
 OPENAPI_SPEC = yaml_parser.data
 
+# A list of exceptions we allow when running validate_against_openapi_schema.
+# The validator will ignore these keys when they appear in the "content"
+# passed.
+EXCLUDE_PROPERTIES = {
+    '/register': {
+        'post': {
+            '200': ['max_message_id', 'realm_emoji']
+        }
+    }
+}
+
+
 class SchemaError(Exception):
     pass
 
@@ -37,7 +49,14 @@ def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
     schema = (OPENAPI_SPEC['paths'][endpoint][method.lower()]['responses']
               [response]['content']['application/json']['schema'])
 
+    exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {})
+                                        .get(response, []))
+
     for key, value in content.items():
+        # Ignore in the validation the keys in EXCLUDE_PROPERTIES
+        if key in exclusion_list:
+            continue
+
         # Check that the key is defined in the schema
         if key not in schema['properties']:
             raise SchemaError('Extraneous key "{}" in the response\'s '
