@@ -31,6 +31,7 @@ from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.request import REQ, has_request_variables, JsonableError
 from zerver.lib.response import json_success, json_error
+from zerver.lib.sessions import maybe_remove_session_cookie_at_root_domain
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.validator import validate_login_email
 from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
@@ -642,7 +643,10 @@ def login_page(request: HttpRequest, **kwargs: Any) -> HttpResponse:
         # https://github.com/django/django/blob/master/django/template/response.py#L19.
         update_login_page_context(request, template_response.context_data)
 
-    return template_response
+    # We need to remove session cookie at root here for the sole purpose of
+    # preventing users of Microsoft Edge getting stuck in login loops
+    # because they opened up the login page link directly and tried logging in.
+    return maybe_remove_session_cookie_at_root_domain(request, template_response)
 
 def start_two_factor_auth(request: HttpRequest,
                           extra_context: ExtraContext=None,

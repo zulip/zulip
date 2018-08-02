@@ -18,6 +18,7 @@ from django.utils.decorators import available_attrs
 from django.utils.timezone import now as timezone_now
 from django.conf import settings
 from zerver.lib.queue import queue_json_publish
+from zerver.lib.sessions import maybe_remove_session_cookie_at_root_domain
 from zerver.lib.subdomains import get_subdomain, user_matches_subdomain
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import statsd, is_remote_server
@@ -383,8 +384,10 @@ def user_passes_test(test_func: Callable[[HttpResponse], bool], login_url: Optio
             if ((not login_scheme or login_scheme == current_scheme) and
                     (not login_netloc or login_netloc == current_netloc)):
                 path = request.get_full_path()
-            return redirect_to_login(
+            response = redirect_to_login(
                 path, resolved_login_url, redirect_field_name)
+            patched_response = maybe_remove_session_cookie_at_root_domain(request, response)
+            return patched_response
         return _wrapped_view  # type: ignore # https://github.com/python/mypy/issues/1927
     return decorator
 
