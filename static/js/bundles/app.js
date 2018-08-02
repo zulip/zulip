@@ -148,6 +148,7 @@ import "js/zulip.js";
 import "js/presence.js";
 import "js/user_search.js";
 import "js/buddy_data.js";
+import "js/padded_widget.js";
 import "js/buddy_list.js";
 import "js/list_cursor.js";
 import "js/activity.js";

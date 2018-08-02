@@ -11,14 +11,24 @@
 #user_presences li:hover,
 #user_presences li.highlighted_user {
     background-color: hsl(93, 19%, 88%);
+    z-index: 1;
+}
+
+#buddy_list_wrapper,
+#group-pms {
+    position: relative;
+    margin-left: 0;
+    overflow: auto;
+}
+
+#user_presences {
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 #user_presences,
 #group-pms {
-    position: relative;
     list-style-position: inside; /* Draw the bullets inside our box */
-    margin-left: 0;
-    overflow: auto;
 }
 
 #user_presences:hover,

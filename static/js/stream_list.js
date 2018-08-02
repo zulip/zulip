@@ -534,7 +534,7 @@ exports.initialize = function () {
 
     exports.stream_cursor = list_cursor({
         list: {
-            container: $('#stream-filters-container'),
+            scroll_container_sel: '#stream-filters-container',
             find_li: function (opts) {
                 var stream_id = opts.key;
                 var li = exports.get_stream_li(stream_id);

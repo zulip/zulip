@@ -26,6 +26,10 @@ set_global('ui', {
     update_scrollbar: function () {},
 });
 
+set_global('padded_widget', {
+    update_padding: () => {},
+});
+
 zrequire('compose_fade');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
@@ -138,6 +142,16 @@ presence_info[fred.user_id] = { status: 'active' };
 presence_info[jill.user_id] = { status: 'active' };
 
 presence.presence_info = presence_info;
+
+// Simulate a small window by having the
+// fill_screen_with_content render the entire
+// list in one pass.  We will do more refined
+// testing in the buddy_list node tests.
+buddy_list.fill_screen_with_content = () => {
+    buddy_list.render_more({
+        chunk_size: 100,
+    });
+};
 
 run_test('get_status', () => {
     assert.equal(presence.get_status(page_params.user_id), "active");
@@ -299,6 +313,8 @@ function reset_setup() {
     activity.set_cursor_and_filter();
 
     buddy_list.container = $('#user_presences');
+
+    buddy_list.container.append = () => {};
     clear_buddy_list();
 }
 
@@ -343,6 +359,7 @@ function buddy_list_add(user_id, stub) {
     if (stub.attr) {
         stub.attr('data-user-id', user_id);
     }
+    stub.length = 1;
     const sel = `li.user_sidebar_entry[data-user-id='${user_id}']`;
     $('#user_presences').set_find_results(sel, stub);
 }
@@ -397,25 +414,34 @@ run_test('group_update_dom_counts', () => {
     assert.equal(value.text(), '');
 });
 
-reset_setup();
-
 run_test('handlers', () => {
     // This is kind of weak coverage; we are mostly making sure that
     // keys and clicks got mapped to functions that don't crash.
+    let alice_li;
+    let fred_li;
 
-    const alice_li = $.create('alice stub');
-    const fred_li = $.create('fred stub');
-    clear_buddy_list();
-    buddy_list_add(alice.user_id, alice_li);
-    buddy_list_add(fred.user_id, fred_li);
+    function init() {
+        reset_setup();
+        buddy_list.populate({
+            keys: [alice.user_id, fred.user_id],
+        });
+
+        alice_li = $.create('alice stub');
+        fred_li = $.create('fred stub');
+
+        buddy_list_add(alice.user_id, alice_li);
+        buddy_list_add(fred.user_id, fred_li);
+    }
 
     (function test_filter_keys() {
+        init();
         activity.user_cursor.go_to(alice.user_id);
         filter_key_handlers.down_arrow();
         filter_key_handlers.up_arrow();
     }());
 
     (function test_click_filter() {
+        init();
         const e = {
             stopPropagation: () => {},
         };
@@ -425,6 +451,7 @@ run_test('handlers', () => {
     }());
 
     (function test_click_header_filter() {
+        init();
         const e = {};
         const handler = $('#userlist-header').get_on_handler('click');
 
@@ -436,6 +463,7 @@ run_test('handlers', () => {
     }());
 
     (function test_enter_key() {
+        init();
         var narrowed;
 
         narrow.by = (method, email) => {
@@ -444,7 +472,6 @@ run_test('handlers', () => {
         };
 
         $('.user-list-filter').val('al');
-        buddy_list_add(alice.user_id, alice_li);
         activity.user_cursor.go_to(alice.user_id);
 
         filter_key_handlers.enter_key();
@@ -456,6 +483,7 @@ run_test('handlers', () => {
     }());
 
     (function test_click_handler() {
+        init();
         // We wire up the click handler in click_handlers.js,
         // so this just tests the called function.
         var narrowed;
@@ -465,12 +493,12 @@ run_test('handlers', () => {
             narrowed = true;
         };
 
-        buddy_list_add(alice.user_id, alice_li);
         activity.narrow_for_user({li: alice_li});
         assert(narrowed);
     }());
 
     (function test_blur_filter() {
+        init();
         const e = {};
         const handler = $('.user-list-filter').get_on_handler('blur');
         handler(e);
@@ -788,8 +816,15 @@ run_test('initialize', () => {
     global.server_events = {
         check_for_unsuspend: function () {},
     };
+
+    var scroll_handler_started;
+    buddy_list.start_scroll_handler = () => {
+        scroll_handler_started = true;
+    };
+
     activity.has_focus = false;
     activity.initialize();
+    assert(scroll_handler_started);
     assert(!activity.new_user_input);
     assert(!$('#zephyr-mirror-error').hasClass('show'));
     assert.equal(page_params.presences, undefined);
@@ -813,5 +848,6 @@ run_test('initialize', () => {
     reload.is_in_progress = function () {
         return true;
     };
+
     activity.initialize();
 });
