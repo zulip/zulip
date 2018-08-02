@@ -549,10 +549,11 @@ def update_subscription_properties_backend(
 
     Requests are of the form:
 
-    [{"stream_id": "1", "property": "in_home_view", "value": False},
+    [{"stream_id": "1", "property": "is_muted", "value": False},
      {"stream_id": "1", "property": "color", "value": "#c2c2c2"}]
     """
     property_converters = {"color": check_color, "in_home_view": check_bool,
+                           "is_muted": check_bool,
                            "desktop_notifications": check_bool,
                            "audible_notifications": check_bool,
                            "push_notifications": check_bool,

@@ -36,7 +36,7 @@ def get_muted_streams(user_profile: UserProfile, stream_ids: Set[int]) -> Set[in
     rows = Subscription.objects.filter(
         user_profile=user_profile,
         recipient__type_id__in=stream_ids,
-        in_home_view=False,
+        is_muted=True,
     ).values(
         'recipient__type_id'
     )

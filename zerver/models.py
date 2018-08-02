@@ -1880,8 +1880,8 @@ class Subscription(models.Model):
     # resubscribes.
     active = models.BooleanField(default=True)  # type: bool
 
-    # Whether the stream is muted.  TODO: Remove to !muted.
-    in_home_view = models.NullBooleanField(default=True)  # type: Optional[bool]
+    # Whether this user had muted this stream.
+    is_muted = models.NullBooleanField(default=False)  # type: Optional[bool]
 
     DEFAULT_STREAM_COLOR = u"#c2c2c2"
     color = models.CharField(max_length=10, default=DEFAULT_STREAM_COLOR)  # type: str

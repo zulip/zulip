@@ -1585,6 +1585,66 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         self.assertIsNotNone(updated_sub)
         self.assertEqual(updated_sub.pin_to_top, new_pin_to_top)
 
+    def test_change_is_muted(self) -> None:
+        test_user = self.example_user('hamlet')
+        test_email = test_user.email
+        self.login(test_email)
+        subs = gather_subscriptions(test_user)[0]
+
+        sub = Subscription.objects.get(recipient__type=Recipient.STREAM,
+                                       recipient__type_id=subs[0]["stream_id"],
+                                       user_profile=test_user)
+        self.assertEqual(sub.is_muted, False)
+
+        events = []  # type: List[Mapping[str, Any]]
+        property_name = "is_muted"
+        with tornado_redirected_to_list(events):
+            result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                                   {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                       "value": True,
+                                                                       "stream_id": subs[0]["stream_id"]}])})
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]['event']['property'], 'in_home_view')
+        self.assertEqual(events[0]['event']['value'], False)
+        sub = Subscription.objects.get(recipient__type=Recipient.STREAM,
+                                       recipient__type_id=subs[0]["stream_id"],
+                                       user_profile=test_user)
+        self.assertEqual(sub.is_muted, True)
+
+        events = []
+        legacy_property_name = 'in_home_view'
+        with tornado_redirected_to_list(events):
+            result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                                   {"subscription_data": ujson.dumps([{"property": legacy_property_name,
+                                                                       "value": True,
+                                                                       "stream_id": subs[0]["stream_id"]}])})
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]['event']['property'], 'in_home_view')
+        self.assertEqual(events[0]['event']['value'], True)
+        self.assert_json_success(result)
+        sub = Subscription.objects.get(recipient__type=Recipient.STREAM,
+                                       recipient__type_id=subs[0]["stream_id"],
+                                       user_profile=test_user)
+        self.assertEqual(sub.is_muted, False)
+
+        events = []
+        with tornado_redirected_to_list(events):
+            result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                                   {"subscription_data": ujson.dumps([{"property": legacy_property_name,
+                                                                       "value": False,
+                                                                       "stream_id": subs[0]["stream_id"]}])})
+        self.assert_json_success(result)
+        self.assert_length(events, 1)
+        self.assertEqual(events[0]['event']['property'], 'in_home_view')
+        self.assertEqual(events[0]['event']['value'], False)
+
+        sub = Subscription.objects.get(recipient__type=Recipient.STREAM,
+                                       recipient__type_id=subs[0]["stream_id"],
+                                       user_profile=test_user)
+        self.assertEqual(sub.is_muted, True)
+
     def test_set_subscription_property_incorrect(self) -> None:
         """
         Trying to set a property incorrectly returns a JSON error.
@@ -1593,6 +1653,14 @@ class SubscriptionPropertiesTest(ZulipTestCase):
         test_email = test_user.email
         self.login(test_email)
         subs = gather_subscriptions(test_user)[0]
+
+        property_name = "is_muted"
+        result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
+                               {"subscription_data": ujson.dumps([{"property": property_name,
+                                                                   "value": "bad",
+                                                                   "stream_id": subs[0]["stream_id"]}])})
+        self.assert_json_error(result,
+                               '%s is not a boolean' % (property_name,))
 
         property_name = "in_home_view"
         result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
@@ -1648,7 +1716,7 @@ class SubscriptionPropertiesTest(ZulipTestCase):
 
         stream_id = 1000
         result = self.api_post(test_email, "/api/v1/users/me/subscriptions/properties",
-                               {"subscription_data": ujson.dumps([{"property": "in_home_view",
+                               {"subscription_data": ujson.dumps([{"property": "is_muted",
                                                                    "stream_id": stream_id,
                                                                    "value": False}])})
         self.assert_json_error(result, "Invalid stream id")
@@ -1746,7 +1814,7 @@ class SubscriptionRestApiTest(ZulipTestCase):
         test_email = self.example_email("hamlet")
         self.login(test_email)
         result = self.api_patch(test_email, "/api/v1/users/me/subscriptions/121",
-                                {'property': 'in_home_view', 'value': 'somevalue'})
+                                {'property': 'is_muted', 'value': 'somevalue'})
         self.assert_json_error(result,
                                "Invalid stream id")
 

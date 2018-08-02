@@ -310,7 +310,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
                                         'email_notifications': True})
         client_descriptor.event_queue.pop()
         self.assertTrue(client_descriptor.event_queue.empty())
-        change_subscription_properties(user_profile, stream, sub, {'in_home_view': False})
+        change_subscription_properties(user_profile, stream, sub, {'is_muted': True})
         msg_id = self.send_stream_message(self.example_email("iago"), "Denmark",
                                           content="what's up everyone?")
         with mock.patch("zerver.tornado.event_queue.maybe_enqueue_notifications") as mock_enqueue:
@@ -326,7 +326,7 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         # Clean up the state we just changed (not necessary unless we add more test code below)
         change_subscription_properties(user_profile, stream, sub,
                                        {'push_notifications': True,
-                                        'in_home_view': True})
+                                        'is_muted': False})
 
 class FileReloadLogicTest(ZulipTestCase):
     def test_persistent_queue_filename(self) -> None:

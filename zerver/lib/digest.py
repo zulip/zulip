@@ -179,7 +179,7 @@ def handle_digest_email(user_profile_id: int, cutoff: float,
         user_profile=user_profile,
         recipient__type=Recipient.STREAM,
         active=True,
-        in_home_view=True).values_list('recipient__type_id', flat=True)
+        is_muted=False).values_list('recipient__type_id', flat=True)
 
     if not user_profile.long_term_idle:
         stream_ids = home_view_streams

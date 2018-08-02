@@ -388,7 +388,7 @@ class FixUnreadTests(ZulipTestCase):
                 user_profile=user,
                 recipient=recipient
             )
-            subscription.in_home_view = False
+            subscription.is_muted = True
             subscription.save()
 
         def mute_topic(stream_name: str, topic_name: str) -> None:

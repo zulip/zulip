@@ -737,7 +737,7 @@ def get_inactive_recipient_ids(user_profile: UserProfile) -> List[int]:
 def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
     rows = get_stream_subscriptions_for_user(user_profile).filter(
         active=True,
-        in_home_view=False,
+        is_muted=True,
     ).values(
         'recipient__type_id'
     )

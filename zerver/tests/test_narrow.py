@@ -67,7 +67,7 @@ def mute_stream(realm: Realm, user_profile: str, stream_name: str) -> None:
     stream = get_stream(stream_name, realm)
     recipient = get_stream_recipient(stream.id)
     subscription = Subscription.objects.get(recipient=recipient, user_profile=user_profile)
-    subscription.in_home_view = False
+    subscription.is_muted = True
     subscription.save()
 
 def first_visible_id_as(message_id: int) -> Any:

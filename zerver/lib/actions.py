@@ -978,7 +978,7 @@ def get_recipient_info(recipient: Recipient,
             'email_notifications',
             'user_profile_email_notifications',
             'user_profile_push_notifications',
-            'in_home_view',
+            'is_muted',
         ).order_by('user_profile_id')
 
         message_to_user_ids = [
@@ -990,7 +990,7 @@ def get_recipient_info(recipient: Recipient,
             # This implements the structure that the UserProfile stream notification settings
             # are defaults, which can be overridden by the stream-level settings (if those
             # values are not null).
-            if not row['in_home_view']:
+            if row['is_muted']:
                 return False
             if row[setting] is not None:
                 return row[setting]
@@ -2662,7 +2662,8 @@ def notify_subscriptions_added(user_profile: UserProfile,
     # Send a notification to the user who subscribed.
     payload = [dict(name=stream.name,
                     stream_id=stream.id,
-                    in_home_view=subscription.in_home_view,
+                    in_home_view=not subscription.is_muted,
+                    is_muted=subscription.is_muted,
                     invite_only=stream.invite_only,
                     is_announcement_only=stream.is_announcement_only,
                     color=subscription.color,
@@ -3090,16 +3091,30 @@ def log_subscription_property_change(user_email: str, stream_name: str, property
 def do_change_subscription_property(user_profile: UserProfile, sub: Subscription,
                                     stream: Stream, property_name: str, value: Any
                                     ) -> None:
-    setattr(sub, property_name, value)
-    sub.save(update_fields=[property_name])
-    log_subscription_property_change(user_profile.email, stream.name,
-                                     property_name, value)
+    database_property_name = property_name
+    event_property_name = property_name
+    database_value = value
+    event_value = value
 
+    # For this property, is_muted is used in the database, but
+    # in_home_view in the API, since we haven't migrated the events
+    # API to the new name yet.
+    if property_name == "in_home_view":
+        database_property_name = "is_muted"
+        database_value = not value
+    if property_name == "is_muted":
+        event_property_name = "in_home_view"
+        event_value = not value
+
+    setattr(sub, database_property_name, database_value)
+    sub.save(update_fields=[database_property_name])
+    log_subscription_property_change(user_profile.email, stream.name,
+                                     database_property_name, database_value)
     event = dict(type="subscription",
                  op="update",
                  email=user_profile.email,
-                 property=property_name,
-                 value=value,
+                 property=event_property_name,
+                 value=event_value,
                  stream_id=stream.id,
                  name=stream.name)
     send_event(user_profile.realm, event, [user_profile.id])
@@ -4525,7 +4540,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
 
     subscribed = [
         {'name': stream.name,
-         'in_home_view': True,
+         'is_muted': False,
          'invite_only': False,
          'is_announcement_only': stream.is_announcement_only,
          'color': get_next_color(),
@@ -4552,7 +4567,7 @@ def get_web_public_subs(realm: Realm) -> SubHelperT:
 def gather_subscriptions_helper(user_profile: UserProfile,
                                 include_subscribers: bool=True) -> SubHelperT:
     sub_dicts = get_stream_subscriptions_for_user(user_profile).values(
-        "recipient_id", "in_home_view", "color", "desktop_notifications",
+        "recipient_id", "is_muted", "color", "desktop_notifications",
         "audible_notifications", "push_notifications", "email_notifications",
         "active", "pin_to_top"
     ).order_by("recipient_id")
@@ -4628,7 +4643,8 @@ def gather_subscriptions_helper(user_profile: UserProfile,
             subscribers = None
 
         stream_dict = {'name': stream["name"],
-                       'in_home_view': sub["in_home_view"],
+                       'in_home_view': not sub["is_muted"],
+                       'is_muted': sub["is_muted"],
                        'invite_only': stream["invite_only"],
                        'is_announcement_only': stream["is_announcement_only"],
                        'color': sub["color"],
@@ -4683,7 +4699,6 @@ def gather_subscriptions_helper(user_profile: UserProfile,
                 if subscribers is not None:
                     stream_dict['subscribers'] = subscribers
             never_subscribed.append(stream_dict)
-
     return (sorted(subscribed, key=lambda x: x['name']),
             sorted(unsubscribed, key=lambda x: x['name']),
             sorted(never_subscribed, key=lambda x: x['name']))

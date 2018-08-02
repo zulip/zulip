@@ -2382,6 +2382,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('email_address', check_string),
             ('invite_only', check_bool),
             ('is_announcement_only', check_bool),
+            ('is_muted', check_bool),
             ('in_home_view', check_bool),
             ('name', check_string),
             ('audible_notifications', check_none_or(check_bool)),
@@ -2734,7 +2735,7 @@ class GetUnreadMsgsTest(ZulipTestCase):
             user_profile=user_profile,
             recipient=recipient
         )
-        subscription.in_home_view = False
+        subscription.is_muted = True
         subscription.save()
 
     def mute_topic(self, user_profile: UserProfile, stream_name: str,

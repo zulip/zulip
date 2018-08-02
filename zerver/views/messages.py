@@ -567,7 +567,7 @@ def exclude_muting_conditions(user_profile: UserProfile,
         rows = Subscription.objects.filter(
             user_profile=user_profile,
             active=True,
-            in_home_view=False,
+            is_muted=True,
             recipient__type=Recipient.STREAM
         ).values('recipient_id')
         muted_recipient_ids = [row['recipient_id'] for row in rows]
