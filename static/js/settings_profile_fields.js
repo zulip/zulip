@@ -103,6 +103,17 @@ function get_profile_field(id) {
     return field;
 }
 
+function set_choice_delete_button(e) {
+    // Choice type field must have at least one choice
+    $(e.target).find(".choice-row .delete-choice").each(function (index) {
+        if (index === 0) {
+            $(this).hide();
+        } else {
+            $(this).show();
+        }
+    });
+}
+
 function open_edit_form(e) {
     var field_id = $(e.currentTarget).attr("data-profile-field-id");
     var profile_field = get_profile_field_info(field_id);
@@ -117,7 +128,7 @@ function open_edit_form(e) {
     if (exports.field_type_id_to_string(field.type) === "Choice") {
         var choice_list = profile_field.form.find('.edit_profile_field_choices_container')[0];
         Sortable.create(choice_list, {
-            onUpdate: function () {},
+            onUpdate: set_choice_delete_button,
         });
     }
 
@@ -235,7 +246,7 @@ function set_up_choices_field() {
 
     var choice_list = $("#profile_field_choices")[0];
     Sortable.create(choice_list, {
-        onUpdate: function () {},
+        onUpdate: set_choice_delete_button,
     });
 
     if ($('#profile_field_type').val() !== '3') {
