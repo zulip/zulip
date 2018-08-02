@@ -4,11 +4,13 @@ import logging
 from django.conf import settings
 from django.contrib.auth import SESSION_KEY, get_user_model
 from django.contrib.sessions.models import Session
+from django.http import HttpRequest, HttpResponse
 from django.utils.timezone import now as timezone_now
 from importlib import import_module
 from typing import List, Mapping, Optional
 
 from zerver.models import Realm, UserProfile, get_user_profile_by_id
+from zerver.lib.subdomains import is_subdomain_root_or_alias
 
 session_engine = import_module(settings.SESSION_ENGINE)
 
@@ -54,3 +56,19 @@ def delete_all_deactivated_user_sessions() -> None:
         if not user_profile.is_active or user_profile.realm.deactivated:
             logging.info("Deactivating session for deactivated user %s" % (user_profile.email,))
             delete_session(session)
+
+def maybe_remove_session_cookie_at_root_domain(request: HttpRequest,
+                                               response: HttpResponse) -> HttpResponse:
+    request_host = request.get_host().split(':')[0]
+    root_session_cookie_domain = settings.EXTERNAL_HOST.split(":")[0]
+    if (not is_subdomain_root_or_alias(request) and
+            root_session_cookie_domain in request_host and
+            root_session_cookie_domain != request_host):
+        # We delete the sessionid cookie on the root domain only if it is a
+        # multi realm server. We do this so that the cookie on root domain
+        # does not mask the real session cookie set for this realm (which is
+        # hosted on a subdomain) and leave users in endless login loops.
+        # See issue https://github.com/zulip/zulip/issues/9940 for details.
+        response.delete_cookie(settings.SESSION_COOKIE_NAME,
+                               domain=root_session_cookie_domain)
+    return response
