@@ -3619,7 +3619,7 @@ def do_update_message_flags(user_profile: UserProfile,
                             client: Client,
                             operation: str,
                             flag: str,
-                            messages: Optional[Sequence[int]]) -> int:
+                            messages: List[int]) -> int:
     flagattr = getattr(UserMessage.flags, flag)
 
     assert messages is not None
