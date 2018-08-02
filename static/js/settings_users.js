@@ -304,68 +304,6 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    var user_info_form_modal_container = $("#user-info-form-modal-container");
-
-    user_info_form_modal_container.on("click", ".make-admin", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Go up the tree until we find the user row, then grab the user_id data
-        var user_id = user_info_form_modal_container.find('#user-name-form').attr("data-user-id");
-
-        var url = "/json/users/" + encodeURIComponent(user_id);
-        var data = {
-            is_admin: JSON.stringify(true),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-            success: function () {
-                var button = user_info_form_modal_container.find("button.make-admin");
-                button.addClass("btn-danger");
-                button.removeClass("btn-warning");
-                button.addClass("remove-admin");
-                button.removeClass("make-admin");
-                button.text(i18n.t("Remove admin"));
-            },
-            error: function (xhr) {
-                var status = $("#organization-status").expectOne();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
-    });
-
-    user_info_form_modal_container.on("click", ".remove-admin", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
-
-        // Go up the tree until we find the user row, then grab the user_id data
-        var user_id = user_info_form_modal_container.find('#user-name-form').attr("data-user-id");
-
-        var url = "/json/users/" + encodeURIComponent(user_id);
-        var data = {
-            is_admin: JSON.stringify(false),
-        };
-
-        channel.patch({
-            url: url,
-            data: data,
-            success: function () {
-                var button = user_info_form_modal_container.find("button.remove-admin");
-                button.addClass("btn-warning");
-                button.removeClass("btn-danger");
-                button.addClass("make-admin");
-                button.removeClass("remove-admin");
-                button.text(i18n.t("Make admin"));
-            },
-            error: function (xhr) {
-                var status = $("#organization-status").expectOne();
-                ui_report.error(i18n.t("Failed"), xhr, status);
-            },
-        });
-    });
-
     function open_user_info_form_modal(person) {
         var html = templates.render('user-info-form-modal', {
             user_id: person.user_id,
@@ -409,6 +347,8 @@ exports.on_load_success = function (realm_people_data) {
             e.preventDefault();
             e.stopPropagation();
 
+            var user_role_select_value = user_info_form_modal.find('#user-role-select').val();
+
             if (person.is_bot) {
                 url = "/json/bots/" + encodeURIComponent(user_id);
                 data = {
@@ -422,6 +362,7 @@ exports.on_load_success = function (realm_people_data) {
                 url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
+                    is_admin: JSON.stringify(user_role_select_value === 'admin'),
                 };
             }
 
