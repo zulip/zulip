@@ -66,14 +66,10 @@
     float: none;
 }
 
-ul.info_popover_actions i {
-    display: inline-block;
-    width: 14px;
-    text-align: center;
-    margin-right: 3px;
-}
-
-ul.actions_popover i {
+ul.info_popover_actions i,
+ul.actions_popover i,
+ul.streams_popover i,
+ul.topics_popover i {
     display: inline-block;
     width: 14px;
     text-align: center;
