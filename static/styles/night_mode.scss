@@ -505,3 +505,19 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
     }
 }
+
+body.night-mode #bots_lists_navbar .active a {
+    color: #ddd;
+    background-color: hsl(212, 28%, 18%);
+    border-color: #ddd;
+    border-bottom-color: transparent;
+}
+
+body.night-mode .searching-for-more-topics img {
+    -webkit-filter: invert(100%);
+    filter: invert(100%);
+}
+body.night-mode .alert-word{
+    background-color:#468E37;
+}
+
