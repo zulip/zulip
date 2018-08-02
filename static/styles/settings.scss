@@ -705,7 +705,7 @@ input[type=checkbox].inline-block {
 .admin_profile_fields_table {
     .movable-profile-field-row {
         cursor: move;
-        i {
+        .fa-ellipsis-v {
             color: hsl(0, 0, 75%);
             position: relative;
             top: 1px;
