@@ -48,6 +48,7 @@ from zerver.lib.actions import (
     do_change_realm_domain,
     do_change_stream_description,
     do_change_subscription_property,
+    do_change_user_delivery_email,
     do_create_user,
     do_create_default_stream_group,
     do_deactivate_stream,
@@ -1399,6 +1400,22 @@ class EventsRegisterTest(ZulipTestCase):
             ])),
         ])
         events = self.do_test(lambda: do_change_full_name(self.user_profile, 'Sir Hamlet', self.user_profile))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
+    def test_change_user_delivery_email_email_address_visibilty_admins(self) -> None:
+        schema_checker = self.check_events_dict([
+            ('type', equals('realm_user')),
+            ('op', equals('update')),
+            ('person', check_dict_only([
+                ('delivery_email', check_string),
+                ('user_id', check_int),
+            ])),
+        ])
+        do_set_realm_property(self.user_profile.realm, "email_address_visibility",
+                              Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS)
+        action = lambda: do_change_user_delivery_email(self.user_profile, 'newhamlet@zulip.com')
+        events = self.do_test(action, num_events=1)
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 

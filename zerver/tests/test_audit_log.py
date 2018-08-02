@@ -3,7 +3,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, do_change_password, \
-    do_change_user_email, do_change_avatar_fields, do_change_bot_owner, \
+    do_change_user_delivery_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key, do_change_full_name, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic
 from zerver.lib.test_classes import ZulipTestCase
@@ -45,7 +45,7 @@ class TestRealmAuditLog(ZulipTestCase):
         now = timezone_now()
         user = self.example_user('hamlet')
         email = 'test@example.com'
-        do_change_user_email(user, email)
+        do_change_user_delivery_email(user, email)
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_EMAIL_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertEqual(email, user.email)

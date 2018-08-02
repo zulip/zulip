@@ -503,12 +503,12 @@ subdomain.  E.g. on `it.zulip.example.com`, use
 
 You can get an iPython shell with full access to code within the Zulip
 project using `manage.py shell`, e.g., you can do the following to
-change an email address:
+change a user's email address:
 
 ```
 $ /home/zulip/deployments/current/manage.py shell
 In [1]: user_profile = get_user_profile_by_email("email@example.com")
-In [2]: do_change_user_email(user_profile, "new_email@example.com")
+In [2]: do_change_user_delivery_email(user_profile, "new_email@example.com")
 ```
 
 #### manage.py dbshell
