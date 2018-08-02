@@ -15,18 +15,28 @@ exports.update_person = function update(person) {
         return;
     }
 
+    var user_id = person.user_id;
+
     if (_.has(person, 'new_email')) {
-        var user_id = person.user_id;
         var new_email = person.new_email;
 
         narrow_state.update_email(user_id, new_email);
         compose.update_email(user_id, new_email);
 
-        if (people.is_my_user_id(person.user_id)) {
+        if (people.is_my_user_id(person.user_id)
+            && !page_params.realm_delivery_email_hidden) {
             settings_account.update_email(new_email);
         }
 
         people.update_email(user_id, new_email);
+    }
+
+    if (_.has(person, 'new_delivery_email')) {
+        var new_delivery_email = person.new_delivery_email;
+
+        if (people.is_my_user_id(person.user_id)) {
+            settings_account.update_email(new_delivery_email);
+        }
     }
 
     if (_.has(person, 'full_name')) {

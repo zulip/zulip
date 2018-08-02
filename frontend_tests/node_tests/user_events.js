@@ -139,4 +139,13 @@ run_test('updates', () => {
     user_events.update_person({user_id: me.user_id, custom_profile_field: {id: 3, value: 'Value'}});
     person = people.get_by_email(me.email);
     assert.equal(person.profile_data[3], 'Value');
+
+    var updated = false;
+    settings_account.update_email = (email) => {
+        assert.equal(email, 'you@example.org');
+        updated = true;
+    };
+
+    user_events.update_person({user_id: me.user_id, new_delivery_email: 'you@example.org'});
+    assert(updated);
 });
