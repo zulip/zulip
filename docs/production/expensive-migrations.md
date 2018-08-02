@@ -4,8 +4,8 @@
 
 # Running expensive migrations early
 
-Zulip 1.7 contains some significant database migrations that can take
-several minutes to run.
+Zulip 1.7 and 1.9 each contain some significant database migrations
+that can take several minutes to run.
 
 The upgrade process automatically minimizes disruption by running
 these first, before beginning the user-facing downtime.  However, if
@@ -18,6 +18,18 @@ can run them manually before starting the upgrade:
 2. Run `./manage.py dbshell`.  This will open a shell connected to the
   Postgres database.
 3. In the postgres shell, run the following commands:
+
+        CREATE INDEX CONCURRENTLY
+        zerver_usermessage_is_private_message_id
+        ON zerver_usermessage (user_profile_id, message_id)
+        WHERE (flags & 2048) != 0;
+
+        CREATE INDEX CONCURRENTLY
+        zerver_usermessage_active_mobile_push_notification_id
+        ON zerver_usermessage (user_profile_id, message_id)
+        WHERE (flags & 4096) != 0;
+
+(These first migrations are the only new ones in Zulip 1.9).
 
         CREATE INDEX CONCURRENTLY
         zerver_usermessage_mentioned_message_id
@@ -44,13 +56,13 @@ can run them manually before starting the upgrade:
         ON zerver_usermessage (user_profile_id, message_id)
         WHERE (flags & 1) = 0;
 
-4. These will take some time to run, during which the server will
-  continue to serve user traffic as usual with no disruption.  Once
-  they finish, you can proceed with installing Zulip 1.7.
+These will take some time to run, during which the server will
+continue to serve user traffic as usual with no disruption.  Once they
+finish, you can proceed with installing Zulip 1.7.
 
 To help you estimate how long these will take on your server: count
 the number of UserMessage rows, with `select COUNT(*) from zerver_usermessage;`
 at the `./manage.py dbshell` prompt.  At the time these migrations
-were run on chat.zulip.org, it had 75M UserMessage rows; the first 4
+were run on chat.zulip.org, it had 75M UserMessage rows; the first 5
 indexes took about 1 minute each to create, and the final,
 "unread_message" index took more like 10 minutes.

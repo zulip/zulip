@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# See https://zulip.readthedocs.io/en/latest/subsystems/thumbnailing.html
 import base64
 import os
 import sys

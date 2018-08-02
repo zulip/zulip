@@ -1,4 +1,4 @@
-
+# See https://zulip.readthedocs.io/en/latest/subsystems/caching.html for docs
 from functools import wraps
 
 from django.utils.lru_cache import lru_cache

@@ -1,9 +1,9 @@
-tc-aws==6.2.7
-thumbor==6.4.2
+tc-aws==6.2.10
+thumbor==6.5.1
 typing==3.6.4
 # Required for just importing settings from our main django app.
 django-auth-ldap==1.5.0
-Django==1.11.13
+Django==1.11.14
 
 # Below dependencies should ideally have been added to thumbor.txt by the
 # use of tools/update-locked-requirements but for some reason `pip-compile`
@@ -11,5 +11,8 @@ Django==1.11.13
 # https://github.com/thumbor/thumbor/issues/1006
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
-certifi==2018.1.18
+certifi==2018.4.16
 singledispatch==3.4.0.3
+
+# Needed for cloning virtual environments
+virtualenv-clone==0.3.0

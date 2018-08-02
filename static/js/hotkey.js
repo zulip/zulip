@@ -707,7 +707,7 @@ exports.process_hotkey = function (e, hotkey) {
     case 'message_actions':
         return popovers.open_message_menu(msg);
     case 'star_message':
-        message_flags.toggle_starred(msg);
+        message_flags.toggle_starred_and_update_server(msg);
         return true;
     case 'narrow_by_recipient':
         return do_narrow_action(narrow.by_recipient);
@@ -729,7 +729,10 @@ exports.process_hotkey = function (e, hotkey) {
         reactions.open_reactions_popover();
         return true;
     case 'thumbs_up_emoji': // '+': reacts with thumbs up emoji on selected message
-        reactions.toggle_emoji_reaction(msg.id, "thumbs_up");
+        // Use canonical name.
+        var thumbs_up_emoji_code = '1f44d';
+        var canonical_name = emoji_codes.codepoint_to_name[thumbs_up_emoji_code];
+        reactions.toggle_emoji_reaction(msg.id, canonical_name);
         return true;
     case 'toggle_mute':
         muting_ui.toggle_mute(msg);

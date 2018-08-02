@@ -117,6 +117,7 @@ exports.initialize = function () {
             return items;
         },
         stopAdvance: page_params.search_pills_enabled,
+        advanceKeyCodes: [8],
     });
 
     searchbox_form.on('compositionend', function () {

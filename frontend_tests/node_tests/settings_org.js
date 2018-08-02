@@ -531,19 +531,19 @@ function test_sync_realm_settings() {
         property_elem.length = 1;
         property_elem.attr('id', 'id_realm_org_join_restrictions');
 
-        page_params.realm_restricted_to_domain = true;
+        page_params.realm_emails_restricted_to_domains = true;
         page_params.realm_disallow_disposable_email_addresses = false;
-        settings_org.sync_realm_settings('restricted_to_domain');
+        settings_org.sync_realm_settings('emails_restricted_to_domains');
         assert.equal($("#id_realm_org_join_restrictions").val(), "only_selected_domain");
 
-        page_params.realm_restricted_to_domain = false;
+        page_params.realm_emails_restricted_to_domains = false;
 
         page_params.realm_disallow_disposable_email_addresses = true;
-        settings_org.sync_realm_settings('restricted_to_domain');
+        settings_org.sync_realm_settings('emails_restricted_to_domains');
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_disposable_email");
 
         page_params.realm_disallow_disposable_email_addresses = false;
-        settings_org.sync_realm_settings('restricted_to_domain');
+        settings_org.sync_realm_settings('emails_restricted_to_domains');
         assert.equal($("#id_realm_org_join_restrictions").val(), "no_restriction");
     }
 }

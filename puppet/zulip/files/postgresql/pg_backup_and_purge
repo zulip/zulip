@@ -2,6 +2,7 @@
 
 import sys
 import glob
+import shlex
 import subprocess
 import sys
 import logging
@@ -17,7 +18,7 @@ logger = logging.getLogger(__name__)
 def run(args, dry_run=False):
     # type: (List[str], bool) -> str
     if dry_run:
-        print("Would have run: " + " ".join(args))
+        print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
 
     p = subprocess.Popen(args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,

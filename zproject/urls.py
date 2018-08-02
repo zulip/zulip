@@ -340,7 +340,7 @@ v1_api_and_json_patterns = [
 
     # events -> zerver.tornado.views
     url(r'^events$', rest_dispatch,
-        {'GET': 'zerver.tornado.views.get_events_backend',
+        {'GET': 'zerver.tornado.views.get_events',
          'DELETE': 'zerver.tornado.views.cleanup_event_queue'}),
 
     # report -> zerver.views.report
@@ -613,6 +613,7 @@ for app_name in settings.EXTRA_INSTALLED_APPS:
 urls += [
     # Used internally for communication between Django and Tornado processes
     url(r'^notify_tornado$', zerver.tornado.views.notify, name='zerver.tornado.views.notify'),
+    url(r'^api/v1/events/internal$', zerver.tornado.views.get_events_internal),
 ]
 
 # Python Social Auth

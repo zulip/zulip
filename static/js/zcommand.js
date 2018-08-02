@@ -77,12 +77,8 @@ exports.process = function (message_content) {
         return true;
     }
 
-    if (content === '/day') {
-        update_setting(content);
-        return true;
-    }
-
-    if (content === '/night') {
+    var mode_commands = ['/day', '/night', '/light', '/dark'];
+    if (mode_commands.indexOf(content) >= 0) {
         update_setting(content);
         return true;
     }

@@ -536,6 +536,52 @@ class HandlePushNotificationTest(PushNotificationTest):
             mock_send_android.assert_called_with(android_devices,
                                                  {'gcm': True})
 
+    def test_send_remove_notifications_to_bouncer(self) -> None:
+        user_profile = self.example_user('hamlet')
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=user_profile,
+            message=message
+        )
+
+        with self.settings(PUSH_NOTIFICATION_BOUNCER_URL=True), \
+                mock.patch('zerver.lib.push_notifications'
+                           '.send_notifications_to_bouncer') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.get_common_payload',
+                           return_value={'gcm': True}):
+            apn.handle_remove_push_notification(user_profile.id, message.id)
+            mock_send_android.assert_called_with(user_profile.id, {},
+                                                 {'gcm': True,
+                                                  'event': 'remove',
+                                                  'zulip_message_id': message.id})
+
+    def test_non_bouncer_push_remove(self) -> None:
+        message = self.get_message(Recipient.PERSONAL, type_id=1)
+        UserMessage.objects.create(
+            user_profile=self.user_profile,
+            message=message
+        )
+
+        for token in [u'dddd']:
+            PushDeviceToken.objects.create(
+                kind=PushDeviceToken.GCM,
+                token=apn.hex_to_b64(token),
+                user=self.user_profile)
+
+        android_devices = list(
+            PushDeviceToken.objects.filter(user=self.user_profile,
+                                           kind=PushDeviceToken.GCM))
+
+        with mock.patch('zerver.lib.push_notifications'
+                        '.send_android_push_notification') as mock_send_android, \
+                mock.patch('zerver.lib.push_notifications.get_common_payload',
+                           return_value={'gcm': True}):
+            apn.handle_remove_push_notification(self.user_profile.id, message.id)
+            mock_send_android.assert_called_with(android_devices,
+                                                 {'gcm': True,
+                                                  'event': 'remove',
+                                                  'zulip_message_id': message.id})
+
     def test_user_message_does_not_exist(self) -> None:
         """This simulates a condition that should only be an error if the user is
         not long-term idle; we fake it, though, in the sense that the user should
@@ -744,6 +790,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -772,6 +819,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     "topic": message.subject,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -803,6 +851,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                     'sender_id': 4,
                     'server': settings.EXTERNAL_HOST,
                     'realm_id': message.sender.realm.id,
+                    'realm_uri': message.sender.realm.uri,
                 }
             }
         }
@@ -829,6 +878,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": True,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -854,6 +904,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -878,6 +929,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",
@@ -905,6 +957,7 @@ class TestGetGCMPayload(PushNotificationTest):
             "content_truncated": False,
             "server": settings.EXTERNAL_HOST,
             "realm_id": self.example_user("hamlet").realm.id,
+            "realm_uri": self.example_user("hamlet").realm.uri,
             "sender_id": self.example_user("hamlet").id,
             "sender_email": self.example_email("hamlet"),
             "sender_full_name": "King Hamlet",

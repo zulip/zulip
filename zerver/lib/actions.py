@@ -395,7 +395,8 @@ def add_new_user_history(user_profile: UserProfile, streams: Iterable[Stream]) -
 def process_new_human_user(user_profile: UserProfile,
                            prereg_user: Optional[PreregistrationUser]=None,
                            newsletter_data: Optional[Dict[str, str]]=None,
-                           default_stream_groups: List[DefaultStreamGroup]=[]) -> None:
+                           default_stream_groups: List[DefaultStreamGroup]=[],
+                           realm_creation: bool=False) -> None:
     mit_beta_user = user_profile.realm.is_zephyr_mirror_realm
     if prereg_user is not None:
         streams = prereg_user.streams.all()
@@ -445,7 +446,7 @@ def process_new_human_user(user_profile: UserProfile,
 
     notify_new_user(user_profile)
     if user_profile.realm.send_welcome_emails:
-        enqueue_welcome_emails(user_profile)
+        enqueue_welcome_emails(user_profile, realm_creation)
 
     # We have an import loop here; it's intentional, because we want
     # to keep all the onboarding code in zerver/lib/onboarding.py.
@@ -478,7 +479,9 @@ def notify_created_user(user_profile: UserProfile) -> None:
                              avatar_url=avatar_url(user_profile),
                              timezone=user_profile.timezone,
                              date_joined=user_profile.date_joined.isoformat(),
-                             is_bot=user_profile.is_bot))
+                             is_bot=user_profile.is_bot))  # type: Dict[str, Any]
+    if not user_profile.is_bot:
+        event["person"]["profile_data"] = {}
     send_event(event, active_user_ids(user_profile.realm_id))
 
 def created_bot_event(user_profile: UserProfile) -> Dict[str, Any]:
@@ -532,7 +535,8 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
                    prereg_user: Optional[PreregistrationUser]=None,
                    newsletter_data: Optional[Dict[str, str]]=None,
                    default_stream_groups: List[DefaultStreamGroup]=[],
-                   source_profile: Optional[UserProfile]=None) -> UserProfile:
+                   source_profile: Optional[UserProfile]=None,
+                   realm_creation: bool=False) -> UserProfile:
 
     user_profile = create_user(email=email, password=password, realm=realm,
                                full_name=full_name, short_name=short_name,
@@ -557,7 +561,8 @@ def do_create_user(email: str, password: Optional[str], realm: Realm, full_name:
     else:
         process_new_human_user(user_profile, prereg_user=prereg_user,
                                newsletter_data=newsletter_data,
-                               default_stream_groups=default_stream_groups)
+                               default_stream_groups=default_stream_groups,
+                               realm_creation=realm_creation)
     return user_profile
 
 def do_activate_user(user_profile: UserProfile) -> None:
@@ -2677,6 +2682,7 @@ def notify_subscriptions_removed(user_profile: UserProfile, streams: Iterable[St
 SubAndRemovedT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_remove_subscriptions(users: Iterable[UserProfile],
                               streams: Iterable[Stream],
+                              acting_client: Client,
                               acting_user: Optional[UserProfile]=None) -> SubAndRemovedT:
 
     users = list(users)
@@ -2771,6 +2777,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
         notify_subscriptions_removed(user_profile, streams_by_user[user_profile.id])
 
         event = {'type': 'mark_stream_messages_as_read',
+                 'client_id': acting_client.id,
                  'user_profile_id': user_profile.id,
                  'stream_ids': [stream.id for stream in streams]}
         queue_json_publish("deferred_work", event)
@@ -3167,14 +3174,15 @@ def do_change_stream_description(stream: Stream, new_description: str) -> None:
     )
     send_event(event, can_access_stream_user_ids(stream))
 
-def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bool]=None) -> Realm:
+def do_create_realm(string_id: str, name: str,
+                    emails_restricted_to_domains: Optional[bool]=None) -> Realm:
     existing_realm = get_realm(string_id)
     if existing_realm is not None:
         raise AssertionError("Realm %s already exists!" % (string_id,))
 
     kwargs = {}  # type: Dict[str, Any]
-    if restricted_to_domain is not None:
-        kwargs['restricted_to_domain'] = restricted_to_domain
+    if emails_restricted_to_domains is not None:
+        kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
@@ -3192,7 +3200,7 @@ def do_create_realm(string_id: str, name: str, restricted_to_domain: Optional[bo
     # Log the event
     log_event({"type": "realm_created",
                "string_id": string_id,
-               "restricted_to_domain": restricted_to_domain})
+               "emails_restricted_to_domains": emails_restricted_to_domains})
 
     # Send a notification to the admin realm (if configured)
     if settings.NOTIFICATION_BOT is not None:
@@ -3526,7 +3534,8 @@ def update_user_presence(user_profile: UserProfile, client: Client, log_time: da
     if new_user_input:
         update_user_activity_interval(user_profile, log_time)
 
-def do_update_pointer(user_profile: UserProfile, pointer: int, update_flags: bool=False) -> None:
+def do_update_pointer(user_profile: UserProfile, client: Client,
+                      pointer: int, update_flags: bool=False) -> None:
     prev_pointer = user_profile.pointer
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
@@ -3537,14 +3546,13 @@ def do_update_pointer(user_profile: UserProfile, pointer: int, update_flags: boo
         # up until the pointer move
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
-                                   message__id__lte=pointer,
-                                   flags=~UserMessage.flags.read)        \
+                                   message__id__lte=pointer).extra([UserMessage.where_unread()]) \
                            .update(flags=F('flags').bitor(UserMessage.flags.read))
 
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
 
-def do_mark_all_as_read(user_profile: UserProfile) -> int:
+def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
     log_statsd_event('bankruptcy')
 
     msgs = UserMessage.objects.filter(
@@ -3570,7 +3578,8 @@ def do_mark_all_as_read(user_profile: UserProfile) -> int:
     return count
 
 def do_mark_stream_messages_as_read(user_profile: UserProfile,
-                                    stream: Optional[Stream],
+                                    client: Client,
+                                    stream: Stream,
                                     topic_name: Optional[str]=None) -> int:
     log_statsd_event('mark_stream_as_read')
 
@@ -3607,9 +3616,10 @@ def do_mark_stream_messages_as_read(user_profile: UserProfile,
     return count
 
 def do_update_message_flags(user_profile: UserProfile,
+                            client: Client,
                             operation: str,
                             flag: str,
-                            messages: Optional[Sequence[int]]) -> int:
+                            messages: List[int]) -> int:
     flagattr = getattr(UserMessage.flags, flag)
 
     assert messages is not None
@@ -4284,6 +4294,9 @@ def get_cross_realm_dicts() -> List[Dict[str, Any]]:
              'user_id': user.id,
              'is_admin': user.is_realm_admin,
              'is_bot': user.is_bot,
+             'avatar_url': avatar_url(user),
+             'timezone': user.timezone,
+             'date_joined': user.date_joined.isoformat(),
              'full_name': user.full_name}
             for user in users
             # Important: We filter here, is addition to in
@@ -4634,12 +4647,12 @@ def do_remove_realm_domain(realm_domain: RealmDomain) -> None:
     realm = realm_domain.realm
     domain = realm_domain.domain
     realm_domain.delete()
-    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.restricted_to_domain:
+    if RealmDomain.objects.filter(realm=realm).count() == 0 and realm.emails_restricted_to_domains:
         # If this was the last realm domain, we mark the realm as no
         # longer restricted to domain, because the feature doesn't do
         # anything if there are no domains, and this is probably less
         # confusing than the alternative.
-        do_set_realm_property(realm, 'restricted_to_domain', False)
+        do_set_realm_property(realm, 'emails_restricted_to_domains', False)
     event = dict(type="realm_domains", op="remove", domain=domain)
     send_event(event, active_user_ids(realm.id))
 

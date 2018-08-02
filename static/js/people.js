@@ -617,6 +617,13 @@ exports.get_realm_persons = function () {
     return active_user_dict.values();
 };
 
+exports.get_active_human_persons = function () {
+    var human_persons = exports.get_realm_persons().filter(function (person)  {
+        return !person.is_bot;
+    });
+    return human_persons;
+};
+
 exports.get_active_user_ids = function () {
     // This includes active users and active bots.
     return active_user_dict.keys();
@@ -776,7 +783,7 @@ exports.report_late_add = function (user_id, email) {
     // types of realms.
     var msg = 'Added user late: user_id=' + user_id + ' email=' + email;
 
-    if (reload.is_in_progress) {
+    if (reload.is_in_progress()) {
         blueslip.log(msg);
     } else {
         blueslip.error(msg);

@@ -191,10 +191,10 @@ var event_fixtures = {
         value: 'new_realm_name',
     },
 
-    realm__update__restricted_to_domain: {
+    realm__update__emails_restricted_to_domains: {
         type: 'realm',
         op: 'update',
-        property: 'restricted_to_domain',
+        property: 'emails_restricted_to_domains',
         value: false,
     },
 
@@ -688,8 +688,8 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.realm_name, 'new_realm_name');
 
-    event = event_fixtures.realm__update__restricted_to_domain;
-    test_realm_boolean(event, 'realm_restricted_to_domain');
+    event = event_fixtures.realm__update__emails_restricted_to_domains;
+    test_realm_boolean(event, 'realm_emails_restricted_to_domains');
 
     event = event_fixtures.realm__update__disallow_disposable_email_addresses;
     test_realm_boolean(event, 'realm_disallow_disposable_email_addresses');
@@ -1001,24 +1001,27 @@ with_overrides(function (override) {
     });
 });
 
+// notify_server_message_read requires message_store and these dependencies.
+zrequire('unread_ops');
+zrequire('unread');
+zrequire('topic_data');
+zrequire('stream_list');
+zrequire("message_flags");
+set_global('message_store', {
+    get: function () {return {};},
+});
+
 with_overrides(function (override) {
     // update_message_flags__starred
     var event = event_fixtures.update_message_flags__starred;
     global.with_stub(function (stub) {
-        override('ui.update_starred', stub.f);
+        override('ui.update_starred_view', stub.f);
         dispatch(event);
         var args = stub.get_args('message_id', 'new_value');
         assert_same(args.message_id, 99);
         assert_same(args.new_value, true); // for 'add'
     });
 });
-
-// notify_server_message_read requires message_store and these dependencies.
-zrequire('unread_ops');
-zrequire('unread');
-zrequire('topic_data');
-zrequire('stream_list');
-set_global('message_store', {});
 
 with_overrides(function (override) {
     // delete_message

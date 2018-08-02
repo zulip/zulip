@@ -577,8 +577,9 @@ exports.initialize = function () {
                 .removeClass("text-error");
         }
 
-        function invite_failure() {
-            stream_subscription_info_elem.text(i18n.t("Could not add user to this stream."))
+        function invite_failure(xhr) {
+            var error = JSON.parse(xhr.responseText);
+            stream_subscription_info_elem.text(error.msg)
                 .addClass("text-error").removeClass("text-success");
         }
 

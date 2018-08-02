@@ -50,5 +50,8 @@ if using_sso.strip() == b'True':
     logging.info("Restarting Apache WSGI process...")
     subprocess.check_call(["pkill", "-f", "apache2", "-u", "zulip"])
 
+if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
+    subprocess.check_call(["supervisorctl", "restart", "process-fts-updates"])
+
 logging.info("Done!")
 print(OKGREEN + "Application restarted successfully!" + ENDC)

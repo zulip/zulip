@@ -104,7 +104,7 @@ exports.set_info = function (presences, server_timestamp) {
         if (!people.is_current_user(this_email)) {
             var person = people.get_by_email(this_email);
             if (person === undefined) {
-                if (!server_events.suspect_offline) {
+                if (!(server_events.suspect_offline || reload.is_in_progress())) {
                     // If we're online, and we get a user who we don't
                     // know about in the presence data, throw an error.
                     blueslip.error('Unknown email in presence data: ' + this_email);

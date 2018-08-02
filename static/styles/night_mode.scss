@@ -1,487 +1,503 @@
 body.night-mode {
     background-color: hsl(212, 28%, 18%);
     color: hsl(236, 33%, 90%);
-
     -webkit-font-smoothing: antialiased;
-}
 
-body.night-mode .app-main,
-body.night-mode .header-main,
-body.night-mode #tab_bar_underpadding,
-body.night-mode .floating_recipient .message-header-wrapper,
-body.night-mode .column-middle,
-body.night-mode #compose,
-body.night-mode .column-left .left-sidebar,
-body.night-mode .column-right .right-sidebar,
-body.night-mode #subscription_overlay .right,
-body.night-mode #settings_page .form-sidebar,
-body.night-mode #settings_page .right {
-    background-color: hsl(212, 28%, 18%);
-}
+    .app-main,
+    .header-main,
+    #tab_bar_underpadding,
+    .floating_recipient .message-header-wrapper,
+    .column-middle,
+    #compose,
+    .column-left .left-sidebar,
+    .column-right .right-sidebar,
+    #subscription_overlay .right,
+    #settings_page .form-sidebar,
+    #settings_page .right {
+        background-color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .message_embed .data-container::after {
-    background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 10%);
-}
+    .message_embed .data-container::after {
+        background: linear-gradient(0deg, hsl(212, 28%, 18%), transparent 10%);
+    }
 
-body.night-mode .column-left .left-sidebar,
-body.night-mode #settings_page .form-sidebar,
-body.night-mode .column-right .right-sidebar {
-    border-color: hsla(0, 0%, 0%, 0.2);
-}
+    .column-left .left-sidebar,
+    #settings_page .form-sidebar,
+    .column-right .right-sidebar {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .dark .message_label_clickable.stream_label,
-body.night-mode .dark .stream_label,
-body.night-mode .stream_label {
-    color: hsl(212, 28%, 18%);
-}
+    .dark .message_label_clickable.stream_label,
+    .dark .stream_label,
+    .stream_label {
+        color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .new-style label.checkbox input[type=checkbox] ~ span {
-    border-color: hsla(0, 0%, 100%, 0.4);
-}
+    .new-style label.checkbox input[type=checkbox] ~ span {
+        border-color: hsla(0, 0%, 100%, 0.4);
+    }
 
-body.night-mode .modal-bg {
-    background: hsl(212, 28%, 18%);
-}
+    .modal-bg {
+        background: hsl(212, 28%, 18%);
+    }
 
-.streams_popover .sp-container {
-    background: transparent;
-}
+    .streams_popover .sp-container {
+        background: transparent;
+    }
 
-/* this one is because in the app we have blue and in night-mode it should be white. */
-body.night-mode .popover a {
-    color: inherit;
-}
+    /* this one is because in the app we have blue and in night-mode it should be white. */
+    .popover a {
+        color: inherit;
+    }
 
-body.night-mode .dark_background a,
-body.night-mode a.dark_background:hover,
-body.night-mode .dark_background,
-body.night-mode .message_reactions .message_reaction_count,
-body.night-mode .message_reactions .reaction_button i,
-body.night-mode .message_reactions:hover .message_reaction + .reaction_button {
-    color: inherit !important;
-}
+    .dark_background a,
+    a.dark_background:hover,
+    .dark_background,
+    .message_reactions .message_reaction_count,
+    .message_reactions .reaction_button i,
+    .message_reactions:hover .message_reaction + .reaction_button {
+        color: inherit !important;
+    }
 
-/* do not turn the .message_header .stream_label text dark on hover because they're
+    /* do not turn the .message_header .stream_label text dark on hover because they're
 on a dark background, and don't change the dark labels dark either. */
-body.night-mode .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
-body.night-mode #tab_list li.stream:not(.dark_background) {
-    color: hsl(212, 28%, 18%) !important;
-}
+    .message_header:not(.dark_background) a.stream_label:not(.dark_background):hover,
+    #tab_list li.stream:not(.dark_background) {
+        color: hsl(212, 28%, 18%) !important;
+    }
 
-/* these are converting grey things to "new grey" */
-body.night-mode .sidebar-title,
-body.night-mode .recipient_row_date {
-    color: inherit;
-    opacity: 0.5;
-}
+    /* these are converting grey things to "new grey" */
+    .sidebar-title,
+    .recipient_row_date {
+        color: inherit;
+        opacity: 0.5;
+    }
 
-body.night-mode .new-style .button,
-body.night-mode input[type="text"],
-body.night-mode input[type="email"],
-body.night-mode input[type="password"],
-body.night-mode input[type="number"],
-body.night-mode input[type="url"],
-body.night-mode input[type="date"],
-body.night-mode textarea,
-body.night-mode .new-style .tab-switcher .ind-tab:not(.selected),
-body.night-mode select,
-body.night-mode .pill-container {
-    background-color: hsla(0, 0%, 0%, 0.2);
-    border-color: hsla(0, 0%, 0%, 0.6);
-    color: inherit;
-}
+    .new-style .button,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"],
+    input[type="url"],
+    input[type="date"],
+    textarea,
+    .new-style .tab-switcher .ind-tab:not(.selected),
+    select,
+    .pill-container {
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.6);
+        color: inherit;
+    }
 
-body.night-mode select option {
-    background-color: hsl(212, 28%, 18%);
-    color: hsl(236, 33%, 90%);
-}
+    select option {
+        background-color: hsl(212, 28%, 18%);
+        color: hsl(236, 33%, 90%);
+    }
 
-body.night-mode .topic-unread-count,
-body.night-mode .private_message_count {
-    background-color: hsla(105, 2%, 50%, 0.5);
-}
+    .topic-unread-count,
+    .private_message_count {
+        background-color: hsla(105, 2%, 50%, 0.5);
+    }
 
-body.night-mode .pill-container {
-    border-style: solid;
-    border-width: 1px;
-}
+    .pill-container {
+        border-style: solid;
+        border-width: 1px;
+    }
 
-body.night-mode .pm_recipient .pill-container .pill {
-    color: inherit;
-    border: 1px solid hsla(0, 0%, 0%, 0.50);
-    background: hsla(0, 0%, 0%, 0.25);
-    font-weight: 600;
-}
+    #search_arrows .pill,
+    .pm_recipient .pill-container .pill {
+        color: inherit;
+        border: 1px solid hsla(0, 0%, 0%, 0.50);
+        background: hsla(0, 0%, 0%, 0.25);
+        font-weight: 600;
+    }
 
-body.night-mode .pm_recipient .pill-container .pill:focus {
-    color: #fff;
-    border: 1px solid hsla(176, 78%, 28%, 0.6);
-    background: hsla(176, 49%, 42%, 0.4);
-}
+    #search_arrows .pill:focus,
+    .pm_recipient .pill-container .pill:focus {
+        color: #fff;
+        border: 1px solid hsla(176, 78%, 28%, 0.6);
+        background: hsla(176, 49%, 42%, 0.4);
+    }
 
-body.night-mode .new-style .button.no-style {
-    background-color: transparent;
-}
+    .new-style .button.no-style {
+        background-color: transparent;
+    }
 
-body.night-mode .new-style .tab-switcher .ind-tab.selected,
-body.night-mode div.message_content thead,
-body.night-mode .table-striped thead th,
-body.night-mode .message_reactions .message_reaction.reacted,
-body.night-mode .message_reactions:hover .message_reaction + .reaction_button {
-    background-color: hsla(0, 0%, 0%, 0.5);
-    border-color: hsla(0, 0%, 0%, 0.9);
-}
+    .new-style .tab-switcher .ind-tab.selected,
+    div.message_content thead,
+    .table-striped thead th,
+    .message_reactions .message_reaction.reacted,
+    .message_reactions:hover .message_reaction + .reaction_button {
+        background-color: hsla(0, 0%, 0%, 0.5);
+        border-color: hsla(0, 0%, 0%, 0.9);
+    }
 
-body.night-mode .message_reactions .message_reaction {
-    background-color: hsla(0, 0%, 0%, 0.2);
-    border-color: hsla(0, 0%, 0%, 0.5);
-    color: inherit;
-}
+    .message_reactions .message_reaction {
+        background-color: hsla(0, 0%, 0%, 0.2);
+        border-color: hsla(0, 0%, 0%, 0.5);
+        color: inherit;
+    }
 
-body.night-mode .new-style button.button:focus,
-body.night-mode input[type="text"]:focus,
-body.night-mode input[type="email"]:focus,
-body.night-mode input[type="number"]:focus,
-body.night-mode textarea:focus,
-body.night-mode textarea.new_message_textarea:focus,
-body.night-mode .compose_table .recipient_box:focus {
-    border-color: hsla(0, 0%, 0%, 0.9);
-}
+    .new-style button.button:focus,
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    textarea.new_message_textarea:focus,
+    .compose_table .recipient_box:focus {
+        border-color: hsla(0, 0%, 0%, 0.9);
+    }
 
-body.night-mode .message-header-contents,
-body.night-mode .message_header_private_message .message-header-contents,
-body.night-mode #tab_list li.active {
-    background: hsla(0, 0%, 0%, 0.2);
-}
+    .message-header-contents,
+    .message_header_private_message .message-header-contents,
+    #tab_list li.active {
+        background: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .message-header-contents,
-body.night-mode .message_header_private_message .message-header-contents {
-    border-color: transparent;
-}
+    .message-header-contents,
+    .message_header_private_message .message-header-contents {
+        border-color: transparent;
+    }
 
-/* Not that .message_row (below) needs to be more contrast on dark mode */
-body.night-mode .compose-content,
-body.night-mode .message_list .recipient_row,
-body.night-mode .message_row,
-body.night-mode .draft-row .draft-info-box,
-body.night-mode #preview_message_area {
-    border-color: hsla(0, 0%, 0%, 0.2);
-}
+    /* Not that .message_row (below) needs to be more contrast on dark mode */
+    .compose-content,
+    .message_list .recipient_row,
+    .message_row,
+    .draft-row .draft-info-box,
+    #preview_message_area {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .navbar-search {
-    border-right-color: hsla(0, 0%, 0%, 0.2);
-}
+    #searchbox_legacy .navbar-search {
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
 
-body.night-mode .overlay,
-body.night-mode .emoji-popover-emoji:not(.reacted):focus {
-    background-color: hsla(212, 28%, 8%, 0.75);
-}
+    .overlay,
+    .emoji-popover-emoji:not(.reacted):focus {
+        background-color: hsla(212, 28%, 8%, 0.75);
+    }
 
-body.night-mode .overlay .flex.overlay-content > div,
-body.night-mode #settings_page,
-body.night-mode .informational-overlays .overlay-content {
-    box-shadow: 0px 0px 30px hsl(212, 32%, 7%);
-}
+    .overlay .flex.overlay-content > div,
+    #settings_page,
+    .informational-overlays .overlay-content {
+        box-shadow: 0px 0px 30px hsl(212, 32%, 7%);
+    }
 
-body.night-mode .dropdown .dropdown-menu,
-body.night-mode .popover,
-body.night-mode .popover-title,
-body.night-mode .popover-content {
-    background-color: hsl(212, 32%, 14%);
-}
+    .dropdown .dropdown-menu,
+    .popover,
+    .popover-title,
+    .popover-content {
+        background-color: hsl(212, 32%, 14%);
+    }
 
-body.night-mode .dropdown-menu a {
-    color: inherit;
-}
+    .dropdown-menu a {
+        color: inherit;
+    }
 
-body.night-mode .dropdown .dropdown-menu li.divider,
-body.night-mode .popover hr,
-body.night-mode hr {
-    color: hsl(212, 28%, 18%);
-    opacity: 0.2;
-}
+    .dropdown .dropdown-menu li.divider,
+    .popover hr,
+    hr {
+        color: hsl(212, 28%, 18%);
+        opacity: 0.2;
+    }
 
-body.night-mode .nav .dropdown-menu::after,
-body.night-mode .popover.bottom .arrow {
-    border-bottom-color: hsl(235, 18%, 7%);
-}
+    .nav .dropdown-menu::after,
+    .popover.bottom .arrow {
+        border-bottom-color: hsl(235, 18%, 7%);
+    }
 
-body.night-mode .popover.left .arrow {
-    border-left-color: hsl(235, 18%, 7%);
-}
+    .popover.left .arrow {
+        border-left-color: hsl(235, 18%, 7%);
+    }
 
-body.night-mode .popover.top .arrow {
-    border-top-color: hsl(235, 18%, 7%);
-}
+    .popover.top .arrow {
+        border-top-color: hsl(235, 18%, 7%);
+    }
 
-body.night-mode .popover.right .arrow {
-    border-right-color: hsl(235, 18%, 7%);
-}
+    .popover.right .arrow {
+        border-right-color: hsl(235, 18%, 7%);
+    }
 
-body.night-mode .close,
-body.night-mode ul.filters li:hover .arrow {
-    color: hsl(236, 33%, 80%);
-}
+    #searchbox_legacy a.search_icon,
+    #searchbox_legacy .search_button,
+    #searchbox a.search_icon,
+    #searchbox .search_button,
+    .close,
+    ul.filters li:hover .arrow {
+        color: hsl(236, 33%, 80%);
+    }
 
-body.night-mode .close:hover,
-body.night-mode ul.filters li .arrow:hover {
-    color: hsl(0, 0%, 100%);
-}
+    #searchbox_legacy a.search_icon:hover,
+    #searchbox_legacy .search_button:hover,
+    #searchbox a.search_icon:hover,
+    #searchbox .search_button:hover,
+    .close:hover,
+    ul.filters li .arrow:hover {
+        color: hsl(0, 0%, 100%);
+    }
 
-body.night-mode li.active-filter,
-body.night-mode li.active-sub-filter {
-    background-color: hsla(199, 33%, 46%, 0.2);
-}
+    li.active-filter,
+    li.active-sub-filter {
+        background-color: hsla(199, 33%, 46%, 0.2);
+    }
 
-body.night-mode #global_filters li:hover,
-body.night-mode #stream_filters li:hover,
-body.night-mode #stream_filters li.highlighted_stream,
-body.night-mode #group-pms li:hover,
-body.night-mode #user_presences li:hover,
-body.night-mode #user_presences li.highlighted_user {
-    background-color: hsla(136, 25%, 73%, 0.2);
-}
+    #global_filters li:hover,
+    #stream_filters li:hover,
+    #stream_filters li.highlighted_stream,
+    #group-pms li:hover,
+    #user_presences li:hover,
+    #user_presences li.highlighted_user {
+        background-color: hsla(136, 25%, 73%, 0.2);
+    }
 
-body.night-mode #stream_filters li.active-sub-filter:hover {
-    background-color: hsla(136, 25%, 73%, 0.5);
-}
+    #stream_filters li.active-sub-filter:hover {
+        background-color: hsla(136, 25%, 73%, 0.5);
+    }
 
-body.night-mode .floating_recipient .recipient_row {
-    border-top: none;
-}
+    .floating_recipient .recipient_row {
+        border-top: none;
+    }
 
-body.night-mode .stream-row.active,
-body.night-mode .emoji-showcase-container,
-body.night-mode .emoji-popover-category-tabs,
-body.night-mode .emoji-popover-top {
-    background-color: hsla(0, 0%, 0%, 0.2);
-}
+    .stream-row.active,
+    .emoji-showcase-container,
+    .emoji-popover-category-tabs,
+    .emoji-popover-top {
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .drafts-header,
-body.night-mode .nav > li > a:hover,
-body.night-mode .subscriptions-header,
-body.night-mode .grey-box,
-body.night-mode .white-box,
-body.night-mode .stream-email,
-body.night-mode #settings_page .settings-header,
-body.night-mode #settings_page .form-sidebar .title,
-body.night-mode #settings_page .sidebar li.active,
-body.night-mode #settings_page .sidebar .tab-container,
-body.night-mode .table-striped tbody tr:nth-child(odd) td,
-body.night-mode .table-striped tbody tr:nth-child(odd) th,
-body.night-mode .modal-footer,
-body.night-mode .modal-bg .modal-header {
-    border-color: hsla(0, 0%, 0%, 0.2);
-    background-color: hsla(0, 0%, 0%, 0.2);
-}
+    #searchbox,
+    .drafts-header,
+    .nav > li > a:hover,
+    .subscriptions-header,
+    .grey-box,
+    .white-box,
+    .stream-email,
+    #settings_page .settings-header,
+    #settings_page .form-sidebar .title,
+    #settings_page .sidebar li.active,
+    #settings_page .sidebar .tab-container,
+    .table-striped tbody tr:nth-child(odd) td,
+    .table-striped tbody tr:nth-child(odd) th,
+    .modal-footer,
+    .modal-bg .modal-header {
+        border-color: hsla(0, 0%, 0%, 0.2);
+        background-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .modal-footer {
-    -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
-    box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
-}
+    .modal-footer {
+        -webkit-box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+        box-shadow: inset 0 1px 0 hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .subscriptions-container .right .display-type,
-body.night-mode .stream-row,
-body.night-mode .subscriptions-container .left .search-container,
-body.night-mode .subscriptions-container .left,
-body.night-mode .subscriber-list-box,
-body.night-mode .subscriber-list tr,
-body.night-mode #subscription_overlay ul.grey-box li,
-body.night-mode #stream_privacy_modal ul.grey-box li,
-body.night-mode #settings_page .sidebar,
-body.night-mode #settings_page .sidebar *,
-body.night-mode table,
-body.night-mode table th,
-body.night-mode table td {
-    border-color: hsla(0, 0%, 0%, 0.2);
-}
+    .subscriptions-container .right .display-type,
+    .stream-row,
+    .subscriptions-container .left .search-container,
+    .subscriptions-container .left,
+    .subscriber-list-box,
+    .subscriber-list tr,
+    #subscription_overlay ul.grey-box li,
+    #stream_privacy_modal ul.grey-box li,
+    #settings_page .sidebar,
+    #settings_page .sidebar *,
+    table,
+    table th,
+    table td {
+        border-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .draft-row .draft-info-box,
-body.night-mode .private-message .messagebox,
-body.night-mode .message_header_private_message .message-header-contents {
-    box-shadow: none;
-}
+    .draft-row .draft-info-box,
+    .private-message .messagebox,
+    .message_header_private_message .message-header-contents {
+        box-shadow: none;
+    }
 
-body.night-mode .draft-row .message_header_private_message .message_label_clickable {
-    padding: 4px 6px 3px 6px;
-    color: inherit;
-}
+    .draft-row .message_header_private_message .message_label_clickable {
+        padding: 4px 6px 3px 6px;
+        color: inherit;
+    }
 
-body.night-mode .nav-list > li > a,
-body.night-mode .nav-list .nav-header {
-    text-shadow: none;
-}
+    .nav-list > li > a,
+    .nav-list .nav-header {
+        text-shadow: none;
+    }
 
-body.night-mode .mention .messagebox {
-    background-color: hsla(8, 78%, 43%, 0.15);
-}
+    .mention .messagebox {
+        background-color: hsla(8, 78%, 43%, 0.15);
+    }
 
-body.night-mode .user-mention,
-body.night-mode .user-group-mention {
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
-    background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-    background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-    background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
-    background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+    .user-mention,
+    .user-group-mention {
+        background: -webkit-gradient(linear, left top, left bottom, color-stop(0%, hsla(0, 0%, 0%, 0.1)), color-stop(100%, hsla(0, 0%, 0%, 0.0)));
+        background: -webkit-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: -o-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: -ms-linear-gradient(top, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        background: linear-gradient(to bottom, hsla(0, 0%, 0%, 0.2) 0%, hsla(0, 0%, 0%, 0.1) 100%);
+        box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
+    }
 
-    box-shadow: 0px 0px 0px 1px hsla(0, 0%, 0%, 0.4);
-}
+    .user-mention-me {
+        background: hsla(355, 37%, 31%, 1);
+        box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
+    }
 
-body.night-mode .user-mention-me {
-    background: hsla(355, 37%, 31%, 1);
-    box-shadow: 0px 0px 0px 1px hsla(330, 40%, 20%, 1);
-}
+    .tip {
+        color: inherit;
+        background-color: hsla(46, 28%, 38%, 0.27);
+        border: 1px solid hsl(49, 38%, 46%);
+    }
 
-body.night-mode .tip {
-    color: inherit;
-    background-color: hsla(46, 28%, 38%, 0.27);
-    border: 1px solid hsl(49, 38%, 46%);
-}
+    .alert {
+        text-shadow: none;
+    }
 
-body.night-mode .alert {
-    text-shadow: none;
-}
+    .alert.alert-success {
+        color: inherit;
+        background-color: hsla(161, 60%, 46%, 0.20);
+        border-color: #1e9e7f;
+    }
 
-body.night-mode .alert.alert-success {
-    color: inherit;
-    background-color: hsla(161, 60%, 46%, 0.20);
-    border-color: #1e9e7f;
-}
+    .alert.alert-error,
+    .alert.alert-danger {
+        background: hsl(318, 12%, 21%);
+        color: inherit;
+        border: 1px solid hsl(0, 75%, 65%);
+    }
 
-body.night-mode .alert.alert-error,
-body.night-mode .alert.alert-danger {
-    background: hsl(318, 12%, 21%);
-    color: inherit;
-    border: 1px solid hsl(0, 75%, 65%);
-}
+    .alert .close {
+        color: inherit;
+    }
 
-body.night-mode .alert .close {
-    color: inherit;
-}
+    .alert-box .alert,
+    .alert.alert-error {
+        background: hsl(318, 12%, 21%);
+        color: inherit;
+        border: 1px solid hsl(0, 75%, 65%);
+    }
 
-body.night-mode .alert-box .alert,
-body.night-mode .alert.alert-error {
-    background: hsl(318, 12%, 21%);
-    color: inherit;
+    .alert-box .alert.alert-error::before {
+        color: 1px solid hsl(0, 75%, 65%);
+    }
 
-    border: 1px solid hsl(0, 75%, 65%);
-}
-
-body.night-mode .alert-box .alert.alert-error::before {
-    color: 1px solid hsl(0, 75%, 65%);
-}
-
-/* Popover: */
-
-body.night-mode .hotspot.overlay .hotspot-popover {
-    border-color: hsla(0, 0%, 0%, 0.2) !important;
-
-    /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
+    /* Popover: */
+    .hotspot.overlay .hotspot-popover {
+        border-color: hsla(0, 0%, 0%, 0.2) !important;
+        /* Based on the `.hotspot-popover` shadow in `hotspots.css`, but with a new
     color. */
-    box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
-}
+        box-shadow: 0 5px 10px hsla(0, 0%, 0%, 0.4);
+    }
 
-/* Arrows: */
+    /* Arrows: */
+    .hotspot.overlay .hotspot-popover.arrow-right::before {
+        border-left-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-right::before {
-    border-left-color: hsla(0, 0%, 0%, 0.2);
-}
+    .hotspot.overlay .hotspot-popover.arrow-right::after {
+        border-left-color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-right::after {
-    border-left-color: hsl(212, 28%, 18%);
-}
+    .hotspot.overlay .hotspot-popover.arrow-bottom::before {
+        border-top-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-bottom::before {
-    border-top-color: hsla(0, 0%, 0%, 0.2);
-}
+    .hotspot.overlay .hotspot-popover.arrow-bottom::after {
+        border-top-color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-bottom::after {
-    border-top-color: hsl(212, 28%, 18%);
-}
+    .hotspot.overlay .hotspot-popover.arrow-left::before {
+        border-right-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-left::before {
-    border-right-color: hsla(0, 0%, 0%, 0.2);
-}
+    .hotspot.overlay .hotspot-popover.arrow-left::after {
+        border-right-color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-left::after {
-    border-right-color: hsl(212, 28%, 18%);
-}
+    .hotspot.overlay .hotspot-popover.arrow-top::before {
+        border-bottom-color: hsla(0, 0%, 0%, 0.2);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-top::before {
-    border-bottom-color: hsla(0, 0%, 0%, 0.2);
-}
+    .hotspot.overlay .hotspot-popover.arrow-top::after {
+        border-bottom-color: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover.arrow-top::after {
-    border-bottom-color: hsl(212, 28%, 18%);
-}
+    /* Content: */
+    .hotspot.overlay .hotspot-popover .hotspot-popover-content,
+    .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
+        background-color: hsl(212, 28%, 18%);
+    }
 
-/* Content: */
+    .top-messages-logo svg path {
+        fill: hsl(214, 27%, 18%);
+        stroke: hsl(214, 27%, 18%);
+    }
 
-body.night-mode .hotspot.overlay .hotspot-popover .hotspot-popover-content,
-body.night-mode .hotspot.overlay .hotspot-popover .hotspot-popover-bottom {
-    background-color: hsl(212, 28%, 18%);
-}
+    .top-messages-logo svg circle {
+        fill: hsl(0, 0%, 100%);
+        stroke: hsl(0, 0%, 100%);
+    }
 
-body.night-mode .top-messages-logo svg path {
-    fill: hsl(214, 27%, 18%);
-    stroke: hsl(214, 27%, 18%);
-}
+    #unmute_muted_topic_notification,
+    .message_content code,
+    .message_edit_content code,
+    #settings_page code,
+    .typeahead.dropdown-menu {
+        background-color: hsl(212, 25%, 15%);
+        border-color: hsla(0, 0%, 0%, 0.5);
+        color: inherit;
+    }
 
-body.night-mode .top-messages-logo svg circle {
-    fill: hsl(0, 0%, 100%);
-    stroke: hsl(0, 0%, 100%);
-}
+    .highlight {
+        background-color: hsla(51, 100%, 64%, 0.42);
+    }
 
-body.night-mode #unmute_muted_topic_notification,
-body.night-mode .message_content code,
-body.night-mode .message_edit_content code,
-body.night-mode #settings_page code,
-body.night-mode .typeahead.dropdown-menu {
-    background-color: hsl(212, 25%, 15%);
-    border-color: hsla(0, 0%, 0%, 0.5);
-    color: inherit;
-}
+    .highlight_text_inserted {
+        color: hsl(122, 100%, 81%);
+        background-color: hsla(120, 64%, 95%, 0.3);
+    }
 
-body.night-mode .highlight {
-    background-color: hsla(51, 100%, 64%, 0.42);
-}
+    .highlight_text_deleted {
+        text-decoration: line-through;
+        background-color: hsla(7, 54%, 62%, 0.38);
+    }
 
-body.night-mode .highlight_text_inserted {
-    color: hsl(122, 100%, 81%);
-    background-color: hsla(120, 64%, 95%, 0.3);
-}
+    .sub-unsub-message span::before,
+    .sub-unsub-message span::after,
+    .date_row span::before,
+    .date_row span::after {
+        opacity: 0.2;
+    }
 
-body.night-mode .highlight_text_deleted {
-    text-decoration: line-through;
-    background-color: hsla(7, 54%, 62%, 0.38);
-}
+    .star:not(.empty-star),
+    .empty-star:hover {
+        color: hsla(126, 66%, 72%, 0.75);
+    }
 
-body.night-mode .sub-unsub-message span::before,
-body.night-mode .sub-unsub-message span::after,
-body.night-mode .date_row span::before,
-body.night-mode .date_row span::after {
-    opacity: 0.2;
-}
+    #out-of-view-notification {
+        border: 1px solid 1px solid hsl(144, 45%, 62%);
+    }
 
-body.night-mode .star:not(.empty-star),
-body.night-mode .empty-star:hover {
-    color: hsla(126, 66%, 72%, 0.75);
-}
+    .email_tooltip {
+        background-color: #404c59;
+    }
 
-body.night-mode #out-of-view-notification {
-    border: 1px solid 1px solid hsl(144, 45%, 62%);
-}
+    .email_tooltip::after {
+        border-bottom-color: #404c59 !important;
+    }
 
-body.night-mode .email_tooltip {
-    background-color: #404c59;
-}
+    .ps__rail-y {
+        background: hsl(212, 28%, 18%);
+    }
 
-body.night-mode .email_tooltip::after {
-    border-bottom-color: #404c59 !important;
-}
+    #bots_lists_navbar .active a {
+        color: #ddd;
+        background-color: hsl(212, 28%, 18%);
+        border-color: #ddd;
+        border-bottom-color: transparent;
+    }
 
-body.night-mode .ps__rail-y {
-    background: hsl(212, 28%, 18%);
+    .searching-for-more-topics img {
+        -webkit-filter: invert(100%);
+        filter: invert(100%);
+    }
 }
 
 @-moz-document url-prefix() {
@@ -504,3 +520,4 @@ body.night-mode .searching-for-more-topics img {
 body.night-mode .alert-word{
     background-color:#468E37;
 }
+

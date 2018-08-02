@@ -98,7 +98,7 @@ exports.open = function (image, options) {
     var payload;
     // if the asset_map already contains the metadata required to display the
     // asset, just recall that metadata.
-    var $image_source = $image.attr("data-original") || $image.attr("src");
+    var $image_source = $image.attr("data-src-fullsize") || $image.attr("src");
     if (asset_map[$image_source]) {
         payload = asset_map[$image_source];
     // otherwise retrieve the metadata from the DOM and store into the asset_map.
@@ -115,9 +115,9 @@ exports.open = function (image, options) {
             $source = $parent.attr("data-id");
         } else {
             $type = "image";
-            // thumbor supplies the src as thumbnail, data-original as full-sized.
-            if ($image.attr("data-original")) {
-                $source = $image.attr("data-original");
+            // thumbor supplies the src as thumbnail, data-src-fullsize as full-sized.
+            if ($image.attr("data-src-fullsize")) {
+                $source = $image.attr("data-src-fullsize");
             } else {
                 $source = $image.attr("src");
             }

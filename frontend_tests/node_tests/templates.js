@@ -398,7 +398,8 @@ run_test('admin_user_list', () => {
     html += "</table>";
 
     buttons = $(html).find('.button');
-    assert.equal($(buttons).length, 6);
+    // No buttons should be availabe to non-admins
+    assert.equal($(buttons).length, 0);
 });
 
 run_test('alert_word_settings_item', () => {

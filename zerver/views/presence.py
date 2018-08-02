@@ -70,7 +70,7 @@ def update_active_status_backend(request: HttpRequest, user_profile: UserProfile
         # (running as their user) has been active.
         try:
             activity = UserActivity.objects.get(user_profile = user_profile,
-                                                query="get_events_backend",
+                                                query="get_events",
                                                 client__name="zephyr_mirror")
 
             ret['zephyr_mirror_active'] = \

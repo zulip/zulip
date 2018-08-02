@@ -214,7 +214,7 @@ exports.register_stream_handlers = function () {
 
         subs.onlaunch("narrow_to_row", function () {
             $(".stream-row[data-stream-id='" + sub.stream_id + "']").click();
-        }, true);
+        }, false);
     });
 
     // Narrow to stream

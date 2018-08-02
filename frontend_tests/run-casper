@@ -4,6 +4,7 @@ import subprocess
 import sys
 import os
 import glob
+import shlex
 
 #
 # In order to use remote casperjs debugging, pass the --remote-debug flag
@@ -51,7 +52,7 @@ sanity_check.check_venv(__file__)
 from tools.lib.test_script import get_provisioning_status
 from tools.lib.test_server import test_server_running
 
-from typing import Iterable
+from typing import Iterable, List
 
 if not options.force:
     ok, msg = get_provisioning_status()
@@ -86,9 +87,9 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
     if options.skip_flaky:
         test_files = [fn for fn in test_files if '10-admin' not in fn]
 
-    remote_debug = ""
+    remote_debug = []  # type: List[str]
     if options.remote_debug:
-        remote_debug = "--remote-debugger-port=7777 --remote-debugger-autorun=yes"
+        remote_debug = ["--remote-debugger-port=7777", "--remote-debugger-autorun=yes"]
 
     with test_server_running(options.force, external_host):
         # Important: do this next call inside the `with` block, when Django
@@ -98,9 +99,9 @@ def run_tests(files: Iterable[str], external_host: str) -> None:
         ret = 1
         for test_file in test_files:
             test_name = os.path.basename(test_file)
-            cmd = "node_modules/.bin/casperjs %s test %s" % (remote_debug, test_file)
-            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, cmd))
-            ret = subprocess.call(cmd, shell=True)
+            cmd = ["node_modules/.bin/casperjs"] + remote_debug + ["test", test_file]
+            print("\n\n===================== %s\nRunning %s\n\n" % (test_name, " ".join(map(shlex.quote, cmd))))
+            ret = subprocess.call(cmd)
             if ret != 0:
                 break
     if ret != 0:

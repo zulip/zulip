@@ -7,7 +7,7 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_regenerate_api_key, do_change_full_name, do_change_tos_version, \
     bulk_add_subscriptions, bulk_remove_subscriptions
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.models import RealmAuditLog, get_realm
+from zerver.models import RealmAuditLog, get_client, get_realm
 
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
@@ -112,7 +112,7 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(subscription_creation_logs[0].modified_stream.id, stream[0].id)
         self.assertEqual(subscription_creation_logs[0].modified_user, user[0])
 
-        bulk_remove_subscriptions(user, stream)
+        bulk_remove_subscriptions(user, stream, get_client("website"))
         subscription_deactivation_logs = RealmAuditLog.objects.filter(event_type=RealmAuditLog.SUBSCRIPTION_DEACTIVATED,
                                                                       event_time__gte=now)
         self.assertEqual(subscription_deactivation_logs.count(), 1)

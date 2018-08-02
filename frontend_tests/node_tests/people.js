@@ -109,6 +109,12 @@ run_test('basics', () => {
     assert.equal(people.is_my_user_id(me.user_id), true);
     assert.equal(people.is_my_user_id(isaac.user_id), false);
     assert.equal(people.is_my_user_id(undefined), false);
+
+    // Reactivating issac
+    people.add_in_realm(isaac);
+    var active_human_persons = people.get_active_human_persons();
+    assert.equal(active_human_persons.length, 1);
+    assert.deepEqual(active_human_persons, [isaac]);
 });
 
 run_test('pm_lookup_key', () => {

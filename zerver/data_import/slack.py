@@ -19,7 +19,7 @@ from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
-from zerver.lib.slack_message_conversion import convert_to_zulip_markdown, \
+from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.lib.parallel import run_parallel
 from zerver.lib.avatar_hash import user_avatar_path_from_ids

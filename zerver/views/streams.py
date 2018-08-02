@@ -5,6 +5,7 @@ from django.utils.translation import ugettext as _
 from django.conf import settings
 from django.db import transaction
 from django.http import HttpRequest, HttpResponse
+from django.utils.timezone import now as timezone_now
 
 from zerver.lib.exceptions import JsonableError, ErrorCode
 from zerver.lib.request import REQ, has_request_variables
@@ -246,6 +247,7 @@ def remove_subscriptions_backend(
 
     result = dict(removed=[], not_subscribed=[])  # type: Dict[str, List[str]]
     (removed, not_subscribed) = bulk_remove_subscriptions(people_to_unsub, streams,
+                                                          request.client,
                                                           acting_user=user_profile)
 
     for (subscriber, removed_stream) in removed:
@@ -309,6 +311,8 @@ def add_subscriptions_backend(
     if len(principals) > 0:
         if user_profile.realm.is_zephyr_mirror_realm and not all(stream.invite_only for stream in streams):
             return json_error(_("You can only invite other Zephyr mirroring users to private streams."))
+        if not user_profile.can_subscribe_other_users():
+            return json_error(_("Your account is too new to modify other users' subscriptions."))
         subscribers = set(principal_to_user_profile(user_profile, principal) for principal in principals)
     else:
         subscribers = set([user_profile])

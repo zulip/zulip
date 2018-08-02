@@ -98,6 +98,8 @@ usermessage_index_migrations = [
     "[ ] 0095_index_unread_user_messages",
     "[ ] 0098_index_has_alert_word_user_messages",
     "[ ] 0099_index_wildcard_mentioned_user_messages",
+    "[ ] 0177_user_message_add_and_index_is_private_flag",
+    "[ ] 0180_usermessage_add_active_mobile_push_notification",
 ]
 # Our next optimization is to check whether any migrations are needed
 # before we start the critical section of the restart.  This saves
@@ -106,12 +108,13 @@ migrations_needed = False
 if not args.skip_migrations:
     logging.info("Checking for needed migrations")
     migrations_output = subprocess.check_output(["./manage.py", "showmigrations"],
-                                                preexec_fn=su_to_zulip)
+                                                preexec_fn=su_to_zulip).decode("utf-8")
     need_create_large_indexes = False
-    for ln in migrations_output.split(b"\n"):
-        if ln.strip().startswith(b"[ ]"):
+    for ln in migrations_output.split("\n"):
+        line_str = ln.strip()
+        if line_str.startswith("[ ]"):
             migrations_needed = True
-            if ln.strip() in usermessage_index_migrations:
+            if line_str in usermessage_index_migrations:
                 need_create_large_indexes = True
     if need_create_large_indexes:
         logging.info("Creating some expensive indexes before starting downtime.")

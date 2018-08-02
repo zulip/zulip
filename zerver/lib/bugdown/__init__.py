@@ -227,13 +227,15 @@ def add_a(
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
     if is_thumbor_enabled() and use_thumbnails:
+        # See docs/thumbnailing.md for some high-level documentation.
+        #
         # We strip leading '/' from relative URLs here to ensure
         # consistency in what gets passed to /thumbnail
         url = url.lstrip('/')
         img.set("src", "/thumbnail?url={0}&size=thumbnail".format(
             urllib.parse.quote(url, safe='')
         ))
-        img.set('data-original', "/thumbnail?url={0}&size=original".format(
+        img.set('data-src-fullsize', "/thumbnail?url={0}&size=full".format(
             urllib.parse.quote(url, safe='')
         ))
     else:

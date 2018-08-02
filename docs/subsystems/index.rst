@@ -12,6 +12,7 @@ Subsystems Documentation
    custom-apps
    pointer
    markdown
+   caching
    realms
    management-commands
    front-end-build-process
@@ -37,6 +38,7 @@ Subsystems Documentation
    documentation
    conversion
    input-pills
+   thumbnailing
    presence
    unread_messages
    billing

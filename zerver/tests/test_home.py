@@ -125,10 +125,12 @@ class HomeTest(ZulipTestCase):
             "realm_default_streams",
             "realm_default_twenty_four_hour_time",
             "realm_description",
+            "realm_digest_emails_enabled",
             "realm_disallow_disposable_email_addresses",
             "realm_domains",
             "realm_email_auth_enabled",
             "realm_email_changes_disabled",
+            "realm_emails_restricted_to_domains",
             "realm_embedded_bots",
             "realm_emoji",
             "realm_filters",
@@ -152,9 +154,7 @@ class HomeTest(ZulipTestCase):
             "realm_password_auth_enabled",
             "realm_presence_disabled",
             "realm_push_notifications_enabled",
-            "realm_restricted_to_domain",
             "realm_send_welcome_emails",
-            "realm_show_digest_email",
             "realm_signup_notifications_stream_id",
             "realm_uri",
             "realm_user_groups",
@@ -528,6 +528,11 @@ class HomeTest(ZulipTestCase):
         cross_bots = page_params['cross_realm_bots']
         self.assertEqual(len(cross_bots), 5)
         cross_bots.sort(key=lambda d: d['email'])
+        for cross_bot in cross_bots:
+            # These are either nondeterministic or boring
+            del cross_bot['timezone']
+            del cross_bot['avatar_url']
+            del cross_bot['date_joined']
 
         notification_bot = self.notification_bot()
 

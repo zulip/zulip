@@ -299,7 +299,7 @@ class AdminCreateUserTest(ZulipTestCase):
                                "Email 'romeo@zulip.net' already in use")
 
         # Don't allow user to sign up with disposable email.
-        realm.restricted_to_domain = False
+        realm.emails_restricted_to_domains = False
         realm.disallow_disposable_email_addresses = True
         realm.save()
 
@@ -309,7 +309,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # Don't allow creating a user with + in their email address when realm
         # is restricted to a domain.
-        realm.restricted_to_domain = True
+        realm.emails_restricted_to_domains = True
         realm.save()
 
         valid_params["email"] = "iago+label@zulip.com"
@@ -318,7 +318,7 @@ class AdminCreateUserTest(ZulipTestCase):
 
         # Users can be created with + in their email address when realm
         # is not restricted to a domain.
-        realm.restricted_to_domain = False
+        realm.emails_restricted_to_domains = False
         realm.save()
 
         valid_params["email"] = "iago+label@zulip.com"

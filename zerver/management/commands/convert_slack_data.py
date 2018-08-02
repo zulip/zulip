@@ -8,7 +8,7 @@ from typing import Any
 
 from django.core.management.base import BaseCommand, CommandParser, CommandError
 
-from zerver.lib.slack_data_to_zulip_data import do_convert_data
+from zerver.data_import.slack import do_convert_data
 
 class Command(BaseCommand):
     help = """Convert the Slack data into Zulip data format."""

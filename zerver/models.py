@@ -159,9 +159,8 @@ class Realm(models.Model):
     date_created = models.DateTimeField(default=timezone_now)  # type: datetime.datetime
     deactivated = models.BooleanField(default=False)  # type: bool
 
-    # Whether email addresses are restricted to a given domain or domains.
     # See RealmDomain for the domains that apply for a given organization.
-    restricted_to_domain = models.BooleanField(default=False)  # type: bool
+    emails_restricted_to_domains = models.BooleanField(default=False)  # type: bool
 
     invite_required = models.BooleanField(default=True)  # type: bool
     invite_by_admins_only = models.BooleanField(default=False)  # type: bool
@@ -175,7 +174,7 @@ class Realm(models.Model):
     inline_url_embed_preview = models.BooleanField(default=True)  # type: bool
 
     # Whether digest emails are enabled for the organization.
-    show_digest_email = models.BooleanField(default=True)  # type: bool
+    digest_emails_enabled = models.BooleanField(default=True)  # type: bool
 
     send_welcome_emails = models.BooleanField(default=True)  # type: bool
 
@@ -258,7 +257,7 @@ class Realm(models.Model):
         message_retention_days=(int, type(None)),
         name=str,
         name_changes_disabled=bool,
-        restricted_to_domain=bool,
+        emails_restricted_to_domains=bool,
         send_welcome_emails=bool,
         video_chat_provider=str,
         waiting_period_threshold=int,
@@ -406,7 +405,7 @@ def name_changes_disabled(realm: Optional[Realm]) -> bool:
     return settings.NAME_CHANGES_DISABLED or realm.name_changes_disabled
 
 class RealmDomain(models.Model):
-    """For an organization with restricted_to_domain enabled, the list of
+    """For an organization with emails_restricted_to_domains enabled, the list of
     allowed domains"""
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
     # should always be stored lowercase
@@ -443,7 +442,7 @@ class EmailContainsPlusError(Exception):
 # So for invite-only realms, this is the test for whether a user can be invited,
 # not whether the user can sign up currently.)
 def email_allowed_for_realm(email: str, realm: Realm) -> None:
-    if not realm.restricted_to_domain:
+    if not realm.emails_restricted_to_domains:
         if realm.disallow_disposable_email_addresses and \
                 is_disposable_domain(email_to_domain(email)):
             raise DisposableEmailError
@@ -901,13 +900,25 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
         return {row['id']: row['email'] for row in rows}
 
     def can_create_streams(self) -> bool:
-        diff = (timezone_now() - self.date_joined).days
         if self.is_realm_admin:
             return True
         if self.realm.create_stream_by_admins_only:
             return False
         if self.is_guest:
             return False
+
+        diff = (timezone_now() - self.date_joined).days
+        if diff >= self.realm.waiting_period_threshold:
+            return True
+        return False
+
+    def can_subscribe_other_users(self) -> bool:
+        if self.is_realm_admin:
+            return True
+        if self.is_guest:
+            return False
+
+        diff = (timezone_now() - self.date_joined).days
         if diff >= self.realm.waiting_period_threshold:
             return True
         return False
@@ -1511,13 +1522,9 @@ class Reaction(models.Model):
 # though each row is only 4 integers.
 class AbstractUserMessage(models.Model):
     user_profile = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
-    # WARNING: We removed the previously-final flag,
-    # is_me_message, without clearing any values it might have had in
-    # the database.  So when we next add a flag, you need to do a
-    # migration to set it to 0 first
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
-                 'has_alert_word', "historical"]
+                 'has_alert_word', "historical", "is_private", "active_mobile_push_notification"]
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
     class Meta:
@@ -2163,7 +2170,7 @@ class RealmAuditLog(models.Model):
     REALM_STRIPE_INITIALIZED = 'realm_stripe_initialized'
     REALM_CARD_ADDED = 'realm_card_added'
     REALM_PLAN_STARTED = 'realm_plan_started'
-    REALM_PLAN_QUANTITY_UPDATED = 'realm_plan_quantity_updated'
+    REALM_PLAN_QUANTITY_RESET = 'realm_plan_quantity_reset'
 
     USER_CREATED = 'user_created'
     USER_ACTIVATED = 'user_activated'

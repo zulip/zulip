@@ -73,6 +73,7 @@ def get_raw_user_data(realm_id: int, client_gravatar: bool) -> Dict[int, Dict[st
 
         is_admin = row['is_realm_admin']
         is_bot = row['is_bot']
+        # This format should align with get_cross_realm_dicts() and notify_created_user
         result = dict(
             email=row['email'],
             user_id=row['id'],
@@ -170,7 +171,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS
         state['realm_presence_disabled'] = realm.presence_disabled
-        state['realm_show_digest_email'] = realm.show_digest_email and settings.SEND_DIGEST_EMAILS
+        state['realm_digest_emails_enabled'] = realm.digest_emails_enabled and settings.SEND_DIGEST_EMAILS
         state['realm_is_zephyr_mirror_realm'] = realm.is_zephyr_mirror_realm
         state['realm_email_auth_enabled'] = email_auth_enabled(realm)
         state['realm_password_auth_enabled'] = password_auth_enabled(realm)

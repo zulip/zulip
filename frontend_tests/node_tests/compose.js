@@ -197,6 +197,11 @@ run_test('validate', () => {
     assert.equal($("#compose-send-button").prop('disabled'), false);
     assert.equal($('#compose-error-msg').html(), i18n.t('You have nothing to send!'));
 
+    reminder.is_deferred_delivery = () => true;
+    compose.validate();
+    assert.equal($('#sending-indicator').html(), 'translated: Scheduling...');
+    reminder.is_deferred_delivery = noop;
+
     add_content_to_compose_box();
     var zephyr_checked = false;
     $("#zephyr-mirror-error").is = function () {
@@ -293,11 +298,6 @@ run_test('validate_stream_message', () => {
         assert.equal(template_name, 'compose_all_everyone');
         assert.equal(data.count, 16);
         return 'compose_all_everyone_stub';
-    };
-    $('#compose-all-everyone').is = function (sel) {
-        if (sel === ':visible') {
-            return $('#compose-all-everyone').visible();
-        }
     };
     var compose_content;
     $('#compose-all-everyone').append = function (data) {

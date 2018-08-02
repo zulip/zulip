@@ -174,7 +174,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         if seat_count != current_seat_count:
             RealmAuditLog.objects.create(
                 realm=customer.realm,
-                event_type=RealmAuditLog.REALM_PLAN_QUANTITY_UPDATED,
+                event_type=RealmAuditLog.REALM_PLAN_QUANTITY_RESET,
                 event_time=timestamp_to_datetime(stripe_subscription.created),
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))

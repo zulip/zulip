@@ -1,8 +1,13 @@
 zrequire('people');
 zrequire('presence');
 
+var return_false = function () { return false; };
+
 set_global('server_events', {});
 set_global('blueslip', {});
+set_global('reload', {
+    is_in_progress: return_false,
+});
 
 var OFFLINE_THRESHOLD_SECS = 140;
 

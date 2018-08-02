@@ -78,12 +78,12 @@ exports.find_message = function (message_id) {
     return message;
 };
 
-exports.update_starred = function (message) {
-    var starred = message.starred;
+exports.update_starred_view = function (message_id, new_value) {
+    var starred = new_value;
 
     // Avoid a full re-render, but update the star in each message
     // table in which it is visible.
-    update_message_in_all_views(message.id, function update_row(row) {
+    update_message_in_all_views(message_id, function update_row(row) {
         var elt = row.find(".star");
         if (starred) {
             elt.addClass("fa-star").removeClass("fa-star-o").removeClass("empty-star");

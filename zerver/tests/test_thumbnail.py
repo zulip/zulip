@@ -40,8 +40,8 @@ class ThumbnailTest(ZulipTestCase):
 
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
 
-        # Test original image size.
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        # Test full size image.
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
@@ -56,7 +56,7 @@ class ThumbnailTest(ZulipTestCase):
         self.logout()
         result = self.api_get(
             self.example_email("hamlet"),
-            '/thumbnail?url=%s&size=original' %
+            '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
@@ -64,17 +64,17 @@ class ThumbnailTest(ZulipTestCase):
 
         # Test with another user trying to access image using thumbor.
         self.login(self.example_email("iago"))
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
 
     def test_external_source_type(self) -> None:
         def run_test_with_image_url(image_url: str) -> None:
-            # Test original image size.
+            # Test full size image.
             self.login(self.example_email("hamlet"))
             quoted_url = urllib.parse.quote(image_url, safe='')
             encoded_url = base64.urlsafe_b64encode(image_url.encode()).decode('utf-8')
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_url))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
@@ -112,7 +112,7 @@ class ThumbnailTest(ZulipTestCase):
             # Test with another user trying to access image using thumbor.
             # File should be always accessible to user in case of external source
             self.login(self.example_email("iago"))
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_url))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_url))
             self.assertEqual(result.status_code, 302, result)
             expected_part_url = '/smart/filters:no_upscale()/' + encoded_url + '/source_type/external'
             self.assertIn(expected_part_url, result.url)
@@ -145,11 +145,11 @@ class ThumbnailTest(ZulipTestCase):
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
 
-        # Test original image size.
+        # Test full size image.
         # We remove the forward slash infront of the `/user_uploads/` to match
         # bugdown behaviour.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
@@ -173,7 +173,7 @@ class ThumbnailTest(ZulipTestCase):
         # We remove the forward slash infront of the `/user_uploads/` to match
         # bugdown behaviour.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
@@ -183,7 +183,7 @@ class ThumbnailTest(ZulipTestCase):
         user_profile = self.example_user("hamlet")
         result = self.api_get(
             self.example_email("hamlet"),
-            '/thumbnail?url=%s&size=original' %
+            '/thumbnail?url=%s&size=full' %
             (quoted_uri,))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
@@ -193,7 +193,7 @@ class ThumbnailTest(ZulipTestCase):
         # auth.
         user_profile = self.example_user("hamlet")
         result = self.client_get(
-            '/thumbnail?url=%s&size=original&api_key=%s' %
+            '/thumbnail?url=%s&size=full&api_key=%s' %
             (quoted_uri, user_profile.api_key))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
@@ -201,7 +201,7 @@ class ThumbnailTest(ZulipTestCase):
 
         # Test with another user trying to access image using thumbor.
         self.login(self.example_email("iago"))
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("You are not authorized to view this file.", result)
 
@@ -210,7 +210,7 @@ class ThumbnailTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         uri = '/static/images/cute/turtle.png'
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         self.assertEqual(uri, result.url)
 
@@ -230,21 +230,21 @@ class ThumbnailTest(ZulipTestCase):
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
 
         with self.settings(THUMBOR_URL=''):
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         self.assertEqual(uri, result.url)
 
         uri = 'https://www.google.com/images/srpr/logo4w.png'
         quoted_uri = urllib.parse.quote(uri, safe='')
         with self.settings(THUMBOR_URL=''):
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         self.assertEqual(uri, result.url)
 
         uri = 'http://www.google.com/images/srpr/logo4w.png'
         quoted_uri = urllib.parse.quote(uri, safe='')
         with self.settings(THUMBOR_URL=''):
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         base = 'https://external-content.zulipcdn.net/7b6552b60c635e41e8f6daeb36d88afc4eabde79/687474703a2f2f7777772e676f6f676c652e636f6d2f696d616765732f737270722f6c6f676f34772e706e67'
         self.assertEqual(base, result.url)
@@ -265,7 +265,7 @@ class ThumbnailTest(ZulipTestCase):
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         hex_uri = base64.urlsafe_b64encode(uri[len('/user_uploads/'):].encode()).decode('utf-8')
         with self.settings(THUMBOR_URL='http://test-thumborhost.com'):
-            result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+            result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         base = 'http://test-thumborhost.com/'
         self.assertEqual(base, result.url[:len(base)])
@@ -296,20 +296,20 @@ class ThumbnailTest(ZulipTestCase):
 
         # Test with size supplied as a query parameter.
         # size=thumbnail should return a 0x100 sized image.
-        # size=original should return the original resolution image.
+        # size=full should return the original resolution image.
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
         result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri, '0x100')
         self.assertIn(expected_part_url, result.url)
 
-        result = self.client_get("/thumbnail?url=%s&size=original" % (quoted_uri))
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
 
         # Test with size supplied as a query parameter where size is anything
-        # else than original or thumbnail. Result should be an error message.
+        # else than 'full' or 'thumbnail'. Result should be an error message.
         result = self.client_get("/thumbnail?url=%s&size=480x360" % (quoted_uri))
         self.assertEqual(result.status_code, 403, result)
         self.assert_in_response("Invalid size.", result)

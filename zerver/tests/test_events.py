@@ -129,7 +129,7 @@ from zerver.tornado.event_queue import (
     process_message_event,
     EventQueue,
 )
-from zerver.tornado.views import get_events_backend
+from zerver.tornado.views import get_events
 
 from collections import OrderedDict
 import mock
@@ -277,7 +277,7 @@ class GetEventsTest(ZulipTestCase):
         recipient_email = recipient_user_profile.email
         self.login(email)
 
-        result = self.tornado_call(get_events_backend, user_profile,
+        result = self.tornado_call(get_events, user_profile,
                                    {"apply_markdown": ujson.dumps(True),
                                     "client_gravatar": ujson.dumps(True),
                                     "event_types": ujson.dumps(["message"]),
@@ -287,7 +287,7 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(result)
         queue_id = ujson.loads(result.content)["queue_id"]
 
-        recipient_result = self.tornado_call(get_events_backend, recipient_user_profile,
+        recipient_result = self.tornado_call(get_events, recipient_user_profile,
                                              {"apply_markdown": ujson.dumps(True),
                                               "client_gravatar": ujson.dumps(True),
                                               "event_types": ujson.dumps(["message"]),
@@ -297,7 +297,7 @@ class GetEventsTest(ZulipTestCase):
         self.assert_json_success(recipient_result)
         recipient_queue_id = ujson.loads(recipient_result.content)["queue_id"]
 
-        result = self.tornado_call(get_events_backend, user_profile,
+        result = self.tornado_call(get_events, user_profile,
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": -1,
@@ -319,7 +319,7 @@ class GetEventsTest(ZulipTestCase):
             sender_queue_id=queue_id,
         )
 
-        result = self.tornado_call(get_events_backend, user_profile,
+        result = self.tornado_call(get_events, user_profile,
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": -1,
@@ -348,7 +348,7 @@ class GetEventsTest(ZulipTestCase):
             sender_queue_id=queue_id,
         )
 
-        result = self.tornado_call(get_events_backend, user_profile,
+        result = self.tornado_call(get_events, user_profile,
                                    {"queue_id": queue_id,
                                     "user_client": "website",
                                     "last_event_id": last_event_id,
@@ -363,7 +363,7 @@ class GetEventsTest(ZulipTestCase):
 
         # Test that the received message in the receiver's event queue
         # exists and does not contain a local id
-        recipient_result = self.tornado_call(get_events_backend, recipient_user_profile,
+        recipient_result = self.tornado_call(get_events, recipient_user_profile,
                                              {"queue_id": recipient_queue_id,
                                               "user_client": "website",
                                               "last_event_id": -1,
@@ -386,7 +386,7 @@ class GetEventsTest(ZulipTestCase):
 
         def get_message(apply_markdown: bool, client_gravatar: bool) -> Dict[str, Any]:
             result = self.tornado_call(
-                get_events_backend,
+                get_events,
                 user_profile,
                 dict(
                     apply_markdown=ujson.dumps(apply_markdown),
@@ -401,7 +401,7 @@ class GetEventsTest(ZulipTestCase):
             self.assert_json_success(result)
             queue_id = ujson.loads(result.content)["queue_id"]
 
-            result = self.tornado_call(get_events_backend, user_profile,
+            result = self.tornado_call(get_events, user_profile,
                                        {"queue_id": queue_id,
                                         "user_client": "website",
                                         "last_event_id": -1,
@@ -414,7 +414,7 @@ class GetEventsTest(ZulipTestCase):
             self.send_personal_message(email, self.example_email("othello"), "hello")
             self.send_stream_message(email, "Denmark", "**hello**")
 
-            result = self.tornado_call(get_events_backend, user_profile,
+            result = self.tornado_call(get_events, user_profile,
                                        {"queue_id": queue_id,
                                         "user_client": "website",
                                         "last_event_id": -1,
@@ -749,7 +749,7 @@ class EventsRegisterTest(ZulipTestCase):
         )
         user_profile = self.example_user('hamlet')
         events = self.do_test(
-            lambda: do_update_message_flags(user_profile, 'add', 'starred', [message]),
+            lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'starred', [message]),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -762,7 +762,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('operation', equals("remove")),
         ])
         events = self.do_test(
-            lambda: do_update_message_flags(user_profile, 'remove', 'starred', [message]),
+            lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
             state_change_expected=False,
         )
         error = schema_checker('events[0]', events[0])
@@ -781,7 +781,7 @@ class EventsRegisterTest(ZulipTestCase):
             )
 
             self.do_test(
-                lambda: do_update_message_flags(user_profile, 'add', 'read', [message]),
+                lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'read', [message]),
                 state_change_expected=True,
             )
 
@@ -1129,7 +1129,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('type', equals('pointer')),
             ('pointer', check_int)
         ])
-        events = self.do_test(lambda: do_update_pointer(self.user_profile, 1500))
+        events = self.do_test(lambda: do_update_pointer(self.user_profile, get_client("website"), 1500))
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
@@ -1144,6 +1144,7 @@ class EventsRegisterTest(ZulipTestCase):
                 ('full_name', check_string),
                 ('is_admin', check_bool),
                 ('is_bot', check_bool),
+                ('profile_data', check_dict_only([])),
                 ('timezone', check_string),
                 ('date_joined', check_string),
             ])),
@@ -2152,7 +2153,8 @@ class EventsRegisterTest(ZulipTestCase):
         # Now remove the first user, to test the normal unsubscribe flow
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('othello')],
-            [stream])
+            [stream],
+            get_client("website"))
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               state_change_expected=include_subscribers,
@@ -2163,7 +2165,8 @@ class EventsRegisterTest(ZulipTestCase):
         # Now remove the second user, to test the 'vacate' event flow
         action = lambda: bulk_remove_subscriptions(
             [self.example_user('hamlet')],
-            [stream])
+            [stream],
+            get_client("website"))
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               num_events=3)

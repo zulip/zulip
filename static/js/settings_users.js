@@ -10,12 +10,8 @@ exports.reset = function () {
     meta.loaded = false;
 };
 
-function get_user_info(user_id) {
-    var self = {};
-    self.user_row = $("tr.user_row[data-user-id='" + user_id + "']");
-    self.form_row = $("tr.user-name-form[data-user-id='" + user_id + "']");
-
-    return self;
+function get_user_info_row(user_id) {
+    return $("tr.user_row[data-user-id='" + user_id + "']");
 }
 
 function update_view_on_deactivate(row) {
@@ -46,14 +42,11 @@ exports.update_user_data = function (user_id, new_data) {
         return;
     }
 
-    var user_info = get_user_info(user_id);
-    var user_row = user_info.user_row;
-    var form_row = user_info.form_row;
+    var user_row = get_user_info_row(user_id);
 
     if (new_data.full_name !== undefined) {
         // Update the full name in the table
         user_row.find(".user_name").text(new_data.full_name);
-        form_row.find("input[name='full_name']").val(new_data.full_name);
     }
 
     if (new_data.owner !== undefined) {
@@ -70,13 +63,6 @@ exports.update_user_data = function (user_id, new_data) {
             update_view_on_reactivate(user_row);
         }
     }
-
-    // Remove the bot owner select control.
-    form_row.find(".edit_bot_owner_container select").remove();
-
-    // Hide name change form
-    form_row.hide();
-    user_row.show();
 };
 
 function failed_listing_users(xhr) {
@@ -372,57 +358,59 @@ exports.on_load_success = function (realm_people_data) {
         });
     });
 
-    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
-        var users_list = people.get_realm_persons().filter(function (person)  {
-            return !person.is_bot;
+    function open_user_info_form_modal(person) {
+        var html = templates.render('user-info-form-modal', {
+            user_id: person.user_id,
+            full_name: people.get_full_name(person.user_id),
+            is_bot: person.is_bot,
         });
-        var user_id = $(e.currentTarget).attr("data-user-id");
-        var user_info = get_user_info(user_id);
-        var user_row = user_info.user_row;
-        var form_row = user_info.form_row;
-        var reset_button = form_row.find(".reset_edit_user");
-        var submit_button = form_row.find(".submit_name_changes");
-        var full_name = form_row.find("input[name='full_name']");
-        var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
-        var admin_status = $('#organization-status').expectOne();
-        var person = people.get_person_from_user_id(user_id);
-        var url;
-        var data;
-        if (!person) {
-            return;
-        } else if (person.is_bot) {
+        var user_info_form_modal = $(html);
+        var modal_container = $('#user-info-form-modal-container');
+        modal_container.empty().append(user_info_form_modal);
+        overlays.open_modal('user-info-form-modal');
+
+        if (person.is_bot) {
             // Dynamically add the owner select control in order to
             // avoid performance issues in case of large number of users.
-            owner_select.val(bot_data.get(user_id).owner || "");
-            form_row.find(".edit_bot_owner_container").append(owner_select);
+            var users_list = people.get_active_human_persons();
+            var owner_select = $(templates.render("bot_owner_select", {users_list: users_list}));
+            owner_select.val(bot_data.get(person.user_id).owner || "");
+            modal_container.find(".edit_bot_owner_container").append(owner_select);
         }
 
-        // Show user form and set the full name value in input field.
-        full_name.val(person.full_name);
-        user_row.hide();
-        form_row.show();
+        return user_info_form_modal;
+    }
 
-        reset_button.on("click", function () {
-            owner_select.remove();
-            form_row.hide();
-            user_row.show();
-        });
+    $(".admin_user_table, .admin_bot_table").on("click", ".open-user-form", function (e) {
+        var user_id = $(e.currentTarget).attr("data-user-id");
+        var person = people.get_person_from_user_id(user_id);
 
-        submit_button.on("click", function (e) {
+        if (!person) {
+            return;
+        }
+
+        var user_info_form_modal = open_user_info_form_modal(person);
+
+        var url;
+        var data;
+        var admin_status = $('#organization-status').expectOne();
+        var full_name = user_info_form_modal.find("input[name='full_name']");
+
+        user_info_form_modal.find('.submit_name_changes').on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
 
             if (person.is_bot) {
-                url = "/json/bots/" + encodeURIComponent(person.user_id);
+                url = "/json/bots/" + encodeURIComponent(user_id);
                 data = {
                     full_name: full_name.val(),
                 };
-                if (owner_select.val() !== null && owner_select.val() !== undefined &&
-                    owner_select.val() !== "") {
-                    data.bot_owner_id = people.get_by_email(owner_select.val()).user_id;
+                var owner_select_value = user_info_form_modal.find('.bot_owner_select').val();
+                if (owner_select_value) {
+                    data.bot_owner_id = people.get_by_email(owner_select_value).user_id;
                 }
             } else {
-                url = "/json/users/" + encodeURIComponent(person.user_id);
+                url = "/json/users/" + encodeURIComponent(user_id);
                 data = {
                     full_name: JSON.stringify(full_name.val()),
                 };
@@ -433,9 +421,11 @@ exports.on_load_success = function (realm_people_data) {
                 data: data,
                 success: function () {
                     ui_report.success(i18n.t('Updated successfully!'), admin_status);
+                    overlays.close_modal('user-info-form-modal');
                 },
                 error: function (xhr) {
                     ui_report.error(i18n.t('Failed'), xhr, admin_status);
+                    overlays.close_modal('user-info-form-modal');
                 },
             });
         });

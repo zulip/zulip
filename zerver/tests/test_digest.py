@@ -53,7 +53,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         enqueue_emails(cutoff)
         self.assertEqual(mock_queue_digest_recipient.call_count, all_user_profiles.count())
         mock_queue_digest_recipient.reset_mock()
-        for realm in Realm.objects.filter(deactivated=False, show_digest_email=True):
+        for realm in Realm.objects.filter(deactivated=False, digest_emails_enabled=True):
             user_profiles = all_user_profiles.filter(realm=realm)
             for user_profile in user_profiles:
                 UserActivity.objects.create(
@@ -83,7 +83,7 @@ class TestDigestEmailMessages(ZulipTestCase):
         cutoff = timezone_now()
         # A Tuesday
         mock_django_timezone.return_value = datetime.datetime(year=2016, month=1, day=5)
-        realms = Realm.objects.filter(deactivated=False, show_digest_email=True)
+        realms = Realm.objects.filter(deactivated=False, digest_emails_enabled=True)
         for realm in realms:
             user_profiles = UserProfile.objects.filter(realm=realm)
             for counter, user_profile in enumerate(user_profiles, 1):

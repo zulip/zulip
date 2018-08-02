@@ -893,11 +893,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_outside_domain_in_closed_realm(self) -> None:
         """
-        In a realm with `restricted_to_domain = True`, you can't invite people
+        In a realm with `emails_restricted_to_domains = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = True
+        zulip_realm.emails_restricted_to_domains = True
         zulip_realm.save()
 
         self.login(self.example_email("hamlet"))
@@ -909,11 +909,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_using_disposable_email(self) -> None:
         """
-        In a realm with `restricted_to_domain = True`, you can't invite people
+        In a realm with `emails_restricted_to_domains = True`, you can't invite people
         with a different domain from that of the realm or your e-mail address.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = False
+        zulip_realm.emails_restricted_to_domains = False
         zulip_realm.disallow_disposable_email_addresses = True
         zulip_realm.save()
 
@@ -926,11 +926,11 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_outside_domain_in_open_realm(self) -> None:
         """
-        In a realm with `restricted_to_domain = False`, you can invite people
+        In a realm with `emails_restricted_to_domains = False`, you can invite people
         with a different domain from that of the realm or your e-mail address.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = False
+        zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
         self.login(self.example_email("hamlet"))
@@ -942,12 +942,12 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_invite_outside_domain_before_closing(self) -> None:
         """
         If you invite someone with a different domain from that of the realm
-        when `restricted_to_domain = False`, but `restricted_to_domain` later
+        when `emails_restricted_to_domains = False`, but `emails_restricted_to_domains` later
         changes to true, the invitation should succeed but the invitee's signup
         attempt should fail.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = False
+        zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
         self.login(self.example_email("hamlet"))
@@ -956,7 +956,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
         self.check_sent_emails([external_address])
 
-        zulip_realm.restricted_to_domain = True
+        zulip_realm.emails_restricted_to_domains = True
         zulip_realm.save()
 
         result = self.submit_reg_form_for_user("foo@example.com", "password")
@@ -971,7 +971,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         but the invitee's signup attempt should fail.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = False
+        zulip_realm.emails_restricted_to_domains = False
         zulip_realm.disallow_disposable_email_addresses = False
         zulip_realm.save()
 
@@ -991,14 +991,14 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
     def test_invite_with_email_containing_plus_before_closing(self) -> None:
         """
         If you invite someone with an email containing plus when
-        `restricted_to_domain = False`, but later change
-        `restricted_to_domain = True`, the invitation should
+        `emails_restricted_to_domains = False`, but later change
+        `emails_restricted_to_domains = True`, the invitation should
         succeed but the invitee's signup attempt should fail as
         users are not allowed to signup using email containing +
         when the realm is restricted to domain.
         """
         zulip_realm = get_realm("zulip")
-        zulip_realm.restricted_to_domain = False
+        zulip_realm.emails_restricted_to_domains = False
         zulip_realm.save()
 
         self.login(self.example_email("hamlet"))
@@ -1007,7 +1007,7 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
         self.assert_json_success(self.invite(external_address, ["Denmark"]))
         self.check_sent_emails([external_address])
 
-        zulip_realm.restricted_to_domain = True
+        zulip_realm.emails_restricted_to_domains = True
         zulip_realm.save()
 
         result = self.submit_reg_form_for_user(external_address, "password")
@@ -1511,7 +1511,7 @@ class RealmCreationTest(ZulipTestCase):
 
         # Check defaults
         self.assertEqual(realm.org_type, Realm.CORPORATE)
-        self.assertEqual(realm.restricted_to_domain, False)
+        self.assertEqual(realm.emails_restricted_to_domains, False)
         self.assertEqual(realm.invite_required, True)
 
         # Check welcome messages
@@ -2192,7 +2192,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_disposable_email(self) -> None:
         realm = get_realm('zulip')
-        realm.restricted_to_domain = False
+        realm.emails_restricted_to_domains = False
         realm.disallow_disposable_email_addresses = True
         realm.save()
 
@@ -2204,7 +2204,7 @@ class UserSignUpTest(ZulipTestCase):
 
     def test_failed_signup_due_to_email_containing_plus(self) -> None:
         realm = get_realm('zulip')
-        realm.restricted_to_domain = True
+        realm.emails_restricted_to_domains = True
         realm.save()
 
         request = HostRequestMock(host = realm.host)
