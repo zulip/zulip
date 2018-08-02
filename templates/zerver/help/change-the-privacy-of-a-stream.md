@@ -2,51 +2,23 @@
 
 {!admin-only.md!}
 
-Follow the following steps to change who can join your stream by changing the stream's
-privacy.
+Streams can be public or private, and private streams can have shared or
+protected history. See [stream permissions](/help/stream-permissions) for
+details on stream privacy settings.
 
-Please note that any users that were previously subscribed to the stream will
-remain subscribed to the stream after you change the stream's privacy.
+As an organization administrator, you can always make a public stream
+private, but you must be subscribed to a private stream in order to make it
+public.
 
-## Make a public stream private
+!!! tip ""
+    Be careful making a private stream public. All past messages will become
+    accessible, even if the stream previously had protected history.
 
-{!subscriptions.md!}
-{!filter-streams.md!}
+{!go-to-stream-via-all-streams.md!}
 
-    !!! tip ""
-    {!all-streams.md!}
+4. Find the privacy description under the stream name and description on the
+   right. Click **[Change]**.
 
-4. Click on the stream that you want to make private; {!stream-settings.md!}
+5. Select a privacy level.
 
-{!stream-settings-scroll.md!} **Administrator settings** section. This section
-shows all stream settings that can be modified by an organization administrator.
-
-6. To make a public stream private, simply locate the **Make stream private**
-button located on the bottom of the **Administrator settings** section and click
-on it.
-
-7. After clicking the **Make stream private** button, the button will turn into
-a **Make stream public** button, and a notification labeled
-**The stream has been made private!** will appear, confirming that the stream
-has been made private.
-
-## Make a private stream public
-
-{!subscriptions.md!}
-{!filter-streams.md!}
-
-    !!! tip ""
-    {!all-streams.md!}
-
-4. Click on the stream that you want to make public; {!stream-settings.md!}
-
-{!stream-settings-scroll.md!} **Administrator settings** section. This section
-shows all stream settings that can be modified by an organization administrator.
-
-6. To make a public stream private, simply locate the **Make stream public**
-button located on the bottom of the **Administrator settings** section and click
-on it.
-
-7. After clicking the **Make stream public** button, the button will turn into a
-**Make stream private** button, and a notification labeled **The stream has been made public!**
-will appear, confirming that the stream has been made public.
+6. Click **Save changes**.
