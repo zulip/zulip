@@ -15,17 +15,13 @@
                 <div class="input-group edit_bot_owner_container">
                     <label for="bot_owner_select">{{t "Owner" }}</label>
                 </div>
-                {{else if is_admin}}
-                <div class="user-admin-settings">
-                    <button class="button rounded small remove-admin btn-danger">
-                        {{t "Remove admin" }}
-                    </button>
-                </div>
                 {{else}}
-                <div class="user-admin-settings">
-                    <button class="button rounded small make-admin btn-warning">
-                        {{t "Make admin" }}
-                    </button>
+                <div class="input-group">
+                    <label class="input-label" for="user-role-select">{{t 'User role' }}</label>
+                    <select name="user-role-select" id="user-role-select">
+                        <option value="regular">{{t 'Regular member' }}</option>
+                        <option value="admin" {{#if is_admin}}selected{{/if}}>{{t 'Organization administrator' }}</option>
+                    </select>
                 </div>
                 {{/if}}
             </form>
