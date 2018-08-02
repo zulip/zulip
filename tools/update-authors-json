@@ -49,7 +49,7 @@ ContributorsJSON = TypedDict('ContributorsJSON', {
 
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
-    r = requests.get(repo_link)  # type: requests.Response
+    r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
     return r.json() if r.status_code == 200 else None
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:

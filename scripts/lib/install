@@ -11,6 +11,7 @@ Other options:
   --certbot
   --self-signed-cert
   --no-init-db
+  --cacert
 
 The --hostname and --email options are required,
 unless --no-init-db is set and --certbot is not.
@@ -21,12 +22,13 @@ EOF
 
 # Shell option parsing.  Over time, we'll want to move some of the
 # environment variables below into this self-documenting system.
-args="$(getopt -o '' --long help,no-init-db,self-signed-cert,certbot,hostname:,email: -n "$0" -- "$@")"
+args="$(getopt -o '' --long help,no-init-db,self-signed-cert,certbot,hostname:,email:,cacert: -n "$0" -- "$@")"
 eval "set -- $args"
 while true; do
     case "$1" in
         --help) usage;;
         --self-signed-cert) SELF_SIGNED_CERT=1; shift;;
+        --cacert) export CUSTOM_CA_CERTIFICATES="$2"; shift; shift;;
         --certbot) USE_CERTBOT=1; shift;;
         --hostname) EXTERNAL_HOST="$2"; shift; shift;;
         --email) ZULIP_ADMINISTRATOR="$2"; shift; shift;;

@@ -28,7 +28,11 @@ fi
 if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path" ]; then
     export NVM_DIR=/usr/local/nvm
     if ! [ -e "$NVM_DIR/nvm.sh" ]; then
-        wget -nv -O- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
+        wget_opts=(-nv)
+        if [ -n "${CUSTOM_CA_CERTIFICATES:-}" ]; then
+            wget_opts+=(--ca-certificate "${CUSTOM_CA_CERTIFICATES}")
+        fi
+        wget "${wget_opts[@]}" -O- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
     fi
 
     # shellcheck source=/dev/null
