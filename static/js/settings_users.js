@@ -63,6 +63,14 @@ exports.update_user_data = function (user_id, new_data) {
             update_view_on_reactivate(user_row);
         }
     }
+
+    if (new_data.is_admin !== undefined) {
+        if (new_data.is_admin) {
+            user_row.find('#admin_icon').show();
+        } else {
+            user_row.find('#admin_icon').hide();
+        }
+    }
 };
 
 function failed_listing_users(xhr) {
