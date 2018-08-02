@@ -21,9 +21,8 @@ from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient
+    build_avatar, build_subscription, build_recipient, process_avatars
 from zerver.lib.parallel import run_parallel
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
@@ -819,7 +818,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads, '-512')
 
     uploads_folder = os.path.join(output_dir, 'uploads')
     os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
@@ -887,56 +886,6 @@ def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
 
     logging.info('######### GETTING EMOJIS FINISHED #########\n')
     return emoji_records
-
-def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
-                    realm_id: int, threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the avatar of size 512 px and saves it in the
-    user's avatar directory with both the extensions
-    '.png' and '.original'
-    """
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        # get avatar of size 512
-        slack_avatar_url = avatar_upload_list[0]
-        image_path = avatar_upload_list[1]
-        original_image_path = avatar_upload_list[2]
-        response = requests.get(slack_avatar_url + '-512', stream=True)
-        with open(image_path, 'wb') as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-        shutil.copy(image_path, original_image_path)
-        return 0
-
-    logging.info('######### GETTING AVATARS #########\n')
-    logging.info('DOWNLOADING AVATARS .......\n')
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
-        slack_avatar_url = avatar['path']
-        avatar_original = dict(avatar)
-
-        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
-        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
-
-        avatar_upload_list.append([slack_avatar_url, image_path, original_image_path])
-
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar['path'] = image_path
-        avatar['s3_path'] = image_path
-
-        avatar_original['path'] = original_image_path
-        avatar_original['s3_path'] = original_image_path
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING AVATARS FINISHED #########\n')
-    return avatar_list + avatar_original_list
 
 def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
                     threads: int) -> List[ZerverFieldsT]:

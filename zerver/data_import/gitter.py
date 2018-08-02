@@ -15,10 +15,8 @@ from typing import Any, Dict, List, Tuple
 
 from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.parallel import run_parallel
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient
+    build_avatar, build_subscription, build_recipient, process_avatars
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -292,7 +290,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, threads)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
 
     attachment = {"zerver_attachment": []}  # type: Dict[str, List[Any]]
 
@@ -311,53 +309,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-
-def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
-                    threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the gitter avatar of the user and saves it in the
-    user's avatar directory with both the extensions '.png' and '.original'
-    """
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        gitter_avatar_url = avatar_upload_list[0]
-        image_path = avatar_upload_list[1]
-        original_image_path = avatar_upload_list[2]
-        response = requests.get(gitter_avatar_url, stream=True)
-        with open(image_path, 'wb') as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-        shutil.copy(image_path, original_image_path)
-        return 0
-
-    logging.info('######### GETTING AVATARS #########\n')
-    logging.info('DOWNLOADING AVATARS .......\n')
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
-        gitter_avatar_url = avatar['path']
-        avatar_original = dict(avatar)
-
-        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
-        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
-
-        avatar_upload_list.append([gitter_avatar_url, image_path, original_image_path])
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar['path'] = image_path
-        avatar['s3_path'] = image_path
-
-        avatar_original['path'] = original_image_path
-        avatar_original['s3_path'] = original_image_path
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING AVATARS FINISHED #########\n')
-    return avatar_list + avatar_original_list
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
