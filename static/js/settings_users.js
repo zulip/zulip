@@ -405,7 +405,7 @@ exports.on_load_success = function (realm_people_data) {
         var admin_status = $('#organization-status').expectOne();
         var full_name = user_info_form_modal.find("input[name='full_name']");
 
-        user_info_form_modal.find('.submit_name_changes').on("click", function (e) {
+        user_info_form_modal.find('.submit_user_info_change').on("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
 
