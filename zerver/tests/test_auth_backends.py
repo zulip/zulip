@@ -30,6 +30,7 @@ from zerver.lib.actions import (
 from zerver.lib.avatar import avatar_url
 from zerver.lib.avatar_hash import user_avatar_path
 from zerver.lib.dev_ldap_directory import generate_dev_ldap_dir
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
     check_bool, check_dict_only, check_string, Validator
@@ -1417,6 +1418,29 @@ class GoogleAuthBackendTest(SocialAuthBase):
             result = self.get_log_into_subdomain(data)
             mock_warning.assert_called_with("Login attempt on invalid subdomain")
         self.assertEqual(result.status_code, 400)
+
+class ListAPIKeysTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+
+        result = self.api_get(self.email, '/api/v1/users/me/api_keys')
+        self.assert_json_success(result)
+        json = result.json()
+        # Users should have at least one API key
+        self.assertTrue(len(json['api_keys']) >= 1)
+        # Make sure that the API keys themselves are never shown
+        self.assertNotIn('api_key', json['api_keys'][0].keys())
+        # Check that the API key we created is in the list
+        self.assertTrue(any(item['id'] == user_api_key.id for item in json['api_keys']))
+
+    def test_not_loggedin(self) -> None:
+        result = self.client_get('/api/v1/users/me/api_keys')
+        self.assert_json_error(result,
+                               "Not logged in: API authentication or user session required", 401)
 
 class CreateAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
