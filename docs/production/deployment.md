@@ -49,20 +49,31 @@ those providers, Zulip's full-text search will be unavailable.
 
 ## Putting the Zulip application behind a reverse proxy
 
-If you'd like to run Zulip behind a reverse proxy server, you need to
-make sure that your proxy server is configured in a way that is
-compatible with Zulip's use of long-polling for real-time push from
-the server to your users' browsers.
+Zulip is designed to support being run behind a reverse proxy server.
+There are few things you need to be careful about when configuring a
+reverse proxy:
 
-With an `nginx` reverse proxy, the key configuration options are, for
-the `/json/events` and `/api/1/events` endpoints:
+1. Configure your reverse proxy (or proxies) to correctly maintain the
+`X-Forwarded-For` HTTP header, which is supposed to contain the series
+of IP addresses the request was forwarded through.  This
+[nginx code snippet][nginx-proxy-config] will do the right thing, and
+you can verify your work by looking at `/var/log/zulip/server.log` and
+checking it has the actual IP addresses of clients, not the IP address
+of the proxy server.
+
+2. Ensure your proxy doesn't interfere with Zulip's use of long-polling
+for real-time push from the server to your users' browsers.  This
+[nginx code snippet][nginx-proxy-longpolling-config] will do the right thing.
+
+The key configuration options are, for the `/json/events` and
+`/api/1/events` endpoints:
 
 * `proxy_read_timeout 1200;`.  It's critical that this be
   significantly above 60s, but the precise value isn't important.
 * `proxy_buffering off`.  If you don't do this, your `nginx` proxy may
   return occasional 502 errors to clients using Zulip's events API.
 
-The other tricky failure mode with `nginx` reverse proxies is that
+3. The other tricky failure mode with `nginx` reverse proxies is that
 they can load-balance between the IPv4 and IPv6 addresses for a given
 hostname.  This can result in mysterious errors that can be quite
 difficult to debug.  Be sure to declare your `upstreams` in a way that
@@ -75,6 +86,8 @@ You can look at our
 example of how to do this properly (the various include files are
 available via the `zulip::nginx` puppet module).
 
+[nginx-proxy-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy
+[nginx-proxy-longpolling-config]: https://github.com/zulip/zulip/blob/master/puppet/zulip/files/nginx/zulip-include-common/proxy_longpolling
 [voyager.pp]: https://github.com/zulip/zulip/blob/master/puppet/zulip/manifests/voyager.pp
 [zulipchat-puppet]: https://github.com/zulip/zulip/tree/master/puppet/zulip_ops/manifests
 [nginx-loadbalancer]: https://github.com/zulip/zulip/blob/master/puppet/zulip_ops/files/nginx/sites-available/loadbalancer
