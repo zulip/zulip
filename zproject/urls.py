@@ -286,7 +286,8 @@ v1_api_and_json_patterns = [
 
     # users/me/alert_words -> zerver.views.alert_words
     url(r'^users/me/alert_words$', rest_dispatch,
-        {'POST': 'zerver.views.alert_words.add_alert_words',
+        {'GET': 'zerver.views.alert_words.list_alert_words',
+        'POST': 'zerver.views.alert_words.add_alert_words',
          'DELETE': 'zerver.views.alert_words.remove_alert_words'}),
 
     # users/me/custom_profile_data -> zerver.views.custom_profile_data
