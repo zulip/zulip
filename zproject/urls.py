@@ -273,6 +273,10 @@ v1_api_and_json_patterns = [
         {'POST': 'zerver.views.user_settings.set_avatar_backend',
          'DELETE': 'zerver.views.user_settings.delete_avatar_backend'}),
 
+    # users/me/api_keys -> zerver.views.auth
+    url(r'^users/me/api_keys$', rest_dispatch,
+        {'GET': 'zerver.views.auth.get_user_api_keys'}),
+
     # users/me/hotspots -> zerver.views.hotspots
     url(r'^users/me/hotspots$', rest_dispatch,
         {'POST': 'zerver.views.hotspots.mark_hotspot_as_read'}),

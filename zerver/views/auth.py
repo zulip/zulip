@@ -35,8 +35,8 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.users import get_api_key
 from zerver.lib.validator import validate_login_email
-from zerver.models import PreregistrationUser, UserProfile, remote_user_to_email, Realm, \
-    get_realm
+from zerver.models import PreregistrationUser, UserAPIKey, UserProfile, \
+    remote_user_to_email, Realm, get_realm
 from zerver.signals import email_on_new_login
 from zproject.backends import password_auth_enabled, dev_auth_enabled, \
     github_auth_enabled, google_auth_enabled, ldap_auth_enabled, \
@@ -748,6 +748,17 @@ def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ(),
         description = 'Development API key'
     api_key = create_user_api_key(user_profile, 'Created via REST API').api_key
     return json_success({"api_key": api_key, "email": user_profile.email})
+
+@csrf_exempt
+@has_request_variables
+def get_user_api_keys(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    """This is for listing all the API keys associated to a user. The keys
+    themselves aren't displayed, just the basic information to identify each
+    one.
+    """
+    api_key_list = (UserAPIKey.objects.filter(user_profile=user_profile)
+                    .values('id', 'description', 'date_created'))
+    return json_success({"api_keys": api_key_list, "email": user_profile.email})
 
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
