@@ -2,18 +2,21 @@
 
 {!admin-only.md!}
 
-Follow the following steps to set the default streams that new users are automatically
-subscribed to.
+When new users join a Zulip organization, they are subscribed to a default set
+of streams. Organization administrators can control which streams are in that
+default set of streams.
+
+## Add a new default stream
 
 {settings_tab|default-streams-list}
 
-2. To add a new stream to **Default streams**, enter the name of the stream in the
-box next to **Stream name**.  Autocompletion suggestions will appear in a
-dropdown as you type; select the stream name from the dropdown.
+2. Enter the name of the stream in the box next to **Stream name**.
 
-3. Once you select the stream name from the dropdown, the stream will appear in
-the **Default streams** list, confirming the success of your action.
+3. Click **Add stream**.
 
-!!! tip ""
-    To remove a stream from **Default streams** click on the **Remove from default**
-    button next to the name of the stream you want to remove.
+## Remove a default stream
+
+{settings_tab|default-streams-list}
+
+2. Find the stream name that you would like to remove from the default set of
+streams and click **Remove from default** to the right.
