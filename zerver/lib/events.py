@@ -364,7 +364,7 @@ def apply_event(state: Dict[str, Any],
                     state['avatar_url'] = person['avatar_url']
                     state['avatar_url_medium'] = person['avatar_url_medium']
 
-                for field in ['is_admin', 'email', 'full_name']:
+                for field in ['is_admin', 'delivery_email', 'email', 'full_name']:
                     if field in person and field in state:
                         state[field] = person[field]
 

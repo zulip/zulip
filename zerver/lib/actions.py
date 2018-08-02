@@ -772,14 +772,25 @@ def send_user_email_update_event(user_profile: UserProfile) -> None:
                dict(type='realm_user', op='update', person=payload),
                active_user_ids(user_profile.realm_id))
 
-def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
+def do_change_user_delivery_email(user_profile: UserProfile, new_email: str) -> None:
     delete_user_profile_caches([user_profile])
 
-    user_profile.email = new_email
+    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        user_profile.email = new_email
     user_profile.delivery_email = new_email
     user_profile.save(update_fields=["email", "delivery_email"])
 
-    send_user_email_update_event(user_profile)
+    # We notify just the target user (and eventually org admins) about
+    # their new delivery email, since that field is private.
+    payload = dict(user_id=user_profile.id,
+                   delivery_email=new_email)
+    event = dict(type='realm_user', op='update', person=payload)
+    send_event(user_profile.realm, event, [user_profile.id])
+
+    if user_profile.realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_EVERYONE:
+        # Additionally, if we're also changing the publicly visible
+        # email, we send a new_email event as well.
+        send_user_email_update_event(user_profile)
 
     event_time = timezone_now()
     RealmAuditLog.objects.create(realm=user_profile.realm, acting_user=user_profile,
@@ -787,7 +798,7 @@ def do_change_user_email(user_profile: UserProfile, new_email: str) -> None:
                                  event_time=event_time)
 
 def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> None:
-    old_email = user_profile.email
+    old_email = user_profile.delivery_email
     obj = EmailChangeStatus.objects.create(new_email=new_email, old_email=old_email,
                                            user_profile=user_profile, realm=user_profile.realm)
 

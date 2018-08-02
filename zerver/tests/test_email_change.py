@@ -19,7 +19,8 @@ from zerver.lib.test_classes import (
     ZulipTestCase,
 )
 from zerver.lib.send_email import FromAddress
-from zerver.models import get_user, EmailChangeStatus, Realm, get_realm
+from zerver.models import get_user_by_delivery_email, EmailChangeStatus, Realm, get_realm, \
+    get_user_profile_by_id, get_user, UserProfile
 
 
 class EmailChangeTestCase(ZulipTestCase):
@@ -77,7 +78,7 @@ class EmailChangeTestCase(ZulipTestCase):
         self.assertEqual(response.status_code, 200)
         self.assert_in_success_response(["This confirms that the email address for your Zulip"],
                                         response)
-        user_profile = get_user(new_email, new_realm)
+        user_profile = get_user_by_delivery_email(new_email, new_realm)
         self.assertTrue(bool(user_profile))
         obj.refresh_from_db()
         self.assertEqual(obj.status, 1)
