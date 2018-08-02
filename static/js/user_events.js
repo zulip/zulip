@@ -23,10 +23,19 @@ exports.update_person = function update(person) {
         compose.update_email(user_id, new_email);
 
         if (people.is_my_user_id(person.user_id)) {
-            settings_account.update_email(new_email);
+            page_params.email = new_email;
         }
 
         people.update_email(user_id, new_email);
+    }
+
+    if (_.has(person, 'delivery_email')) {
+        var delivery_email = person.delivery_email;
+
+        if (people.is_my_user_id(person.user_id)) {
+            settings_account.update_email(delivery_email);
+            page_params.delivery_email = delivery_email;
+        }
     }
 
     if (_.has(person, 'full_name')) {
