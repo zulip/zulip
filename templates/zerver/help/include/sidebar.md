@@ -147,6 +147,5 @@
 * [Set default streams for new users](/help/set-default-streams-for-new-users)
 * [Rename a stream](/help/rename-a-stream)
 * [Change a stream's description](/help/change-the-stream-description)
-* [Make a private stream public](/help/change-the-privacy-of-a-stream#make-a-private-stream-public)
-* [Make a public stream private](/help/change-the-privacy-of-a-stream)
+* [Change the privacy of a stream](/help/change-the-privacy-of-a-stream)
 * [Add or remove users from a stream](/help/add-or-remove-users-from-a-stream)
