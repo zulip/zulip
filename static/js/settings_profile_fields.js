@@ -27,14 +27,13 @@ function delete_profile_field(e) {
 
 function read_field_data_from_form(selector) {
     var field_data = {};
-    var i = 0;
-    selector.each(function (ind, row) {
-        var value = i;
-        var text = row.children[0].value;
-        var order = row.children[1].value;
-        field_data[value] = {text: text, order: order};
-        i += 1;
+    var field_order = 1;
+    selector.each(function () {
+        var text = $(this).find("input")[0].value;
+        field_data[field_order - 1] = {text: text, order: field_order.toString()};
+        field_order += 1;
     });
+
     return field_data;
 }
 
@@ -115,6 +114,13 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
 
+    if (exports.field_type_id_to_string(field.type) === "Choice") {
+        var choice_list = profile_field.form.find('.edit_profile_field_choices_container')[0];
+        Sortable.create(choice_list, {
+            onUpdate: function () {},
+        });
+    }
+
     profile_field.form.find('.reset').on("click", function () {
         profile_field.form.hide();
         profile_field.row.show();
@@ -138,8 +144,8 @@ function open_edit_form(e) {
                                        data, profile_field_status);
     });
 
-    profile_field.form.find(".profile-field-choices").on("click", "button.add-choice", add_choice_row);
-    profile_field.form.find(".profile-field-choices").on("click", "button.delete-choice", delete_choice_row);
+    profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.add-choice", add_choice_row);
+    profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
 }
 
 exports.reset = function () {
@@ -226,6 +232,11 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
 
 function set_up_choices_field() {
     create_choice_row('#profile_field_choices', false);
+
+    var choice_list = $("#profile_field_choices")[0];
+    Sortable.create(choice_list, {
+        onUpdate: function () {},
+    });
 
     if ($('#profile_field_type').val() !== '3') {
         // If 'Choice' type is already selected, show choice row.

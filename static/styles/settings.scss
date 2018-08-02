@@ -702,7 +702,8 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
-.admin_profile_fields_table {
+.admin_profile_fields_table,
+.profile_field_choices_table {
     .movable-profile-field-row {
         cursor: move;
         .fa-ellipsis-v {
@@ -1754,12 +1755,12 @@ thead .actions {
     margin-top: 0;
 }
 
-.profile-field-choices .choice-row button {
-    margin-left: 0 !important;
+.profile-field-choices .choice-row input {
+    width: 190px;
 }
 
-.profile-field-choices .choice-row input {
-    width: 50px;
+.profile-field-choices .choice-row button {
+    margin-left: 0 !important;
 }
 
 .custom_user_field .pill-container {
