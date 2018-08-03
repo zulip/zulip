@@ -21,8 +21,8 @@ from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, process_avatars, \
-    process_uploads, process_emojis
+    build_avatar, build_subscription, build_recipient, build_usermessages, \
+    process_avatars, process_uploads, process_emojis
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -659,7 +659,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         zerver_message.append(zulip_message)
 
         # construct usermessages
-        usermessage_id_count = build_zerver_usermessage(
+        usermessage_id_count = build_usermessages(
             zerver_usermessage, usermessage_id_count, zerver_subscription,
             recipient_id, mentioned_users_id, message_id)
 
@@ -756,24 +756,6 @@ def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
     if message.get('file'):
         return message['file'].get('user')
     return None
-
-def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
-                             zerver_subscription: List[ZerverFieldsT], recipient_id: int,
-                             mentioned_users_id: List[int], message_id: int) -> int:
-    for subscription in zerver_subscription:
-        if subscription['recipient'] == recipient_id:
-            flags_mask = 1  # For read
-            if subscription['user_profile'] in mentioned_users_id:
-                flags_mask = 9  # For read and mentioned
-
-            usermessage = dict(
-                user_profile=subscription['user_profile'],
-                id=usermessage_id,
-                flags_mask=flags_mask,
-                message=message_id)
-            usermessage_id += 1
-            zerver_usermessage.append(usermessage)
-    return usermessage_id
 
 def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command

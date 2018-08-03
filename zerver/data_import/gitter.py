@@ -16,7 +16,8 @@ from typing import Any, Dict, List, Tuple
 from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, process_avatars
+    build_avatar, build_subscription, build_recipient, build_usermessages, \
+    process_avatars
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -194,7 +195,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
     while True:
         message_json = {}
         zerver_message = []
-        zerver_usermessage = []
+        zerver_usermessage = []  # type: List[ZerverFieldsT]
         message_data = gitter_data[low_index: upper_index]
         if len(message_data) == 0:
             break
@@ -221,19 +222,9 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                 has_link=False)
             zerver_message.append(zulip_message)
 
-            for subscription in zerver_subscription:
-                if subscription['recipient'] == recipient_id:
-                    flags_mask = 1  # For read
-                    if subscription['user_profile'] in mentioned_user_ids:
-                        flags_mask = 9  # For read and mentioned
-
-                    usermessage = dict(
-                        user_profile=subscription['user_profile'],
-                        id=usermessage_id,
-                        flags_mask=flags_mask,
-                        message=message_id)
-                    usermessage_id += 1
-                    zerver_usermessage.append(usermessage)
+            usermessage_id = build_usermessages(
+                zerver_usermessage, usermessage_id, zerver_subscription,
+                recipient_id, mentioned_user_ids, message_id)
             message_id += 1
 
         message_json['zerver_message'] = zerver_message
