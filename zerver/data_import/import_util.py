@@ -79,6 +79,14 @@ def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: 
             zerver_usermessage.append(usermessage)
     return usermessage_id
 
+def build_defaultstream(realm_id: int, stream_id: int,
+                        defaultstream_id: int) -> ZerverFieldsT:
+    defaultstream = dict(
+        stream=stream_id,
+        realm=realm_id,
+        id=defaultstream_id)
+    return defaultstream
+
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id: int,
                     threads: int, size_url_suffix: str='') -> List[ZerverFieldsT]:
     """

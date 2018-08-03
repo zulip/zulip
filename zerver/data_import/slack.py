@@ -22,7 +22,7 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    process_avatars, process_uploads, process_emojis
+    build_defaultstream, process_avatars, process_uploads, process_emojis
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -377,7 +377,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         # where every user is subscribed
         default_channels = ['general', 'random']  # Slack specific
         if channel['name'] in default_channels:
-            defaultstream = build_defaultstream(channel['name'], realm_id, stream_id,
+            defaultstream = build_defaultstream(realm_id, stream_id,
                                                 defaultstream_id)
             zerver_defaultstream.append(defaultstream)
             defaultstream_id += 1
@@ -431,14 +431,6 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, \
         zerver_recipient, added_recipient
-
-def build_defaultstream(channel_name: str, realm_id: int, stream_id: int,
-                        defaultstream_id: int) -> ZerverFieldsT:
-    defaultstream = dict(
-        stream=stream_id,
-        realm=realm_id,
-        id=defaultstream_id)
-    return defaultstream
 
 def get_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
                      recipient_id: int, added_users: AddedUsersT,

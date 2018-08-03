@@ -11,7 +11,6 @@ from zerver.data_import.slack import (
     get_admin,
     get_user_timezone,
     users_to_zerver_userprofile,
-    build_defaultstream,
     get_subscription,
     channels_to_zerver_stream,
     slack_workspace_to_realm,
@@ -26,6 +25,7 @@ from zerver.data_import.import_util import (
     build_subscription,
     build_recipient,
     build_usermessages,
+    build_defaultstream,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -212,10 +212,10 @@ class SlackImporter(ZulipTestCase):
     def test_build_defaultstream(self) -> None:
         realm_id = 1
         stream_id = 1
-        default_channel_general = build_defaultstream('general', realm_id, stream_id, 1)
+        default_channel_general = build_defaultstream(realm_id, stream_id, 1)
         test_default_channel = {'stream': 1, 'realm': 1, 'id': 1}
         self.assertDictEqual(test_default_channel, default_channel_general)
-        default_channel_general = build_defaultstream('random', realm_id, stream_id, 1)
+        default_channel_general = build_defaultstream(realm_id, stream_id, 1)
         test_default_channel = {'stream': 1, 'realm': 1, 'id': 1}
         self.assertDictEqual(test_default_channel, default_channel_general)
 
