@@ -89,6 +89,32 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 
+# Set to None to disable FakeLDAP server.
+# Three modes are allowed.
+#   (A) If users' email addresses are in LDAP and used as username.
+#   (B) If LDAP only has usernames but email addresses are of the form
+#       username@example.com
+#   (C) If LDAP username are completely unrelated to email addresses,
+# Refer `prod_settings_template.py` for description of the modes.
+FAKE_LDAP_MODE = None  # type: Optional[str]
+
+# By default 8 users are populated in the LDAP directory.
+FAKE_LDAP_EXTRA_USER = 0
+
+if FAKE_LDAP_MODE:
+    LDAP_APPEND_DOMAIN = None
+    AUTH_LDAP_USER_DN_TEMPLATE = 'uid=%(user)s,ou=users,dc=zulip,dc=com'
+
+    if FAKE_LDAP_MODE == 'a':
+        import ldap
+        from django_auth_ldap.config import LDAPSearch
+        AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                           ldap.SCOPE_SUBTREE, "(email=%(user)s)")
+    elif FAKE_LDAP_MODE == 'b':
+        LDAP_APPEND_DOMAIN = 'zulip.com'
+    elif FAKE_LDAP_MODE == 'c':
+        LDAP_EMAIL_ATTR = 'email'  # type: Optional[str]
+
 THUMBOR_URL = 'http://127.0.0.1:9995'
 
 SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)

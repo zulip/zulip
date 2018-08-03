@@ -140,6 +140,8 @@ DEFAULT_SETTINGS = {
     'LDAP_EMAIL_ATTR': None,
     # Disable django-auth-ldap caching, to prevent problems with OU changes.
     'AUTH_LDAP_CACHE_TIMEOUT': 0,
+    'FAKE_LDAP_MODE': None,
+    'FAKE_LDAP_EXTRA_USER': 0,
 
     # Social auth; we support providing values for some of these
     # settings in zulip-secrets.conf instead of settings.py in development.
