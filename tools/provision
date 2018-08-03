@@ -10,13 +10,13 @@ if [ "$EUID" -eq 0 ]; then
     exit 1
 fi
 
-FAIL="\033[91m"
-WARNING="\033[93m"
-ENDC="\033[0m"
+FAIL='\033[91m'
+WARNING='\033[93m'
+ENDC='\033[0m'
 
 #Make the script independent of the location from where it is
 #executed
-PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE}")" ; pwd -P )
+PARENT_PATH=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$PARENT_PATH"
 mkdir -p ../var/log
 LOG_PATH="../var/log/provision.log"
@@ -29,7 +29,7 @@ export PYTHONUNBUFFERED=1
 ./lib/provision.py "$@" 2>&1 | tee -a "$LOG_PATH"
 failed=${PIPESTATUS[0]}
 
-if [ $failed = 1 ]; then
+if [ "$failed" = 1 ]; then
     echo -e "$FAIL"
     echo "Provisioning failed!"
     echo
@@ -46,6 +46,7 @@ elif [ "$VIRTUAL_ENV" != "/srv/zulip-py3-venv" ] && [ -z "${TRAVIS}${SKIP_VENV_S
     echo
     echo "To update the shell, run:"
     echo "    source /srv/zulip-py3-venv/bin/activate"
+    # shellcheck disable=SC2016
     echo 'or just close this shell and start a new one (with Vagrant, `vagrant ssh`).'
     echo -en "$ENDC"
 fi
