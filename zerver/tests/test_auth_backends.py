@@ -45,7 +45,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_helpers import POSTRequestMock, HostRequestMock
 from zerver.models import \
-    get_realm, email_to_username, UserProfile, \
+    get_realm, email_to_username, UserAPIKey, UserProfile, \
     PreregistrationUser, Realm, get_user, MultiuseInvite
 from zerver.signals import JUST_CREATED_THRESHOLD
 
@@ -1362,6 +1362,33 @@ class CreateAPIKeyTest(ZulipTestCase):
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
         self.assert_json_error(result, "Missing 'description' argument", 400)
+
+class RevokeAPIKeysTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (user_api_key.id,))
+        self.assert_json_success(result)
+        self.assertNotIn(user_api_key.api_key, get_all_api_keys(self.user_profile))
+
+    def test_non_existing_key(self) -> None:
+        # Get an API key id that we know for sure doesn't exist
+        user_api_key = create_user_api_key(self.user_profile, 'Test API key')
+        deleted_id = user_api_key.id
+        user_api_key.delete()
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (deleted_id,))
+        self.assert_json_error(result, 'There are no API keys with such ID in your account.', 404)
+
+    def test_other_users_key(self) -> None:
+        othello_api_key = UserAPIKey.objects.filter(user_profile=self.example_user('othello')).first()
+
+        result = self.api_delete(self.email, '/api/v1/users/me/api_keys/%d' % (othello_api_key.id,))
+        self.assert_json_error(result, 'There are no API keys with such ID in your account.', 404)
 
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:

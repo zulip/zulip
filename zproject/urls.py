@@ -276,6 +276,8 @@ v1_api_and_json_patterns = [
     # users/me/api_keys -> zerver.views.auth
     url(r'^users/me/api_keys$', rest_dispatch,
         {'GET': 'zerver.views.auth.get_user_api_keys'}),
+    url(r'^users/me/api_keys/(?P<api_key_id>\d+)$', rest_dispatch,
+        {'DELETE': 'zerver.views.auth.revoke_user_api_key'}),
 
     # users/me/hotspots -> zerver.views.hotspots
     url(r'^users/me/hotspots$', rest_dispatch,
