@@ -47,9 +47,9 @@ git archive -o "$TARBALL" "--prefix=$prefix/" HEAD
 
 cd "$TMPDIR"
 tar -xf "$TARBALL"
-for i in `cat "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"`; do
-    rm -r --interactive=never "$TMPDIR/$prefix/$i";
-done
+while read -r i; do
+    rm -r --interactive=never "${TMPDIR:?}/$prefix/$i";
+done < "$TMPDIR/$prefix/tools/release-tarball-exclude.txt"
 tar -cf "$TARBALL" "$prefix"
 rm -rf "$prefix"
 
@@ -94,8 +94,8 @@ ln -nfs "$BUILD_PROD_STATIC_LOGPATH" "$USER_PROD_STATIC_LOGPATH"
 
 ./tools/update-prod-static $authors_not_required || (
     set +x
-    echo; echo -ne "\033[33mRunning update-prod-static failed. "
-    echo -e "Check $TMPDIR/update-prod-static.log for more information.\033[0m"
+    echo; echo -ne '\033[33mRunning update-prod-static failed. '
+    echo -e "Check $TMPDIR/update-prod-static.log for more information.\\033[0m"
     exit 1
 )
 rm -f "$USER_PROD_STATIC_LOGPATH"
