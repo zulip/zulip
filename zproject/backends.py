@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Set, Tuple, Optional
+from typing import Any, Dict, List, Set, Tuple, Optional, Sequence
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
@@ -105,6 +105,50 @@ def common_get_active_user(email: str, realm: Realm,
             return_data['inactive_realm'] = True
         return None
     return user_profile
+
+def generate_dev_ldap_dir(mode: str, extra_users: int=0) -> Dict[str, Dict[str, Sequence[str]]]:
+    mode = mode.lower()
+    names = [
+        ("Zoe", "ldap_ZOE@zulip.com"),
+        ("Othello, the Moor of Venice", "ldap_othello@zulip.com"),
+        ("Iago", "ldap_iago@zulip.com"),
+        ("Prospero from The Tempest", "ldap_prospero@zulip.com"),
+        ("Cordelia Lear", "ldap_cordelia@zulip.com"),
+        ("King Hamlet", "ldap_hamlet@zulip.com"),
+        ("aaron", "ldap_AARON@zulip.com"),
+        ("Polonius", "ldap_polonius@zulip.com"),
+    ]
+    for i in range(extra_users):
+        names.append(('Extra User %d' % (i,), 'ldap_extrauser%d@zulip.com' % (i,)))
+
+    ldap_dir = {}
+    if mode == 'a':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword':  email_username,
+            }
+    elif mode == 'b':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword': email_username,
+            }
+    elif mode == 'c':
+        for name in names:
+            email = name[1].lower()
+            email_username = email.split('@')[0]
+            ldap_dir['uid=' + email_username + ',ou=users,dc=zulip,dc=com'] = {
+                'cn': [name[0], ],
+                'userPassword': email_username + '_test',
+                'email': email,
+            }
+
+    return ldap_dir
 
 class ZulipAuthMixin:
     def get_user(self, user_profile_id: int) -> Optional[UserProfile]:
