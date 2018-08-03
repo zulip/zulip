@@ -184,6 +184,9 @@ class Realm(models.Model):
     name_changes_disabled = models.BooleanField(default=False)  # type: bool
     email_changes_disabled = models.BooleanField(default=False)  # type: bool
 
+    # Whether the delivery_email is hidden from the UI
+    delivery_email_hidden = models.BooleanField(default=False)  # type: bool
+
     # Threshold in days for new users to create streams, and potentially take
     # some other actions.
     waiting_period_threshold = models.PositiveIntegerField(default=0)  # type: int
@@ -245,6 +248,7 @@ class Realm(models.Model):
         create_stream_by_admins_only=bool,
         default_language=str,
         default_twenty_four_hour_time = bool,
+        delivery_email_hidden=bool,
         description=str,
         disallow_disposable_email_addresses=bool,
         email_changes_disabled=bool,

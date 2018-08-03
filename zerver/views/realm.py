@@ -58,7 +58,8 @@ def update_realm(
         bot_creation_policy: Optional[int]=REQ(converter=to_not_negative_int_or_none, default=None),
         default_twenty_four_hour_time: Optional[bool]=REQ(validator=check_bool, default=None),
         video_chat_provider: Optional[str]=REQ(validator=check_string, default=None),
-        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None)
+        google_hangouts_domain: Optional[str]=REQ(validator=check_string, default=None),
+        delivery_email_hidden: Optional[bool]=REQ(validator=check_bool, default=None)
 ) -> HttpResponse:
     realm = user_profile.realm
 
