@@ -21,7 +21,8 @@ from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
-    build_avatar, build_subscription, build_recipient, process_avatars
+    build_avatar, build_subscription, build_recipient, process_avatars, \
+    process_uploads, process_emojis
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -842,83 +843,6 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-
-def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
-                   emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the custom emojis and saves in the output emoji folder
-    """
-    def get_emojis(upload: List[str]) -> int:
-        slack_emoji_url = upload[0]
-        emoji_path = upload[1]
-        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
-
-        response = requests.get(slack_emoji_url, stream=True)
-        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-        with open(upload_emoji_path, 'wb') as emoji_file:
-            shutil.copyfileobj(response.raw, emoji_file)
-        return 0
-
-    emoji_records = []
-    upload_emoji_list = []
-    logging.info('######### GETTING EMOJIS #########\n')
-    logging.info('DOWNLOADING EMOJIS .......\n')
-    for emoji in zerver_realmemoji:
-        slack_emoji_url = emoji_url_map[emoji['name']]
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=emoji['realm'],
-            emoji_file_name=emoji['name'])
-
-        upload_emoji_list.append([slack_emoji_url, emoji_path])
-
-        emoji_record = dict(emoji)
-        emoji_record['path'] = emoji_path
-        emoji_record['s3_path'] = emoji_path
-        emoji_record['realm_id'] = emoji_record['realm']
-        emoji_record.pop('realm')
-
-        emoji_records.append(emoji_record)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_emojis, upload_emoji_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING EMOJIS FINISHED #########\n')
-    return emoji_records
-
-def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
-                    threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the uploads and saves it in the realm's upload directory
-    """
-    def get_uploads(upload: List[str]) -> int:
-        upload_url = upload[0]
-        upload_path = upload[1]
-        upload_path = os.path.join(upload_dir, upload_path)
-
-        response = requests.get(upload_url, stream=True)
-        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-        with open(upload_path, 'wb') as upload_file:
-            shutil.copyfileobj(response.raw, upload_file)
-        return 0
-
-    logging.info('######### GETTING ATTACHMENTS #########\n')
-    logging.info('DOWNLOADING ATTACHMENTS .......\n')
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload['path']
-        upload_s3_path = upload['s3_path']
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload['path'] = upload_s3_path
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_uploads, upload_url_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
-    return upload_list
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))
