@@ -55,7 +55,7 @@ Zulip 1.9; it is generally updated in bursts.
 - Added automatic thumbnailing of images, powered by thumbor.  The new
   THUMBOR_URL setting controls this feature.
 - Added documentation on alternative production deployment options.
-- Added a Gitter data import import.
+- Added a Gitter data import tool.
 - Added support for using both LDAPAuthBackend and EmailAuthBackend.
 - Added Clubhouse and Zabbix integrations.
 - Added support for rendering message content written in right-to-left
@@ -77,7 +77,7 @@ Zulip 1.9; it is generally updated in bursts.
 - Fixed confusing intermediate states of group PMs online indicators.
 - Fixed several subtle unread count corner case bugs.
 - Fixed several installer issues to make it easier to Dockerize Zulip.
-- Fixed several bugs issues with the LDAP integration.
+- Fixed several subtle issues with the LDAP integration.
 - Fixed several minor bugs and otherwise optimized search typeahead.
 - Fixed a bad nginx configuration interaction with servers that have
   misconfigured IPv6.
