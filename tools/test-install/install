@@ -54,7 +54,7 @@ EOF
 trap 'set +x; echo "$message"' EXIT
 
 if [ -d "$INSTALLER" ]; then
-    installer_dir="$(readlink -f $INSTALLER)"
+    installer_dir="$(readlink -f "$INSTALLER")"
 else
     installer_dir="$(mktemp -d --tmpdir zulip-server-XXXXX)"
     tar -xf "$INSTALLER" -C "$installer_dir" --transform='s,^[^/]*,zulip-server,'

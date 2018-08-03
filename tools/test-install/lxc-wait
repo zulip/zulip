@@ -27,7 +27,7 @@ if [ "$EUID" -ne 0 ]; then
 fi
 
 # We poll.
-for i in {1..60}; do
+for _ in {1..60}; do
     echo "lxc-wait: $CONTAINER_NAME: polling for boot..." >&2
     runlevel="$(lxc-attach -n "$CONTAINER_NAME" -- runlevel 2>/dev/null)" \
         || { sleep 1; continue; }

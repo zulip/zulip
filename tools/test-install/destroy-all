@@ -28,7 +28,7 @@ fi
 
 lxc-ls -f \
   | perl -lane '$_ = $F[0]; print if (/^zulip-install-/ && !/-base$/)' \
-  | while read c
+  | while read -r c
 do
     echo "$c"
     lxc-stop -n "$c"
