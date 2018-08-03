@@ -75,6 +75,25 @@ var org_permissions = {
         bot_creation_policy: {
             type: 'integer',
         },
+        email_address_visibility: {
+            type: 'integer',
+        },
+    },
+};
+
+exports.email_address_visibility_values = {
+    everyone: {
+        code: 1,
+        description: i18n.t("Members, admins, and guests"),
+    },
+    //// Backend support for this configuration is not available yet.
+    // admins_and_members: {
+    //     code: 2,
+    //     description: i18n.t("Members and admins"),
+    // },
+    admins_only: {
+        code: 3,
+        description: i18n.t("Admins only"),
     },
 };
 

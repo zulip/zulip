@@ -76,18 +76,21 @@ exports.setup_page = function () {
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
+        development: page_params.development_environment,
     };
 
     options.admin_settings_label = admin_settings_label;
     options.msg_edit_limit_dropdown_values = settings_org.msg_edit_limit_dropdown_values;
     options.msg_delete_limit_dropdown_values = settings_org.msg_delete_limit_dropdown_values;
     options.bot_creation_policy_values = settings_bots.bot_creation_policy_values;
+    options.email_address_visibility_values = settings_org.email_address_visibility_values;
     var rendered_admin_tab = templates.render('admin_tab', options);
     $("#settings_content .organization-box").html(rendered_admin_tab);
     $("#settings_content .alert").removeClass("show");
 
     settings_bots.update_bot_settings_tip();
     $("#id_realm_bot_creation_policy").val(page_params.realm_bot_creation_policy);
+    $("#id_realm_email_address_visibility").val(page_params.realm_email_address_visibility);
 
     // Since we just swapped in a whole new page, we need to
     // tell admin_sections nothing is loaded.
