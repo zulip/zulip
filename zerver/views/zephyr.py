@@ -5,6 +5,7 @@ from django.http import HttpResponse, HttpRequest
 from django.utils.translation import ugettext as _
 from zerver.decorator import authenticated_json_view
 from zerver.lib.ccache import make_ccache
+from zerver.lib.create_user import create_user_api_key
 from zerver.lib.request import has_request_variables, REQ, JsonableError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.users import get_api_key
@@ -44,7 +45,12 @@ def webathena_kerberos_login(request: HttpRequest, user_profile: UserProfile,
 
     # TODO: Send these data via (say) rabbitmq
     try:
+        # Grab an API key for the user, or register a new one if they don't
+        # have any
         api_key = get_api_key(user_profile)
+        if api_key is None:
+            api_key = create_user_api_key(user_profile, 'Zephyr mirroring service').api_key
+
         subprocess.check_call(["ssh", settings.PERSONAL_ZMIRROR_SERVER, "--",
                                "/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache",
                                user,

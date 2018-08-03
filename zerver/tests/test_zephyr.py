@@ -7,7 +7,7 @@ from typing import Any, Dict
 
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.users import get_api_key
-from zerver.models import get_user, get_realm
+from zerver.models import get_user, get_realm, UserAPIKey
 
 
 class ZephyrTest(ZulipTestCase):
@@ -61,6 +61,23 @@ class ZephyrTest(ZulipTestCase):
 
         with ccache_mock(return_value=b'1234'), mirror_mock(), ssh_mock() as ssh:
             result = post("zephyr", cred=cred)
+
+        self.assert_json_success(result)
+        ssh.assert_called_with([
+            'ssh',
+            'server',
+            '--',
+            '/home/zulip/python-zulip-api/zulip/integrations/zephyr/process_ccache',
+            'starnine',
+            api_key,
+            'MTIzNA=='])
+
+        # Make sure the login works even if the user doesn't have an API key
+        UserAPIKey.objects.filter(user_profile=user).delete()
+        with ccache_mock(return_value=b'1234'), mirror_mock(), ssh_mock() as ssh:
+            result = post("zephyr", cred=cred)
+
+        api_key = get_api_key(user)
 
         self.assert_json_success(result)
         ssh.assert_called_with([
