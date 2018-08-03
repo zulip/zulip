@@ -51,7 +51,7 @@ from zproject.backends import ZulipDummyBackend, EmailAuthBackend, \
     ZulipLDAPUserPopulator, DevAuthBackend, GitHubAuthBackend, ZulipAuthMixin, \
     dev_auth_enabled, password_auth_enabled, github_auth_enabled, \
     require_email_format_usernames, AUTH_BACKEND_NAME_MAP, \
-    ZulipLDAPConfigurationError
+    ZulipLDAPConfigurationError, generate_dev_ldap_dir
 
 from zerver.views.auth import (maybe_send_to_registration,
                                login_or_register_remote_user,
@@ -2093,6 +2093,18 @@ class TestLDAP(ZulipTestCase):
         realm = user_profile.realm
         realm.string_id = 'zulip'
         realm.save()
+
+    def test_generate_dev_ldap_dir(self) -> None:
+        fixtures = ujson.loads(self.fixture_data("ldap_dir.json"))
+
+        ldap_dir = generate_dev_ldap_dir('A', 2)
+        self.assertEqual(ldap_dir, fixtures['a'])
+
+        ldap_dir = generate_dev_ldap_dir('b', 1)
+        self.assertEqual(ldap_dir, fixtures['b'])
+
+        ldap_dir = generate_dev_ldap_dir('c', 0)
+        self.assertEqual(ldap_dir, fixtures['c'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success(self) -> None:
