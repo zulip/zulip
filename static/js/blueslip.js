@@ -156,10 +156,10 @@ function report_error(msg, stack, opts) {
         timeout:  3*1000,
         success:  function () {
             reported_errors[key] = true;
-            if (opts.show_ui_msg && ui !== undefined) {
+            if (opts.show_ui_msg && ui_report !== undefined) {
                 // There are a few races here (and below in the error
                 // callback):
-                // 1) The ui module or something it requires might
+                // 1) The ui_report module or something it requires might
                 //    not have been compiled or initialized yet.
                 // 2) The DOM might not be ready yet and so fetching
                 //    the #home-error div might fail.
@@ -184,7 +184,7 @@ function report_error(msg, stack, opts) {
             }
         },
         error: function () {
-            if (opts.show_ui_msg && ui !== undefined) {
+            if (opts.show_ui_msg && ui_report !== undefined) {
                 ui_report.message("Oops.  It seems something has gone wrong. " +
                                   "Please try reloading the page.",
                                   $("#home-error"), "alert-error");
