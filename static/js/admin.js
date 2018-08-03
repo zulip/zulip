@@ -39,6 +39,7 @@ var admin_settings_label = {
     // Organization permissions
     realm_name_changes_disabled: i18n.t("Prevent users from changing their name"),
     realm_email_changes_disabled : i18n.t("Prevent users from changing their email address"),
+    realm_delivery_email_hidden: i18n.t("Hide public user email addresses"),
 };
 
 exports.setup_page = function () {
@@ -55,6 +56,7 @@ exports.setup_page = function () {
         realm_create_stream_by_admins_only: page_params.realm_create_stream_by_admins_only,
         realm_name_changes_disabled: page_params.realm_name_changes_disabled,
         realm_email_changes_disabled: page_params.realm_email_changes_disabled,
+        realm_delivery_email_hidden: page_params.realm_delivery_email_hidden,
         realm_add_emoji_by_admins_only: page_params.realm_add_emoji_by_admins_only,
         can_add_emojis: settings_emoji.can_add_emoji(),
         realm_allow_community_topic_editing: page_params.realm_allow_community_topic_editing,
@@ -76,6 +78,7 @@ exports.setup_page = function () {
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,
+        development: page_params.development_environment,
     };
 
     options.admin_settings_label = admin_settings_label;

@@ -72,6 +72,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             create_stream_by_admins_only: noop,
             default_language: noop,
             default_twenty_four_hour_time: noop,
+            delivery_email_hidden: noop,
             description: noop,
             email_changes_disabled: settings_account.update_email_change_display,
             disallow_disposable_email_addresses: noop,

@@ -70,6 +70,9 @@ var org_permissions = {
         email_changes_disabled: {
             type: 'bool',
         },
+        delivery_email_hidden: {
+            type: 'bool',
+        },
     },
     other_permissions: {
         bot_creation_policy: {

@@ -50,6 +50,14 @@
                   "prefix" "id_"
                   "is_checked" realm_email_changes_disabled
                   "label" admin_settings_label.realm_email_changes_disabled}}
+
+                {{#if development}}
+                {{partial "settings_checkbox"
+                  "setting_name" "realm_delivery_email_hidden"
+                  "prefix" "id_"
+                  "is_checked" realm_delivery_email_hidden
+                  "label" admin_settings_label.realm_delivery_email_hidden}}
+                {{/if}}
             </div>
         </div>
 
