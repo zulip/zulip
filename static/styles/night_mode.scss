@@ -229,6 +229,10 @@ on a dark background, and don't change the dark labels dark either. */
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .clear_search_button,
+    .clear_search_button:focus,
+    .clear_search_button:active,
+    .clear_search_button[disabled]:hover,
     #searchbox_legacy a.search_icon,
     #searchbox_legacy .search_button,
     #searchbox a.search_icon,
@@ -238,6 +242,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
+    .clear_search_button:hover,
     #searchbox_legacy a.search_icon:hover,
     #searchbox_legacy .search_button:hover,
     #searchbox a.search_icon:hover,
