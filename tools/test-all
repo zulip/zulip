@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"/..
 
 # read the options
-TEMP=`getopt -o f --long force -- "$@"`
+TEMP=$(getopt -o f --long force -- "$@")
 eval set -- "$TEMP"
 
 # extract options.
@@ -21,9 +21,13 @@ done
 
 function run {
     echo '----'
-    echo "Running $@"
+    printf 'Running'
+    printf ' %q' "$@"
+    printf '\n'
     if ! "$@"; then
-        printf "\n\e[31;1mFAILED\e[0m $@\n"
+        printf '\n\e[31;1mFAILED\e[0m'
+        printf ' %q' "$@"
+        printf '\n'
         exit 1
     else
         echo
