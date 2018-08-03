@@ -210,10 +210,19 @@ its CSS; see our
 [configuration](https://github.com/zulip/zulip/blob/master/.stylelintrc)
 for the rules we currently enforce.
 
+#### Shell scripts
+
+Zulip uses [shellcheck](https://github.com/koalaman/shellcheck) to
+lint our shell scripts.  We recommend the
+[shellcheck gallery of bad code][shellcheck-bad-code] as a resource on
+how to not write bad shell.
+
+[shellcheck-bad-code]: https://github.com/koalaman/shellcheck/blob/master/README.md#user-content-gallery-of-bad-code
+
 #### Markdown, shell scripts, JSON fixtures
 
-We mostly validate miscellaneous source files like `.sh`, `.json`, and `.md` files for
-whitespace issues.
+We mostly validate miscellaneous source files like `.json`, and `.md`
+files for whitespace issues.
 
 ## Philosophy
 

@@ -8,6 +8,8 @@ EXCLUDED_FILES = [
     "puppet/apt/manifests/release.pp",
     "puppet/apt/manifests/unattended_upgrades.pp",
     "puppet/stdlib/tests/file_line.pp",
+    "puppet/zulip/files/nagios_plugins/zulip_nagios_server/check_website_response.sh",
+    "scripts/lib/third",
     "static/third",
     # Transifex syncs translation.json files without trailing
     # newlines; there's nothing other than trailing newlines we'd be

@@ -260,6 +260,9 @@ def main(options):
         print(WARNING + "`yarn install` failed; retrying..." + ENDC)
         setup_node_modules()
 
+    # Install shellcheck.
+    run(["sudo", "scripts/lib/install-shellcheck"])
+
     # Import tools/setup_venv.py instead of running it so that we get an
     # activated virtualenv for the rest of the provisioning process.
     from tools.setup import setup_venvs
