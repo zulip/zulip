@@ -43,6 +43,8 @@
         "./static/third/fontawesome-legacy.css",
         "./static/generated/icons/style.css",
         "./node_modules/source-sans-pro/source-sans-pro.css",
+        "./node_modules/simplebar/dist/simplebar.css",
+        "./node_modules/simplebar/dist/simplebar.js",
         "./static/styles/pygments.scss"
     ],
     "help": [

@@ -24,11 +24,24 @@ exports.set_up_scrollbar = function (element) {
     element[0].perfectScrollbar = perfectScrollbar;
 };
 
+exports.set_up_simplebar = function (element) {
+    var simplebar = new SimpleBar(element[0]);
+    element[0].simplebar = simplebar;
+};
+
 exports.update_scrollbar = function (element) {
     element.scrollTop = 0;
     if (element[0].perfectScrollbar !== undefined) {
         element[0].perfectScrollbar.update();
     }
+};
+
+exports.reset_simplebar = function (element) {
+    if (element[0].simplebar === undefined) {
+        return;
+    }
+    var scrollbar = element[0].simplebar.getScrollElement();
+    scrollbar.scrollTop = 0;
 };
 
 exports.destroy_scrollbar = function (element) {

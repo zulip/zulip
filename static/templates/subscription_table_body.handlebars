@@ -20,7 +20,9 @@
                         <div class="float-clear"></div>
                     </form>
                 </div>
-                <div class="streams-list">
+                <div id="streams-list-container">
+                    <div class="streams-list">
+                    </div>
                 </div>
             </div>
             <div class="right">
@@ -34,10 +36,16 @@
                     <span>{{t 'First time? Read our <a href="/help/create-a-stream" target="_blank">guidelines</a> for creating and naming streams.' }}</span>
                     {{/if}}
                 </div>
-                <div class="settings">
-                    {{!-- edit stream here --}}
+                <div id="right-scroll-container">
+                    <div class="settings">
+                        {{!-- edit stream here --}}
+                    </div>
+                    {{ partial "stream_creation_form" }}
                 </div>
-                {{ partial "stream_creation_form" }}
+                <div id="stream-creation-footer" class="modal-footer">
+                    <button class="button small white rounded" data-dismiss="modal">{{t "Cancel" }}</button>
+                    <button class="button small sea-green rounded" type="submit">{{t "Create" }}</button>
+                </div>
             </div>
         </div>
     </div>

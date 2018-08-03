@@ -196,6 +196,7 @@
         "panels": false,
         "PerfectScrollbar": false,
         "search_pill": false,
+        "SimpleBar": false,
         "Sortable": false,
         "search_pill_widget": false
     },

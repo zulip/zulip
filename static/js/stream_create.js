@@ -249,6 +249,7 @@ function clear_error_display() {
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
+    $("#right-scroll-container").addClass('stream-creation-active');
 
     var all_users = people.get_rest_of_realm();
     // Add current user on top of list
@@ -371,6 +372,11 @@ exports.create_handlers_for_users = function (container) {
 
         update_announce_stream_state();
         e.preventDefault();
+    });
+
+    $('#stream-creation-footer button[type="submit"]').on('click', function (e) {
+        e.preventDefault();
+        $('#stream_creation_form').trigger('submit');
     });
 };
 

@@ -106,7 +106,7 @@ casper.then(function () {
         casper.click('input[value="Scotland"] ~ span');
         casper.click('input[value="cordelia@zulip.com"] ~ span');
         casper.click('input[value="othello@zulip.com"] ~ span');
-        casper.click('form#stream_creation_form button.button.sea-green');
+        casper.click('#stream-creation-footer button.button.sea-green');
     });
 });
 
@@ -132,23 +132,23 @@ casper.then(function () {
 casper.then(function () {
     casper.click('#add_new_subscription .create_stream_button');
     casper.fill('form#stream_creation_form', {stream_name: '  '});
-    casper.click('form#stream_creation_form button.button.sea-green');
+    casper.click('#stream-creation-footer button.button.sea-green');
 });
 casper.then(function () {
     casper.waitForSelectorText('#stream_name_error', 'A stream needs to have a name', function () {
         casper.test.assertTextExists('A stream needs to have a name', "Can't create a stream with an empty name");
-        casper.click('form#stream_creation_form button.button.white');
+        casper.click('#stream-creation-footer button.button.white');
         casper.fill('form#add_new_subscription', {stream_name: '  '});
         casper.click('#add_new_subscription .create_stream_button');
         casper.fill('form#stream_creation_form', {stream_name: 'Waseemio'});
-        casper.click('form#stream_creation_form button.button.sea-green');
+        casper.click('#stream-creation-footer button.button.sea-green');
     });
 });
 casper.then(function () {
     casper.waitForSelectorText('#stream_name_error', 'A stream with this name already exists', function () {
         casper.test.assertTextExists('A stream with this name already exists', "Can't create a stream with a duplicate name");
         casper.test.info('Streams should be filtered when typing in the create box');
-        casper.click('form#stream_creation_form button.button.white');
+        casper.click('#stream-creation-footer button.button.white');
     });
 });
 casper.then(function () {

@@ -582,12 +582,13 @@ form#add_new_subscription {
     margin-right: 8px;
 }
 
-.streams-list {
-    position: relative;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    height: calc(100% - 45px);
-    width: 100%;
+#right-scroll-container,
+#streams-list-container {
+    height: calc(95vh - 88px);
+}
+
+#right-scroll-container.stream-creation-active {
+    height: calc(95vh - 148px);
 }
 
 .stream-row {
@@ -736,12 +737,6 @@ form#add_new_subscription {
     -webkit-overflow-scrolling: touch;
 }
 
-#subscription_overlay #stream-creation .modal-footer {
-    position: absolute;
-    bottom: 0;
-    width: calc(100% - 27px);
-}
-
 #stream-creation .stream-creation-body {
     padding: 15px;
 }
@@ -767,7 +762,7 @@ form#add_new_subscription {
 #stream_creation_form #stream_creating_indicator:not(:empty) {
     position: absolute;
     width: 100% !important;
-    height: calc(100% - 105px) !important;
+    height: 100% !important;
     display: flex !important;
     justify-content: center;
     align-items: center;
@@ -914,13 +909,6 @@ form#add_new_subscription {
     top: 1px;
     content: "#";
     font-weight: 800;
-}
-
-#subscription_overlay .settings {
-    position: relative;
-    height: calc(100% - 45px);
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
 }
 
 #subscription_overlay .subscription_settings {
@@ -1079,10 +1067,12 @@ form#add_new_subscription {
         height: 95%;
     }
 
-    #subscription_overlay .settings {
-        overflow: auto;
-        height: calc(100% - 20px);
-        -webkit-overflow-scrolling: touch;
+    #subscription_overlay #right-scroll-container {
+        height: calc(95vh - 44px);
+    }
+
+    #subscription_overlay #right-scroll-container.stream-creation-active {
+        height: calc(95vh - 104px);
     }
 }
 
