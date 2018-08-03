@@ -153,10 +153,6 @@ subprocess.check_call(["./manage.py", "create_realm_internal_bots"], preexec_fn=
 
 logging.info("Restarting Zulip...")
 subprocess.check_output(["./scripts/restart-server"], preexec_fn=su_to_zulip)
-
-if os.path.exists("/etc/supervisor/conf.d/zulip_db.conf"):
-    subprocess.check_call(["supervisorctl", "start", "process-fts-updates"], preexec_fn=su_to_zulip)
-
 logging.info("Upgrade complete!")
 
 subprocess.check_call(["./scripts/purge-old-deployments"])
