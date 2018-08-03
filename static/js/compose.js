@@ -323,6 +323,12 @@ exports.finish = function () {
         return;
     }
 
+    if (zgram.process(message_content)) {
+        exports.clear_preview_area();
+        clear_compose_box();
+        return;
+    }
+
     if (!compose.validate()) {
         return false;
     }

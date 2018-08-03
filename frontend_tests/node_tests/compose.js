@@ -64,6 +64,7 @@ global.document.location.protocol = 'https:';
 global.document.location.host = 'foo.com';
 
 zrequire('zcommand');
+zrequire('zgram');
 zrequire('compose_ui');
 zrequire('util');
 zrequire('rtl');

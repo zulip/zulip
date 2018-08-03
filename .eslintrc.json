@@ -199,6 +199,7 @@
         "widgetize": false,
         "zcommand": false,
         "zform": false,
+        "zgram": false,
         "zxcvbn": false
     },
     "plugins": [

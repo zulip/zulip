@@ -1,0 +1,14 @@
+{{#with data}}
+<div>
+    <h4>{{ heading }}</h4>
+    <div>
+        {{#each choices}}
+        <div>
+            <p>{{ this.media_title }}</p>
+            <img src="{{ this.media_link }}" alt="{{ this.media_title }}">
+            <button>{{ this.button_text }}</button>
+        </div>
+        {{/each}}
+    </div>
+</div>
+{{/with}}

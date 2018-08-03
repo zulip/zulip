@@ -450,6 +450,10 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         }
         settings_user_groups.reload();
         break;
+
+    case 'zgram':
+        zgram.handle_event(event);
+        break;
     }
 };
 
