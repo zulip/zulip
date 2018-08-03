@@ -3,11 +3,11 @@ set -x
 
 SOURCES_FILE=/etc/apt/sources.list.d/zulip.list
 STAMP_FILE=/etc/apt/sources.list.d/zulip.list.apt-update-in-progress
-zulip_source_hash=`sha1sum $SOURCES_FILE`
+zulip_source_hash=$(sha1sum "$SOURCES_FILE")
 
 apt-get install -y lsb-release apt-transport-https
 
-SCRIPTS_PATH="$(dirname $(dirname $0))"
+SCRIPTS_PATH="$(dirname "$(dirname "$0")")"
 
 release=$(lsb_release -sc)
 if [ "$release" = "trusty" ] || [ "$release" = "xenial" ] || [ "$release" = "bionic" ]; then
@@ -33,7 +33,7 @@ else
     exit 1
 fi
 
-if [ "$zulip_source_hash" = "`sha1sum $SOURCES_FILE`" ] && ! [ -e "$STAMP_FILE" ]; then
+if [ "$zulip_source_hash" = "$(sha1sum "$SOURCES_FILE")" ] && ! [ -e "$STAMP_FILE" ]; then
     echo "zulip.list file did not change; skipping apt-get update"
 else
     # We create this stamp file to ensure `apt-get update` will be run
