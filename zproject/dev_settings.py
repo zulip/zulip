@@ -89,6 +89,37 @@ SENDFILE_BACKEND = 'sendfile.backends.development'
 # Set this True to send all hotspots in development
 ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 
+# FAKE_LDAP_MODE supports using a fake LDAP database in the
+# development environment, without needing an LDAP server!
+#
+# Three modes are allowed, and each will setup Zulip and the fake LDAP
+# database in a way appropriate for the corresponding mode described
+# in zproject/prod_settings_template.py:
+#   (A) If users' email addresses are in LDAP and used as username.
+#   (B) If LDAP only has usernames but email addresses are of the form
+#       username@example.com
+#   (C) If LDAP usernames are completely unrelated to email addresses.
+#
+# In any case, the LDAP user account data is available in:
+#    zerver/tests/fixtures/ldap_dir.json
+FAKE_LDAP_MODE = None  # type: Optional[str]
+FAKE_LDAP_EXTRA_USERS = 0
+
+if FAKE_LDAP_MODE:
+    LDAP_APPEND_DOMAIN = None
+    AUTH_LDAP_USER_DN_TEMPLATE = 'uid=%(user)s,ou=users,dc=zulip,dc=com'
+
+    if FAKE_LDAP_MODE == 'a':
+        import ldap
+        from django_auth_ldap.config import LDAPSearch
+        AUTH_LDAP_USER_SEARCH = LDAPSearch("ou=users,dc=zulip,dc=com",
+                                           ldap.SCOPE_SUBTREE, "(email=%(user)s)")
+    elif FAKE_LDAP_MODE == 'b':
+        LDAP_APPEND_DOMAIN = 'zulip.com'
+    elif FAKE_LDAP_MODE == 'c':
+        LDAP_EMAIL_ATTR = 'email'  # type: Optional[str]
+    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)
+
 THUMBOR_URL = 'http://127.0.0.1:9995'
 
 SEARCH_PILLS_ENABLED = os.getenv('SEARCH_PILLS_ENABLED', False)

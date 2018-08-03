@@ -1,4 +1,5 @@
 import logging
+import mock
 from typing import Any, Dict, List, Set, Tuple, Optional, Sequence
 
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
@@ -323,6 +324,18 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
 
 class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
     REALM_IS_NONE_ERROR = 1
+
+    def __init__(self) -> None:
+        if settings.DEVELOPMENT and settings.FAKE_LDAP_MODE:  # nocoverage # We only use this in development
+            from fakeldap import MockLDAP
+
+            ldap_patcher = mock.patch('django_auth_ldap.config.ldap.initialize')
+            self.mock_initialize = ldap_patcher.start()
+            self.mock_ldap = MockLDAP()
+            self.mock_initialize.return_value = self.mock_ldap
+
+            self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
+                                                             settings.FAKE_LDAP_EXTRA_USERS)
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
