@@ -6,15 +6,15 @@
 # linter will be invoked through `vagrant ssh`.
 
 # Do not invoke gitlint if commit message is empty
-if [ $(grep '^[^#]' .git/COMMIT_EDITMSG --count) -ne 0 ]; then
-    lint_cmd="cd ~/zulip && cat \"$1\" | python -m gitlint.cli"
-    if [ -z "$VIRTUAL_ENV" ] && `which vagrant > /dev/null` && [ -e .vagrant ]; then
-        vagrant ssh -c "$lint_cmd"
-    else
-        $lint_cmd
-    fi
-
-    if [ $? -ne 0 ]; then
+if grep -q '^[^#]' "$1"; then
+    lint_cmd="cd ~/zulip && python -m gitlint.cli"
+    if \
+        if [ -z "$VIRTUAL_ENV" ] && command -v vagrant > /dev/null && [ -e .vagrant ]; then
+            ! vagrant ssh -c "$lint_cmd"
+        else
+            ! eval "$lint_cmd"
+        fi < "$1"
+    then
         echo "WARNING: Your commit message does not match Zulip's style guide."
     fi
 fi
