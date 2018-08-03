@@ -28,7 +28,9 @@ an extra and difficult-to-guess step to reproduce (namely, putting the
 wrong data into the cache).
 
 So we've designed our backend to ensure that if we write a small
-amount of Zulip's core caching code correctly.
+amount of Zulip's core caching code correctly, then the code most developers
+naturally write will both benefit from caching and not create any cache
+consistency problems.
 
 The overall result of this design is that in the vast majority of
 Zulip's Django codebase, all one needs to do is call the standard
@@ -107,7 +109,7 @@ reuse are actually a really bad idea.  For example:
   deactivated users.  If one calls `get_active_user` to access a
   deactivated user, the right thing will happen, but if you call
   `get_user` to access that user first, then the `get_active_user`
-  function will happily return the user from the cache, without every
+  function will happily return the user from the cache, without ever
   doing your more limited query.
 
 So remember: Use separate cache key functions for different data sets,
@@ -116,7 +118,7 @@ even if they feature the same objects.
 ### Cache invalidation after writes
 
 The caching strategy described above works pretty well for anything
-where the state its storing is immutable (i.e. never changes).  With
+where the state it's storing is immutable (i.e. never changes).  With
 mutable state, one needs to do something to ensure that the Python
 processes don't end up fetching stale data from the cache after a
 write to the database.
@@ -143,8 +145,7 @@ modifying `user_profile` objects (and passing the `update_fields`
 argument to `.save()` consistently, which encodes which fields on an
 object changed).  This means that all we have to do is write those
 cache-flushing functions correctly, and people writing Zulip code
-won't need to think about (or even know about!) the caching in order
-to correctly.
+won't need to think about (or even know about!) the caching.
 
 Each of those flush functions basically just computes the list of
 cache keys that might contain data that was modified by the
@@ -196,7 +197,7 @@ problems across multiple tests.
 
 This is a really important detail.  It makes it possible for us to do
 assertions in our tests on the number of database queries or memcached
-queries are done as part of a particular function/route, and have
+queries that are done as part of a particular function/route, and have
 those checks consistently get the same result (those tests are great
 for catching bugs where we accidentally do database queries in a
 loop).  And it means one can debug failures in the test suite without
@@ -248,7 +249,7 @@ for the webapp), and kept correct over time.  The key to keeping these
 state up to date is Zulip's
 [real-time events system](../subsystems/events-system.html), which
 allows the server to notify clients whenever state that might be
-cached by clients is changed.  Clients are responisible for handling
+cached by clients is changed.  Clients are responsible for handling
 the events, updating their state, and rerendering any UI components
 that might display the modified state.
 
