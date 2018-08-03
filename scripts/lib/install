@@ -44,9 +44,9 @@ fi
 ## Options from environment variables.
 #
 # Specify options for apt.
-APT_OPTIONS="${APT_OPTIONS:-}"
+read -r -a APT_OPTIONS <<< "${APT_OPTIONS:-}"
 # Install additional packages using apt.
-ADDITIONAL_PACKAGES=${ADDITIONAL_PACKAGES:-}
+read -r -a ADDITIONAL_PACKAGES <<< "${ADDITIONAL_PACKAGES:-}"
 # Deployment type is almost always voyager.
 DEPLOYMENT_TYPE="${DEPLOYMENT_TYPE:-voyager}"
 # Comma-separated list of puppet manifests to install.  default is
@@ -70,7 +70,7 @@ fi
 # Do set -x after option parsing is complete
 set -x
 
-ZULIP_PATH="$(readlink -f $(dirname $0)/../..)"
+ZULIP_PATH="$(readlink -f "$(dirname "$0")"/../..)"
 
 # Force a known locale.  Some packages on PyPI fail to install in some locales.
 localedef -i en_US -f UTF-8 en_US.UTF-8
@@ -104,7 +104,7 @@ esac
 # Check for at least ~1.9GB of RAM before starting installation;
 # otherwise users will find out about insufficient RAM via weird
 # errors like a segfault running `pip install`.
-mem_kb=$(cat /proc/meminfo | head -n1 | awk '{print $2}')
+mem_kb=$(head -n1 /proc/meminfo | awk '{print $2}')
 if [ "$mem_kb" -lt 1900000 ]; then
     echo "Insufficient RAM.  Zulip requires at least 2GB of RAM."
     exit 1
@@ -140,11 +140,11 @@ EOF
    exit 1
 fi
 
-apt-get -y dist-upgrade $APT_OPTIONS
+apt-get -y dist-upgrade "${APT_OPTIONS[@]}"
 apt-get install -y \
     puppet git curl wget \
     python python3 python-six python3-six crudini \
-    $ADDITIONAL_PACKAGES
+    "${ADDITIONAL_PACKAGES[@]}"
 
 if [ -n "$USE_CERTBOT" ]; then
     "$ZULIP_PATH"/scripts/setup/setup-certbot \
@@ -253,7 +253,7 @@ if [ "$has_appserver" = 0 ]; then
     if [ -n "$EXTERNAL_HOST" ]; then
         sed -i "s/^EXTERNAL_HOST =.*/EXTERNAL_HOST = '$EXTERNAL_HOST'/" /etc/zulip/settings.py
     fi
-    if [ -n "ZULIP_ADMINISTRATOR" ]; then
+    if [ -n "$ZULIP_ADMINISTRATOR" ]; then
         sed -i "s/^ZULIP_ADMINISTRATOR =.*/ZULIP_ADMINISTRATOR = '$ZULIP_ADMINISTRATOR'/" /etc/zulip/settings.py
     fi
     ln -nsf /etc/zulip/settings.py "$ZULIP_PATH"/zproject/prod_settings.py
