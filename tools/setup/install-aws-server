@@ -22,7 +22,6 @@ if ! echo "$hostname" | grep -q zulip; then
     exit 1
 fi
 set -x
-zulip_root=${ZULIP_ROOT:-$HOME/zulip}
 
 zulip_ssh_config_file="$HOME/.zulip-install-server.conf"
 amazon_key_file=$(crudini --get "$zulip_ssh_config_file" ssh amazon_key_file)
@@ -37,7 +36,7 @@ if ! [ -e "$server_private_key_file" ]; then
     exit 1
 fi
 
-if [ -n "$zulip_confdir" ]; then
+if [ -n "${zulip_confdir-}" ]; then
     zulipconf_file="$zulip_confdir/zulip.conf"
     secrets_file="$zulip_confdir/zulip-secrets.conf"
 fi
@@ -52,12 +51,12 @@ if [ -z "$branch" ]; then
     branch=$(crudini --get "$zulip_ssh_config_file" repo default_branch)
 fi
 
-VIRTUALENV_NEEDED=$(if $(echo "$type" | grep -q app_frontend); then echo -n yes; else echo -n no; fi)
+VIRTUALENV_NEEDED=$(if echo "$type" | grep -q app_frontend; then echo -n yes; else echo -n no; fi)
 
 # Force RSA keys. We do this because the ECDSA key is not printed on syslog,
 # and our puppet configuration does not use ECDSA. If we don't do this,
 # we'll get key errors after puppet apply.
-SSH_OPTS=(-o HostKeyAlgorithms=ssh-rsa)
+SSH_OPTS=(-o 'HostKeyAlgorithms=ssh-rsa')
 
 set +e
 
@@ -66,6 +65,7 @@ sudo mkdir -p ~root/.ssh && sudo cp .ssh/authorized_keys /root/.ssh/authorized_k
 sudo sed -i 's/disable_root: true/disable_root: false/' /etc/cloud/cloud.cfg
 sudo mkdir -p /etc/zulip
 EOF
+# shellcheck disable=SC2029 disable=SC2087
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 # Set the hostname early
 echo "$hostname" > /etc/hostname
@@ -83,6 +83,7 @@ if [ -e "$zulipconf_file" ]; then
     scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$zulipconf_file" root@"$server":/etc/zulip/zulip.conf
 fi
 
+# shellcheck disable=SC2029 disable=SC2087
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 set -x
 # Finish setting up the SSH private key
@@ -97,7 +98,7 @@ passwd -d root
 apt-get update
 apt-get -y upgrade
 
-cd "$(mktemp -d)"
+cd "\$(mktemp -d)"
 
 # Get GitHub known_hosts setup
 # TODO: Replace this with hardcoding the actual GitHub keys
@@ -118,6 +119,7 @@ EOF
 
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file" root@"$server":/home/zulip/.ssh/id_rsa
 scp "${SSH_OPTS[@]}" -i "$amazon_key_file" "$server_private_key_file".pub root@"$server":/home/zulip/.ssh/id_rsa.pub
+# shellcheck disable=SC2029
 ssh "${SSH_OPTS[@]}" "$server" -t -i "$amazon_key_file" -lroot <<EOF
 chown zulip:zulip /home/zulip/.ssh/id_rsa*
 chmod 600 /home/zulip/.ssh/id_rsa*
