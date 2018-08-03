@@ -16,7 +16,7 @@ yarn_version=1.7.0
 export HOME=/root
 
 current_node_version="none"
-if node_wrapper_path="$(type -p node)"; then
+if node_wrapper_path="$(command -v node)"; then
     current_node_version="$(node --version)"
 fi
 
@@ -31,13 +31,13 @@ if [ "$current_node_version" != "v$node_version" ] || ! [ -L "$node_wrapper_path
         wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.33.8/install.sh | bash
     fi
 
+    # shellcheck source=/dev/null
     source "$NVM_DIR/nvm.sh"
     nvm install "$node_version" && nvm alias default "$node_version"
-    export NODE_BIN="$(nvm which default)"
+    NODE_BIN="$(nvm which default)"
 
     # Fix messed-up uid=500 and group write bits produced by nvm
-    n=$(which node)
-    n=${n%/bin/node}
+    n=${NODE_BIN%/bin/node}
     chown -R root:root "$n"
     chmod -R go-w "$n"
 
