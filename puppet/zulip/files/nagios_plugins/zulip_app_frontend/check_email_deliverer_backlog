@@ -1,4 +1,5 @@
 #!/bin/bash
+set -eu
 
 #"OK": 0
 #"WARNING": 1
