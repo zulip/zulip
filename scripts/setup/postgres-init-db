@@ -9,7 +9,7 @@ POSTGRES_USER="${POSTGRES_USER:-postgres}"
 # We have to do this because on production database zulip may not exist, so psql
 # will fail with return code 2. Because set -e is on, this will cause the script
 # to bail.
-records=`su "$POSTGRES_USER" -c "psql -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip" | cat`
+records=$(su "$POSTGRES_USER" -c "psql -Atc 'SELECT COUNT(*) FROM zulip.zerver_message;' zulip" | cat)
 
 if [[ $records -gt 200 ]]
 then
@@ -32,6 +32,7 @@ fi
 # Drop any open connections to any old database.  Hackishly call using
 # `source`, because postgres user may not be able to read this directory
 # if unpacked by root.
+# shellcheck source=/dev/null
 source "$(dirname "$0")/terminate-psql-sessions" postgres zulip zulip_base
 
 (
