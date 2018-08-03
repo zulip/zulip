@@ -702,8 +702,7 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
-.admin_profile_fields_table,
-.admin_filters_table {
+.admin_profile_fields_table {
     margin-top: 20px;
     .movable-profile-field-row {
         cursor: move;
@@ -716,6 +715,10 @@ input[type=checkbox].inline-block {
             }
         }
     }
+}
+
+#filter-settings .admin_filters_table {
+    margin-top: 20px;
 }
 
 #admin-filter-pattern-status,
