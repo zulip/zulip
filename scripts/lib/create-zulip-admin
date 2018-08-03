@@ -1,10 +1,10 @@
 #!/bin/bash
 
-if ([ "$ZULIP_USER_CREATION_ENABLED" == "True" ] || [ "$ZULIP_USER_CREATION_ENABLED" == "true" ]) && \
-   ([ -z "$ZULIP_USER_DOMAIN" ]   || \
-    [ -z "$ZULIP_USER_EMAIL" ]    || \
-    [ -z "$ZULIP_USER_FULLNAME" ] || \
-    [ -z "$ZULIP_USER_PASS" ]); then
+if { [ "$ZULIP_USER_CREATION_ENABLED" == "True" ] || [ "$ZULIP_USER_CREATION_ENABLED" == "true" ]; } && \
+   { [ -z "$ZULIP_USER_DOMAIN" ]   || \
+     [ -z "$ZULIP_USER_EMAIL" ]    || \
+     [ -z "$ZULIP_USER_FULLNAME" ] || \
+     [ -z "$ZULIP_USER_PASS" ]; }; then
     echo "No zulip user configuration given."
     exit 1
 fi
