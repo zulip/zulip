@@ -9,17 +9,20 @@
 # contains your provisioned Zulip development environment, the linter
 # will automatically be run through `vagrant ssh`.
 
-changed_files=$(git diff --cached --name-only --diff-filter=ACM)
-if [ -z "$changed_files" ]; then
+changed_files=()
+while read -r -d '' f; do
+    changed_files+=("$f")
+done < <(git diff -z --cached --name-only --diff-filter=ACM)
+if [ ${#changed_files} -eq 0 ]; then
     echo "No changed files to lint."
     exit 0
 fi
 
-if [ -z "$VIRTUAL_ENV" ] && `which vagrant > /dev/null` && [ -e .vagrant ]; then
-    vcmd="/srv/zulip/tools/lint --no-gitlint --force $changed_files || true"
+if [ -z "$VIRTUAL_ENV" ] && command -v vagrant > /dev/null && [ -e .vagrant ]; then
+    vcmd="/srv/zulip/tools/lint --no-gitlint --force $(printf '%q ' "${changed_files[@]}") || true"
     echo "Running lint using vagrant..."
     vagrant ssh -c "$vcmd"
 else
-    ./tools/lint --no-gitlint --force $changed_files || true
+    ./tools/lint --no-gitlint --force "${changed_files[@]}" || true
 fi
 exit 0
