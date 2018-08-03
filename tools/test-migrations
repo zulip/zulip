@@ -10,12 +10,13 @@ new_auto_named_migrations=$(./manage.py showmigrations \
            -e ' 0052_auto_fix_realmalias_realm_nullable' \
            -e ' 0003_auto_20150817_1733' \
            -e ' 0002_auto_20150110_0810' \
+    | sed 's/\[[x ]\] /  /' \
  || true)
 if [ "$new_auto_named_migrations" != "" ]; then
     echo "ERROR: New migrations with unclear automatically generated names."
     echo "Please rename these migrations to have readable names:"
     echo
-    echo "$new_auto_named_migrations" | sed 's/\[[x ]\] /  /'
+    echo "$new_auto_named_migrations"
     echo
     echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for advice.'
     echo
@@ -24,6 +25,7 @@ fi
 
 if ! ./manage.py makemigrations --check --dry-run; then
     echo
+    # shellcheck disable=SC2016
     echo 'ERROR: Migrations are not consistent with models!  Fix with `./tools/renumber-migrations`.'
     echo 'See https://zulip.readthedocs.io/en/latest/subsystems/schema-migrations.html for details.'
     echo
