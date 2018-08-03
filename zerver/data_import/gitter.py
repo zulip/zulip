@@ -17,7 +17,7 @@ from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    process_avatars
+    build_defaultstream, process_avatars
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -132,10 +132,7 @@ def build_stream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
         date_created=timestamp,
         id=0)
 
-    defaultstream = dict(
-        stream=0,
-        realm=realm_id,
-        id=0)
+    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=0, defaultstream_id=0)
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return [stream], [defaultstream]
 
