@@ -61,7 +61,7 @@ if [ -n "$show_help" ]; then
     usage
 fi
 
-if [ -z "$DOMAIN" -o -z "$EMAIL" ]; then
+if [ -z "$DOMAIN" ] || [ -z "$EMAIL" ]; then
     usage
 fi
 
@@ -70,7 +70,7 @@ case "$method" in
         method_args=(--standalone)
         ;;
     webroot)
-        method_args=(--webroot --webroot-path=/var/lib/zulip/certbot-webroot/)
+        method_args=(--webroot '--webroot-path=/var/lib/zulip/certbot-webroot/')
         ;;
     *)
         usage
@@ -109,7 +109,7 @@ symlink_with_backup() {
     ln -nsf "$1" "$2"
 }
 
-if [ -z "$deploy_hook" ]; then
+if [ ${#deploy_hook} -eq 0 ]; then
     # If no deploy hook was specified, assume we're deploying to the default
     # location Zulip wants.
     CERT_DIR=/etc/letsencrypt/live/"$DOMAIN"
