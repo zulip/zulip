@@ -2,7 +2,7 @@
 set -e
 
 vergte() {
-    [ "$1" = "`echo -e "$1\n$2" | sort -V | tail -n1`" ]
+    [ "$1" = "$(echo -e "$1\\n$2" | sort -V | tail -n1)" ]
 }
 
 DEFAULT_USER="postgres"
@@ -17,11 +17,11 @@ else
     version=$(psql -A -t -d postgres -c "show server_version")
 fi
 
-major=$(echo $version | cut -d. -f1,2)
+major=$(echo "$version" | cut -d. -f1,2)
 username=$1
 
 shift
-tables=$(echo "'$@'" | sed "s/ /','/g")
+tables=$(echo "'$*'" | sed "s/ /','/g")
 if vergte "$major" "9.2"; then
     pidname="pid"
 else
