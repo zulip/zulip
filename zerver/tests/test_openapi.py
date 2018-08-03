@@ -173,6 +173,7 @@ class OpenAPIArgumentsTest(ZulipTestCase):
         '/users/me/presence',
         '/bot_storage',
         '/users/me/api_keys',
+        '/users/me/api_keys/{api_key_id}',
         '/users/me/api_key/regenerate',
         '/default_streams',
         '/default_stream_groups/create',

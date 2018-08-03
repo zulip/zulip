@@ -24,6 +24,7 @@ from zerver.context_processors import zulip_default_context, get_realm_from_requ
 from zerver.forms import HomepageForm, OurAuthenticationForm, \
     WRONG_SUBDOMAIN_ERROR, DEACTIVATED_ACCOUNT_ERROR, ZulipPasswordResetForm, \
     AuthenticationTokenForm
+from zerver.lib.cache import delete_user_profile_caches
 from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -32,7 +33,7 @@ from zerver.lib.request import REQ, has_request_variables, JsonableError, \
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.user_agent import parse_user_agent
-from zerver.lib.validator import validate_login_email
+from zerver.lib.validator import check_int, validate_login_email
 from zerver.models import PreregistrationUser, UserAPIKey, UserProfile, \
     remote_user_to_email, Realm, get_realm
 from zerver.signals import email_on_new_login
@@ -714,6 +715,23 @@ def get_user_api_keys(request: HttpRequest, user_profile: UserProfile) -> HttpRe
     api_key_list = (UserAPIKey.objects.filter(user_profile=user_profile)
                     .values('id', 'description', 'date_created'))
     return json_success({"api_keys": api_key_list, "email": user_profile.delivery_email})
+
+@has_request_variables
+def revoke_user_api_key(request: HttpRequest, user_profile: UserProfile,
+                        api_key_id: int=REQ(validator=check_int)) -> HttpResponse:
+    api_keys = UserAPIKey.objects.filter(user_profile=user_profile)
+    user_api_key = api_keys.filter(id=api_key_id).first()
+
+    if user_api_key is None:
+        return json_error(_('There are no API keys with such ID in your account.'), status=404)
+
+    user_api_key.delete()
+
+    # TODO: The is overkill; we only need to flush the old API key
+    # from the api_key -> user_profile cache; not all other caches
+    # containing the user object.
+    delete_user_profile_caches([user_api_key.user_profile])
+    return json_success()
 
 @csrf_exempt
 def api_dev_list_users(request: HttpRequest) -> HttpResponse:
