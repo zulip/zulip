@@ -22,6 +22,6 @@ if [ -z "$pseudo_remote" ]; then
 else
     target_ref=refs/remotes/"$pseudo_remote"/"$request_id"
     set -x
-    git fetch "$remote" +"pull/$request_id/head":"$target_ref"
+    git fetch "$remote" +"pull/$request_id/head:$target_ref"
     git reset --hard "$target_ref"
 fi
