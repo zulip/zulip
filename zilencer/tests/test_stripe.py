@@ -6,7 +6,6 @@ import ujson
 from django.core import signing
 
 import stripe
-from stripe.api_resources.list_object import ListObject
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
     do_activate_user, do_reactivate_user, activity_change_requires_seat_update

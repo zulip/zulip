@@ -1,5 +1,6 @@
 import stripe.error as error
 import stripe.util as util
+from stripe.api_resources.list_object import SubscriptionListObject
 
 from typing import Optional, Any, Dict, List
 
@@ -9,7 +10,7 @@ class Customer:
     default_source: Card
     created: int
     id: str
-    subscriptions: List[Subscription]
+    subscriptions: SubscriptionListObject
 
     @staticmethod
     def retrieve(customer_id: str, expand: Optional[List[str]]) -> Customer:
