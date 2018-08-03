@@ -16,7 +16,6 @@ from zerver.data_import.slack import (
     channels_to_zerver_stream,
     slack_workspace_to_realm,
     get_message_sending_user,
-    build_zerver_usermessage,
     channel_message_to_zerver_message,
     convert_slack_workspace_messages,
     do_convert_data,
@@ -26,6 +25,7 @@ from zerver.data_import.import_util import (
     build_zerver_realm,
     build_subscription,
     build_recipient,
+    build_usermessages,
 )
 from zerver.lib.import_realm import (
     do_import_realm,
@@ -374,9 +374,9 @@ class SlackImporter(ZulipTestCase):
         mentioned_users_id = [12, 3, 16]
         message_id = 9
 
-        test_usermessage_id = build_zerver_usermessage(zerver_usermessage, usermessage_id_count,
-                                                       zerver_subscription, recipient_id,
-                                                       mentioned_users_id, message_id)
+        test_usermessage_id = build_usermessages(zerver_usermessage, usermessage_id_count,
+                                                 zerver_subscription, recipient_id,
+                                                 mentioned_users_id, message_id)
         self.assertEqual(test_usermessage_id, 4)
 
         self.assertEqual(zerver_usermessage[0]['flags_mask'], 1)
@@ -388,8 +388,8 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_usermessage[3]['id'], 3)
         self.assertEqual(zerver_usermessage[3]['message'], message_id)
 
-    @mock.patch("zerver.data_import.slack.build_zerver_usermessage", return_value = 2)
-    def test_channel_message_to_zerver_message(self, mock_build_zerver_usermessage: mock.Mock) -> None:
+    @mock.patch("zerver.data_import.slack.build_usermessages", return_value = 2)
+    def test_channel_message_to_zerver_message(self, mock_build_usermessage: mock.Mock) -> None:
 
         user_data = [{"id": "U066MTL5U", "name": "john doe", "deleted": False, "real_name": "John"},
                      {"id": "U061A5N1G", "name": "jane doe", "deleted": False, "real_name": "Jane"},

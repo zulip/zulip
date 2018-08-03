@@ -61,6 +61,24 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
         type=type)
     return recipient
 
+def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
+                       zerver_subscription: List[ZerverFieldsT], recipient_id: int,
+                       mentioned_users_id: List[int], message_id: int) -> int:
+    for subscription in zerver_subscription:
+        if subscription['recipient'] == recipient_id:
+            flags_mask = 1  # For read
+            if subscription['user_profile'] in mentioned_users_id:
+                flags_mask = 9  # For read and mentioned
+
+            usermessage = dict(
+                user_profile=subscription['user_profile'],
+                id=usermessage_id,
+                flags_mask=flags_mask,
+                message=message_id)
+            usermessage_id += 1
+            zerver_usermessage.append(usermessage)
+    return usermessage_id
+
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id: int,
                     threads: int, size_url_suffix: str='') -> List[ZerverFieldsT]:
     """
