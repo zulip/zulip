@@ -22,7 +22,8 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars, process_uploads, process_emojis
+    build_defaultstream, build_attachment, process_avatars, process_uploads, \
+    process_emojis
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -616,8 +617,8 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                               uploads_list)
 
                 attachment_id = attachment_id_count
-                build_zerver_attachment(realm_id, message_id, attachment_id, added_users[user],
-                                        fileinfo, s3_path, zerver_attachment)
+                build_attachment(realm_id, message_id, attachment_id, added_users[user],
+                                 fileinfo, s3_path, zerver_attachment)
                 attachment_id_count += 1
 
             # For attachments with link not from slack
@@ -726,21 +727,6 @@ def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverField
         s3_path=s3_path,
         size=fileinfo['size'])
     uploads_list.append(upload)
-
-def build_zerver_attachment(realm_id: int, message_id: int, attachment_id: int,
-                            user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
-                            zerver_attachment: List[ZerverFieldsT]) -> None:
-    attachment = dict(
-        owner=user_id,
-        messages=[message_id],
-        id=attachment_id,
-        size=fileinfo['size'],
-        create_time=fileinfo['created'],
-        is_realm_public=True,  # is always true for stream message
-        path_id=s3_path,
-        realm=realm_id,
-        file_name=fileinfo['name'])
-    zerver_attachment.append(attachment)
 
 def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
     if 'user' in message:

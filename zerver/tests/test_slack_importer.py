@@ -508,7 +508,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(test_reactions, reactions)
 
     @mock.patch("zerver.data_import.slack.process_uploads", return_value = [])
-    @mock.patch("zerver.data_import.slack.build_zerver_attachment",
+    @mock.patch("zerver.data_import.slack.build_attachment",
                 return_value = [])
     @mock.patch("zerver.data_import.slack.build_avatar_url")
     @mock.patch("zerver.data_import.slack.build_avatar")

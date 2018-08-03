@@ -87,6 +87,25 @@ def build_defaultstream(realm_id: int, stream_id: int,
         id=defaultstream_id)
     return defaultstream
 
+def build_attachment(realm_id: int, message_id: int, attachment_id: int,
+                     user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
+                     zerver_attachment: List[ZerverFieldsT]) -> None:
+    """
+    This function should be passed a 'fileinfo' dictionary, which contains
+    information about 'size', 'created' (created time) and ['name'] (filename).
+    """
+    attachment = dict(
+        owner=user_id,
+        messages=[message_id],
+        id=attachment_id,
+        size=fileinfo['size'],
+        create_time=fileinfo['created'],
+        is_realm_public=True,
+        path_id=s3_path,
+        realm=realm_id,
+        file_name=fileinfo['name'])
+    zerver_attachment.append(attachment)
+
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id: int,
                     threads: int, size_url_suffix: str='') -> List[ZerverFieldsT]:
     """
