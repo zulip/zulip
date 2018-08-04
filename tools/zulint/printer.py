@@ -4,14 +4,18 @@ from __future__ import absolute_import
 import sys
 import os
 from itertools import cycle
-
-sys.path.append(os.path.join(os.path.dirname(__file__), '../..'))
-from scripts.lib.zulip_tools import ENDC, BOLDRED, GREEN, YELLOW, BLUE, MAGENTA, CYAN
-
 from typing import Union, Text
 
-colors = cycle([GREEN, YELLOW, BLUE, MAGENTA, CYAN])
+# Terminal Color codes for use in differentiatng linters
+BOLDRED = '\x1B[1;31m'
+GREEN = '\x1b[32m'
+YELLOW = '\x1b[33m'
+BLUE = '\x1b[34m'
+MAGENTA = '\x1b[35m'
+CYAN = '\x1b[36m'
+ENDC = '\033[0m'
 
+colors = cycle([GREEN, YELLOW, BLUE, MAGENTA, CYAN])
 
 def print_err(name, color, line):
     # type: (str, str, Union[Text, bytes]) -> None
