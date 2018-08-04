@@ -18,6 +18,9 @@ exports.set_furthest_read = function (value) {
     exports.furthest_read = value;
 };
 exports.server_furthest_read = -1;
+exports.set_server_furthest_read = function (value) {
+    exports.server_furthest_read = value;
+};
 
 var pointer_update_in_flight = false;
 

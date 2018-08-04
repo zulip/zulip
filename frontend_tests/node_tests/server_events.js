@@ -71,6 +71,9 @@ run_test('pointer_event', () => {
         this.furthest_read = value;
     };
     global.pointer.server_furthest_read = 0;
+    global.pointer.set_server_furthest_read = function (value) {
+        this.server_furthest_read = value;
+    };
     server_events._get_events_success([event]);
     assert.equal(global.pointer.furthest_read, event.pointer);
     assert.equal(global.pointer.server_furthest_read, event.pointer);
