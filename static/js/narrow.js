@@ -767,12 +767,6 @@ exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
 };
 
-exports.by_sender_uri = function (reply_to) {
-    return hash_util.operators_to_hash([
-        {operator: 'sender', operand: reply_to},
-    ]);
-};
-
 exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
     var absolute_url = "";
     if (is_absolute_url) {
