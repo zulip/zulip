@@ -192,7 +192,7 @@ function same_recipient_as_before(msg_type, opts) {
 exports.start = function (msg_type, opts) {
     exports.autosize_message_content();
 
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         return;
     }
     notifications.clear_compose_notifications();

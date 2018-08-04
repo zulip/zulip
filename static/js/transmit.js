@@ -30,7 +30,7 @@ function send_message_ajax(request, success, error) {
         data: request,
         success: success,
         error: function (xhr, error_type) {
-            if (error_type !== 'timeout' && reload.is_pending()) {
+            if (error_type !== 'timeout' && reload_state.is_pending()) {
                 // The error might be due to the server changing
                 reload.initiate({immediate: true,
                                  save_pointer: true,

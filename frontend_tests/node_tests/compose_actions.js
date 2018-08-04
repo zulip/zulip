@@ -44,7 +44,7 @@ compose_state.recipient = (function () {
     };
 }());
 
-set_global('reload', {
+set_global('reload_state', {
     is_in_progress: return_false,
 });
 

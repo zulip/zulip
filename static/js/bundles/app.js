@@ -78,6 +78,7 @@ import "js/message_list.js";
 import "js/message_live_update.js";
 import "js/narrow_state.js";
 import "js/narrow.js";
+import "js/reload_state.js";
 import "js/reload.js";
 import "js/compose_fade.js";
 import "js/fenced_code.js";

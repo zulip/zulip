@@ -2,7 +2,7 @@ zrequire('people');
 
 var return_false = function () { return false; };
 var return_true = function () { return true; };
-set_global('reload', {
+set_global('reload_state', {
     is_in_progress: return_false,
 });
 
@@ -27,7 +27,7 @@ run_test('report_late_add', () => {
     assert.equal(blueslip.get_test_logs('error').length, 1);
     blueslip.clear_test_data();
 
-    reload.is_in_progress = return_true;
+    reload_state.is_in_progress = return_true;
     people.report_late_add(55, 'foo@example.com');
     assert.equal(blueslip.get_test_logs('log').length, 1);
     assert.equal(blueslip.get_test_logs('log')[0].message, 'Added user late: user_id=55 email=foo@example.com');

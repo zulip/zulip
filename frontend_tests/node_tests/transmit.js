@@ -8,6 +8,7 @@ set_global('page_params', {
 set_global('channel', {});
 set_global('navigator', {});
 set_global('reload', {});
+set_global('reload_state', {});
 set_global('socket', {});
 set_global('Socket', function () {
     return global.socket;
@@ -136,7 +137,7 @@ run_test('transmit_message_ajax', () => {
 run_test('transmit_message_ajax_reload_pending', () => {
     var success = function () { throw 'unexpected success'; };
 
-    reload.is_pending = function () {
+    reload_state.is_pending = function () {
         return true;
     };
 

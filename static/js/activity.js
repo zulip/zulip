@@ -295,7 +295,7 @@ exports.update_huddles = function () {
 };
 
 function focus_ping(want_redraw) {
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         blueslip.log("Skipping querying presence because reload in progress");
         return;
     }

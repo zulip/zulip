@@ -5,7 +5,7 @@ var return_false = function () { return false; };
 
 set_global('server_events', {});
 set_global('blueslip', {});
-set_global('reload', {
+set_global('reload_state', {
     is_in_progress: return_false,
 });
 
