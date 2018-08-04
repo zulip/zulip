@@ -291,7 +291,7 @@ class AdminCreateUserTest(ZulipTestCase):
         # Romeo is a newly registered user
         new_user = get_user('romeo@zulip.net', get_realm('zulip'))
         self.assertEqual(new_user.full_name, 'Romeo Montague')
-        self.assertEqual(new_user.short_name, 'Romeo')
+        self.assertEqual(new_user.short_name, 'user' + str(new_user.id))
 
         # we can't create the same user twice.
         result = self.client_post("/json/users", valid_params)

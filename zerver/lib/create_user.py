@@ -110,4 +110,8 @@ def create_user(email: str, password: Optional[str], realm: Realm,
     recipient = Recipient.objects.create(type_id=user_profile.id,
                                          type=Recipient.PERSONAL)
     Subscription.objects.create(user_profile=user_profile, recipient=recipient)
+
+    user_profile.short_name = 'user' + str(user_profile.id)
+    user_profile.save()
+
     return user_profile
