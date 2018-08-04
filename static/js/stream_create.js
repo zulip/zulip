@@ -254,6 +254,28 @@ function clear_error_display() {
     stream_subscription_error.clear_errors();
 }
 
+function update_user_checkboxes(checked_prop, new_subscriber_ids) {
+    var sub_check;
+    var already_checked_sub_ids = [];
+
+    // Current non-admin-user must subscribes to newly created stream.
+    if (!page_params.is_admin) {
+        already_checked_sub_ids.push(people.my_current_user_id());
+    }
+
+    $("#stream-checkboxes input:checkbox[name=stream]:checked").each(function () {
+        var stream_id = $(this).closest(".add-user-label").attr("data-stream-id");
+        var stream_subs = stream_data.get_sub_by_id(stream_id).subscribers.keys();
+        already_checked_sub_ids = already_checked_sub_ids.concat(stream_subs);
+    });
+
+    for (var i = 0; i < new_subscriber_ids.length; i += 1) {
+        var sub_id = new_subscriber_ids[i];
+        sub_check = checked_prop || already_checked_sub_ids.indexOf(sub_id) > -1;
+        $("#user-checkboxes").find("label[data-user-id='" + sub_id + "'] input").prop('checked', sub_check);
+    }
+}
+
 exports.show_new_stream_modal = function () {
     $("#stream-creation").removeClass("hide");
     $(".right .settings").hide();
@@ -288,17 +310,9 @@ exports.show_new_stream_modal = function () {
         var elem = $(this);
         var stream_id = elem.attr('data-stream-id');
         var checked = elem.find('input').prop('checked');
-        var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers;
+        var subscriber_ids = stream_data.get_sub_by_id(stream_id).subscribers.keys();
 
-        $('#user-checkboxes label.checkbox').each(function () {
-            var user_elem = $(this);
-            var user_id = user_elem.attr('data-user-id');
-
-            if (subscriber_ids.has(user_id)) {
-                user_elem.find('input').prop('checked', checked);
-            }
-        });
-
+        update_user_checkboxes(checked, subscriber_ids);
         e.preventDefault();
     });
 };
