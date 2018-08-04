@@ -25,9 +25,8 @@ def check_pyflakes(options, by_lang):
                                 stderr=subprocess.PIPE)
     assert pyflakes.stdout is not None  # Implied by use of subprocess.PIPE
     for ln in pyflakes.stdout.readlines() + pyflakes.stderr.readlines():
-        if options.full:
-            print_err('pyflakes', color, ln)
-            failed = True
+        print_err('pyflakes', color, ln)
+        failed = True
     return failed
 
 def run():
@@ -36,11 +35,10 @@ def run():
     add_default_linter_arguments(parser)
     args = parser.parse_args()
 
-    tools_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    root_dir = os.path.dirname(tools_dir)
-    sys.path.insert(0, root_dir)
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    sys.path.insert(0, current_dir)
 
-    os.chdir(root_dir)
+    os.chdir(current_dir)
 
     file_types = ['py']
     EXCLUDED_FILES = []
@@ -59,6 +57,7 @@ def run():
     linter_config = LinterConfig(by_lang)
 
     @linter_config.lint
+
     def pyflakes():
         # type: () -> int
         failed = check_pyflakes(args, by_lang)
