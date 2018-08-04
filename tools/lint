@@ -14,30 +14,9 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from zulint import lister
-from zulint.command import add_default_linter_arguments
+from zulint.command import add_default_linter_arguments, do_lint
 from typing import cast, Callable, Dict, Iterator, List
 
-
-def run_parallel(lint_functions):
-    # type: (Dict[str, Callable[[], int]]) -> bool
-    pids = []
-    for name, func in lint_functions.items():
-        pid = os.fork()
-        if pid == 0:
-            logging.info("start " + name)
-            result = func()
-            logging.info("finish " + name)
-            sys.stdout.flush()
-            sys.stderr.flush()
-            os._exit(result)
-        pids.append(pid)
-    failed = False
-
-    for pid in pids:
-        (_, status) = os.waitpid(pid, 0)
-        if status != 0:
-            failed = True
-    return failed
 
 def run():
     # type: () -> None
@@ -188,9 +167,7 @@ def run():
         failed = check_pep8(by_lang['py'])
         return 1 if failed else 0
 
-    failed = run_parallel(lint_functions)
-
-    sys.exit(1 if failed else 0)
+    do_lint(lint_functions)
 
 if __name__ == '__main__':
     run()
