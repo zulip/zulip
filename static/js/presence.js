@@ -21,10 +21,8 @@ function is_mobile(device) {
 }
 
 exports.is_active = function (user_id) {
-    var presence_info = exports.presence_info;
-
-    if (presence_info[user_id]) {
-        var status = presence_info[user_id].status;
+    if (exports.presence_info[user_id]) {
+        var status = exports.presence_info[user_id].status;
         if (status && status === "active") {
             return true;
         }
@@ -134,14 +132,13 @@ exports.update_info_for_small_realm = function () {
 
     // For small realms, we create presence info for users
     // that the server didn't include in its presence update.
-    var presence_info = exports.presence_info;
     var persons = people.get_realm_persons();
 
     _.each(persons, function (person) {
         var user_id = person.user_id;
         var status = "offline";
 
-        if (presence_info[user_id]) {
+        if (exports.presence_info[user_id]) {
             // this is normal, we have data for active
             // users that we don't want to clobber.
             return;
@@ -156,7 +153,7 @@ exports.update_info_for_small_realm = function () {
             status = "active";
         }
 
-        presence_info[user_id] = {
+        exports.presence_info[user_id] = {
             status: status,
             mobile: false,
             last_active: undefined,
