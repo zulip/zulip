@@ -125,7 +125,7 @@ exports.set_message_position = function (message_top, message_height, viewport_i
         message_top
         - message_offset;
 
-    pointer.suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
     exports.scrollTop(new_scroll_top);
 };
 
@@ -282,7 +282,7 @@ exports.is_narrow = function () {
 };
 
 exports.system_initiated_animate_scroll = function (scroll_amount) {
-    pointer.suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
     var viewport_offset = exports.scrollTop();
     in_stoppable_autoscroll = true;
     exports.message_pane.animate({
@@ -294,7 +294,7 @@ exports.system_initiated_animate_scroll = function (scroll_amount) {
 };
 
 exports.user_initiated_animate_scroll = function (scroll_amount) {
-    pointer.suppress_scroll_pointer_update = true; // Gets set to false in the scroll handler.
+    pointer.set_suppress_scroll_pointer_update(true); // Gets set to false in the scroll handler.
     in_stoppable_autoscroll = false; // defensive
 
     var viewport_offset = exports.scrollTop();

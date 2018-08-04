@@ -39,7 +39,7 @@ exports.update_is_muted = function (sub, value) {
         // make sure the pointer is still visible. We don't want the auto-scroll handler to move
         // our pointer to the old scroll location before we have a chance to update it.
         pointer.set_recenter_pointer_on_display(true);
-        pointer.suppress_scroll_pointer_update = true;
+        pointer.set_suppress_scroll_pointer_update(true);
 
         if (!home_msg_list.empty()) {
             message_util.do_unread_count_updates(home_msg_list.all_messages());

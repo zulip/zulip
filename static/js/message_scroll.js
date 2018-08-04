@@ -39,7 +39,7 @@ exports.scroll_finished = function () {
     if (!pointer.suppress_scroll_pointer_update) {
         message_viewport.keep_pointer_in_view();
     } else {
-        pointer.suppress_scroll_pointer_update = false;
+        pointer.set_suppress_scroll_pointer_update(false);
     }
 
     floating_recipient_bar.update();

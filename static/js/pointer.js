@@ -13,6 +13,9 @@ exports.set_recenter_pointer_on_display = function (value) {
 // Toggles re-centering the pointer in the window
 // when All Messages is next clicked by the user
 exports.suppress_scroll_pointer_update = false;
+exports.set_suppress_scroll_pointer_update = function (value) {
+    exports.suppress_scroll_pointer_update = value;
+};
 exports.furthest_read = -1;
 exports.set_furthest_read = function (value) {
     exports.furthest_read = value;
