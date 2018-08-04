@@ -176,7 +176,7 @@ exports.reify_message_id = function (opts) {
     var old_id = opts.old_id;
     var new_id = opts.new_id;
     if (pointer.furthest_read === old_id) {
-        pointer.furthest_read = new_id;
+        pointer.set_furthest_read(new_id);
     }
     if (stored_messages[old_id]) {
         stored_messages[new_id] = stored_messages[old_id];

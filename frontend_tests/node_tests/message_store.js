@@ -203,6 +203,7 @@ run_test('message_id_change', () => {
 
     set_global('pointer', {
         furthest_read: 401,
+        set_furthest_read: function (value) { this.furthest_read = value; },
     });
 
     set_global('message_list', {});

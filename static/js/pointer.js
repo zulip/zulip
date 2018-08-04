@@ -11,6 +11,9 @@ exports.recenter_pointer_on_display = false;
 // when All Messages is next clicked by the user
 exports.suppress_scroll_pointer_update = false;
 exports.furthest_read = -1;
+exports.set_furthest_read = function (value) {
+    exports.furthest_read = value;
+};
 exports.server_furthest_read = -1;
 
 var pointer_update_in_flight = false;
