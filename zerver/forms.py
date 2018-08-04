@@ -249,10 +249,10 @@ class ZulipPasswordResetForm(PasswordResetForm):
                        context=context)
         else:
             context['no_account_in_realm'] = True
-            accounts = UserProfile.objects.filter(email__iexact=email)
-            if accounts:
-                context['accounts'] = accounts
-                context['multiple_accounts'] = accounts.count() != 1
+            active_accounts = UserProfile.objects.filter(email__iexact=email, is_active=True)
+            if active_accounts:
+                context['active_accounts'] = active_accounts
+                context['multiple_active_accounts'] = active_accounts.count() != 1
             send_email('zerver/emails/password_reset', to_email=email,
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),
