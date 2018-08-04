@@ -86,6 +86,12 @@ exports.operators_to_hash = function (operators) {
     return hash;
 };
 
+exports.by_sender_uri = function (reply_to) {
+    return exports.operators_to_hash([
+        {operator: 'sender', operand: reply_to},
+    ]);
+};
+
 exports.pm_with_uri = function (reply_to) {
     return exports.operators_to_hash([
         {operator: 'pm-with', operand: reply_to},

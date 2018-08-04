@@ -67,7 +67,7 @@ run_test('uris', () => {
     uri = hash_util.huddle_with_uri("22,23");
     assert.equal(uri, '#narrow/pm-with/22,23-group');
 
-    uri = narrow.by_sender_uri(ray.email);
+    uri = hash_util.by_sender_uri(ray.email);
     assert.equal(uri, '#narrow/sender/22-ray');
 
     var emails = global.hash_util.decode_operand('pm-with', '22,23-group');
