@@ -106,12 +106,10 @@ exports.huddle_with_uri = function (user_ids_string) {
     return "#narrow/pm-with/" + user_ids_string + '-group';
 };
 
-exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
-    var absolute_url = "";
-    if (is_absolute_url) {
-        absolute_url = window.location.protocol + "//" +
-            window.location.host + "/" + window.location.pathname.split('/')[1];
-    }
+exports.by_conversation_and_time_uri = function (message) {
+    var absolute_url = window.location.protocol + "//" +
+        window.location.host + "/" + window.location.pathname.split('/')[1];
+
     if (message.type === "stream") {
         return absolute_url + "#narrow/stream/" +
             exports.encode_stream_name(message.stream) +
