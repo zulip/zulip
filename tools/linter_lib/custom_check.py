@@ -7,7 +7,7 @@ import os
 import re
 import traceback
 
-from .printer import print_err, colors
+from zulint.printer import print_err, colors
 
 from typing import cast, Any, Callable, Dict, List, Optional, Tuple, Iterable
 
@@ -525,7 +525,7 @@ def build_custom_checkers(by_lang):
              # We are likely to want to keep these dirs Python 2+3 compatible,
              # since the plan includes extracting them to a separate project eventually.
              'tools/lib',
-             'tools/linter_lib',
+             'tools/zulint',
              # TODO: Update our migrations from Text->str.
              'zerver/migrations/',
              # thumbor is (currently) python2 only

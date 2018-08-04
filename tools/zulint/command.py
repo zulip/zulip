@@ -9,7 +9,7 @@ import os
 import subprocess
 import sys
 
-from linter_lib.printer import print_err, colors
+from zulint.printer import print_err, colors
 
 from typing import Any, Callable, Dict, List, Optional
 
