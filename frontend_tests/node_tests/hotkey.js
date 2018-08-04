@@ -15,8 +15,6 @@
 
 const emoji_codes = zrequire("emoji_codes", "generated/emoji/emoji_codes.json");
 
-set_global("activity", {});
-
 set_global("navigator", {
     platform: "",
 });
@@ -36,6 +34,7 @@ emoji.initialize({
     emoji_codes,
 });
 
+zrequire("activity");
 const hotkey = zrequire("hotkey");
 zrequire("common");
 

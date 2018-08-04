@@ -29,6 +29,9 @@ exports.client_is_active = document.hasFocus && document.hasFocus();
 // if this was a server-initiated-reload to avoid counting a
 // server-initiated reload as user activity.
 exports.new_user_input = true;
+exports.set_new_user_input = function (value) {
+    exports.new_user_input = value;
+};
 
 function update_pm_count_in_dom(count_span, value_span, count) {
     const li = count_span.parents("li");
