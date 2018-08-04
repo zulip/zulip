@@ -126,7 +126,7 @@ exports.do_set_reminder_for_message = function (msgid, timestamp) {
         return;
     }
 
-    var link_to_msg = hash_util.by_conversation_and_time_uri(message, true);
+    var link_to_msg = hash_util.by_conversation_and_time_uri(message);
     var command = deferred_message_types.reminders.slash_command;
     var reminder_timestamp = timestamp;
     var custom_msg = message.raw_content + '\n\n[Link to conversation](' + link_to_msg + ')';
