@@ -276,7 +276,7 @@ exports.update_huddles = function () {
         return {
             user_ids_string: huddle,
             name: exports.full_huddle_name(huddle),
-            href: narrow.huddle_with_uri(huddle),
+            href: hash_util.huddle_with_uri(huddle),
             fraction_present: exports.huddle_fraction_present(huddle),
             short_name: exports.short_huddle_name(huddle),
         };

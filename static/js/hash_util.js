@@ -92,6 +92,14 @@ exports.pm_with_uri = function (reply_to) {
     ]);
 };
 
+exports.huddle_with_uri = function (user_ids_string) {
+    // This method is convenient for callers
+    // that have already converted emails to a comma-delimited
+    // list of user_ids.  We should be careful to keep this
+    // consistent with hash_util.decode_operand.
+    return "#narrow/pm-with/" + user_ids_string + '-group';
+};
+
 return exports;
 
 }());
