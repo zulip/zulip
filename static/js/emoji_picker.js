@@ -11,12 +11,17 @@ var APPROX_WIDTH = 255;
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
 exports.complete_emoji_catalog = [];
+
+// Unfortunately, this list does not currently match on
+// alias names like party_popper, simple_smile, and
+// hammer_and_wrench. But thumbs_up sorts to the top
+// for some other reason.
 exports.frequently_used_emojis_list = [
-    '1f44d',    // thumbs_up
-    '1f389',    // party_popper
-    '1f642',    // simple_smile
+    '1f44d',    // +1
+    '1f389',    // tada
+    '1f642',    // slight_smile
     '2764',     // heart
-    '1f6e0',    // hammer_and_wrench
+    '1f6e0',    // working_on_it
     '1f419',    // octopus
 ];
 var current_message_emoji_popover_elem;
