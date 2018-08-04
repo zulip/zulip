@@ -3,7 +3,7 @@ from __future__ import absolute_import
 
 import subprocess
 
-from .printer import print_err, colors
+from zulint.printer import print_err, colors
 
 from typing import List
 

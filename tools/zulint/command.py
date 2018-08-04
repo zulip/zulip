@@ -10,7 +10,7 @@ import subprocess
 import sys
 from typing import Any, Callable, Dict, List, Optional
 
-from linter_lib.printer import print_err, colors
+from zulint.printer import print_err, colors
 
 def add_default_linter_arguments(parser):
     # type: (argparse.ArgumentParser) -> None
