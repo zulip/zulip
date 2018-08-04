@@ -6,7 +6,7 @@ import sys
 import argparse
 import subprocess
 
-import lister
+from zulint import lister
 from typing import cast, Dict, List
 
 TOOLS_DIR = os.path.dirname(os.path.abspath(__file__))

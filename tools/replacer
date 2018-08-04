@@ -4,7 +4,7 @@ import argparse
 from subprocess import check_call
 from typing import List, Dict, Union
 
-from .lister import list_files
+from zulint.lister import list_files
 
 def do_replace(listing, old_string, new_string):
     # type: (Union[Dict[str, List[str]], List[str]], str, str) -> None
