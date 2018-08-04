@@ -55,6 +55,7 @@ def check_html_templates(templates, all_dups):
         IGNORE_IDS = [
             'api-example-tabs',
             'errors',
+            'error-message-box',
             'email',
             'messages',
             'registration',
