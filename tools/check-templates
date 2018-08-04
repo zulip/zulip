@@ -10,7 +10,7 @@ import logging
 from lib import sanity_check
 sanity_check.check_venv(__file__)
 
-import lister
+from zulint import lister
 from typing import cast, Callable, Dict, Iterable, List
 
 EXCLUDED_FILES = [
