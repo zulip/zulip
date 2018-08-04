@@ -212,7 +212,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             people.add_in_realm(event.person);
         } else if (event.op === 'remove') {
             people.deactivate(event.person);
-            stream_data.remove_deactivated_user_from_all_streams(event.person.user_id);
+            stream_events.remove_deactivated_user_from_all_streams(event.person.user_id);
         } else if (event.op === 'update') {
             user_events.update_person(event.person);
         }
