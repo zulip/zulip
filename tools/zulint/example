@@ -1,0 +1,54 @@
+#!/usr/bin/env python3
+from __future__ import print_function
+from __future__ import absolute_import
+import logging
+import os
+import sys
+import argparse
+
+# TODO: Need to set PYTHONPATH externally so it can find things.
+
+from zulint import lister
+from zulint.command import add_default_linter_arguments, LinterConfig
+from typing import cast, Callable, Dict, Iterator, List
+
+from tools.linter_lib.pyflakes import check_pyflakes
+
+def run():
+    # type: () -> None
+    parser = argparse.ArgumentParser()
+    add_default_linter_arguments(parser)
+    args = parser.parse_args()
+
+    tools_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    root_dir = os.path.dirname(tools_dir)
+    sys.path.insert(0, root_dir)
+
+    os.chdir(root_dir)
+
+    file_types = ['py']
+    EXCLUDED_FILES = []
+    by_lang = cast(Dict[str, List[str]],
+                   lister.list_files(args.targets, modified_only=args.modified,
+                                     ftypes=file_types,
+                                     use_shebang=True, group_by_ftype=True, exclude=EXCLUDED_FILES))
+
+    logging.basicConfig(format="%(asctime)s %(message)s")
+    logger = logging.getLogger()
+    if args.verbose:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.WARNING)
+
+    linter_config = LinterConfig(by_lang)
+
+    @linter_config.lint
+    def pyflakes():
+        # type: () -> int
+        failed = check_pyflakes(args, by_lang)
+        return 1 if failed else 0
+
+    linter_config.do_lint()
+
+if __name__ == '__main__':
+    run()
