@@ -787,15 +787,6 @@ exports.by_sender_uri = function (reply_to) {
     ]);
 };
 
-exports.by_stream_uri = function (stream) {
-    return "#narrow/stream/" + hash_util.encode_stream_name(stream);
-};
-
-exports.by_stream_subject_uri = function (stream, subject) {
-    return "#narrow/stream/" + hash_util.encode_stream_name(stream) +
-           "/subject/" + hash_util.encodeHashComponent(subject);
-};
-
 exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
     var absolute_url = "";
     if (is_absolute_url) {

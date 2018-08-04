@@ -55,6 +55,16 @@ exports.decode_operand = function (operator, operand) {
     return operand;
 };
 
+exports.by_stream_uri = function (stream) {
+    return "#narrow/stream/" + exports.encode_stream_name(stream);
+};
+
+exports.by_stream_subject_uri = function (stream, subject) {
+    return "#narrow/stream/" + exports.encode_stream_name(stream) +
+           "/subject/" + exports.encodeHashComponent(subject);
+};
+
+
 return exports;
 
 }());

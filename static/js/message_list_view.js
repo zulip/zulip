@@ -232,10 +232,11 @@ MessageListView.prototype = {
 
                 if (message_container.msg.stream) {
                     message_container.stream_url =
-                        narrow.by_stream_uri(message_container.msg.stream);
+                        hash_util.by_stream_uri(message_container.msg.stream);
                     message_container.topic_url =
-                        narrow.by_stream_subject_uri(message_container.msg.stream,
-                                                     message_container.msg.subject);
+                        hash_util.by_stream_subject_uri(
+                            message_container.msg.stream,
+                            message_container.msg.subject);
                 } else {
                     message_container.pm_with_url =
                         message_container.msg.pm_with_url;
