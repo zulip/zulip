@@ -64,7 +64,7 @@ exports.populate_emoji = function (emoji_data) {
         if (data.deactivated !== true) {
             emoji_table.append(templates.render('admin_emoji_list', {
                 emoji: {
-                    name: data.name, source_url: data.source_url,
+                    name: data.name.replace("_", " "), source_url: data.source_url,
                     display_url: data.source_url,
                     author: data.author || '',
                     can_admin_emoji: can_admin_emoji(data),
