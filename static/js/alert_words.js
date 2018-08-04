@@ -3,6 +3,9 @@ var alert_words = (function () {
 var exports = {};
 
 exports.words = page_params.alert_words;
+exports.set_words = function (value) {
+    exports.words = value;
+};
 
 // Delete the `page_params.alert_words` since we are its sole user.
 delete page_params.alert_words;

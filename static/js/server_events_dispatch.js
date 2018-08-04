@@ -6,7 +6,7 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
     var noop = function () {};
     switch (event.type) {
     case 'alert_words':
-        alert_words.words = event.alert_words;
+        alert_words.set_words(event.alert_words);
         alert_words_ui.render_alert_words_ui();
         break;
 
