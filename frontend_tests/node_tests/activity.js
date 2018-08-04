@@ -77,7 +77,6 @@ zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 zrequire('unread');
 zrequire('hash_util');
-zrequire('hashchange');
 zrequire('narrow');
 zrequire('util');
 zrequire('presence');

@@ -39,33 +39,11 @@ exports.changehash = function (newhash) {
     favicon.reset();
 };
 
-// Encodes an operator list into the
-// corresponding hash: the # component
-// of the narrow URL
-exports.operators_to_hash = function (operators) {
-    var hash = '#';
-
-    if (operators !== undefined) {
-        hash = '#narrow';
-        _.each(operators, function (elem) {
-            // Support legacy tuples.
-            var operator = elem.operator;
-            var operand = elem.operand;
-
-            var sign = elem.negated ? '-' : '';
-            hash += '/' + sign + hash_util.encodeHashComponent(operator)
-                  + '/' + hash_util.encode_operand(operator, operand);
-        });
-    }
-
-    return hash;
-};
-
 exports.save_narrow = function (operators) {
     if (changing_hash) {
         return;
     }
-    var new_hash = exports.operators_to_hash(operators);
+    var new_hash = hash_util.operators_to_hash(operators);
     exports.changehash(new_hash);
 };
 
