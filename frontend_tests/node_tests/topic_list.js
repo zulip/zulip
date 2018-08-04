@@ -9,7 +9,6 @@ set_global('stream_popover', {});
 set_global('templates', {});
 
 zrequire('hash_util');
-zrequire('narrow');
 zrequire('stream_data');
 zrequire('unread');
 zrequire('topic_data');

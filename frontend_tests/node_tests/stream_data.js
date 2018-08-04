@@ -10,7 +10,6 @@ set_global('blueslip', global.make_zblueslip());
 
 zrequire('util');
 zrequire('hash_util');
-zrequire('narrow');
 zrequire('topic_data');
 zrequire('people');
 zrequire('stream_color');
