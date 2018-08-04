@@ -14,6 +14,7 @@ from lib import sanity_check
 sanity_check.check_venv(__file__)
 
 from zulint import lister
+from zulint.command import add_default_linter_arguments
 from typing import cast, Callable, Dict, Iterator, List
 
 
@@ -50,15 +51,6 @@ def run():
     parser.add_argument('--no-gitlint',
                         action='store_true',
                         help='Disable gitlint')
-    parser.add_argument('--modified', '-m',
-                        action='store_true',
-                        help='Only check modified files')
-    parser.add_argument('--verbose', '-v',
-                        action='store_true',
-                        help='Print verbose timing output')
-    parser.add_argument('targets',
-                        nargs='*',
-                        help='Specify directories to check')
     limited_tests_group = parser.add_mutually_exclusive_group()
     limited_tests_group.add_argument('--frontend',
                                      action='store_true',
@@ -66,6 +58,7 @@ def run():
     limited_tests_group.add_argument('--backend',
                                      action='store_true',
                                      help='Only check files relevant to backend')
+    add_default_linter_arguments(parser)
     args = parser.parse_args()
 
     tools_dir = os.path.dirname(os.path.abspath(__file__))
