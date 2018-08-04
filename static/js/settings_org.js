@@ -690,10 +690,9 @@ exports.build_page = function () {
         });
     };
 
-    function parse_time_limit(elem) {
+    exports.parse_time_limit = function parse_time_limit(elem) {
         return Math.floor(parseFloat(elem.val(), 10).toFixed(1) * 60);
-    }
-    exports.parse_time_limit = parse_time_limit;
+    };
 
     function get_complete_data_for_subsection(subsection) {
         var data = {};
@@ -702,7 +701,7 @@ exports.build_page = function () {
             if (edit_limit_setting_value === 'never') {
                 data.allow_message_editing = false;
             } else if (edit_limit_setting_value === 'custom_limit') {
-                data.message_content_edit_limit_seconds = parse_time_limit($('#id_realm_message_content_edit_limit_minutes'));
+                data.message_content_edit_limit_seconds = exports.parse_time_limit($('#id_realm_message_content_edit_limit_minutes'));
                 // Disable editing if the parsed time limit is 0 seconds
                 data.allow_message_editing = !!data.message_content_edit_limit_seconds;
             } else {
@@ -714,7 +713,7 @@ exports.build_page = function () {
             if (delete_limit_setting_value === 'never') {
                 data.allow_message_deleting = false;
             } else if (delete_limit_setting_value === 'custom_limit') {
-                data.message_content_delete_limit_seconds = parse_time_limit($('#id_realm_message_content_delete_limit_minutes'));
+                data.message_content_delete_limit_seconds = exports.parse_time_limit($('#id_realm_message_content_delete_limit_minutes'));
                 // Disable deleting if the parsed time limit is 0 seconds
                 data.allow_message_deleting = !!data.message_content_delete_limit_seconds;
             } else {
