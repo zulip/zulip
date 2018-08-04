@@ -19,6 +19,12 @@
         <div class="page-content">
             <div class="main">
 
+                {% if error_message %}
+                <div class="alert alert-danger" id="error-message-box">
+                    {{ error_message }}
+                </div>
+                {% endif %}
+
                 <h1>{{ _("Billing") }}</h1>
                 {% if admin_access %}
                 <ul class="nav nav-tabs" id="billing-tabs">
