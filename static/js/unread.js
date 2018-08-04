@@ -8,6 +8,9 @@ var unread = (function () {
 var exports = {};
 
 exports.suppress_unread_counts = true;
+exports.set_suppress_unread_counts = function (value) {
+    exports.suppress_unread_counts = value;
+};
 exports.messages_read_in_narrow = false;
 exports.set_messages_read_in_narrow = function (value) {
     exports.messages_read_in_narrow = value;

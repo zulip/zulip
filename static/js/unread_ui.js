@@ -62,7 +62,7 @@ exports.update_unread_counts = function () {
 };
 
 exports.enable = function enable() {
-    unread.suppress_unread_counts = false;
+    unread.set_suppress_unread_counts(false);
     exports.update_unread_counts();
 };
 
