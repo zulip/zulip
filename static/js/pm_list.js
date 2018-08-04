@@ -111,7 +111,7 @@ exports._build_private_messages_list = function (active_conversation, max_privat
             unread: num_unread,
             is_zero: num_unread === 0,
             zoom_out_hide: !always_visible,
-            url: narrow.pm_with_uri(reply_to),
+            url: hash_util.pm_with_uri(reply_to),
         };
         display_messages.push(display_message);
     });

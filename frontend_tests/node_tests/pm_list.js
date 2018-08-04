@@ -15,8 +15,6 @@ set_global('popovers', {
 });
 
 zrequire('hash_util');
-zrequire('hashchange');
-zrequire('narrow');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
 zrequire('people');
