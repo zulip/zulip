@@ -22,6 +22,7 @@ def list_emoji(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
 @has_request_variables
 def upload_emoji(request: HttpRequest, user_profile: UserProfile,
                  emoji_name: str=REQ()) -> HttpResponse:
+    emoji_name = emoji_name.strip().replace(' ', '_')
     check_valid_emoji_name(emoji_name)
     check_emoji_admin(user_profile)
     if RealmEmoji.objects.filter(realm=user_profile.realm,

@@ -123,6 +123,9 @@ IGNORED_PHRASES = [
     r"argument ",
     # I can't find this one
     r"text",
+    r"GIF",
+    # Emoji name placeholder
+    r"leafy green vegetable",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
