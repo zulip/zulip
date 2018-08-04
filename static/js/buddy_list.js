@@ -287,18 +287,18 @@ function buddy_list_create() {
     };
 
     self.fill_screen_with_content = function () {
-        var height_to_fill = self.height_to_fill();
+        var height = self.height_to_fill();
 
         var elem = ui.get_scroll_element($(self.scroll_container_sel)).expectOne()[0];
 
         // Add a fudge factor.
-        height_to_fill += 10;
+        height += 10;
 
         while (self.render_count < self.keys.length) {
             var padding_height = $(self.padding_sel).height();
             var bottom_offset = elem.scrollHeight - elem.scrollTop - padding_height;
 
-            if (bottom_offset > height_to_fill) {
+            if (bottom_offset > height) {
                 break;
             }
 
