@@ -354,7 +354,7 @@ exports.toggle_actions_popover = function (element, id) {
             should_display_uncollapse: should_display_uncollapse,
             should_display_add_reaction_option: message.sent_by_me,
             should_display_edit_history_option: should_display_edit_history_option,
-            conversation_time_uri: narrow.by_conversation_and_time_uri(message, true),
+            conversation_time_uri: hash_util.by_conversation_and_time_uri(message, true),
             narrowed: narrow_state.active(),
             should_display_delete_option: should_display_delete_option,
             should_display_reminder_option: feature_flags.reminders_in_message_action_menu,
