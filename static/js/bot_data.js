@@ -42,7 +42,7 @@ var bot_data = (function () {
         send_change_event();
     };
 
-    exports.delete = function bot_data__delete(bot_id) {
+    exports.del = function bot_data__del(bot_id) {
         delete bots[bot_id];
         delete services[bot_id];
         send_change_event();

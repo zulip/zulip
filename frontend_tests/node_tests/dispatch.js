@@ -1002,7 +1002,7 @@ with_overrides(function (override) {
     event = event_fixtures.realm_bot__delete;
     global.with_stub(function (bot_stub) {
         global.with_stub(function (admin_stub) {
-            override('bot_data.delete', bot_stub.f);
+            override('bot_data.del', bot_stub.f);
             override('settings_users.update_user_data', admin_stub.f);
             dispatch(event);
             var args = bot_stub.get_args('bot_id');
