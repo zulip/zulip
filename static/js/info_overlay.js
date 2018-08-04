@@ -22,8 +22,8 @@ exports.set_up_toggler = function () {
         },
     };
 
-    var toggler = components.toggle(opts);
-    var elem = toggler.get();
+    exports.toggler = components.toggle(opts);
+    var elem = exports.toggler.get();
     elem.addClass('large allow-overflow');
 
     var modals = _.map(opts.values, function (item) {
@@ -36,8 +36,8 @@ exports.set_up_toggler = function () {
         keydown_util.handle({
             elem: modal,
             handlers: {
-                left_arrow: toggler.maybe_go_left,
-                right_arrow: toggler.maybe_go_right,
+                left_arrow: exports.toggler.maybe_go_left,
+                right_arrow: exports.toggler.maybe_go_right,
             },
         });
     });
@@ -46,8 +46,6 @@ exports.set_up_toggler = function () {
 
     common.adjust_mac_shortcuts(".hotkeys_table .hotkey kbd");
     common.adjust_mac_shortcuts("#markdown-instructions kbd");
-
-    exports.toggler = toggler;
 };
 
 exports.show = function (target) {
