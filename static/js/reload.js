@@ -167,7 +167,7 @@ exports.initialize = function () {
         page_params.initial_narrow_offset = narrow_offset;
     }
 
-    activity.new_user_input = false;
+    activity.set_new_user_input(false);
     hashchange.changehash(vars.oldhash);
 };
 

@@ -860,7 +860,7 @@ exports.process_hotkey = function (e, hotkey) {
    instead just let keypress go for it. */
 
 exports.process_keydown = function (e) {
-    activity.new_user_input = true;
+    activity.set_new_user_input(true);
     const hotkey = exports.get_keydown_hotkey(e);
     if (!hotkey) {
         return false;
