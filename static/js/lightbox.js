@@ -275,8 +275,10 @@ exports.initialize = function () {
     $("#lightbox_overlay").on("click", ".center .arrow", function () {
         var direction = $(this).attr("data-direction");
 
-        if (/^(next|prev)$/.test(direction)) {
-            lightbox[direction]();
+        if (direction === 'next') {
+            lightbox.next();
+        } else if (direction === 'prev') {
+            lightbox.prev();
         }
     });
 
