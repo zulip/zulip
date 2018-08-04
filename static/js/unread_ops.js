@@ -40,7 +40,7 @@ exports.process_read_messages_event = function (message_ids) {
         if (current_msg_list === message_list.narrowed) {
             // I'm not sure this entirely makes sense for all server
             // notifications.
-            unread.messages_read_in_narrow = true;
+            unread.set_messages_read_in_narrow(true);
         }
 
         unread.mark_as_read(message_id);
@@ -70,7 +70,7 @@ exports.notify_server_messages_read = function (messages, options) {
 
     _.each(messages, function (message) {
         if (current_msg_list === message_list.narrowed) {
-            unread.messages_read_in_narrow = true;
+            unread.set_messages_read_in_narrow(true);
         }
 
         unread.mark_as_read(message.id);

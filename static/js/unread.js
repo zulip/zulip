@@ -9,6 +9,9 @@ var exports = {};
 
 exports.suppress_unread_counts = true;
 exports.messages_read_in_narrow = false;
+exports.set_messages_read_in_narrow = function (value) {
+    exports.messages_read_in_narrow = value;
+};
 
 function make_id_set() {
     /* This is just a basic set class where

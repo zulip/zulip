@@ -152,7 +152,7 @@ exports.activate = function (raw_operators, opts) {
     }
 
     if (!was_narrowed_already) {
-        unread.messages_read_in_narrow = false;
+        unread.set_messages_read_in_narrow(false);
     }
 
     // IMPORTANT!  At this point we are heavily committed to
