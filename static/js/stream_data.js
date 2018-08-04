@@ -381,16 +381,6 @@ exports.add_subscriber = function (stream_name, user_id) {
     return true;
 };
 
-exports.remove_deactivated_user_from_all_streams = function (user_id) {
-    stream_info.values().forEach(function (stream) {
-        if (exports.is_user_subscribed(stream.name, user_id)) {
-            exports.remove_subscriber(stream.name, user_id);
-            var sub = exports.get_sub(stream.name);
-            subs.rerender_subscriptions_settings(sub);
-        }
-    });
-};
-
 exports.remove_subscriber = function (stream_name, user_id) {
     var sub = exports.get_sub(stream_name);
     if (typeof sub === 'undefined') {
