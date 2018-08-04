@@ -131,6 +131,8 @@ worker_services = ["zulip-workers:*"]
 # Stop and start thumbor service only if thumbor is installed.
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
+if os.path.exists("/etc/supervisor/conf.d/outproxy.conf"):
+    core_server_services.append("zulip-outproxy")
 
 if not args.skip_puppet or migrations_needed:
     # By default, we shut down the service to apply migrations and

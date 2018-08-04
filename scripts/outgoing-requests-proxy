@@ -1,0 +1,191 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import logging
+import socket
+import urllib
+import ipaddress
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(BASE_DIR)
+import scripts.lib.setup_path_on_import
+
+import tornado.ioloop
+import tornado.iostream
+import tornado.web
+import tornado.httpclient
+import tornado.httputil
+
+from typing import Any, Callable, Optional
+
+logging.basicConfig(format='%(asctime)s %(levelname)s [outproxy] %(message)s',
+                    level=logging.INFO)
+
+HandleResponseT = Callable[[tornado.httpclient.HTTPResponse], None]
+
+def fetch_request(url: str, callback: HandleResponseT, **kwargs: Any) -> None:
+    req = tornado.httpclient.HTTPRequest(url, **kwargs)
+    client = tornado.httpclient.AsyncHTTPClient()
+    client.fetch(req, callback, raise_error=False)
+
+def resolve_host(host: str) -> Optional[str]:
+    # Remove port from host if it exists
+    parts = host.split(":")
+    hostname = parts[0]
+    try:
+        host_ip = socket.gethostbyname(hostname)
+        logging.info('Resolved %s to %s', hostname, host_ip)
+        ip_addr = ipaddress.IPv4Address(host_ip)
+        if ip_addr.is_private:
+            return None
+        netloc = host_ip
+        # If there was a port in the original hostname
+        if len(parts) > 1:
+            netloc += ':' + parts[1]
+        return netloc
+    except (socket.gaierror, UnicodeError, ipaddress.AddressValueError):
+        logging.info('Failed to resolve %s', host)
+        return None
+
+class ProxyHandler(tornado.web.RequestHandler):
+    SUPPORTED_METHODS = tornado.web.RequestHandler.SUPPORTED_METHODS + ('CONNECT',)
+
+    def compute_etag(self) -> None:
+        return None
+
+    @tornado.web.asynchronous
+    def get(self) -> None:
+        logging.info('Handle %s request to %s', self.request.method,
+                     self.request.uri)
+
+        def handle_response(response: tornado.httpclient.HTTPResponse) -> None:
+            if (response.error and not
+                    isinstance(response.error, tornado.httpclient.HTTPError)):
+                self.set_status(500)
+                self.write('Internal server error:\n' + str(response.error))
+            else:
+                self.set_status(response.code, response.reason)
+                self._headers = response.headers
+                if response.body:
+                    self.write(response.body)
+            self.finish()
+
+        body = self.request.body
+        if not body:
+            body = None
+
+        if 'Proxy-Connection' in self.request.headers:
+            del self.request.headers['Proxy-Connection']
+        if 'Connection' in self.request.headers:
+            del self.request.headers['Connection']
+
+        parsed_url = urllib.parse.urlparse(self.request.uri)
+
+        # The host header can be spoofed, so we get the host from the url itself.
+        actual_host = parsed_url.netloc
+        if actual_host != self.request.host:
+            self.set_status(400, 'Invalid Host Header')
+            self.finish()
+            return
+
+        resolved_netloc = resolve_host(self.request.host)
+        if not resolved_netloc:
+            self.set_status(404, 'Not Found')
+            self.finish()
+            return
+
+        self.request.headers.add('Connection', 'Close')
+        if 'Host' not in self.request.headers:
+            self.request.headers.add('Host', self.request.host)
+
+        final_url = urllib.parse.urlunparse((parsed_url.scheme, resolved_netloc,
+                                             parsed_url.path, parsed_url.params,
+                                             parsed_url.query, parsed_url.fragment))
+
+        fetch_request(
+            final_url, handle_response,
+            method=self.request.method, body=body,
+            headers=self.request.headers, follow_redirects=False,
+            allow_nonstandard_methods=True, decompress_response=False)
+
+    @tornado.web.asynchronous
+    def head(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def post(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def delete(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def patch(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def put(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def options(self) -> None:
+        return self.get()
+
+    @tornado.web.asynchronous
+    def connect(self) -> None:
+        logging.info('Handle CONNECT request to %s', self.request.uri)
+        host, port = self.request.uri.split(':')
+        client = self.request.connection.stream
+
+        def read_from_client(data: bytes) -> None:
+            upstream.write(data)
+
+        def read_from_upstream(data: bytes) -> None:
+            client.write(data)
+
+        def client_close(data: Optional[bytes]=None) -> None:
+            if upstream.closed():
+                return
+            if data:
+                upstream.write(data)
+            upstream.close()
+
+        def upstream_close(data: Optional[bytes]=None) -> None:
+            if client.closed():
+                return
+            if data:
+                client.write(data)
+            client.close()
+
+        def start_tunnel() -> None:
+            logging.info('CONNECT tunnel established to %s', self.request.uri)
+            client.read_until_close(client_close, read_from_client)
+            upstream.read_until_close(upstream_close, read_from_upstream)
+            client.write(b'HTTP/1.0 200 Connection established\r\n\r\n')
+
+        host_ip = resolve_host(host)
+        if not host_ip:
+            self.set_status(404, 'Not Found')
+            self.finish()
+            return
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
+        upstream = tornado.iostream.IOStream(s)
+        upstream.connect((host_ip, int(port)), start_tunnel)
+
+
+def run_proxy(port: int) -> None:
+    app = tornado.web.Application([
+        (r'.*', ProxyHandler),
+    ])
+    app.listen(port)
+    logging.info('Serving on http://localhost:' + str(port))
+    tornado.ioloop.IOLoop.current().start()
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        logging.error('Please specify port as the first argument.')
+        exit(1)
+    port = int(sys.argv[1])
+    run_proxy(port)

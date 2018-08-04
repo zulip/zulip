@@ -10,6 +10,7 @@ class zulip::dockervoyager {
   include zulip::supervisor
   include zulip::process_fts_updates
   include zulip::thumbor
+  include zulip::outproxy
 
   file { '/etc/supervisor/conf.d/cron.conf':
     ensure  => file,

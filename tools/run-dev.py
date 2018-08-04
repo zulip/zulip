@@ -113,6 +113,11 @@ django_port = base_port + 1
 tornado_port = base_port + 2
 webpack_port = base_port + 3
 thumbor_port = base_port + 4
+# We specify the Outproxy port explicitly as this is also used in thumbor.conf
+if options.test:
+    outproxy_port = 9986
+else:
+    outproxy_port = 9996
 
 os.chdir(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -154,7 +159,8 @@ cmds = [['./manage.py', 'runserver'] +
          './puppet/zulip/files/postgresql/process_fts_updates'],
         ['./manage.py', 'deliver_scheduled_messages'],
         ['/srv/zulip-thumbor-venv/bin/thumbor', '-c', './zthumbor/thumbor.conf',
-         '-p', '%s' % (thumbor_port,)]]
+         '-p', '%s' % (thumbor_port,)],
+        ['./scripts/outgoing-requests-proxy', '%s' % (outproxy_port,)]]
 if options.test:
     # We just need to compile handlebars templates and webpack assets
     # once at startup, not run a daemon, in test mode.  Additionally,
@@ -404,7 +410,8 @@ def shutdown_handler(*args, **kwargs):
 
 # log which services/ports will be started
 print("Starting Zulip services on ports: web proxy: {},".format(proxy_port),
-      "Django: {}, Tornado: {}, Thumbor: {}".format(django_port, tornado_port, thumbor_port),
+      "Django: {}, Tornado: {}, Thumbor: {}, \
+Outgoing Proxy: {}".format(django_port, tornado_port, thumbor_port, outproxy_port),
       end='')
 if options.test:
     print("")  # no webpack for --test

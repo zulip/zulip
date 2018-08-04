@@ -28,6 +28,8 @@ subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
+if os.path.exists("/etc/supervisor/conf.d/outproxy.conf"):
+    core_server_services.append("zulip-outproxy")
 
 # Restart the uWSGI and related processes via supervisorctl.
 logging.info("Stopping workers")
