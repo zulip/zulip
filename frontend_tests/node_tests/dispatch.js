@@ -820,7 +820,7 @@ with_overrides(function (override) {
     event = event_fixtures.realm_user__remove;
     global.with_stub(function (stub) {
         override('people.deactivate', stub.f);
-        override('stream_data.remove_deactivated_user_from_all_streams', noop);
+        override('stream_events.remove_deactivated_user_from_all_streams', noop);
         dispatch(event);
         var args = stub.get_args('person');
         assert_same(args.person, event.person);
