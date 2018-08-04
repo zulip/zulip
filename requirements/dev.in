@@ -49,4 +49,7 @@ python-digitalocean==1.13.2
 # Needed for updating the locked pip dependencies
 pip-tools==2.0.2
 
+# Zulip's linter library
+-e git+https://github.com/zulip/zulint@1b34e45c7da65fd470a44cdd3b272ccb316be648#egg=zulint==0.0.2+git
+
 -r mypy.in
