@@ -767,66 +767,6 @@ exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
 };
 
-exports.pm_with_uri = function (reply_to) {
-    return hashchange.operators_to_hash([
-        {operator: 'pm-with', operand: reply_to},
-    ]);
-};
-
-exports.huddle_with_uri = function (user_ids_string) {
-    // This method is convenient is convenient for callers
-    // that have already converted emails to a comma-delimited
-    // list of user_ids.  We should be careful to keep this
-    // consistent with hash_util.decode_operand.
-    return "#narrow/pm-with/" + user_ids_string + '-group';
-};
-
-exports.by_sender_uri = function (reply_to) {
-    return hashchange.operators_to_hash([
-        {operator: 'sender', operand: reply_to},
-    ]);
-};
-
-exports.by_stream_uri = function (stream) {
-    return "#narrow/stream/" + hash_util.encode_stream_name(stream);
-};
-
-exports.by_stream_subject_uri = function (stream, subject) {
-    return "#narrow/stream/" + hash_util.encode_stream_name(stream) +
-           "/subject/" + hash_util.encodeHashComponent(subject);
-};
-
-exports.by_message_uri = function (message_id) {
-    return "#narrow/id/" + hash_util.encodeHashComponent(message_id);
-};
-
-exports.by_near_uri = function (message_id) {
-    return "#narrow/near/" + hash_util.encodeHashComponent(message_id);
-};
-
-exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
-    var absolute_url = "";
-    if (is_absolute_url) {
-        absolute_url = window.location.protocol + "//" +
-            window.location.host + "/" + window.location.pathname.split('/')[1];
-    }
-    if (message.type === "stream") {
-        return absolute_url + "#narrow/stream/" +
-            hash_util.encode_stream_name(message.stream) +
-            "/subject/" + hash_util.encodeHashComponent(message.subject) +
-            "/near/" + hash_util.encodeHashComponent(message.id);
-    }
-
-    // Include your own email in this URI if it's not there already
-    var all_emails = message.reply_to;
-    if (all_emails.indexOf(people.my_current_email()) === -1) {
-        all_emails += "," + people.my_current_email();
-    }
-    return absolute_url + "#narrow/pm-with/" +
-        hash_util.encodeHashComponent(all_emails) +
-        "/near/" + hash_util.encodeHashComponent(message.id);
-};
-
 return exports;
 
 }());

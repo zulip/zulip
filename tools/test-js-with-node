@@ -43,7 +43,6 @@ enforce_fully_covered = {
     'static/js/fenced_code.js',
     'static/js/fetch_status.js',
     'static/js/filter.js',
-    'static/js/hash_util.js',
     'static/js/keydown_util.js',
     'static/js/markdown.js',
     'static/js/message_store.js',

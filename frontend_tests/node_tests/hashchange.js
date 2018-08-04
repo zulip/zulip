@@ -33,7 +33,7 @@ run_test('operators_round_trip', () => {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'algol'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/topic/algol');
 
     narrow = hashchange.parse_narrow(hash.split('/'));
@@ -46,7 +46,7 @@ run_test('operators_round_trip', () => {
         {operator: 'stream', operand: 'devel'},
         {operator: 'topic', operand: 'visual c++', negated: true},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/devel/-topic/visual.20c.2B.2B');
 
     narrow = hashchange.parse_narrow(hash.split('/'));
@@ -64,7 +64,7 @@ run_test('operators_round_trip', () => {
     operators = [
         {operator: 'stream', operand: 'Florida, USA'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/stream/987-Florida.2C-USA');
     narrow = hashchange.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
@@ -99,7 +99,7 @@ run_test('people_slugs', () => {
     operators = [
         {operator: 'sender', operand: 'alice@example.com'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/sender/42-alice');
     narrow = hashchange.parse_narrow(hash.split('/'));
     assert.deepEqual(narrow, [
@@ -109,7 +109,7 @@ run_test('people_slugs', () => {
     operators = [
         {operator: 'pm-with', operand: 'alice@example.com'},
     ];
-    hash = hashchange.operators_to_hash(operators);
+    hash = hash_util.operators_to_hash(operators);
     assert.equal(hash, '#narrow/pm-with/42-alice');
 });
 
