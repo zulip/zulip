@@ -64,7 +64,7 @@ run_test('uris', () => {
     var uri = hash_util.pm_with_uri(ray.email);
     assert.equal(uri, '#narrow/pm-with/22-ray');
 
-    uri = narrow.huddle_with_uri("22,23");
+    uri = hash_util.huddle_with_uri("22,23");
     assert.equal(uri, '#narrow/pm-with/22,23-group');
 
     uri = narrow.by_sender_uri(ray.email);
