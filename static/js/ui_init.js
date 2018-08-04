@@ -70,7 +70,7 @@ exports.initialize_kitchen_sink_stuff = function () {
             }
         }
 
-        message_viewport.last_movement_direction = delta;
+        message_viewport.set_last_movement_direction(delta);
     }, 50);
 
     message_viewport.message_pane.on('wheel', function (e) {
