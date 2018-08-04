@@ -60,6 +60,9 @@ exports.hide_sub_settings = function (sub) {
     $settings.find(".regular_subscription_settings").removeClass('in');
     // Clear email address widget
     $settings.find(".email-address").html("");
+    if (!sub.can_change_stream_permissions) {
+        $settings.find(".change-stream-privacy").hide();
+    }
 };
 
 exports.show_sub_settings = function (sub) {
