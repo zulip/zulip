@@ -61,7 +61,7 @@ run_test('uris', () => {
     people.add(ray);
     people.add(alice);
 
-    var uri = narrow.pm_with_uri(ray.email);
+    var uri = hash_util.pm_with_uri(ray.email);
     assert.equal(uri, '#narrow/pm-with/22-ray');
 
     uri = narrow.huddle_with_uri("22,23");

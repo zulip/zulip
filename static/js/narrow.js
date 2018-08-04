@@ -767,12 +767,6 @@ exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
 };
 
-exports.pm_with_uri = function (reply_to) {
-    return hash_util.operators_to_hash([
-        {operator: 'pm-with', operand: reply_to},
-    ]);
-};
-
 exports.huddle_with_uri = function (user_ids_string) {
     // This method is convenient is convenient for callers
     // that have already converted emails to a comma-delimited
