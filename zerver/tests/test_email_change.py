@@ -193,3 +193,31 @@ class EmailChangeTestCase(ZulipTestCase):
         result = self.client_patch(url, data)
         self.assertEqual('success', result.json()['result'])
         self.assertEqual('', result.json()['msg'])
+
+    def test_change_delivery_email_end_to_end(self) -> None:
+        user_profile = self.example_user('hamlet')
+        do_set_realm_property(user_profile.realm, 'delivery_email_hidden', True)
+
+        old_email = user_profile.email
+        new_email = 'hamlet-new@zulip.com'
+        self.login(self.example_email('hamlet'))
+        obj = EmailChangeStatus.objects.create(new_email=new_email,
+                                               old_email=old_email,
+                                               user_profile=user_profile,
+                                               realm=user_profile.realm)
+        key = generate_key()
+        Confirmation.objects.create(content_object=obj,
+                                    date_sent=now(),
+                                    confirmation_key=key,
+                                    type=Confirmation.EMAIL_CHANGE)
+        url = confirmation_url(key, user_profile.realm.host, Confirmation.EMAIL_CHANGE)
+        response = self.client_get(url)
+
+        self.assertEqual(response.status_code, 200)
+        self.assert_in_success_response(["This confirms that the email address for your Zulip"],
+                                        response)
+        user_profile = get_user(old_email, user_profile.realm)
+        self.assertEqual(user_profile.delivery_email, new_email)
+        self.assertEqual(user_profile.email, old_email)
+        obj.refresh_from_db()
+        self.assertEqual(obj.status, 1)
