@@ -133,7 +133,7 @@ exports.maybe_scroll_to_selected = function () {
     // selected message, then do so
     if (pointer.recenter_pointer_on_display) {
         exports.scroll_to_selected();
-        pointer.recenter_pointer_on_display = false;
+        pointer.set_recenter_pointer_on_display(false);
     }
 };
 

@@ -6,6 +6,9 @@ var pointer = (function () {
 var exports = {};
 
 exports.recenter_pointer_on_display = false;
+exports.set_recenter_pointer_on_display = function (value) {
+    exports.recenter_pointer_on_display = value;
+};
 
 // Toggles re-centering the pointer in the window
 // when All Messages is next clicked by the user
