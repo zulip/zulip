@@ -768,7 +768,7 @@ exports.hide_empty_narrow_message = function () {
 };
 
 exports.pm_with_uri = function (reply_to) {
-    return hashchange.operators_to_hash([
+    return hash_util.operators_to_hash([
         {operator: 'pm-with', operand: reply_to},
     ]);
 };
@@ -782,7 +782,7 @@ exports.huddle_with_uri = function (user_ids_string) {
 };
 
 exports.by_sender_uri = function (reply_to) {
-    return hashchange.operators_to_hash([
+    return hash_util.operators_to_hash([
         {operator: 'sender', operand: reply_to},
     ]);
 };

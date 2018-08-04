@@ -64,6 +64,28 @@ exports.by_stream_subject_uri = function (stream, subject) {
            "/subject/" + exports.encodeHashComponent(subject);
 };
 
+// Encodes an operator list into the
+// corresponding hash: the # component
+// of the narrow URL
+exports.operators_to_hash = function (operators) {
+    var hash = '#';
+
+    if (operators !== undefined) {
+        hash = '#narrow';
+        _.each(operators, function (elem) {
+            // Support legacy tuples.
+            var operator = elem.operator;
+            var operand = elem.operand;
+
+            var sign = elem.negated ? '-' : '';
+            hash += '/' + sign + exports.encodeHashComponent(operator)
+                  + '/' + exports.encode_operand(operator, operand);
+        });
+    }
+
+    return hash;
+};
+
 
 return exports;
 

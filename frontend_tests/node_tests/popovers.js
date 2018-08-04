@@ -1,7 +1,6 @@
 set_global('$', global.make_zjquery());
 set_global('i18n', global.stub_i18n);
 
-zrequire('hashchange');
 zrequire('hash_util');
 zrequire('narrow');
 zrequire('narrow_state');

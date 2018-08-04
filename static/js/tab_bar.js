@@ -38,11 +38,11 @@ function make_tab_data() {
         tabs.push(make_tab("All Messages", "#narrow/in/all", undefined, "root"));
     } else if (page_params.narrow !== undefined) {
         tabs.push(make_tab("Stream " + page_params.narrow_stream,
-                           hashchange.operators_to_hash([page_params.narrow[0]]),
+                           hash_util.operators_to_hash([page_params.narrow[0]]),
                            page_params.narrow_stream, 'stream'));
         if (page_params.narrow_topic !== undefined) {
             tabs.push(make_tab("Topic " + page_params.narrow_topic,
-                               hashchange.operators_to_hash(page_params.narrow),
+                               hash_util.operators_to_hash(page_params.narrow),
                                null));
         }
     }
@@ -51,7 +51,7 @@ function make_tab_data() {
         var stream;
         var ops = narrow_state.operators();
         // Second breadcrumb item
-        var hashed = hashchange.operators_to_hash(ops.slice(0, 1));
+        var hashed = hash_util.operators_to_hash(ops.slice(0, 1));
         if (filter.has_operator("stream")) {
             stream = filter.operands("stream")[0];
             tabs.push(make_tab(stream, hashed, stream, 'stream'));
@@ -103,7 +103,7 @@ function make_tab_data() {
         if (filter.has_operator("stream") &&
             filter.has_operator("topic")) {
             var subject = filter.operands("topic")[0];
-            hashed = hashchange.operators_to_hash(ops.slice(0, 2));
+            hashed = hash_util.operators_to_hash(ops.slice(0, 2));
 
             tabs.push(make_tab(subject, hashed, null));
         }
