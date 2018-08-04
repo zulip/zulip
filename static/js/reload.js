@@ -3,17 +3,6 @@ var reload = (function () {
 
 var exports = {};
 
-var reload_in_progress = false;
-var reload_pending = false;
-
-exports.is_pending = function () {
-    return reload_pending;
-};
-
-exports.is_in_progress = function () {
-    return reload_in_progress;
-};
-
 function preserve_state(send_after_reload, save_pointer, save_narrow, save_compose) {
     if (!localstorage.supported()) {
         // If local storage is not supported by the browser, we can't
@@ -181,7 +170,7 @@ exports.initialize = function () {
 };
 
 function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compose, message) {
-    if (reload_in_progress) {
+    if (reload_state.is_in_progress()) {
         blueslip.log("do_reload_app: Doing nothing since reload_in_progress");
         return;
     }
@@ -203,7 +192,7 @@ function do_reload_app(send_after_reload, save_pointer, save_narrow, save_compos
     // TODO: We need a better API for showing messages.
     ui_report.message(message, $("#reloading-application"));
     blueslip.log('Starting server requested page reload');
-    reload_in_progress = true;
+    reload_state.set_state_to_in_progress();
 
     // Sometimes the window.location.reload that we attempt has no
     // immediate effect (likely by browsers trying to save power by
@@ -253,10 +242,10 @@ exports.initiate = function (options) {
                       options.message);
     }
 
-    if (reload_pending) {
+    if (reload_state.is_pending()) {
         return;
     }
-    reload_pending = true;
+    reload_state.set_state_to_pending();
 
     // If the user is composing a message, reload if they become idle
     // while composing.  If they finish or cancel the compose, wait
@@ -315,7 +304,7 @@ window.addEventListener('beforeunload', function () {
     // happens before the navigation is complete the user is kept captive at
     // zulip.
     blueslip.log("Setting reload_in_progress in beforeunload handler");
-    reload_in_progress = true;
+    reload_state.set_state_to_in_progress();
 });
 
 

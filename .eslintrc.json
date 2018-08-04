@@ -118,6 +118,7 @@
         "realm_icon": false,
         "recent_senders": false,
         "reload": false,
+        "reload_state": false,
         "reminder": false,
         "resize": false,
         "rows": false,

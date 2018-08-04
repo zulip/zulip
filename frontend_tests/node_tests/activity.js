@@ -48,7 +48,7 @@ const _stream_popover = {
     },
 };
 
-const _reload = {
+const _reload_state = {
     is_in_progress: () => false,
 };
 
@@ -66,7 +66,7 @@ set_global('feature_flags', _feature_flags);
 set_global('keydown_util', _keydown_util);
 set_global('page_params', _page_params);
 set_global('popovers', _popovers);
-set_global('reload', _reload);
+set_global('reload_state', _reload_state);
 set_global('resize', _resize);
 set_global('scroll_util', _scroll_util);
 set_global('stream_popover', _stream_popover);
@@ -853,7 +853,7 @@ run_test('initialize', () => {
     assert(!activity.has_focus);
 
     // Now execute the reload-in-progress code path
-    reload.is_in_progress = function () {
+    _reload_state.is_in_progress = function () {
         return true;
     };
 

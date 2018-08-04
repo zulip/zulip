@@ -131,7 +131,7 @@ function get_events_success(events) {
 function get_events(options) {
     options = _.extend({dont_block: false}, options);
 
-    if (reload.is_in_progress()) {
+    if (reload_state.is_in_progress()) {
         return;
     }
 
