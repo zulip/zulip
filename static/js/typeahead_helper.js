@@ -161,6 +161,22 @@ exports.render_emoji = function (item) {
     return exports.render_typeahead_item(args);
 };
 
+// manipulate prefix_sort to select popular emojis first
+// This is kinda a hack and so probably not our long-term solution.
+function emoji_prefix_sort(query, objs, get_item) {
+    var prefix_sort = util.prefix_sort(query, objs, get_item);
+    var popular_emoji_matches = [];
+    var other_emoji_matches = [];
+    prefix_sort.matches.forEach(function (obj) {
+        if (emoji.frequently_used_emojis_list.indexOf(obj.codepoint) !== -1) {
+            popular_emoji_matches.push(obj);
+        } else {
+            other_emoji_matches.push(obj);
+        }
+    });
+    return { matches: popular_emoji_matches.concat(other_emoji_matches), rest: prefix_sort.rest };
+}
+
 exports.sorter = function (query, objs, get_item) {
     var results = util.prefix_sort(query, objs, get_item);
     return results.matches.concat(results.rest);
@@ -315,7 +331,7 @@ exports.sort_recipients = function (users, query, current_stream, current_subjec
 
 exports.sort_emojis = function (matches, query) {
     // TODO: sort by category in v2
-    var results = util.emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
+    var results = emoji_prefix_sort(query, matches, function (x) { return x.emoji_name; });
     return results.matches.concat(results.rest);
 };
 

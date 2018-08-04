@@ -11,14 +11,7 @@ var APPROX_WIDTH = 255;
 // and composing a message with an emoji share a single widget,
 // implemented as the emoji_popover.
 exports.complete_emoji_catalog = [];
-exports.frequently_used_emojis_list = [
-    '1f44d',    // thumbs_up
-    '1f389',    // party_popper
-    '1f642',    // simple_smile
-    '2764',     // heart
-    '1f6e0',    // hammer_and_wrench
-    '1f419',    // octopus
-];
+
 var current_message_emoji_popover_elem;
 var emoji_catalog_last_coordinates = {
     section: 0,
@@ -124,7 +117,7 @@ exports.generate_emoji_picker_data = function (realm_emojis) {
     });
 
     exports.complete_emoji_catalog.Popular = [];
-    _.each(exports.frequently_used_emojis_list, function (codepoint) {
+    _.each(emoji.frequently_used_emojis_list, function (codepoint) {
         if (emoji_codes.codepoint_to_name.hasOwnProperty(codepoint)) {
             var emoji_name = emoji_codes.codepoint_to_name[codepoint];
             if (emoji.emojis_by_name.hasOwnProperty(emoji_name)) {

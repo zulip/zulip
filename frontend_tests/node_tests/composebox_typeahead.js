@@ -3,7 +3,7 @@ zrequire('dict');
 zrequire('compose_state');
 zrequire('ui_util');
 zrequire('pm_conversations');
-zrequire('emoji_picker');
+zrequire('emoji');
 zrequire('util');
 zrequire('Handlebars', 'handlebars');
 zrequire('templates');
@@ -116,10 +116,9 @@ set_global('compose', {
     finish: noop,
 });
 
-set_global('emoji', {
-    active_realm_emojis: {},
-    emojis: emoji_list,
-});
+emoji.active_realm_emojis = {};
+emoji.emojis = emoji_list;
+
 set_global('pygments_data', {langs:
     {python: 0, javscript: 1, html: 2, css: 3},
 });
