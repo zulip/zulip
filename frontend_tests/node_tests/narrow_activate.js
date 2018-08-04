@@ -17,7 +17,9 @@ set_global('current_msg_list', {});
 set_global('hashchange', {});
 set_global('home_msg_list', {});
 set_global('message_fetch', {});
-set_global('message_list', {});
+set_global('message_list', {
+    set_narrowed: function (value) { this.narrowed = value; },
+});
 set_global('message_scroll', {});
 set_global('message_util', {});
 set_global('notifications', {});

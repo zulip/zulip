@@ -3,6 +3,9 @@ var message_list = (function () {
 var exports = {};
 
 exports.narrowed = undefined;
+exports.set_narrowed = function (value) {
+    exports.narrowed = value;
+};
 
 exports.MessageList = function (opts) {
     if (opts.data) {
