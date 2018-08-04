@@ -43,16 +43,14 @@ exports.initialize_state = function () {
 exports.initialize_state();
 
 exports.stop_last_notification = function stop_last_notification(worker) {
-    var state = exports.state;
-    if (state.idle_timer) {
-        clearTimeout(state.idle_timer);
+    if (exports.state.idle_timer) {
+        clearTimeout(exports.state.idle_timer);
     }
-    worker.notify_server_stop(state.current_recipient);
+    worker.notify_server_stop(exports.state.current_recipient);
     exports.initialize_state();
 };
 
 exports.start_or_extend_idle_timer = function start_or_extend_idle_timer(worker) {
-    var state = exports.state;
     function on_idle_timeout() {
         // We don't do any real error checking here, because
         // if we've been idle, we need to tell folks, and if
@@ -61,10 +59,10 @@ exports.start_or_extend_idle_timer = function start_or_extend_idle_timer(worker)
         exports.stop_last_notification(worker);
     }
 
-    if (state.idle_timer) {
-        clearTimeout(state.idle_timer);
+    if (exports.state.idle_timer) {
+        clearTimeout(exports.state.idle_timer);
     }
-    state.idle_timer = setTimeout(
+    exports.state.idle_timer = setTimeout(
         on_idle_timeout,
         TYPING_STOPPED_WAIT_PERIOD
     );
