@@ -8,7 +8,7 @@ zrequire('Handlebars', 'handlebars');
 zrequire('recent_senders');
 zrequire('pm_conversations');
 zrequire('people');
-zrequire('emoji_picker');
+zrequire('emoji');
 zrequire('util');
 zrequire('stream_data');
 zrequire('narrow');
@@ -498,15 +498,13 @@ run_test('render_stream', () => {
 run_test('render_emoji', () => {
     // Test render_emoji with normal emoji.
     var rendered = false;
-    var emoji = {
+    var test_emoji = {
         emoji_name: 'thumbs_up',
         codepoint: '1f44d',
     };
-    set_global('emoji', {
-        active_realm_emojis: {
-            realm_emoji: 'TBD',
-        },
-    });
+    emoji.active_realm_emojis = {
+        realm_emoji: 'TBD',
+    };
 
     global.templates.render = function (template_name, args) {
         assert.equal(template_name, 'typeahead_list_item');
@@ -520,12 +518,12 @@ run_test('render_emoji', () => {
         rendered = true;
         return 'typeahead-item-stub';
     };
-    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
 
     // Test render_emoji with normal emoji.
     rendered = false;
-    emoji = {
+    test_emoji = {
         emoji_name: 'realm_emoji',
         emoji_url: 'TBD',
     };
@@ -542,7 +540,7 @@ run_test('render_emoji', () => {
         rendered = true;
         return 'typeahead-item-stub';
     };
-    assert.equal(th.render_emoji(emoji), 'typeahead-item-stub');
+    assert.equal(th.render_emoji(test_emoji), 'typeahead-item-stub');
     assert(rendered);
 });
 
