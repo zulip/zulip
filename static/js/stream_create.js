@@ -292,7 +292,6 @@ exports.show_new_stream_modal = function () {
             }
         });
 
-        update_announce_stream_state();
         e.preventDefault();
     });
 };
@@ -331,7 +330,6 @@ exports.create_handlers_for_users = function (container) {
         $('#stream-checkboxes').toggle();
         $("#copy-from-stream-expand-collapse .toggle").toggleClass('fa-caret-right fa-caret-down');
         e.preventDefault();
-        update_announce_stream_state();
     });
 
     // Search People or Streams
@@ -370,7 +368,6 @@ exports.create_handlers_for_users = function (container) {
             });
         }());
 
-        update_announce_stream_state();
         e.preventDefault();
     });
 };
