@@ -796,14 +796,6 @@ exports.by_stream_subject_uri = function (stream, subject) {
            "/subject/" + hash_util.encodeHashComponent(subject);
 };
 
-exports.by_message_uri = function (message_id) {
-    return "#narrow/id/" + hash_util.encodeHashComponent(message_id);
-};
-
-exports.by_near_uri = function (message_id) {
-    return "#narrow/near/" + hash_util.encodeHashComponent(message_id);
-};
-
 exports.by_conversation_and_time_uri = function (message, is_absolute_url) {
     var absolute_url = "";
     if (is_absolute_url) {
