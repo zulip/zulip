@@ -158,7 +158,7 @@ casper.then(function () {
     casper.click("li[data-section='emoji-settings']");
     casper.waitUntilVisible('.admin-emoji-form', function () {
         casper.fill('form.admin-emoji-form', {
-            name: 'mouseface',
+            name: 'new mouse face',
             emoji_file_input: 'static/images/logo/zulip-icon-128x128.png',
         }, true);
     });
@@ -171,16 +171,16 @@ casper.then(function () {
 });
 
 casper.then(function () {
-    casper.waitUntilVisible('tr#emoji_mouseface', function () {
-        casper.test.assertSelectorHasText('tr#emoji_mouseface .emoji_name', 'mouseface');
-        casper.test.assertExists('tr#emoji_mouseface img');
-        casper.click('tr#emoji_mouseface button.delete');
+    casper.waitUntilVisible('tr#emoji_new_mouse_face', function () {
+        casper.test.assertSelectorHasText('tr#emoji_new_mouse_face .emoji_name', 'new mouse face');
+        casper.test.assertExists('tr#emoji_new_mouse_face img');
+        casper.click('tr#emoji_new_mouse_face button.delete');
     });
 });
 
 casper.then(function () {
-    casper.waitWhileVisible('tr#emoji_mouseface', function () {
-        casper.test.assertDoesntExist('tr#emoji_mouseface');
+    casper.waitWhileVisible('tr#emoji_new_mouse_face', function () {
+        casper.test.assertDoesntExist('tr#emoji_new_mouse_face');
     });
 });
 
