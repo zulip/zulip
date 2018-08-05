@@ -95,7 +95,6 @@ function set_topic_edit_properties(group, message) {
 function populate_group_from_message_container(group, message_container) {
     group.is_stream = message_container.msg.is_stream;
     group.is_private = message_container.msg.is_private;
-    group.is_zgram = message_container.msg.zgram;
 
     if (group.is_stream) {
         group.background_color = stream_data.get_color(message_container.msg.stream);
@@ -440,10 +439,6 @@ MessageListView.prototype = {
                 message_id: id,
             });
 
-            zgram.process_row({
-                row: row,
-                message_id: id,
-            });
         });
     },
 
@@ -453,7 +448,7 @@ MessageListView.prototype = {
         var msg_to_render = _.extend(message_container, {
             table_name: this.table_name,
         });
-        return templates.render('message_row', msg_to_render);
+        return templates.render('single_message', msg_to_render);
     },
 
     render: function MessageListView__render(messages, where, messages_are_new) {

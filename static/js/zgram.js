@@ -32,11 +32,10 @@ exports.send = function (opts) {
 exports.handle_event = function (event) {
     var message = event.data;
 
-    message.id = local_message.get_next_id();
     message.timestamp = local_message.now();
     message.simulated = true;
     message.type = 'zgram';
-    local_message.insert_message(message);
+    exports.process_row(message);
 };
 
 exports.display_zgram = function (msg) {
@@ -118,12 +117,9 @@ exports._fake_sender_id = function () {
     return person.user_id;
 };
 
-exports.process_row = function (in_opts) {
-    var row = in_opts.row;
-
-    var message_id = in_opts.message_id;
-    var message = message_store.get(message_id);
+exports.process_row = function (message) {
     message.small_avatar_url = people.small_avatar_url(message);
+    message.sender_full_name = people.get_person_from_user_id(message.sender_id).full_name;
 
     if (!message) {
         return;
