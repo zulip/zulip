@@ -26,6 +26,8 @@ exports.update_person = function update(person) {
         if (people.is_my_user_id(person.user_id)
             && !page_params.realm_delivery_email_hidden) {
             settings_account.update_email(new_email);
+            page_params.email = new_email;
+            page_params.delivery_email = new_email;
         }
 
         people.update_email(user_id, new_email);
@@ -36,6 +38,7 @@ exports.update_person = function update(person) {
 
         if (people.is_my_user_id(person.user_id)) {
             settings_account.update_email(new_delivery_email);
+            page_params.delivery_email = new_delivery_email;
         }
     }
 
