@@ -347,6 +347,9 @@ exports.make_new_elem = function (selector, opts) {
         visible: function () {
             return shown;
         },
+        load: function () {
+            return self;
+        },
     };
 
     if (selector[0] === '<') {
