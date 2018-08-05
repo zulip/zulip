@@ -27,7 +27,8 @@ from zerver.forms import HomepageForm, OurAuthenticationForm, \
 from zerver.lib.create_user import create_user_api_key
 from zerver.lib.mobile_auth_otp import is_valid_otp, otp_encrypt_api_key
 from zerver.lib.push_notifications import push_notifications_enabled
-from zerver.lib.request import REQ, has_request_variables, JsonableError
+from zerver.lib.request import REQ, has_request_variables, JsonableError, \
+    RequestVariableMissingError
 from zerver.lib.response import json_success, json_error
 from zerver.lib.subdomains import get_subdomain, is_subdomain_root_or_alias
 from zerver.lib.user_agent import parse_user_agent
@@ -666,7 +667,8 @@ def dev_direct_login(request: HttpRequest, **kwargs: Any) -> HttpResponse:
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ()) -> HttpResponse:
+def api_dev_fetch_api_key(request: HttpRequest, username: str=REQ(),
+                          description: Optional[str]=REQ(default=None)) -> HttpResponse:
     """This function allows logging in without a password on the Zulip
     mobile apps when connecting to a Zulip development environment.  It
     requires DevAuthBackend to be included in settings.AUTHENTICATION_BACKENDS.
@@ -715,7 +717,8 @@ def api_dev_list_users(request: HttpRequest) -> HttpResponse:
 @csrf_exempt
 @require_post
 @has_request_variables
-def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ()) -> HttpResponse:
+def api_fetch_api_key(request: HttpRequest, username: str=REQ(), password: str=REQ(),
+                      description: Optional[str]=REQ(default=None)) -> HttpResponse:
     return_data = {}  # type: Dict[str, bool]
     subdomain = get_subdomain(request)
     realm = get_realm(subdomain)

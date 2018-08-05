@@ -1418,6 +1418,29 @@ class GoogleAuthBackendTest(SocialAuthBase):
             mock_warning.assert_called_with("Login attempt on invalid subdomain")
         self.assertEqual(result.status_code, 400)
 
+class CreateAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email),
+                                       description='Test API key'))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
+
+    def test_missing_description(self) -> None:
+        result = self.client_post('/api/v1/create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_error(result, "Missing 'description' argument", 400)
+
 class JSONFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user('hamlet')
@@ -1511,6 +1534,34 @@ class FetchAPIKeyTest(ZulipTestCase):
                                   dict(username=self.email,
                                        password=initial_password(self.email)))
         self.assert_json_error_contains(result, "This organization has been deactivated", 403)
+
+class DevCreateAPIKeyTest(ZulipTestCase):
+    def setUp(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.email = self.user_profile.email
+
+    def test_success(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/dev_create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email),
+                                       description='Test API key'))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
+
+    def test_with_no_description(self) -> None:
+        prev_count = len(get_all_api_keys(self.user_profile))
+        result = self.client_post('/api/v1/dev_create_api_key',
+                                  dict(username=self.email,
+                                       password=initial_password(self.email)))
+        self.assert_json_success(result)
+        json = result.json()
+        new_api_keys = get_all_api_keys(self.user_profile)
+        self.assertIn(json['api_key'], new_api_keys)
+        self.assertEqual(len(new_api_keys), prev_count + 1)
 
 class DevFetchAPIKeyTest(ZulipTestCase):
     def setUp(self) -> None:

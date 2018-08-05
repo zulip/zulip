@@ -669,9 +669,15 @@ v1_api_mobile_patterns = [
     # password/pair and returns an API key.
     url(r'^fetch_api_key$', zerver.views.auth.api_fetch_api_key,
         name='zerver.views.auth.api_fetch_api_key'),
+    # This is the new endpoint for API creation, that also requires a
+    # description for the API key (besides the usual username/password pair).
+    url(r'^api/v1/create_api_key$', zerver.views.auth.api_fetch_api_key,
+        name='zerver.views.auth.api_fetch_api_key'),
 
     # This is for the signing in through the devAuthBackEnd on mobile apps.
     url(r'^dev_fetch_api_key$', zerver.views.auth.api_dev_fetch_api_key,
+        name='zerver.views.auth.api_dev_fetch_api_key'),
+    url(r'api/v1/dev_create_api_key', zerver.views.auth.api_dev_fetch_api_key,
         name='zerver.views.auth.api_dev_fetch_api_key'),
     # This is for fetching the emails of the admins and the users.
     url(r'^dev_list_users$', zerver.views.auth.api_dev_list_users,
