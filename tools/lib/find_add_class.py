@@ -10,6 +10,7 @@ GENERIC_KEYWORDS = [
     'danger',
     'condensed',
     'disabled',
+    'enabled',
     'error',
     'expanded',
     'fade-out',

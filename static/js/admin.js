@@ -22,7 +22,7 @@ exports.show_or_hide_menu_item = function () {
             .find("input, button, select").attr("disabled", true);
         $(".organization-box [data-name='profile-field-settings']")
             .find("input, button, select").attr("disabled", true);
-        $(".control-label-disabled").css("color", "#333333");
+        $(".control-label-disabled").addClass('enabled');
     }
 };
 
