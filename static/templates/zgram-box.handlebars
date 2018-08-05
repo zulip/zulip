@@ -1,0 +1,22 @@
+<div zid="{{id}}" id="{{id}}" class="messagebox">
+    <div class="messagebox-border">
+        <div class="messagebox-content">
+            <div class="message_top_line">
+                <span class="message_sender sender_info_hover no-select">
+                <div class="u-{{sender_id}} inline_profile_picture">
+                    <img src="{{small_avatar_url}}" alt="" class="no-drag"/>
+                </div>
+                <span class="sender_name auto-select">{{ sender_full_name }}</span>
+                </span>
+            </div>
+            {{#if widget_type}}
+                <div id="zgram-widget" class="message_content zgram-content">
+                </div>
+            {{else}}
+                <div class="message_content zgram-content">
+                    {{ content }}
+                </div>
+            {{/if}}
+        </div>
+    </div>
+</div>

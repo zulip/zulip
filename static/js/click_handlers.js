@@ -437,6 +437,9 @@ exports.initialize = function () {
     $('#compose-send-status .compose-send-status-close').click(
         function () { $('#compose-send-status').stop(true).fadeOut(500); }
     );
+    $('#zgram-container .zgram-box-close').click(
+        function () { $('#zgram-container').hide() }
+    );
     $('#nonexistent_stream_reply_error .compose-send-status-close').click(
         function () { $('#nonexistent_stream_reply_error').stop(true).fadeOut(500); }
     );

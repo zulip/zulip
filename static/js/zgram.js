@@ -39,6 +39,12 @@ exports.handle_event = function (event) {
     local_message.insert_message(message);
 };
 
+exports.display_zgram = function (msg) {
+    $('#zgram-container').show();
+    var html = templates.render('zgram-box', msg);
+    $('#zgram-box-content').html(html);
+};
+
 exports.process = function (content) {
     // TEMPORARY CODE:
     //
@@ -117,6 +123,7 @@ exports.process_row = function (in_opts) {
 
     var message_id = in_opts.message_id;
     var message = message_store.get(message_id);
+    message.small_avatar_url = people.small_avatar_url(message);
 
     if (!message) {
         return;
@@ -126,13 +133,16 @@ exports.process_row = function (in_opts) {
         return;
     }
 
-    var content_holder = row.find('.message_content');
+    exports.display_zgram(message);
+    var content_holder = $('#zgram-widget');
 
     var widget_elem;
     if (message.widget) {
         // Use local to work around linter.  We can trust this
         // value because it comes from a template.
+        exports.display_zgram(message);
         widget_elem = message.widget_elem;
+        var content_holder = $('#zgram-widget');
         content_holder.html(widget_elem);
         return;
     }
