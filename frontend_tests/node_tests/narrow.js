@@ -4,6 +4,7 @@ zrequire('narrow_state');
 zrequire('people');
 zrequire('stream_data');
 zrequire('Filter', 'js/filter');
+set_global('i18n', global.stub_i18n);
 
 zrequire('narrow');
 
@@ -78,10 +79,12 @@ run_test('show_empty_narrow_message', () => {
 
     var hide_id;
     var show_id;
+    var attr_id;
     set_global('$', (id) => {
         return {
             hide: () => {hide_id = id;},
             show: () => {show_id = id;},
+            attr: () => {attr_id = id;},
         };
     });
 
@@ -89,6 +92,7 @@ run_test('show_empty_narrow_message', () => {
     narrow.show_empty_narrow_message();
     assert.equal(hide_id,'.empty_feed_notice');
     assert.equal(show_id, '#empty_narrow_message');
+    assert.equal(attr_id, '#left_bar_compose_reply_button_big');
 
     // for non-existent or private stream
     set_filter([['stream', 'Foo']]);
