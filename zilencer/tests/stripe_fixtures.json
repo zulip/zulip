@@ -134,7 +134,7 @@
         "trial_end": null,
         "trial_start": null
     },
-    "customer_with_active_subscription": {
+    "customer_with_subscription": {
         "account_balance": 0,
         "created": 1529990750,
         "currency": "usd",

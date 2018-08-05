@@ -27,17 +27,17 @@ def mock_create_customer(*args: Any, **kwargs: Any) -> stripe.Customer:
 def mock_create_subscription(*args: Any, **kwargs: Any) -> stripe.Subscription:
     return stripe.util.convert_to_stripe_object(fixture_data["create_subscription"])
 
-def mock_customer_with_active_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    return stripe.util.convert_to_stripe_object(fixture_data["customer_with_active_subscription"])
+def mock_customer_with_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
+    return stripe.util.convert_to_stripe_object(fixture_data["customer_with_subscription"])
 
 def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    customer = mock_customer_with_active_subscription()
+    customer = mock_customer_with_subscription()
     customer.subscriptions.data[0].status = "canceled"
     customer.subscriptions.data[0].canceled_at = 1532602160
     return customer
 
 def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
-    customer = mock_customer_with_active_subscription()
+    customer = mock_customer_with_subscription()
     customer.subscriptions.data[0].canceled_at = 1532602243
     customer.subscriptions.data[0].cancel_at_period_end = True
     return customer
@@ -136,12 +136,12 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/billing/', response.url)
 
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
     def test_billing_page_permissions(self, mock_create_subscription: mock.Mock,
                                       mock_create_customer: mock.Mock,
-                                      mock_customer_with_active_subscription: mock.Mock,
+                                      mock_customer_with_subscription: mock.Mock,
                                       mock_upcoming_invoice: mock.Mock) -> None:
         # Check that non-admins can access /upgrade via /billing, when there is no Customer object
         self.login(self.example_email('hamlet'))
@@ -222,10 +222,10 @@ class StripeTest(ZulipTestCase):
         })
         self.assert_in_success_response(["Something went wrong. Please contact"], result)
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
-                          mock_customer_with_active_subscription: mock.Mock) -> None:
+                          mock_customer_with_subscription: mock.Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -259,13 +259,13 @@ class StripeTest(ZulipTestCase):
 
     def test_extract_current_subscription(self) -> None:
         self.assertIsNone(extract_current_subscription(mock_create_customer()))
-        subscription = extract_current_subscription(mock_customer_with_active_subscription())
+        subscription = extract_current_subscription(mock_customer_with_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     def test_subscribe_customer_to_second_plan(self) -> None:
         with self.assertRaisesRegex(BillingError, "Your organization has an existing active subscription."):
-            do_subscribe_customer_to_plan(mock_customer_with_active_subscription(), self.stripe_plan_id, self.quantity, 0)
+            do_subscribe_customer_to_plan(mock_customer_with_subscription(), self.stripe_plan_id, self.quantity, 0)
 
     def test_sign_string(self) -> None:
         string = "abc"
