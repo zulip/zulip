@@ -115,7 +115,7 @@ def run():
     @linter_config.lint
     def pyflakes():
         # type: () -> int
-        failed = check_pyflakes(args, by_lang)
+        failed = check_pyflakes(by_lang['py'], args)
         return 1 if failed else 0
 
     @linter_config.lint

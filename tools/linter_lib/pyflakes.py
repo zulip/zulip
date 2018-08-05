@@ -31,13 +31,13 @@ def suppress_line(line: str) -> bool:
             return True
     return False
 
-def check_pyflakes(options, by_lang):
-    # type: (Any, Dict[str, List[str]]) -> bool
-    if len(by_lang['py']) == 0:
+def check_pyflakes(files, options):
+    # type: (List[str], Dict[str, Any]) -> bool
+    if len(files) == 0:
         return False
     failed = False
     color = next(colors)
-    pyflakes = subprocess.Popen(['pyflakes'] + by_lang['py'],
+    pyflakes = subprocess.Popen(['pyflakes'] + files,
                                 stdout=subprocess.PIPE,
                                 stderr=subprocess.PIPE)
     assert pyflakes.stdout is not None  # Implied by use of subprocess.PIPE
