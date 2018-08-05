@@ -13,7 +13,7 @@ sanity_check.check_venv(__file__)
 from zulint import lister
 from zulint.command import add_default_linter_arguments, LinterConfig
 from typing import cast, Callable, Dict, Iterator, List
-
+import random
 
 def run():
     # type: () -> None
@@ -118,10 +118,19 @@ def run():
         failed = check_pyflakes(by_lang['py'], args)
         return 1 if failed else 0
 
+    python_part1 = {x for x in by_lang['py'] if random.randint(0, 1) == 0}
+    python_part2 = {y for y in by_lang['py'] if y not in python_part1}
+
     @linter_config.lint
-    def pep8():
+    def pep8_1of2():
         # type: () -> int
-        failed = check_pep8(by_lang['py'])
+        failed = check_pep8(list(python_part1))
+        return 1 if failed else 0
+
+    @linter_config.lint
+    def pep8_2of2():
+        # type: () -> int
+        failed = check_pep8(list(python_part2))
         return 1 if failed else 0
 
     linter_config.do_lint()
