@@ -611,6 +611,10 @@ input[type=checkbox].inline-block {
     color: hsl(0, 0%, 82%);
 }
 
+.control-label-disabled.enabled {
+    color: hsl(0, 0%, 20%);
+}
+
 .disableable {
     margin-left: 22px;
     margin-top: -10px;
