@@ -101,7 +101,7 @@ def stripe_get_customer(stripe_customer_id: str) -> stripe.Customer:
     return stripe_customer
 
 @catch_stripe_errors
-def get_upcoming_invoice(stripe_customer_id: str) -> stripe.Invoice:
+def stripe_get_upcoming_invoice(stripe_customer_id: str) -> stripe.Invoice:
     stripe_invoice = stripe.Invoice.upcoming(customer=stripe_customer_id)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"upcoming_invoice": ', str(stripe_invoice), ',']))  # nocoverage

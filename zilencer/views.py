@@ -26,7 +26,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    stripe_get_customer, get_upcoming_invoice, get_seat_count, \
+    stripe_get_customer, stripe_get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
@@ -244,7 +244,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         # Need user's timezone to do this properly
         renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
-        upcoming_invoice = get_upcoming_invoice(customer.stripe_customer_id)
+        upcoming_invoice = stripe_get_upcoming_invoice(customer.stripe_customer_id)
         renewal_amount = subscription.plan.amount * subscription.quantity / 100.
         prorated_credits = 0
         prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
