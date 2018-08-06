@@ -617,9 +617,6 @@ function handle_post_narrow_deactivate_processes() {
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
     tab_bar.initialize();
-
-    $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
-
     exports.narrow_title = "home";
     notifications.redraw_title();
 }
