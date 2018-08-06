@@ -42,9 +42,17 @@ function display_image(payload, options) {
         photo.speed(2.3);
     } else {
         var img = new Image();
-        img.src = payload.source;
+        img.src = payload.preview;
 
         $("#lightbox_overlay .image-preview").html(img).show();
+
+        if (payload.preview !== payload.source) {
+            var fullsize_img = new Image();
+            fullsize_img.src = payload.source;
+            $(fullsize_img).on("load", function () {
+                $("#lightbox_overlay .image-preview img").attr("src", $(this).attr("src"));
+            });
+        }
     }
 
     $(".image-description .title").text(payload.title || "N/A");

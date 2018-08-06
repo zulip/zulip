@@ -28,6 +28,7 @@ set_global('$', function () {
             show: () => {},
         }),
         hide: () => {},
+        on: () => {},
         show: () => {},
         text: () => '',
     };
