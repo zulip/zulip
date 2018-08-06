@@ -26,7 +26,7 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
-    get_stripe_customer, get_upcoming_invoice, get_seat_count, \
+    stripe_get_customer, get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     unsign_string, BillingError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
@@ -235,7 +235,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         return render(request, 'zilencer/billing.html', context=context)
     context = {'admin_access': True}
 
-    stripe_customer = get_stripe_customer(customer.stripe_customer_id)
+    stripe_customer = stripe_get_customer(customer.stripe_customer_id)
     subscription = extract_current_subscription(stripe_customer)
 
     if subscription:
