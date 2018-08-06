@@ -227,6 +227,10 @@ DEFAULT_SETTINGS = {
     # We use SubMessage for now-experimental features like
     # slash commands.
     'ALLOW_SUB_MESSAGES': DEVELOPMENT,
+
+    # We log emails in development environment for accessing
+    # them easily through /emails page
+    'DEVELOPMENT_LOG_EMAILS': DEVELOPMENT,
 }
 
 # These settings are not documented in prod_settings_template.py.
