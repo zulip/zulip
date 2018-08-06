@@ -82,8 +82,6 @@ exports.set_widgets_for_list = function () {
     });
 };
 
-$(document).on('narrow_deactivated.zulip', exports.set_widgets_for_list);
-
 exports.handle_event = function (widget_event) {
     var widget_elem = widget_contents[widget_event.message_id];
 

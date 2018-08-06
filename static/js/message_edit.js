@@ -586,14 +586,14 @@ exports.delete_message = function (msg_id) {
     });
 };
 
-$(document).on('narrow_deactivated.zulip', function () {
+exports.handle_narrow_deactivated = function () {
     _.each(currently_editing_messages, function (elem, idx) {
         if (current_msg_list.get(idx) !== undefined) {
             var row = current_msg_list.get_row(idx);
             current_msg_list.show_edit_message(row, elem);
         }
     });
-});
+};
 
 return exports;
 }());
