@@ -103,6 +103,26 @@ function get_profile_field(id) {
     return field;
 }
 
+exports.parse_field_choices_from_field_data = function (field_data) {
+    var choices = [];
+    _.each(field_data, function (choice, value) {
+        choices.push({
+            value: value,
+            text: choice.text,
+            order: choice.order,
+            add_delete_button: true,
+        });
+    });
+    if (choices.length > 0) {
+        // Remove delete button from the first choice. This makes sure that
+        // the user cannot delete all choices of a choice field. To delete
+        // all choices, just delete the field.
+        choices[0].add_delete_button = false;
+    }
+
+    return choices;
+};
+
 function set_choice_delete_button(e) {
     // Choice type field must have at least one choice
     $(e.target).find(".choice-row .delete-choice").each(function (index) {
@@ -126,8 +146,26 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=hint]').val(field.hint);
 
     if (exports.field_type_id_to_string(field.type) === "Choice") {
-        var choice_list = profile_field.form.find('.edit_profile_field_choices_container')[0];
-        Sortable.create(choice_list, {
+        // Re-render field choices in edit form to load initial choice data
+        var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
+        choice_list.html("");
+
+        var field_data = {};
+        if (field.field_data !== "") {
+            field_data = JSON.parse(field.field_data);
+        }
+        var choices_data = exports.parse_field_choices_from_field_data(field_data);
+
+        _.each(choices_data, function (choice) {
+            choice_list.append(
+                templates.render("profile-field-choice", {
+                    text: choice.text,
+                    add_delete_button: choice.add_delete_button,
+                })
+            );
+        });
+
+        Sortable.create(choice_list[0], {
             onUpdate: set_choice_delete_button,
         });
     }
@@ -195,23 +233,9 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
         if (profile_field.field_data !== "") {
             field_data = JSON.parse(profile_field.field_data);
         }
-        var choices = [];
-        _.each(field_data, function (choice, value) {
-            choices.push({
-                value: value,
-                text: choice.text,
-                order: choice.order,
-                add_delete_button: true,
-            });
-        });
-        if (choices.length > 0) {
-            // Remove delete button from the first choice. This makes sure that
-            // the user cannot delete all choices of a choice field. To delete
-            // all choices, just delete the field.
-            choices[0].add_delete_button = false;
-        }
-
+        var choices = exports.parse_field_choices_from_field_data(field_data);
         var is_choice_field = false;
+
         if (profile_field.type === 3) {
             is_choice_field = true;
         }
