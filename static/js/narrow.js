@@ -600,6 +600,24 @@ exports.by_recipient = function (target_id, opts) {
     }
 };
 
+function handle_post_narrow_deactivate_processes() {
+    compose_fade.update_message_list();
+
+    // clear existing search pills
+    if (page_params.search_pills_enabled) {
+        search_pill_widget.widget.clear(true);
+    }
+
+    top_left_corner.handle_narrow_deactivated();
+    stream_list.handle_narrow_deactivated();
+    compose.update_stream_button_for_stream();
+
+    $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
+
+    exports.narrow_title = "home";
+    notifications.redraw_title();
+}
+
 exports.deactivate = function () {
     search.clear_search_form();
     if (narrow_state.filter() === undefined) {
@@ -668,21 +686,7 @@ exports.deactivate = function () {
         current_msg_list.select_id(message_id_to_select, select_opts);
     }
 
-    compose_fade.update_message_list();
-
-    // clear existing search pills
-    if (page_params.search_pills_enabled) {
-        search_pill_widget.widget.clear(true);
-    }
-
-    top_left_corner.handle_narrow_deactivated();
-    stream_list.handle_narrow_deactivated();
-    compose.update_stream_button_for_stream();
-
-    $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
-
-    exports.narrow_title = "home";
-    notifications.redraw_title();
+    handle_post_narrow_deactivate_processes();
 
     unnarrow_times.initial_core_time = new Date();
     setTimeout(function () {
