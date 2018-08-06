@@ -69,10 +69,11 @@ class StripeTest(ZulipTestCase):
         return match.group(1) if match else None
 
     @mock.patch("zilencer.lib.stripe.billing_logger.error")
-    def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
+    def test_catch_stripe_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
-            raise stripe.error.InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: x", None)
+            raise stripe.error.InvalidRequestError(
+                "Request req_oJU621i6H6X4Ez: No such token: x", None, json_body={})
         with self.assertRaises(BillingError) as context:
             raise_invalid_request_error()
         self.assertEqual('other stripe error', context.exception.description)
@@ -84,7 +85,7 @@ class StripeTest(ZulipTestCase):
             json_body = {"error": {"message": error_message}}
             raise stripe.error.CardError(error_message, "number", "invalid_number",
                                          json_body=json_body)
-        with self.assertRaises(BillingError) as context:
+        with self.assertRaises(StripeCardError) as context:
             raise_card_error()
         self.assertIn('not a valid credit card', context.exception.message)
         self.assertEqual('card error', context.exception.description)

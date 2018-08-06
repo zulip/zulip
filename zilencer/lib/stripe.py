@@ -73,6 +73,12 @@ class BillingError(Exception):
         self.description = description
         self.message = message
 
+class StripeCardError(BillingError):
+    pass
+
+class StripeConnectionError(BillingError):
+    pass
+
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
@@ -85,12 +91,22 @@ def catch_stripe_errors(func: CallableT) -> CallableT:
                                    "Plan objects not created. Please run ./manage.py setup_stripe")
         try:
             return func(*args, **kwargs)
+        # See https://stripe.com/docs/api/python#error_handling, though
+        # https://stripe.com/docs/api/ruby#error_handling suggests there are additional fields, and
+        # https://stripe.com/docs/error-codes gives a more detailed set of error codes
         except stripe.error.StripeError as e:
-            billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
+            err = e.json_body.get('error', {})
+            billing_logger.error("Stripe error: %s %s %s %s" % (
+                e.http_status, err.get('type'), err.get('code'), err.get('param')))
             if isinstance(e, stripe.error.CardError):
-                raise BillingError('card error', e.json_body.get('error', {}).get('message'))
-            else:
-                raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
+                # TODO: Look into i18n for this
+                raise StripeCardError('card error', err.get('message'))
+            if isinstance(e, stripe.error.RateLimitError) or \
+               isinstance(e, stripe.error.APIConnectionError):  # nocoverage TODO
+                raise StripeConnectionError(
+                    'stripe connection error',
+                    _("Something went wrong. Please wait a few seconds and try again."))
+            raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
     return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
 
 @catch_stripe_errors
