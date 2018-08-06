@@ -18,7 +18,9 @@ class zulip::postgres_common {
   safepackage { $postgres_packages: ensure => 'installed' }
 
   exec { 'disable_logrotate':
+    # lint:ignore:140chars
     command => '/usr/bin/dpkg-divert --rename --divert /etc/logrotate.d/postgresql-common.disabled --add /etc/logrotate.d/postgresql-common',
+    # lint:endignore
     creates => '/etc/logrotate.d/postgresql-common.disabled',
   }
   file { '/usr/lib/nagios/plugins/zulip_postgres_common':

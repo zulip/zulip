@@ -44,7 +44,9 @@ vm.dirty_background_ratio = 5
   exec { 'pgtune':
     require     => Package['pgtune'],
     # Let Postgres use half the memory on the machine
+    # lint:ignore:140chars
     command     => "pgtune -T Web -M ${half_memory} -i /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template -o /etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf",
+    # lint:endignore
     refreshonly => true,
     subscribe   => File["/etc/postgresql/${zulip::base::postgres_version}/main/postgresql.conf.template"]
   }
