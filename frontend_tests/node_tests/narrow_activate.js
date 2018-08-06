@@ -24,6 +24,7 @@ set_global('page_params', {});
 set_global('search', {});
 set_global('stream_list', {});
 set_global('top_left_corner', {});
+set_global('typing_events', {});
 set_global('ui_util', {});
 set_global('unread_ops', {});
 set_global('search_pill_widget', {
@@ -81,6 +82,7 @@ function test_helper() {
     stub('search', 'update_button_visibility');
     stub('stream_list', 'handle_narrow_activated');
     stub('top_left_corner', 'handle_narrow_activated');
+    stub('typing_events', 'render_notifications_for_narrow');
     stub('ui_util', 'change_tab_to');
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_stream_button_for_stream');
@@ -213,6 +215,7 @@ run_test('basics', () => {
         'compose_actions.on_narrow',
         'top_left_corner.handle_narrow_activated',
         'stream_list.handle_narrow_activated',
+        'typing_events.render_notifications_for_narrow',
         'trigger event',
     ]);
 
