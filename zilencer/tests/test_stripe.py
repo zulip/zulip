@@ -12,7 +12,7 @@ from zerver.lib.actions import do_deactivate_user, do_create_user, \
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
-from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
+from zilencer.lib.stripe import catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     BillingError
@@ -62,10 +62,10 @@ class StripeTest(ZulipTestCase):
     def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
-            raise stripe.error.InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: x",
-                                                   None)
-        with self.assertRaisesRegex(StripeError, "Something went wrong. Please try again or "):
+            raise stripe.error.InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: x", None)
+        with self.assertRaises(BillingError) as context:
             raise_invalid_request_error()
+        self.assertEqual('other stripe error', context.exception.description)
         mock_billing_logger_error.assert_called()
 
         @catch_stripe_errors
@@ -74,16 +74,10 @@ class StripeTest(ZulipTestCase):
             json_body = {"error": {"message": error_message}}
             raise stripe.error.CardError(error_message, "number", "invalid_number",
                                          json_body=json_body)
-        with self.assertRaisesRegex(StripeError,
-                                    "The card number is not a valid credit card number."):
+        with self.assertRaises(BillingError) as context:
             raise_card_error()
-        mock_billing_logger_error.assert_called()
-
-        @catch_stripe_errors
-        def raise_exception() -> None:
-            raise Exception
-        with self.assertRaises(Exception):
-            raise_exception()
+        self.assertIn('not a valid credit card', context.exception.message)
+        self.assertEqual('card error', context.exception.description)
         mock_billing_logger_error.assert_called()
 
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
@@ -204,23 +198,25 @@ class StripeTest(ZulipTestCase):
 
     def test_upgrade_with_tampered_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
-        result = self.client_post("/upgrade/", {
+        response = self.client_post("/upgrade/", {
             'stripeToken': self.token,
             'signed_seat_count': "randomsalt",
             'salt': self.salt,
             'plan': Plan.CLOUD_ANNUAL
         })
-        self.assert_in_success_response(["Something went wrong. Please contact"], result)
+        self.assert_in_success_response(["Upgrade to Zulip Premium"], response)
+        self.assertEqual(response['error_description'], 'tampered seat count')
 
     def test_upgrade_with_tampered_plan(self) -> None:
         self.login(self.example_email("hamlet"))
-        result = self.client_post("/upgrade/", {
+        response = self.client_post("/upgrade/", {
             'stripeToken': self.token,
             'signed_seat_count': self.signed_seat_count,
             'salt': self.salt,
             'plan': "invalid"
         })
-        self.assert_in_success_response(["Something went wrong. Please contact"], result)
+        self.assert_in_success_response(["Upgrade to Zulip Premium"], response)
+        self.assertEqual(response['error_description'], 'tampered plan')
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
@@ -264,8 +260,10 @@ class StripeTest(ZulipTestCase):
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     def test_subscribe_customer_to_second_plan(self) -> None:
-        with self.assertRaisesRegex(BillingError, "Your organization has an existing active subscription."):
-            do_subscribe_customer_to_plan(mock_customer_with_subscription(), self.stripe_plan_id, self.quantity, 0)
+        with self.assertRaises(BillingError) as context:
+            do_subscribe_customer_to_plan(mock_customer_with_subscription(),
+                                          self.stripe_plan_id, self.quantity, 0)
+            self.assertEqual(context.exception.description, 'subscribing with existing subscription')
 
     def test_sign_string(self) -> None:
         string = "abc"

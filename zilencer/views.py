@@ -24,7 +24,7 @@ from zerver.lib.validator import check_int, check_string, check_url, \
 from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
-from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
+from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, \
     get_stripe_customer, get_upcoming_invoice, get_seat_count, \
     extract_current_subscription, process_initial_upgrade, sign_string, \
     BillingError
@@ -165,6 +165,7 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
 
     user = request.user
     error_message = ""
+    error_description = ""  # only used in tests
 
     if Customer.objects.filter(realm=user.realm).exists():
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
@@ -173,10 +174,12 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         try:
             process_initial_upgrade(user, request.POST['plan'], request.POST['signed_seat_count'],
                                     request.POST['salt'], request.POST['stripeToken'])
-        except (BillingError, StripeError) as e:
-            error_message = str(e)
-        except Exception:
-            error_message = "Something went wrong. Please contact support@zulipchat.com."
+        except BillingError as e:
+            error_message = e.message
+            error_description = e.description
+        except Exception as e:
+            billing_logger.exception("Uncaught exception in billing: %s" % (e,))
+            error_message = BillingError.CONTACT_SUPPORT
         else:
             return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
@@ -193,7 +196,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'nickname_annual': Plan.CLOUD_ANNUAL,
         'error_message': error_message,
     }  # type: Dict[str, Any]
-    return render(request, 'zilencer/upgrade.html', context=context)
+    response = render(request, 'zilencer/upgrade.html', context=context)
+    response['error_description'] = error_description
+    return response
 
 PLAN_NAMES = {
     Plan.CLOUD_ANNUAL: "Zulip Premium (billed annually)",

@@ -64,38 +64,34 @@ def unsign_string(signed_string: str, salt: str) -> str:
     signer = Signer(salt=salt)
     return signer.unsign(signed_string)
 
-class StripeError(JsonableError):
-    pass
-
 class BillingError(Exception):
-    pass
+    # error messages
+    CONTACT_SUPPORT = _("Something went wrong. Please contact %s)" % (settings.ZULIP_ADMINISTRATOR,))
+    TRY_RELOADING = _("Something went wrong. Please reload the page.")
+
+    # description is used only for tests
+    def __init__(self, description: str, message: str) -> None:
+        self.description = description
+        self.message = message
 
 def catch_stripe_errors(func: CallableT) -> CallableT:
     @wraps(func)
     def wrapped(*args: Any, **kwargs: Any) -> Any:
         if settings.DEVELOPMENT and not settings.TEST_SUITE:  # nocoverage
             if STRIPE_PUBLISHABLE_KEY is None:
-                raise AssertionError(
-                    "Missing Stripe config. "
-                    "See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
+                raise BillingError('missing stripe config', "Missing Stripe config. "
+                                   "See https://zulip.readthedocs.io/en/latest/subsystems/billing.html.")
             if not Plan.objects.exists():
-                raise AssertionError(
-                    "Plan objects not created. Please run ./manage.py setup_stripe")
-
+                raise BillingError('missing plans',
+                                   "Plan objects not created. Please run ./manage.py setup_stripe")
         try:
             return func(*args, **kwargs)
         except stripe.error.StripeError as e:
-            billing_logger.error("Stripe error: %d %s",
-                                 e.http_status, e.__class__.__name__)
+            billing_logger.error("Stripe error: %d %s", e.http_status, e.__class__.__name__)
             if isinstance(e, stripe.error.CardError):
-                raise StripeError(e.json_body.get('error', {}).get('message'))
+                raise BillingError('card error', e.json_body.get('error', {}).get('message'))
             else:
-                raise StripeError(
-                    _("Something went wrong. Please try again or email us at %s.")
-                    % (settings.ZULIP_ADMINISTRATOR,))
-        except Exception:
-            billing_logger.exception("Uncaught error in Stripe integration")
-            raise
+                raise BillingError('other stripe error', BillingError.CONTACT_SUPPORT)
     return wrapped  # type: ignore # https://github.com/python/mypy/issues/1927
 
 @catch_stripe_errors
@@ -147,10 +143,11 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
 def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
     if extract_current_subscription(stripe_customer) is not None:
+        # Most likely due to a race condition where two people in the org
+        # try to upgrade their plan at the same time
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
-        # TODO: Change to an error sent to the frontend
-        raise BillingError("Your organization has an existing active subscription.")
+        raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',
@@ -187,13 +184,13 @@ def process_initial_upgrade(user: UserProfile, plan: str, signed_seat_count: str
     if plan not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
         billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
                                % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError("Something went wrong. Please contact support@zulipchat.com")
+        raise BillingError('tampered plan', BillingError.CONTACT_SUPPORT)
     try:
         seat_count = int(unsign_string(signed_seat_count, salt))
     except signing.BadSignature:
         billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
                                % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError("Something went wrong. Please contact support@zulipchat.com")
+        raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
 
     stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(
