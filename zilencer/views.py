@@ -3,7 +3,6 @@ import logging
 
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email, URLValidator
-from django.core import signing
 from django.db import IntegrityError
 from django.http import HttpRequest, HttpResponse, HttpResponseRedirect
 from django.utils import timezone
@@ -26,9 +25,9 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import UserProfile, Realm
 from zerver.views.push_notifications import validate_token
 from zilencer.lib.stripe import STRIPE_PUBLISHABLE_KEY, StripeError, \
-    do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_stripe_customer, get_upcoming_invoice, get_seat_count, \
-    extract_current_subscription, sign_string, unsign_string
+    extract_current_subscription, process_initial_upgrade, sign_string, \
+    BillingError
 from zilencer.models import RemotePushDeviceToken, RemoteZulipServer, \
     Customer, Plan
 
@@ -171,28 +170,14 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
-        plan = request.POST['plan']
-        if plan not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
-            billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
-                                   % (user.id, user.realm.id, user.realm.string_id))
-            error_message = "Something went wrong. Please contact support@zulipchat.com"
         try:
-            seat_count = int(unsign_string(request.POST['signed_seat_count'], request.POST['salt']))
-        except signing.BadSignature:
-            billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
-                                   % (user.id, user.realm.id, user.realm.string_id))
-            error_message = "Something went wrong. Please contact support@zulipchat.com"
-
-        if not error_message:
-            stripe_customer = do_create_customer_with_payment_source(user, request.POST['stripeToken'])
-            do_subscribe_customer_to_plan(
-                stripe_customer=stripe_customer,
-                stripe_plan_id=Plan.objects.get(nickname=plan).stripe_plan_id,
-                seat_count=seat_count,
-                # TODO: billing address details are passed to us in the request;
-                # use that to calculate taxes.
-                tax_percent=0)
-            # TODO: check for errors and raise/send to frontend
+            process_initial_upgrade(user, request.POST['plan'], request.POST['signed_seat_count'],
+                                    request.POST['salt'], request.POST['stripeToken'])
+        except (BillingError, StripeError) as e:
+            error_message = str(e)
+        except Exception:
+            error_message = "Something went wrong. Please contact support@zulipchat.com."
+        else:
             return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     seat_count = get_seat_count(user.realm)
@@ -230,26 +215,29 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     stripe_customer = get_stripe_customer(customer.stripe_customer_id)
     subscription = extract_current_subscription(stripe_customer)
 
+    seat_count = 0
+    current_period_end = ''
+    renewal_amount = 0.
+    prorated_credits = 0.
+    prorated_charges = 0.
+    cancel_at_period_end = False
+
     if subscription:
         plan_name = PLAN_NAMES[Plan.objects.get(stripe_plan_id=subscription.plan.id).nickname]
         seat_count = subscription.quantity
         # Need user's timezone to do this properly
-        renewal_date = '{dt:%B} {dt.day}, {dt.year}'.format(
+        current_period_end = '{dt:%B} {dt.day}, {dt.year}'.format(
             dt=timestamp_to_datetime(subscription.current_period_end))
-        upcoming_invoice = get_upcoming_invoice(customer.stripe_customer_id)
-        renewal_amount = subscription.plan.amount * subscription.quantity / 100.
-        prorated_credits = 0
-        prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
-        if prorated_charges < 0:
-            prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
-            prorated_charges = 0  # nocoverage
+        cancel_at_period_end = subscription.cancel_at_period_end
+        if not cancel_at_period_end:
+            upcoming_invoice = get_upcoming_invoice(customer.stripe_customer_id)
+            renewal_amount = subscription.plan.amount * subscription.quantity / 100.
+            prorated_charges = upcoming_invoice.amount_due / 100. - renewal_amount
+            if prorated_charges < 0:
+                prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
+                prorated_charges = 0  # nocoverage
     else:  # nocoverage -- no way to get here yet
         plan_name = "Zulip Free"
-        seat_count = 0
-        renewal_date = ''
-        renewal_amount = 0
-        prorated_credits = 0
-        prorated_charges = 0
 
     payment_method = None
     if stripe_customer.default_source is not None:
@@ -258,7 +246,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     context.update({
         'plan_name': plan_name,
         'seat_count': seat_count,
-        'renewal_date': renewal_date,
+        'current_period_end': current_period_end,
+        'cancel_at_period_end': cancel_at_period_end,
         'renewal_amount': '{:,.2f}'.format(renewal_amount),
         'payment_method': payment_method,
         'prorated_charges': '{:,.2f}'.format(prorated_charges),

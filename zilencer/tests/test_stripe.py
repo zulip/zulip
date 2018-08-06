@@ -14,7 +14,8 @@ from zerver.lib.timestamp import timestamp_to_datetime
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import StripeError, catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
-    get_seat_count, extract_current_subscription, sign_string, unsign_string
+    get_seat_count, extract_current_subscription, sign_string, unsign_string, \
+    BillingError
 from zilencer.models import Customer, Plan
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
@@ -223,8 +224,8 @@ class StripeTest(ZulipTestCase):
 
     @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
-    def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
-                          mock_customer_with_active_subscription: mock.Mock) -> None:
+    def test_billing_home_with_active_subscription(self, mock_upcoming_invoice: mock.Mock,
+                                                   mock_customer_with_active_subscription: mock.Mock) -> None:
         user = self.example_user("hamlet")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
@@ -238,6 +239,25 @@ class StripeTest(ZulipTestCase):
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
                           'Card ending in 4242']:
+            self.assert_in_response(substring, response)
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_cancel_at_period_end_subscription)
+    @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
+    def test_billing_home_with_canceled_subscription_going_to_end(self, mock_upcoming_invoice: mock.Mock,
+                                                                  mock_retrieve_customer: mock.Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        # No Customer yet; check that we are redirected to /upgrade
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/upgrade/', response.url)
+
+        Customer.objects.create(
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user)
+        response = self.client_get("/billing/")
+        self.assert_not_in_success_response(['We can also bill by invoice'], response)
+        for substring in ['for Zulip Premium is ending on <strong>June 26, 2019',
+                          'downgraded to Zulip Free when the subscription']:
             self.assert_in_response(substring, response)
 
     def test_get_seat_count(self) -> None:
@@ -260,13 +280,21 @@ class StripeTest(ZulipTestCase):
         self.assertIsNone(extract_current_subscription(mock_create_customer()))
         subscription = extract_current_subscription(mock_customer_with_active_subscription())
         self.assertEqual(subscription["id"][:4], "sub_")
+        self.assertEqual(subscription["status"], "active")
+        self.assertEqual(subscription["cancel_at_period_end"], False)
+        self.assertIsNone(subscription["canceled_at"])
+
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
-    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_active_subscription)
-    def test_subscribe_customer_to_second_plan(self, mock_customer_with_active_subscription: mock.Mock) -> None:
-        with self.assertRaisesRegex(AssertionError, "Customer already has an active subscription."):
-            do_subscribe_customer_to_plan(stripe.Customer.retrieve(),  # type: ignore # Mocked out function call
-                                          self.stripe_plan_id, self.quantity, 0)
+        subscription = extract_current_subscription(mock_customer_with_cancel_at_period_end_subscription())
+        self.assertEqual(subscription["id"][:4], "sub_")
+        self.assertEqual(subscription["status"], "active")
+        self.assertEqual(subscription["cancel_at_period_end"], True)
+        self.assertIsNotNone(subscription["canceled_at"])
+
+    def test_subscribe_customer_to_second_plan(self) -> None:
+        with self.assertRaisesRegex(BillingError, "Your organization has an existing active subscription."):
+            do_subscribe_customer_to_plan(mock_customer_with_active_subscription(), self.stripe_plan_id, self.quantity, 0)
 
     def test_sign_string(self) -> None:
         string = "abc"

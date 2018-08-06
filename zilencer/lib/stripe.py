@@ -9,6 +9,7 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from django.core.signing import Signer
+from django.core import signing
 import stripe
 
 from zerver.lib.exceptions import JsonableError
@@ -64,6 +65,9 @@ def unsign_string(signed_string: str, salt: str) -> str:
     return signer.unsign(signed_string)
 
 class StripeError(JsonableError):
+    pass
+
+class BillingError(Exception):
     pass
 
 def catch_stripe_errors(func: CallableT) -> CallableT:
@@ -146,7 +150,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         # TODO: Change to an error sent to the frontend
-        raise AssertionError("Customer already has an active subscription.")
+        raise BillingError("Your organization has an existing active subscription.")
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',
@@ -177,3 +181,25 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
                 event_time=timestamp_to_datetime(stripe_subscription.created),
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
+
+def process_initial_upgrade(user: UserProfile, plan: str, signed_seat_count: str,
+                            salt: str, stripe_token: str) -> None:
+    if plan not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
+        billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
+                               % (user.id, user.realm.id, user.realm.string_id))
+        raise BillingError("Something went wrong. Please contact support@zulipchat.com")
+    try:
+        seat_count = int(unsign_string(signed_seat_count, salt))
+    except signing.BadSignature:
+        billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
+                               % (user.id, user.realm.id, user.realm.string_id))
+        raise BillingError("Something went wrong. Please contact support@zulipchat.com")
+
+    stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
+    do_subscribe_customer_to_plan(
+        stripe_customer=stripe_customer,
+        stripe_plan_id=Plan.objects.get(nickname=plan).stripe_plan_id,
+        seat_count=seat_count,
+        # TODO: billing address details are passed to us in the request;
+        # use that to calculate taxes.
+        tax_percent=0)
