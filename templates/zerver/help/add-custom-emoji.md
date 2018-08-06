@@ -12,14 +12,15 @@ Organization administrators can also
 
 1. Under **Add a new emoji**, enter an **emoji name**.
 
-    Emoji names can only contain `a-z`, `0-9`, dashes (`-`), and
-    spaces. Upper and lower case letters will be treated the same, and
-    underscores (`_`) will be treated the same as spaces.
-
-1. Click **Upload emoji** and add an image or GIF. The image will
-   automatically be scaled to 25x25 pixels.
+1. Click **Upload image or GIF** and add a file in the PNG, JPG, or
+   GIF file format. Zulip will automatically scale the image down to
+   25x25 pixels.
 
 1. Click **Add emoji**.
+
+**Emoji names** can only contain `a-z`, `0-9`, dashes (`-`), and spaces.
+Upper and lower case letters are treated the same, and underscores (`_`)
+are treated the same as spaces.
 
 ## Replace a default emoji
 
@@ -33,7 +34,8 @@ may have to scroll down a bit to find it).
 
 {settings_tab|emoji-settings}
 
-1. Click the trash icon next to the emoji that you would like to delete.
+1. Click the trash icon (<i class="icon-vector-trash"></i>) next to the
+   emoji that you would like to delete.
 
 Deleting an emoji will not affect any existing messages or emoji
 reactions. Anyone can delete custom emoji they added, and organization
