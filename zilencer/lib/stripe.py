@@ -9,7 +9,6 @@ from django.conf import settings
 from django.db import transaction
 from django.utils.translation import ugettext as _
 from django.core.signing import Signer
-from django.core import signing
 import stripe
 
 from zerver.lib.exceptions import JsonableError
@@ -179,23 +178,11 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
                 requires_billing_update=True,
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
 
-def process_initial_upgrade(user: UserProfile, plan: str, signed_seat_count: str,
-                            salt: str, stripe_token: str) -> None:
-    if plan not in [Plan.CLOUD_ANNUAL, Plan.CLOUD_MONTHLY]:
-        billing_logger.warning("Tampered plan during realm upgrade. user: %s, realm: %s (%s)."
-                               % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError('tampered plan', BillingError.CONTACT_SUPPORT)
-    try:
-        seat_count = int(unsign_string(signed_seat_count, salt))
-    except signing.BadSignature:
-        billing_logger.warning("Tampered seat count during realm upgrade. user: %s, realm: %s (%s)."
-                               % (user.id, user.realm.id, user.realm.string_id))
-        raise BillingError('tampered seat count', BillingError.CONTACT_SUPPORT)
-
+def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stripe_token: str) -> None:
     stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(
         stripe_customer=stripe_customer,
-        stripe_plan_id=Plan.objects.get(nickname=plan).stripe_plan_id,
+        stripe_plan_id=plan.stripe_plan_id,
         seat_count=seat_count,
         # TODO: billing address details are passed to us in the request;
         # use that to calculate taxes.
