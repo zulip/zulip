@@ -273,9 +273,6 @@ exports.activate = function (raw_operators, opts) {
     typing_events.render_notifications_for_narrow();
     tab_bar.initialize();
 
-    $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
-                                                           filter: current_filter,
-                                                           trigger: opts.trigger}));
     msg_list.initial_core_time = new Date();
     setTimeout(function () {
         msg_list.initial_free_time = new Date();
