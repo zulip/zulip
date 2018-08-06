@@ -166,13 +166,6 @@ function build_tab_bar() {
 }
 
 exports.initialize = function () {
-    $(document).on('narrow_activated.zulip', function () {
-        build_tab_bar();
-    });
-    $(document).on('narrow_deactivated.zulip', function () {
-        build_tab_bar();
-    });
-
     build_tab_bar();
 };
 
