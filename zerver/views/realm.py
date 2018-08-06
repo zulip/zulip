@@ -8,6 +8,7 @@ from django.views.decorators.http import require_GET
 
 from zerver.decorator import require_realm_admin, to_non_negative_int, to_not_negative_int_or_none
 from zerver.lib.actions import (
+    do_change_display_email,
     do_set_realm_message_editing,
     do_set_realm_message_deleting,
     do_set_realm_authentication_methods,
@@ -153,6 +154,9 @@ def update_realm(
             do_set_realm_signup_notifications_stream(realm, new_signup_notifications_stream,
                                                      signup_notifications_stream_id)
             data['signup_notifications_stream_id'] = signup_notifications_stream_id
+
+    if delivery_email_hidden is not None:
+        do_change_display_email(realm, delivery_email_hidden)
 
     return json_success(data)
 

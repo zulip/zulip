@@ -97,8 +97,9 @@ from zerver.lib.validator import check_widget_content
 from zerver.lib.widget import do_widget_post_save_actions
 
 from django.db import transaction, IntegrityError, connection
-from django.db.models import F, Q, Max, Sum
+from django.db.models import F, Q, Max, Sum, Value as V
 from django.db.models.query import QuerySet
+from django.db.models.functions import Concat
 from django.core.exceptions import ValidationError
 from django.utils.timezone import now as timezone_now
 
@@ -861,6 +862,21 @@ def do_start_email_change_process(user_profile: UserProfile, new_email: str) -> 
     send_email('zerver/emails/confirm_new_email', to_email=new_email,
                from_name='Zulip Account Security', from_address=FromAddress.tokenized_no_reply_address(),
                context=context)
+
+def do_change_display_email(realm: Realm, delivery_email_hidden: bool) -> None:
+    for user_profile in UserProfile.objects.all():
+        if user_profile.is_bot:
+            continue
+        if delivery_email_hidden:
+            user_profile.email = user_profile.short_name + '@' + realm.host
+        else:
+            user_profile.email = user_profile.delivery_email
+        user_profile.save(update_fields=["email"])
+
+        payload = dict(user_id=user_profile.id,
+                       new_email=user_profile.email)
+        send_event(dict(type='realm_user', op='update', person=payload),
+                   active_user_ids(user_profile.realm_id))
 
 def compute_irc_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
     return email.split("@")[0] + " (IRC)"
