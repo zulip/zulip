@@ -271,6 +271,7 @@ exports.activate = function (raw_operators, opts) {
     top_left_corner.handle_narrow_activated(current_filter);
     stream_list.handle_narrow_activated(current_filter);
     typing_events.render_notifications_for_narrow();
+    tab_bar.initialize();
 
     $(document).trigger($.Event('narrow_activated.zulip', {msg_list: message_list.narrowed,
                                                            filter: current_filter,
@@ -615,6 +616,7 @@ function handle_post_narrow_deactivate_processes() {
     message_edit.handle_narrow_deactivated();
     widgetize.set_widgets_for_list();
     typing_events.render_notifications_for_narrow();
+    tab_bar.initialize();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 
