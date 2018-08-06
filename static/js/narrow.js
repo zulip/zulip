@@ -611,6 +611,8 @@ function handle_post_narrow_deactivate_processes() {
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
     compose.update_stream_button_for_stream();
+    message_edit.handle_narrow_deactivated();
+    widgetize.set_widgets_for_list();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 
