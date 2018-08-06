@@ -128,6 +128,7 @@
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
+* [Community topic edits](/help/community-topic-edits)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
