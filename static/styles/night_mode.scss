@@ -67,6 +67,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* these are converting grey things to "new grey" */
+    *[disabled=disabled],
     .sidebar-title,
     .recipient_row_date {
         color: inherit;
@@ -74,6 +75,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .new-style .button,
+    .new-style .button[disabled=disabled]:hover,
     input[type="text"],
     input[type="email"],
     input[type="password"],
@@ -87,17 +89,6 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: hsla(0, 0%, 0%, 0.6);
         color: inherit;
-    }
-
-    .new-style .button[disabled="disabled"] {
-        background-color: hsla(0, 0%, 0%, 0.4);
-        color: hsl(0, 0%, 50%);
-    }
-
-    .new-style .button[disabled="disabled"]:hover {
-        background-color: hsla(0, 0%, 0%, 0.4);
-        color: hsl(0, 0%, 55%);
-        border-color: hsla(0, 0%, 0%, 0.6);
     }
 
     select option {
