@@ -46,14 +46,6 @@ global.patch_builtin('setTimeout', (f, t) => {
     f();
 });
 
-function stub_trigger(f) {
-    set_global('document', 'document-stub');
-    $('document-stub').trigger = f;
-    $.Event = (name) => {
-        assert.equal(name, 'narrow_activated.zulip');
-    };
-}
-
 set_global('muting', {
     is_topic_muted: () => false,
 });
@@ -91,8 +83,6 @@ function test_helper() {
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_stream_button_for_stream');
     stub('compose', 'update_stream_button_for_private');
-
-    stub_trigger(() => { events.push('trigger event'); });
 
     blueslip.debug = noop;
 
@@ -223,7 +213,6 @@ run_test('basics', () => {
         'stream_list.handle_narrow_activated',
         'typing_events.render_notifications_for_narrow',
         'tab_bar.initialize',
-        'trigger event',
     ]);
 
     current_msg_list.selected_id = () => { return -1; };
