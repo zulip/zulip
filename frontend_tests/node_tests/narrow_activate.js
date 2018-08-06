@@ -23,6 +23,7 @@ set_global('notifications', {});
 set_global('page_params', {});
 set_global('search', {});
 set_global('stream_list', {});
+set_global('tab_bar', {});
 set_global('top_left_corner', {});
 set_global('typing_events', {});
 set_global('ui_util', {});
@@ -83,6 +84,7 @@ function test_helper() {
     stub('notifications', 'redraw_title');
     stub('search', 'update_button_visibility');
     stub('stream_list', 'handle_narrow_activated');
+    stub('tab_bar', 'initialize');
     stub('top_left_corner', 'handle_narrow_activated');
     stub('typing_events', 'render_notifications_for_narrow');
     stub('ui_util', 'change_tab_to');
@@ -220,6 +222,7 @@ run_test('basics', () => {
         'top_left_corner.handle_narrow_activated',
         'stream_list.handle_narrow_activated',
         'typing_events.render_notifications_for_narrow',
+        'tab_bar.initialize',
         'trigger event',
     ]);
 
