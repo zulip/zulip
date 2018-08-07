@@ -102,14 +102,15 @@ def check_stream_name_available(realm: Realm, name: str) -> None:
         pass
 
 def access_stream_by_name(user_profile: UserProfile,
-                          stream_name: str) -> Tuple[Stream, Recipient, Optional[Subscription]]:
+                          stream_name: str,
+                          allow_realm_admin: bool=False) -> Tuple[Stream, Recipient, Optional[Subscription]]:
     error = _("Invalid stream name '%s'" % (stream_name,))
     try:
         stream = get_realm_stream(stream_name, user_profile.realm_id)
     except Stream.DoesNotExist:
         raise JsonableError(error)
 
-    (recipient, sub) = access_stream_common(user_profile, stream, error)
+    (recipient, sub) = access_stream_common(user_profile, stream, error, allow_realm_admin=allow_realm_admin)
     return (stream, recipient, sub)
 
 def access_stream_for_unmute_topic(user_profile: UserProfile, stream_name: str, error: str) -> Stream:
