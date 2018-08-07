@@ -848,6 +848,57 @@ paths:
                         "msg": "Email 'newbie@zulip.com' already in use",
                         "result": "error"
                     }
+  /users/{email}/presence:
+    get:
+      description: Get the presence status for a specific user.
+      parameters:
+      - name: email
+        in: path
+        description: The email address of the user whose presence you want to
+          fetch.
+        schema:
+          type: string
+        example: iago@zulip.com
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    presence:
+                      type: object
+                      description: An object containing the presence details
+                        for every client the user has logged into.
+                - example:
+                    {
+                        "presence": {
+                            "website": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "website"
+                            },
+                            "ZulipMobile": {
+                                "timestamp": 1522687421,
+                                "status": "active",
+                                "pushable": false,
+                                "client": "ZulipMobile"
+                            },
+                            "aggregated": {
+                                "timestamp": 1532697622,
+                                "status": "active",
+                                "client": "website"
+                            }
+                        },
+                        "result": "success",
+                        "msg": ""
+                    }
   /users/me/{stream_id}/topics:
     get:
       description: Get all the topics in a specific stream.
