@@ -198,6 +198,8 @@ class TemplateTestCase(ZulipTestCase):
                          "login_time": "9:33am NewYork, NewYork",
                          },
             api_uri_context={},
+            cloud_annual_price=80,
+            seat_count=8,
         )
 
         context.update(kwargs)

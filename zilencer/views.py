@@ -213,6 +213,9 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
         'nickname_monthly': Plan.CLOUD_MONTHLY,
         'nickname_annual': Plan.CLOUD_ANNUAL,
         'error_message': error_message,
+        'cloud_monthly_price': 8,
+        'cloud_annual_price': 80,
+        'cloud_annual_price_per_month': 6.67,
     }  # type: Dict[str, Any]
     response = render(request, 'zilencer/upgrade.html', context=context)
     response['error_description'] = error_description
