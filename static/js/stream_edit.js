@@ -668,8 +668,6 @@ exports.initialize = function () {
         }
         var row = $(".stream-row.active");
         exports.delete_stream(stream_id, $(".stream_change_property_info"), row);
-        $(".settings").hide();
-        $(".nothing-selected").show();
     });
 
     $("#subscriptions_table").on("hide.bs.modal", "#deactivation_stream_modal", function () {
