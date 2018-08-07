@@ -99,6 +99,16 @@ def test_authorization_errors_fatal(client, nonadmin_client):
     validate_against_openapi_schema(result, '/users/me/subscriptions', 'post',
                                     '400_unauthorized_errors_fatal_true')
 
+def get_user_presence(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Get presence information for "iago@zulip.com"
+    result = client.get_user_presence('iago@zulip.com')
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/users/{email}/presence', 'get', '200')
+
 def create_user(client):
     # type: (Client) -> None
 
@@ -640,6 +650,7 @@ TEST_FUNCTIONS = {
     '/users:post': create_user,
     'get-profile': get_profile,
     'add-subscriptions': add_subscriptions,
+    '/users/{email}/presence:get': get_user_presence,
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users:get': get_members,
@@ -723,6 +734,7 @@ def test_users(client):
     get_profile(client)
     upload_file(client)
     set_typing_status(client)
+    get_user_presence(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None

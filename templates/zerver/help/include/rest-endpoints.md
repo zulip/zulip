@@ -27,6 +27,7 @@
 * [Get profile](/api/get-profile)
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)
+* [Get user presence](/api/get-presence)
 
 #### Server & organizations
 
