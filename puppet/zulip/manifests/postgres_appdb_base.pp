@@ -8,7 +8,7 @@ class zulip::postgres_appdb_base {
     # Needed for our full text search system
     "postgresql-${zulip::base::postgres_version}-tsearch-extras",
   ]
-  safepackage { $appdb_packages: ensure => 'installed' }
+  zulip::safepackage { $appdb_packages: ensure => 'installed' }
 
   # We bundle a bunch of other sysctl parameters into 40-postgresql.conf
   file { '/etc/sysctl.d/30-postgresql-shm.conf':

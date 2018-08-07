@@ -12,5 +12,5 @@ class zulip::static_asset_compiler {
     'gettext',
   ]
 
-  safepackage { $static_asset_compiler_packages: ensure => 'installed' }
+  zulip::safepackage { $static_asset_compiler_packages: ensure => 'installed' }
 }

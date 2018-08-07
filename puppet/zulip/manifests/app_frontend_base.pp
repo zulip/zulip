@@ -8,7 +8,7 @@ class zulip::app_frontend_base {
     # Needed to access our database
     "postgresql-client-${zulip::base::postgres_version}",
   ]
-  safepackage { $web_packages: ensure => 'installed' }
+  zulip::safepackage { $web_packages: ensure => 'installed' }
 
   file { '/etc/nginx/zulip-include/app':
     require => Package['nginx-full'],

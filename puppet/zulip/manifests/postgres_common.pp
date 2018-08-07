@@ -15,7 +15,7 @@ class zulip::postgres_common {
                         # Postgres Nagios check plugin
                         'check-postgres',
                         ]
-  safepackage { $postgres_packages: ensure => 'installed' }
+  zulip::safepackage { $postgres_packages: ensure => 'installed' }
 
   exec { 'disable_logrotate':
     # lint:ignore:140chars
