@@ -237,8 +237,8 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         } else if (event.op === 'delete') {
             _.each(event.streams, function (stream) {
                 var was_subscribed = stream_data.get_sub_by_id(stream.stream_id).subscribed;
-                stream_data.delete_sub(stream.stream_id);
                 subs.remove_stream(stream.stream_id);
+                stream_data.delete_sub(stream.stream_id);
                 if (was_subscribed) {
                     stream_list.remove_sidebar_row(stream.stream_id);
                 }

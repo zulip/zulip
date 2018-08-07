@@ -250,6 +250,10 @@ exports.remove_stream = function (stream_id) {
     // stream, but we let jQuery silently handle that.
     var row = row_for_stream_id(stream_id);
     row.remove();
+    var sub = stream_data.get_sub_by_id(stream_id);
+    if (stream_edit.is_sub_settings_active(sub)) {
+        exports.show_subs_pane.nothing_selected();
+    }
 };
 
 exports.update_settings_for_subscribed = function (sub) {
