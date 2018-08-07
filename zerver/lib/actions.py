@@ -2749,22 +2749,6 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
     # Now since we have all log objects generated we can do a bulk insert
     RealmAuditLog.objects.bulk_create(all_subscription_logs)
 
-    new_vacant_streams = [stream for stream in
-                          set(occupied_streams_before) - set(occupied_streams_after)]
-    new_vacant_private_streams = [stream for stream in new_vacant_streams
-                                  if stream.invite_only]
-    new_vacant_public_streams = [stream for stream in new_vacant_streams
-                                 if not stream.invite_only]
-    if new_vacant_public_streams:
-        event = dict(type="stream", op="vacate",
-                     streams=[stream.to_dict()
-                              for stream in new_vacant_public_streams])
-        send_event(event, active_user_ids(our_realm.id))
-    if new_vacant_private_streams:
-        # Deactivate any newly-vacant private streams
-        for stream in new_vacant_private_streams:
-            do_deactivate_stream(stream)
-
     altered_user_dict = defaultdict(list)  # type: Dict[int, List[UserProfile]]
     streams_by_user = defaultdict(list)  # type: Dict[int, List[Stream]]
     for (sub, stream) in subs_to_deactivate:
@@ -2806,6 +2790,22 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                              subscriptions=[stream.name],
                              user_id=removed_user.id)
                 send_event(event, peer_user_ids)
+
+    new_vacant_streams = [stream for stream in
+                          set(occupied_streams_before) - set(occupied_streams_after)]
+    new_vacant_private_streams = [stream for stream in new_vacant_streams
+                                  if stream.invite_only]
+    new_vacant_public_streams = [stream for stream in new_vacant_streams
+                                 if not stream.invite_only]
+    if new_vacant_public_streams:
+        event = dict(type="stream", op="vacate",
+                     streams=[stream.to_dict()
+                              for stream in new_vacant_public_streams])
+        send_event(event, active_user_ids(our_realm.id))
+    if new_vacant_private_streams:
+        # Deactivate any newly-vacant private streams
+        for stream in new_vacant_private_streams:
+            do_deactivate_stream(stream)
 
     return (
         [(sub.user_profile, stream) for (sub, stream) in subs_to_deactivate],
