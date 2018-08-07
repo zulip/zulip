@@ -9,6 +9,7 @@ insert_final_newline = true
 [*.{sh,py,pyi,js,json,yml,xml,css,md,markdown,handlebars,html}]
 indent_style = space
 indent_size = 4
+max_line_length = 110
 
 [*.{svg,rb,pp,pl}]
 indent_style = space
