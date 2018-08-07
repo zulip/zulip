@@ -10,7 +10,6 @@ import re
 import logging
 import random
 import requests
-import random
 
 from django.conf import settings
 from django.db import connection
@@ -18,18 +17,19 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.models import Reaction, RealmEmoji, Realm, UserProfile
+from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
+    build_avatar, build_subscription, build_recipient, build_usermessages, \
+    build_defaultstream, build_attachment, process_avatars, process_uploads, \
+    process_emojis
 from zerver.lib.parallel import run_parallel
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.lib.emoji import NAME_TO_CODEPOINT_PATH
 
 # stubs
-ZerverFieldsT = Dict[str, Any]
 AddedUsersT = Dict[str, int]
 AddedChannelsT = Dict[str, Tuple[str, int]]
 AddedRecipientsT = Dict[str, int]
@@ -56,7 +56,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     """
     NOW = float(timezone_now().timestamp())
 
-    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Slack')  # type: List[ZerverFieldsT]
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -100,16 +100,6 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     added_recipient = channels_to_zerver_stream_fields[5]
 
     return realm, added_users, added_recipient, added_channels, avatars, emoji_url_map
-
-def build_zerver_realm(realm_id: int, realm_subdomain: str,
-                       time: float) -> List[ZerverFieldsT]:
-    realm = Realm(id=realm_id, date_created=time,
-                  name=realm_subdomain, string_id=realm_subdomain,
-                  description="Organization imported from Slack!")
-    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude='authentication_methods')
-    realm_dict['authentication_methods'] = auth_methods
-    return[realm_dict]
 
 def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                      realm_id: int) -> Tuple[List[ZerverFieldsT],
@@ -316,19 +306,6 @@ def build_avatar_url(slack_user_id: str, team_id: str, avatar_hash: str) -> str:
                                                              avatar_hash)
     return avatar_url
 
-def build_avatar(zulip_user_id: int, realm_id: int, email: str, avatar_url: str,
-                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
-    avatar = dict(
-        path=avatar_url,  # Save slack's url here, which is used later while processing
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=zulip_user_id,
-        last_modified=timestamp,
-        user_profile_email=email,
-        s3_path="",
-        size="")
-    avatar_list.append(avatar)
-
 def get_admin(user: ZerverFieldsT) -> bool:
     admin = user.get('is_admin', False)
     owner = user.get('is_owner', False)
@@ -401,7 +378,7 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         # where every user is subscribed
         default_channels = ['general', 'random']  # Slack specific
         if channel['name'] in default_channels:
-            defaultstream = build_defaultstream(channel['name'], realm_id, stream_id,
+            defaultstream = build_defaultstream(realm_id, stream_id,
                                                 defaultstream_id)
             zerver_defaultstream.append(defaultstream)
             defaultstream_id += 1
@@ -409,22 +386,15 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         zerver_stream.append(stream)
         added_channels[stream['name']] = (channel['id'], stream_id)
 
-        # construct the recipient object and append it to zerver_recipient
-        # type 1: private
-        # type 2: stream
-        # type 3: huddle
-        recipient = dict(
-            type_id=stream_id,
-            id=recipient_id,
-            type=2)
+        recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
         zerver_recipient.append(recipient)
         added_recipient[stream['name']] = recipient_id
         # TODO add recipients for private message and huddles
 
         # construct the subscription object and append it to zerver_subscription
-        subscription_id_count = build_subscription(channel['members'], zerver_subscription,
-                                                   recipient_id, added_users,
-                                                   subscription_id_count)
+        subscription_id_count = get_subscription(channel['members'], zerver_subscription,
+                                                 recipient_id, added_users,
+                                                 subscription_id_count)
         # TODO add zerver_subscription which correspond to
         # huddles type recipient
         # For huddles:
@@ -448,16 +418,14 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         #         ],
 
     for user in zerver_userprofile:
-        zulip_user_id = user['id']
         # this maps the recipients and subscriptions
         # related to private messages
-        recipient_id = recipient_id_count
-        subscription_id = subscription_id_count
+        recipient = build_recipient(user['id'], recipient_id_count, Recipient.PERSONAL)
+        sub = build_subscription(recipient_id_count, user['id'], subscription_id_count)
 
-        recipient, sub = build_pm_recipient_sub_from_user(zulip_user_id, recipient_id,
-                                                          subscription_id)
         zerver_recipient.append(recipient)
         zerver_subscription.append(sub)
+
         subscription_id_count += 1
         recipient_id_count += 1
 
@@ -465,53 +433,11 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
     return zerver_defaultstream, zerver_stream, added_channels, zerver_subscription, \
         zerver_recipient, added_recipient
 
-def build_defaultstream(channel_name: str, realm_id: int, stream_id: int,
-                        defaultstream_id: int) -> ZerverFieldsT:
-    defaultstream = dict(
-        stream=stream_id,
-        realm=realm_id,
-        id=defaultstream_id)
-    return defaultstream
-
-def build_pm_recipient_sub_from_user(zulip_user_id: int, recipient_id: int,
-                                     subscription_id: int) -> Tuple[ZerverFieldsT,
-                                                                    ZerverFieldsT]:
-    recipient = dict(
-        type_id=zulip_user_id,
-        id=recipient_id,
-        type=1)
-
-    sub = dict(
-        recipient=recipient_id,
-        color=random.choice(stream_colors),
-        audible_notifications=True,
-        push_notifications=False,
-        email_notifications=False,
-        desktop_notifications=True,
-        pin_to_top=False,
-        in_home_view=True,
-        active=True,
-        user_profile=zulip_user_id,
-        id=subscription_id)
-
-    return recipient, sub
-
-def build_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
-                       recipient_id: int, added_users: AddedUsersT,
-                       subscription_id: int) -> int:
+def get_subscription(channel_members: List[str], zerver_subscription: List[ZerverFieldsT],
+                     recipient_id: int, added_users: AddedUsersT,
+                     subscription_id: int) -> int:
     for member in channel_members:
-        sub = dict(
-            recipient=recipient_id,
-            color=random.choice(stream_colors),
-            audible_notifications=True,
-            push_notifications=False,
-            email_notifications=False,
-            desktop_notifications=True,
-            pin_to_top=False,
-            in_home_view=True,
-            active=True,
-            user_profile=added_users[member],
-            id=subscription_id)
+        sub = build_subscription(recipient_id, added_users[member], subscription_id)
         # The recipient corresponds to a stream for stream-readable message.
         zerver_subscription.append(sub)
         subscription_id += 1
@@ -691,8 +617,8 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                               uploads_list)
 
                 attachment_id = attachment_id_count
-                build_zerver_attachment(realm_id, message_id, attachment_id, added_users[user],
-                                        fileinfo, s3_path, zerver_attachment)
+                build_attachment(realm_id, message_id, attachment_id, added_users[user],
+                                 fileinfo, s3_path, zerver_attachment)
                 attachment_id_count += 1
 
             # For attachments with link not from slack
@@ -726,7 +652,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
         zerver_message.append(zulip_message)
 
         # construct usermessages
-        usermessage_id_count = build_zerver_usermessage(
+        usermessage_id_count = build_usermessages(
             zerver_usermessage, usermessage_id_count, zerver_subscription,
             recipient_id, mentioned_users_id, message_id)
 
@@ -802,45 +728,12 @@ def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverField
         size=fileinfo['size'])
     uploads_list.append(upload)
 
-def build_zerver_attachment(realm_id: int, message_id: int, attachment_id: int,
-                            user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
-                            zerver_attachment: List[ZerverFieldsT]) -> None:
-    attachment = dict(
-        owner=user_id,
-        messages=[message_id],
-        id=attachment_id,
-        size=fileinfo['size'],
-        create_time=fileinfo['created'],
-        is_realm_public=True,  # is always true for stream message
-        path_id=s3_path,
-        realm=realm_id,
-        file_name=fileinfo['name'])
-    zerver_attachment.append(attachment)
-
 def get_message_sending_user(message: ZerverFieldsT) -> Optional[str]:
     if 'user' in message:
         return message['user']
     if message.get('file'):
         return message['file'].get('user')
     return None
-
-def build_zerver_usermessage(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
-                             zerver_subscription: List[ZerverFieldsT], recipient_id: int,
-                             mentioned_users_id: List[int], message_id: int) -> int:
-    for subscription in zerver_subscription:
-        if subscription['recipient'] == recipient_id:
-            flags_mask = 1  # For read
-            if subscription['user_profile'] in mentioned_users_id:
-                flags_mask = 9  # For read and mentioned
-
-            usermessage = dict(
-                user_profile=subscription['user_profile'],
-                id=usermessage_id,
-                flags_mask=flags_mask,
-                message=message_id)
-            usermessage_id += 1
-            zerver_usermessage.append(usermessage)
-    return usermessage_id
 
 def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: int=6) -> None:
     # Subdomain is set by the user while running the import command
@@ -886,7 +779,7 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads, '-512')
 
     uploads_folder = os.path.join(output_dir, 'uploads')
     os.makedirs(os.path.join(uploads_folder, str(realm_id)), exist_ok=True)
@@ -910,133 +803,6 @@ def do_convert_data(slack_zip_file: str, output_dir: str, token: str, threads: i
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-
-def process_emojis(zerver_realmemoji: List[ZerverFieldsT], emoji_dir: str,
-                   emoji_url_map: ZerverFieldsT, threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the custom emojis and saves in the output emoji folder
-    """
-    def get_emojis(upload: List[str]) -> int:
-        slack_emoji_url = upload[0]
-        emoji_path = upload[1]
-        upload_emoji_path = os.path.join(emoji_dir, emoji_path)
-
-        response = requests.get(slack_emoji_url, stream=True)
-        os.makedirs(os.path.dirname(upload_emoji_path), exist_ok=True)
-        with open(upload_emoji_path, 'wb') as emoji_file:
-            shutil.copyfileobj(response.raw, emoji_file)
-        return 0
-
-    emoji_records = []
-    upload_emoji_list = []
-    logging.info('######### GETTING EMOJIS #########\n')
-    logging.info('DOWNLOADING EMOJIS .......\n')
-    for emoji in zerver_realmemoji:
-        slack_emoji_url = emoji_url_map[emoji['name']]
-        emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
-            realm_id=emoji['realm'],
-            emoji_file_name=emoji['name'])
-
-        upload_emoji_list.append([slack_emoji_url, emoji_path])
-
-        emoji_record = dict(emoji)
-        emoji_record['path'] = emoji_path
-        emoji_record['s3_path'] = emoji_path
-        emoji_record['realm_id'] = emoji_record['realm']
-        emoji_record.pop('realm')
-
-        emoji_records.append(emoji_record)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_emojis, upload_emoji_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING EMOJIS FINISHED #########\n')
-    return emoji_records
-
-def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
-                    realm_id: int, threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the avatar of size 512 px and saves it in the
-    user's avatar directory with both the extensions
-    '.png' and '.original'
-    """
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        # get avatar of size 512
-        slack_avatar_url = avatar_upload_list[0]
-        image_path = avatar_upload_list[1]
-        original_image_path = avatar_upload_list[2]
-        response = requests.get(slack_avatar_url + '-512', stream=True)
-        with open(image_path, 'wb') as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-        shutil.copy(image_path, original_image_path)
-        return 0
-
-    logging.info('######### GETTING AVATARS #########\n')
-    logging.info('DOWNLOADING AVATARS .......\n')
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
-        slack_avatar_url = avatar['path']
-        avatar_original = dict(avatar)
-
-        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
-        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
-
-        avatar_upload_list.append([slack_avatar_url, image_path, original_image_path])
-
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar['path'] = image_path
-        avatar['s3_path'] = image_path
-
-        avatar_original['path'] = original_image_path
-        avatar_original['s3_path'] = original_image_path
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING AVATARS FINISHED #########\n')
-    return avatar_list + avatar_original_list
-
-def process_uploads(upload_list: List[ZerverFieldsT], upload_dir: str,
-                    threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the uploads and saves it in the realm's upload directory
-    """
-    def get_uploads(upload: List[str]) -> int:
-        upload_url = upload[0]
-        upload_path = upload[1]
-        upload_path = os.path.join(upload_dir, upload_path)
-
-        response = requests.get(upload_url, stream=True)
-        os.makedirs(os.path.dirname(upload_path), exist_ok=True)
-        with open(upload_path, 'wb') as upload_file:
-            shutil.copyfileobj(response.raw, upload_file)
-        return 0
-
-    logging.info('######### GETTING ATTACHMENTS #########\n')
-    logging.info('DOWNLOADING ATTACHMENTS .......\n')
-    upload_url_list = []
-    for upload in upload_list:
-        upload_url = upload['path']
-        upload_s3_path = upload['s3_path']
-        upload_url_list.append([upload_url, upload_s3_path])
-        upload['path'] = upload_s3_path
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_uploads, upload_url_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING ATTACHMENTS FINISHED #########\n')
-    return upload_list
 
 def get_data_file(path: str) -> Any:
     data = json.load(open(path))

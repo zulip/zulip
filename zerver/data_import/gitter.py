@@ -13,15 +13,14 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 
-from zerver.models import Realm, UserProfile
-from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
+from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
-from zerver.lib.avatar_hash import user_avatar_path_from_ids
-from zerver.lib.parallel import run_parallel
+from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
+    build_avatar, build_subscription, build_recipient, build_usermessages, \
+    build_defaultstream, process_avatars
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
-ZerverFieldsT = Dict[str, Any]
 
 realm_id = 0
 
@@ -36,7 +35,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     3. user_map, which is a dictionary to map from gitter user id to zulip user id
     """
     NOW = float(timezone_now().timestamp())
-    zerver_realm = build_zerver_realm(realm_subdomain, NOW)
+    zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')  # type: List[ZerverFieldsT]
 
     realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
                                 {"name": "website", "id": 2},
@@ -71,15 +70,6 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
 
     return realm, avatars, user_map
 
-def build_zerver_realm(realm_subdomain: str, time: float) -> List[ZerverFieldsT]:
-    realm = Realm(id=realm_id, date_created=time,
-                  name=realm_subdomain, string_id=realm_subdomain,
-                  description="Organization imported from Gitter!")
-    auth_methods = [[flag[0], flag[1]] for flag in realm.authentication_methods]
-    realm_dict = model_to_dict(realm, exclude='authentication_methods')
-    realm_dict['authentication_methods'] = auth_methods
-    return[realm_dict]
-
 def build_userprofile(timestamp: Any, domain_name: str,
                       gitter_data: GitterDataT) -> Tuple[List[ZerverFieldsT],
                                                          List[ZerverFieldsT],
@@ -102,7 +92,8 @@ def build_userprofile(timestamp: Any, domain_name: str,
             user_map[user_data['id']] = user_id
 
             email = get_user_email(user_data, domain_name)
-            build_avatar(user_id, realm_id, email, user_data, timestamp, avatar_list)
+            build_avatar(user_id, realm_id, email, user_data['avatarUrl'],
+                         timestamp, avatar_list)
 
             # Build userprofile object
             userprofile = UserProfile(
@@ -128,20 +119,6 @@ def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     email = ("%s@users.noreply.github.com" % user_data['username'])
     return email
 
-def build_avatar(user_id: int, realm_id: int, email: str, user_data: ZerverFieldsT,
-                 timestamp: Any, avatar_list: List[ZerverFieldsT]) -> None:
-    avatar_url = user_data['avatarUrl']
-    avatar = dict(
-        path=avatar_url,  # Save the avatar url here, which is downloaded later
-        realm_id=realm_id,
-        content_type=None,
-        user_profile_id=user_id,
-        last_modified=timestamp,
-        user_profile_email=email,
-        s3_path="",
-        size="")
-    avatar_list.append(avatar)
-
 def build_stream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
                                           List[ZerverFieldsT]]:
     logging.info('######### IMPORTING STREAM STARTED #########\n')
@@ -155,10 +132,7 @@ def build_stream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
         date_created=timestamp,
         id=0)
 
-    defaultstream = dict(
-        stream=0,
-        realm=realm_id,
-        id=0)
+    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=0, defaultstream_id=0)
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return [stream], [defaultstream]
 
@@ -179,7 +153,7 @@ def build_recipient_and_subscription(
 
     # We have only one recipient, because we have only one stream
     # Hence 'recipient_id'=0 corresponds to 'stream_id'=0
-    recipient = build_recipient(0, recipient_id, 2)
+    recipient = build_recipient(0, recipient_id, Recipient.STREAM)
     zerver_recipient.append(recipient)
 
     for user in zerver_userprofile:
@@ -190,7 +164,7 @@ def build_recipient_and_subscription(
 
     # For users
     for user in zerver_userprofile:
-        recipient = build_recipient(user['id'], recipient_id, 1)
+        recipient = build_recipient(user['id'], recipient_id, Recipient.PERSONAL)
         subscription = build_subscription(recipient_id, user['id'], subscription_id)
         zerver_recipient.append(recipient)
         zerver_subscription.append(subscription)
@@ -198,29 +172,6 @@ def build_recipient_and_subscription(
         subscription_id += 1
 
     return zerver_recipient, zerver_subscription
-
-def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT:
-    recipient = dict(
-        type_id=type_id,  # stream id
-        id=recipient_id,
-        type=type)
-    return recipient
-
-def build_subscription(recipient_id: int, user_id: int,
-                       subscription_id: int) -> ZerverFieldsT:
-    subscription = dict(
-        recipient=recipient_id,
-        color=random.choice(stream_colors),
-        audible_notifications=True,
-        push_notifications=False,
-        email_notifications=False,
-        desktop_notifications=True,
-        pin_to_top=False,
-        in_home_view=True,
-        active=True,
-        user_profile=user_id,
-        id=subscription_id)
-    return subscription
 
 def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                       zerver_subscription: List[ZerverFieldsT],
@@ -241,7 +192,7 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
     while True:
         message_json = {}
         zerver_message = []
-        zerver_usermessage = []
+        zerver_usermessage = []  # type: List[ZerverFieldsT]
         message_data = gitter_data[low_index: upper_index]
         if len(message_data) == 0:
             break
@@ -268,19 +219,9 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                 has_link=False)
             zerver_message.append(zulip_message)
 
-            for subscription in zerver_subscription:
-                if subscription['recipient'] == recipient_id:
-                    flags_mask = 1  # For read
-                    if subscription['user_profile'] in mentioned_user_ids:
-                        flags_mask = 9  # For read and mentioned
-
-                    usermessage = dict(
-                        user_profile=subscription['user_profile'],
-                        id=usermessage_id,
-                        flags_mask=flags_mask,
-                        message=message_id)
-                    usermessage_id += 1
-                    zerver_usermessage.append(usermessage)
+            usermessage_id = build_usermessages(
+                zerver_usermessage, usermessage_id, zerver_subscription,
+                recipient_id, mentioned_user_ids, message_id)
             message_id += 1
 
         message_json['zerver_message'] = zerver_message
@@ -337,7 +278,7 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
     avatar_folder = os.path.join(output_dir, 'avatars')
     avatar_realm_folder = os.path.join(avatar_folder, str(realm_id))
     os.makedirs(avatar_realm_folder, exist_ok=True)
-    avatar_records = process_avatars(avatar_list, avatar_folder, threads)
+    avatar_records = process_avatars(avatar_list, avatar_folder, realm_id, threads)
 
     attachment = {"zerver_attachment": []}  # type: Dict[str, List[Any]]
 
@@ -356,53 +297,6 @@ def do_convert_data(gitter_data_file: str, output_dir: str, threads: int=6) -> N
 
     logging.info('######### DATA CONVERSION FINISHED #########\n')
     logging.info("Zulip data dump created at %s" % (output_dir))
-
-def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str,
-                    threads: int) -> List[ZerverFieldsT]:
-    """
-    This function gets the gitter avatar of the user and saves it in the
-    user's avatar directory with both the extensions '.png' and '.original'
-    """
-    def get_avatar(avatar_upload_list: List[str]) -> int:
-        gitter_avatar_url = avatar_upload_list[0]
-        image_path = avatar_upload_list[1]
-        original_image_path = avatar_upload_list[2]
-        response = requests.get(gitter_avatar_url, stream=True)
-        with open(image_path, 'wb') as image_file:
-            shutil.copyfileobj(response.raw, image_file)
-        shutil.copy(image_path, original_image_path)
-        return 0
-
-    logging.info('######### GETTING AVATARS #########\n')
-    logging.info('DOWNLOADING AVATARS .......\n')
-    avatar_original_list = []
-    avatar_upload_list = []
-    for avatar in avatar_list:
-        avatar_hash = user_avatar_path_from_ids(avatar['user_profile_id'], realm_id)
-        gitter_avatar_url = avatar['path']
-        avatar_original = dict(avatar)
-
-        image_path = ('%s/%s.png' % (avatar_dir, avatar_hash))
-        original_image_path = ('%s/%s.original' % (avatar_dir, avatar_hash))
-
-        avatar_upload_list.append([gitter_avatar_url, image_path, original_image_path])
-        # We don't add the size field here in avatar's records.json,
-        # since the metadata is not needed on the import end, and we
-        # don't have it until we've downloaded the files anyway.
-        avatar['path'] = image_path
-        avatar['s3_path'] = image_path
-
-        avatar_original['path'] = original_image_path
-        avatar_original['s3_path'] = original_image_path
-        avatar_original_list.append(avatar_original)
-
-    # Run downloads parallely
-    output = []
-    for (status, job) in run_parallel(get_avatar, avatar_upload_list, threads=threads):
-        output.append(job)
-
-    logging.info('######### GETTING AVATARS FINISHED #########\n')
-    return avatar_list + avatar_original_list
 
 def create_converted_data_files(data: Any, output_dir: str, file_path: str) -> None:
     output_file = output_dir + file_path
