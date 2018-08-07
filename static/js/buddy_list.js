@@ -1,44 +1,45 @@
 var buddy_list = (function () {
 
-function buddy_list_create() {
-    var self = {};
+function buddy_list_conf() {
+    var conf = {};
 
-    self.container_sel = '#user_presences';
-    self.scroll_container_sel = '#buddy_list_wrapper';
-    self.item_sel = 'li.user_sidebar_entry';
-    self.padding_sel = '#buddy_list_wrapper_padding';
+    conf.container_sel = '#user_presences';
+    conf.scroll_container_sel = '#buddy_list_wrapper';
+    conf.item_sel = 'li.user_sidebar_entry';
+    conf.padding_sel = '#buddy_list_wrapper_padding';
 
-    self.items_to_html = function (opts) {
+    conf.items_to_html = function (opts) {
         var user_info = opts.items;
         var html = templates.render('user_presence_rows', {users: user_info});
         return html;
     };
 
-    self.item_to_html = function (opts) {
+    conf.item_to_html = function (opts) {
         var html = templates.render('user_presence_row', opts.item);
         return html;
     };
 
-    self.get_li_from_key = function (opts) {
+    conf.get_li_from_key = function (opts) {
         var user_id = opts.key;
-        var sel = self.item_sel + "[data-user-id='" + user_id + "']";
-        return self.container.find(sel);
+        var container = $(conf.container_sel);
+        var sel = conf.item_sel + "[data-user-id='" + user_id + "']";
+        return container.find(sel);
     };
 
-    self.get_key_from_li = function (opts) {
+    conf.get_key_from_li = function (opts) {
         var user_id = opts.li.expectOne().attr('data-user-id');
         return user_id;
     };
 
-    self.get_data_from_keys = function (opts) {
+    conf.get_data_from_keys = function (opts) {
         var keys = opts.keys;
         var data = buddy_data.get_items_for_users(keys);
         return data;
     };
 
-    self.compare_function = buddy_data.compare_function;
+    conf.compare_function = buddy_data.compare_function;
 
-    self.height_to_fill = function () {
+    conf.height_to_fill = function () {
         // Because the buddy list gets sized dynamically, we err on the side
         // of using the height of the entire viewport for deciding
         // how much content to render.  Even on tall monitors this should
@@ -48,8 +49,32 @@ function buddy_list_create() {
         return height;
     };
 
-    // Try to keep code below this line generic, so that we can
-    // extract a widget.
+    return conf;
+}
+
+function buddy_list_create() {
+    var conf = buddy_list_conf();
+
+    var self = {};
+
+    self.container_sel = conf.container_sel;
+    self.scroll_container_sel = conf.scroll_container_sel;
+    self.item_sel = conf.item_sel;
+    self.padding_sel = conf.padding_sel;
+
+    var func_names = [
+        'items_to_html',
+        'item_to_html',
+        'get_li_from_key',
+        'get_key_from_li',
+        'get_data_from_keys',
+        'compare_function',
+        'height_to_fill',
+    ];
+
+    _.each(func_names, function (func_name) {
+        self[func_name] = conf[func_name];
+    });
 
     self.keys = [];
 
