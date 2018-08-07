@@ -42,7 +42,7 @@ def run():
     sys.path.insert(0, root_dir)
 
     from tools.linter_lib.custom_check import build_custom_checkers
-    from tools.linter_lib.exclude import EXCLUDED_FILES
+    from tools.linter_lib.exclude import EXCLUDED_FILES, PUPPET_CHECK_RULES_TO_EXCLUDE
     from tools.linter_lib.pyflakes import check_pyflakes
     from tools.linter_lib.pep8 import check_pep8
 
@@ -92,6 +92,8 @@ def run():
     linter_config.external_linter('tslint', ['node', 'node_modules/.bin/tslint', '-c',
                                              'static/ts/tslint.json'], ['ts'])
     linter_config.external_linter('puppet', ['puppet', 'parser', 'validate'], ['pp'])
+    linter_config.external_linter('puppet-lint',
+                                  ['puppet-lint'] + PUPPET_CHECK_RULES_TO_EXCLUDE, ['pp'])
     linter_config.external_linter('templates', ['tools/check-templates'], ['handlebars', 'html'])
     linter_config.external_linter('urls', ['tools/check-urls'], ['py'])
     linter_config.external_linter('swagger', ['node', 'tools/check-swagger'], ['yaml'])
