@@ -1,6 +1,6 @@
-/* eslint indent: "off" */
-
 var buddy_list = (function () {
+
+function buddy_list_create() {
     var self = {};
 
     self.container_sel = '#user_presences';
@@ -309,8 +309,13 @@ var buddy_list = (function () {
     };
 
     return self;
-}());
+}
 
+var exports = buddy_list_create();
+
+return exports;
+
+}());
 if (typeof module !== 'undefined') {
     module.exports = buddy_list;
 }
