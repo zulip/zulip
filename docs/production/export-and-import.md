@@ -9,6 +9,26 @@ you're exporting from and the one you're exporting to are running the
 same version of Zulip, since we do change and extend the format from
 time to time.
 
+## Backups
+
+If you want to move hardware for a self-hosted Zulip installation, we
+recommend Zulip's
+[database-level backup and restoration process][backups].  Zulip's
+backup process is structurally very unlikely to ever develop bugs, and
+will restore your Zulip server to the exact state it was left in.  The
+big thing it can't do is support a migration to a server hosting a
+different set of organizations than the original one (because doing so
+generally requires renumbering all the users/messages/etc.).
+
+Zulip's export/import tools (documented on this page) have full
+support for such a renumbering process.  While these tools are
+carefully designed and tested to make various classes of bugs
+impossible or unlikely, the extra complexity required for renumbering
+makes them structurally more risky than the direct postgres backup
+process.
+
+[backups]: ../production/maintain-secure-upgrade.html#backups
+
 ## Export your Zulip data
 
 For best results, you'll want to shut down access to the organization

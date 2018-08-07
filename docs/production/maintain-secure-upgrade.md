@@ -268,15 +268,16 @@ email), etc.
 they do get large on a busy server, and it's definitely
 lower-priority.
 
-If you are interested in backups because you are moving from one Zulip
-server to another server and can't transfer a full postgres dump
-(which is definitely the simplest approach), our draft
-[conversion and export design document](../subsystems/conversion.html) may help.
-The tool is well designed, and was tested carefully with dozens of
-realms in mid-2016; but it's not integrated into Zulip's regular
-testing process, and thus it is worth asking on the Zulip developers
-mailing list whether it needs any minor updates to do things like
-export newly added tables.
+Zulip also has a [data export and import tool][export-import], which
+is useful for migrating data between Zulip Cloud and other Zulip
+servers, as well as various auditing purposes.  The big advantage of
+the `postgres` layer backups over the export/import process is that
+it's structurally very unlikely for the `postgres` process to ever
+develop bugs.  The export tool's advantage is that the export is more
+human-readable and easier to parse, and doesn't have the requirement
+that the same set of Zulip organizations exist on the two servers.
+
+[export-import]: ../production/export-and-import.html
 
 ### Restore from backups
 
