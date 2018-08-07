@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import mock
 from typing import Dict, Any
 
 import zerver.lib.openapi as openapi
@@ -132,3 +133,8 @@ class OpenAPIToolsTest(ZulipTestCase):
         # Check that the file has been reloaded by verifying that the last
         # update date isn't zero anymore
         self.assertNotEqual(openapi_spec.last_update, 0)
+
+        # Now verify calling it again doesn't call reload
+        with mock.patch('zerver.lib.openapi.openapi_spec.reload') as mock_reload:
+            get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
+            self.assertFalse(mock_reload.called)

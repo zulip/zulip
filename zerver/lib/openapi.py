@@ -23,7 +23,7 @@ EXCLUDE_PROPERTIES = {
 class OpenAPISpec():
     def __init__(self, path: str) -> None:
         self.path = path
-        self.reload()
+        self.last_update = None  # type: Optional[float]
 
     def reload(self) -> None:
         self.last_update = os.path.getmtime(self.path)
