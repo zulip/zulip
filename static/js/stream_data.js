@@ -141,7 +141,7 @@ exports.delete_sub = function (stream_id) {
 exports.get_non_default_stream_names = function () {
     var subs = stream_info.values();
     subs = _.reject(subs, function (sub) {
-        return exports.is_default_stream_id(sub.stream_id);
+        return exports.is_default_stream_id(sub.stream_id) || !sub.subscribed && sub.invite_only;
     });
     var names = _.pluck(subs, 'name');
     return names;
