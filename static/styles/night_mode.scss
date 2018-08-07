@@ -89,6 +89,17 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
+    .new-style .button[disabled="disabled"] {
+        background-color: hsla(0, 0%, 0%, 0.4);
+        color: hsl(0, 0%, 70%);
+    }
+
+    .new-style .button[disabled="disabled"]:hover {
+        background-color: hsla(0, 0%, 0%, 0.4);
+        color: hsl(0, 0%, 75%);
+        border-color: hsla(0, 0%, 0%, 0.6);
+    }
+
     select option {
         background-color: hsl(212, 28%, 18%);
         color: hsl(236, 33%, 90%);

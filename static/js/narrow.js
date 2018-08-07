@@ -761,10 +761,14 @@ function pick_empty_narrow_banner() {
 exports.show_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
     pick_empty_narrow_banner().show();
+    $("#left_bar_compose_reply_button_big").attr("title", i18n.t("There are no messages to reply to."));
+    $("#left_bar_compose_reply_button_big").attr("disabled", "disabled");
 };
 
 exports.hide_empty_narrow_message = function () {
     $(".empty_feed_notice").hide();
+    $("#left_bar_compose_reply_button_big").attr("title", i18n.t("Reply (r)"));
+    $("#left_bar_compose_reply_button_big").removeAttr("disabled");
 };
 
 return exports;
