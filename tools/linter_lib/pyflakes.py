@@ -1,6 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 
+import argparse
 import subprocess
 
 from zulint.printer import print_err, colors
@@ -32,7 +33,7 @@ def suppress_line(line: str) -> bool:
     return False
 
 def check_pyflakes(files, options):
-    # type: (List[str], Dict[str, Any]) -> bool
+    # type: (List[str], argparse.Namespace) -> bool
     if len(files) == 0:
         return False
     failed = False
