@@ -2170,7 +2170,7 @@ class EventsRegisterTest(ZulipTestCase):
         events = self.do_test(action,
                               include_subscribers=include_subscribers,
                               num_events=3)
-        error = remove_schema_checker('events[1]', events[1])
+        error = remove_schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
         # Now resubscribe a user, to make sure that works on a vacated stream
