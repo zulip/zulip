@@ -136,7 +136,8 @@ def remove_default_stream_group(request: HttpRequest, user_profile: UserProfile,
 def remove_default_stream(request: HttpRequest,
                           user_profile: UserProfile,
                           stream_name: str=REQ()) -> HttpResponse:
-    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name)
+    (stream, recipient, sub) = access_stream_by_name(user_profile, stream_name,
+                                                     allow_realm_admin=True)
     do_remove_default_stream(stream)
     return json_success()
 
