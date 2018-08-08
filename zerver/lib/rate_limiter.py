@@ -8,7 +8,6 @@ from zerver.lib.redis_utils import get_redis_client
 
 from zerver.models import UserProfile
 
-import redis
 import time
 import logging
 
@@ -177,6 +176,7 @@ def is_ratelimited(entity: RateLimitedObject) -> Tuple[bool, float]:
 
 def incr_ratelimit(entity: RateLimitedObject) -> None:
     """Increases the rate-limit for the specified entity"""
+    import redis
     list_key, set_key, _ = entity.get_keys()
     now = time.time()
 
