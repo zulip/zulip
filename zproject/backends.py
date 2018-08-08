@@ -1,7 +1,6 @@
 import logging
 from typing import Any, Dict, List, Set, Tuple, Optional
 
-from apiclient.sample_tools import client as googleapiclient
 from django_auth_ldap.backend import LDAPBackend, _LDAPUser
 import django.contrib.auth
 from django.contrib.auth.backends import RemoteUserBackend
@@ -183,6 +182,10 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
 
     def authenticate(self, google_oauth2_token: str=None, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
+        # We lazily import apiclient as part of optimizing the base
+        # import time for a Zulip management command, since it's only
+        # used in this one code path and takes 30-50ms to import.
+        from apiclient.sample_tools import client as googleapiclient
         if realm is None:
             return None
         if return_data is None:
