@@ -671,6 +671,20 @@ class StreamMessagesTest(ZulipTestCase):
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
 
+    def test_is_private_flag(self) -> None:
+        user_profile = self.example_user('iago')
+        self.subscribe(user_profile, "Denmark")
+
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="test")
+        message = most_recent_message(user_profile)
+        self.assertFalse(UserMessage.objects.get(user_profile=user_profile, message=message).flags.is_private.is_set)
+
+        self.send_personal_message(self.example_email("hamlet"), user_profile.email,
+                                   content="test")
+        message = most_recent_message(user_profile)
+        self.assertTrue(UserMessage.objects.get(user_profile=user_profile, message=message).flags.is_private.is_set)
+
     def _send_stream_message(self, email: str, stream_name: str, content: str) -> Set[int]:
         with mock.patch('zerver.lib.actions.send_event') as m:
             self.send_stream_message(
