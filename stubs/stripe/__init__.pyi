@@ -17,7 +17,8 @@ class Customer:
         ...
 
     @staticmethod
-    def create(description: str, metadata: Dict[str, Any], source: str) -> Customer:
+    def create(description: str, email: str, metadata: Dict[str, Any],
+               source: str) -> Customer:
         ...
 
 class Invoice:

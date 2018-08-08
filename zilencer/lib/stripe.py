@@ -122,6 +122,7 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
     realm = user.realm
     stripe_customer = stripe.Customer.create(
         description="%s (%s)" % (realm.string_id, realm.name),
+        email=user.email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
         source=stripe_token)
     if PRINT_STRIPE_FIXTURE_DATA:

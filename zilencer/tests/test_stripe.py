@@ -99,6 +99,7 @@ class StripeTest(ZulipTestCase):
         # Check that we created a customer and subscription in stripe
         mock_create_customer.assert_called_once_with(
             description="zulip (Zulip Dev)",
+            email=user.email,
             metadata={'realm_id': user.realm.id, 'realm_str': 'zulip'},
             source=self.token)
         mock_create_subscription.assert_called_once_with(
