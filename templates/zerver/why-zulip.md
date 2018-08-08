@@ -1,4 +1,3 @@
-# Why Zulip?
 
 There are a lot of team chat apps. So why did we build Zulip?
 
