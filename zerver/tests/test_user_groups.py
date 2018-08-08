@@ -197,6 +197,20 @@ class UserGroupAPITestCase(ZulipTestCase):
         result = self.client_patch('/json/user_groups/{}'.format(user_group.id), info=params)
         self.assert_json_error(result, "Not allowed for guest users")
 
+    def test_user_group_update_to_already_existing_name(self) -> None:
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
+        realm = get_realm('zulip')
+        support_user_group = create_user_group('support', [hamlet], realm)
+        marketing_user_group = create_user_group('marketing', [hamlet], realm)
+
+        params = {
+            'name': marketing_user_group.name,
+        }
+        result = self.client_patch('/json/user_groups/{}'.format(support_user_group.id), info=params)
+        self.assert_json_error(
+            result, "User group '{}' already exists.".format(marketing_user_group.name))
+
     def test_user_group_delete(self) -> None:
         hamlet = self.example_user('hamlet')
         self.login(self.example_email("hamlet"))
