@@ -2026,7 +2026,7 @@
     }
 
   , move: function (e) {
-      if (!this.shown) return
+      if (!this.shown && e.keyCode != 9) return
 
       switch(e.keyCode) {
         case 9: // tab
@@ -2069,6 +2069,13 @@
           break
 
         case 9: // tab
+          if (!this.shown) {
+            this.lookup()
+            return
+          }
+          this.select(e)
+          break
+        
         case 13: // enter
           if (!this.shown) return
           this.select(e)
