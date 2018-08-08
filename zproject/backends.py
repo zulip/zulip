@@ -8,7 +8,6 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from django.http import HttpResponse
-from oauth2client.crypt import AppIdentityError
 from requests import HTTPError
 from social_core.backends.github import GithubOAuth2, GithubOrganizationOAuth2, \
     GithubTeamOAuth2
@@ -186,6 +185,7 @@ class GoogleMobileOauth2Backend(ZulipAuthMixin):
         # import time for a Zulip management command, since it's only
         # used in this one code path and takes 30-50ms to import.
         from apiclient.sample_tools import client as googleapiclient
+        from oauth2client.crypt import AppIdentityError
         if realm is None:
             return None
         if return_data is None:
