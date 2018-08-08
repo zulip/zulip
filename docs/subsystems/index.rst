@@ -43,3 +43,4 @@ Subsystems Documentation
    unread_messages
    billing
    user-docs
+   widgets
