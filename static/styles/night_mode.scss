@@ -67,6 +67,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     /* these are converting grey things to "new grey" */
+    *[disabled=disabled],
     .sidebar-title,
     .recipient_row_date {
         color: inherit;
@@ -74,6 +75,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     .new-style .button,
+    .new-style .button[disabled=disabled]:hover,
     input[type="text"],
     input[type="email"],
     input[type="password"],
@@ -87,17 +89,6 @@ on a dark background, and don't change the dark labels dark either. */
         background-color: hsla(0, 0%, 0%, 0.2);
         border-color: hsla(0, 0%, 0%, 0.6);
         color: inherit;
-    }
-
-    .new-style .button[disabled="disabled"] {
-        background-color: hsla(0, 0%, 0%, 0.4);
-        color: hsl(0, 0%, 50%);
-    }
-
-    .new-style .button[disabled="disabled"]:hover {
-        background-color: hsla(0, 0%, 0%, 0.4);
-        color: hsl(0, 0%, 55%);
-        border-color: hsla(0, 0%, 0%, 0.6);
     }
 
     select option {
@@ -179,11 +170,12 @@ on a dark background, and don't change the dark labels dark either. */
         border-color: hsla(0, 0%, 0%, 0.2);
     }
 
-    #searchbox_legacy .navbar-search {
+    #searchbox_legacy {
         border-color: hsla(0, 0%, 0%, 0.6);
     }
 
     .overlay,
+    #stream_creation_form #stream_creating_indicator:not(:empty),
     .emoji-popover-emoji:not(.reacted):focus {
         background-color: hsla(212, 28%, 8%, 0.75);
     }
@@ -229,6 +221,10 @@ on a dark background, and don't change the dark labels dark either. */
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    .clear_search_button,
+    .clear_search_button:focus,
+    .clear_search_button:active,
+    .clear_search_button[disabled]:hover,
     #searchbox_legacy a.search_icon,
     #searchbox_legacy .search_button,
     #searchbox a.search_icon,
@@ -238,6 +234,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
+    .clear_search_button:hover,
     #searchbox_legacy a.search_icon:hover,
     #searchbox_legacy .search_button:hover,
     #searchbox a.search_icon:hover,
