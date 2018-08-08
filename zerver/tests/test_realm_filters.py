@@ -44,7 +44,7 @@ class RealmFilterTest(ZulipTestCase):
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_error(result, 'URL format string must be in the following format: `https://example.com/%(\\w+)s`')
 
-        data['url_format_string'] = 'https://realm.com/my_realm_filter/%(id)s'
+        data['url_format_string'] = 'https://realm.com/my_realm_filter/#hashtag/%(id)s'
         result = self.client_post("/json/realm/filters", info=data)
         self.assert_json_success(result)
 
