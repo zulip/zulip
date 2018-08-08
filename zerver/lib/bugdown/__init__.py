@@ -12,7 +12,6 @@ import urllib
 import re
 import os
 import html
-import twitter
 import platform
 import time
 import functools
@@ -301,6 +300,11 @@ def fetch_tweet_data(tweet_id: str) -> Optional[Dict[str, Any]]:
         }
         if not all(creds.values()):
             return None
+
+        # We lazily import twitter here because its import process is
+        # surprisingly slow, and doing so has a significant impact on
+        # the startup performance of `manage.py` commands.
+        import twitter
 
         try:
             api = twitter.Api(tweet_mode='extended', **creds)
