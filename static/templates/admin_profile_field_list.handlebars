@@ -44,9 +44,11 @@
                         <div class='choice-field'>Order</div>
                     </div>
                     <hr />
-                    {{#each choices}}
-                    {{partial "profile-field-choice" }}
-                    {{/each}}
+                    <div class="edit_profile_field_choices_container">
+                        {{#each choices}}
+                        {{partial "profile-field-choice" }}
+                        {{/each}}
+                    </div>
                 </div>
             </div>
             {{/if}}
