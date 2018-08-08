@@ -61,16 +61,23 @@ function create_profile_field(e) {
 
     var selector = $('.admin-profile-field-form div.choice-row');
     var field_data = {};
+
     if ($('#profile_field_type').val() === '3') {
         // Only read choice data if we are creating a choice field.
         field_data = read_field_data_from_form(selector);
     }
-    $('#profile_field_data').val(JSON.stringify(field_data));
+
     var opts = {
         success_continuation: clear_form_data,
     };
+    var form_data = {
+        name: $("#profile_field_name").val(),
+        field_type: $("#profile_field_type").val(),
+        hint: $("#profile_field_hint").val(),
+        field_data: JSON.stringify(field_data),
+    };
 
-    settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", $(this).serialize(),
+    settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
                                    $('#admin-profile-field-status').expectOne(), opts);
 }
 
@@ -300,7 +307,7 @@ exports.set_up = function () {
     meta.loaded = true;
 
     $('#admin_profile_fields_table').on('click', '.delete', delete_profile_field);
-    $(".organization").on("submit", "form.admin-profile-field-form", create_profile_field);
+    $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
     set_up_choices_field();
 };
