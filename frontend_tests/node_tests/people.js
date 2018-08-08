@@ -669,6 +669,35 @@ run_test('update_email_in_reply_to', () => {
     );
 });
 
+initialize();
+
+run_test('track_duplicate_full_names', () => {
+    var stephen1 = {
+        email: 'stephen-the-author@example.com',
+        user_id: 601,
+        full_name: 'Stephen King',
+    };
+    var stephen2 = {
+        email: 'stephen-the-explorer@example.com',
+        user_id: 602,
+        full_name: 'Stephen King',
+    };
+    var maria = {
+        email: 'athens@example.com',
+        user_id: 603,
+        full_name: 'Maria Athens',
+    };
+    people.add(stephen1);
+    people.add(stephen2);
+    people.add(maria);
+    assert(people.is_duplicate_full_name('Stephen King'));
+    assert(!people.is_duplicate_full_name('Maria Athens'));
+    assert(!people.is_duplicate_full_name('Some Random Name'));
+    people.set_full_name(stephen2, 'Stephen King JP');
+    assert(!people.is_duplicate_full_name('Stephen King'));
+    assert(!people.is_duplicate_full_name('Stephen King JP'));
+});
+
 run_test('initialize', () => {
     people.init();
 

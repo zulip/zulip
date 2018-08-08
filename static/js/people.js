@@ -8,6 +8,7 @@ var people_by_user_id_dict;
 var active_user_dict;
 var cross_realm_dict;
 var pm_recipient_count_dict;
+var duplicate_full_name_data;
 var my_user_id;
 
 // We have an init() function so that our automated tests
@@ -27,6 +28,9 @@ exports.init = function () {
     active_user_dict = new Dict();
     cross_realm_dict = new Dict(); // keyed by user_id
     pm_recipient_count_dict = new Dict();
+
+    // The next Dict maintains a set of ids of people with same full names.
+    duplicate_full_name_data = new Dict({fold_case: true});
 };
 
 // WE INITIALIZE DATA STRUCTURES HERE!
@@ -748,6 +752,27 @@ exports.get_rest_of_realm = function get_rest_of_realm() {
     return people_minus_you.sort(people_cmp);
 };
 
+exports.track_duplicate_full_name = function (full_name, user_id, to_remove) {
+    var ids = new Dict();
+    if (duplicate_full_name_data.has(full_name)) {
+        ids = duplicate_full_name_data.get(full_name);
+    }
+    if (!to_remove && user_id) {
+        ids.set(user_id);
+    }
+    if (to_remove && user_id && ids.has(user_id)) {
+        ids.del(user_id);
+    }
+    duplicate_full_name_data.set(full_name,ids);
+};
+
+exports.is_duplicate_full_name = function (full_name) {
+    if (duplicate_full_name_data.has(full_name)) {
+        return duplicate_full_name_data.get(full_name).keys().length > 1;
+    }
+    return false;
+};
+
 exports.add = function add(person) {
     if (person.user_id) {
         people_by_user_id_dict.set(person.user_id, person);
@@ -761,6 +786,7 @@ exports.add = function add(person) {
         blueslip.warn('No user_id provided for ' + person.email);
     }
 
+    exports.track_duplicate_full_name(person.full_name, person.user_id);
     people_dict.set(person.email, person);
     people_by_name_dict.set(person.full_name, person);
 };
@@ -854,6 +880,9 @@ exports.set_full_name = function (person_obj, new_full_name) {
     if (people_by_name_dict.has(person_obj.full_name)) {
         people_by_name_dict.del(person_obj.full_name);
     }
+    // Remove previous and add new full name to the duplicate full name tracker.
+    exports.track_duplicate_full_name(person_obj.full_name, person_obj.user_id, true);
+    exports.track_duplicate_full_name(new_full_name, person_obj.user_id);
     people_by_name_dict.set(new_full_name, person_obj);
     person_obj.full_name = new_full_name;
 };
