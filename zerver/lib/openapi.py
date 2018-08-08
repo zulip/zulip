@@ -3,8 +3,6 @@
 import os
 from typing import Any, Dict, List, Optional
 
-from yamole import YamoleParser
-
 OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__),
     '../openapi/zulip.yaml'))
@@ -26,6 +24,11 @@ class OpenAPISpec():
         self.last_update = None  # type: Optional[float]
 
     def reload(self) -> None:
+        # Because importing yamole (and in turn, yaml) takes
+        # significant time, and we only use python-yaml for our API
+        # docs, importing it lazily here is a significant optimization
+        # to `manage.py` startup.
+        from yamole import YamoleParser
         self.last_update = os.path.getmtime(self.path)
         with open(self.path) as f:
             yaml_parser = YamoleParser(f)
