@@ -38,7 +38,7 @@ class OpenAPISpec():
         last_modified = os.path.getmtime(self.path)
         # Using != rather than < to cover the corner case of users placing an
         # earlier version than the current one
-        if self.last_update != last_modified:
+        if self.last_update != last_modified or self.data is None:
             self.reload()
         return self.data
 
