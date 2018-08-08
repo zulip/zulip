@@ -1,8 +1,9 @@
 #### Messages
 
 * [Send a message](/api/send-message)
-* [Render message](/api/render-message)
 * [Update a message](/api/update-message)
+* [Render a message](/api/render-message)
+* [Upload a file](/api/upload-file)
 
 #### Streams
 
@@ -19,7 +20,6 @@
 * [Get all users](/api/get-all-users)
 * [Get profile](/api/get-profile)
 * [Create a user](/api/create-user)
-* [Upload a file](/api/upload-file)
 
 #### Real-time events
 * [Real time events API](/api/real-time-events)
