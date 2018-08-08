@@ -4865,9 +4865,12 @@ def do_send_user_group_update_event(user_group: UserGroup, data: Dict[str, Any])
     send_event(event, active_user_ids(user_group.realm_id))
 
 def do_update_user_group_name(user_group: UserGroup, name: str) -> None:
-    user_group.name = name
-    user_group.save(update_fields=['name'])
-    do_send_user_group_update_event(user_group, dict(name=name))
+    try:
+        user_group.name = name
+        user_group.save(update_fields=['name'])
+        do_send_user_group_update_event(user_group, dict(name=name))
+    except django.db.utils.IntegrityError:
+        raise JsonableError(_("User group '%s' already exists." % (name,)))
 
 def do_update_user_group_description(user_group: UserGroup, description: str) -> None:
     user_group.description = description
