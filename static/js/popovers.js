@@ -182,14 +182,17 @@ function show_user_profile(element, user) {
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user.user_id, field.id);
         var field_type = settings_profile_fields.field_type_id_to_string(field.type);
-        if (field_type === "Date") {
-            profile_data[field.name] = moment(field_value).format(localFormat);
-        } else if (field_type === "User") {
-            if (field_value) {
-                profile_data[field.name] = people.safe_full_names([field_value]);
+        if (field_value) {
+            if (field_type === "Date") {
+                profile_data[field.name] = moment(field_value).format(localFormat);
+            } else if (field_type === "User") {
+                profile_data[field.name] = people.safe_full_names(field_value);
+            } else if (field_type === "Choice") {
+                var field_choice_dict = JSON.parse(field.field_data);
+                profile_data[field.name] = field_choice_dict[field_value].text;
+            } else {
+                profile_data[field.name] = field_value;
             }
-        } else {
-            profile_data[field.name] = field_value;
         }
     });
 
