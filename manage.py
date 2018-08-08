@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import sys
+import types
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(BASE_DIR)
@@ -20,6 +21,15 @@ if __name__ == "__main__":
         # should be only readable by root and zulip)
         print("Error accessing Zulip secrets; manage.py in production must be run as the zulip user.")
         sys.exit(1)
+
+    # Performance Hack: We make the pika.adapters.twisted_connection
+    # module unavailable, to save ~100ms of import time for most Zulip
+    # management commands for code we don't use.  The correct
+    # long-term fix for this will be to get a setting integrated
+    # upstream to disable pika importing this.
+    #   See https://github.com/pika/pika/issues/1128
+    sys.modules['pika.adapters.twisted_connection'] = types.ModuleType(
+        'pika.adapters.twisted_connection')
 
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "zproject.settings")
     from django.conf import settings
