@@ -22,10 +22,6 @@ from zerver.models import Stream, Recipient, \
     get_user_profile_by_id, get_display_recipient, get_personal_recipient, \
     Message, Realm, UserProfile, get_system_bot, get_user, MAX_SUBJECT_LENGTH, \
     MAX_MESSAGE_LENGTH
-import talon
-from talon import quotations
-
-talon.init()
 
 logger = logging.getLogger(__name__)
 
@@ -218,17 +214,24 @@ def get_message_part_by_type(message: message.Message, content_type: str) -> Opt
                 return content.decode(charsets[idx], errors="ignore")
     return None
 
+talon_initialized = False
 def extract_body(message: message.Message) -> str:
+    import talon
+    global talon_initialized
+    if not talon_initialized:
+        talon.init()
+        talon_initialized = True
+
     # If the message contains a plaintext version of the body, use
     # that.
     plaintext_content = get_message_part_by_type(message, "text/plain")
     if plaintext_content:
-        return quotations.extract_from_plain(plaintext_content)
+        return talon.quotations.extract_from_plain(plaintext_content)
 
     # If we only have an HTML version, try to make that look nice.
     html_content = get_message_part_by_type(message, "text/html")
     if html_content:
-        return convert_html_to_markdown(quotations.extract_from_html(html_content))
+        return convert_html_to_markdown(talon.quotations.extract_from_html(html_content))
 
     raise ZulipEmailForwardError("Unable to find plaintext or HTML message body")
 
