@@ -148,12 +148,7 @@ class NarrowBuilder:
 
     def by_is(self, query: Query, operand: str, maybe_negate: ConditionTransform) -> Query:
         if operand == 'private':
-            # The `.select_from` method extends the query with a join.
-            query = query.select_from(join(query.froms[0], table("zerver_recipient"),
-                                           column("recipient_id") ==
-                                           literal_column("zerver_recipient.id")))
-            cond = or_(column("type") == Recipient.PERSONAL,
-                       column("type") == Recipient.HUDDLE)
+            cond = column("flags").op("&")(UserMessage.flags.is_private.mask) != 0
             return query.where(maybe_negate(cond))
         elif operand == 'starred':
             cond = column("flags").op("&")(UserMessage.flags.starred.mask) != 0
