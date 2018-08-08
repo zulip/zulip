@@ -6,7 +6,7 @@ import zerver.lib.openapi as openapi
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.openapi import (
     get_openapi_fixture, get_openapi_parameters,
-    validate_against_openapi_schema, to_python_type, SchemaError
+    validate_against_openapi_schema, to_python_type, SchemaError, openapi_spec
 )
 
 TEST_ENDPOINT = '/messages/{message_id}'
@@ -122,3 +122,13 @@ class OpenAPIToolsTest(ZulipTestCase):
 
         for oa_type, py_type in TYPES.items():
             self.assertEqual(to_python_type(oa_type), py_type)
+
+    def test_live_reload(self) -> None:
+        # Force the reload by making the last update date < the file's last
+        # modified date
+        openapi_spec.last_update = 0
+        get_openapi_fixture(TEST_ENDPOINT, TEST_METHOD)
+
+        # Check that the file has been reloaded by verifying that the last
+        # update date isn't zero anymore
+        self.assertNotEqual(openapi_spec.last_update, 0)

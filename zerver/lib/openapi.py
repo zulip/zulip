@@ -9,11 +9,6 @@ OPENAPI_SPEC_PATH = os.path.abspath(os.path.join(
     os.path.dirname(__file__),
     '../openapi/zulip.yaml'))
 
-with open(OPENAPI_SPEC_PATH) as file:
-    yaml_parser = YamoleParser(file)
-
-OPENAPI_SPEC = yaml_parser.data
-
 # A list of exceptions we allow when running validate_against_openapi_schema.
 # The validator will ignore these keys when they appear in the "content"
 # passed.
@@ -25,28 +20,51 @@ EXCLUDE_PROPERTIES = {
     }
 }
 
+class OpenAPISpec():
+    def __init__(self, path: str) -> None:
+        self.path = path
+        self.last_update = None  # type: Optional[float]
+
+    def reload(self) -> None:
+        self.last_update = os.path.getmtime(self.path)
+        with open(self.path) as f:
+            yaml_parser = YamoleParser(f)
+        self.data = yaml_parser.data
+
+    def spec(self) -> Dict[str, Any]:
+        """Reload the OpenAPI file if it has been modified after the last time
+        it was read, and then return the parsed data.
+        """
+        last_modified = os.path.getmtime(self.path)
+        # Using != rather than < to cover the corner case of users placing an
+        # earlier version than the current one
+        if self.last_update != last_modified:
+            self.reload()
+        return self.data
 
 class SchemaError(Exception):
     pass
+
+openapi_spec = OpenAPISpec(OPENAPI_SPEC_PATH)
 
 def get_openapi_fixture(endpoint: str, method: str,
                         response: Optional[str]='200') -> Dict[str, Any]:
     """Fetch a fixture from the full spec object.
     """
-    return (OPENAPI_SPEC['paths'][endpoint][method.lower()]['responses']
+    return (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
             [response]['content']['application/json']['schema']
             ['example'])
 
 def get_openapi_parameters(endpoint: str,
                            method: str) -> List[Dict[str, Any]]:
-    return (OPENAPI_SPEC['paths'][endpoint][method.lower()]['parameters'])
+    return (openapi_spec.spec()['paths'][endpoint][method.lower()]['parameters'])
 
 def validate_against_openapi_schema(content: Dict[str, Any], endpoint: str,
                                     method: str, response: str) -> None:
     """Compare a "content" dict with the defined schema for a specific method
     in an endpoint.
     """
-    schema = (OPENAPI_SPEC['paths'][endpoint][method.lower()]['responses']
+    schema = (openapi_spec.spec()['paths'][endpoint][method.lower()]['responses']
               [response]['content']['application/json']['schema'])
 
     exclusion_list = (EXCLUDE_PROPERTIES.get(endpoint, {}).get(method, {})
