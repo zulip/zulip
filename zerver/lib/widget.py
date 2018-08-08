@@ -7,16 +7,6 @@ import json
 from zerver.models import SubMessage
 
 
-def do_widget_pre_save_actions(message: MutableMapping[str, Any]) -> None:
-    if not settings.ALLOW_SUB_MESSAGES:
-        return
-
-    content = message['message'].content
-
-    if content == '/stats':
-        message['message'].content = 'We are running **1 server**.'
-        return
-
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
     valid_widget_types = ['tictactoe', 'poll', 'todo']
     tokens = content.split(' ')

@@ -88,8 +88,7 @@ from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
 from zerver.lib.stream_recipient import StreamRecipientMap
 from zerver.lib.validator import check_widget_content
-from zerver.lib.widget import do_widget_post_save_actions, \
-    do_widget_pre_save_actions
+from zerver.lib.widget import do_widget_post_save_actions
 
 from django.db import transaction, IntegrityError, connection
 from django.db.models import F, Q, Max, Sum
@@ -1209,9 +1208,6 @@ def do_send_messages(messages_maybe_none: Sequence[Optional[MutableMapping[str, 
         message['local_id'] = message.get('local_id', None)
         message['sender_queue_id'] = message.get('sender_queue_id', None)
         message['realm'] = message.get('realm', message['message'].sender.realm)
-
-        # Some widgets need to overwrite content/etc. before message is saved.
-        do_widget_pre_save_actions(message)
 
         mention_data = bugdown.MentionData(
             realm_id=message['realm'].id,
