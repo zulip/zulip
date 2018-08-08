@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render, redirect
-from django.test import Client
 from django.views.decorators.http import require_GET
 from django.views.decorators.csrf import csrf_exempt
 
@@ -19,7 +18,6 @@ import os
 from typing import List, Dict, Any, Optional
 import datetime
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../')
-client = Client()
 
 def email_page(request: HttpRequest) -> HttpResponse:
     if request.method == 'POST':
@@ -43,6 +41,11 @@ def clear_emails(request: HttpRequest) -> HttpResponse:
 
 @require_GET
 def generate_all_emails(request: HttpRequest) -> HttpResponse:
+    # We import the Django test client inside the view function,
+    # because it isn't needed in production elsewhere, and not
+    # importing it saves ~50ms of unnecessary manage.py startup time.
+    from django.test import Client
+    client = Client()
 
     # write fake data for all variables
     registered_email = "hamlet@zulip.com"
