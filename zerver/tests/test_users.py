@@ -161,6 +161,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], user.email)
         self.assertIsNone(hamlet['avatar_url'])
+        self.assertNotIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # we need to verify client_gravatar is not being overridden.
@@ -183,6 +184,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
         self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
+        self.assertNotIn('delivery_email', hamlet)
 
         # Also verify the /events code path.  This is a bit hacky, but
         # basically we want to verify client_gravatar is being
@@ -195,9 +197,10 @@ class PermissionTest(ZulipTestCase):
             self.assertEqual(mock_request_event_queue.call_args_list[0][0][3],
                              False)
 
-        # It's still turned off for admins.  In theory, it doesn't
-        # need to be, but client-side changes would be required in
-        # apps like the mobile apps.
+        # client_gravatar is still turned off for admins.  In theory,
+        # it doesn't need to be, but client-side changes would be
+        # required in apps like the mobile apps.
+        # delivery_email is sent for admins.
         admin.refresh_from_db()
         self.login(admin.delivery_email)
         result = self.client_get('/json/users?client_gravatar=true')
@@ -206,6 +209,7 @@ class PermissionTest(ZulipTestCase):
         hamlet = find_dict(members, 'user_id', user.id)
         self.assertEqual(hamlet['email'], "user%s@zulip.testserver" % (user.id,))
         self.assertEqual(hamlet['avatar_url'], "https://secure.gravatar.com/avatar/5106fb7f928d89e2f2ddb3c4c42d6949?d=identicon&version=1")
+        self.assertEqual(hamlet['delivery_email'], self.example_email("hamlet"))
 
     def test_user_cannot_promote_to_admin(self) -> None:
         self.login(self.example_email("hamlet"))

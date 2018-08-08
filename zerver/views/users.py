@@ -400,14 +400,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
     realm = user_profile.realm
 
-    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
-        # If email addresses are only available to administrators,
-        # clients cannot compute gravatars, so we force-set it to false.
-        client_gravatar = False
-
-    query = UserProfile.objects.filter(
-        realm_id=realm.id
-    ).values(
+    fields = [
         'id',
         'email',
         'realm_id',
@@ -421,7 +414,19 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         'avatar_version',
         'bot_owner__email',
         'timezone',
-    )
+    ]
+    if realm.email_address_visibility == Realm.EMAIL_ADDRESS_VISIBILITY_ADMINS:
+        # If email addresses are only available to administrators,
+        # clients cannot compute gravatars, so we force-set it to false.
+        client_gravatar = False
+    include_delivery_email = user_profile.is_realm_admin
+    if include_delivery_email:
+        fields.append("delivery_email")
+        fields.append("bot_owner__delivery_email")
+
+    query = UserProfile.objects.filter(
+        realm_id=realm.id
+    ).values(*fields)
 
     def get_member(row: Dict[str, Any]) -> Dict[str, Any]:
         email = row['email']
@@ -451,6 +456,11 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
         if row['bot_owner__email']:
             result['bot_owner'] = row['bot_owner__email']
+
+        if include_delivery_email:
+            result['delivery_email'] = row['delivery_email']
+            if row['bot_owner__delivery_email']:
+                result['bot_owner_delivery_email'] = row['bot_owner__delivery_email']
 
         return result
 
