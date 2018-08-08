@@ -384,6 +384,18 @@ class ExtractedRecipientsTest(TestCase):
 
 class PersonalMessagesTest(ZulipTestCase):
 
+    def test_is_private_flag_not_leaked(self) -> None:
+        """
+        Make sure `is_private` flag is not leaked to the API.
+        """
+        self.login(self.example_email("hamlet"))
+        self.send_personal_message(self.example_email("hamlet"),
+                                   self.example_email("cordelia"),
+                                   "test")
+
+        for msg in self.get_messages():
+            self.assertNotIn('is_private', msg['flags'])
+
     def test_auto_subbed_to_personals(self) -> None:
         """
         Newly created users are auto-subbed to the ability to receive
