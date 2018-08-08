@@ -21,6 +21,7 @@ class TestRetentionLib(ZulipTestCase):
         super().setUp()
         self.zulip_realm = self._set_realm_message_retention_value('zulip', 30)
         self.mit_realm = self._set_realm_message_retention_value('zephyr', 100)
+        Message.objects.all().update(pub_date=timezone_now())
 
     @staticmethod
     def _set_realm_message_retention_value(realm_str: str, retention_period: int) -> Realm:
