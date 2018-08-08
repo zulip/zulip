@@ -1,9 +1,11 @@
 import mock
 import os
-from typing import Any
+from typing import Any, Optional
 import ujson
+import re
 
 from django.core import signing
+from django.http import HttpResponse
 
 import stripe
 
@@ -58,6 +60,14 @@ class StripeTest(ZulipTestCase):
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
         Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=self.stripe_plan_id)
 
+    def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
+        match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
+        return match.group(1) if match else None
+
+    def get_salt_from_response(self, response: HttpResponse) -> Optional[str]:
+        match = re.search(r'name=\"salt\" value=\"(\w+)\"', response.content.decode("utf-8"))
+        return match.group(1) if match else None
+
     @mock.patch("zilencer.lib.stripe.billing_logger.error")
     def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
@@ -89,12 +99,12 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
+
         # Click "Make payment" in Stripe Checkout
-        response = self.client_post("/upgrade/", {
+        self.client_post("/upgrade/", {
             'stripeToken': self.token,
-            # TODO: get these values from the response
-            'signed_seat_count': self.signed_seat_count,
-            'salt': self.salt,
+            'signed_seat_count': self.get_signed_seat_count_from_response(response),
+            'salt': self.get_salt_from_response(response),
             'plan': Plan.CLOUD_ANNUAL})
         # Check that we created a customer and subscription in stripe
         mock_create_customer.assert_called_once_with(
@@ -167,11 +177,13 @@ class StripeTest(ZulipTestCase):
         self.login(self.example_email("hamlet"))
         new_seat_count = 123
         # Change the seat count while the user is going through the upgrade flow
+        response = self.client_get("/upgrade/")
         with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
-            self.client_post("/upgrade/", {'stripeToken': self.token,
-                                           'signed_seat_count': self.signed_seat_count,
-                                           'salt': self.salt,
-                                           'plan': Plan.CLOUD_ANNUAL})
+            self.client_post("/upgrade/", {
+                'stripeToken': self.token,
+                'signed_seat_count': self.get_signed_seat_count_from_response(response),
+                'salt': self.get_salt_from_response(response),
+                'plan': Plan.CLOUD_ANNUAL})
         # Check that the subscription call used the old quantity, not new_seat_count
         mock_create_subscription.assert_called_once_with(
             customer=self.stripe_customer_id,
