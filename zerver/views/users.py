@@ -374,6 +374,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
     ).values(
         'id',
         'email',
+        'delivery_email',
         'realm_id',
         'full_name',
         'is_bot',
@@ -382,6 +383,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         'avatar_source',
         'avatar_version',
         'bot_owner__email',
+        'bot_owner__delivery_email',
     )
 
     def get_member(row: Dict[str, Any]) -> Dict[str, Any]:
@@ -391,6 +393,7 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
         result = dict(
             user_id=user_id,
             email=email,
+            delivery_email=row['delivery_email'],
             full_name=row['full_name'],
             is_bot=row['is_bot'],
             is_active=row['is_active'],
@@ -411,6 +414,9 @@ def get_members_backend(request: HttpRequest, user_profile: UserProfile,
 
         if row['bot_owner__email']:
             result['bot_owner'] = row['bot_owner__email']
+
+        if row['bot_owner__delivery_email']:
+            result['bot_owner_delivery_email'] = row['bot_owner__delivery_email']
 
         return result
 
