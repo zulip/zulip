@@ -1900,10 +1900,10 @@
 
   , lookup: function (event) {
       var items
+      var from_tab = (event === 'from_tab')
 
       this.query = this.$element.is("[contenteditable]") ? this.$element.text() :  this.$element.val();
-
-      if (!this.options.helpOnEmptyStrings) {
+      if (!this.options.helpOnEmptyStrings && !(from_tab && this.options.tabOpensEmptyTypeahead)) {
         if (!this.query || this.query.length < this.options.minLength) {
           return this.shown ? this.hide() : this
         }
@@ -2070,7 +2070,7 @@
 
         case 9: // tab
           if (!this.shown) {
-            this.lookup()
+            this.lookup('from_tab')
             return
           }
           this.select(e)
@@ -2143,6 +2143,7 @@
   , stopAdvance: false
   , dropup: false
   , advanceKeyCodes: []
+  , tabOpensEmptyTypeahead: false
   }
 
   $.fn.typeahead.Constructor = Typeahead
