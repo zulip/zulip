@@ -1697,7 +1697,7 @@ class GetOldMessagesTest(ZulipTestCase):
         """
         self.login(self.example_email("hamlet"))
 
-        required_args = (("anchor", 1), ("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
+        required_args = (("num_before", 1), ("num_after", 1))  # type: Tuple[Tuple[str, int], ...]
 
         for i in range(len(required_args)):
             post_params = dict(required_args[:i] + required_args[i + 1:])
