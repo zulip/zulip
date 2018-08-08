@@ -659,7 +659,7 @@ class TestAPNs(PushNotificationTest):
         import zerver.lib.push_notifications
         zerver.lib.push_notifications._apns_client_initialized = False
         with self.settings(APNS_CERT_FILE='/foo.pem'), \
-                mock.patch('zerver.lib.push_notifications.APNsClient') as mock_client:
+                mock.patch('apns2.client.APNsClient') as mock_client:
             client = get_apns_client()
             self.assertEqual(mock_client.return_value, client)
 
