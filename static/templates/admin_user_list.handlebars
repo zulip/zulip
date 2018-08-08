@@ -4,7 +4,11 @@
         <span class="user_name">{{full_name}}</span>
     </td>
     <td>
+        {{#if ../can_modify}}
+        <span class="email">{{delivery_email}}</span>
+        {{else}}
         <span class="email">{{email}}</span>
+        {{/if}}
     </td>
     {{#unless is_bot}}
     <td>
@@ -21,7 +25,11 @@
     {{/unless}}
     {{#if is_bot}}
     <td>
+        {{#if ../can_modify}}
+        <span class="owner">{{bot_owner_delivery_email}}</span>
+        {{else}}
         <span class="owner">{{bot_owner}}</span>
+        {{/if}}
     </td>
     <td>
         <span class="bot type">{{bot_type}}</span>
