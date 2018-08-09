@@ -18,6 +18,11 @@ exports.IDLE = "idle";
 // case after a server-initiated reload.
 exports.has_focus = document.hasFocus && document.hasFocus();
 
+// We initialize this to false as when opened in browser this should remain
+// false. It is updated true only by the desktop app using electron_bridge
+// and hence would always remain false for all other platforms.
+exports.desktop_has_focus = false;
+
 // We initialize this to true, to count new page loads, but set it to
 // false in the onload function in reload.js if this was a
 // server-initiated-reload to avoid counting a server-initiated reload
@@ -200,6 +205,13 @@ function focus_lost() {
     // server; instead, we wait for our next periodic update, since
     // this data is fundamentally not timely.
     exports.has_focus = false;
+
+    // If the webapp is determined to be idle, we check if the desktop app
+    // is in focus in some other server, and request the desktop app to update
+    // desktop_has_focus variable.
+    if (window.electron_bridge !== undefined) {
+        window.electron_bridge.send_event('electron_presence_update');
+    }
 }
 
 exports.insert_user_into_list = function (user_id) {
@@ -301,7 +313,8 @@ function focus_ping(want_redraw) {
     }
     channel.post({
         url: '/json/users/me/presence',
-        data: {status: exports.has_focus ? exports.ACTIVE : exports.IDLE,
+        data: {status: exports.has_focus || exports.desktop_has_focus ?
+            exports.ACTIVE : exports.IDLE,
                ping_only: !want_redraw,
                new_user_input: exports.new_user_input},
         idempotent: true,
