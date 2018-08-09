@@ -390,7 +390,7 @@ EMAIL_GATEWAY_IMAP_FOLDER = "INBOX"
 #       LDAP_APPEND_DOMAIN = example.com and
 #       AUTH_LDAP_USER_SEARCH to lookup users by username
 #
-#   (C) If LDAP username are completely unrelated to email addresses,
+#   (C) If LDAP usernames are completely unrelated to email addresses,
 #       you should set:
 #       LDAP_EMAIL_ATTR = "email"
 #       LDAP_APPEND_DOMAIN = None
