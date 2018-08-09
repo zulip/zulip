@@ -231,11 +231,10 @@ def validate_api_key(request: HttpRequest, role: Optional[str],
     return user_profile
 
 def validate_account_and_subdomain(request: HttpRequest, user_profile: UserProfile) -> None:
-    if not user_profile.is_active:
-        raise JsonableError(_("Account not active"))
-
     if user_profile.realm.deactivated:
         raise JsonableError(_("This organization has been deactivated"))
+    if not user_profile.is_active:
+        raise JsonableError(_("Account not active"))
 
     # Either the subdomain matches, or processing a websockets message
     # in the message_sender worker (which will have already had the
