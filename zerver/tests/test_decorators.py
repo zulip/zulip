@@ -349,7 +349,7 @@ body:
         # Now deactivate the user
         webhook_bot.is_active = False
         webhook_bot.save()
-        with self.assertRaisesRegex(JsonableError, "Account not active"):
+        with self.assertRaisesRegex(JsonableError, "Account is deactivated"):
             my_webhook(request)  # type: ignore # mypy doesn't seem to apply the decorator
 
         # Reactive the user, but deactivate their realm.
@@ -942,14 +942,14 @@ class InactiveUserTest(ZulipTestCase):
                                                      "content": "Test message",
                                                      "client": "test suite",
                                                      "to": self.example_email("othello")})
-        self.assert_json_error_contains(result, "Account not active", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
         result = self.api_post(self.example_email("hamlet"),
                                "/api/v1/messages", {"type": "private",
                                                     "content": "Test message",
                                                     "client": "test suite",
                                                     "to": self.example_email("othello")})
-        self.assert_json_error_contains(result, "Account not active", status_code=401)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=401)
 
     def test_fetch_api_key_deactivated_user(self) -> None:
         """
@@ -966,7 +966,7 @@ class InactiveUserTest(ZulipTestCase):
         user_profile.is_active = False
         user_profile.save()
         result = self.client_post("/json/fetch_api_key", {"password": test_password})
-        self.assert_json_error_contains(result, "Account not active", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
     def test_login_deactivated_user(self) -> None:
         """
@@ -1036,7 +1036,7 @@ class InactiveUserTest(ZulipTestCase):
         data = self.webhook_fixture_data('jira', 'created_v2')
         result = self.client_post(url, data,
                                   content_type="application/json")
-        self.assert_json_error_contains(result, "Account not active", status_code=400)
+        self.assert_json_error_contains(result, "Account is deactivated", status_code=400)
 
 
 class TestIncomingWebhookBot(ZulipTestCase):
@@ -1284,7 +1284,7 @@ class TestAuthenticatedJsonPostViewDecorator(ZulipTestCase):
         # we deactivate user manually because do_deactivate_user removes user session
         user_profile.is_active = False
         user_profile.save()
-        self.assert_json_error_contains(self._do_test(user_email), "Account not active")
+        self.assert_json_error_contains(self._do_test(user_email), "Account is deactivated")
         do_reactivate_user(user_profile)
 
     def test_authenticated_json_post_view_if_user_realm_is_deactivated(self) -> None:
