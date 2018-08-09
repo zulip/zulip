@@ -15,7 +15,7 @@ import os
 import platform
 import time
 import sys
-from typing import Optional
+from typing import Any, Optional
 import configparser
 
 from zerver.lib.db import TimeTrackingConnection
@@ -40,12 +40,13 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key: str, development_only=False) -> Optional[str]:
+def get_secret(key: str, default_value: Optional[Any]=None,
+               development_only: bool=False) -> Optional[Any]:
     if development_only and PRODUCTION:
-        return None
+        return default_value
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
-    return None
+    return default_value
 
 # Make this unique, and don't share it with anybody.
 SECRET_KEY = get_secret("secret_key")

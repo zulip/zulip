@@ -31,11 +31,13 @@ if PRODUCTION:
 else:
     secrets_file.read(os.path.join(DEPLOY_ROOT, "zproject/dev-secrets.conf"))
 
-def get_secret(key):
-    # type: (str) -> Optional[Text]
+def get_secret(key, default_value=None, development_only=False):
+    # type: (str, Optional[Any], bool) -> Optional[Any]
+    if development_only and PRODUCTION:
+        return default_value
     if secrets_file.has_option('secrets', key):
         return secrets_file.get('secrets', key)
-    return None
+    return default_value
 
 THUMBOR_EXTERNAL_TYPE = 'external'
 THUMBOR_S3_TYPE = 's3'
