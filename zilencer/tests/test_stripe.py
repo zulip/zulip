@@ -273,10 +273,9 @@ class StripeTest(ZulipTestCase):
         self.assertIsNone(extract_current_subscription(mock_customer_with_canceled_subscription()))
 
     def test_subscribe_customer_to_second_plan(self) -> None:
-        with self.assertRaises(BillingError) as context:
+        with self.assertRaisesRegex(BillingError, 'subscribing with existing subscription'):
             do_subscribe_customer_to_plan(mock_customer_with_subscription(),
                                           self.stripe_plan_id, self.quantity, 0)
-            self.assertEqual(context.exception.description, 'subscribing with existing subscription')
 
     def test_sign_string(self) -> None:
         string = "abc"
