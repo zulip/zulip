@@ -17,6 +17,8 @@ from zerver.lib.test_helpers import (
 from zerver.models import (
     Realm,
     get_realm,
+    UserProfile,
+    Message,
 )
 from zerver.data_import.gitter import (
     do_convert_data,
@@ -43,7 +45,7 @@ class GitterImporter(ZulipTestCase):
         return output_dir
 
     @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
-    def test_gitter_import_to_existing_database(self, mock_process_avatars: mock.Mock) -> None:
+    def test_gitter_import_data_conversion(self, mock_process_avatars: mock.Mock) -> None:
         output_dir = self._make_output_dir()
         gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
         do_convert_data(gitter_file, output_dir)
@@ -107,6 +109,21 @@ class GitterImporter(ZulipTestCase):
         self.assertEqual(exported_user_ids, exported_usermessage_userprofile)
         exported_usermessage_message = get_set(messages['zerver_usermessage'], 'message')
         self.assertEqual(exported_usermessage_message, exported_messages_id)
+
+    @mock.patch('zerver.data_import.gitter.process_avatars', return_value=[])
+    def test_gitter_import_to_existing_database(self, mock_process_avatars: mock.Mock) -> None:
+        output_dir = self._make_output_dir()
+        gitter_file = os.path.join(os.path.dirname(__file__), 'fixtures/gitter_data.json')
+        do_convert_data(gitter_file, output_dir)
+
+        do_import_realm(output_dir, 'test-gitter-import')
+        realm = get_realm('test-gitter-import')
+
+        # test rendered_messages
+        realm_users = UserProfile.objects.filter(realm=realm)
+        messages = Message.objects.filter(sender__in=realm_users)
+        for message in messages:
+            self.assertIsNotNone(message.rendered_content, None)
 
     def test_get_usermentions(self) -> None:
         user_map = {'57124a4': 3, '57124b4': 5, '57124c4': 8}

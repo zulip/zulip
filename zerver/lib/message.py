@@ -151,6 +151,13 @@ def stringify_message_dict(message_dict: Dict[str, Any]) -> bytes:
 def message_to_dict_json(message: Message) -> bytes:
     return MessageDict.to_dict_uncached(message)
 
+def save_message_rendered_content(message: Message, content: str) -> str:
+    rendered_content = render_markdown(message, content, realm=message.get_realm())
+    message.rendered_content = rendered_content
+    message.rendered_content_version = bugdown.version
+    message.save_rendered_content()
+    return rendered_content
+
 class MessageDict:
     @staticmethod
     def wide_dict(message: Message) -> Dict[str, Any]:
@@ -347,10 +354,7 @@ class MessageDict:
             assert message is not None  # Hint for mypy.
             # It's unfortunate that we need to have side effects on the message
             # in some cases.
-            rendered_content = render_markdown(message, content, realm=message.get_realm())
-            message.rendered_content = rendered_content
-            message.rendered_content_version = bugdown.version
-            message.save_rendered_content()
+            rendered_content = save_message_rendered_content(message, content)
 
         if rendered_content is not None:
             obj['rendered_content'] = rendered_content
