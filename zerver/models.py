@@ -1523,7 +1523,7 @@ class AbstractUserMessage(models.Model):
     # Zulip backend, and don't make sense to expose to the API.  A
     # good example is is_private, which is just a denormalization of
     # message.recipient_type for database query performance.
-    NON_API_FLAGS = {"is_private"}
+    NON_API_FLAGS = {"is_private", "active_mobile_push_notification"}
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
     class Meta:
