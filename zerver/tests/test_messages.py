@@ -2386,6 +2386,32 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
 class MessageAccessTests(ZulipTestCase):
+    def test_update_invalid_flags(self) -> None:
+        message = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.example_email("hamlet"),
+            "hello",
+        )
+
+        self.login(self.example_email("hamlet"))
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps([message]),
+                                   "op": "add",
+                                   "flag": "invalid"})
+        self.assert_json_error(result, "Invalid flag: 'invalid'")
+
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps([message]),
+                                   "op": "add",
+                                   "flag": "is_private"})
+        self.assert_json_error(result, "Invalid flag: 'is_private'")
+
+        result = self.client_post("/json/messages/flags",
+                                  {"messages": ujson.dumps([message]),
+                                   "op": "add",
+                                   "flag": "active_mobile_push_notification"})
+        self.assert_json_error(result, "Invalid flag: 'active_mobile_push_notification'")
+
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
