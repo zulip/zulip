@@ -16,6 +16,7 @@ from zerver.lib.exceptions import JsonableError
 from zerver.lib.logging_util import log_to_file
 from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
+from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
 from zilencer.models import Customer, Plan, BillingProcessor
 from zproject.settings import get_secret
@@ -228,6 +229,7 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
         # TODO: billing address details are passed to us in the request;
         # use that to calculate taxes.
         tax_percent=0)
+    do_change_plan_type(user, Realm.PREMIUM)
 
 ## Process RealmAuditLog
 

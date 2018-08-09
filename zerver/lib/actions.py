@@ -3003,6 +3003,15 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                               icon_url=realm_icon_url(realm))),
                active_user_ids(realm.id))
 
+def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
+    realm = user.realm
+    old_value = realm.plan_type
+    realm.plan_type = plan_type
+    realm.save(update_fields=['plan_type'])
+    RealmAuditLog.objects.create(event_type=RealmAuditLog.REALM_PLAN_TYPE_CHANGED,
+                                 realm=realm, acting_user=user, event_time=timezone_now(),
+                                 extra_data={'old_value': old_value, 'new_value': plan_type})
+
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
     user_profile.default_sending_stream = stream
@@ -3179,6 +3188,8 @@ def do_create_realm(string_id: str, name: str,
     kwargs = {}  # type: Dict[str, Any]
     if emails_restricted_to_domains is not None:
         kwargs['emails_restricted_to_domains'] = emails_restricted_to_domains
+    if settings.BILLING_ENABLED:
+        kwargs['plan_type'] = Realm.LIMITED
     realm = Realm(string_id=string_id, name=name, **kwargs)
     realm.save()
 
