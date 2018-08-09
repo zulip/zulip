@@ -30,8 +30,11 @@ def run(args, dry_run=False):
         sys.exit(1)
     return stdout
 
-# Only run if we're the master
-if run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip() != 'f':
+recovery_val = run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip().decode()
+# Assertion to check that we're extracting the value correctly.
+assert recovery_val in ['t', 'f']
+if recovery_val == 't':
+    # Only run if we're the master
     sys.exit(0)
 
 pg_data_paths = glob.glob('/var/lib/postgresql/*/main')
