@@ -114,6 +114,7 @@ exports.add_custom_profile_fields_to_settings = function () {
         } else {
             blueslip.error("Undefined field type.");
         }
+
         if (value === undefined) {
             // If user has not set value for field.
             value = "";
@@ -146,7 +147,6 @@ exports.add_custom_profile_fields_to_settings = function () {
                     update_user_custom_profile_fields(fields, channel.patch);
                 }
             }
-
             if (value !== undefined && value.length > 0) {
                 value.forEach(function (user_id) {
                     var user = people.get_person_from_user_id(user_id);

@@ -1082,6 +1082,16 @@ class EventsRegisterTest(ZulipTestCase):
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
 
+        # Test we pass correct stringify value in custom-user-field data event
+        field_id = realm.customprofilefield_set.get(realm=realm, name='Mentor').id
+        field = {
+            "id": field_id,
+            "value": [self.example_user("ZOE").id],
+        }
+        events = self.do_test(lambda: do_update_user_custom_profile_data(self.user_profile, [field]))
+        error = schema_checker('events[0]', events[0])
+        self.assert_on_error(error)
+
     def test_presence_events(self) -> None:
         schema_checker = self.check_events_dict([
             ('type', equals('presence')),

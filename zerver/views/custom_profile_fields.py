@@ -141,7 +141,9 @@ def remove_user_custom_profile_data(request: HttpRequest, user_profile: UserProf
         except CustomProfileFieldValue.DoesNotExist:
             continue
         field_value.delete()
-        notify_user_update_custom_profile_data(user_profile, {'id': field_id, 'value': None})
+        notify_user_update_custom_profile_data(user_profile, {'id': field_id,
+                                                              'value': None,
+                                                              'type': field.field_type})
 
     return json_success()
 
