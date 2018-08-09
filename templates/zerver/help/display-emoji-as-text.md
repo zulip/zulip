@@ -7,7 +7,8 @@ As an example, when a heart emoji is displayed as text, it looks like
 
 {settings_tab|display-settings}
 
-2. Under **Emoji Style**, select the option labeled **Plain text**.
+2. Under **Emoji settings**, select the option labeled
+   **Translate emoji to text (Convert 😃 to :smile:)**.
 
 ## Related articles
 
