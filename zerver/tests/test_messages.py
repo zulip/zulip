@@ -28,6 +28,7 @@ from zerver.lib.actions import (
     get_client,
     do_add_alert_words,
     do_change_stream_invite_only,
+    do_update_message_flags,
 )
 
 from zerver.lib.message import (
@@ -384,6 +385,18 @@ class ExtractedRecipientsTest(TestCase):
 
 class PersonalMessagesTest(ZulipTestCase):
 
+    def test_is_private_flag_not_leaked(self) -> None:
+        """
+        Make sure `is_private` flag is not leaked to the API.
+        """
+        self.login(self.example_email("hamlet"))
+        self.send_personal_message(self.example_email("hamlet"),
+                                   self.example_email("cordelia"),
+                                   "test")
+
+        for msg in self.get_messages():
+            self.assertNotIn('is_private', msg['flags'])
+
     def test_auto_subbed_to_personals(self) -> None:
         """
         Newly created users are auto-subbed to the ability to receive
@@ -657,6 +670,20 @@ class StreamMessagesTest(ZulipTestCase):
                                  content="test @**Iago** rules")
         message = most_recent_message(user_profile)
         assert(UserMessage.objects.get(user_profile=user_profile, message=message).flags.mentioned.is_set)
+
+    def test_is_private_flag(self) -> None:
+        user_profile = self.example_user('iago')
+        self.subscribe(user_profile, "Denmark")
+
+        self.send_stream_message(self.example_email("hamlet"), "Denmark",
+                                 content="test")
+        message = most_recent_message(user_profile)
+        self.assertFalse(UserMessage.objects.get(user_profile=user_profile, message=message).flags.is_private.is_set)
+
+        self.send_personal_message(self.example_email("hamlet"), user_profile.email,
+                                   content="test")
+        message = most_recent_message(user_profile)
+        self.assertTrue(UserMessage.objects.get(user_profile=user_profile, message=message).flags.is_private.is_set)
 
     def _send_stream_message(self, email: str, stream_name: str, content: str) -> Set[int]:
         with mock.patch('zerver.lib.actions.send_event') as m:
@@ -2374,6 +2401,22 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
 class MessageAccessTests(ZulipTestCase):
+    def test_update_invalid_flags(self) -> None:
+        message = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.example_email("hamlet"),
+            "hello",
+        )
+        user_profile = self.example_user('hamlet')
+        for first_non_api_flag in UserMessage.NON_API_FLAGS:
+            break
+
+        with self.assertRaises(JsonableError):
+            do_update_message_flags(user_profile, get_client("website"), 'remove', first_non_api_flag, [message])
+
+        with self.assertRaises(JsonableError):
+            do_update_message_flags(user_profile, get_client("website"), 'remove', 'invalid', [message])
+
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),

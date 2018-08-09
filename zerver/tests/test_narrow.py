@@ -100,12 +100,12 @@ class NarrowBuilderTest(ZulipTestCase):
 
     def test_add_term_using_is_operator_and_private_operand(self) -> None:
         term = dict(operator='is', operand='private')
-        self._do_add_term_test(term, 'WHERE type = :type_1 OR type = :type_2')
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) != :param_1')
 
     def test_add_term_using_is_operator_private_operand_and_negated(
             self) -> None:  # NEGATED
         term = dict(operator='is', operand='private', negated=True)
-        self._do_add_term_test(term, 'WHERE NOT (type = :type_1 OR type = :type_2)')
+        self._do_add_term_test(term, 'WHERE (flags & :flags_1) = :param_1')
 
     def test_add_term_using_is_operator_and_non_private_operand(self) -> None:
         for operand in ['starred', 'mentioned', 'alerted']:

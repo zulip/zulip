@@ -1519,6 +1519,11 @@ class AbstractUserMessage(models.Model):
     ALL_FLAGS = ['read', 'starred', 'collapsed', 'mentioned', 'wildcard_mentioned',
                  'summarize_in_home', 'summarize_in_stream', 'force_expand', 'force_collapse',
                  'has_alert_word', "historical", "is_private", "active_mobile_push_notification"]
+    # Certain flags are used only for internal accounting within the
+    # Zulip backend, and don't make sense to expose to the API.  A
+    # good example is is_private, which is just a denormalization of
+    # message.recipient_type for database query performance.
+    NON_API_FLAGS = {"is_private", "active_mobile_push_notification"}
     flags = BitField(flags=ALL_FLAGS, default=0)  # type: BitHandler
 
     class Meta:
@@ -1545,7 +1550,7 @@ class AbstractUserMessage(models.Model):
         flags = []
         mask = 1
         for flag in UserMessage.ALL_FLAGS:
-            if val & mask:
+            if (val & mask) and flag not in AbstractUserMessage.NON_API_FLAGS:
                 flags.append(flag)
             mask <<= 1
         return flags

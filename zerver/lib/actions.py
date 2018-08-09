@@ -1472,6 +1472,8 @@ def create_user_messages(message: Message,
             um.flags |= UserMessage.flags.mentioned
         if um.user_profile_id in ids_with_alert_words:
             um.flags |= UserMessage.flags.has_alert_word
+        if message.recipient.type in [Recipient.HUDDLE, Recipient.PERSONAL]:
+            um.flags |= UserMessage.flags.is_private
 
     user_messages = []
     for um in ums_to_create:
@@ -3621,6 +3623,9 @@ def do_update_message_flags(user_profile: UserProfile,
                             operation: str,
                             flag: str,
                             messages: List[int]) -> int:
+    valid_flags = [item for item in UserMessage.flags if item not in UserMessage.NON_API_FLAGS]
+    if flag not in valid_flags:
+        raise JsonableError(_("Invalid flag: '%s'" % (flag,)))
     flagattr = getattr(UserMessage.flags, flag)
 
     assert messages is not None
