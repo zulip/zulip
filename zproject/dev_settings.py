@@ -118,7 +118,7 @@ if FAKE_LDAP_MODE:
         LDAP_APPEND_DOMAIN = 'zulip.com'
     elif FAKE_LDAP_MODE == 'c':
         LDAP_EMAIL_ATTR = 'email'  # type: Optional[str]
-    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)
+    AUTHENTICATION_BACKENDS += ('zproject.backends.ZulipLDAPAuthBackend',)  # type: ignore # tuple hackery
 
 THUMBOR_URL = 'http://127.0.0.1:9995'
 
