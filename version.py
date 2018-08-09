@@ -1,4 +1,4 @@
-ZULIP_VERSION = "1.8.1+git"
+ZULIP_VERSION = "1.9.0-rc1+git"
 
 # Bump the minor PROVISION_VERSION to indicate that folks should provision
 # only when going from an old version of the code to a newer version. Bump
