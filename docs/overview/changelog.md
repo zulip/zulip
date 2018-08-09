@@ -53,7 +53,8 @@ Zulip 1.9; it is generally updated in bursts.
   both GitHub authentication and hosting multiple Zulip organizations
   should set (see [the docs for details](../production/multiple-organizations.html#social-authentication)).
 - Added automatic thumbnailing of images, powered by thumbor.  The new
-  THUMBOR_URL setting controls this feature.
+  THUMBOR_URL setting controls this feature; it is disabled by default
+  in this release, because the mobile apps don't support it yet.
 - Added documentation on alternative production deployment options.
 - Added a Gitter data import tool.
 - Added support for using both LDAPAuthBackend and EmailAuthBackend.
