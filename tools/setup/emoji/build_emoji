@@ -10,8 +10,8 @@ import ujson
 from typing import Any, Dict, List
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
-    get_emoji_code, generate_name_to_codepoint_map, get_remapped_emojis_map, \
-    emoji_names_for_picker, EMOJISETS, EMOTICON_CONVERSIONS
+    get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
+    EMOJISETS, EMOTICON_CONVERSIONS, REMAPPED_EMOJIS
 from emoji_names import EMOJI_NAME_MAPS
 
 ZULIP_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), '../../../')
@@ -184,12 +184,8 @@ def setup_old_emoji_farm(cache_path: str,
     unicode_symlink_path = os.path.join(unicode_emoji_cache_path, 'zulip.png')
     os.symlink(image_file_path, unicode_symlink_path)
 
-    # `remapped_emojis` is a mapping which helps in mapping `emoji_map`
-    # codepoints to corresponding images in new emoji farm.
-    remapped_emojis = get_remapped_emojis_map(emoji_data)
-
     for name, codepoint in emoji_map.items():
-        mapped_codepoint = remapped_emojis.get(codepoint, codepoint)
+        mapped_codepoint = REMAPPED_EMOJIS.get(codepoint, codepoint)
         image_file_path = os.path.join(google_emoji_cache_path, '{}.png'.format(mapped_codepoint))
         symlink_path = os.path.join(emoji_cache_path, '{}.png'.format(name))
         os.symlink(image_file_path, symlink_path)
