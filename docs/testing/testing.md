@@ -86,7 +86,7 @@ Zulip also has about a dozen smaller tests suites:
   this helps prevent bugs that break the development environment.
 - `./tools/test-queue-worker-reload`: Verifies that Zulip's queue
   processors properly reload themselves after code changes.
-- `./tools/optimize-svg`: Checks whether all SVG files for integration
+- `./tools/setup/optimize-svg`: Checks whether all SVG files for integration
   logos are properly optimized for size (since we're not going to edit
   third-party logos, this helps keep the Zulip codebase from getting huge).
 - `./tools/test-tools`: Automated tests for various parts of our

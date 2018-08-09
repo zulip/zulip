@@ -16,7 +16,7 @@ set -x
 ./tools/run-mypy
 
 ./tools/test-migrations
-./tools/optimize-svg
+./tools/setup/optimize-svg
 ./tools/test-documentation ${CIRCLECI:+--skip-check-links}
 ./tools/test-help-documentation
 ./tools/test-api

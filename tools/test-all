@@ -45,7 +45,7 @@ run ./tools/test-backend $FORCEARG
 run ./tools/run-mypy $FORCEARG
 run ./tools/test-migrations
 # Not running SVG optimizing since it's low-churn
-# run ./tools/optimize-svg
+# run ./tools/setup/optimize-svg
 # Not running documentation tests since it takes 20s and only tests documentation
 # run ./tools/test-documentation
 run ./tools/test-help-documentation $FORCEARG
