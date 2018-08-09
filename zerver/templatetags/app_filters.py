@@ -10,6 +10,7 @@ import markdown_include.include
 from django.conf import settings
 from django.template import Library, engines, loader
 from django.utils.safestring import mark_safe
+from jinja2.exceptions import TemplateNotFound
 
 import zerver.lib.bugdown.fenced_code
 import zerver.lib.bugdown.api_arguments_table_generator
@@ -71,7 +72,9 @@ docs_without_macros = [
 # the results when called if none of the arguments are unhashable.
 @ignore_unhashable_lru_cache(512)
 @register.filter(name='render_markdown_path', is_safe=True)
-def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, Any]]=None) -> str:
+def render_markdown_path(markdown_file_path: str,
+                         context: Optional[Dict[Any, Any]]=None,
+                         pure_markdown: Optional[bool]=False) -> str:
     """Given a path to a markdown file, return the rendered html.
 
     Note that this assumes that any HTML in the markdown file is
@@ -114,7 +117,24 @@ def render_markdown_path(markdown_file_path: str, context: Optional[Dict[Any, An
     md_engine.reset()
 
     jinja = engines['Jinja2']
-    markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
-    html = md_engine.convert(markdown_string)
-    html_template = jinja.from_string(html)
-    return mark_safe(html_template.render(context))
+
+    if not pure_markdown:
+        markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+        html = md_engine.convert(markdown_string)
+        rendered_html = jinja.from_string(html).render(context)
+    else:
+        # This is for files such as /etc/zulip/terms.md that aren't in the
+        # default template directories recognized by our Jinja2 loaders.
+        # But we should still try to load the template using Jinja2 (in case
+        # the file path isn't absolute and does happen to be in Jinja's recognized
+        # template directories, and only try to load it directly after that has
+        # failed.
+        try:
+            markdown_string = jinja.env.loader.get_source(jinja.env, markdown_file_path)[0]
+        except TemplateNotFound:
+            with open(markdown_file_path) as fp:
+                markdown_string = fp.read()
+
+        rendered_html = md_engine.convert(markdown_string)
+
+    return mark_safe(rendered_html)

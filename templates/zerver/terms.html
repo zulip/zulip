@@ -20,7 +20,7 @@
         <div class="padded-content">
             <div class="inner-content">
                 {% if terms_of_service %}
-                    {{ render_markdown_path(terms_of_service) }}
+                    {{ render_markdown_path(terms_of_service, pure_markdown=True) }}
                 {% else %}
                     {% trans %}
                     This installation of Zulip does not have a configured terms of service.

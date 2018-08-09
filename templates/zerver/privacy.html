@@ -21,7 +21,7 @@
         <div class="padded-content">
             <div class="inner-content">
                 {% if privacy_policy %}
-                    {{ render_markdown_path(privacy_policy) }}
+                    {{ render_markdown_path(privacy_policy, pure_markdown=True) }}
                 {% else %}
                     {% trans %}
                     This installation of Zulip does not have a configured privacy policy.
