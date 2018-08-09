@@ -88,6 +88,8 @@ function expect_stream_subject() {
                 '<p>test message B</p>',
                 '<p>test message D</p>',
             ]);
+
+            casper.test.assertEquals(casper.fetchText('#left_bar_compose_stream_button_big'), 'New topic');
         });
     });
 }
@@ -149,6 +151,8 @@ function expect_all_pm() {
                 '<p>personal D</p>',
                 '<p>personal E</p>',
             ]);
+
+            casper.test.assertEquals(casper.fetchText('#left_bar_compose_stream_button_big'), 'New stream message');
         });
     });
 }
