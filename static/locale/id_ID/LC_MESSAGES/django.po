@@ -6,12 +6,13 @@
 # Mamat Rahmat <coderbodoh@gmail.com>, 2017
 # Rafid Aslam <rafidteam@gmail.com>, 2017
 # Steven Hans <cqpphp@gmail.com>, 2018
+# Tim Abbott <tabbott@kandralabs.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-27 19:22+0000\n"
-"PO-Revision-Date: 2018-07-27 19:26+0000\n"
+"PO-Revision-Date: 2018-08-07 17:59+0000\n"
 "Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Indonesian (Indonesia) (http://www.transifex.com/zulip/zulip/language/id_ID/)\n"
 "MIME-Version: 1.0\n"
@@ -429,7 +430,7 @@ msgid ""
 "            Why not <a href=\"#\" class=\"empty_feed_compose_private\">\n"
 "            start the conversation</a>?\n"
 "            "
-msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_stream\">\n            memulai percakapan</a>?</p>\n        "
+msgstr "\n        <p>Mengapa tidak <a href=\"#\" class=\"empty_feed_compose_private\">\n            memulai percakapan</a>?</p>\n        "
 
 #: templates/zerver/app/home.html:52
 msgid "You have no private messages with this person yet!"

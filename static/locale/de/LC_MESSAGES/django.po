@@ -17,13 +17,14 @@
 # Niklas P <niklaspotthoff@gmail.com>, 2016
 # Robert Hönig <robhoenig@gmail.com>, 2017-2018
 # Robin Richtsfeld <robin.richtsfeld@gmail.com>, 2018
+# Tim Abbott <tabbott@kandralabs.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-27 19:22+0000\n"
-"PO-Revision-Date: 2018-07-27 20:16+0000\n"
-"Last-Translator: Harlan Lieberman-Berg <hlieberman@setec.io>\n"
+"PO-Revision-Date: 2018-08-07 17:57+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: German (http://www.transifex.com/zulip/zulip/language/de/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -883,7 +884,7 @@ msgid ""
 "                            with this <a target=\"_blank\"\n"
 "                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
 "                        table syntax</a>."
-msgstr "Du kannst auch auch <a target=\"_blank\" href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Tabellen</a> erstellen. Benutze hierzu die <a target=\"_blank\" href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Tabellensyntax im Markdown-Stil</a>"
+msgstr "Du kannst auch auch <a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Tabellen</a> erstellen. Benutze hierzu die <a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Tabellensyntax im Markdown-Stil</a>"
 
 #: templates/zerver/app/message_history.html:5
 msgid "Message edit history"

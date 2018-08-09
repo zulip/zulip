@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-27 19:22+0000\n"
-"PO-Revision-Date: 2018-07-31 01:13+0000\n"
+"PO-Revision-Date: 2018-08-04 21:08+0000\n"
 "Last-Translator: Barna Kovács <vonbraun22@gmail.com>\n"
 "Language-Team: Hungarian (http://www.transifex.com/zulip/zulip/language/hu/)\n"
 "MIME-Version: 1.0\n"
@@ -1009,7 +1009,7 @@ msgstr ""
 #: templates/zerver/app/right_sidebar.html:12
 #: templates/zerver/app/right_sidebar.html:13
 msgid "Filter users"
-msgstr ""
+msgstr "Felhasználók szűrése"
 
 #: templates/zerver/app/right_sidebar.html:12
 msgid "USERS"
@@ -1202,7 +1202,7 @@ msgstr "Alapértelmezett folyamok"
 
 #: templates/zerver/app/settings_overlay.html:89
 msgid "Filter settings"
-msgstr ""
+msgstr "Szűrési beállítások"
 
 #: templates/zerver/app/settings_overlay.html:93
 msgid "Custom profile fields"
