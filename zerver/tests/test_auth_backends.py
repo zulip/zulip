@@ -6,6 +6,7 @@ from django.test import override_settings
 from django_auth_ldap.backend import _LDAPUser
 from django.contrib.auth import authenticate
 from django.test.client import RequestFactory
+from django.utils.timezone import now as timezone_now
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from builtins import object
 from oauth2client.crypt import AppIdentityError
@@ -19,6 +20,7 @@ import jwt
 import mock
 import re
 import time
+import datetime
 
 from zerver.forms import HomepageForm
 from zerver.lib.actions import (
@@ -43,6 +45,7 @@ from zerver.lib.test_helpers import POSTRequestMock, HostRequestMock
 from zerver.models import \
     get_realm, email_to_username, UserProfile, \
     PreregistrationUser, Realm, get_user, MultiuseInvite
+from zerver.signals import JUST_CREATED_THRESHOLD
 
 from confirmation.models import Confirmation, confirmation_url, create_confirmation_link
 
@@ -657,6 +660,9 @@ class GitHubAuthBackendTest(ZulipTestCase):
         mobile_flow_otp = '1234abcd' * 8
         account_data_dict = dict(email=self.email, name='Full Name')
         self.assertEqual(len(mail.outbox), 0)
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        self.user_profile.save()
+
         with self.settings(SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
             result = self.github_oauth2_test(account_data_dict, subdomain='zulip',
@@ -905,13 +911,17 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         self.assertTrue(uri.startswith('http://zulip.testserver/accounts/login/subdomain/'))
 
     def test_google_oauth2_mobile_success(self) -> None:
+        self.user_profile = self.example_user('hamlet')
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        self.user_profile.save()
         mobile_flow_otp = '1234abcd' * 8
         token_response = ResponseMock(200, {'access_token': "unique_token"})
         account_data = dict(name=dict(formatted="Full Name"),
                             emails=[dict(type="account",
-                                         value=self.example_email("hamlet"))])
+                                         value=self.user_profile.email)])
         account_response = ResponseMock(200, account_data)
         self.assertEqual(len(mail.outbox), 0)
+
         with self.settings(SEND_LOGIN_EMAILS=True):
             # Verify that the right thing happens with an invalid-format OTP
             result = self.google_oauth2_test(token_response, account_response, subdomain='zulip',
@@ -930,9 +940,9 @@ class GoogleSubdomainLoginTest(GoogleOAuthTest):
         query_params = urllib.parse.parse_qs(parsed_url.query)
         self.assertEqual(parsed_url.scheme, 'zulip')
         self.assertEqual(query_params["realm"], ['http://zulip.testserver'])
-        self.assertEqual(query_params["email"], [self.example_email("hamlet")])
+        self.assertEqual(query_params["email"], [self.user_profile.email])
         encrypted_api_key = query_params["otp_encrypted_api_key"][0]
-        hamlet_api_keys = get_all_api_keys(self.example_user('hamlet'))
+        hamlet_api_keys = get_all_api_keys(self.user_profile)
         self.assertIn(otp_decrypt_api_key(encrypted_api_key, mobile_flow_otp), hamlet_api_keys)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Zulip on Android', mail.outbox[0].body)
@@ -1354,6 +1364,8 @@ class FetchAPIKeyTest(ZulipTestCase):
                        SEND_LOGIN_EMAILS=True)
     def test_google_oauth2_token_success(self) -> None:
         self.assertEqual(len(mail.outbox), 0)
+        self.user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        self.user_profile.save()
         with mock.patch(
                 'apiclient.sample_tools.client.verify_id_token',
                 return_value={
@@ -1897,9 +1909,11 @@ class TestZulipRemoteUserBackend(ZulipTestCase):
     def test_login_mobile_flow_otp_success(self) -> None:
         user_profile = self.example_user('hamlet')
         email = user_profile.email
+        user_profile.date_joined = timezone_now() - datetime.timedelta(seconds=61)
+        user_profile.save()
         mobile_flow_otp = '1234abcd' * 8
-        # Verify that the right thing happens with an invalid-format OTP
 
+        # Verify that the right thing happens with an invalid-format OTP
         result = self.client_post('/accounts/login/sso/',
                                   dict(mobile_flow_otp="1234"),
                                   REMOTE_USER=email,

@@ -3,7 +3,7 @@ from django.conf import settings
 from django.core import mail
 from django.contrib.auth.signals import user_logged_in
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.signals import get_device_browser, get_device_os
+from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
 from zerver.lib.actions import notify_new_user
 from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
@@ -25,14 +25,16 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
+            utc = get_timezone('utc')
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+
             user = self.example_user('hamlet')
             user.timezone = 'US/Pacific'
+            user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
             password = initial_password(user.email)
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
-            utc = get_timezone('utc')
             user_tz = get_timezone(user.timezone)
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
             utc_offset = mock_time.astimezone(user_tz).strftime('%z')
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p ') + utc_offset
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):

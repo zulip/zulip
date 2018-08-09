@@ -15,6 +15,8 @@ from zerver.lib.send_email import FromAddress
 from zerver.models import UserProfile
 from zerver.lib.timezone import get_timezone
 
+JUST_CREATED_THRESHOLD = 60
+
 def get_device_browser(user_agent: str) -> Optional[str]:
     user_agent = user_agent.lower()
     if "zulip" in user_agent:
@@ -66,7 +68,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
     if request:
         # If the user's account was just created, avoid sending an email.
-        if getattr(user, "just_registered", False):
+        if (timezone_now() - user.date_joined).total_seconds() <= JUST_CREATED_THRESHOLD:
             return
 
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
