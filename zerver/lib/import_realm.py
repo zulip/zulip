@@ -17,6 +17,8 @@ from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
+from zerver.lib.message import save_message_rendered_content
+from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
     S3UploadBackend, LocalUploadBackend
 from zerver.lib.utils import generate_api_key
@@ -195,6 +197,24 @@ def fix_customprofilefield(data: TableData) -> None:
                 related_table='user_profile',
                 old_id_list=old_user_id_list)
             item['value'] = ujson.dumps(new_id_list)
+
+def fix_message_rendered_content(data: TableData, field: TableName) -> None:
+    """
+    This function sets the rendered_content of all the messages
+    after the messages have been imported.
+    """
+    for message in data[field]:
+        message_object = Message.objects.get(id=message['id'])
+        try:
+            rendered_content = save_message_rendered_content(message_object, message['content'])  # type: Optional[str]
+        except Exception:
+            rendered_content = None
+
+        if rendered_content is None:
+            # This can happen with two possible causes:
+            # * rendering markdown failing with the exception being caught in bugdown
+            # * The explicit None clause from an exception escaping
+            logging.warning("Error in markdown rendering for message ID %s; continuing" % (message['id']))
 
 def current_table_ids(data: TableData, table: TableName) -> List[int]:
     """
@@ -860,6 +880,9 @@ def import_message_data(import_dir: Path) -> None:
 
         re_map_foreign_keys(data, 'zerver_message', 'id', related_table='message', id_field=True)
         bulk_import_model(data, Message)
+
+        fix_message_rendered_content(data, 'zerver_message')
+        logging.info("Successfully rendered markdown for message batch")
 
         # Due to the structure of these message chunks, we're
         # guaranteed to have already imported all the Message objects
