@@ -21,14 +21,16 @@ def process_zcommands(content: str, user_profile: UserProfile) -> Dict[str, Any]
         if user_profile.night_mode:
             msg = 'You are still in night mode.'
         else:
-            msg = 'Changed to night mode! To revert night mode, type `%s`.' % (content,)
+            switch_command = day_commands[night_commands.index(command)]
+            msg = 'Changed to night mode! To revert night mode, type `/%s`.' % (switch_command,)
             do_set_user_display_setting(user_profile, 'night_mode', True)
         ret = dict(msg=msg)
         return ret
 
     if command in day_commands:
         if user_profile.night_mode:
-            msg = 'Changed to day mode! To revert day mode, type `%s`.' % (content,)
+            switch_command = night_commands[day_commands.index(command)]
+            msg = 'Changed to day mode! To revert day mode, type `/%s`.' % (switch_command,)
             do_set_user_display_setting(user_profile, 'night_mode', False)
         else:
             msg = 'You are still in day mode.'
