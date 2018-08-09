@@ -201,10 +201,14 @@ def fix_customprofilefield(data: TableData) -> None:
 def fix_message_rendered_content(data: TableData, field: TableName) -> None:
     """
     This function sets the rendered_content of all the messages
-    after the messages have been imported.
+    after the messages have been imported from a non-Zulip platform.
     """
     for message in data[field]:
         message_object = Message.objects.get(id=message['id'])
+        if message_object.rendered_content is not None:
+            # For Zulip->Zulip imports, we use the original rendered markdown.
+            continue
+
         try:
             rendered_content = save_message_rendered_content(message_object, message['content'])  # type: Optional[str]
         except Exception:
