@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import re
 from typing import Any, Dict, Iterable
 import logging
@@ -256,3 +257,11 @@ class TemplateTestCase(ZulipTestCase):
             response = self.client_get('/privacy/')
         self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
         self.assert_not_in_success_response([not_configured_message], response)
+
+    def test_custom_privacy_policy_template_with_absolute_url(self) -> None:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        abs_path = os.path.join(current_dir, '..', '..',
+                                'templates/zerver/tests/markdown/test_markdown.md')
+        with self.settings(PRIVACY_POLICY=abs_path):
+            response = self.client_get('/privacy/')
+        self.assert_in_success_response(['This is some <em>bold text</em>.'], response)
