@@ -334,9 +334,6 @@ def accounts_register(request: HttpRequest) -> HttpResponse:
     )
 
 def login_and_go_to_home(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-
-    # Mark the user as having been just created, so no "new login" email is sent
-    user_profile.just_registered = True
     do_login(request, user_profile)
     return HttpResponseRedirect(user_profile.realm.uri + reverse('zerver.views.home.home'))
 
