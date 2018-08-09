@@ -99,12 +99,12 @@ translating, you should check out the
      contains a translated text.
 
 3. Those resource files are uploaded to Transifex by a maintainer using the
-   `./tools/push-translations` command.
+   `./tools/i18n/push-translations` command.
 
 4. Translators translate the strings in Transifex.
 
 5. The translations are downloaded back into the codebase by a
-   maintainer, using `tools/sync-translations` (which invokes `tx
+   maintainer, using `tools/i18n/sync-translations` (which invokes `tx
    pull`, internally).
 
 ## Translators' workflow
