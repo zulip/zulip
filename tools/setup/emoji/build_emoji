@@ -140,7 +140,7 @@ def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
         dst_file = os.path.join(target_emoji_farm, img_file_name)
         shutil.copy2(src_file, dst_file)
 
-    for emojiset in EMOJISETS:
+    for emojiset in ['google']:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
             NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64')
