@@ -12,17 +12,17 @@ EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
 # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
 # emoji farm to their name in the new emoji farm.
 remapped_emojis = {
-    "0023": "0023-fe0f-20e3",    # Hash
-    "0030": "0030-fe0f-20e3",    # Zero
-    "0031": "0031-fe0f-20e3",    # One
-    "0032": "0032-fe0f-20e3",    # Two
-    "0033": "0033-fe0f-20e3",    # Three
-    "0034": "0034-fe0f-20e3",    # Four
-    "0035": "0035-fe0f-20e3",    # Five
-    "0036": "0036-fe0f-20e3",    # Six
-    "0037": "0037-fe0f-20e3",    # Seven
-    "0038": "0038-fe0f-20e3",    # Eight
-    "0039": "0039-fe0f-20e3",    # Nine
+    "0023": "0023-20e3",         # Hash
+    "0030": "0030-20e3",         # Zero
+    "0031": "0031-20e3",         # One
+    "0032": "0032-20e3",         # Two
+    "0033": "0033-20e3",         # Three
+    "0034": "0034-20e3",         # Four
+    "0035": "0035-20e3",         # Five
+    "0036": "0036-20e3",         # Six
+    "0037": "0037-20e3",         # Seven
+    "0038": "0038-20e3",         # Eight
+    "0039": "0039-20e3",         # Nine
     "1f1e8": "1f1e8-1f1f3",      # cn
     "1f1e9": "1f1e9-1f1ea",      # de
     "1f1ea": "1f1ea-1f1f8",      # es
@@ -114,11 +114,4 @@ def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
     return name_to_codepoint
 
 def get_remapped_emojis_map(emoji_data: List[Dict[str, Any]]) -> Dict[str, str]:
-    # Extend `remapped_emojis` to include emojis whose filename from version 4
-    # have a emoji presentation selector(FE0F) appended to them.
-    for emoji_dict in emoji_data:
-        if emoji_dict['non_qualified'] is not None:
-            unified_codepoint = emoji_dict['unified'].lower()
-            non_qualified_codepoint = emoji_dict['non_qualified'].lower()
-            remapped_emojis[non_qualified_codepoint] = unified_codepoint
     return remapped_emojis
