@@ -445,6 +445,32 @@ def get_stream_topics(client, stream_id):
     validate_against_openapi_schema(result, '/users/me/{stream_id}/topics',
                                     'get', '200')
 
+def set_typing_status(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # The user has started to type in the group PM with Iago and Polonius
+    request = {
+        'op': 'start',
+        'to': ['iago@zulip.com', 'polonius@zulip.com']
+    }
+    result = client.set_typing_status(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/typing', 'post', '200')
+
+    # {code_example|start}
+    # The user has finished typing in the group PM with Iago and Polonius
+    request = {
+        'op': 'stop',
+        'to': ['iago@zulip.com', 'polonius@zulip.com']
+    }
+    result = client.set_typing_status(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/typing', 'post', '200')
+
+
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -479,7 +505,8 @@ TEST_FUNCTIONS = {
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/user_uploads:post': upload_file,
-    '/users/me/{stream_id}/topics:get': get_stream_topics
+    '/users/me/{stream_id}/topics:get': get_stream_topics,
+    '/typing:post': set_typing_status,
 }
 
 # SETUP METHODS FOLLOW
@@ -548,6 +575,7 @@ def test_users(client):
     get_members(client)
     get_profile(client)
     upload_file(client)
+    set_typing_status(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None

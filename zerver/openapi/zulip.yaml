@@ -1012,7 +1012,42 @@ paths:
                         "msg": "User not authorized for this query",
                         "result": "error"
                     }
-
+  /typing:
+    post:
+      description: Send an event indicating that the user has started or
+        stopped typing on their client.
+      parameters:
+      - name: op
+        in: query
+        description: Whether the user has started (`start`) or stopped (`stop`)
+          to type.
+        schema:
+          type: string
+          enum:
+          - start
+          - stop
+        example: start
+        required: true
+      - name: notification_to
+        in: query
+        description: The recipients of the message being typed, in the same format used by the
+          send_message API.  Typing notifications are only supported for private messages,
+          so this should be a JSON-encoded list of email addresses of the message's recipients.
+        schema:
+          type: array
+          items:
+            type: string
+        example: ["iago@zulip.com", "polonius@zulip.com"]
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
 components:
   #######################
   # Security definitions
