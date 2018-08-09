@@ -1,6 +1,10 @@
 {
   "bg": {
-    "not_translated": 7,
+    "not_translated": 0,
+    "total": 139
+  },
+  "ca": {
+    "not_translated": 57,
     "total": 139
   },
   "cs": {
@@ -15,8 +19,16 @@
     "not_translated": 7,
     "total": 139
   },
+  "fi": {
+    "not_translated": 7,
+    "total": 139
+  },
   "fr": {
     "not_translated": 0,
+    "total": 139
+  },
+  "gl": {
+    "not_translated": 7,
     "total": 139
   },
   "hi": {
@@ -72,7 +84,11 @@
     "total": 139
   },
   "tr": {
-    "not_translated": 7,
+    "not_translated": 0,
+    "total": 139
+  },
+  "uk": {
+    "not_translated": 8,
     "total": 139
   },
   "zh_Hans": {

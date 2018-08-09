@@ -7,14 +7,15 @@
 # Enrique Maldonado, 2016
 # Enrique Maldonado, 2016
 # Greg Price <gnprice@gmail.com>, 2017
+# Tim Abbott <tabbott@kandralabs.com>, 2018
 # Yago González <yagogonzalezg@gmail.com>, 2017-2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-07-27 19:22+0000\n"
-"PO-Revision-Date: 2018-08-02 08:37+0000\n"
-"Last-Translator: Yago González <yagogonzalezg@gmail.com>\n"
+"PO-Revision-Date: 2018-08-07 18:00+0000\n"
+"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
 "Language-Team: Spanish (http://www.transifex.com/zulip/zulip/language/es/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -874,7 +875,7 @@ msgid ""
 "                            with this <a target=\"_blank\"\n"
 "                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">Markdown-ish\n"
 "                        table syntax</a>."
-msgstr "También puedes hacer <a target=\"_blank\"\nhref=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tablas</a>\ncon esta <a target=\"_blank\"\nhref=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tabla de sintaxis\nMarkdown-osa</a>."
+msgstr "También puedes hacer <a target=\"_blank\"\n                            href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tablas</a>\ncon esta <a target=\"_blank\"\n                                          href=\"https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet#wiki-tables\">tabla de sintaxis\nMarkdown-osa</a>."
 
 #: templates/zerver/app/message_history.html:5
 msgid "Message edit history"
