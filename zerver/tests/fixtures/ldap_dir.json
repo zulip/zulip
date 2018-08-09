@@ -1,0 +1,178 @@
+{
+    "a": {
+        "uid=ldap_zoe@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Zoe"
+            ],
+            "userPassword": "ldap_zoe"
+        },
+        "uid=ldap_othello@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Othello, the Moor of Venice"
+            ],
+            "userPassword": "ldap_othello"
+        },
+        "uid=ldap_iago@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Iago"
+            ],
+            "userPassword": "ldap_iago"
+        },
+        "uid=ldap_prospero@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Prospero from The Tempest"
+            ],
+            "userPassword": "ldap_prospero"
+        },
+        "uid=ldap_cordelia@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Cordelia Lear"
+            ],
+            "userPassword": "ldap_cordelia"
+        },
+        "uid=ldap_hamlet@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "King Hamlet"
+            ],
+            "userPassword": "ldap_hamlet"
+        },
+        "uid=ldap_aaron@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "aaron"
+            ],
+            "userPassword": "ldap_aaron"
+        },
+        "uid=ldap_polonius@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Polonius"
+            ],
+            "userPassword": "ldap_polonius"
+        },
+        "uid=ldap_extrauser0@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Extra User 0"
+            ],
+            "userPassword": "ldap_extrauser0"
+        },
+        "uid=ldap_extrauser1@zulip.com,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Extra User 1"
+            ],
+            "userPassword": "ldap_extrauser1"
+        }
+    },
+    "b": {
+        "uid=ldap_zoe,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Zoe"
+            ],
+            "userPassword": "ldap_zoe"
+        },
+        "uid=ldap_othello,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Othello, the Moor of Venice"
+            ],
+            "userPassword": "ldap_othello"
+        },
+        "uid=ldap_iago,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Iago"
+            ],
+            "userPassword": "ldap_iago"
+        },
+        "uid=ldap_prospero,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Prospero from The Tempest"
+            ],
+            "userPassword": "ldap_prospero"
+        },
+        "uid=ldap_cordelia,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Cordelia Lear"
+            ],
+            "userPassword": "ldap_cordelia"
+        },
+        "uid=ldap_hamlet,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "King Hamlet"
+            ],
+            "userPassword": "ldap_hamlet"
+        },
+        "uid=ldap_aaron,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "aaron"
+            ],
+            "userPassword": "ldap_aaron"
+        },
+        "uid=ldap_polonius,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Polonius"
+            ],
+            "userPassword": "ldap_polonius"
+        },
+        "uid=ldap_extrauser0,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Extra User 0"
+            ],
+            "userPassword": "ldap_extrauser0"
+        }
+    },
+    "c": {
+        "uid=ldap_zoe,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Zoe"
+            ],
+            "userPassword": "ldap_zoe_test",
+            "email": "ldap_zoe@zulip.com"
+        },
+        "uid=ldap_othello,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Othello, the Moor of Venice"
+            ],
+            "userPassword": "ldap_othello_test",
+            "email": "ldap_othello@zulip.com"
+        },
+        "uid=ldap_iago,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Iago"
+            ],
+            "userPassword": "ldap_iago_test",
+            "email": "ldap_iago@zulip.com"
+        },
+        "uid=ldap_prospero,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Prospero from The Tempest"
+            ],
+            "userPassword": "ldap_prospero_test",
+            "email": "ldap_prospero@zulip.com"
+        },
+        "uid=ldap_cordelia,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Cordelia Lear"
+            ],
+            "userPassword": "ldap_cordelia_test",
+            "email": "ldap_cordelia@zulip.com"
+        },
+        "uid=ldap_hamlet,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "King Hamlet"
+            ],
+            "userPassword": "ldap_hamlet_test",
+            "email": "ldap_hamlet@zulip.com"
+        },
+        "uid=ldap_aaron,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "aaron"
+            ],
+            "userPassword": "ldap_aaron_test",
+            "email": "ldap_aaron@zulip.com"
+        },
+        "uid=ldap_polonius,ou=users,dc=zulip,dc=com": {
+            "cn": [
+                "Polonius"
+            ],
+            "userPassword": "ldap_polonius_test",
+            "email": "ldap_polonius@zulip.com"
+        }
+    }
+}
