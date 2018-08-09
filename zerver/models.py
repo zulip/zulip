@@ -223,6 +223,15 @@ class Realm(models.Model):
     COMMUNITY = 2
     org_type = models.PositiveSmallIntegerField(default=CORPORATE)  # type: int
 
+    # plan_type controls various features around resource/feature
+    # limitations for a Zulip organization on multi-tenant servers
+    # like zulipchat.com.
+    SELF_HOSTED = 1
+    LIMITED = 2
+    PREMIUM = 3
+    PREMIUM_FREE = 4
+    plan_type = models.PositiveSmallIntegerField(default=SELF_HOSTED)  # type: int
+
     # This value is also being used in static/js/settings_bots.bot_creation_policy_values.
     # On updating it here, update it there as well.
     BOT_CREATION_EVERYONE = 1
@@ -2189,6 +2198,7 @@ class RealmAuditLog(models.Model):
 
     REALM_DEACTIVATED = 'realm_deactivated'
     REALM_REACTIVATED = 'realm_reactivated'
+    REALM_PLAN_TYPE_CHANGED = 'realm_plan_type_changed'
 
     SUBSCRIPTION_CREATED = 'subscription_created'
     SUBSCRIPTION_ACTIVATED = 'subscription_activated'
