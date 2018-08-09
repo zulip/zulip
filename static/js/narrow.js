@@ -253,6 +253,13 @@ exports.activate = function (raw_operators, opts) {
         });
     }
 
+    if (filter.has_operator("is") && filter.operands("is")[0] === "private"
+        || filter.has_operator("pm-with") || filter.has_operator("group-pm-with")) {
+        compose.update_stream_button_for_private();
+    } else {
+        compose.update_stream_button_for_stream();
+    }
+
     // Put the narrow operators in the search bar.
     $('#search_query').val(Filter.unparse(operators));
     search.update_button_visibility();
@@ -670,6 +677,7 @@ exports.deactivate = function () {
 
     top_left_corner.handle_narrow_deactivated();
     stream_list.handle_narrow_deactivated();
+    compose.update_stream_button_for_stream();
 
     $(document).trigger($.Event('narrow_deactivated.zulip', {msg_list: current_msg_list}));
 
