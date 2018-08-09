@@ -15,8 +15,7 @@ if False:
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 
-def run(args, dry_run=False):
-    # type: (List[str], bool) -> str
+def run(args: List[str], dry_run: bool=False) -> str:
     if dry_run:
         print("Would have run: " + " ".join(map(shlex.quote, args)))
         return ""
@@ -28,9 +27,9 @@ def run(args, dry_run=False):
         logger.error("Could not invoke %s\nstdout: %s\nstderror: %s"
                      % (args[0], stdout, stderr))
         sys.exit(1)
-    return stdout
+    return stdout.decode()
 
-recovery_val = run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip().decode()
+recovery_val = run(['psql', '-t', '-c', 'select pg_is_in_recovery()']).strip()
 # Assertion to check that we're extracting the value correctly.
 assert recovery_val in ['t', 'f']
 if recovery_val == 't':
