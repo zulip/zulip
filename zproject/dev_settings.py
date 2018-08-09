@@ -7,7 +7,6 @@ import pwd
 from typing import Set
 
 LOCAL_UPLOADS_DIR = 'var/uploads'
-EMAIL_LOG_DIR = "/var/log/zulip/email.log"
 FORWARD_ADDRESS_CONFIG_FILE = "var/forward_address.ini"
 # Check if test_settings.py set EXTERNAL_HOST.
 EXTERNAL_HOST = os.getenv('EXTERNAL_HOST')
