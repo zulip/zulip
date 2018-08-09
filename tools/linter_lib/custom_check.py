@@ -223,7 +223,7 @@ def build_custom_checkers(by_lang):
                          'frontend_tests/casper_lib/common.js',
                          'frontend_tests/node_tests',
                          'static/js/debug.js',
-                         'tools/generate-custom-icon-webfont']),
+                         'tools/setup/generate-custom-icon-webfont']),
          'description': 'console.log and similar should not be used in webapp'},
         {'pattern': r'''[.]text\(["'][a-zA-Z]''',
          'description': 'Strings passed to $().text should be wrapped in i18n.t() for internationalization',

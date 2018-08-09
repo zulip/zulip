@@ -46,7 +46,7 @@ run(['./tools/inline-email-css'], stdout=fp, stderr=fp)
 run(['./tools/setup/generate_zulip_bots_static_files'], stdout=fp, stderr=fp)
 
 # Generate custom icon webfont
-run(['./tools/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
+run(['./tools/setup/generate-custom-icon-webfont'], stdout=fp, stderr=fp)
 
 # Build pygment data
 run(['./tools/setup/build_pygments_data'], stdout=fp, stderr=fp)

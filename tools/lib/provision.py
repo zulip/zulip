@@ -291,12 +291,12 @@ def main(options):
     # copy over static files from the zulip_bots package
     run(["tools/setup/generate_zulip_bots_static_files"])
 
-    webfont_paths = ["tools/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
+    webfont_paths = ["tools/setup/generate-custom-icon-webfont", "static/icons/fonts/template.hbs"]
     webfont_paths += glob.glob('static/assets/icons/*')
     if file_or_package_hash_updated(webfont_paths, "webfont_files_hash", options.is_force):
-        run(["tools/generate-custom-icon-webfont"])
+        run(["tools/setup/generate-custom-icon-webfont"])
     else:
-        print("No need to run `tools/generate-custom-icon-webfont`.")
+        print("No need to run `tools/setup/generate-custom-icon-webfont`.")
 
     build_pygments_data_paths = ["tools/setup/build_pygments_data", "tools/setup/lang.json"]
     from pygments import __version__ as pygments_version
