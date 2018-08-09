@@ -3,6 +3,7 @@
 # See docs/subsystems/emoji.md for a high-level explanation of how this system
 # works.
 import os
+import shutil
 import sys
 import ujson
 
@@ -126,13 +127,31 @@ def generate_sprite_css_files(cache_path: str, emoji_data: List[Dict[str, Any]])
         sprite_css_file.close()
 
 def setup_emoji_farm(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
+    def ensure_emoji_image(emoji_dict: Dict[str, Any]) -> None:
+        # We use individual images from emoji farm for rendering emojis
+        # in notification messages. We have a custom emoji formatter in
+        # notifications processing code that converts `span` tags to
+        # `img` and that logic requires us to have non-qualified
+        # `emoji_code` as file name for emoji.
+        emoji_code = get_emoji_code(emoji_dict)
+        img_file_name = emoji_code + '.png'
+        src_file = os.path.join(src_emoji_farm, emoji_dict['image'])
+        dst_file = os.path.join(target_emoji_farm, img_file_name)
+        shutil.copy2(src_file, dst_file)
+
     for emojiset in EMOJISETS:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
-            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64', '*')
+            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64')
         target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
         run(['mkdir', '-p', target_emoji_farm])
-        run(['cp', '-RPp', src_emoji_farm, target_emoji_farm], shell=True)
+        print("Copying individual image files...")
+        for emoji_dict in emoji_data:
+            if emoji_dict['has_img_' + emojiset]:
+                ensure_emoji_image(emoji_dict)
+                skin_variations = emoji_dict.get('skin_variations', {})
+                for skin_tone in skin_variations:
+                    ensure_emoji_image(skin_variations[skin_tone])
 
         # Copy zulip.png to the emoji farm.
         zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
