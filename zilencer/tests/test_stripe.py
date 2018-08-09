@@ -38,7 +38,7 @@ def mock_customer_with_canceled_subscription(*args: Any, **kwargs: Any) -> strip
     customer.subscriptions.data[0].canceled_at = 1532602160
     return customer
 
-def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:
+def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: Any) -> stripe.Customer:  # nocoverage
     customer = mock_customer_with_subscription()
     customer.subscriptions.data[0].canceled_at = 1532602243
     customer.subscriptions.data[0].cancel_at_period_end = True

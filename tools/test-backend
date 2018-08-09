@@ -33,6 +33,7 @@ target_fully_covered = {path for target in [
     # Test files should have 100% coverage; test code that isn't run
     # is likely a bug in the test.
     'zerver/tests/*.py',
+    'zilencer/tests/*.py',
     # As a project, we require 100% test coverage in the views files.
     'zerver/views/*.py',
     'zproject/backends.py',
