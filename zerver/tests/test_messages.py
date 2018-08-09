@@ -28,6 +28,7 @@ from zerver.lib.actions import (
     get_client,
     do_add_alert_words,
     do_change_stream_invite_only,
+    do_update_message_flags,
 )
 
 from zerver.lib.message import (
@@ -2386,6 +2387,22 @@ class MirroredMessageUsersTest(ZulipTestCase):
         self.assertTrue(bob.is_mirror_dummy)
 
 class MessageAccessTests(ZulipTestCase):
+    def test_update_invalid_flags(self) -> None:
+        message = self.send_personal_message(
+            self.example_email("cordelia"),
+            self.example_email("hamlet"),
+            "hello",
+        )
+        user_profile = self.example_user('hamlet')
+        for first_non_api_flag in UserMessage.NON_API_FLAGS:
+            break
+
+        with self.assertRaises(JsonableError):
+            do_update_message_flags(user_profile, get_client("website"), 'remove', first_non_api_flag, [message])
+
+        with self.assertRaises(JsonableError):
+            do_update_message_flags(user_profile, get_client("website"), 'remove', 'invalid', [message])
+
     def change_star(self, messages: List[int], add: bool=True, **kwargs: Any) -> HttpResponse:
         return self.client_post("/json/messages/flags",
                                 {"messages": ujson.dumps(messages),
