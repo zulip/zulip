@@ -262,11 +262,12 @@ def you_were_just_subscribed_message(acting_user: UserProfile,
                                      stream_names: Set[str]) -> str:
     subscriptions = sorted(list(stream_names))
     if len(subscriptions) == 1:
-        return _("Hi there! @**%s** just subscribed you to the stream #**%s**." %
-                 (acting_user.full_name, subscriptions[0]))
+        return _("Hi there! @**%(full_name)s** just subscribed you to the stream #**%(stream_name)s**." %
+                 {"full_name": acting_user.full_name,
+                  "stream_name": subscriptions[0]})
 
-    message = _("Hi there! @**%s** just subscribed you to the following streams:" %
-                (acting_user.full_name,))
+    message = _("Hi there! @**%(full_name)s** just subscribed you to the following streams:" %
+                {"full_name": acting_user.full_name})
     message += "\n\n"
     for stream_name in subscriptions:
         message += "* #**%s**\n" % (stream_name,)
