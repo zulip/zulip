@@ -11,7 +11,7 @@ EMOJISETS = ['apple', 'emojione', 'google', 'twitter']
 # Some image files in the old emoji farm had a different name than in the new emoji
 # farm. `remapped_emojis` is a map that contains a mapping of their name in the old
 # emoji farm to their name in the new emoji farm.
-remapped_emojis = {
+REMAPPED_EMOJIS = {
     "0023": "0023-20e3",         # Hash
     "0030": "0030-20e3",         # Zero
     "0031": "0031-20e3",         # One
@@ -112,6 +112,3 @@ def generate_name_to_codepoint_map(emoji_name_maps: Dict[str, Dict[str, Any]]) -
         for alias in aliases:
             name_to_codepoint[alias] = emoji_code
     return name_to_codepoint
-
-def get_remapped_emojis_map(emoji_data: List[Dict[str, Any]]) -> Dict[str, str]:
-    return remapped_emojis
