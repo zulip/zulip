@@ -86,14 +86,20 @@ var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post
                   emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
                   emoji_heart, emoji_headphones];
 
-var slash_commands = [
+var day_slash_commands = [
     "/me",
     "/ping",
     "/settings",
     "/dark",
-    "/day",
-    "/light",
     "/night",
+];
+
+var night_slash_commands = [
+    "/me",
+    "/ping",
+    "/settings",
+    "/light",
+    "/day",
 ];
 
 var sweden_stream = {
@@ -1088,7 +1094,12 @@ run_test('begins_typeahead', () => {
     assert_stream_list("test #D");
     assert_stream_list("test #**v");
 
-    assert_typeahead_equals("/", slash_commands);
+    page_params.night_mode = true;
+    assert_typeahead_equals("/", night_slash_commands);
+
+    page_params.night_mode = false;
+    assert_typeahead_equals("/", day_slash_commands);
+
     assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
@@ -1251,7 +1262,7 @@ run_test('typeahead_results', () => {
     }
 
     function assert_slash_matches(input, expected) {
-        var returned = compose_typeahead_results('slash', slash_commands, input);
+        var returned = compose_typeahead_results('slash', day_slash_commands, input);
         assert.deepEqual(returned, expected);
     }
 

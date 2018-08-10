@@ -408,15 +408,21 @@ exports.compose_content_begins_typeahead = function (query) {
         this.completing = 'slash';
         this.token = current_token;
 
-        return [
+        var commands = [
             "/me",
             "/ping",
             "/settings",
-            "/dark",
-            "/day",
-            "/light",
-            "/night",
         ];
+
+        if (page_params.night_mode) {
+            commands.push('/light');
+            commands.push('/day');
+        } else {
+            commands.push('/dark');
+            commands.push('/night');
+        }
+
+        return commands;
     }
 
 
