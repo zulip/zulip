@@ -3549,8 +3549,9 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
         # up until the pointer move
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
-                                   message__id__lte=pointer).extra([UserMessage.where_unread()]) \
-                           .update(flags=F('flags').bitor(UserMessage.flags.read))
+                                   message__id__lte=pointer).extra(
+                                       where=[UserMessage.where_unread()]).update(
+                                           flags=F('flags').bitor(UserMessage.flags.read))
 
     event = dict(type='pointer', pointer=pointer)
     send_event(event, [user_profile.id])
