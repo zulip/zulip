@@ -1549,7 +1549,7 @@ class RealmCreationTest(ZulipTestCase):
             # Create new realm with the email, but no creation key.
             result = self.client_post('/new/', {'email': email})
             self.assertEqual(result.status_code, 200)
-            self.assert_in_response('New organization creation disabled.', result)
+            self.assert_in_response('New organization creation disabled', result)
 
     @override_settings(OPEN_REALM_CREATION=True)
     def test_create_realm_with_subdomain(self) -> None:

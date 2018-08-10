@@ -382,7 +382,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
     if not settings.OPEN_REALM_CREATION:
         if key_record is None:
             return render(request, "zerver/realm_creation_failed.html",
-                          context={'message': _('New organization creation disabled.')})
+                          context={'message': _('New organization creation disabled')})
 
     # When settings.OPEN_REALM_CREATION is enabled, anyone can create a new realm,
     # subject to a few restrictions on their email address.
