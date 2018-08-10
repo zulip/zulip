@@ -418,6 +418,28 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     validate_against_openapi_schema(result, '/events', 'delete', '400')
 
+def update_notification_settings(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Enable all notifications
+    request = {
+        'enable_stream_email_notifications': True,
+        'enable_stream_push_notifications': True,
+        'enable_stream_sounds': True,
+        'enable_desktop_notifications': True,
+        'enable_sounds': True,
+        'enable_offline_email_notifications': True,
+        'enable_offline_push_notifications': True,
+        'enable_online_push_notifications': True,
+        'enable_digest_emails': True,
+        'message_content_in_email_notifications': True
+    }
+    result = client.update_notification_settings(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/settings/notifications', 'patch', '200')
+
 def upload_file(client):
     # type: (Client) -> None
     fp = StringIO("zulip")
@@ -478,6 +500,7 @@ TEST_FUNCTIONS = {
     '/users:get': get_members,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
+    '/settings/notifications:patch': update_notification_settings,
     '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics
 }
@@ -547,6 +570,7 @@ def test_users(client):
     create_user(client)
     get_members(client)
     get_profile(client)
+    update_notification_settings(client)
     upload_file(client)
 
 def test_streams(client, nonadmin_client):

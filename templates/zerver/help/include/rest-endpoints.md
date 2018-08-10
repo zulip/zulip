@@ -20,6 +20,7 @@
 * [Get all users](/api/get-all-users)
 * [Get profile](/api/get-profile)
 * [Create a user](/api/create-user)
+* [Update notification settings](/api/update-notification-settings)
 
 #### Real-time events
 * [Real time events API](/api/real-time-events)

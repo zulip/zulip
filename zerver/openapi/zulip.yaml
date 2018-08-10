@@ -905,6 +905,156 @@ paths:
                         },
                         "result": "success"
                     }
+  /settings/notifications:
+    patch:
+      description: Modify the user's preferences for notifications.
+      parameters:
+      - name: enable_stream_desktop_notifications
+        in: query
+        description: Enable visual desktop notifications for stream messages.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_stream_email_notifications
+        in: query
+        description: Enable email notifications for stream messages.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_stream_push_notifications
+        in: query
+        description: Enable mobile notifications for stream messages.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_stream_sounds
+        in: query
+        description: Enable audible desktop notifications for stream messages.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_desktop_notifications
+        in: query
+        description: Enable visual desktop notifications for private messages
+          and @-mentions.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_sounds
+        in: query
+        description: Enable audible desktop notifications for private messages
+          and @-mentions.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_offline_email_notifications
+        in: query
+        description: Enable email notifications for private messages and
+          @-mentions received when the user is offline.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_offline_push_notifications
+        in: query
+        description: Enable mobile notification for private messages and
+          @-mentions received when the user is offline.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_online_push_notifications
+        in: query
+        description: Enable mobile notification for private messages and
+          @-mentions received when the user is online.
+        schema:
+          type: boolean
+        example: true
+      - name: enable_digest_emails
+        in: query
+        description: Enable digest emails when the user is away.
+        schema:
+          type: boolean
+        example: true
+      - name: message_content_in_email_notifications
+        in: query
+        description: Include the message's content in missed messages email
+          notifications.
+        schema:
+          type: boolean
+        example: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    enable_desktop_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_desktop_notifications`, if it was changed in
+                        this request.
+                    enable_digest_emails:
+                      type: boolean
+                      description: The setting for `enable_digest_emails`, if
+                        it was changed in this request.
+                    enable_offline_email_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_offline_email_notifications`, if it was changed
+                        in this request.
+                    enable_offline_push_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_offline_push_notifications`, if it was changed
+                        in this request.
+                    enable_online_push_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_online_push_notifications`, if it was changed
+                        in this request.
+                    enable_sounds:
+                      type: boolean
+                      description: The setting for `enable_sounds`, if it was
+                        changed in this request.
+                    enable_stream_email_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_stream_email_notifications`, if it was changed
+                        in this request.
+                    enable_stream_push_notifications:
+                      type: boolean
+                      description: The setting for
+                        `enable_stream_push_notifications`, if it was changed
+                        in this request.
+                    enable_stream_sounds:
+                      type: boolean
+                      description: The setting for
+                        `enable_stream_sounds`, if it was changed in this
+                        request.
+                    message_content_in_email_notifications:
+                      type: boolean
+                      description: The setting for
+                        `message_content_in_email_notifications`, if it was
+                        changed in this request.
+                - example:
+                    {
+                        "enable_desktop_notifications": true,
+                        "enable_digest_emails": true,
+                        "enable_offline_email_notifications": true,
+                        "enable_offline_push_notifications": true,
+                        "enable_online_push_notifications": true,
+                        "enable_sounds": true,
+                        "enable_stream_email_notifications": true,
+                        "enable_stream_push_notifications": true,
+                        "enable_stream_sounds": true,
+                        "message_content_in_email_notifications": true,
+                        "msg": "",
+                        "result": "success"
+                    }
   /streams:
     get:
       description: Get all streams that the user has access to.
