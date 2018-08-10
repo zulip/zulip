@@ -167,7 +167,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         RealmAuditLog.objects.create(
             realm=customer.realm,
             acting_user=customer.billing_user,
-            event_type=RealmAuditLog.REALM_PLAN_STARTED,
+            event_type=RealmAuditLog.STRIPE_PLAN_CHANGED,
             event_time=timestamp_to_datetime(stripe_subscription.created),
             extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count}))
 

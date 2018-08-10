@@ -2170,7 +2170,7 @@ class RealmAuditLog(models.Model):
 
     STRIPE_CUSTOMER_CREATED = 'stripe_customer_created'
     STRIPE_CARD_ADDED = 'stripe_card_added'
-    REALM_PLAN_STARTED = 'realm_plan_started'
+    STRIPE_PLAN_CHANGED = 'stripe_plan_changed'
     REALM_PLAN_QUANTITY_RESET = 'realm_plan_quantity_reset'
 
     USER_CREATED = 'user_created'
