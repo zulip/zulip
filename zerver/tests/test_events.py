@@ -160,6 +160,11 @@ class LogEventsTest(ZulipTestCase):
 
 
 class EventsEndpointTest(ZulipTestCase):
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
+
     def test_events_register_endpoint(self) -> None:
 
         # This test is intended to get minimal coverage on the
@@ -265,6 +270,11 @@ class EventsEndpointTest(ZulipTestCase):
         self.assert_json_success(result)
 
 class GetEventsTest(ZulipTestCase):
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
+
     def tornado_call(self, view_func: Callable[[HttpRequest, UserProfile], HttpResponse],
                      user_profile: UserProfile,
                      post_data: Dict[str, Any]) -> HttpResponse:
@@ -448,6 +458,10 @@ class GetEventsTest(ZulipTestCase):
         self.assertEqual(message["avatar_url"], None)
 
 class EventsRegisterTest(ZulipTestCase):
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
 
     def setUp(self) -> None:
         super().setUp()
@@ -2741,11 +2755,14 @@ class EventQueueTest(TestCase):
                            "timestamp": "1"}])
 
 class ClientDescriptorsTest(ZulipTestCase):
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
+
     def test_get_client_info_for_all_public_streams(self) -> None:
         hamlet = self.example_user('hamlet')
         realm = hamlet.realm
-
-        clear_client_event_queues_for_testing()
 
         queue_data = dict(
             all_public_streams=True,
