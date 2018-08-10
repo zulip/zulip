@@ -17,6 +17,7 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
@@ -107,6 +108,7 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
     zerver_realmemoji = []
     emoji_url_map = {}
     emoji_id = 0
+    timestamp = datetime_to_timestamp(timezone_now())
     for emoji_name, url in custom_emoji_list.items():
         if 'emoji.slack-edge.com' in url:
             # Some of the emojis we get from the api have invalid links
@@ -117,6 +119,7 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                 author=None,
                 realm=realm_id,
                 file_name=os.path.basename(url),
+                last_modified=timestamp,
                 deactivated=False)
             emoji_url_map[emoji_name] = url
             zerver_realmemoji.append(realmemoji)
