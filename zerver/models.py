@@ -2168,7 +2168,7 @@ class RealmAuditLog(models.Model):
     requires_billing_update = models.BooleanField(default=False)  # type: bool
     extra_data = models.TextField(null=True)  # type: Optional[str]
 
-    REALM_STRIPE_INITIALIZED = 'realm_stripe_initialized'
+    STRIPE_CUSTOMER_CREATED = 'stripe_customer_created'
     REALM_CARD_ADDED = 'realm_card_added'
     REALM_PLAN_STARTED = 'realm_plan_started'
     REALM_PLAN_QUANTITY_RESET = 'realm_plan_quantity_reset'

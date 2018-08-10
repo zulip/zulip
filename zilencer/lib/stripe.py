@@ -129,7 +129,7 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
     event_time = timestamp_to_datetime(stripe_customer.created)
     RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.REALM_STRIPE_INITIALIZED,
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
         event_time=event_time)
     RealmAuditLog.objects.create(
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.REALM_CARD_ADDED, event_time=event_time)

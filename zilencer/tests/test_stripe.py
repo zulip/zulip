@@ -128,7 +128,7 @@ class StripeTest(ZulipTestCase):
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created)),
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created)),
             (RealmAuditLog.REALM_CARD_ADDED, timestamp_to_datetime(self.customer_created)),
             (RealmAuditLog.REALM_PLAN_STARTED, timestamp_to_datetime(self.subscription_created)),
         ])
@@ -200,7 +200,7 @@ class StripeTest(ZulipTestCase):
                                  .values_list('event_type', 'event_time',
                                               'requires_billing_update')[:4])[::-1]
         self.assertEqual(audit_log_entries, [
-            (RealmAuditLog.REALM_STRIPE_INITIALIZED, timestamp_to_datetime(self.customer_created), False),
+            (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.REALM_CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.REALM_PLAN_STARTED, timestamp_to_datetime(self.subscription_created), False),
             (RealmAuditLog.REALM_PLAN_QUANTITY_RESET, timestamp_to_datetime(self.subscription_created), True),
