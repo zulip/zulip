@@ -23,7 +23,7 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis
+    process_emojis, build_realm
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -57,22 +57,7 @@ def slack_workspace_to_realm(domain_name: str, realm_id: int, user_list: List[Ze
     NOW = float(timezone_now().timestamp())
 
     zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Slack')  # type: List[ZerverFieldsT]
-
-    realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
-                                {"name": "website", "id": 2},
-                                {"name": "API", "id": 3}],
-                 zerver_userpresence=[],  # shows last logged in data, which is not available in slack
-                 zerver_userprofile_mirrordummy=[],
-                 zerver_realmdomain=[{"realm": realm_id,
-                                      "allow_subdomains": False,
-                                      "domain": domain_name,
-                                      "id": realm_id}],
-                 zerver_useractivity=[],
-                 zerver_realm=zerver_realm,
-                 zerver_huddle=[],
-                 zerver_userprofile_crossrealm=[],
-                 zerver_useractivityinterval=[],
-                 zerver_realmfilter=[])
+    realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, added_users, zerver_customprofilefield, \
         zerver_customprofilefield_value = users_to_zerver_userprofile(slack_data_dir, user_list,

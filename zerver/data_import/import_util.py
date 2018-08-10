@@ -61,6 +61,29 @@ def build_recipient(type_id: int, recipient_id: int, type: int) -> ZerverFieldsT
         type=type)
     return recipient
 
+def build_realm(zerver_realm: List[ZerverFieldsT], realm_id: int,
+                domain_name: str) -> ZerverFieldsT:
+    realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
+                                {"name": "website", "id": 2},
+                                {"name": "API", "id": 3}],
+                 zerver_customprofilefield=[],
+                 zerver_customprofilefieldvalue=[],
+                 zerver_userpresence=[],  # shows last logged in data, which is not available
+                 zerver_userprofile_mirrordummy=[],
+                 zerver_realmdomain=[{"realm": realm_id,
+                                      "allow_subdomains": False,
+                                      "domain": domain_name,
+                                      "id": realm_id}],
+                 zerver_useractivity=[],
+                 zerver_realm=zerver_realm,
+                 zerver_huddle=[],
+                 zerver_userprofile_crossrealm=[],
+                 zerver_useractivityinterval=[],
+                 zerver_reaction=[],
+                 zerver_realmemoji=[],
+                 zerver_realmfilter=[])
+    return realm
+
 def build_usermessages(zerver_usermessage: List[ZerverFieldsT], usermessage_id: int,
                        zerver_subscription: List[ZerverFieldsT], recipient_id: int,
                        mentioned_users_id: List[int], message_id: int) -> int:
