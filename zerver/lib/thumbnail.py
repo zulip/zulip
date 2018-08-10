@@ -19,7 +19,7 @@ def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
 def get_source_type(url: str) -> str:
-    if not url.startswith('/user_uploads/'):
+    if not (url.startswith('/user_uploads/') or url.startswith('/user_avatars/')):
         return THUMBOR_EXTERNAL_TYPE
 
     local_uploads_dir = settings.LOCAL_UPLOADS_DIR
