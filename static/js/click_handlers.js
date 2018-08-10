@@ -705,7 +705,7 @@ exports.initialize = function () {
         }
 
         if (compose_state.composing()) {
-            if ($(e.target).is("a")) {
+            if ($(e.target).closest("a").length > 0) {
                 // Refocus compose message text box if link is clicked
                 $("#compose-textarea").focus();
             } else if (!$(e.target).closest(".overlay").length &&
