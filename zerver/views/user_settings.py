@@ -208,9 +208,9 @@ def delete_avatar_backend(request: HttpRequest, user_profile: UserProfile) -> Ht
 # a bot regenerating its own API key.
 @has_request_variables
 def regenerate_api_key(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-    do_regenerate_api_key(user_profile, user_profile)
+    new_api_key = do_regenerate_api_key(user_profile, user_profile)
     json_result = dict(
-        api_key = user_profile.api_key
+        api_key = new_api_key
     )
     return json_success(json_result)
 

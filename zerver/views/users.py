@@ -245,9 +245,9 @@ def patch_bot_backend(
 def regenerate_bot_api_key(request: HttpRequest, user_profile: UserProfile, bot_id: int) -> HttpResponse:
     bot = access_bot_by_id(user_profile, bot_id)
 
-    do_regenerate_api_key(bot, user_profile)
+    new_api_key = do_regenerate_api_key(bot, user_profile)
     json_result = dict(
-        api_key = bot.api_key
+        api_key=new_api_key
     )
     return json_success(json_result)
 
