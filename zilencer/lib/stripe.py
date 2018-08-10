@@ -65,7 +65,7 @@ def unsign_string(signed_string: str, salt: str) -> str:
 
 class BillingError(Exception):
     # error messages
-    CONTACT_SUPPORT = _("Something went wrong. Please contact %s)" % (settings.ZULIP_ADMINISTRATOR,))
+    CONTACT_SUPPORT = _("Something went wrong. Please contact %s." % (settings.ZULIP_ADMINISTRATOR,))
     TRY_RELOADING = _("Something went wrong. Please reload the page.")
 
     # description is used only for tests
