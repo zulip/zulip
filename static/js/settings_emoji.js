@@ -67,7 +67,6 @@ exports.populate_emoji = function (emoji_data) {
                     name: data.name,
                     display_name: data.name.replace(/_/g, ' '),
                     source_url: data.source_url,
-                    display_url: data.source_url,
                     author: data.author || '',
                     can_admin_emoji: can_admin_emoji(data),
                 },

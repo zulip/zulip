@@ -272,7 +272,7 @@ var event_fixtures = {
         type: 'realm_emoji',
         realm_emoji: {
             airplane: {
-                display_url: 'some_url',
+                source_url: 'some_url',
             },
         },
     },
