@@ -17,7 +17,6 @@ from django.utils.timezone import now as timezone_now
 from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
-from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
@@ -108,7 +107,6 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
     zerver_realmemoji = []
     emoji_url_map = {}
     emoji_id = 0
-    timestamp = datetime_to_timestamp(timezone_now())
     for emoji_name, url in custom_emoji_list.items():
         if 'emoji.slack-edge.com' in url:
             # Some of the emojis we get from the api have invalid links
@@ -119,7 +117,6 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
                 author=None,
                 realm=realm_id,
                 file_name=os.path.basename(url),
-                last_modified=timestamp,
                 deactivated=False)
             emoji_url_map[emoji_name] = url
             zerver_realmemoji.append(realmemoji)
@@ -563,7 +560,9 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # Ignore messages without user names
             # These are Sometimes produced by slack
             continue
-        if message.get('subtype') in [
+
+        subtype = message.get('subtype', False)
+        if subtype in [
                 # Zulip doesn't have a pinned_item concept
                 "pinned_item",
                 "unpinned_item",
@@ -594,19 +593,27 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                                 zerver_realmemoji)
 
         # Process different subtypes of slack messages
-        if 'subtype' in message.keys():
-            subtype = message['subtype']
-            # Subtypes which have only the action in the message should
-            # be rendered with '/me' in the content initially
-            # For example "sh_room_created" has the message 'started a call'
-            # which should be displayed as '/me started a call'
-            if subtype in ["bot_add", "sh_room_created", "me_message"]:
-                content = ('/me %s' % (content))
+
+        # Subtypes which have only the action in the message should
+        # be rendered with '/me' in the content initially
+        # For example "sh_room_created" has the message 'started a call'
+        # which should be displayed as '/me started a call'
+        if subtype in ["bot_add", "sh_room_created", "me_message"]:
+            content = ('/me %s' % (content))
+
+        files = message.get('files', False)
+        if subtype == 'file_share' or files:
+            # In the messages, uploads can either have the subtype as 'file_share' or
+            # have the upload information in 'files' keyword
+            if subtype == 'file_share':
+                fileinfo = message['file']
+                url = message['file']['url_private']
+            elif files:
+                fileinfo = files
+                url = files['url_private']
 
             # For attachments with slack download link
-            elif subtype == "file_share" and 'files.slack.com' in message['file']['url_private']:
-                fileinfo = message['file']
-
+            if 'files.slack.com' in url:
                 has_attachment = has_link = True
                 has_image = True if 'image' in fileinfo['mimetype'] else False
 
@@ -626,8 +633,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
 
             # For attachments with link not from slack
             # Example: Google drive integration
-            elif subtype == "file_share":
-                fileinfo = message['file']
+            else:
                 has_link = True
                 if 'title' in fileinfo:
                     file_name = fileinfo['title']

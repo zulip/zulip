@@ -369,6 +369,7 @@ class ImportExportTest(ZulipTestCase):
         self.assertIn('1.png', os.listdir(fn))
         records = full_data['emoji_dir_records']
         self.assertEqual(records[0]['file_name'], '1.png')
+        self.assertTrue('last_modified' in records[0])
         self.assertEqual(records[0]['path'], '1/emoji/images/1.png')
         self.assertEqual(records[0]['s3_path'], '1/emoji/images/1.png')
         check_variable_type(records[0]['user_profile_id'], records[0]['realm_id'])
