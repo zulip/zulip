@@ -7,7 +7,7 @@ in Zulip.
 
 1. {!create-bot-construct-url-indented.md!}
 
-    1. Create an [IFTTT account](https://ifttt.com/join). Select the service you'd like
+1. Create an [IFTTT account](https://ifttt.com/join). Select the service you'd like
    to receive notifications from as `this`. Select **Webhooks** as
    `that`. Select the **Make a web request** action.
 
