@@ -111,13 +111,23 @@ function update_stream_button(title) {
 }
 
 exports.update_buttons_for_private = function () {
-    update_stream_button(i18n.t("New stream message"));
-    update_private_button(i18n.t("New private message"));
+    if (util.is_mobile()) {
+        update_stream_button(i18n.t("Stream message"));
+        update_private_button(i18n.t("New PM"));
+    } else {
+        update_stream_button(i18n.t("New stream message"));
+        update_private_button(i18n.t("New private message"));
+    }
 };
 
 exports.update_buttons_for_stream = function () {
-    update_stream_button(i18n.t("New topic"));
-    update_private_button(i18n.t("New private message"));
+    if (util.is_mobile()) {
+        update_stream_button(i18n.t("New topic"));
+        update_private_button(i18n.t("New PM"));
+    } else {
+        update_stream_button(i18n.t("New topic"));
+        update_private_button(i18n.t("New private message"));
+    }
 };
 
 function update_fade() {
