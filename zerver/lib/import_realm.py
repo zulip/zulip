@@ -15,6 +15,7 @@ from typing import Any, Dict, List, Optional, Set, Tuple, \
 
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.bulk_create import bulk_create_users
+from zerver.lib.timestamp import datetime_to_timestamp
 from zerver.lib.export import DATE_FIELDS, realm_tables, \
     Record, TableData, TableName, Field, Path
 from zerver.lib.message import save_message_rendered_content
@@ -505,6 +506,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
                                  id_field=True)
+    timestamp = datetime_to_timestamp(timezone_now())
     if not processing_emojis:
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
@@ -524,6 +526,7 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
             key.key = emoji_path
+            record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
