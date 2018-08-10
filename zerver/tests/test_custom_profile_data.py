@@ -125,6 +125,10 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, 'field_data["order"] is not a string')
 
+        data["field_data"] = ujson.dumps({})
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'Field must have at least one choice.')
+
         data["field_data"] = ujson.dumps({
             'python': {'text': 'Python', 'order': '1'},
             'java': {'text': 'Java', 'order': '2'},
