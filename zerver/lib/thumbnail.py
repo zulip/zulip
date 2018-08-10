@@ -19,7 +19,7 @@ def is_thumbor_enabled() -> bool:
     return settings.THUMBOR_URL != ''
 
 def get_source_type(url: str) -> str:
-    if not url.startswith('/user_uploads/'):
+    if not (url.startswith('/user_uploads/') or url.startswith('/user_avatars/')):
         return THUMBOR_EXTERNAL_TYPE
 
     local_uploads_dir = settings.LOCAL_UPLOADS_DIR
@@ -41,12 +41,7 @@ def generate_thumbnail_url(path: str, size: str='0x0') -> str:
         return path
 
     source_type = get_source_type(path)
-    if source_type == THUMBOR_EXTERNAL_TYPE:
-        url = path
-    else:
-        url = path[len('/user_uploads/'):]
-
-    safe_url = base64.urlsafe_b64encode(url.encode()).decode('utf-8')
+    safe_url = base64.urlsafe_b64encode(path.encode()).decode('utf-8')
     image_url = '%s/source_type/%s' % (safe_url, source_type)
     width, height = map(int, size.split('x'))
     crypto = CryptoURL(key=settings.THUMBOR_KEY)

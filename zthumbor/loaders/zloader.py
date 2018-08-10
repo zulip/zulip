@@ -34,10 +34,18 @@ def load(context, url, callback):
         logging.warning('INVALID SOURCE TYPE: ' + source_type)
         return
 
+    local_file_path_prefix = ''
+    if actual_url.startswith('/user_uploads/'):  # type: ignore # python 2 type differs from python 3 type
+        actual_url = actual_url[len('/user_uploads/'):]
+        local_file_path_prefix = 'files/'
+    elif actual_url.startswith('/user_avatars/'):  # type: ignore # python 2 type differs from python 3 type
+        actual_url = actual_url[len('/user_avatars/'):]
+        local_file_path_prefix = 'avatars/'
+
     if source_type == THUMBOR_S3_TYPE:
         s3_loader.load(context, actual_url, callback)
     elif source_type == THUMBOR_LOCAL_FILE_TYPE:
-        patched_local_url = 'files/' + actual_url  # type: ignore # python 2 type differs from python 3 type
+        patched_local_url = local_file_path_prefix + actual_url  # type: ignore # python 2 type differs from python 3 type
         file_loader.load(context, patched_local_url, callback)
     elif source_type == THUMBOR_EXTERNAL_TYPE:
         https_loader.load(context, actual_url, callback)
