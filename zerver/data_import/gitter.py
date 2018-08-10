@@ -17,7 +17,7 @@ from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars
+    build_defaultstream, process_avatars, build_realm
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -36,26 +36,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     """
     NOW = float(timezone_now().timestamp())
     zerver_realm = build_zerver_realm(realm_id, realm_subdomain, NOW, 'Gitter')  # type: List[ZerverFieldsT]
-
-    realm = dict(zerver_client=[{"name": "populate_db", "id": 1},
-                                {"name": "website", "id": 2},
-                                {"name": "API", "id": 3}],
-                 zerver_customprofilefield=[],
-                 zerver_customprofilefieldvalue=[],
-                 zerver_userpresence=[],  # shows last logged in data, which is not available in gitter
-                 zerver_userprofile_mirrordummy=[],
-                 zerver_realmdomain=[{"realm": realm_id,
-                                      "allow_subdomains": False,
-                                      "domain": domain_name,
-                                      "id": realm_id}],
-                 zerver_useractivity=[],
-                 zerver_realm=zerver_realm,
-                 zerver_huddle=[],
-                 zerver_userprofile_crossrealm=[],
-                 zerver_useractivityinterval=[],
-                 zerver_reaction=[],
-                 zerver_realmemoji=[],
-                 zerver_realmfilter=[])
+    realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
     zerver_stream, zerver_defaultstream = build_stream(int(NOW))
