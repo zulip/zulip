@@ -16,12 +16,10 @@ class ThumbnailTest(ZulipTestCase):
     @use_s3_backend
     def test_s3_source_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            base = '/user_uploads/'
             url_in_result = 'smart/filters:no_upscale()/%s/source_type/s3'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
-            upload_file_path = uri[len(base):]
-            hex_uri = base64.urlsafe_b64encode(upload_file_path.encode()).decode('utf-8')
+            hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (hex_uri)
 
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
@@ -127,12 +125,10 @@ class ThumbnailTest(ZulipTestCase):
 
     def test_local_file_type(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            base = '/user_uploads/'
             url_in_result = 'smart/filters:no_upscale()/%s/source_type/local_file'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
-            upload_file_path = uri[len(base):]
-            hex_uri = base64.urlsafe_b64encode(upload_file_path.encode()).decode('utf-8')
+            hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (hex_uri)
 
         self.login(self.example_email("hamlet"))
@@ -265,7 +261,7 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(base, uri[:len(base)])
 
         quoted_uri = urllib.parse.quote(uri[1:], safe='')
-        hex_uri = base64.urlsafe_b64encode(uri[len('/user_uploads/'):].encode()).decode('utf-8')
+        hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
         with self.settings(THUMBOR_URL='http://test-thumborhost.com'):
             result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
@@ -276,12 +272,10 @@ class ThumbnailTest(ZulipTestCase):
 
     def test_with_different_sizes(self) -> None:
         def get_file_path_urlpart(uri: str, size: str='') -> str:
-            base = '/user_uploads/'
             url_in_result = 'smart/filters:no_upscale()/%s/source_type/local_file'
             if size:
                 url_in_result = '/%s/%s' % (size, url_in_result)
-            upload_file_path = uri[len(base):]
-            hex_uri = base64.urlsafe_b64encode(upload_file_path.encode()).decode('utf-8')
+            hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (hex_uri)
 
         self.login(self.example_email("hamlet"))
