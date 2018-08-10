@@ -85,6 +85,17 @@ var emoji_headphones = {
 var emoji_list = [emoji_tada, emoji_moneybag, emoji_stadium, emoji_japanese_post_office,
                   emoji_panda_face, emoji_see_no_evil, emoji_thumbs_up, emoji_thermometer,
                   emoji_heart, emoji_headphones];
+
+var slash_commands = [
+    "/me",
+    "/ping",
+    "/settings",
+    "/dark",
+    "/day",
+    "/light",
+    "/night",
+];
+
 var sweden_stream = {
     name: 'Sweden',
     description: 'Cold, mountains and home decor.',
@@ -292,6 +303,12 @@ run_test('content_typeahead_selected', () => {
     fake_this.token = 'back';
     actual_value = ct.content_typeahead_selected.call(fake_this, backend);
     expected_value = '@*Backend* ';
+    assert.equal(actual_value, expected_value);
+
+    // slash
+    fake_this.completing = 'slash';
+    actual_value = ct.content_typeahead_selected.call(fake_this, '/settings');
+    expected_value = '/settings';
     assert.equal(actual_value, expected_value);
 
     // stream
@@ -954,7 +971,7 @@ run_test('initialize', () => {
 run_test('begins_typeahead', () => {
 
     var begin_typehead_this = {options: {completions: {
-        emoji: true, mention: true, stream: true, syntax: true}}};
+        emoji: true, mention: true, stream: true, slash: true, syntax: true}}};
 
     function get_values(input, rest) {
         // Stub out split_at_cursor that uses $(':focus')
@@ -1071,6 +1088,8 @@ run_test('begins_typeahead', () => {
     assert_stream_list("test #D");
     assert_stream_list("test #**v");
 
+    assert_typeahead_equals("/", slash_commands);
+    assert_typeahead_equals("x/", false);
     assert_typeahead_equals("```", false);
     assert_typeahead_equals("``` ", false);
     assert_typeahead_equals(" ```", false);
@@ -1112,6 +1131,8 @@ run_test('begins_typeahead', () => {
 });
 
 run_test('tokenizing', () => {
+    assert.equal(ct.tokenize_compose_str("/m"), "/m");
+    assert.equal(ct.tokenize_compose_str("1/3"), "");
     assert.equal(ct.tokenize_compose_str("foo bar"), "");
     assert.equal(ct.tokenize_compose_str("foo#@:bar"), "");
     assert.equal(ct.tokenize_compose_str("foo bar [#alic"), "#alic");
@@ -1156,6 +1177,11 @@ run_test('content_highlighter', () => {
         th_render_user_group_called = true;
     };
     ct.content_highlighter.call(fake_this, backend);
+
+    // We don't have any fancy rendering for slash commands yet.
+    fake_this = { completing: 'slash' };
+    var rendered = ct.content_highlighter.call(fake_this, '/me');
+    assert.equal(rendered, '/me');
 
     fake_this = { completing: 'stream' };
     var th_render_stream_called = false;
@@ -1224,6 +1250,11 @@ run_test('typeahead_results', () => {
         assert.deepEqual(returned, expected);
     }
 
+    function assert_slash_matches(input, expected) {
+        var returned = compose_typeahead_results('slash', slash_commands, input);
+        assert.deepEqual(returned, expected);
+    }
+
     assert_emoji_matches('da',[{emoji_name: "tada", emoji_url: "TBD", codepoint: "1f389"},
                                {emoji_name: "panda_face", emoji_url: "TBD", codepoint: "1f43c"}]);
     assert_emoji_matches('da_', []);
@@ -1249,6 +1280,12 @@ run_test('typeahead_results', () => {
     assert_mentions_matches('characters o ', []);
     assert_mentions_matches('haracters of hamlet', []);
     assert_mentions_matches('of hamlet', []);
+
+    // Autocomplete by slash commands.
+    assert_slash_matches('/set', ['/settings']);
+    assert_slash_matches('x/s', []);
+    assert_slash_matches('/asdf', []);
+
     // Autocomplete stream by stream name or stream description.
     assert_stream_matches('den', [denmark_stream, sweden_stream]);
     assert_stream_matches('denmark', [denmark_stream]);

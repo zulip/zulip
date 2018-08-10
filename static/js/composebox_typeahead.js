@@ -97,6 +97,11 @@ function query_matches_person_or_user_group(query, item) {
     return query_matches_person(query, item);
 }
 
+function query_matches_slash_commmand(query, item) {
+    // We are strict about case here.
+    return query_matches_string(query, item, ' ');
+}
+
 // Case-insensitive
 function query_matches_emoji(query, emoji) {
     // replaces spaces with underscores
@@ -280,16 +285,21 @@ exports.tokenize_compose_str = function (s) {
         case '~':
             // Code block must start on a new line
             if (i === 2) {
-                return s.slice(0);
+                return s;
             } else if (i > 2 && s[i - 3] === "\n") {
                 return s.slice(i - 2);
+            }
+            break;
+        case '/':
+            if (i === 0) {
+                return s;
             }
             break;
         case '#':
         case '@':
         case ':':
             if (i === 0) {
-                return s.slice(i);
+                return s;
             } else if (/[\s(){}\[\]]/.test(s[i - 1])) {
                 return s.slice(i);
             }
@@ -394,6 +404,22 @@ exports.compose_content_begins_typeahead = function (query) {
         return [].concat(persons, all_items, groups);
     }
 
+    if (this.options.completions.slash && query[0] === '/') {
+        this.completing = 'slash';
+        this.token = current_token;
+
+        return [
+            "/me",
+            "/ping",
+            "/settings",
+            "/dark",
+            "/day",
+            "/light",
+            "/night",
+        ];
+    }
+
+
     if (this.options.completions.stream && current_token[0] === '#') {
         if (current_token.length === 1) {
             return false;
@@ -421,6 +447,8 @@ exports.content_highlighter = function (item) {
         return typeahead_helper.render_emoji(item);
     } else if (this.completing === 'mention') {
         return typeahead_helper.render_person_or_user_group(item);
+    } else if (this.completing === 'slash') {
+        return item;
     } else if (this.completing === 'stream') {
         return typeahead_helper.render_stream(item);
     } else if (this.completing === 'syntax') {
@@ -458,6 +486,8 @@ exports.content_typeahead_selected = function (item) {
             beginning += '@**' + item.full_name + '** ';
             $(document).trigger('usermention_completed.zulip', {mentioned: item});
         }
+    } else if (this.completing === 'slash') {
+        beginning = item;
     } else if (this.completing === 'stream') {
         beginning = beginning.substring(0, beginning.length - this.token.length - 1);
         if (beginning.endsWith('#*')) {
@@ -497,6 +527,8 @@ exports.compose_content_matcher = function (item) {
         return query_matches_emoji(this.token, item);
     } else if (this.completing === 'mention') {
         return query_matches_person_or_user_group(this.token, item);
+    } else if (this.completing === 'slash') {
+        return query_matches_slash_commmand(this.token, item);
     } else if (this.completing === 'stream') {
         return query_matches_user_group_or_stream(this.token, item);
     } else if (this.completing === 'syntax') {
@@ -509,6 +541,8 @@ exports.compose_matches_sorter = function (matches) {
         return typeahead_helper.sort_emojis(matches, this.token);
     } else if (this.completing === 'mention') {
         return typeahead_helper.sort_people_and_user_groups(this.token, matches);
+    } else if (this.completing === 'slash') {
+        return matches;
     } else if (this.completing === 'stream') {
         return typeahead_helper.sort_streams(matches, this.token);
     } else if (this.completing === 'syntax') {
@@ -520,6 +554,7 @@ exports.initialize_compose_typeahead = function (selector) {
     var completions = {
         mention: true,
         emoji: true,
+        slash: true,
         stream: true,
         syntax: true,
     };
