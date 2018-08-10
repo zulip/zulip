@@ -409,7 +409,7 @@ class SlackImporter(ZulipTestCase):
                          "ts": "1239868294.000006", "channel_name": "general"},
                         {"text": "<http://journals.plos.org/plosone/article>", "user": "U061A1R2R",
                          "ts": "1463868370.000008", "channel_name": "general"},
-                        {"text": "test message 2", "user": "U061A5N1G",
+                        {"text": "added bot", "user": "U061A5N1G", "subtype": "bot_add",
                          "ts": "1433868549.000010", "channel_name": "general"},
                         # This message will be ignored since it has no user and file is None.
                         # See #9217 for the situation; likely file uploads on archived channels
@@ -450,6 +450,7 @@ class SlackImporter(ZulipTestCase):
         self.assertEqual(zerver_message[2]['has_link'], True)
 
         self.assertEqual(zerver_message[3]['subject'], 'imported from slack')
+        self.assertEqual(zerver_message[3]['content'], '/me added bot')
         self.assertEqual(zerver_message[4]['recipient'], added_recipient['general'])
         self.assertEqual(zerver_message[2]['subject'], 'imported from slack')
         self.assertEqual(zerver_message[1]['recipient'], added_recipient['random'])

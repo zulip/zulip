@@ -560,7 +560,9 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
             # Ignore messages without user names
             # These are Sometimes produced by slack
             continue
-        if message.get('subtype') in [
+
+        subtype = message.get('subtype', False)
+        if subtype in [
                 # Zulip doesn't have a pinned_item concept
                 "pinned_item",
                 "unpinned_item",
@@ -591,19 +593,24 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                                                 zerver_realmemoji)
 
         # Process different subtypes of slack messages
-        if 'subtype' in message.keys():
-            subtype = message['subtype']
-            # Subtypes which have only the action in the message should
-            # be rendered with '/me' in the content initially
-            # For example "sh_room_created" has the message 'started a call'
-            # which should be displayed as '/me started a call'
-            if subtype in ["bot_add", "sh_room_created", "me_message"]:
-                content = ('/me %s' % (content))
 
+        # Subtypes which have only the action in the message should
+        # be rendered with '/me' in the content initially
+        # For example "sh_room_created" has the message 'started a call'
+        # which should be displayed as '/me started a call'
+        if subtype in ["bot_add", "sh_room_created", "me_message"]:
+            content = ('/me %s' % (content))
+
+        files = message.get('files', [])
+        if subtype == 'file_share':
+            # In Slack messages, uploads can either have the subtype as 'file_share' or
+            # have the upload information in 'files' keyword
+            files = [message['file']]
+
+        for fileinfo in files:
+            url = fileinfo['url_private']
             # For attachments with slack download link
-            elif subtype == "file_share" and 'files.slack.com' in message['file']['url_private']:
-                fileinfo = message['file']
-
+            if 'files.slack.com' in url:
                 has_attachment = has_link = True
                 has_image = True if 'image' in fileinfo['mimetype'] else False
 
@@ -620,11 +627,9 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 build_attachment(realm_id, message_id, attachment_id, added_users[user],
                                  fileinfo, s3_path, zerver_attachment)
                 attachment_id_count += 1
-
             # For attachments with link not from slack
             # Example: Google drive integration
-            elif subtype == "file_share":
-                fileinfo = message['file']
+            else:
                 has_link = True
                 if 'title' in fileinfo:
                     file_name = fileinfo['title']
