@@ -762,6 +762,20 @@ def get_server_settings(client):
 
     validate_against_openapi_schema(result, '/server_settings', 'get', '200')
 
+def update_notification_settings(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Enable push notifications even when online
+    request = {
+        'enable_offline_push_notifications': True,
+        'enable_online_push_notifications': True,
+    }
+    result = client.update_notification_settings(request)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/settings/notifications', 'patch', '200')
+
 def upload_file(client):
     # type: (Client) -> None
     path_to_file = os.path.join(ZULIP_DIR, 'zerver', 'tests', 'images', 'img.jpg')
@@ -896,17 +910,6 @@ def update_user_group_members(client, group_id):
 
     assert result['result'] == 'success'
 
-def update_notification_settings(client):
-    # type: (Client) -> None
-    request = {
-        'enable_stream_push_notifications': True,
-        'enable_offline_push_notifications': False
-    }
-
-    result = client.update_notification_settings(request)
-
-    assert result['result'] == 'success'
-
 def test_invalid_api_key(client_with_invalid_key):
     # type: (Client) -> None
     result = client_with_invalid_key.list_subscriptions()
@@ -951,7 +954,6 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users/me/subscriptions/properties:post': update_subscription_settings,
-    '/settings/notifications:patch': update_notification_settings,
     '/users:get': get_members,
     '/realm/emoji:get': get_realm_emoji,
     '/realm/emoji/<emoji_name>:post': upload_custom_emoji,
@@ -961,6 +963,7 @@ TEST_FUNCTIONS = {
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/server_settings:get': get_server_settings,
+    '/settings/notifications:patch': update_notification_settings,
     '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
@@ -1050,6 +1053,7 @@ def test_users(client):
     create_user(client)
     get_members(client)
     get_profile(client)
+    update_notification_settings(client)
     upload_file(client)
     set_typing_status(client)
     get_user_presence(client)

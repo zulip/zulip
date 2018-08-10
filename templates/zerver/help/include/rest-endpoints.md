@@ -32,6 +32,7 @@
 * [Set "typing" status](/api/typing)
 * [Get user presence](/api/get-presence)
 * [Get all user groups](/api/get-user-groups)
+* [Update notification settings](/api/update-notification-settings)
 
 #### Server & organizations
 
