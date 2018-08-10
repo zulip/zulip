@@ -26,9 +26,22 @@ subprocess.check_call(["./manage.py", "send_stats", "incr", "events.server_resta
 logging.info("Filling memcached caches")
 subprocess.check_call(["./manage.py", "fill_memcached_caches"])
 
-core_server_services = ["zulip-django", "zulip-tornado", "zulip-senders:*"]
+core_server_services = ["zulip-django", "zulip-senders:*"]
 if os.path.exists("/etc/supervisor/conf.d/thumbor.conf"):
     core_server_services.append("zulip-thumbor")
+
+current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
+last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
+if os.readlink(current_symlink) != deploy_path:
+    subprocess.check_call(["ln", '-nsf', os.readlink(current_symlink), last_symlink])
+    subprocess.check_call(["ln", '-nsf', deploy_path, current_symlink])
+
+# We restart just the zulip-tornado service early, in order to
+# minimize downtime of the tornado service caused by too many Python
+# processes restarting at the same time resulting in it receiving
+# insufficient priority.  This is important, because Tornado is the
+# main source of user-visible downtime when we restart a Zulip server.
+subprocess.check_call(["supervisorctl", "restart", "zulip-tornado"])
 
 # Restart the uWSGI and related processes via supervisorctl.
 logging.info("Stopping workers")
@@ -36,11 +49,6 @@ subprocess.check_call(["supervisorctl", "stop", "zulip-workers:*"])
 logging.info("Stopping server core")
 subprocess.check_call(["supervisorctl", "stop"] + core_server_services)
 
-current_symlink = os.path.join(DEPLOYMENTS_DIR, "current")
-last_symlink = os.path.join(DEPLOYMENTS_DIR, "last")
-if os.readlink(current_symlink) != deploy_path:
-    subprocess.check_call(["ln", '-nsf', os.readlink(current_symlink), last_symlink])
-    subprocess.check_call(["ln", '-nsf', deploy_path, current_symlink])
 logging.info("Starting server core")
 subprocess.check_call(["supervisorctl", "start"] + core_server_services)
 logging.info("Starting workers")
