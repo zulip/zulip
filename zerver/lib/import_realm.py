@@ -505,8 +505,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
 
     re_map_foreign_keys_internal(records, 'records', 'realm_id', related_table="realm",
                                  id_field=True)
-    re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
-                                 related_table="user_profile", id_field=True)
+    if not processing_emojis:
+        re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
+                                     related_table="user_profile", id_field=True)
     for record in records:
         key = Key(bucket)
 
@@ -534,15 +535,19 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
             key.key = s3_file_name
             path_maps['attachment_path'][record['s3_path']] = s3_file_name
 
-        user_profile_id = int(record['user_profile_id'])
-        # Support email gateway bot and other cross-realm messages
-        if user_profile_id in id_maps["user_profile"]:
-            logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
-            user_profile_id = id_maps["user_profile"][user_profile_id]
-        user_profile = get_user_profile_by_id(user_profile_id)
-        key.set_metadata("user_profile_id", str(user_profile.id))
-        key.set_metadata("realm_id", str(user_profile.realm_id))
+        # Exported custom emoji from tools like Slack don't have
+        # the data for what user uploaded them in `user_profile_id`.
+        if not processing_emojis:
+            user_profile_id = int(record['user_profile_id'])
+            # Support email gateway bot and other cross-realm messages
+            if user_profile_id in id_maps["user_profile"]:
+                logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
+                user_profile_id = id_maps["user_profile"][user_profile_id]
+            user_profile = get_user_profile_by_id(user_profile_id)
+            key.set_metadata("user_profile_id", str(user_profile.id))
+
         key.set_metadata("orig_last_modified", record['last_modified'])
+        key.set_metadata("realm_id", str(record['realm_id']))
 
         headers = {'Content-Type': record['content_type']}
 
