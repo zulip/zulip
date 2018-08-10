@@ -50,8 +50,6 @@ class TornadoWebTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def tearDown(self) -> None:
         super().tearDown()
         self.session_cookie = None  # type: Optional[Dict[str, str]]
-        # Important: we need to clear event queues to avoid leaking data to future tests.
-        event_queue.clear_client_event_queues_for_testing()
 
     @override_settings(DEBUG=False)
     def get_app(self) -> Application:
@@ -143,7 +141,6 @@ class EventsTestCase(TornadoWebTestCase):
         self.assertEqual(data['result'], 'success')
 
 class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
-
     def setUp(self) -> None:
         settings.RUNNING_INSIDE_TORNADO = True
         super().setUp()
@@ -151,8 +148,6 @@ class WebSocketBaseTestCase(AsyncHTTPTestCase, ZulipTestCase):
     def tearDown(self) -> None:
         super().tearDown()
         settings.RUNNING_INSIDE_TORNADO = False
-        # Important: we need to clear event queues to avoid leaking data to future tests.
-        event_queue.clear_client_event_queues_for_testing()
 
     @gen.coroutine
     def ws_connect(self, path: str, cookie_header: str,

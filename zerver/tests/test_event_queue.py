@@ -10,7 +10,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import POSTRequestMock
 from zerver.models import Recipient, Stream, Subscription, UserProfile, get_stream
 from zerver.tornado.event_queue import maybe_enqueue_notifications, \
-    allocate_client_descriptor, process_message_event, clear_client_event_queues_for_testing, \
+    allocate_client_descriptor, process_message_event, \
     get_client_descriptor, missedmessage_hook
 from zerver.tornado.views import get_events
 
@@ -138,8 +138,6 @@ class MissedMessageNotificationsTest(ZulipTestCase):
         stream_name = 'Denmark'
 
         self.unsubscribe(hamlet, stream_name)
-
-        clear_client_event_queues_for_testing()
 
         queue_data = dict(
             all_public_streams=True,

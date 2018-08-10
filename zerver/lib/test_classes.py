@@ -51,10 +51,9 @@ from zerver.models import (
     Subscription,
     UserProfile,
 )
-
 from zilencer.models import get_remote_server_by_uuid
 from zerver.decorator import do_two_factor_login
-
+from zerver.tornado.event_queue import clear_client_event_queues_for_testing
 
 import base64
 import mock
@@ -90,6 +89,11 @@ class UploadSerializeMixin(SerializeMixin):
 class ZulipTestCase(TestCase):
     # Ensure that the test system just shows us diffs
     maxDiff = None  # type: Optional[int]
+
+    def tearDown(self) -> None:
+        super().tearDown()
+        # Important: we need to clear event queues to avoid leaking data to future tests.
+        clear_client_event_queues_for_testing()
 
     '''
     WRAPPER_COMMENT:
