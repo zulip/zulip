@@ -132,7 +132,8 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
         event_time=event_time)
     RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.REALM_CARD_ADDED, event_time=event_time)
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+        event_time=event_time)
     Customer.objects.create(
         realm=realm,
         stripe_customer_id=stripe_customer.id,
