@@ -614,7 +614,7 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 has_attachment = has_link = True
                 has_image = True if 'image' in fileinfo['mimetype'] else False
 
-                file_user = [iterate_user for iterate_user in users if message['user'] == user]
+                file_user = [iterate_user for iterate_user in users if message['user'] == iterate_user['id']]
                 file_user_email = get_user_email(file_user[0], domain_name)
 
                 s3_path, content = get_attachment_path_and_content(fileinfo, realm_id)
