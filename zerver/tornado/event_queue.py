@@ -699,7 +699,7 @@ def maybe_enqueue_notifications(user_profile_id: int, message_id: int, private_m
             raise AssertionError("Unknown notification trigger!")
         notice['stream_name'] = stream_name
         if not already_notified.get("push_notified"):
-            queue_json_publish("missedmessage_mobile_notifications", notice, lambda notice: None)
+            queue_json_publish("missedmessage_mobile_notifications", notice)
             notified['push_notified'] = True
 
     # Send missed_message emails if a private message or a
