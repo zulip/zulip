@@ -20,7 +20,7 @@ from zerver.lib.export import DATE_FIELDS, realm_tables, \
 from zerver.lib.message import save_message_rendered_content
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
-    S3UploadBackend, LocalUploadBackend
+    S3UploadBackend, LocalUploadBackend, guess_type
 from zerver.lib.utils import generate_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
@@ -549,7 +549,9 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         key.set_metadata("orig_last_modified", record['last_modified'])
         key.set_metadata("realm_id", str(record['realm_id']))
 
-        headers = {'Content-Type': record['content_type']}
+        # Zulip exports will always have a content-type, but third-party exports might not.
+        content_type = record.get("content_type", guess_type(record['s3_path'])[0])
+        headers = {'Content-Type': content_type}
 
         key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
 
