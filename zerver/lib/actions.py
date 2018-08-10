@@ -3543,10 +3543,12 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
     user_profile.pointer = pointer
     user_profile.save(update_fields=["pointer"])
 
-    if update_flags:
-        # Until we handle the new read counts in the Android app
-        # natively, this is a shim that will mark as read any messages
-        # up until the pointer move
+    if update_flags:  # nocoverage
+        # This block of code is compatibility code for the
+        # legacy/original Zulip Android app natively.  It's a shim
+        # that will mark as read any messages up until the pointer
+        # move; we expect to remove this feature entirely before long,
+        # when we drop support for the old Android app entirely.
         UserMessage.objects.filter(user_profile=user_profile,
                                    message__id__gt=prev_pointer,
                                    message__id__lte=pointer).extra(
