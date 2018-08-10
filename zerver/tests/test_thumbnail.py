@@ -2,7 +2,12 @@
 from django.conf import settings
 
 from zerver.lib.test_classes import ZulipTestCase, UploadSerializeMixin
-from zerver.lib.test_helpers import use_s3_backend, override_settings
+from zerver.lib.test_helpers import (
+    use_s3_backend,
+    override_settings,
+    get_test_image_file
+)
+from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
 from io import StringIO
@@ -24,6 +29,7 @@ class ThumbnailTest(ZulipTestCase):
 
         conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
         conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        conn.create_bucket(settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -49,6 +55,24 @@ class ThumbnailTest(ZulipTestCase):
         result = self.client_get("/thumbnail?url=%s&size=thumbnail" % (quoted_uri))
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri, '0x100')
+        self.assertIn(expected_part_url, result.url)
+
+        # Test custom emoji urls in Zulip messages.
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+        custom_emoji_url = upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+        emoji_url_base = '/user_avatars/'
+        self.assertEqual(emoji_url_base, custom_emoji_url[:len(emoji_url_base)])
+
+        quoted_emoji_url = urllib.parse.quote(custom_emoji_url[1:], safe='')
+
+        # Test full size custom emoji image (for emoji link in messages case).
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_emoji_url))
+        self.assertEqual(result.status_code, 302, result)
+        expected_part_url = get_file_path_urlpart(custom_emoji_url)
         self.assertIn(expected_part_url, result.url)
 
         # Tests the /api/v1/thumbnail api endpoint with standard API auth
@@ -175,9 +199,27 @@ class ThumbnailTest(ZulipTestCase):
         self.assertEqual(result.status_code, 302, result)
         expected_part_url = get_file_path_urlpart(uri)
         self.assertIn(expected_part_url, result.url)
-        self.logout()
+
+        # Test custom emoji urls in Zulip messages.
+        user_profile = self.example_user("hamlet")
+        image_file = get_test_image_file("img.png")
+        file_name = "emoji.png"
+
+        upload_emoji_image(image_file, file_name, user_profile)
+        custom_emoji_url = upload_backend.get_emoji_url(file_name, user_profile.realm_id)
+        emoji_url_base = '/user_avatars/'
+        self.assertEqual(emoji_url_base, custom_emoji_url[:len(emoji_url_base)])
+
+        quoted_emoji_url = urllib.parse.quote(custom_emoji_url[1:], safe='')
+
+        # Test full size custom emoji image (for emoji link in messages case).
+        result = self.client_get("/thumbnail?url=%s&size=full" % (quoted_emoji_url))
+        self.assertEqual(result.status_code, 302, result)
+        expected_part_url = get_file_path_urlpart(custom_emoji_url)
+        self.assertIn(expected_part_url, result.url)
 
         # Tests the /api/v1/thumbnail api endpoint with HTTP basic auth.
+        self.logout()
         user_profile = self.example_user("hamlet")
         result = self.api_get(
             self.example_email("hamlet"),
