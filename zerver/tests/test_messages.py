@@ -383,6 +383,19 @@ class InternalPrepTest(ZulipTestCase):
                 recipient_user=recipient_user,
                 content=content)
 
+        # Simulate sending a message to somebody not in the
+        # realm of the sender.
+        recipient_user = self.mit_user('starnine')
+        with mock.patch('logging.exception') as logging_mock:
+            result = internal_prep_private_message(
+                realm=realm,
+                sender=sender,
+                recipient_user=recipient_user,
+                content=content)
+        arg = logging_mock.call_args_list[0][0][0]
+        prefix = "Error queueing internal message by cordelia@zulip.com: You can't send private messages outside of your organization."
+        self.assertTrue(arg.startswith(prefix))
+
     def test_ensure_stream_gets_called(self) -> None:
         realm = get_realm('zulip')
         sender = self.example_user('cordelia')
