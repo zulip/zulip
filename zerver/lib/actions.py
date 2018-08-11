@@ -220,15 +220,14 @@ def activity_change_requires_seat_update(user: UserProfile) -> bool:
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
 
+    # Sort rows by max_message_id so that if a topic
+    # has many different casings, we use the most
+    # recent row.
+    rows = sorted(rows, key=lambda tup: tup[1])
+
     for (topic_name, max_message_id) in rows:
         canonical_name = topic_name.lower()
-
-        if canonical_name not in canonical_topic_names:
-            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
-            continue
-
-        if max_message_id > canonical_topic_names[canonical_name][0]:
-            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
+        canonical_topic_names[canonical_name] = (max_message_id, topic_name)
 
     history = []
     for canonical_topic, (max_message_id, topic_name) in canonical_topic_names.items():
