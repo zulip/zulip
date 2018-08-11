@@ -52,6 +52,7 @@ def am_master(cursor):
     cursor.execute("SELECT pg_is_in_recovery()")
     return not cursor.fetchall()[0][0]
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger("process_fts_updates")
 logger.setLevel(logging.DEBUG)

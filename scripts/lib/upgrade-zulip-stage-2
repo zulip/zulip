@@ -9,6 +9,7 @@ import subprocess
 import os
 import sys
 import logging
+import time
 
 os.environ["PYTHONUNBUFFERED"] = "y"
 
@@ -20,6 +21,7 @@ os.environ["LANGUAGE"] = "en_US.UTF-8"
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, su_to_zulip
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-stage-2: %(message)s",
                     level=logging.INFO)
 

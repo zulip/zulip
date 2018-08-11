@@ -4,6 +4,7 @@ import shutil
 import sys
 import subprocess
 import logging
+import time
 
 TARBALL_ARCHIVE_PATH = "/home/zulip/archives"
 os.environ["PYTHONUNBUFFERED"] = "y"
@@ -12,6 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, \
     su_to_zulip, get_deployment_lock, release_deployment_lock
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip: %(message)s",
                     level=logging.INFO)
 
