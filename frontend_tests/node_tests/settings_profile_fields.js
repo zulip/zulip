@@ -90,8 +90,8 @@ run_test('populate_profile_fields', () => {
                 hint: 'lunch',
                 type: 'choice',
                 choices: [
-                    {order: 0, value: 0, text: 'lunch', add_delete_button: false},
-                    {order: 1, value: 1, text: 'dinner', add_delete_button: true},
+                    {order: 0, value: 0, text: 'lunch'},
+                    {order: 1, value: 1, text: 'dinner'},
                 ],
                 is_choice_field: true,
             },
