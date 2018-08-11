@@ -9,6 +9,7 @@
 * [Delete a message](/api/delete-message)
 * [Construct a narrow](/api/construct-narrow)
 * [Get a message's edit history](/api/get-message-history)
+* [Mark messages as read in bulk](/api/mark-as-read-bulk)
 
 #### Streams
 

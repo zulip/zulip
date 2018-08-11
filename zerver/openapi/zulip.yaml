@@ -209,6 +209,68 @@ paths:
                         "msg": "Invalid stream name 'nonexistent'",
                         "result": "error"
                     }
+  /mark_all_as_read:
+    post:
+      description: Flag all the user's unread messages as read. This is often
+        called "bankruptcy" in Zulip.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+  /mark_stream_as_read:
+    post:
+      description: Flag all the unread messages in a specific stream as read.
+      parameters:
+      - name: stream_id
+        in: query
+        description: The ID of the stream whose messages should be flagged as
+          read.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+  /mark_topic_as_read:
+    post:
+      description: Flag all the unread messages in a specific topic as read.
+      parameters:
+      - name: stream_id
+        in: query
+        description: The ID of the stream that contains the topic.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      - name: topic_name
+        in: query
+        description: The name of the topic whose messages should be flagged as
+          read.
+        schema:
+          type: string
+        example: new coffee machine
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
   /messages:
     get:
       description: Fetch messages that match a specific narrow.
