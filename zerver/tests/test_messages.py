@@ -19,6 +19,7 @@ from zerver.lib.actions import (
     get_active_presence_idle_user_ids,
     get_user_info_for_message_updates,
     internal_prep_private_message,
+    internal_prep_stream_message,
     internal_send_private_message,
     check_message,
     check_send_stream_message,
@@ -381,6 +382,24 @@ class InternalPrepTest(ZulipTestCase):
                 sender=sender,
                 recipient_user=recipient_user,
                 content=content)
+
+    def test_ensure_stream_gets_called(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        stream_name = 'test_stream'
+        topic = 'whatever'
+        content = 'hello'
+
+        internal_prep_stream_message(
+            realm=realm,
+            sender=sender,
+            stream_name=stream_name,
+            topic=topic,
+            content=content)
+
+        # This would throw an error if the stream
+        # wasn't automatically created.
+        Stream.objects.get(name=stream_name, realm_id=realm.id)
 
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self) -> None:
