@@ -603,6 +603,10 @@ def test_queues(client):
     queue_id = register_queue(client)
     deregister_queue(client, queue_id)
 
+def test_server_organizations(client):
+    # type: (Client) -> None
+    pass
+
 def test_errors(client):
     # type: (Client) -> None
     test_missing_request_argument(client)
@@ -616,4 +620,5 @@ def test_the_api(client, nonadmin_client):
     test_streams(client, nonadmin_client)
     test_messages(client, nonadmin_client)
     test_queues(client)
+    test_server_organizations(client)
     test_errors(client)
