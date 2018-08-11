@@ -437,6 +437,11 @@ class ExtractedRecipientsTest(TestCase):
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
 
+        # Invalid data
+        s = ujson.dumps(dict(color='red'))
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_recipients(s)
+
 class PersonalMessagesTest(ZulipTestCase):
 
     def test_is_private_flag_not_leaked(self) -> None:
