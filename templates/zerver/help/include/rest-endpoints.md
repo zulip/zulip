@@ -28,6 +28,10 @@
 
 * [Create organization filters](/api/create-org-filters)
 
+#### Server & organizations
+
+* [Get server settings](/api/server-settings)
+
 #### Real-time events
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
