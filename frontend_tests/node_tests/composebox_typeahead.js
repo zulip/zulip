@@ -152,11 +152,24 @@ var lear = {
     full_name: "King Lear",
 };
 
+var twin1 = {
+    full_name: 'Mark Twin',
+    user_id: 105,
+    email: 'twin1@zulip.com',
+};
+
+var twin2 = {
+    full_name: 'Mark Twin',
+    user_id: 106,
+    email: 'twin2@zulip.com',
+};
 
 global.people.add_in_realm(hamlet);
 global.people.add_in_realm(othello);
 global.people.add_in_realm(cordelia);
 global.people.add_in_realm(lear);
+global.people.add_in_realm(twin1);
+global.people.add_in_realm(twin2);
 global.people.add(deactivated_user);
 
 var hamletcharacters = {
@@ -249,6 +262,13 @@ run_test('content_typeahead_selected', () => {
 
     // mention
     fake_this.completing = 'mention';
+
+    fake_this.query = '@**Mark Tw';
+    fake_this.token = 'Mark Tw';
+    actual_value = ct.content_typeahead_selected.call(fake_this, twin1);
+    expected_value = '@**Mark Twin|105** ';
+    assert.equal(actual_value, expected_value);
+
     var document_stub_trigger1_called = false;
     $('document-stub').trigger = function (event, params) {
         assert.equal(event, 'usermention_completed.zulip');
@@ -471,7 +491,8 @@ run_test('initialize', () => {
 
         // This should match the users added at the beginning of this test file.
         var actual_value = options.source();
-        var expected_value = [hamlet, othello, cordelia, lear, hamletcharacters, backend];
+        var expected_value = [hamlet, othello, cordelia, lear,
+                              twin1, twin2, hamletcharacters, backend];
         assert.deepEqual(actual_value, expected_value);
 
         // Even though the items passed to .highlighter() are the full
@@ -1241,6 +1262,7 @@ run_test('typeahead_results', () => {
     assert_mentions_matches('King H', [hamlet]);
     assert_mentions_matches('King L', [lear]);
     assert_mentions_matches('delia lear', []);
+    assert_mentions_matches('Mark Tw', [twin1, twin2]);
     // Autocomplete user group mentions by group name.
     assert_mentions_matches('hamletchar', [hamletcharacters]);
     // Autocomplete user group mentions by group descriptions.
