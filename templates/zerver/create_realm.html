@@ -30,7 +30,7 @@ $(function () {
                     <button type="submit" class="new-organization-button register-button">{{ _("Create organization") }}</button>
                 </div>
             </form>
-            <div class="alert alert-error"></div>
+            <div class="alert alert-error email-frontend-error"></div>
             {% if form.email.errors %}
                 {% for error in form.email.errors %}
                 <div class="alert alert-error">{{ error }}</div>
