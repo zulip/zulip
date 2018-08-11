@@ -702,6 +702,10 @@ class StreamAdminTest(ZulipTestCase):
         realm = stream.realm
         stream_id = stream.id
 
+        # Simulate that a stream by the same name has already been
+        # deactivated, just to exercise our renaming logic:
+        ensure_stream(realm, "!DEACTIVATED:" + active_name)
+
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             result = self.client_delete('/json/streams/' + str(stream_id))
@@ -722,7 +726,7 @@ class StreamAdminTest(ZulipTestCase):
 
         # A deleted stream's name is changed, is deactivated, is invite-only,
         # and has no subscribers.
-        deactivated_stream_name = "!DEACTIVATED:" + active_name
+        deactivated_stream_name = "!!DEACTIVATED:" + active_name
         deactivated_stream = get_stream(deactivated_stream_name, realm)
         self.assertTrue(deactivated_stream.deactivated)
         self.assertTrue(deactivated_stream.invite_only)
