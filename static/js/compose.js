@@ -100,14 +100,17 @@ exports.clear_preview_area = function () {
     $("#markdown_preview").show();
 };
 
+function update_stream_button(title) {
+    $("#left_bar_compose_stream_button_big").text(title);
+    $("#left_bar_compose_stream_button_big").prop("title", title);
+}
+
 exports.update_stream_button_for_private = function () {
-    $("#left_bar_compose_stream_button_big").html(i18n.t("New stream message"));
-    $("#left_bar_compose_stream_button_big").prop("title", i18n.t("New stream message"));
+    update_stream_button(i18n.t("New stream message"));
 };
 
 exports.update_stream_button_for_stream = function () {
-    $("#left_bar_compose_stream_button_big").html(i18n.t("New topic"));
-    $("#left_bar_compose_stream_button_big").prop("title", i18n.t("New topic"));
+    update_stream_button(i18n.t("New topic"));
 };
 
 function update_fade() {
