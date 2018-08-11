@@ -375,6 +375,13 @@ class InternalPrepTest(ZulipTestCase):
         message = result['message']
         self.assertIn('message was too long', message.content)
 
+        with self.assertRaises(RuntimeError):
+            internal_prep_private_message(
+                realm=None,  # should cause error
+                sender=sender,
+                recipient_user=recipient_user,
+                content=content)
+
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self) -> None:
 
