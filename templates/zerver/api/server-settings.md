@@ -1,0 +1,80 @@
+# Get global settings
+
+Fetch global settings for a Zulip server.
+
+`GET {{ api_url }}/v1/server_settings`
+
+**Note:** this endpoint does not require any authentication at all, and you can use it to check:
+
+* If this is a Zulip server.
+* What you need to know to display a logic prompt for the server (e.g. what
+  authentication methods are available).
+
+## Usage examples
+
+<div class="code-section" markdown="1">
+<ul class="nav">
+<li data-language="python">Python</li>
+<li data-language="curl">curl</li>
+</ul>
+<div class="blocks">
+
+<div data-language="curl" markdown="1">
+
+```
+curl {{ api_url }}/v1/server_settings \
+    -u BOT_EMAIL_ADDRESS:BOT_API_KEY
+```
+
+</div>
+
+<div data-language="python" markdown="1">
+
+{generate_code_example(python)|/server_settings:get|example}
+
+</div>
+
+</div>
+
+</div>
+
+## Arguments
+
+{generate_api_arguments_table|zulip.yaml|/server_settings:get}
+
+## Response
+
+#### Return values
+
+* `authentication_methods`: object in which each key-value pair in the object
+  indicates whether the authentication method is enabled on this server.
+* `zulip_version`: the version of Zulip running in the server.
+* `push_notifications_enabled`: whether mobile/push notifications are enabled.
+* `email_auth_enabled`: setting for allowing users authenticate with an
+  email-password combination.
+* `require_email_format_usernames`: whether usernames should have an email
+  address format. This is important if your server has
+  [LDAP authentication](https://zulip.readthedocs.io/en/latest/production/authentication-methods.html#plug-and-play-sso-google-github-ldap)
+  enabled with a username and password combination.
+* `realm_uri`: the organization's URI.
+* `realm_name`: the organization's name.
+* `realm_icon`: the URI of the organization's icon (usually a logo).
+* `realm_description`: HTML description of the organization, as configured by
+  the [organization profile](/help/create-your-organization-profile).
+
+
+Please note that not all of these attributes are guaranteed to appear in a
+response, for two reasons:
+
+* This endpoint has evolved over time, so responses from older Zulip servers
+  might be missing some keys (in which case a client should assume the
+  appropriate default).
+* If a `/server_settings` request is made to the root domain of a
+  multi-subdomain server, like the root domain of zulipchat.com, the settings
+  that are realm-specific are not known and thus not provided.
+
+#### Example response
+
+A typical successful JSON response for a single-organization server may look like:
+
+{generate_code_example|/server_settings:get|fixture(200)}
