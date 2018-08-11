@@ -578,9 +578,6 @@ exports.validate = function () {
 };
 
 exports.handle_keydown = function (event, textarea) {
-    // Set the rtl class if the text has an rtl direction, remove it otherwise
-    rtl.set_rtl_class_for_textarea(textarea);
-
     var code = event.keyCode || event.which;
     var isBold = code === 66;
     var isItalic = code === 73 && !event.shiftKey;
@@ -640,6 +637,11 @@ exports.handle_keydown = function (event, textarea) {
     }
 };
 
+exports.handle_keyup = function (event, textarea) {
+    // Set the rtl class if the text has an rtl direction, remove it otherwise
+    rtl.set_rtl_class_for_textarea(textarea);
+};
+
 exports.needs_subscribe_warning = function (email) {
     // This returns true if all of these conditions are met:
     //  * the user is valid
@@ -687,8 +689,10 @@ exports.initialize = function () {
     $('#stream,#subject,#private_message_recipient').on('keyup', update_fade);
     $('#stream,#subject,#private_message_recipient').on('change', update_fade);
     $('#compose-textarea').on('keydown', function (event) {
-        var textarea = $("#compose-textarea").expectOne();
-        exports.handle_keydown(event, textarea);
+        exports.handle_keydown(event, $("#compose-textarea").expectOne());
+    });
+    $('#compose-textarea').on('keyup', function (event) {
+        exports.handle_keyup(event, $("#compose-textarea").expectOne());
     });
 
     $("#compose form").on("submit", function (e) {
