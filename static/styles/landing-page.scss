@@ -3105,7 +3105,7 @@ nav ul li.active::after {
             }
         }
         .box {
-            width: 100px;
+            width: 120px;
             height: 70px;
             background: #efefef;
             transition: all .2s ease;
@@ -3164,7 +3164,8 @@ nav ul li.active::after {
         box-shadow: 0px 3px 10px rgba(0, 0, 0, 0.3);
     }
 
-    .stripe-button-el:active {
+    .stripe-button-el:active,
+    .stripe-button-el:not(:disabled):active {
         background: rgb(25, 139, 118);
         span {
             background: 0;
