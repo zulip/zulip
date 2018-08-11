@@ -18,6 +18,7 @@ from zerver.lib.actions import (
     do_send_messages,
     get_active_presence_idle_user_ids,
     get_user_info_for_message_updates,
+    internal_prep_private_message,
     internal_send_private_message,
     check_message,
     check_send_stream_message,
@@ -358,6 +359,21 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
+
+class InternalPrepTest(ZulipTestCase):
+    def test_error_handling(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        recipient_user = self.example_user('hamlet')
+        content = 'x' * 15000
+
+        result = internal_prep_private_message(
+            realm=realm,
+            sender=sender,
+            recipient_user=recipient_user,
+            content=content)
+        message = result['message']
+        self.assertIn('message was too long', message.content)
 
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self) -> None:
