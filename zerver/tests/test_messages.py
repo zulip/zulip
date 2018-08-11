@@ -30,6 +30,7 @@ from zerver.lib.actions import (
     get_client,
     do_add_alert_words,
     do_change_stream_invite_only,
+    send_rate_limited_pm_notification_to_bot_owner,
 )
 
 from zerver.lib.message import (
@@ -2995,6 +2996,27 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
         self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
 
+    def test_bot_pm_error_handling(self) -> None:
+        # This just test some defensive code.
+        cordelia = self.example_user('cordelia')
+        test_bot = self.create_test_bot(
+            short_name='test',
+            user_profile=cordelia,
+        )
+        content = 'whatever'
+        good_realm = test_bot.realm
+        wrong_realm = get_realm('mit')
+        wrong_sender = cordelia
+
+        send_rate_limited_pm_notification_to_bot_owner(test_bot, wrong_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
+
+        send_rate_limited_pm_notification_to_bot_owner(wrong_sender, good_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
+
+        test_bot.realm.deactivated = True
+        send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
 
 class DeleteMessageTest(ZulipTestCase):
 
