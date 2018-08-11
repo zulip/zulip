@@ -37,6 +37,20 @@ function read_field_data_from_form(selector) {
     return field_data;
 }
 
+function update_choice_delete_btn(container, display_flag) {
+    var no_of_choice_row = container.find(".choice-row").length;
+
+    // Disable delete button if there only one choice row
+    // Enable choice delete button more one than once choice
+    if (no_of_choice_row === 1) {
+        if (display_flag === true) {
+            container.find(".choice-row .delete-choice").show();
+        } else {
+            container.find(".choice-row .delete-choice").hide();
+        }
+    }
+}
+
 function create_choice_row(container) {
     var context = {};
     var row = templates.render("profile-field-choice", context);
@@ -51,6 +65,7 @@ function clear_form_data() {
     // Clear data from choice field form
     $("#profile_field_choices").html("");
     create_choice_row($("#profile_field_choices"));
+    update_choice_delete_btn($("#profile_field_choices"), false);
     $("#profile_field_choices_row").hide();
 }
 
@@ -81,13 +96,16 @@ function create_profile_field(e) {
 }
 
 function add_choice_row(e) {
+    update_choice_delete_btn($(e.delegateTarget).parent(), true);
     var choices_div = e.delegateTarget;
     create_choice_row(choices_div);
 }
 
 function delete_choice_row(e) {
     var row = $(e.currentTarget).parent();
+    var container = row.parent();
     row.remove();
+    update_choice_delete_btn(container, false);
 }
 
 function get_profile_field_info(id) {
@@ -153,6 +171,7 @@ function open_edit_form(e) {
             );
         });
 
+        update_choice_delete_btn(choice_list, false);
         Sortable.create(choice_list[0], {
             onUpdate: function () {},
         });
@@ -255,6 +274,7 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
 
 function set_up_choices_field() {
     create_choice_row('#profile_field_choices');
+    update_choice_delete_btn($("#profile_field_choices"), false);
 
     var choice_list = $("#profile_field_choices")[0];
     Sortable.create(choice_list, {
