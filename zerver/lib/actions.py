@@ -1847,26 +1847,32 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         return messages[0].id
     return None
 
-def extract_recipients(s: Union[str, Iterable[str]]) -> List[str]:
+def extract_recipients(s: Union[str, Iterable[Union[str, int]]]) -> List[str]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
         data = ujson.loads(s)  # type: ignore # This function has a super weird union argument.
-    except ValueError:
+    except (ValueError, TypeError):
         data = s
 
     if isinstance(data, str):
         data = data.split(',')
 
-    if not isinstance(data, list):
-        raise ValueError("Invalid data type for recipients")
+    if all(isinstance(elem, int) for elem in data):
+        return list(set(data))
 
-    recipients = data
+    recipients = []  # type: List[Any]
+    for recipient in data:
+        recipient = recipient.strip()
+        if recipient.isdigit():
+            recipients.append(int(recipient))
+        elif recipient:
+            # Strip recipients if they are not an integer ID
+            recipients.append(recipient)
 
-    # Strip recipients, and then remove any duplicates and any that
-    # are the empty string after being stripped.
-    recipients = [recipient.strip() for recipient in recipients]
-    return list(set(recipient for recipient in recipients if recipient))
+    # Remove any duplicates and any that are the empty string
+    # after being stripped.
+    return list(set(recipients))
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
                               topic: str, body: str) -> int:
@@ -1885,7 +1891,7 @@ def check_send_private_message(sender: UserProfile, client: Client,
 # check_send_message:
 # Returns the id of the sent message.  Has same argspec as check_message.
 def check_send_message(sender: UserProfile, client: Client, message_type_name: str,
-                       message_to: Sequence[str], topic_name: Optional[str],
+                       message_to: Sequence[Union[int, str]], topic_name: Optional[str],
                        message_content: str, realm: Optional[Realm]=None,
                        forged: bool=False, forged_timestamp: Optional[float]=None,
                        forwarder_user_profile: Optional[UserProfile]=None,

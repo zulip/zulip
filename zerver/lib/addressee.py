@@ -1,5 +1,5 @@
 
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, List, Optional, Sequence, Union, Any
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
@@ -9,9 +9,10 @@ from zerver.models import (
     Realm,
     UserProfile,
     get_user_including_cross_realm,
+    get_user_profile_by_id_in_realm,
 )
 
-def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
+def user_profiles_from_unvalidated_emails(emails: Iterable[Any], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
@@ -21,9 +22,26 @@ def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -
         user_profiles.append(user_profile)
     return user_profiles
 
-def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
+def user_profiles_from_ids(ids: Iterable[Any], realm: Realm) -> List[UserProfile]:
+    user_profiles = []
+    for user_id in ids:
+        try:
+            user_profile = get_user_profile_by_id_in_realm(user_id, realm)
+        except UserProfile.DoesNotExist:
+            raise ValidationError("Invalid User ID {}".format(user_id))
+        user_profiles.append(user_profile)
+
+    return user_profiles
+
+def get_user_profiles(emails_or_ids: Iterable[Union[int, str]], realm: Realm) -> List[UserProfile]:
     try:
-        return user_profiles_from_unvalidated_emails(emails, realm)
+        if all(isinstance(email, str) for email in emails_or_ids):
+            user_profiles = user_profiles_from_unvalidated_emails(emails_or_ids, realm)
+        elif all(isinstance(user_id, int) for user_id in emails_or_ids):
+            user_profiles = user_profiles_from_ids(emails_or_ids, realm)
+        else:
+            raise JsonableError(_('Recipient list must contain either emails or IDs, but not both'))
+        return user_profiles
     except ValidationError as e:
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
@@ -73,7 +91,7 @@ class Addressee:
     @staticmethod
     def legacy_build(sender: UserProfile,
                      message_type_name: str,
-                     message_to: Sequence[str],
+                     message_to: Sequence[Union[int, str]],
                      topic_name: str,
                      realm: Optional[Realm]=None) -> 'Addressee':
 
@@ -101,13 +119,13 @@ class Addressee:
 
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
-            emails = message_to
-            return Addressee.for_private(emails, realm)
+            emails_or_ids = message_to
+            return Addressee.for_private(emails_or_ids, realm)
         else:
             raise JsonableError(_("Invalid message type"))
 
     @staticmethod
-    def for_stream(stream_name: str, topic: str) -> 'Addressee':
+    def for_stream(stream_name: Any, topic: str) -> 'Addressee':
         if topic is None:
             raise JsonableError(_("Missing topic"))
         topic = topic.strip()
@@ -120,8 +138,8 @@ class Addressee:
         )
 
     @staticmethod
-    def for_private(emails: Sequence[str], realm: Realm) -> 'Addressee':
-        user_profiles = get_user_profiles(emails, realm)
+    def for_private(emails_or_ids: Sequence[Union[int, str]], realm: Realm) -> 'Addressee':
+        user_profiles = get_user_profiles(emails_or_ids, realm)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,

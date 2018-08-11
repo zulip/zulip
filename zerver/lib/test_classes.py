@@ -41,6 +41,7 @@ from zerver.models import (
     get_stream,
     get_client,
     get_user,
+    get_user_profile_by_id_in_realm,
     get_realm,
     Client,
     Message,
@@ -417,6 +418,20 @@ class ZulipTestCase(TestCase):
         sender = get_user(from_email, get_realm(sender_realm))
 
         recipient_list = [to_email]
+        (sending_client, _) = Client.objects.get_or_create(name="test suite")
+
+        return check_send_message(
+            sender, sending_client, 'private', recipient_list, None,
+            content
+        )
+
+    def send_personal_message_by_id(
+            self, from_id: int, to_id: int, content: str="test content",
+            sender_realm: str="zulip"
+    ) -> int:
+        sender = get_user_profile_by_id_in_realm(from_id, get_realm(sender_realm))
+
+        recipient_list = [to_id]
         (sending_client, _) = Client.objects.get_or_create(name="test suite")
 
         return check_send_message(
