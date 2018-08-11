@@ -20,7 +20,7 @@ from zerver.lib.send_email import send_email, FromAddress
 from zerver.lib.events import do_events_register
 from zerver.lib.actions import do_change_password, do_change_full_name, do_change_is_admin, \
     do_activate_user, do_create_user, do_create_realm, \
-    email_not_system_bot, compute_mit_user_fullname, validate_email_for_realm, \
+    email_not_system_bot, validate_email_for_realm, \
     do_set_user_display_setting, lookup_default_stream_groups, bulk_add_subscriptions
 from zerver.forms import RegistrationForm, HomepageForm, RealmCreationForm, \
     CreateUserForm, FindMyTeamForm
@@ -33,6 +33,7 @@ from zerver.lib.response import json_success
 from zerver.lib.subdomains import get_subdomain, is_root_domain_available
 from zerver.lib.timezone import get_all_timezones
 from zerver.lib.users import get_accounts_for_email
+from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.views.auth import create_preregistration_user, \
     redirect_and_log_into_subdomain, \
     redirect_to_deactivation_notice

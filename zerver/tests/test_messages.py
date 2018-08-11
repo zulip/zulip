@@ -18,6 +18,8 @@ from zerver.lib.actions import (
     do_send_messages,
     get_active_presence_idle_user_ids,
     get_user_info_for_message_updates,
+    internal_prep_private_message,
+    internal_prep_stream_message,
     internal_send_private_message,
     check_message,
     check_send_stream_message,
@@ -28,6 +30,7 @@ from zerver.lib.actions import (
     get_client,
     do_add_alert_words,
     do_change_stream_invite_only,
+    send_rate_limited_pm_notification_to_bot_owner,
 )
 
 from zerver.lib.message import (
@@ -359,6 +362,59 @@ class TestCrossRealmPMs(ZulipTestCase):
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
 
+class InternalPrepTest(ZulipTestCase):
+    def test_error_handling(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        recipient_user = self.example_user('hamlet')
+        content = 'x' * 15000
+
+        result = internal_prep_private_message(
+            realm=realm,
+            sender=sender,
+            recipient_user=recipient_user,
+            content=content)
+        message = result['message']
+        self.assertIn('message was too long', message.content)
+
+        with self.assertRaises(RuntimeError):
+            internal_prep_private_message(
+                realm=None,  # should cause error
+                sender=sender,
+                recipient_user=recipient_user,
+                content=content)
+
+        # Simulate sending a message to somebody not in the
+        # realm of the sender.
+        recipient_user = self.mit_user('starnine')
+        with mock.patch('logging.exception') as logging_mock:
+            result = internal_prep_private_message(
+                realm=realm,
+                sender=sender,
+                recipient_user=recipient_user,
+                content=content)
+        arg = logging_mock.call_args_list[0][0][0]
+        prefix = "Error queueing internal message by cordelia@zulip.com: You can't send private messages outside of your organization."
+        self.assertTrue(arg.startswith(prefix))
+
+    def test_ensure_stream_gets_called(self) -> None:
+        realm = get_realm('zulip')
+        sender = self.example_user('cordelia')
+        stream_name = 'test_stream'
+        topic = 'whatever'
+        content = 'hello'
+
+        internal_prep_stream_message(
+            realm=realm,
+            sender=sender,
+            stream_name=stream_name,
+            topic=topic,
+            content=content)
+
+        # This would throw an error if the stream
+        # wasn't automatically created.
+        Stream.objects.get(name=stream_name, realm_id=realm.id)
+
 class ExtractedRecipientsTest(TestCase):
     def test_extract_recipients(self) -> None:
 
@@ -381,6 +437,11 @@ class ExtractedRecipientsTest(TestCase):
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
         self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+
+        # Invalid data
+        s = ujson.dumps(dict(color='red'))
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_recipients(s)
 
 class PersonalMessagesTest(ZulipTestCase):
 
@@ -2935,6 +2996,27 @@ class CheckMessageTest(ZulipTestCase):
         self.assertEqual(ret['message'].sender.email, 'othello-bot@zulip.com')
         self.assertIn("there are no subscribers to that stream", most_recent_message(parent).content)
 
+    def test_bot_pm_error_handling(self) -> None:
+        # This just test some defensive code.
+        cordelia = self.example_user('cordelia')
+        test_bot = self.create_test_bot(
+            short_name='test',
+            user_profile=cordelia,
+        )
+        content = 'whatever'
+        good_realm = test_bot.realm
+        wrong_realm = get_realm('mit')
+        wrong_sender = cordelia
+
+        send_rate_limited_pm_notification_to_bot_owner(test_bot, wrong_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
+
+        send_rate_limited_pm_notification_to_bot_owner(wrong_sender, good_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
+
+        test_bot.realm.deactivated = True
+        send_rate_limited_pm_notification_to_bot_owner(test_bot, good_realm, content)
+        self.assertEqual(test_bot.last_reminder, None)
 
 class DeleteMessageTest(ZulipTestCase):
 

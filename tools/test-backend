@@ -90,6 +90,7 @@ not_yet_fully_covered = {
     'zerver/lib/timeout.py',
     'zerver/lib/unminify.py',
     'zerver/lib/utils.py',
+    'zerver/lib/zephyr.py',
     # Low priority for coverage
     'zerver/lib/ccache.py',
     'zerver/lib/generate_test_data.py',

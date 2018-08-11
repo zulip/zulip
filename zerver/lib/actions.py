@@ -67,6 +67,7 @@ from zerver.lib.users import (
     user_ids_to_users
 )
 from zerver.lib.user_groups import create_user_group, access_user_group_by_id
+
 from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, \
     RealmDomain, Service, SubMessage, \
     Subscription, Recipient, Message, Attachment, UserMessage, RealmAuditLog, \
@@ -126,16 +127,14 @@ from zerver.lib.exceptions import JsonableError, ErrorCode, BugdownRenderingExce
 from zerver.lib.sessions import delete_user_sessions
 from zerver.lib.upload import attachment_url_re, attachment_url_to_path_id, \
     claim_attachment, delete_message_image, upload_emoji_image
-from zerver.lib.str_utils import NonBinaryStr, force_str
+from zerver.lib.str_utils import NonBinaryStr
 from zerver.tornado.event_queue import request_event_queue, send_event
 from zerver.lib.types import ProfileFieldData
 
 from analytics.models import StreamCount
 
-import DNS
 import ujson
 import time
-import traceback
 import re
 import datetime
 import os
@@ -220,15 +219,14 @@ def activity_change_requires_seat_update(user: UserProfile) -> bool:
 def generate_topic_history_from_db_rows(rows: List[Tuple[str, int]]) -> List[Dict[str, Any]]:
     canonical_topic_names = {}  # type: Dict[str, Tuple[int, str]]
 
+    # Sort rows by max_message_id so that if a topic
+    # has many different casings, we use the most
+    # recent row.
+    rows = sorted(rows, key=lambda tup: tup[1])
+
     for (topic_name, max_message_id) in rows:
         canonical_name = topic_name.lower()
-
-        if canonical_name not in canonical_topic_names:
-            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
-            continue
-
-        if max_message_id > canonical_topic_names[canonical_name][0]:
-            canonical_topic_names[canonical_name] = (max_message_id, topic_name)
+        canonical_topic_names[canonical_name] = (max_message_id, topic_name)
 
     history = []
     for canonical_topic, (max_message_id, topic_name) in canonical_topic_names.items():
@@ -858,26 +856,6 @@ def compute_irc_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
 
 def compute_jabber_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
     return email.split("@")[0] + " (XMPP)"
-
-def compute_mit_user_fullname(email: NonBinaryStr) -> NonBinaryStr:
-    try:
-        # Input is either e.g. username@mit.edu or user|CROSSREALM.INVALID@mit.edu
-        match_user = re.match(r'^([a-zA-Z0-9_.-]+)(\|.+)?@mit\.edu$', email.lower())
-        if match_user and match_user.group(2) is None:
-            answer = DNS.dnslookup(
-                "%s.passwd.ns.athena.mit.edu" % (match_user.group(1),),
-                DNS.Type.TXT)
-            hesiod_name = force_str(answer[0][0]).split(':')[4].split(',')[0].strip()
-            if hesiod_name != "":
-                return hesiod_name
-        elif match_user:
-            return match_user.group(1).lower() + "@" + match_user.group(2).upper()[1:]
-    except DNS.Base.ServerError:
-        pass
-    except Exception:
-        print("Error getting fullname for %s:" % (email,))
-        traceback.print_exc()
-    return email.lower()
 
 @cache_with_key(lambda realm, email, f: user_profile_by_email_cache_key(email),
                 timeout=3600*24*7)
