@@ -11,8 +11,8 @@ from zerver.lib.rate_limiter import (
     remove_ratelimit_rule,
     RateLimitedUser,
 )
+from zerver.lib.zephyr import compute_mit_user_fullname
 
-from zerver.lib.actions import compute_mit_user_fullname
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )

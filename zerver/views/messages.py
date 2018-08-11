@@ -15,7 +15,7 @@ from django.utils.html import escape as escape_html
 from zerver.lib import bugdown
 from zerver.lib.zcommand import process_zcommands
 from zerver.lib.actions import recipient_for_emails, do_update_message_flags, \
-    compute_mit_user_fullname, compute_irc_user_fullname, compute_jabber_user_fullname, \
+    compute_irc_user_fullname, compute_jabber_user_fullname, \
     create_mirror_user_if_needed, check_send_message, do_update_message, \
     extract_recipients, truncate_body, render_incoming_message, do_delete_message, \
     do_mark_all_as_read, do_mark_stream_messages_as_read, \
@@ -36,6 +36,7 @@ from zerver.lib.topic_mutes import exclude_topic_mutes
 from zerver.lib.utils import statsd
 from zerver.lib.validator import \
     check_list, check_int, check_dict, check_string, check_bool
+from zerver.lib.zephyr import compute_mit_user_fullname
 from zerver.models import Message, UserProfile, Stream, Subscription, Client,\
     Realm, RealmDomain, Recipient, UserMessage, bulk_get_recipients, get_personal_recipient, \
     get_stream, email_to_domain, get_realm, get_active_streams, \
