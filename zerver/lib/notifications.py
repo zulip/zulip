@@ -465,6 +465,8 @@ def clear_scheduled_emails(user_id: int, email_type: Optional[int]=None) -> None
 
 def log_digest_event(msg: str) -> None:
     import logging
+    import time
+    logging.Formatter.converter = time.gmtime
     logging.basicConfig(filename=settings.DIGEST_LOG_PATH, level=logging.INFO)
     logging.info(msg)
 

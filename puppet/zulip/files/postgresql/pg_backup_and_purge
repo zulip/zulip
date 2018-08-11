@@ -8,10 +8,12 @@ import sys
 import logging
 import dateutil.parser
 import pytz
+import time
 from datetime import datetime, timedelta
 if False:
     from typing import Dict, List
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s %(levelname)s: %(message)s")
 logger = logging.getLogger(__name__)
 

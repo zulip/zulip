@@ -4,6 +4,7 @@ import configparser
 import sys
 import subprocess
 import logging
+import time
 
 config_file = configparser.RawConfigParser()
 config_file.read("/etc/zulip/zulip.conf")
@@ -24,6 +25,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from scripts.lib.zulip_tools import DEPLOYMENTS_DIR, FAIL, WARNING, ENDC, make_deploy_path, \
     get_deployment_lock, release_deployment_lock, su_to_zulip
 
+logging.Formatter.converter = time.gmtime
 logging.basicConfig(format="%(asctime)s upgrade-zulip-from-git: %(message)s",
                     level=logging.INFO)
 
