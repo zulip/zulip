@@ -39,8 +39,7 @@ Usage: ./manage.py deliver_email
     def handle(self, *args: Any, **options: Any) -> None:
 
         if settings.EMAIL_DELIVERER_DISABLED:
-            while True:
-                time.sleep(10*9)
+            time.sleep(10**9)  # "infinity seconds"
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
