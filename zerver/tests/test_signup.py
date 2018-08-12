@@ -909,8 +909,8 @@ so we didn't send them an invitation. We did send invitations to everyone else!"
 
     def test_invite_using_disposable_email(self) -> None:
         """
-        In a realm with `emails_restricted_to_domains = True`, you can't invite people
-        with a different domain from that of the realm or your e-mail address.
+        In a realm with `disallow_disposable_email_addresses = True`, you can't invite
+        people with a disposable domain.
         """
         zulip_realm = get_realm("zulip")
         zulip_realm.emails_restricted_to_domains = False
