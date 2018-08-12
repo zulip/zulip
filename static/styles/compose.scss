@@ -478,7 +478,14 @@ a#undo_markdown_preview {
 }
 
 @media (max-width: 700px) {
-    #compose_buttons .compose_reply_button {
+    #compose_buttons .compose_stream_button,
+    #compose_buttons .compose_private_button {
+        display: none;
+    }
+}
+
+@media (min-width: 700px) {
+    #compose_buttons .compose_mobile_button {
         display: none;
     }
 }
