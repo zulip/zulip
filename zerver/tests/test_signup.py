@@ -64,6 +64,7 @@ from zerver.lib.test_classes import (
 )
 from zerver.lib.test_runner import slow
 from zerver.lib.sessions import get_session_dict_user
+from zerver.lib.name_restrictions import is_disposable_domain
 from zerver.context_processors import common_context
 
 from collections import defaultdict
@@ -3027,3 +3028,7 @@ class TwoFactorAuthTest(ZulipTestCase):
             # logged in.
             result = self.client_get('/accounts/login/')
             self.assertEqual(result["Location"], "http://zulip.testserver")
+
+class NameRestrictionsTest(ZulipTestCase):
+    def test_whitelisted_disposable_domains(self) -> None:
+        self.assertFalse(is_disposable_domain('OPayQ.com'))
