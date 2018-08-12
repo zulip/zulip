@@ -30,8 +30,10 @@ function read_field_data_from_form(selector) {
     var field_order = 1;
     selector.each(function () {
         var text = $(this).find("input")[0].value;
-        field_data[field_order - 1] = {text: text, order: field_order.toString()};
-        field_order += 1;
+        if (text) {
+            field_data[field_order - 1] = {text: text, order: field_order.toString()};
+            field_order += 1;
+        }
     });
 
     return field_data;
