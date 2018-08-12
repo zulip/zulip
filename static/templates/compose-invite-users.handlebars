@@ -1,6 +1,10 @@
 <div class="compose_invite_user" data-useremail="{{email}}">
+    {{#if can_subscribe_other_users}}
     <p>{{#tr this}}<strong>__name__</strong> is not subscribed to this stream. They will not be notified unless you subscribe them.{{/tr}}</p>
     <div class="compose_invite_user_controls">
         <button class="btn btn-warning compose_invite_link" >{{t "Subscribe" }}</button><button type="button" class="compose_invite_close close">&times;</button>
     </div>
+    {{else}}
+    <p>{{#tr this}}<strong>__name__</strong> is not subscribed to this stream. They will not be notified if you mention them.{{/tr}}</p>
+    {{/if}}
 </div>

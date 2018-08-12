@@ -86,6 +86,7 @@ var me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
+    date_joined: new Date(),
 };
 
 var alice = {

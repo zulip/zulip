@@ -223,6 +223,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
         )
 
         state['can_create_streams'] = user_profile.can_create_streams()
+        state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         state['cross_realm_bots'] = list(get_cross_realm_dicts())
         state['is_admin'] = user_profile.is_realm_admin
         state['is_guest'] = user_profile.is_guest
