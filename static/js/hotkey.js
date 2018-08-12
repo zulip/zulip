@@ -570,6 +570,8 @@ exports.process_hotkey = function (e, hotkey) {
             return true;
         } else if (event_name === "search_with_k") {
             // Do nothing; this allows one to use ctrl+k inside compose.
+        } else if (event_name === "star_message") {
+            // Do nothing; this allows one to use ctrl+s inside compose.
         } else {
             // Let the browser handle the key normally.
             return false;
