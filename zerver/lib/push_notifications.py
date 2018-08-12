@@ -527,6 +527,7 @@ def get_apns_payload(message: Message) -> Dict[str, Any]:
             'title': get_alert_from_message(message),
             'body': content,
         },
+        'sound': 'default',
         'badge': 0,  # TODO: set badge count in a better way
         'custom': {'zulip': zulip_data},
     }

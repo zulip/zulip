@@ -780,6 +780,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'body': message.content,
             },
             'badge': 0,
+            'sound': 'default',
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
@@ -811,6 +812,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'body': message.content,
             },
             'badge': 0,
+            'sound': 'default',
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
@@ -841,6 +843,7 @@ class TestGetAPNsPayload(PushNotificationTest):
                 'body': "***REDACTED***",
             },
             'badge': 0,
+            'sound': 'default',
             'custom': {
                 'zulip': {
                     'message_ids': [message.id],
