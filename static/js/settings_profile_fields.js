@@ -96,8 +96,11 @@ function create_profile_field(e) {
 }
 
 function add_choice_row(e) {
-    update_choice_delete_btn($(e.delegateTarget).parent(), true);
+    if ($(e.target).parent().next().hasClass("choice-row")) {
+        return;
+    }
     var choices_div = e.delegateTarget;
+    update_choice_delete_btn($(choices_div), true);
     create_choice_row(choices_div);
 }
 
@@ -171,6 +174,8 @@ function open_edit_form(e) {
             );
         });
 
+        // Add blank choice at last
+        create_choice_row(choice_list);
         update_choice_delete_btn(choice_list, false);
         Sortable.create(choice_list[0], {
             onUpdate: function () {},
@@ -200,7 +205,7 @@ function open_edit_form(e) {
                                        data, profile_field_status);
     });
 
-    profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.add-choice", add_choice_row);
+    profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
     profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
 }
 
@@ -294,7 +299,7 @@ function set_up_choices_field() {
         }
     });
 
-    $("#profile_field_choices").on("click", "button.add-choice", add_choice_row);
+    $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);
     $("#profile_field_choices").on("click", "button.delete-choice", delete_choice_row);
 }
 
