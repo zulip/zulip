@@ -25,14 +25,16 @@ class SendLoginEmailTest(ZulipTestCase):
         with self.settings(SEND_LOGIN_EMAILS=True):
             self.assertTrue(settings.SEND_LOGIN_EMAILS)
             # we don't use the self.login method since we spoof the user-agent
+            utc = get_timezone('utc')
+            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+
             user = self.example_user('hamlet')
             user.timezone = 'US/Pacific'
+            user.date_joined = mock_time - datetime.timedelta(seconds=61)
             user.save()
             password = initial_password(user.email)
             firefox_windows = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:47.0) Gecko/20100101 Firefox/47.0"
-            utc = get_timezone('utc')
             user_tz = get_timezone(user.timezone)
-            mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
             utc_offset = mock_time.astimezone(user_tz).strftime('%z')
             reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %I:%M%p ') + utc_offset
             with mock.patch('zerver.signals.timezone_now', return_value=mock_time):

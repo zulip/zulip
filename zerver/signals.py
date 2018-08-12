@@ -66,7 +66,7 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
 
     if request:
         # If the user's account was just created, avoid sending an email.
-        if getattr(user, "just_registered", False):
+        if (timezone_now() - user.date_joined).total_seconds() <= 60:
             return
 
         user_agent = request.META.get('HTTP_USER_AGENT', "").lower()
