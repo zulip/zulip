@@ -270,3 +270,9 @@ class TestDigestEmailMessages(ZulipTestCase):
         do_create_user('abc@mit.edu', password='abc', realm=user.realm, full_name='abc', short_name='abc')
         gathered_no_of_user, _ = gather_new_users(user, cutoff)
         self.assertEqual(gathered_no_of_user, 0)
+
+class TestDigestContentInBrowser(ZulipTestCase):
+    def test_get_digest_content_in_browser(self) -> None:
+        self.login(self.example_email('hamlet'))
+        result = self.client_get("/digest/")
+        self.assert_in_success_response(["A lot has happened on Zulip while you've been away!"], result)

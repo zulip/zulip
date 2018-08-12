@@ -1,4 +1,4 @@
-from typing import Any, Callable, Dict, Iterable, List, Set, Tuple
+from typing import Any, Callable, Dict, Iterable, List, Set, Tuple, Union
 
 from collections import defaultdict
 import datetime
@@ -193,7 +193,8 @@ def enough_traffic(unread_pms: str, hot_conversations: str, new_streams: int, ne
         return True
     return False
 
-def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
+def handle_digest_email(user_profile_id: int, cutoff: float,
+                        render_to_web: bool = False) -> Union[None, Dict[str, Any]]:
     user_profile = get_user_profile_by_id(user_profile_id)
 
     # We are disabling digest emails for soft deactivated users for the time.
@@ -257,6 +258,9 @@ def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
         user_profile, cutoff_date)
     context["new_users"] = new_users
 
+    if render_to_web:
+        return context
+
     # We don't want to send emails containing almost no information.
     if enough_traffic(context["unread_pms"], context["hot_conversations"],
                       new_streams_count, new_users_count):
@@ -265,3 +269,4 @@ def handle_digest_email(user_profile_id: int, cutoff: float) -> None:
         send_future_email('zerver/emails/digest', user_profile.realm, to_user_ids=[user_profile.id],
                           from_name="Zulip Digest", from_address=FromAddress.NOREPLY,
                           context=context)
+    return None

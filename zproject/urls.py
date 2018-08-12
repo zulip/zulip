@@ -33,6 +33,7 @@ import zerver.views.user_settings
 import zerver.views.muting
 import zerver.views.streams
 import zerver.views.realm
+import zerver.views.digest
 
 from zerver.lib.rest import rest_dispatch
 
@@ -415,6 +416,9 @@ i18n_urls = [
     url(r'^accounts/deactivated/',
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
+
+    # Displays digest email content in browser.
+    url(r'^digest/$', zerver.views.digest.digest_page),
 
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/social/(\w+)$',
