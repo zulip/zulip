@@ -725,7 +725,11 @@ exports.initialize = function () {
                 });
 
                 if (existing_invites.indexOf(email) === -1) {
-                    var context = {email: email, name: data.mentioned.full_name};
+                    var context = {
+                        email: email,
+                        name: data.mentioned.full_name,
+                        can_subscribe_other_users: page_params.can_subscribe_other_users,
+                    };
                     var new_row = templates.render("compose-invite-users", context);
                     error_area.append(new_row);
                 }

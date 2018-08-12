@@ -534,10 +534,16 @@ run_test('compose_invite_users', () => {
     var args = {
         email: 'hamlet@zulip.com',
         name: 'Hamlet',
+        can_subscribe_other_users: true,
     };
     var html = render('compose-invite-users', args);
     var button = $(html).find("button:first");
     assert.equal(button.text(), "translated: Subscribe");
+
+    args.can_subscribe_other_users = false;
+    html = render('compose-invite-users', args);
+    button = $(html).find("button:first");
+    assert.equal(button.length, 0);
 });
 
 run_test('compose_all_everyone', () => {

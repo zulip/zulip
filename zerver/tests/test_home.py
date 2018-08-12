@@ -51,6 +51,7 @@ class HomeTest(ZulipTestCase):
             "avatar_url_medium",
             "bot_types",
             "can_create_streams",
+            "can_subscribe_other_users",
             "cross_realm_bots",
             "custom_profile_field_types",
             "custom_profile_fields",
