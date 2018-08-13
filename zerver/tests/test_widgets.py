@@ -1,3 +1,5 @@
+import ujson
+
 from typing import Dict, Any
 
 from zerver.lib.test_classes import ZulipTestCase
@@ -54,3 +56,25 @@ class WidgetContentTestCase(ZulipTestCase):
         ]
 
         self.assertEqual(check_widget_content(obj), None)
+
+    def test_message_error_handling(self) -> None:
+        sender_email = self.example_email('cordelia')
+        stream_name = 'Verona'
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender_email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        payload['widget_content'] = '{{{{{{'  # unparsable
+        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Widgets: API programmer sent invalid JSON')
+
+        bogus_data = dict(color='red', foo='bar', x=2)
+        payload['widget_content'] = ujson.dumps(bogus_data)
+        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Widgets: widget_type is not in widget_content')
