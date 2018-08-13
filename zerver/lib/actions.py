@@ -2071,7 +2071,9 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             assert isinstance(e.messages[0], str)
             raise JsonableError(e.messages[0])
     else:
-        raise JsonableError(_("Invalid message type"))
+        # This is defensive code--Addressee already validates
+        # the message type.
+        raise AssertionError("Invalid message type")
 
     message = Message()
     message.sender = sender
