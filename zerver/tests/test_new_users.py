@@ -30,6 +30,7 @@ class SendLoginEmailTest(ZulipTestCase):
 
             user = self.example_user('hamlet')
             user.timezone = 'US/Pacific'
+            user.twenty_four_hour_time = False
             user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
             user.save()
             password = initial_password(user.email)
@@ -47,6 +48,17 @@ class SendLoginEmailTest(ZulipTestCase):
             self.assertEqual(mail.outbox[0].subject, subject)
             # local time is correct and in email's body
             self.assertIn(reference_time, mail.outbox[0].body)
+
+            # Try again with the 24h time format setting enabled for this user
+            self.logout()  # We just logged in, we'd be redirected without this
+            user.twenty_four_hour_time = True
+            user.save()
+            with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
+                self.client_post("/accounts/login/", info={"username": user.email, "password": password},
+                                 HTTP_USER_AGENT=firefox_windows)
+
+            reference_time = mock_time.astimezone(user_tz).strftime('%A, %B %d, %Y at %H:%M %Z')
+            self.assertIn(reference_time, mail.outbox[1].body)
 
     def test_dont_send_login_emails_if_send_login_emails_is_false(self) -> None:
         self.assertFalse(settings.SEND_LOGIN_EMAILS)
