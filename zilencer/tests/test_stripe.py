@@ -1,3 +1,4 @@
+import datetime
 import mock
 import os
 from typing import Any, Optional
@@ -6,19 +7,21 @@ import re
 
 from django.core import signing
 from django.http import HttpResponse
+from django.utils.timezone import utc as timezone_utc
 
 import stripe
 
 from zerver.lib.actions import do_deactivate_user, do_create_user, \
     do_activate_user, do_reactivate_user, activity_change_requires_seat_update
 from zerver.lib.test_classes import ZulipTestCase
-from zerver.lib.timestamp import timestamp_to_datetime
+from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import catch_stripe_errors, \
     do_create_customer_with_payment_source, do_subscribe_customer_to_plan, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
-    BillingError
-from zilencer.models import Customer, Plan
+    get_next_billing_log_entry, run_billing_processor_one_step, \
+    BillingError, StripeCardError, StripeConnectionError
+from zilencer.models import Customer, Plan, BillingProcessor
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
@@ -69,10 +72,11 @@ class StripeTest(ZulipTestCase):
         return match.group(1) if match else None
 
     @mock.patch("zilencer.lib.stripe.billing_logger.error")
-    def test_errors(self, mock_billing_logger_error: mock.Mock) -> None:
+    def test_catch_stripe_errors(self, mock_billing_logger_error: mock.Mock) -> None:
         @catch_stripe_errors
         def raise_invalid_request_error() -> None:
-            raise stripe.error.InvalidRequestError("Request req_oJU621i6H6X4Ez: No such token: x", None)
+            raise stripe.error.InvalidRequestError(
+                "Request req_oJU621i6H6X4Ez: No such token: x", None, json_body={})
         with self.assertRaises(BillingError) as context:
             raise_invalid_request_error()
         self.assertEqual('other stripe error', context.exception.description)
@@ -84,7 +88,7 @@ class StripeTest(ZulipTestCase):
             json_body = {"error": {"message": error_message}}
             raise stripe.error.CardError(error_message, "number", "invalid_number",
                                          json_body=json_body)
-        with self.assertRaises(BillingError) as context:
+        with self.assertRaises(StripeCardError) as context:
             raise_card_error()
         self.assertIn('not a valid credit card', context.exception.message)
         self.assertEqual('card error', context.exception.description)
@@ -285,7 +289,55 @@ class StripeTest(ZulipTestCase):
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
 
-class BillingUpdateTest(ZulipTestCase):
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_customer_with_subscription)
+    def test_billing_quantity_changes_end_to_end(
+            self, mock_customer_with_subscription: mock.Mock, mock_create_subscription: mock.Mock,
+            mock_create_customer: mock.Mock) -> None:
+        self.login(self.example_email("hamlet"))
+        processor = BillingProcessor.objects.create(
+            log_row=RealmAuditLog.objects.order_by('id').first(), state=BillingProcessor.DONE)
+
+        def check_billing_processor_update(event_type: str, quantity: int) -> None:
+            def check_subscription_save(subscription: stripe.Subscription, idempotency_key: str) -> None:
+                self.assertEqual(subscription.quantity, quantity)
+                log_row = RealmAuditLog.objects.filter(
+                    event_type=event_type, requires_billing_update=True).order_by('-id').first()
+                self.assertEqual(idempotency_key, 'process_billing_log_entry:%s' % (log_row.id,))
+                self.assertEqual(subscription.proration_date, datetime_to_timestamp(log_row.event_time))
+            with mock.patch.object(stripe.Subscription, 'save', autospec=True,
+                                   side_effect=check_subscription_save):
+                run_billing_processor_one_step(processor)
+
+        # Test STRIPE_PLAN_QUANTITY_RESET
+        new_seat_count = 123
+        # change the seat count while the user is going through the upgrade flow
+        with mock.patch('zilencer.lib.stripe.get_seat_count', return_value=new_seat_count):
+            self.client_post("/upgrade/", {'stripeToken': self.token,
+                                           'signed_seat_count': self.signed_seat_count,
+                                           'salt': self.salt,
+                                           'plan': Plan.CLOUD_ANNUAL})
+        check_billing_processor_update(RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, new_seat_count)
+
+        # Test USER_CREATED
+        user = do_create_user('newuser@zulip.com', 'password', get_realm('zulip'), 'full name', 'short name')
+        check_billing_processor_update(RealmAuditLog.USER_CREATED, self.quantity + 1)
+
+        # Test USER_DEACTIVATED
+        do_deactivate_user(user)
+        check_billing_processor_update(RealmAuditLog.USER_DEACTIVATED, self.quantity - 1)
+
+        # Test USER_REACTIVATED
+        do_reactivate_user(user)
+        check_billing_processor_update(RealmAuditLog.USER_REACTIVATED, self.quantity + 1)
+
+        # Test USER_ACTIVATED
+        # Not a proper use of do_activate_user, but it's fine to call it like this for this test
+        do_activate_user(user)
+        check_billing_processor_update(RealmAuditLog.USER_ACTIVATED, self.quantity + 1)
+
+class RequiresBillingUpdateTest(ZulipTestCase):
     def test_activity_change_requires_seat_update(self) -> None:
         # Realm doesn't have a seat based plan
         self.assertFalse(activity_change_requires_seat_update(self.example_user("hamlet")))
@@ -318,3 +370,142 @@ class BillingUpdateTest(ZulipTestCase):
         do_reactivate_user(user2)
         do_activate_user(user2)
         self.assertEqual(4, RealmAuditLog.objects.filter(requires_billing_update=True).count())
+
+class BillingProcessorTest(ZulipTestCase):
+    def add_log_entry(self, realm: Realm=get_realm('zulip'),
+                      event_type: str=RealmAuditLog.USER_CREATED,
+                      requires_billing_update: bool=True) -> RealmAuditLog:
+        return RealmAuditLog.objects.create(
+            realm=realm, event_time=datetime.datetime(2001, 2, 3, 4, 5, 6).replace(tzinfo=timezone_utc),
+            event_type=event_type, requires_billing_update=requires_billing_update)
+
+    def test_get_next_billing_log_entry(self) -> None:
+        second_realm = Realm.objects.create(string_id='second', name='second')
+        entry1 = self.add_log_entry(realm=second_realm)
+        realm_processor = BillingProcessor.objects.create(
+            realm=second_realm, log_row=entry1, state=BillingProcessor.DONE)
+        entry2 = self.add_log_entry()
+        # global processor
+        processor = BillingProcessor.objects.create(
+            log_row=entry2, state=BillingProcessor.STARTED)
+
+        # Test STARTED, STALLED, and typo'ed state entry
+        self.assertEqual(entry2, get_next_billing_log_entry(processor))
+        processor.state = BillingProcessor.STALLED
+        processor.save()
+        with self.assertRaises(AssertionError):
+            get_next_billing_log_entry(processor)
+        processor.state = 'typo'
+        processor.save()
+        with self.assertRaisesRegex(BillingError, 'unknown processor state'):
+            get_next_billing_log_entry(processor)
+
+        # Test global processor is handled correctly
+        processor.state = BillingProcessor.DONE
+        processor.save()
+        # test it ignores entries with requires_billing_update=False
+        entry3 = self.add_log_entry(requires_billing_update=False)
+        # test it ignores entries with realm processors
+        entry4 = self.add_log_entry(realm=second_realm)
+        self.assertIsNone(get_next_billing_log_entry(processor))
+        # test it does catch entries it should
+        entry5 = self.add_log_entry()
+        self.assertEqual(entry5, get_next_billing_log_entry(processor))
+
+        # Test realm processor is handled correctly
+        # test it gets the entry with its realm, and ignores the entry with
+        # requires_billing_update=False, when global processor is up ahead
+        processor.log_row = entry5
+        processor.save()
+        self.assertEqual(entry4, get_next_billing_log_entry(realm_processor))
+
+        # test it doesn't run past the global processor
+        processor.log_row = entry3
+        processor.save()
+        self.assertIsNone(get_next_billing_log_entry(realm_processor))
+
+    def test_run_billing_processor_logic_when_no_errors(self) -> None:
+        second_realm = Realm.objects.create(string_id='second', name='second')
+        entry1 = self.add_log_entry(realm=second_realm)
+        realm_processor = BillingProcessor.objects.create(
+            realm=second_realm, log_row=entry1, state=BillingProcessor.DONE)
+        entry2 = self.add_log_entry()
+        # global processor
+        processor = BillingProcessor.objects.create(
+            log_row=entry2, state=BillingProcessor.DONE)
+
+        # Test nothing to process
+        # test nothing changes, for global processor
+        self.assertFalse(run_billing_processor_one_step(processor))
+        self.assertEqual(2, BillingProcessor.objects.count())
+        # test realm processor gets deleted
+        self.assertFalse(run_billing_processor_one_step(realm_processor))
+        self.assertEqual(1, BillingProcessor.objects.count())
+        self.assertEqual(1, BillingProcessor.objects.filter(realm=None).count())
+
+        # Test something to process
+        processor.state = BillingProcessor.STARTED
+        processor.save()
+        realm_processor = BillingProcessor.objects.create(
+            realm=second_realm, log_row=entry1, state=BillingProcessor.STARTED)
+        Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
+        Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
+        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity'):
+            # test return values
+            self.assertTrue(run_billing_processor_one_step(processor))
+            self.assertTrue(run_billing_processor_one_step(realm_processor))
+        # test no processors get added or deleted
+        self.assertEqual(2, BillingProcessor.objects.count())
+
+    @mock.patch("zilencer.lib.stripe.billing_logger.error")
+    def test_run_billing_processor_with_card_error(self, mock_billing_logger_error: mock.Mock) -> None:
+        second_realm = Realm.objects.create(string_id='second', name='second')
+        entry1 = self.add_log_entry(realm=second_realm)
+        # global processor
+        processor = BillingProcessor.objects.create(
+            log_row=entry1, state=BillingProcessor.STARTED)
+        Customer.objects.create(realm=second_realm, stripe_customer_id='cust_2')
+
+        # card error on global processor should create a new realm processor
+        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+            self.assertTrue(run_billing_processor_one_step(processor))
+        self.assertEqual(2, BillingProcessor.objects.count())
+        self.assertTrue(BillingProcessor.objects.filter(
+            realm=None, log_row=entry1, state=BillingProcessor.SKIPPED).exists())
+        self.assertTrue(BillingProcessor.objects.filter(
+            realm=second_realm, log_row=entry1, state=BillingProcessor.STALLED).exists())
+        mock_billing_logger_error.assert_called()
+
+        # card error on realm processor should change state to STALLED
+        realm_processor = BillingProcessor.objects.filter(realm=second_realm).first()
+        realm_processor.state = BillingProcessor.STARTED
+        realm_processor.save()
+        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+            self.assertTrue(run_billing_processor_one_step(realm_processor))
+        self.assertEqual(2, BillingProcessor.objects.count())
+        self.assertTrue(BillingProcessor.objects.filter(
+            realm=second_realm, log_row=entry1, state=BillingProcessor.STALLED).exists())
+        mock_billing_logger_error.assert_called()
+
+    @mock.patch("zilencer.lib.stripe.billing_logger.error")
+    def test_run_billing_processor_with_uncaught_error(self, mock_billing_logger_error: mock.Mock) -> None:
+        # This tests three different things:
+        # * That run_billing_processor_one_step passes through exceptions that
+        #   are not StripeCardError
+        # * That process_billing_log_entry catches StripeErrors and re-raises them as BillingErrors
+        # * That processor.state=STARTED for non-StripeCardError exceptions
+        entry1 = self.add_log_entry()
+        entry2 = self.add_log_entry()
+        processor = BillingProcessor.objects.create(
+            log_row=entry1, state=BillingProcessor.DONE)
+        Customer.objects.create(realm=get_realm('zulip'), stripe_customer_id='cust_1')
+        with mock.patch('zilencer.lib.stripe.do_adjust_subscription_quantity',
+                        side_effect=stripe.error.StripeError('message', 'param', 'code', json_body={})):
+            with self.assertRaises(BillingError):
+                run_billing_processor_one_step(processor)
+        mock_billing_logger_error.assert_called()
+        # check processor.state is STARTED
+        self.assertTrue(BillingProcessor.objects.filter(
+            log_row=entry2, state=BillingProcessor.STARTED).exists())

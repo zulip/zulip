@@ -2,7 +2,8 @@ import datetime
 
 from django.db import models
 
-from zerver.models import AbstractPushDeviceToken, Realm, UserProfile
+from zerver.models import AbstractPushDeviceToken, Realm, UserProfile, \
+    RealmAuditLog
 
 def get_remote_server_by_uuid(uuid: str) -> 'RemoteZulipServer':
     return RemoteZulipServer.objects.get(uuid=uuid)
@@ -50,3 +51,19 @@ class Plan(models.Model):
     nickname = models.CharField(max_length=40, unique=True)  # type: str
 
     stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
+
+class BillingProcessor(models.Model):
+    log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
+    # Exactly one processor, the global processor, has realm=None.
+    realm = models.OneToOneField(Realm, null=True, on_delete=models.CASCADE)  # type: Realm
+
+    DONE = 'done'
+    STARTED = 'started'
+    SKIPPED = 'skipped'  # global processor only
+    STALLED = 'stalled'  # realm processors only
+    state = models.CharField(max_length=20)  # type: str
+
+    last_modified = models.DateTimeField(auto_now=True)  # type: datetime.datetime
+
+    def __str__(self) -> str:
+        return '<BillingProcessor: %s %s %s>' % (self.realm, self.log_row, self.id)

@@ -33,6 +33,8 @@ class Subscription:
     status: str
     canceled_at: int
     cancel_at_period_end: bool
+    proration_date: int
+    quantity: int
 
     @staticmethod
     def create(customer: str, billing: str, items: List[Dict[str, Any]],

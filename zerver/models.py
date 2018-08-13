@@ -2198,10 +2198,13 @@ class RealmAuditLog(models.Model):
 
     def __str__(self) -> str:
         if self.modified_user is not None:
-            return "<RealmAuditLog: %s %s %s>" % (self.modified_user, self.event_type, self.event_time)
+            return "<RealmAuditLog: %s %s %s %s>" % (
+                self.modified_user, self.event_type, self.event_time, self.id)
         if self.modified_stream is not None:
-            return "<RealmAuditLog: %s %s %s>" % (self.modified_stream, self.event_type, self.event_time)
-        return "<RealmAuditLog: %s %s %s>" % (self.realm, self.event_type, self.event_time)
+            return "<RealmAuditLog: %s %s %s %s>" % (
+                self.modified_stream, self.event_type, self.event_time, self.id)
+        return "<RealmAuditLog: %s %s %s %s>" % (
+            self.realm, self.event_type, self.event_time, self.id)
 
 class UserHotspot(models.Model):
     user = models.ForeignKey(UserProfile, on_delete=CASCADE)  # type: UserProfile
