@@ -6,8 +6,8 @@ class zulip_ops::redis {
   file { '/var/lib/nagios/redis_password':
     ensure  => file,
     mode    => '0600',
-    owner   => "nagios",
-    group   => "nagios",
+    owner   => 'nagios',
+    group   => 'nagios',
     content => "${zulip::redis::redis_password}\n",
   }
 }

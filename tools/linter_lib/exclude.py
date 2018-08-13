@@ -15,7 +15,6 @@ EXCLUDED_FILES = [
 ]
 
 PUPPET_CHECK_RULES_TO_EXCLUDE = [
-    "--no-double_quoted_strings-check",
     "--no-documentation-check",
     "--no-80chars-check",
 ]

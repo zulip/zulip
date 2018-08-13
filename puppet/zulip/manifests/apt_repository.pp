@@ -1,6 +1,6 @@
 # This depends on zulip::base having already been evaluated
 class zulip::apt_repository {
-  if $zulip::base::release_name == "stretch" {
+  if $zulip::base::release_name == 'stretch' {
     apt::source {'zulip':
       location    =>  'https://packagecloud.io/zulip/server/debian/',
       release     => $zulip::base::release_name,

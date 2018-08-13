@@ -5,8 +5,8 @@ class zulip_ops::postgres_slave {
   file { "/var/lib/postgresql/${zulip::base::postgres_version}/main/recovery.conf":
     ensure  => file,
     require => Package["postgresql-${zulip::base::postgres_version}"],
-    owner   => "postgres",
-    group   => "postgres",
+    owner   => 'postgres',
+    group   => 'postgres',
     mode    => '0644',
     source  => 'puppet:///modules/zulip_ops/postgresql/recovery.conf',
   }
