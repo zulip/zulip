@@ -61,7 +61,7 @@ automatically by Zulip.
             <td align="center"><code>&lt;3</code></td>
             <td align="center">
                 <img
-                    src="/static/generated/emoji/images-google-64/2764-fe0f.png"
+                    src="/static/generated/emoji/images-google-64/2764.png"
                     alt="heart"
                     style="width: 30%;">
             </td>
