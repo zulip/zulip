@@ -70,12 +70,13 @@ run_test('mappings', () => {
         });
     }
 
-    function map_down(which, shiftKey, ctrlKey, metaKey) {
+    function map_down(which, shiftKey, ctrlKey, metaKey, altKey) {
         return hotkey.get_keydown_hotkey({
             which: which,
             shiftKey: shiftKey,
             ctrlKey: ctrlKey,
             metaKey: metaKey,
+            altKey: altKey,
         });
     }
 
@@ -135,6 +136,8 @@ run_test('mappings', () => {
     assert.equal(map_down(83, false, true, false), undefined); // ctrl + s
     // Reset userAgent
     global.navigator.userAgent = '';
+
+    assert.equal(map_down(83, false, true, false, true).name, 'narrow_starred'); // ctrl + alt + s
 });
 
 run_test('basic_chars', () => {
