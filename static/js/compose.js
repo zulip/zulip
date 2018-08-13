@@ -725,7 +725,11 @@ exports.initialize = function () {
                 });
 
                 if (existing_invites.indexOf(email) === -1) {
-                    var context = {email: email, name: data.mentioned.full_name};
+                    var context = {
+                        email: email,
+                        name: data.mentioned.full_name,
+                        can_subscribe_other_users: page_params.can_subscribe_other_users,
+                    };
                     var new_row = templates.render("compose-invite-users", context);
                     error_area.append(new_row);
                 }
@@ -795,11 +799,15 @@ exports.initialize = function () {
             }
         }
 
-        function failure() {
-            var error_msg = invite_row.find('.compose_invite_user_error');
-            error_msg.show();
-
+        function failure(error_msg) {
+            exports.clear_invites();
+            compose_error(error_msg, $("#compose-textarea"));
             $(event.target).attr('disabled', true);
+        }
+
+        function xhr_failure(xhr) {
+            var error = JSON.parse(xhr.responseText);
+            failure(error.msg);
         }
 
         var stream_name = compose_state.stream_name();
@@ -808,12 +816,13 @@ exports.initialize = function () {
             // This should only happen if a stream rename occurs
             // before the user clicks.  We could prevent this by
             // putting a stream id in the link.
-            blueslip.warn('Stream no longer exists: ' + stream_name);
-            failure();
+            var error_msg = 'Stream no longer exists: ' + stream_name;
+            blueslip.warn(error_msg);
+            failure(error_msg);
             return;
         }
 
-        stream_edit.invite_user_to_stream(email, sub, success, failure);
+        stream_edit.invite_user_to_stream(email, sub, success, xhr_failure);
     });
 
     $("#compose_invite_users").on('click', '.compose_invite_close', function (event) {

@@ -86,6 +86,7 @@ var me = {
     email: 'me@example.com',
     user_id: 30,
     full_name: 'Me Myself',
+    date_joined: new Date(),
 };
 
 var alice = {
@@ -1217,17 +1218,15 @@ run_test('on_events', () => {
             assert.equal(field, 'useremail');
             return 'foo@bar.com';
         };
-        var invite_err_sel = '.compose_invite_user_error';
-        container.set_find_results(invite_err_sel, $(invite_err_sel));
+        $("#compose-textarea").select(noop);
         target.prop('disabled', false);
-        $(invite_err_sel).hide();
 
         handler(event);
-
-        assert($(invite_err_sel).visible());
         assert(target.attr('disabled'));
         assert(!invite_user_to_stream_called);
         assert(!container_removed);
+        assert(!$("#compose_invite_users").visible());
+        assert.equal($('#compose-error-msg').html(), "Stream no longer exists: no-stream");
         assert.equal(blueslip.get_test_logs('warn').length, 1);
         blueslip.clear_test_data();
 
