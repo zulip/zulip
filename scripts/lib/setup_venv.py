@@ -252,6 +252,13 @@ def setup_virtualenv(target_venv_path, requirements_file, virtualenv_args=None, 
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
     return cached_venv_path
 
+def add_cert_to_pipconf():
+    # type: () -> None
+    conffile = os.path.expanduser("~/.pip/pip.conf")
+    confdir = os.path.expanduser("~/.pip/")
+    os.makedirs(confdir, exist_ok=True)
+    run(["crudini", "--set", conffile, "global", "cert", os.environ["CUSTOM_CA_CERTIFICATES"]])
+
 def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # type: (str, str, List[str]) -> None
 
@@ -271,6 +278,11 @@ def do_setup_virtualenv(venv_path, requirements_file, virtualenv_args):
     # Switch current Python context to the virtualenv.
     activate_this = os.path.join(venv_path, "bin", "activate_this.py")
     exec(open(activate_this).read(), {}, dict(__file__=activate_this))
+
+    # use custom certificate if needed
+    if os.environ.get('CUSTOM_CA_CERTIFICATES'):
+        print("Configuring pip to use custom CA certificates...")
+        add_cert_to_pipconf()
 
     try:
         install_venv_deps(requirements_file)
