@@ -52,6 +52,16 @@
     width: calc(100% - 13px);
 }
 
+.mobile-message-buttons-popover {
+    position: absolute;
+    top: auto !important;
+    right: 8px;
+    bottom: 48px;
+    left: auto !important;
+    width: 175px;
+    height: 65px;
+}
+
 .streams_popover .sp-palette-container {
     border-right: none;
 }
