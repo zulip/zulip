@@ -138,9 +138,7 @@ exports.remove_user_from_stream = function (user_email, sub, success, failure) {
 };
 
 function get_stream_id(target) {
-    if (target.constructor !== jQuery) {
-        target = $(target);
-    }
+    target = $(target);
     return target.closest(".stream-row, .subscription_settings").attr("data-stream-id");
 }
 
