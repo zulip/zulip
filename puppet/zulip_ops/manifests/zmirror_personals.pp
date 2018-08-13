@@ -29,28 +29,28 @@ class zulip_ops::zmirror_personals {
   }
   file { ['/home/zulip/api-keys', '/home/zulip/zephyr_sessions', '/home/zulip/ccache',
           '/home/zulip/mirror_status']:
-    ensure     => directory,
-    mode       => '0644',
-    owner      => "zulip",
-    group      => "zulip",
+    ensure => directory,
+    mode   => '0644',
+    owner  => "zulip",
+    group  => "zulip",
   }
 
   file { "/etc/cron.d/test_zephyr_personal_mirrors":
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip_ops/cron.d/test_zephyr_personal_mirrors",
   }
 
   file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
     require => Package[nagios-plugins-basic],
     recurse => true,
-    purge => true,
-    owner => "root",
-    group => "root",
-    mode => '0755',
-    source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
+    purge   => true,
+    owner   => "root",
+    group   => "root",
+    mode    => '0755',
+    source  => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
   }
 
   # TODO: Do the rest of our setup, which includes at least:

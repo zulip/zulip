@@ -15,28 +15,28 @@ class zulip_ops::munin {
   file { "/etc/munin":
     require => Package["munin"],
     recurse => true,
-    owner => "root",
-    group => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip_ops/munin"
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip_ops/munin"
   }
 
   file { "/etc/munin/munin.conf":
-    ensure => file,
+    ensure  => file,
     require => [ Package["munin"], File["/etc/munin"] ],
-    owner => "root",
-    group => "root",
-    mode => '0644',
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
     content => template("zulip_ops/munin/munin.conf.erb")
   }
 
   file { "/etc/supervisor/conf.d/munin_tunnels.conf":
-    ensure => file,
+    ensure  => file,
     require => Package["supervisor", "autossh"],
-    mode   => '0644',
-    owner  => "root",
-    group  => "root",
+    mode    => '0644',
+    owner   => "root",
+    group   => "root",
     content => template("zulip_ops/supervisor/conf.d/munin_tunnels.conf.erb"),
-    notify => Service["supervisor"]
+    notify  => Service["supervisor"]
   }
 }

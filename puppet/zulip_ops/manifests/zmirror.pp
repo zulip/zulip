@@ -29,20 +29,20 @@ class zulip_ops::zmirror {
   }
 
   file { "/etc/supervisor/conf.d/zmirror.conf":
-    ensure => file,
+    ensure  => file,
     require => Package[supervisor],
-    owner => "root",
-    group => "root",
-    mode => '0644',
-    source => "puppet:///modules/zulip_ops/supervisor/conf.d/zmirror.conf",
-    notify => Service["supervisor"],
+    owner   => "root",
+    group   => "root",
+    mode    => '0644',
+    source  => "puppet:///modules/zulip_ops/supervisor/conf.d/zmirror.conf",
+    notify  => Service["supervisor"],
   }
 
   file { "/etc/cron.d/zephyr-mirror":
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip_ops/cron.d/zephyr-mirror",
   }
 
@@ -50,18 +50,18 @@ class zulip_ops::zmirror {
     ensure => file,
     owner  => "root",
     group  => "root",
-    mode => '0644',
+    mode   => '0644',
     source => "puppet:///modules/zulip_ops/zephyr-clients.debathena",
   }
 
   file { "/usr/lib/nagios/plugins/zulip_zephyr_mirror":
     require => Package[nagios-plugins-basic],
     recurse => true,
-    purge => true,
-    owner => "root",
-    group => "root",
-    mode => '0755',
-    source => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
+    purge   => true,
+    owner   => "root",
+    group   => "root",
+    mode    => '0755',
+    source  => "puppet:///modules/zulip_ops/nagios_plugins/zulip_zephyr_mirror",
   }
 
   # TODO: Do the rest of our setup, which includes at least:
