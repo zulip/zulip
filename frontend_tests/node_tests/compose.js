@@ -1639,3 +1639,31 @@ run_test('nonexistent_stream_reply_error', () => {
     assert.equal($("#compose-reply-error-msg").html(), 'There are no messages to reply to yet.');
     assert(shown < hidden); // test shown before hidden
 });
+
+run_test('narrow_button_titles', () => {
+    util.is_mobile = () => { return false; };
+
+    compose.update_buttons_for_private();
+
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+
+    compose.update_buttons_for_stream();
+
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New private message"));
+});
+
+run_test('narrow_button_titles_mobile', () => {
+    util.is_mobile = () => { return true; };
+
+    compose.update_buttons_for_private();
+
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("Stream message"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New PM"));
+
+    compose.update_buttons_for_stream();
+
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
+    assert.equal($("#left_bar_compose_private_button_big").text(), i18n.t("New PM"));
+});

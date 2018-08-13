@@ -100,14 +100,34 @@ exports.clear_preview_area = function () {
     $("#markdown_preview").show();
 };
 
-exports.update_stream_button_for_private = function () {
-    $("#left_bar_compose_stream_button_big").html(i18n.t("New stream message"));
-    $("#left_bar_compose_stream_button_big").prop("title", i18n.t("New stream message"));
+function update_private_button(title) {
+    $("#left_bar_compose_private_button_big").text(title);
+    $("#left_bar_compose_private_button_big").prop("title", title);
+}
+
+function update_stream_button(title) {
+    $("#left_bar_compose_stream_button_big").text(title);
+    $("#left_bar_compose_stream_button_big").prop("title", title);
+}
+
+exports.update_buttons_for_private = function () {
+    if (util.is_mobile()) {
+        update_stream_button(i18n.t("Stream message"));
+        update_private_button(i18n.t("New PM"));
+    } else {
+        update_stream_button(i18n.t("New stream message"));
+        update_private_button(i18n.t("New private message"));
+    }
 };
 
-exports.update_stream_button_for_stream = function () {
-    $("#left_bar_compose_stream_button_big").html(i18n.t("New topic"));
-    $("#left_bar_compose_stream_button_big").prop("title", i18n.t("New topic"));
+exports.update_buttons_for_stream = function () {
+    if (util.is_mobile()) {
+        update_stream_button(i18n.t("New topic"));
+        update_private_button(i18n.t("New PM"));
+    } else {
+        update_stream_button(i18n.t("New topic"));
+        update_private_button(i18n.t("New private message"));
+    }
 };
 
 function update_fade() {
