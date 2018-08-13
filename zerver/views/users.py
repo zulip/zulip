@@ -34,9 +34,9 @@ from zerver.lib.users import check_valid_bot_type, check_bot_creation_policy, \
     access_bot_by_id, add_service, access_user_by_id
 from zerver.lib.utils import generate_api_key, generate_random_token
 from zerver.models import UserProfile, Stream, Message, email_allowed_for_realm, \
-    get_user_profile_by_id, get_user, Service, get_user_including_cross_realm, \
+    get_user, Service, get_user_including_cross_realm, \
     DomainNotAllowedForRealmError, DisposableEmailError, get_user_profile_by_id_in_realm, \
-    EmailContainsPlusError
+    EmailContainsPlusError, get_user_by_id_in_realm_including_cross_realm
 
 def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
                             user_id: int) -> HttpResponse:
@@ -94,11 +94,8 @@ def update_user_backend(request: HttpRequest, user_profile: UserProfile, user_id
 
     return json_success()
 
-# TODO: Since eventually we want to support using the same email with
-# different organizations, we'll eventually want this to be a
-# logged-in endpoint so that we can access the realm_id.
-@zulip_login_required
-def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpResponse:
+def avatar(request: HttpRequest, user_profile: UserProfile,
+           email_or_id: str, medium: bool=False) -> HttpResponse:
     """Accepts an email address or user ID and returns the avatar"""
     is_email = False
     try:
@@ -107,11 +104,11 @@ def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpRe
         is_email = True
 
     try:
+        realm = user_profile.realm
         if is_email:
-            realm = request.user.realm
             avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:
-            avatar_user_profile = get_user_profile_by_id(email_or_id)
+            avatar_user_profile = get_user_by_id_in_realm_including_cross_realm(int(email_or_id), realm)
         # If there is a valid user account passed in, use its avatar
         url = avatar_url(avatar_user_profile, medium=medium)
     except UserProfile.DoesNotExist:

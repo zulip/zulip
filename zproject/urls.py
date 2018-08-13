@@ -413,12 +413,6 @@ i18n_urls = [
         zerver.views.auth.show_deactivation_notice,
         name='zerver.views.auth.show_deactivation_notice'),
 
-    # Avatar
-    url(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?', zerver.views.users.avatar,
-        name='zerver.views.users.avatar'),
-    url(r'^avatar/(?P<email_or_id>[\S]+)', zerver.views.users.avatar,
-        name='zerver.views.users.avatar'),
-
     # Registration views, require a confirmation ID.
     url(r'^accounts/register/social/(\w+)$',
         zerver.views.auth.start_social_signup,
@@ -539,15 +533,26 @@ urls += [
 # easily support the mobile apps fetching uploaded files without
 # having to rewrite URLs, and is implemented using the
 # 'override_api_url_scheme' flag passed to rest_dispatch
-urls += url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
-            rest_dispatch,
-            {'GET': ('zerver.views.upload.serve_file_backend',
-                     {'override_api_url_scheme'})}),
-# This endpoint serves thumbnailed versions of images using thumbor;
-# it requires an exception for the same reason.
-urls += url(r'^thumbnail', rest_dispatch,
-            {'GET': ('zerver.views.thumbnail.backend_serve_thumbnail',
-                     {'override_api_url_scheme'})}),
+urls += [
+    url(r'^user_uploads/(?P<realm_id_str>(\d*|unk))/(?P<filename>.*)',
+        rest_dispatch,
+        {'GET': ('zerver.views.upload.serve_file_backend',
+                 {'override_api_url_scheme'})}),
+    # This endpoint serves thumbnailed versions of images using thumbor;
+    # it requires an exception for the same reason.
+    url(r'^thumbnail', rest_dispatch,
+        {'GET': ('zerver.views.thumbnail.backend_serve_thumbnail',
+                 {'override_api_url_scheme'})}),
+    # Avatars have the same constraint due to `!avatar` syntax.
+    url(r'^avatar/(?P<email_or_id>[\S]+)/(?P<medium>[\S]+)?',
+        rest_dispatch,
+        {'GET': ('zerver.views.users.avatar',
+                 {'override_api_url_scheme'})}),
+    url(r'^avatar/(?P<email_or_id>[\S]+)',
+        rest_dispatch,
+        {'GET': ('zerver.views.users.avatar',
+                 {'override_api_url_scheme'})}),
+]
 
 # This url serves as a way to recieve CSP violation reports from the users.
 # We use this endpoint to just log these reports.
