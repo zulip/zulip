@@ -111,6 +111,33 @@ class TestServiceBotBasics(ZulipTestCase):
 
         self.assertEqual(len(event_dict), 0)
 
+    def test_service_events_with_unexpected_bot_type(self) -> None:
+        hamlet = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+        wrong_bot_type = UserProfile.INCOMING_WEBHOOK_BOT
+        bot.bot_type = wrong_bot_type
+        bot.save()
+
+        with mock.patch('logging.error') as log_mock:
+            event_dict = get_service_bot_events(
+                sender=hamlet,
+                service_bot_tuples=[
+                    (bot.id, wrong_bot_type),
+                ],
+                active_user_ids=set(),
+                mentioned_user_ids={bot.id},
+                recipient_type=Recipient.PERSONAL,
+            )
+
+        self.assertEqual(len(event_dict), 0)
+        arg = log_mock.call_args_list[0][0][0]
+        self.assertIn('Unexpected bot_type', arg)
+
 class TestServiceBotStateHandler(ZulipTestCase):
     def setUp(self) -> None:
         self.user_profile = self.example_user("othello")
