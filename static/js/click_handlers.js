@@ -443,11 +443,23 @@ exports.initialize = function () {
 
 
     $('.compose_stream_button').click(function () {
+        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('stream', {trigger: 'new topic button'});
     });
     $('.compose_private_button').click(function () {
+        popovers.hide_mobile_message_buttons_popover();
         compose_actions.start('private');
     });
+
+    $('body').on('click', '.compose_mobile_stream_button', function () {
+        popovers.hide_mobile_message_buttons_popover();
+        compose_actions.start('stream', {trigger: 'new topic button'});
+    });
+    $('body').on('click', '.compose_mobile_private_button', function () {
+        popovers.hide_mobile_message_buttons_popover();
+        compose_actions.start('private');
+    });
+
     $('.compose_reply_button').click(function () {
         compose_actions.respond_to_message({trigger: 'reply button'});
     });
@@ -471,6 +483,13 @@ exports.initialize = function () {
         if ($(e.target).is("#emoji_map, img.emoji, .drag")) {
             return;
         }
+
+        // The mobile compose button has its own popover when clicked, so it already.
+        // hides other popovers.
+        if ($(e.target).is(".compose_mobile_button, .compose_mobile_button *")) {
+            return;
+        }
+
         // Don't let clicks in the compose area count as
         // "unfocusing" our compose -- in other words, e.g.
         // clicking "Press enter to send" should not
