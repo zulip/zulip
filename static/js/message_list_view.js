@@ -404,7 +404,7 @@ MessageListView.prototype = {
     _post_process: function ($message_rows) {
         // $message_rows wraps one or more message rows
 
-        if ($message_rows.constructor !== jQuery) {
+        if (!($message_rows instanceof jQuery)) {
             // An assertion check that we're calling this properly
             blueslip.error('programming error--pass in jQuery objects');
         }
