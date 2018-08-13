@@ -3,20 +3,20 @@ class zulip_ops::zmirror {
   include zulip::supervisor
 
   $zmirror_packages = [# Packages needed to run the mirror
-                       "libzephyr4-krb5",
-                       "zephyr-clients",
-                       "krb5-config",
-                       "krb5-user",
-                       "debathena-kerberos-config",
-                       "debathena-zephyr-config",
-                       # Packages needed to build pyzephyr
-                       "libzephyr-dev",
-                       "comerr-dev",
-                       "python3-dev",
-                       "python-dev",
-                       "cython3",
-                       "cython",
-                       ]
+    "libzephyr4-krb5",
+    "zephyr-clients",
+    "krb5-config",
+    "krb5-user",
+    "debathena-kerberos-config",
+    "debathena-zephyr-config",
+    # Packages needed to build pyzephyr
+    "libzephyr-dev",
+    "comerr-dev",
+    "python3-dev",
+    "python-dev",
+    "cython3",
+    "cython",
+  ]
   package { $zmirror_packages: ensure => "installed" }
 
   apt::source {'debathena':

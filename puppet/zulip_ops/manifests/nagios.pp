@@ -88,11 +88,11 @@ class zulip_ops::nagios {
   }
 
   file { [ '/etc/nagios3/conf.d/extinfo_nagios2.cfg',
-           '/etc/nagios3/conf.d/services_nagios2.cfg',
-           '/etc/nagios3/conf.d/contacts_nagios2.cfg',
-           '/etc/nagios3/conf.d/hostgroups_nagios2.cfg',
-           '/etc/nagios3/conf.d/localhost_nagios2.cfg',
-           ]:
+    '/etc/nagios3/conf.d/services_nagios2.cfg',
+    '/etc/nagios3/conf.d/contacts_nagios2.cfg',
+    '/etc/nagios3/conf.d/hostgroups_nagios2.cfg',
+    '/etc/nagios3/conf.d/localhost_nagios2.cfg',
+  ]:
     ensure     => absent,
   }
 

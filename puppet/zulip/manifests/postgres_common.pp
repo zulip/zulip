@@ -55,8 +55,10 @@ class zulip::postgres_common {
   @user { 'postgres':
     groups     => ['ssl-cert'],
     membership => minimum,
-    require    => [Package["postgresql-${zulip::base::postgres_version}"],
-                   Package['ssl-cert']],
+    require    => [
+      Package["postgresql-${zulip::base::postgres_version}"],
+      Package['ssl-cert']
+    ],
   }
   User <| title == postgres |> { groups +> 'zulip' }
 }

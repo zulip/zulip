@@ -3,40 +3,40 @@ class zulip_ops::base {
   include zulip::apt_repository
 
   $org_base_packages = [# Management for our systems
-                        "openssh-server",
-                        "mosh",
-                        # package management
-                        "aptitude",
-                        # SSL Certificates
-                        "letsencrypt",
-                        # Monitoring
-                        "munin-node",
-                        "munin-plugins-extra" ,
-                        # Security
-                        "iptables-persistent",
-                        # For managing our current Debian packages
-                        "debian-goodies",
-                        # Needed for zulip-ec2-configure-network-interfaces
-                        'dhcpcd5',
-                        "python3-six",
-                        "python-six",
-                        # "python3-boto", # missing on trusty
-                        "python-boto", # needed for postgres_common too
-                        "python3-netifaces",
-                        "python-netifaces",
-                        # Popular editors
-                        "vim",
-                        "emacs-nox",
-                        "puppet-el",
-                        # Prevent accidental reboots
-                        "molly-guard",
-                        # Useful tools in a production environment
-                        "screen",
-                        "strace",
-                        "host",
-                        "git",
-                        "nagios-plugins-contrib",
-                         ]
+    "openssh-server",
+    "mosh",
+    # package management
+    "aptitude",
+    # SSL Certificates
+    "letsencrypt",
+    # Monitoring
+    "munin-node",
+    "munin-plugins-extra" ,
+    # Security
+    "iptables-persistent",
+    # For managing our current Debian packages
+    "debian-goodies",
+    # Needed for zulip-ec2-configure-network-interfaces
+    'dhcpcd5',
+    "python3-six",
+    "python-six",
+    # "python3-boto", # missing on trusty
+    "python-boto", # needed for postgres_common too
+    "python3-netifaces",
+    "python-netifaces",
+    # Popular editors
+    "vim",
+    "emacs-nox",
+    "puppet-el",
+    # Prevent accidental reboots
+    "molly-guard",
+    # Useful tools in a production environment
+    "screen",
+    "strace",
+    "host",
+    "git",
+    "nagios-plugins-contrib",
+  ]
   package { $org_base_packages: ensure => "installed" }
 
   # Add system users here

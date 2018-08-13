@@ -2,13 +2,13 @@ class zulip_ops::postgres_common {
   include zulip::postgres_common
 
   $internal_postgres_packages = [# dependencies for our wal-e backup system
-                                 "lzop",
-                                 "pv",
-                                 "python3-pip",
-                                 "python-pip",
-                                 # "python3-gevent", # missing on trusty
-                                 "python-gevent",
-                                 ]
+    "lzop",
+    "pv",
+    "python3-pip",
+    "python-pip",
+    # "python3-gevent", # missing on trusty
+    "python-gevent",
+  ]
   package { $internal_postgres_packages: ensure => "installed" }
 
   exec {"pip_wal-e":
@@ -28,11 +28,14 @@ class zulip_ops::postgres_common {
     minute      => 0,
     target      => "postgres",
     user        => "postgres",
-    require     => [ File["/usr/local/bin/pg_backup_and_purge"],
-                 Package["postgresql-${zulip::base::postgres_version}",
-                         "python3-dateutil",
-                         "python-dateutil"
-                 ] ]
+    require     => [
+      File["/usr/local/bin/pg_backup_and_purge"],
+      Package[
+        "postgresql-${zulip::base::postgres_version}",
+        "python3-dateutil",
+        "python-dateutil"
+      ]
+    ]
   }
 
   exec { "sysctl_p":

@@ -5,8 +5,8 @@ class zulip_ops::app_frontend {
   include zulip::postfix_localmail
   include zulip::static_asset_compiler
   $app_packages = [# Needed for the ssh tunnel to the redis server
-                   "autossh",
-                   ]
+    "autossh",
+  ]
   package { $app_packages: ensure => "installed" }
   $hosts_domain = zulipconf("nagios", "hosts_domain", undef)
 

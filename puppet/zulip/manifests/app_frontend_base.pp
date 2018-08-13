@@ -77,8 +77,7 @@ class zulip::app_frontend_base {
     notify  => Service['supervisor'],
   }
 
-  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes',
-                               $uwsgi_default_processes)
+  $uwsgi_processes = zulipconf('application_server', 'uwsgi_processes', $uwsgi_default_processes)
   file { '/etc/zulip/uwsgi.ini':
     ensure  => file,
     require => Package[supervisor],
