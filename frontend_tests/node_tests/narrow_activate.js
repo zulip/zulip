@@ -25,6 +25,7 @@ set_global('search', {});
 set_global('stream_list', {});
 set_global('top_left_corner', {});
 set_global('ui_util', {});
+set_global('util', {});
 set_global('unread_ops', {});
 set_global('search_pill_widget', {
     widget: {
@@ -76,6 +77,7 @@ function test_helper() {
     stub('compose_actions', 'on_narrow');
     stub('hashchange', 'save_narrow');
     stub('message_scroll', 'hide_indicators');
+    stub('message_scroll', 'show_loading_older');
     stub('notifications', 'clear_compose_notifications');
     stub('notifications', 'redraw_title');
     stub('search', 'update_button_visibility');
@@ -84,6 +86,7 @@ function test_helper() {
     stub('ui_util', 'change_tab_to');
     stub('unread_ops', 'process_visible');
     stub('compose', 'update_stream_button_for_stream');
+    stub('compose', 'update_stream_button_for_private');
 
     stub_trigger(() => { events.push('trigger event'); });
 
@@ -200,6 +203,7 @@ run_test('basics', () => {
 
     assert.equal(message_list.narrowed.selected_id, selected_id);
     assert.equal(message_list.narrowed.view.offset, 25);
+    assert.equal(narrow_state.narrowed_to_pms(), false);
 
     helper.assert_events([
         'notifications.clear_compose_notifications',
@@ -215,6 +219,16 @@ run_test('basics', () => {
         'stream_list.handle_narrow_activated',
         'trigger event',
     ]);
+
+    current_msg_list.selected_id = () => { return -1; };
+    current_msg_list.get_row = () => { return row; };
+    util.sorted_ids = () => { return []; };
+
+    narrow.activate([{ operator: 'is', operand: 'private' }], {
+        then_select_id: selected_id,
+    });
+
+    assert.equal(narrow_state.narrowed_to_pms(), true);
 
     channel.post = (opts) => {
         assert.equal(opts.url, '/json/report/narrow_times');
