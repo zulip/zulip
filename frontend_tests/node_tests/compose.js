@@ -1639,3 +1639,13 @@ run_test('nonexistent_stream_reply_error', () => {
     assert.equal($("#compose-reply-error-msg").html(), 'There are no messages to reply to yet.');
     assert(shown < hidden); // test shown before hidden
 });
+
+run_test('narrow_button_titles', () => {
+    util.is_mobile = () => { return false; };
+
+    compose.update_stream_button_for_private();
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New stream message"));
+
+    compose.update_stream_button_for_stream();
+    assert.equal($("#left_bar_compose_stream_button_big").text(), i18n.t("New topic"));
+});
