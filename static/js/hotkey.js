@@ -111,22 +111,12 @@ var keypress_mappings = {
     120: {name: 'compose_private_message', message_view_only: true}, // 'x'
 };
 
-var keydown_ctrl_alt_mappings = {
-    83: {name: 'narrow_starred', message_view_only: true}, // 's'
-};
-
 exports.get_keydown_hotkey = function (e) {
-    var hotkey;
-
     if (e.altKey) {
-        if (e.ctrlKey) {
-            hotkey = keydown_ctrl_alt_mappings[e.which];
-            if (hotkey) {
-                return hotkey;
-            }
-        }
         return;
     }
+
+    var hotkey;
 
     if (e.ctrlKey && !e.shiftKey) {
         hotkey = keydown_ctrl_mappings[e.which];
@@ -635,10 +625,6 @@ exports.process_hotkey = function (e, hotkey) {
     case 'narrow_private':
         return do_narrow_action(function (target, opts) {
             narrow.by('is', 'private', opts);
-        });
-    case 'narrow_starred':
-        return do_narrow_action(function (target, opts) {
-            narrow.by('is', 'starred', opts);
         });
     case 'query_streams':
         stream_list.initiate_search();
