@@ -55,15 +55,18 @@ import a database dump from one or more JSON files."""
 
         check_subdomain_available(subdomain, from_management_command=True)
 
+        paths = []
         for path in options['export_paths']:
+            path = os.path.realpath(os.path.expanduser(path))
             if not os.path.exists(path):
                 print("Directory not found: '%s'" % (path,))
                 exit(1)
             if not os.path.isdir(path):
                 print("Export file should be folder; if it's a tarball, please unpack it first.")
                 exit(1)
+            paths.append(path)
 
-        for path in options['export_paths']:
+        for path in paths:
             print("Processing dump: %s ..." % (path,))
             realm = do_import_realm(path, subdomain)
             print("Checking the system bots.")
