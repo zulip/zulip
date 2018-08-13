@@ -5,6 +5,7 @@ var exports = {};
 var current_actions_popover_elem;
 var current_flatpickr_instance;
 var current_message_info_popover_elem;
+var current_mobile_message_buttons_popover_elem;
 var userlist_placement = "right";
 
 var list_of_popovers = [];
@@ -172,6 +173,37 @@ function show_user_info_popover(element, user, message) {
         current_message_info_popover_elem = elt;
     }
 }
+
+function show_mobile_message_buttons_popover(element) {
+    var last_popover_elem = current_mobile_message_buttons_popover_elem;
+    popovers.hide_all();
+    if (last_popover_elem !== undefined
+        && last_popover_elem.get()[0] === element) {
+        // We want it to be the case that a user can dismiss a popover
+        // by clicking on the same element that caused the popover.
+        return;
+    }
+
+    var $element = $(element);
+    $element.popover({
+        placement: "left",
+        template: templates.render('mobile_message_buttons_popover'),
+        content: templates.render('mobile_message_buttons_popover_content', {
+            is_in_private_narrow: narrow_state.narrowed_to_pms(),
+        }),
+        trigger: "manual",
+    });
+    $element.popover("show");
+
+    current_mobile_message_buttons_popover_elem = $element;
+}
+
+exports.hide_mobile_message_buttons_popover = function () {
+    if (current_mobile_message_buttons_popover_elem) {
+        current_mobile_message_buttons_popover_elem.popover("destroy");
+        current_mobile_message_buttons_popover_elem = undefined;
+    }
+};
 
 exports.hide_user_profile = function () {
     $("#user-profile-modal").modal("hide");
@@ -717,6 +749,12 @@ exports.register_click_handlers = function () {
         exports.hide_user_profile();
     });
 
+    $('body').on('click', '.compose_mobile_button', function (e) {
+        show_mobile_message_buttons_popover(this);
+        e.stopPropagation();
+        e.preventDefault();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -984,6 +1022,7 @@ exports.hide_all = function () {
     stream_popover.hide_all_messages_popover();
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
+    popovers.hide_mobile_message_buttons_popover();
     stream_popover.restore_stream_list_size();
     popovers.hide_user_profile();
 
