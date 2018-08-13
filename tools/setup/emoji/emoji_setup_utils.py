@@ -46,6 +46,15 @@ EMOTICON_CONVERSIONS = {
     ':/': ':confused:',
 }
 
+SKIN_TONE_MAPPING = {
+    # '0' is for default yellow skin tone.
+    '1f3fb': '1',
+    '1f3fc': '2',
+    '1f3fd': '3',
+    '1f3fe': '4',
+    '1f3ff': '5',
+}
+
 def emoji_names_for_picker(emoji_name_maps: Dict[str, Dict[str, Any]]) -> List[str]:
     emoji_names = []  # type: List[str]
     for emoji_code, name_info in emoji_name_maps.items():
@@ -122,3 +131,25 @@ def get_remapped_emojis_map(emoji_data: List[Dict[str, Any]]) -> Dict[str, str]:
             non_qualified_codepoint = emoji_dict['non_qualified'].lower()
             remapped_emojis[non_qualified_codepoint] = unified_codepoint
     return remapped_emojis
+
+def skin_variations_are_universal(emoji_dict: Dict[str, Any]) -> bool:
+    if 'skin_variations' not in emoji_dict:
+        return False
+    for skin_tone in SKIN_TONE_MAPPING:
+        if skin_tone not in emoji_dict['skin_variations']:
+            return False
+    for skin_tone, skin_dict in emoji_dict['skin_variations'].items():
+        if not emoji_is_universal(skin_dict):
+            return False
+    return True
+
+def generate_skin_variations_map(emoji_data: List[Dict[str, Any]],
+                                 emoji_name_maps: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, str]]:
+    skin_variations_map = defaultdict(dict)    # type: Dict[str, Dict[str, str]]
+    for emoji_dict in emoji_data:
+        emoji_code = get_emoji_code(emoji_dict)
+        if emoji_code in emoji_name_maps and skin_variations_are_universal(emoji_dict):
+            for skin_tone, skin_dict in emoji_dict['skin_variations'].items():
+                skin_tone_mapped = SKIN_TONE_MAPPING[skin_tone.lower()]
+                skin_variations_map[emoji_code][skin_tone_mapped] = get_emoji_code(skin_dict)
+    return skin_variations_map
