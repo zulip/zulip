@@ -253,9 +253,15 @@ def home_real(request: HttpRequest) -> HttpResponse:
         page_params['translation_data'] = get_language_translation_data(request_language)
 
     csp_nonce = generate_random_token(48)
+    emojiset = user_profile.emojiset
+    if emojiset == UserProfile.TEXT_EMOJISET:
+        # If current emojiset is `TEXT_EMOJISET` then fallback to GOOGLE_EMOJISET
+        # for displaying emojis in emoji picker and composebox typeahead and also
+        # to avoid 404 for related emojiset files.
+        emojiset = UserProfile.GOOGLE_EMOJISET
     response = render(request, 'zerver/app/index.html',
                       context={'user_profile': user_profile,
-                               'emojiset': user_profile.emojiset,
+                               'emojiset': emojiset,
                                'page_params': JSONEncoderForHTML().encode(page_params),
                                'csp_nonce': csp_nonce,
                                'avatar_url': avatar_url(user_profile),
