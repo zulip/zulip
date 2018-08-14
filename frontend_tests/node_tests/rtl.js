@@ -16,6 +16,42 @@ run_test('get_direction', () => {
     assert.equal(rtl.get_direction('۱۲۳'), 'ltr');
     assert.equal(rtl.get_direction('1234'), 'ltr');
 
+    var supp_plane_ltr_char = '\ud800\udfa0';
+    var supp_plane_rtl_char = '\ud802\udc40';
+
+    assert.equal(rtl.get_direction(supp_plane_ltr_char), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char), 'rtl');
+    assert.equal(rtl.get_direction('123' + supp_plane_ltr_char), 'ltr');
+    assert.equal(rtl.get_direction('123' + supp_plane_rtl_char), 'rtl');
+    assert.equal(rtl.get_direction(supp_plane_ltr_char + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char + supp_plane_ltr_char), 'rtl');
+    assert.equal(rtl.get_direction(supp_plane_ltr_char + ' ' + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char + ' ' + supp_plane_ltr_char), 'rtl');
+    assert.equal(rtl.get_direction(supp_plane_ltr_char + 'ج' + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char + 'ج' + supp_plane_ltr_char), 'rtl');
+    assert.equal(rtl.get_direction('پ' + supp_plane_ltr_char + '.' + supp_plane_rtl_char), 'rtl');
+    assert.equal(rtl.get_direction('پ' + supp_plane_rtl_char + '.' + supp_plane_ltr_char), 'rtl');
+    assert.equal(rtl.get_direction('b' + supp_plane_ltr_char + '.' + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction('b' + supp_plane_rtl_char + '.' + supp_plane_ltr_char), 'ltr');
+
+    var unmatched_surrogate_1 = '\ud800';
+    var unmatched_surrogate_2 = '\udf00';
+
+    assert.equal(rtl.get_direction(unmatched_surrogate_1 + ' '), 'ltr');
+    assert.equal(rtl.get_direction(unmatched_surrogate_2 + ' '), 'ltr');
+    assert.equal(rtl.get_direction(' ' + unmatched_surrogate_1), 'ltr');
+    assert.equal(rtl.get_direction(' ' + unmatched_surrogate_2), 'ltr');
+    assert.equal(rtl.get_direction(' ' + unmatched_surrogate_1 + ' '), 'ltr');
+    assert.equal(rtl.get_direction(' ' + unmatched_surrogate_2 + ' '), 'ltr');
+    assert.equal(rtl.get_direction(unmatched_surrogate_1 + supp_plane_ltr_char), 'ltr');
+    assert.equal(rtl.get_direction(unmatched_surrogate_1 + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction(unmatched_surrogate_2 + supp_plane_ltr_char), 'ltr');
+    assert.equal(rtl.get_direction(unmatched_surrogate_2 + supp_plane_rtl_char), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_ltr_char + unmatched_surrogate_1), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_ltr_char + unmatched_surrogate_2), 'ltr');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char + unmatched_surrogate_1), 'rtl');
+    assert.equal(rtl.get_direction(supp_plane_rtl_char + unmatched_surrogate_2), 'rtl');
+
     // Testing with some isolate initiators and PDIs.
     var i_chars = '\u2066\u2067\u2068';
     var pdi = '\u2069';

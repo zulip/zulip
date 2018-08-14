@@ -289,8 +289,12 @@ function edit_message(row, raw_content) {
             currently_editing_messages[rows.id(row)].listeners = listeners;
         }
         composebox_typeahead.initialize_compose_typeahead(edit_id);
+        compose.handle_keyup(null, $(edit_id).expectOne());
         $(edit_id).on('keydown', function (event) {
             compose.handle_keydown(event, $(this).expectOne());
+        });
+        $(edit_id).on('keyup', function (event) {
+            compose.handle_keyup(event, $(this).expectOne());
         });
     }
 

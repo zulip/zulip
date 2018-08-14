@@ -358,7 +358,7 @@ run_test('markdown_rtl', () => {
     assert.equal(textarea.hasClass('rtl'), false);
 
     textarea.val('```quote foo');
-    compose.handle_keydown(event, $("#compose-textarea"));
+    compose.handle_keyup(event, $("#compose-textarea"));
 
     assert.equal(textarea.hasClass('rtl'), true);
 });
@@ -376,7 +376,7 @@ run_test('markdown_ltr', () => {
 
     assert.equal(textarea.hasClass('rtl'), true);
     textarea.val('```quote foo');
-    compose.handle_keydown(event, textarea);
+    compose.handle_keyup(event, textarea);
 
     assert.equal(textarea.hasClass('rtl'), false);
 });
