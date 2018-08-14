@@ -1986,6 +1986,46 @@ def send_pm_if_empty_stream(sender: UserProfile,
 
     send_rate_limited_pm_notification_to_bot_owner(sender, realm, content)
 
+def validate_sender_can_write_to_stream(sender: UserProfile,
+                                        stream: Stream,
+                                        forwarder_user_profile: Optional[UserProfile]) -> None:
+    # Our caller is responsible for making sure that `stream` actually
+    # matches the realm of the sender.
+
+    if stream.is_announcement_only:
+        if not (sender.is_realm_admin or is_cross_realm_bot_email(sender.email)):
+            raise JsonableError(_("Only organization administrators can send to this stream."))
+
+    if not stream.invite_only:
+        # This is a public stream
+        return
+
+    if subscribed_to_stream(sender, stream.id):
+        # It is private, but your are subscribed
+        return
+
+    if sender.is_api_super_user:
+        return
+
+    if (forwarder_user_profile is not None and forwarder_user_profile.is_api_super_user):
+        return
+
+    if sender.is_bot and (sender.bot_owner is not None and
+                          subscribed_to_stream(sender.bot_owner, stream.id)):
+        # Bots can send to any stream their owner can.
+        return
+
+    if sender.email == settings.WELCOME_BOT:
+        # The welcome bot welcomes folks to the stream.
+        return
+
+    if sender.email == settings.NOTIFICATION_BOT:
+        return
+
+    # All other cases are an error.
+    raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
+
+
 # check_message:
 # Returns message ready for sending with do_send_message on success or the error message (string) on error.
 def check_message(sender: UserProfile, client: Client, addressee: Addressee,
@@ -2027,33 +2067,12 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
             raise StreamDoesNotExistError(escape(stream_name))
         recipient = get_stream_recipient(stream.id)
 
-        if (stream.is_announcement_only and not
-            (sender.is_realm_admin or
-             is_cross_realm_bot_email(sender.email))):
-            raise JsonableError(_("Only organization administrators can send to this stream."))
-
-        if not stream.invite_only:
-            # This is a public stream
-            pass
-        elif subscribed_to_stream(sender, stream.id):
-            # Or it is private, but your are subscribed
-            pass
-        elif sender.is_api_super_user or (forwarder_user_profile is not None and
-                                          forwarder_user_profile.is_api_super_user):
-            # Or this request is being done on behalf of a super user
-            pass
-        elif sender.is_bot and (sender.bot_owner is not None and
-                                subscribed_to_stream(sender.bot_owner, stream.id)):
-            # Or you're a bot and your owner is subscribed.
-            pass
-        elif sender.email == settings.WELCOME_BOT:
-            # The welcome bot welcomes folks to the stream.
-            pass
-        elif sender.email == settings.NOTIFICATION_BOT:
-            pass
-        else:
-            # All other cases are an error.
-            raise JsonableError(_("Not authorized to send to stream '%s'") % (stream.name,))
+        # This will raise JsonableError if there are problems.
+        validate_sender_can_write_to_stream(
+            sender=sender,
+            stream=stream,
+            forwarder_user_profile=forwarder_user_profile
+        )
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()

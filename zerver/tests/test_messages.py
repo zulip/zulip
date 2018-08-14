@@ -15,33 +15,36 @@ from zerver.lib.message import estimate_recent_messages
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
+    check_message,
+    check_send_stream_message,
+    do_add_alert_words,
+    do_change_stream_invite_only,
+    do_create_user,
+    do_deactivate_user,
     do_send_messages,
+    do_set_realm_property,
+    extract_recipients,
     get_active_presence_idle_user_ids,
+    get_client,
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message,
+    internal_send_huddle_message,
+    internal_send_message,
     internal_send_private_message,
-    check_message,
-    check_send_stream_message,
-    do_deactivate_user,
-    do_set_realm_property,
-    extract_recipients,
-    do_create_user,
-    get_client,
-    do_add_alert_words,
-    do_change_stream_invite_only,
+    internal_send_stream_message,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 
 from zerver.lib.message import (
     MessageDict,
+    bulk_access_messages,
+    get_first_visible_message_id,
+    get_raw_unread_data,
+    maybe_update_first_visible_message_id,
     messages_for_ids,
     sew_messages_and_reactions,
-    get_first_visible_message_id,
     update_first_visible_message_id,
-    maybe_update_first_visible_message_id,
-    get_raw_unread_data,
-    bulk_access_messages
 )
 
 from zerver.lib.test_helpers import (
@@ -61,7 +64,7 @@ from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_soft_activate_users,
     do_soft_deactivate_users,
-    maybe_catch_up_soft_deactivated_user
+    maybe_catch_up_soft_deactivated_user,
 )
 
 from zerver.models import (
@@ -363,6 +366,67 @@ class TestCrossRealmPMs(ZulipTestCase):
                                      sender_realm="1.example.com")
 
 class InternalPrepTest(ZulipTestCase):
+
+    def test_returns_for_internal_sends(self) -> None:
+        # For our internal_send_* functions we return
+        # if the prep stages fail.  This is mostly defensive
+        # code, since we are generally creating the messages
+        # ourselves, but we want to make sure that the functions
+        # won't actually explode if we give them bad content.
+        bad_content = ''
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        stream_name = 'Verona'
+
+        with mock.patch('logging.exception') as m:
+            internal_send_private_message(
+                realm=realm,
+                sender=cordelia,
+                recipient_user=hamlet,
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_huddle_message(
+                realm=realm,
+                sender=cordelia,
+                emails=[hamlet.email, othello.email],
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_stream_message(
+                realm=realm,
+                sender=cordelia,
+                stream_name=stream_name,
+                topic='whatever',
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_message(
+                realm=realm,
+                sender_email=settings.ERROR_BOT,
+                recipient_type_name='stream',
+                recipients=stream_name,
+                topic_name='whatever',
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
         sender = self.example_user('cordelia')
@@ -1564,6 +1628,77 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "client": "irc_mirror",
                                                            "subject": "from irc",
                                                            "to": "IRCLand"})
+        self.assert_json_success(result)
+
+    def test_unsubscribed_api_super_user(self) -> None:
+        sender = self.example_user('cordelia')
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        self.unsubscribe(sender, stream_name)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Not authorized to send')
+
+        sender.is_api_super_user = True
+        sender.save()
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+    def test_bot_can_send_to_owner_stream(self) -> None:
+        cordelia = self.example_user('cordelia')
+        bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=bot.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(bot.email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Not authorized to send')
+
+        # We subscribe the bot owner! (aka cordelia)
+        self.subscribe(bot.bot_owner, stream_name)
+
+        result = self.api_post(bot.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+    def test_notification_bot(self) -> None:
+        sender = self.notification_bot()
+
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
 class ScheduledMessageTest(ZulipTestCase):
