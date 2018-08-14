@@ -146,6 +146,14 @@ def integration_doc(request: HttpRequest, integration_name: str=REQ(default=None
         context['hubot_docs_url'] = integration.hubot_docs_url
     if isinstance(integration, EmailIntegration):
         context['email_gateway_example'] = settings.EMAIL_GATEWAY_EXAMPLE
+    if integration.name == 'freshdesk':
+        # In our Freshdesk docs, some nested code blocks have characters such
+        # as '{' encoded as '&#123;' to prevent clashes with Jinja2 syntax,
+        # but the encoded form never gets rendered because the text ends up
+        # inside a <pre> tag. So here, we explicitly set a directive that
+        # a particular template should be "unescaped" before being displayed.
+        # Note that this value is used by render_markdown_path.
+        context['unescape_rendered_html'] = True
 
     doc_html_str = render_markdown_path(integration.doc, context)
 
