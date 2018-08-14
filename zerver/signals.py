@@ -79,8 +79,11 @@ def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: A
         if user_tz == '':
             user_tz = timezone_get_current_timezone_name()
         local_time = timezone_now().astimezone(get_timezone(user_tz))
-        utc_offset = local_time.strftime('%z')
-        context['login_time'] = local_time.strftime('%A, %B %d, %Y at %I:%M%p ') + utc_offset
+        if user.twenty_four_hour_time:
+            hhmm_string = local_time.strftime('%H:%M')
+        else:
+            hhmm_string = local_time.strftime('%I:%M%p')
+        context['login_time'] = local_time.strftime('%A, %B %d, %Y at {} %Z'.format(hhmm_string))
         context['device_ip'] = request.META.get('REMOTE_ADDR') or _("Unknown IP address")
         context['device_os'] = get_device_os(user_agent)
         context['device_browser'] = get_device_browser(user_agent)
