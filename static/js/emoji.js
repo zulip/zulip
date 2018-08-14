@@ -93,10 +93,12 @@ exports.initialize = function initialize() {
         // prefetching for that case.
         emojiset = 'google';
     }
-    // Load the sprite image in the background so that the browser
-    // can cache it for later use.
+    // Load the sprite image and octopus image in the background, so
+    // that the browser will cache it for later use.
     var sprite = new Image();
     sprite.src = '/static/generated/emoji/sheet_' + emojiset + '_64.png';
+    var octopus_image = new Image();
+    octopus_image.src = '/static/generated/emoji/images-' + emojiset + '-64/1f419.png';
 };
 
 exports.build_emoji_data = function (realm_emojis) {
