@@ -241,14 +241,14 @@ class ZulipPasswordResetForm(PasswordResetForm):
             endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
                                kwargs=dict(uidb64=uid, token=token))
 
-            context['no_account_in_realm'] = False
+            context['active_account_in_realm'] = True
             context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),
                        context=context)
         else:
-            context['no_account_in_realm'] = True
+            context['active_account_in_realm'] = False
             active_accounts = UserProfile.objects.filter(email__iexact=email, is_active=True)
             if active_accounts:
                 context['active_accounts'] = active_accounts
