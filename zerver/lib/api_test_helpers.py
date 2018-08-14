@@ -154,6 +154,16 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+def get_realm_filters(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch all the filters in this organization
+    result = client.get_realm_filters()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters', 'get', '200')
+
 def add_realm_filter(client):
     # type: (Client) -> None
 
@@ -654,6 +664,7 @@ TEST_FUNCTIONS = {
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users/me/subscriptions/muted_topics:patch': toggle_mute_topic,
     '/users:get': get_members,
+    '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
@@ -766,6 +777,7 @@ def test_queues(client):
 def test_server_organizations(client):
     # type: (Client) -> None
 
+    get_realm_filters(client)
     add_realm_filter(client)
     get_server_settings(client)
 
