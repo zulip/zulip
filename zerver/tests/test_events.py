@@ -750,7 +750,7 @@ class EventsRegisterTest(ZulipTestCase):
         user_profile = self.example_user('hamlet')
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, get_client("website"), 'add', 'starred', [message]),
-            state_change_expected=False,
+            state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -763,7 +763,7 @@ class EventsRegisterTest(ZulipTestCase):
         ])
         events = self.do_test(
             lambda: do_update_message_flags(user_profile, get_client("website"), 'remove', 'starred', [message]),
-            state_change_expected=False,
+            state_change_expected=True,
         )
         error = schema_checker('events[0]', events[0])
         self.assert_on_error(error)
@@ -3037,7 +3037,7 @@ class FetchQueriesTest(ZulipTestCase):
                     client_gravatar=False,
                 )
 
-        self.assert_length(queries, 29)
+        self.assert_length(queries, 30)
 
         expected_counts = dict(
             alert_words=0,
@@ -3057,6 +3057,7 @@ class FetchQueriesTest(ZulipTestCase):
             realm_filters=1,
             realm_user=3,
             realm_user_groups=2,
+            starred_messages=1,
             stream=2,
             subscription=6,
             update_display_settings=0,

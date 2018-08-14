@@ -24,6 +24,7 @@ from zerver.lib.message import (
     aggregate_unread_data,
     apply_unread_message_event,
     get_raw_unread_data,
+    get_starred_message_ids,
 )
 from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.push_notifications import push_notifications_enabled
@@ -258,6 +259,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         # generate a flag update so we need to use the flags field in the
         # message event.
         state['raw_unread_msgs'] = get_raw_unread_data(user_profile)
+
+    if want('starred_messages'):
+        state['starred_messages'] = get_starred_message_ids(user_profile)
 
     if want('stream'):
         state['streams'] = do_get_streams(user_profile)
@@ -587,6 +591,11 @@ def apply_event(state: Dict[str, Any],
         if event['flag'] == 'read' and event['operation'] == 'add':
             for remove_id in event['messages']:
                 remove_message_id_from_unread_mgs(state, remove_id)
+        if event['flag'] == 'starred' and event['operation'] == 'add':
+            state['starred_messages'] += event['messages']
+        if event['flag'] == 'starred' and event['operation'] == 'remove':
+            state['starred_messages'] = [message for message in state['starred_messages']
+                                         if not (message in event['messages'])]
     elif event['type'] == "realm_domains":
         if event['op'] == 'add':
             state['realm_domains'].append(event['realm_domain'])
