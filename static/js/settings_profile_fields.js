@@ -30,16 +30,31 @@ function read_field_data_from_form(selector) {
     var field_order = 1;
     selector.each(function () {
         var text = $(this).find("input")[0].value;
-        field_data[field_order - 1] = {text: text, order: field_order.toString()};
-        field_order += 1;
+        if (text) {
+            field_data[field_order - 1] = {text: text, order: field_order.toString()};
+            field_order += 1;
+        }
     });
 
     return field_data;
 }
 
-function create_choice_row(container, add_delete_button) {
+function update_choice_delete_btn(container, display_flag) {
+    var no_of_choice_row = container.find(".choice-row").length;
+
+    // Disable delete button if there only one choice row
+    // Enable choice delete button more one than once choice
+    if (no_of_choice_row === 1) {
+        if (display_flag === true) {
+            container.find(".choice-row .delete-choice").show();
+        } else {
+            container.find(".choice-row .delete-choice").hide();
+        }
+    }
+}
+
+function create_choice_row(container) {
     var context = {};
-    context.add_delete_button = add_delete_button;
     var row = templates.render("profile-field-choice", context);
     $(container).append(row);
 }
@@ -51,7 +66,8 @@ function clear_form_data() {
     $("#profile_field_type").val("1");
     // Clear data from choice field form
     $("#profile_field_choices").html("");
-    create_choice_row($("#profile_field_choices"), false);
+    create_choice_row($("#profile_field_choices"));
+    update_choice_delete_btn($("#profile_field_choices"), false);
     $("#profile_field_choices_row").hide();
 }
 
@@ -82,13 +98,19 @@ function create_profile_field(e) {
 }
 
 function add_choice_row(e) {
+    if ($(e.target).parent().next().hasClass("choice-row")) {
+        return;
+    }
     var choices_div = e.delegateTarget;
-    create_choice_row(choices_div, true);
+    update_choice_delete_btn($(choices_div), true);
+    create_choice_row(choices_div);
 }
 
 function delete_choice_row(e) {
     var row = $(e.currentTarget).parent();
+    var container = row.parent();
     row.remove();
+    update_choice_delete_btn(container, false);
 }
 
 function get_profile_field_info(id) {
@@ -117,29 +139,11 @@ exports.parse_field_choices_from_field_data = function (field_data) {
             value: value,
             text: choice.text,
             order: choice.order,
-            add_delete_button: true,
         });
     });
-    if (choices.length > 0) {
-        // Remove delete button from the first choice. This makes sure that
-        // the user cannot delete all choices of a choice field. To delete
-        // all choices, just delete the field.
-        choices[0].add_delete_button = false;
-    }
 
     return choices;
 };
-
-function set_choice_delete_button(e) {
-    // Choice type field must have at least one choice
-    $(e.target).find(".choice-row .delete-choice").each(function (index) {
-        if (index === 0) {
-            $(this).hide();
-        } else {
-            $(this).show();
-        }
-    });
-}
 
 function open_edit_form(e) {
     var field_id = $(e.currentTarget).attr("data-profile-field-id");
@@ -168,13 +172,15 @@ function open_edit_form(e) {
             choice_list.append(
                 templates.render("profile-field-choice", {
                     text: choice.text,
-                    add_delete_button: choice.add_delete_button,
                 })
             );
         });
 
+        // Add blank choice at last
+        create_choice_row(choice_list);
+        update_choice_delete_btn(choice_list, false);
         Sortable.create(choice_list[0], {
-            onUpdate: set_choice_delete_button,
+            onUpdate: function () {},
         });
     }
 
@@ -201,7 +207,7 @@ function open_edit_form(e) {
                                        data, profile_field_status);
     });
 
-    profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.add-choice", add_choice_row);
+    profile_field.form.find(".edit_profile_field_choices_container").on("input", ".choice-row input", add_choice_row);
     profile_field.form.find(".edit_profile_field_choices_container").on("click", "button.delete-choice", delete_choice_row);
 }
 
@@ -274,11 +280,12 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
 };
 
 function set_up_choices_field() {
-    create_choice_row('#profile_field_choices', false);
+    create_choice_row('#profile_field_choices');
+    update_choice_delete_btn($("#profile_field_choices"), false);
 
     var choice_list = $("#profile_field_choices")[0];
     Sortable.create(choice_list, {
-        onUpdate: set_choice_delete_button,
+        onUpdate: function () {},
     });
 
     if ($('#profile_field_type').val() !== '3') {
@@ -294,7 +301,7 @@ function set_up_choices_field() {
         }
     });
 
-    $("#profile_field_choices").on("click", "button.add-choice", add_choice_row);
+    $("#profile_field_choices").on("input", ".choice-row input", add_choice_row);
     $("#profile_field_choices").on("click", "button.delete-choice", delete_choice_row);
 }
 

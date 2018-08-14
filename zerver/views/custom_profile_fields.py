@@ -49,6 +49,10 @@ def create_realm_custom_profile_field(request: HttpRequest,
     if field_type not in field_types:
         return json_error(_("Invalid field type."))
 
+    # Choice type field must have at least have one choice
+    if field_type == CustomProfileField.CHOICE and len(field_data) < 1:
+        return json_error(_("Field must have at least one choice."))
+
     error = validate_field_data(field_data)
     if error:
         return json_error(error)
