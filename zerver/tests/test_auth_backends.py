@@ -30,6 +30,7 @@ from zerver.lib.actions import (
     do_reactivate_user,
     do_set_realm_authentication_methods,
     ensure_stream,
+    validate_email,
 )
 from zerver.lib.mobile_auth_otp import otp_decrypt_api_key
 from zerver.lib.validator import validate_login_email, \
@@ -2512,13 +2513,32 @@ class TestAdminSetBackends(ZulipTestCase):
         self.assertTrue(dev_auth_enabled(realm))
         self.assertFalse(password_auth_enabled(realm))
 
-class LoginEmailValidatorTestCase(ZulipTestCase):
+class EmailValidatorTestCase(ZulipTestCase):
     def test_valid_email(self) -> None:
         validate_login_email(self.example_email("hamlet"))
 
     def test_invalid_email(self) -> None:
         with self.assertRaises(JsonableError):
             validate_login_email(u'hamlet')
+
+    def test_validate_email(self) -> None:
+        inviter = self.example_user('hamlet')
+        cordelia = self.example_user('cordelia')
+
+        error, _ = validate_email(inviter, 'fred+5555@zulip.com')
+        self.assertIn('containing + are not allowed', error)
+
+        _, error = validate_email(inviter, cordelia.email)
+        self.assertEqual(error, 'Already has an account.')
+
+        cordelia.is_active = False
+        cordelia.save()
+
+        _, error = validate_email(inviter, cordelia.email)
+        self.assertEqual(error, 'Already has an account.')
+
+        _, error = validate_email(inviter, 'fred-is-fine@zulip.com')
+        self.assertEqual(error, None)
 
 class LDAPBackendTest(ZulipTestCase):
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
