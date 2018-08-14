@@ -144,6 +144,18 @@ def get_members(client):
     validate_against_openapi_schema(result, '/users', 'get', '200')
     assert result['members'][0]['avatar_url'] is None
 
+def add_realm_filter(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Add a filter to automatically linkify #<number> to the corresponding
+    # issue in Zulip's server repo
+    result = client.add_realm_filter('#(?P<id>[0-9]+)',
+                                     'https://github.com/zulip/zulip/issues/%(id)s')
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
+
 def get_profile(client):
     # type: (Client) -> None
 
@@ -502,6 +514,7 @@ TEST_FUNCTIONS = {
     'add-subscriptions': add_subscriptions,
     '/users/me/subscriptions:delete': remove_subscriptions,
     '/users:get': get_members,
+    '/realm/filters:post': add_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/user_uploads:post': upload_file,
@@ -605,7 +618,8 @@ def test_queues(client):
 
 def test_server_organizations(client):
     # type: (Client) -> None
-    pass
+
+    add_realm_filter(client)
 
 def test_errors(client):
     # type: (Client) -> None

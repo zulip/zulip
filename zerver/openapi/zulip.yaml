@@ -790,6 +790,49 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NonExistingStreamError'
+  /realm/filters:
+    post:
+      description: Establish patterns in the messages that should be
+        automatically linkified.
+      parameters:
+      - name: pattern
+        in: query
+        description: The [Python regular
+          expression](https://docs.python.org/3/howto/regex.html) that
+          should trigger the linkifier.
+        schema:
+          type: string
+        example: '#(?P<id>[0-9]+)'
+        required: true
+      - name: url_format_string
+        in: query
+        description: The URL used for the link. If you used named groups for
+          the `pattern`, you can insert their content here with
+          `%(name_of_the_capturing_group)s`.
+        schema:
+          type: string
+        example: https://github.com/zulip/zulip/issues/%(id)s
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    id:
+                      type: integer
+                      description: The numeric ID assigned to this filter.
+                - example:
+                    {
+                        "id": 42,
+                        "result": "success",
+                        "msg": ""
+                    }
   /register:
     post:
       description: This powerful endpoint can be used to register a Zulip

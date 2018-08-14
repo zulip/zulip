@@ -23,6 +23,10 @@
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)
 
+#### Server & organizations
+
+* [Create organization filters](/api/create-org-filters)
+
 #### Real-time events
 * [Real time events API](/api/real-time-events)
 * [Register an event queue](/api/register-queue)
