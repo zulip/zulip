@@ -14,7 +14,7 @@ look at the newest features, consider the [beta releases](#beta-releases).
 ### Disk image (recommended)
 <!-- TODO why zip? -->
 
-1. Download [Zulip for MacOS](https://zulipchat.com/apps/mac).
+1. Download [Zulip for macOS](https://zulipchat.com/apps/mac).
 1. Open the file, and drag the app into the `Applications` folder.
 
 The app will update automatically to future versions.
@@ -87,7 +87,7 @@ update automatically. You can repeat these steps to upgrade to future versions.
 
 Get a peek at new features before they're released!
 
-### MacOS, Windows, and most Linux distros
+### macOS, Windows, and most Linux distros
 
 Start by finding the latest version marked "Pre-release" on the
 [release list page][release-list].  There may or may not be a "Pre-release"
