@@ -30,11 +30,8 @@
 
 #### Server & organizations
 
-* [Create organization filters](/api/create-org-filters)
-
-#### Server & organizations
-
 * [Get server settings](/api/server-settings)
+* [Create organization filters](/api/create-org-filters)
 
 #### Real-time events
 * [Real time events API](/api/real-time-events)
