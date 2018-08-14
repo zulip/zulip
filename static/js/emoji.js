@@ -84,10 +84,19 @@ exports.initialize = function initialize() {
 
     exports.update_emojis(page_params.realm_emoji);
 
+    var emojiset = page_params.emojiset;
+    if (page_params.emojiset === 'text') {
+        // If the current emojiset is `text`, then we fallback to the
+        // `google` emojiset on the backend (see zerver/views/home.py)
+        // for displaying emojis in emoji picker and composebox
+        // typeahead. This logic ensures that we do sprite sheet
+        // prefetching for that case.
+        emojiset = 'google';
+    }
     // Load the sprite image in the background so that the browser
     // can cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet_' + page_params.emojiset + '_64.png';
+    sprite.src = '/static/generated/emoji/sheet_' + emojiset + '_64.png';
 };
 
 exports.build_emoji_data = function (realm_emojis) {
