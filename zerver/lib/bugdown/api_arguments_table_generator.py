@@ -2,6 +2,7 @@ import re
 import os
 import ujson
 
+from django.utils.html import escape as escape_html
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
 from zerver.lib.openapi import get_openapi_parameters
@@ -133,7 +134,7 @@ class APIArgumentsTablePreprocessor(Preprocessor):
                 argument=argument.get('argument') or argument.get('name'),
                 # Show this as JSON to avoid changing the quoting style, which
                 # may cause problems with JSON encoding.
-                example=ujson.dumps(argument['example']),
+                example=escape_html(ujson.dumps(argument['example'])),
                 required='Yes' if argument.get('required') else 'No',
                 description=md_engine.convert(description),
             ))
