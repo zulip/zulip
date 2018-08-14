@@ -5,7 +5,14 @@ import ujson
 import django
 import mock
 
+from zerver.lib.actions import (
+    ensure_stream,
+)
+
 from zerver.lib.test_classes import ZulipTestCase
+from zerver.lib.test_helpers import (
+    most_recent_usermessage,
+)
 from zerver.lib.user_groups import (
     check_add_user_to_user_group,
     check_remove_user_from_user_group,
@@ -380,3 +387,54 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assertEqual(UserGroupMembership.objects.count(), 3)
         members = get_memberships_of_users(user_group, [hamlet, othello, aaron])
         self.assertEqual(len(members), 1)
+
+    def test_mentions(self) -> None:
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        zoe = self.example_user('ZOE')
+
+        realm = cordelia.realm
+
+        group_name = 'support'
+        stream_name = 'Dev Help'
+
+        content_with_group_mention = 'hey @*support* can you help us with this?'
+
+        ensure_stream(realm, stream_name)
+
+        all_users = {cordelia, hamlet, othello, zoe}
+        support_team = {hamlet, zoe}
+        sender = cordelia
+        other_users = all_users - support_team
+
+        for user in all_users:
+            self.subscribe(user, stream_name)
+
+        create_user_group(
+            name=group_name,
+            members=list(support_team),
+            realm=realm,
+        )
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content=content_with_group_mention,
+        )
+
+        with mock.patch('logging.info'):
+            result = self.api_post(sender.email, "/json/messages", payload)
+
+        self.assert_json_success(result)
+
+        for user in support_team:
+            um = most_recent_usermessage(user)
+            self.assertTrue(um.flags.mentioned)
+
+        for user in other_users:
+            um = most_recent_usermessage(user)
+            self.assertFalse(um.flags.mentioned)
