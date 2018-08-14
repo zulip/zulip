@@ -1566,6 +1566,31 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "to": "IRCLand"})
         self.assert_json_success(result)
 
+    def test_unsubscribed_api_super_user(self) -> None:
+        sender = self.example_user('cordelia')
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        self.unsubscribe(sender, stream_name)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Not authorized to send')
+
+        sender.is_api_super_user = True
+        sender.save()
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
 class ScheduledMessageTest(ZulipTestCase):
 
     def last_scheduled_message(self) -> ScheduledMessage:
