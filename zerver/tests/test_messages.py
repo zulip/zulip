@@ -1591,6 +1591,34 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
+    def test_bot_can_send_to_owner_stream(self) -> None:
+        cordelia = self.example_user('cordelia')
+        bot = self.create_test_bot(
+            short_name='whatever',
+            user_profile=cordelia,
+        )
+
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=bot.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(bot.email, "/api/v1/messages", payload)
+        self.assert_json_error_contains(result, 'Not authorized to send')
+
+        # We subscribe the bot owner! (aka cordelia)
+        self.subscribe(bot.bot_owner, stream_name)
+
+        result = self.api_post(bot.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
 class ScheduledMessageTest(ZulipTestCase):
 
     def last_scheduled_message(self) -> ScheduledMessage:
