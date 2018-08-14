@@ -176,6 +176,16 @@ def add_realm_filter(client):
 
     validate_against_openapi_schema(result, '/realm/filters', 'post', '200')
 
+def remove_realm_filter(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Remove the organization filter with ID 42
+    result = client.remove_realm_filter(42)
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/realm/filters/<filter_id>', 'delete', '200')
+
 def get_profile(client):
     # type: (Client) -> None
 
@@ -666,6 +676,7 @@ TEST_FUNCTIONS = {
     '/users:get': get_members,
     '/realm/filters:get': get_realm_filters,
     '/realm/filters:post': add_realm_filter,
+    '/realm/filters/<filter_id>:delete': remove_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
     '/server_settings:get': get_server_settings,
@@ -780,6 +791,7 @@ def test_server_organizations(client):
     get_realm_filters(client)
     add_realm_filter(client)
     get_server_settings(client)
+    remove_realm_filter(client)
 
 def test_errors(client):
     # type: (Client) -> None

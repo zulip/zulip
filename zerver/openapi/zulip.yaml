@@ -1303,6 +1303,26 @@ paths:
                         "result": "success",
                         "msg": ""
                     }
+  /realm/filters/<filter_id>:
+    delete:
+      description: Remove an organization filter.
+      parameters:
+      - name: filter_id
+        in: path
+        description: The ID of the filter that you want to remove.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
   /register:
     post:
       description: This powerful endpoint can be used to register a Zulip
