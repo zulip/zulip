@@ -10,6 +10,7 @@ class Customer:
     default_source: Card
     created: int
     id: str
+    source: str
     subscriptions: SubscriptionListObject
 
     @staticmethod
@@ -19,6 +20,10 @@ class Customer:
     @staticmethod
     def create(description: str, email: str, metadata: Dict[str, Any],
                source: str) -> Customer:
+        ...
+
+    @staticmethod
+    def save(idempotency_key: str) -> Customer:
         ...
 
 class Invoice:

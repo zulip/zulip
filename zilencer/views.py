@@ -184,7 +184,8 @@ def initial_upgrade(request: HttpRequest) -> HttpResponse:
     error_message = ""
     error_description = ""  # only used in tests
 
-    if Customer.objects.filter(realm=user.realm).exists():
+    customer = Customer.objects.filter(realm=user.realm).first()
+    if customer is not None and customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('zilencer.views.billing_home'))
 
     if request.method == 'POST':
@@ -231,6 +232,8 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     user = request.user
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
+        return HttpResponseRedirect(reverse('zilencer.views.initial_upgrade'))
+    if not customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('zilencer.views.initial_upgrade'))
 
     if not user.is_realm_admin and not user == customer.billing_user:

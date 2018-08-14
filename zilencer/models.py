@@ -39,6 +39,10 @@ class RemotePushDeviceToken(AbstractPushDeviceToken):
 class Customer(models.Model):
     realm = models.OneToOneField(Realm, on_delete=models.CASCADE)  # type: Realm
     stripe_customer_id = models.CharField(max_length=255, unique=True)  # type: str
+    # Becomes True the first time a payment successfully goes through, and never
+    # goes back to being False
+    has_billing_relationship = models.BooleanField(default=False)  # type: bool
+
     billing_user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
 
     def __str__(self) -> str:

@@ -213,6 +213,63 @@ class StripeTest(ZulipTestCase):
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
             {'quantity': new_seat_count})
 
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_upgrade_where_subscription_save_fails_at_first(self, create_customer: mock.Mock) -> None:
+        user = self.example_user("hamlet")
+        self.login(user.email)
+        with mock.patch('stripe.Subscription.create',
+                        side_effect=stripe.error.CardError('message', 'param', 'code', json_body={})):
+            self.client_post("/upgrade/", {'stripeToken': self.token,
+                                           'signed_seat_count': self.signed_seat_count,
+                                           'salt': self.salt,
+                                           'plan': Plan.CLOUD_ANNUAL})
+        # Check that we created a customer in stripe
+        create_customer.assert_called()
+        create_customer.reset_mock()
+        # Check that we created a Customer with has_billing_relationship=False
+        self.assertTrue(Customer.objects.filter(
+            stripe_customer_id=self.stripe_customer_id, has_billing_relationship=False).exists())
+        # Check that we correctly populated RealmAuditLog
+        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
+                                 .values_list('event_type', flat=True).order_by('id'))
+        self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                                             RealmAuditLog.STRIPE_CARD_ADDED])
+        # Check that we did not update Realm
+        realm = get_realm("zulip")
+        self.assertFalse(realm.has_seat_based_plan)
+        # Check that we still get redirected to /upgrade
+        response = self.client_get("/billing/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/upgrade/', response.url)
+
+        # mock_create_customer just returns a customer with no subscription object
+        with mock.patch("stripe.Subscription.create", side_effect=mock_customer_with_subscription):
+            with mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer):
+                with mock.patch("stripe.Customer.save", side_effect=mock_create_customer):
+                    self.client_post("/upgrade/", {'stripeToken': self.token,
+                                                   'signed_seat_count': self.signed_seat_count,
+                                                   'salt': self.salt,
+                                                   'plan': Plan.CLOUD_ANNUAL})
+        # Check that we do not create a new customer in stripe
+        create_customer.assert_not_called()
+        # Impossible to create two Customers, but check that we updated has_billing_relationship
+        self.assertTrue(Customer.objects.filter(
+            stripe_customer_id=self.stripe_customer_id, has_billing_relationship=True).exists())
+        # Check that we correctly populated RealmAuditLog
+        audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
+                                 .values_list('event_type', flat=True).order_by('id'))
+        self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+                                             RealmAuditLog.STRIPE_CARD_ADDED,
+                                             RealmAuditLog.STRIPE_CARD_ADDED,
+                                             RealmAuditLog.STRIPE_PLAN_CHANGED])
+        # Check that we correctly updated Realm
+        realm = get_realm("zulip")
+        self.assertTrue(realm.has_seat_based_plan)
+        # Check that we can no longer access /upgrade
+        response = self.client_get("/upgrade/")
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual('/billing/', response.url)
+
     def test_upgrade_with_tampered_seat_count(self) -> None:
         self.login(self.example_email("hamlet"))
         response = self.client_post("/upgrade/", {
@@ -247,7 +304,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         Customer.objects.create(
-            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user)
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user,
+            has_billing_relationship=True)
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),

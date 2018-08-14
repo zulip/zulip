@@ -8,6 +8,7 @@ import ujson
 from django.conf import settings
 from django.db import transaction
 from django.utils.translation import ugettext as _
+from django.utils.timezone import now as timezone_now
 from django.core.signing import Signer
 import stripe
 
@@ -157,6 +158,21 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
     return stripe_customer
 
 @catch_stripe_errors
+def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
+    stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+    stripe_customer.source = stripe_token
+    # Deletes existing card: https://stripe.com/docs/api#update_customer-source
+    # This can also have other side effects, e.g. it will try to pay certain past-due
+    # invoices: https://stripe.com/docs/api#update_customer
+    updated_stripe_customer = stripe_customer.save(
+        # stripe_token[:4] = 'tok_', so 8 characters of entropy
+        idempotency_key='do_replace_payment_source:%s' % (stripe_token[:12]))
+    RealmAuditLog.objects.create(
+        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+        event_time=timezone_now())
+    return updated_stripe_customer
+
+@catch_stripe_errors
 def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
     if extract_current_subscription(stripe_customer) is not None:
@@ -165,6 +181,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
+    # Success implies the customer was charged: https://stripe.com/docs/billing/lifecycle#active
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',
@@ -178,6 +195,8 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         print(''.join(['"create_subscription": ', str(stripe_subscription), ',']))  # nocoverage
     customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
     with transaction.atomic():
+        customer.has_billing_relationship = True
+        customer.save(update_fields=['has_billing_relationship'])
         customer.realm.has_seat_based_plan = True
         customer.realm.save(update_fields=['has_seat_based_plan'])
         RealmAuditLog.objects.create(
@@ -197,7 +216,11 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
                 extra_data=ujson.dumps({'quantity': current_seat_count}))
 
 def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stripe_token: str) -> None:
-    stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
+    customer = Customer.objects.filter(realm=user.realm).first()
+    if customer is None:
+        stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
+    else:
+        stripe_customer = do_replace_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(
         stripe_customer=stripe_customer,
         stripe_plan_id=plan.stripe_plan_id,

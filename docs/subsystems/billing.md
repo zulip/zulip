@@ -22,18 +22,26 @@ Notes:
 * We generally try to store billing-related data in Stripe, rather than in
   Zulip database tables. We'd rather pay the penalty of making extra stripe
   API requests than deal with keeping two sources of data in sync.
+* A realm should have a customer object in Stripe if and only if it has a
+  `Customer` object in Zulip.
 
-The two main billing-related states for a realm are "have never had a
-billing relationship with Zulip" and its opposite. This is determined by
-`Customer.objects.filter(realm=realm).exists()`.  If a realm doesn't have a
-billing relationship, all the messaging, screens, etc. are geared towards
-making it easy to upgrade. If a realm does have a billing relationship, all
-the screens are geared toward making it easy to access current and
-historical billing information.
+The two main billing-related states for a realm are "have never successfully
+been charged for anything" and its opposite. This is determined by whether
+the `realm` has a corresponding `Customer` object with
+`has_billing_relationship=True`. There are only a few cases where a `realm`
+might have a `Customer` object with `has_billing_relationship=False`:
+* They are approved as a non-profit or otherwise have a partial discount,
+  but haven't entered any payment info.
+* They entered valid payment info, but the initial charge failed (rare but
+  possible).
 
-Note that having a billing relationship doesn't necessarily mean they are on
-a paid plan, or have been in the past. E.g. adding a coupon for a potential
-customer requires creating a Customer object.
+If a realm doesn't have a billing relationship, all the messaging, screens,
+etc. are geared towards making it easy to upgrade. If a realm does have a
+billing relationship, all the screens are geared toward making it easy to
+access current and historical billing information.
+
+Note that having a billing relationship doesn't necessarily mean they are
+currently on a paid plan, or that they currently have a card on file.
 
 Notes:
 * When manually testing, I find I often run `Customer.objects.all().delete()`
@@ -41,6 +49,7 @@ Notes:
 * 4242424242424242 is Stripe's test credit card, also useful for manually
   testing. You can put anything in the address fields, any future expiry
   date, and anything for the CVV code.
+  <https://stripe.com/docs/testing#cards-responses> has some other fun ones.
 
 ## BillingProcessor
 
