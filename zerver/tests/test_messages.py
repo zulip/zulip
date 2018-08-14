@@ -1619,6 +1619,24 @@ class MessagePOSTTest(ZulipTestCase):
         result = self.api_post(bot.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
 
+    def test_notification_bot(self) -> None:
+        sender = self.notification_bot()
+
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, invite_only=True)
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
 class ScheduledMessageTest(ZulipTestCase):
 
     def last_scheduled_message(self) -> ScheduledMessage:
