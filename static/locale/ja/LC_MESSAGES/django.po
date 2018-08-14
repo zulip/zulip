@@ -10,9 +10,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Zulip\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2018-07-27 19:22+0000\n"
-"PO-Revision-Date: 2018-07-27 19:26+0000\n"
-"Last-Translator: Tim Abbott <tabbott@kandralabs.com>\n"
+"POT-Creation-Date: 2018-08-09 00:53+0000\n"
+"PO-Revision-Date: 2018-08-09 00:54+0000\n"
+"Last-Translator: Tetsuya Morimoto <tetsuya.morimoto@gmail.com>\n"
 "Language-Team: Japanese (http://www.transifex.com/zulip/zulip/language/ja/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -536,13 +536,13 @@ msgstr "メールアドレス（1行に1つかカンマで区切る）"
 msgid "One or more email addresses..."
 msgstr "1つ以上のメールアドレス…"
 
-#: templates/zerver/app/invite_user.html:17
+#: templates/zerver/app/invite_user.html:19
 msgid "User(s) join as"
 msgstr ""
 
-#: templates/zerver/app/invite_user.html:20
-msgid "Regular users"
-msgstr ""
+#: templates/zerver/app/invite_user.html:22
+msgid "Members"
+msgstr "メンバー"
 
 #: templates/zerver/app/invite_user.html:23
 msgid "Organization administrators"
@@ -562,7 +562,7 @@ msgstr "招待"
 
 #: templates/zerver/app/keyboard_shortcuts.html:2
 #: templates/zerver/app/navbar.html:121
-#: templates/zerver/app/right_sidebar.html:34
+#: templates/zerver/app/right_sidebar.html:37
 msgid "Keyboard shortcuts"
 msgstr "キーボードショートカット"
 
@@ -1016,11 +1016,11 @@ msgstr "ユーザーを絞り込み"
 msgid "USERS"
 msgstr "ユーザー"
 
-#: templates/zerver/app/right_sidebar.html:23
+#: templates/zerver/app/right_sidebar.html:26
 msgid "Invite more users"
 msgstr "ユーザーを招待"
 
-#: templates/zerver/app/right_sidebar.html:28
+#: templates/zerver/app/right_sidebar.html:31
 msgid "GROUP PMs"
 msgstr "グループPM"
 
@@ -1181,7 +1181,7 @@ msgstr "組織の設定"
 msgid "Organization permissions"
 msgstr "組織の権限"
 
-#: templates/zerver/app/settings_overlay.html:59 zerver/models.py:1472
+#: templates/zerver/app/settings_overlay.html:59 zerver/models.py:1477
 msgid "Custom emoji"
 msgstr "カスタム絵文字"
 
@@ -1939,39 +1939,39 @@ msgstr ""
 msgid "See plans and pricing"
 msgstr ""
 
-#: templates/zerver/hello.html:390
+#: templates/zerver/hello.html:391
 msgid "Travis logo"
 msgstr "Travisロゴ"
 
-#: templates/zerver/hello.html:397
+#: templates/zerver/hello.html:398
 msgid "Github logo"
 msgstr "Githubロゴ"
 
-#: templates/zerver/hello.html:404
+#: templates/zerver/hello.html:405
 msgid "Heroku logo"
 msgstr "Herokuロゴ"
 
-#: templates/zerver/hello.html:411
+#: templates/zerver/hello.html:412
 msgid "Zendesk logo"
 msgstr "Zendeskロゴ"
 
-#: templates/zerver/hello.html:418
+#: templates/zerver/hello.html:419
 msgid "JIRA logo"
 msgstr "JIRAロゴ"
 
-#: templates/zerver/hello.html:425
+#: templates/zerver/hello.html:426
 msgid "Sentry logo"
 msgstr "Sentryロゴ"
 
-#: templates/zerver/hello.html:432
+#: templates/zerver/hello.html:433
 msgid "Pagerduty logo"
 msgstr "Pagerdutyロゴ"
 
-#: templates/zerver/hello.html:512
+#: templates/zerver/hello.html:513
 msgid "Log in now!"
 msgstr "すぐにログイン！"
 
-#: templates/zerver/hello.html:516
+#: templates/zerver/hello.html:517
 msgid "Sign up now!"
 msgstr ""
 
@@ -2119,17 +2119,22 @@ msgid ""
 "                    "
 msgstr ""
 
-#: templates/zerver/realm_creation_failed.html:8
+#: templates/zerver/realm_creation_failed.html:20
 msgid ""
 "This server does not allow members of the public to create new "
 "organizations."
 msgstr "このサーバーでは新しい組織を作成できるメンバーが限られています。"
 
-#: templates/zerver/realm_creation_failed.html:9
+#: templates/zerver/realm_creation_failed.html:22
 msgid ""
-"Zulip is open source, so you can install your own Zulip server by following "
-"the instructions on <a href=\"https://www.zulip.org/\">www.zulip.org</a>"
-msgstr "Zulipはオープンソースなので<a href=\"https://www.zulip.org/\">www.zulip.org</a>にある手順で自分用のZulipをインストールできます。"
+"\n"
+"                    Zulip is open source, so you\n"
+"                    can <a href=\"https://zulip.readthedocs.io/en/stable/production/install.html\">install\n"
+"                    your own Zulip server</a> or create a new\n"
+"                    organization on\n"
+"                    <a href=\"https://zulipchat.com\">Zulip Cloud</a>\n"
+"                    "
+msgstr ""
 
 #: templates/zerver/register.html:20
 msgid ""
@@ -2423,7 +2428,7 @@ msgid ""
 "to register for accounts in this organization."
 msgstr "あなたのメールアドレス {email} はこの組織のアカウントに登録できるドメインではありません。"
 
-#: zerver/forms.py:161 zerver/forms.py:174 zerver/lib/actions.py:4337
+#: zerver/forms.py:161 zerver/forms.py:174 zerver/lib/actions.py:4351
 msgid "Please use your real email address."
 msgstr "本物のメールアドレスを使ってください。"
 
@@ -2443,220 +2448,218 @@ msgstr "カンマ区切りで10個までメールアドレスを追加してく�
 msgid "Please enter at most 10 emails."
 msgstr "最大10個のメールアドレスを入力してください。"
 
-#: zerver/lib/actions.py:916
+#: zerver/lib/actions.py:925
 msgid "Unable to render message"
 msgstr "メッセージをレンダリングできません"
 
-#: zerver/lib/actions.py:1622
+#: zerver/lib/actions.py:1628
 msgid "Missing parameter: 'to' (recipient)"
 msgstr "パラメーターがありません: 'to' (受信者)"
 
-#: zerver/lib/actions.py:1624
+#: zerver/lib/actions.py:1630
 msgid "Invalid 'op' value (should be start or stop)"
 msgstr ""
 
-#: zerver/lib/actions.py:1635
+#: zerver/lib/actions.py:1641
 #, python-format
 msgid "Welcome to #**%s**."
 msgstr "#**%s** へようこそ。"
 
-#: zerver/lib/actions.py:1638
+#: zerver/lib/actions.py:1644
 msgid "Description"
 msgstr "説明"
 
-#: zerver/lib/actions.py:1646
+#: zerver/lib/actions.py:1652
 msgid "hello"
 msgstr "こんにちはー"
 
-#: zerver/lib/actions.py:1763 zerver/lib/actions.py:4665
-#: zerver/views/messages.py:1172 zerver/views/messages.py:1179
-#: zerver/views/messages.py:1202
+#: zerver/lib/actions.py:1769 zerver/lib/actions.py:4679
+#: zerver/views/messages.py:1174 zerver/views/messages.py:1181
+#: zerver/views/messages.py:1204
 msgid "User not authorized for this query"
 msgstr "このクエリーを許可されていないユーザーです"
 
-#: zerver/lib/actions.py:1788
+#: zerver/lib/actions.py:1794
 #, python-format
 msgid "'%s' is no longer using Zulip."
 msgstr "'%s' はZulipを使っていません。"
 
-#: zerver/lib/actions.py:1794
+#: zerver/lib/actions.py:1800
 msgid "You can't send private messages outside of your organization."
 msgstr "組織の外部からプライベートメッセージを送信できません。"
 
-#: zerver/lib/actions.py:1922 zerver/lib/streams.py:106
-#: zerver/lib/streams.py:161
+#: zerver/lib/actions.py:1928 zerver/lib/streams.py:107
+#: zerver/lib/streams.py:163
 #, python-format
 msgid "Invalid stream name '%s'"
 msgstr "不正なストリーム名 '%s'"
 
-#: zerver/lib/actions.py:1924
+#: zerver/lib/actions.py:1930
 #, python-format
 msgid "Stream name too long (limit: %s characters)."
 msgstr ""
 
-#: zerver/lib/actions.py:1927
+#: zerver/lib/actions.py:1933
 #, python-format
 msgid "Stream name '%s' contains NULL (0x00) characters."
 msgstr "ストリーム名 '%s' がNULL文字 (0x00) を含んでいます。"
 
-#: zerver/lib/actions.py:1931
+#: zerver/lib/actions.py:1937
 #, python-format
 msgid "Invalid default stream group name '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:1933
+#: zerver/lib/actions.py:1939
 #, python-format
 msgid "Default stream group name too long (limit: %s characters)"
 msgstr ""
 
-#: zerver/lib/actions.py:1937
+#: zerver/lib/actions.py:1943
 #, python-format
 msgid "Default stream group name '%s' contains NULL (0x00) characters."
 msgstr ""
 
-#: zerver/lib/actions.py:2016
+#: zerver/lib/actions.py:2022
 msgid "Message must not be empty"
 msgstr "メッセージを入力する必要があります"
 
-#: zerver/lib/actions.py:2018
+#: zerver/lib/actions.py:2024
 msgid "Message must not contain null bytes"
 msgstr "メッセージにNULL文字を含んではいけません"
 
-#: zerver/lib/actions.py:2047
+#: zerver/lib/actions.py:2053
 msgid "Only organization administrators can send to this stream."
 msgstr ""
 
-#: zerver/lib/actions.py:2070
+#: zerver/lib/actions.py:2076
 #, python-format
 msgid "Not authorized to send to stream '%s'"
 msgstr "ストリーム '%s' への送信は許可されていません"
 
-#: zerver/lib/actions.py:2076
+#: zerver/lib/actions.py:2082
 msgid "Message must have recipients"
 msgstr "メッセージは受信者が必要です"
 
-#: zerver/lib/actions.py:2088 zerver/lib/addressee.py:107
+#: zerver/lib/actions.py:2094 zerver/lib/addressee.py:107
 #: zerver/lib/outgoing_webhook.py:145
 msgid "Invalid message type"
 msgstr "不正なメッセージ種別"
 
-#: zerver/lib/actions.py:2115
+#: zerver/lib/actions.py:2121
 msgid "Widgets: API programmer sent invalid JSON content"
 msgstr ""
 
-#: zerver/lib/actions.py:2119
+#: zerver/lib/actions.py:2125
 #, python-format
 msgid "Widgets: %s"
 msgstr ""
 
-#: zerver/lib/actions.py:2306
+#: zerver/lib/actions.py:2312
 msgid "Subscriber data is not available for this stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2313
+#: zerver/lib/actions.py:2319
 msgid "Unable to retrieve subscribers for private stream"
 msgstr ""
 
-#: zerver/lib/actions.py:2997 zerver/lib/users.py:153 zerver/lib/users.py:167
+#: zerver/lib/actions.py:3005 zerver/lib/users.py:153 zerver/lib/users.py:167
 msgid "Insufficient permission"
 msgstr "権限が足りません"
 
-#: zerver/lib/actions.py:3268
+#: zerver/lib/actions.py:3277
 #, python-format
 msgid "Invalid default stream group %s"
 msgstr ""
 
-#: zerver/lib/actions.py:3324 zerver/lib/actions.py:3343
+#: zerver/lib/actions.py:3333 zerver/lib/actions.py:3352
 #, python-format
 msgid ""
 "'%(stream_name)s' is a default stream and cannot be added to "
 "'%(group_name)s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3331
+#: zerver/lib/actions.py:3340
 #, python-format
 msgid "Default stream group '%(group_name)s' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:3347
+#: zerver/lib/actions.py:3356
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is already present in default stream group "
 "'%(group_name)s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3359
+#: zerver/lib/actions.py:3368
 #, python-format
 msgid ""
 "Stream '%(stream_name)s' is not present in default stream group "
 "'%(group_name)s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3369
+#: zerver/lib/actions.py:3378
 #, python-format
 msgid "This default stream group is already named '%s'"
 msgstr ""
 
-#: zerver/lib/actions.py:3372
+#: zerver/lib/actions.py:3381
 #, python-format
 msgid "Default stream group '%s' already exists"
 msgstr ""
 
-#: zerver/lib/actions.py:3621 zerver/lib/actions.py:3623
-#: zerver/lib/message.py:490 zerver/lib/message.py:501
-#: zerver/lib/message.py:505 zerver/lib/message.py:510
-#: zerver/lib/message.py:518 zerver/lib/message.py:525
+#: zerver/lib/actions.py:3632 zerver/lib/actions.py:3634
+#: zerver/lib/message.py:495 zerver/lib/message.py:501
 msgid "Invalid message(s)"
 msgstr "不正なメッセージ"
 
-#: zerver/lib/actions.py:4330
+#: zerver/lib/actions.py:4344
 msgid "Invalid address."
 msgstr "不正なメールアドレス"
 
-#: zerver/lib/actions.py:4335
+#: zerver/lib/actions.py:4349
 msgid "Outside your domain."
 msgstr "ドメイン外です。"
 
-#: zerver/lib/actions.py:4339 zerver/views/users.py:436
+#: zerver/lib/actions.py:4353 zerver/views/users.py:443
 msgid "Email addresses containing + are not allowed."
 msgstr ""
 
-#: zerver/lib/actions.py:4344
+#: zerver/lib/actions.py:4358
 msgid "Already has an account."
 msgstr "アカウントはすでにあります"
 
-#: zerver/lib/actions.py:4370
+#: zerver/lib/actions.py:4384
 #, python-format
 msgid ""
 "You do not have enough remaining invites. Please contact %s to have your "
 "limit raised. No invitations were sent."
 msgstr ""
 
-#: zerver/lib/actions.py:4405
+#: zerver/lib/actions.py:4419
 msgid ""
 "Your account is too new to send invites for this organization. Ask an "
 "organization admin, or a more experienced user."
 msgstr ""
 
-#: zerver/lib/actions.py:4425
+#: zerver/lib/actions.py:4439
 msgid "Some emails did not validate, so we didn't send any invitations."
 msgstr ""
 
-#: zerver/lib/actions.py:4430
+#: zerver/lib/actions.py:4444
 msgid "We weren't able to invite anyone."
 msgstr ""
 
-#: zerver/lib/actions.py:4454
+#: zerver/lib/actions.py:4468
 msgid ""
 "Some of those addresses are already using Zulip, so we didn't send them an "
 "invitation. We did send invitations to everyone else!"
 msgstr ""
 
-#: zerver/lib/actions.py:4808
+#: zerver/lib/actions.py:4822
 msgid "Invalid order mapping."
 msgstr ""
 
-#: zerver/lib/actions.py:4848
+#: zerver/lib/actions.py:4862 zerver/lib/actions.py:4873
 #, python-format
 msgid "User group '%s' already exists."
 msgstr ""
@@ -2678,7 +2681,7 @@ msgstr "ストリームがありません"
 msgid "Missing topic"
 msgstr "トピックがありません"
 
-#: zerver/lib/addressee.py:115 zerver/views/messages.py:1347
+#: zerver/lib/addressee.py:115 zerver/views/messages.py:1349
 #: zerver/webhooks/ifttt/view.py:22 zerver/webhooks/zapier/view.py:22
 msgid "Topic can't be empty"
 msgstr "トピックを入力してください"
@@ -2720,7 +2723,7 @@ msgstr "サブドメインは '-' で始める、または終えることがで�
 msgid "Domain can only have letters, numbers, '.' and '-'s."
 msgstr "ドメインには文字や数字と '.' と '-' だけが使えます。"
 
-#: zerver/lib/emoji.py:53 zerver/views/realm_emoji.py:52
+#: zerver/lib/emoji.py:53 zerver/views/realm_emoji.py:53
 #, python-format
 msgid "Emoji '%s' does not exist"
 msgstr "絵文字 「%s」は存在しません"
@@ -2753,7 +2756,7 @@ msgstr ""
 msgid "Must be an organization administrator or emoji author"
 msgstr ""
 
-#: zerver/lib/emoji.py:112 zerver/models.py:477
+#: zerver/lib/emoji.py:112 zerver/models.py:476
 msgid "Invalid characters in emoji name"
 msgstr "絵文字名に不正な文字"
 
@@ -2761,7 +2764,7 @@ msgstr "絵文字名に不正な文字"
 msgid "Invalid type parameter"
 msgstr "不正な種別パラメーター"
 
-#: zerver/lib/events.py:659
+#: zerver/lib/events.py:660
 msgid "Could not allocate event queue"
 msgstr ""
 
@@ -2869,11 +2872,11 @@ msgstr ""
 msgid "Operator %s not supported."
 msgstr "オペレーター %s はサポートされていません。"
 
-#: zerver/lib/notifications.py:530
+#: zerver/lib/notifications.py:507
 msgid "admins"
 msgstr ""
 
-#: zerver/lib/notifications.py:534
+#: zerver/lib/notifications.py:511
 msgid "members"
 msgstr ""
 
@@ -2927,29 +2930,21 @@ msgstr "不正なストリームID"
 msgid "Stream name '%s' is already taken."
 msgstr ""
 
-#: zerver/lib/streams.py:240
+#: zerver/lib/streams.py:242
 msgid "User cannot create streams."
 msgstr "ユーザーはストリームを作成できません。"
 
-#: zerver/lib/streams.py:242
+#: zerver/lib/streams.py:244
 #, python-format
 msgid "Stream(s) (%s) do not exist"
 msgstr "このストリーム (%s) は存在しません"
 
-#: zerver/lib/streams.py:260
+#: zerver/lib/streams.py:262
 #, python-format
 msgid "Default stream group with id '%s' does not exist."
 msgstr ""
 
-#: zerver/lib/upload.py:128
-msgid "Animated emoji must have the same width and height."
-msgstr ""
-
-#: zerver/lib/upload.py:131
-msgid "Animated emoji can't be larger than 64px in width or height."
-msgstr ""
-
-#: zerver/lib/upload.py:228
+#: zerver/lib/upload.py:242
 msgid "Upload would exceed your organization's upload quota."
 msgstr ""
 
@@ -2975,7 +2970,7 @@ msgstr "名前が短すぎます！"
 msgid "Invalid characters in name!"
 msgstr "名前に不正な文字があります！"
 
-#: zerver/lib/users.py:29 zerver/views/users.py:264 zerver/views/users.py:422
+#: zerver/lib/users.py:29 zerver/views/users.py:264 zerver/views/users.py:429
 msgid "Bad name or username"
 msgstr "許容できない名前またはユーザー名"
 
@@ -3115,7 +3110,7 @@ msgstr ""
 msgid "There should be a leading slash in the zcommand."
 msgstr ""
 
-#: zerver/lib/zcommand.py:35
+#: zerver/lib/zcommand.py:40
 #, python-format
 msgid "No such command: %s"
 msgstr ""
@@ -3133,54 +3128,54 @@ msgstr "CSRF エラー: {reason}"
 msgid "API usage exceeded rate limit"
 msgstr "API使用量が制限を超えました"
 
-#: zerver/models.py:1471
+#: zerver/models.py:1476
 msgid "Unicode emoji"
 msgstr "Unicode絵文字"
 
-#: zerver/models.py:1473
+#: zerver/models.py:1478
 msgid "Zulip extra emoji"
 msgstr "Zulip拡張絵文字"
 
-#: zerver/models.py:2214
+#: zerver/models.py:2221
 #, python-format
 msgid "Invalid user ID: %d"
 msgstr ""
 
-#: zerver/models.py:2218
+#: zerver/models.py:2225
 #, python-format
 msgid "User with ID %d is deactivated"
 msgstr ""
 
-#: zerver/models.py:2221
+#: zerver/models.py:2228
 #, python-format
 msgid "User with ID %d is a bot"
 msgstr ""
 
-#: zerver/models.py:2249
+#: zerver/models.py:2256
 msgid "Choice"
 msgstr ""
 
-#: zerver/models.py:2252
+#: zerver/models.py:2259
 msgid "User"
 msgstr ""
 
-#: zerver/models.py:2264
+#: zerver/models.py:2271
 msgid "Short text"
 msgstr ""
 
-#: zerver/models.py:2265
+#: zerver/models.py:2272
 msgid "Long text"
 msgstr ""
 
-#: zerver/models.py:2266
+#: zerver/models.py:2273
 msgid "Date"
 msgstr ""
 
-#: zerver/models.py:2267
+#: zerver/models.py:2274
 msgid "URL"
 msgstr ""
 
-#: zerver/signals.py:81
+#: zerver/signals.py:82
 msgid "Unknown IP address"
 msgstr ""
 
@@ -3222,75 +3217,75 @@ msgstr ""
 msgid "You are not authorized to access this queue"
 msgstr "このキューへのアクセスが許可されていません"
 
-#: zerver/views/auth.py:193
+#: zerver/views/auth.py:195
 msgid "No REMOTE_USER set."
 msgstr "REMOTE_USER が設定されていません。"
 
-#: zerver/views/auth.py:206 zerver/views/auth.py:297
+#: zerver/views/auth.py:208 zerver/views/auth.py:299
 msgid "Invalid OTP"
 msgstr "不正なOTP"
 
-#: zerver/views/auth.py:230
+#: zerver/views/auth.py:232
 msgid "Auth key for this subdomain not found."
 msgstr "このサブドメインに対する認証キーがみつかりません。"
 
-#: zerver/views/auth.py:237
+#: zerver/views/auth.py:239
 msgid "No JSON web token passed in request"
 msgstr ""
 
-#: zerver/views/auth.py:239
+#: zerver/views/auth.py:241
 msgid "Bad JSON web token"
 msgstr ""
 
-#: zerver/views/auth.py:243
+#: zerver/views/auth.py:245
 msgid "No user specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:246
+#: zerver/views/auth.py:248
 msgid "No organization specified in JSON web token claims"
 msgstr ""
 
-#: zerver/views/auth.py:252
+#: zerver/views/auth.py:254
 msgid "Wrong subdomain"
 msgstr "誤ったサブドメイン"
 
-#: zerver/views/auth.py:708 zerver/views/auth.py:738
+#: zerver/views/auth.py:710 zerver/views/auth.py:741
 msgid "Dev environment not enabled."
 msgstr "開発環境が有効ではありません。"
 
-#: zerver/views/auth.py:724 zerver/views/auth.py:771
+#: zerver/views/auth.py:726 zerver/views/auth.py:774
 msgid "This organization has been deactivated."
 msgstr ""
 
-#: zerver/views/auth.py:727 zerver/views/auth.py:768
+#: zerver/views/auth.py:729 zerver/views/auth.py:771
 msgid "Your account has been disabled."
 msgstr "アカウントは無効化されています。"
 
-#: zerver/views/auth.py:730
+#: zerver/views/auth.py:732
 msgid "This user is not registered."
 msgstr "このユーザーは登録されていません。"
 
-#: zerver/views/auth.py:774
+#: zerver/views/auth.py:777
 msgid "Password auth is disabled in your team."
 msgstr "チームのパスワード認証は無効です。"
 
-#: zerver/views/auth.py:780
+#: zerver/views/auth.py:783
 msgid "This user is not registered; do so from a browser."
 msgstr "このユーザーは登録されていません。ブラウザから操作してください。"
 
-#: zerver/views/auth.py:782 zerver/views/auth.py:865
+#: zerver/views/auth.py:785 zerver/views/auth.py:869
 msgid "Your username or password is incorrect."
 msgstr "ユーザー名かパスワードが間違っています。"
 
-#: zerver/views/auth.py:806
+#: zerver/views/auth.py:810
 msgid "Invalid subdomain"
 msgstr "不正なサブドメイン"
 
-#: zerver/views/auth.py:812
+#: zerver/views/auth.py:816
 msgid "Subdomain required"
 msgstr "サブドメインが必要です"
 
-#: zerver/views/auth.py:871
+#: zerver/views/auth.py:877
 msgid "GOOGLE_CLIENT_ID is not configured"
 msgstr "GOOGLE_CLIENT_IDは設定されていません"
 
@@ -3348,65 +3343,69 @@ msgstr ""
 msgid "Invalid narrow operator: {desc}"
 msgstr "不正な絞り込みオペレーター: {desc}"
 
-#: zerver/views/messages.py:1022
+#: zerver/views/messages.py:700
+msgid "Missing 'anchor' argument (or set 'use_first_unread_anchor'=True)."
+msgstr ""
+
+#: zerver/views/messages.py:1024
 #, python-format
 msgid "No such topic '%s'"
 msgstr "トピック '%s' は存在しません"
 
-#: zerver/views/messages.py:1132
+#: zerver/views/messages.py:1134
 msgid "Invalid time format"
 msgstr ""
 
-#: zerver/views/messages.py:1142
+#: zerver/views/messages.py:1144
 msgid "Time must be in the future."
 msgstr ""
 
-#: zerver/views/messages.py:1182
+#: zerver/views/messages.py:1184
 #, python-format
 msgid "Unknown organization '%s'"
 msgstr ""
 
-#: zerver/views/messages.py:1200
+#: zerver/views/messages.py:1202
 msgid "Missing sender"
 msgstr "送信者がいません"
 
-#: zerver/views/messages.py:1206
+#: zerver/views/messages.py:1208
 msgid "Invalid mirrored message"
 msgstr "不正なミラーリングされたメッセージ"
 
-#: zerver/views/messages.py:1208
+#: zerver/views/messages.py:1210
 msgid "Zephyr mirroring is not allowed in this organization"
 msgstr ""
 
-#: zerver/views/messages.py:1214
+#: zerver/views/messages.py:1216
 msgid "Missing deliver_at in a request for delayed message delivery"
 msgstr ""
 
-#: zerver/views/messages.py:1281
+#: zerver/views/messages.py:1283
 msgid "Message edit history is disabled in this organization"
 msgstr "この組織のメッセージの編集履歴は無効です"
 
-#: zerver/views/messages.py:1301
+#: zerver/views/messages.py:1303
 msgid "Your organization has turned off message editing"
 msgstr "組織のメッセージ編集を禁止しました"
 
-#: zerver/views/messages.py:1319
+#: zerver/views/messages.py:1321
 msgid "You don't have permission to edit this message"
 msgstr "このメッセージを編集する権限がありません"
 
-#: zerver/views/messages.py:1330 zerver/views/messages.py:1340
+#: zerver/views/messages.py:1332 zerver/views/messages.py:1342
 msgid "The time limit for editing this message has passed"
 msgstr ""
 
-#: zerver/views/messages.py:1343
+#: zerver/views/messages.py:1345
 msgid "Nothing to change"
 msgstr "変更するものがありません"
 
-#: zerver/views/messages.py:1399 zerver/views/messages.py:1402
+#: zerver/views/messages.py:1401 zerver/views/messages.py:1404
 msgid "You don't have permission to delete this message"
 msgstr ""
 
-#: zerver/views/messages.py:1410
+#: zerver/views/messages.py:1412
 msgid "The time limit for deleting this message has passed"
 msgstr ""
 
@@ -3418,7 +3417,7 @@ msgstr "トピックはすでにミュート中"
 msgid "Topic is not there in the muted_topics list"
 msgstr ""
 
-#: zerver/views/pointer.py:26
+#: zerver/views/pointer.py:21
 msgid "Invalid message ID"
 msgstr "不正なメッセージID"
 
@@ -3501,21 +3500,21 @@ msgstr "ドメイン %(domain)s 組織の一部になっています"
 msgid "No entry found for domain %(domain)s."
 msgstr "ドメイン %(domain)s のエントリーがありません。"
 
-#: zerver/views/realm_emoji.py:30
+#: zerver/views/realm_emoji.py:31
 msgid "A custom emoji with this name already exists."
 msgstr ""
 
-#: zerver/views/realm_emoji.py:32
+#: zerver/views/realm_emoji.py:33
 msgid "You must upload exactly one file."
 msgstr "ファイルは1つだけアップロードしてください。"
 
-#: zerver/views/realm_emoji.py:35 zerver/views/realm_icon.py:22
+#: zerver/views/realm_emoji.py:36 zerver/views/realm_icon.py:22
 #: zerver/views/upload.py:74 zerver/views/user_settings.py:185
 #, python-format
 msgid "Uploaded file is larger than the allowed limit of %s MB"
 msgstr "アップロードファイルはサイズ制限 (%sMB) を超えています。"
 
-#: zerver/views/realm_emoji.py:43
+#: zerver/views/realm_emoji.py:44
 msgid "Image file upload failed."
 msgstr ""
 
@@ -3527,64 +3526,68 @@ msgstr "フィルターが見つかりません"
 msgid "You must upload exactly one icon."
 msgstr "アイコンは1つだけアップロードしてください。"
 
-#: zerver/views/registration.py:379
+#: zerver/views/registration.py:380
 msgid "The organization creation link has expired or is not valid."
 msgstr "組織作成リンクは期限切れか、無効になっています。"
 
-#: zerver/views/registration.py:384
+#: zerver/views/registration.py:385
 msgid "New organization creation disabled."
 msgstr "組織の新規作成を無効にしました。"
 
-#: zerver/views/streams.py:48
+#: zerver/views/streams.py:49
 #, python-brace-format
 msgid "User not authorized to execute queries on behalf of '{principal}'"
 msgstr "'{principal}' のクエリーを許可されていないユーザーです"
 
-#: zerver/views/streams.py:96
+#: zerver/views/streams.py:97
 msgid "You must pass \"new_description\" or \"new_group_name\"."
 msgstr ""
 
-#: zerver/views/streams.py:122
+#: zerver/views/streams.py:123
 msgid "Invalid value for \"op\". Specify one of \"add\" or \"remove\"."
 msgstr ""
 
-#: zerver/views/streams.py:162
+#: zerver/views/streams.py:164
 msgid "Stream already has that name!"
 msgstr "同じストリーム名です！"
 
-#: zerver/views/streams.py:191 zerver/views/user_groups.py:69
+#: zerver/views/streams.py:193 zerver/views/user_groups.py:69
 msgid "Nothing to do. Specify at least one of \"add\" or \"delete\"."
 msgstr ""
 
-#: zerver/views/streams.py:233
+#: zerver/views/streams.py:235
 msgid "This action requires administrative rights"
-msgstr ""
-
-#: zerver/views/streams.py:262
-#, python-format
-msgid "Hi there! %s just subscribed you to the stream #**%s**."
 msgstr ""
 
 #: zerver/views/streams.py:265
 #, python-format
-msgid "Hi there! %s just subscribed you to the following streams:"
+msgid "Hi there! @**%s** just subscribed you to the stream #**%s**."
 msgstr ""
 
-#: zerver/views/streams.py:305
+#: zerver/views/streams.py:268
+#, python-format
+msgid "Hi there! @**%s** just subscribed you to the following streams:"
+msgstr ""
+
+#: zerver/views/streams.py:308
 #, python-format
 msgid "Unable to access stream (%s)."
 msgstr "ストリーム (%s) にアクセスできません。"
 
-#: zerver/views/streams.py:311
+#: zerver/views/streams.py:314
 msgid "You can only invite other Zephyr mirroring users to private streams."
 msgstr ""
 
-#: zerver/views/streams.py:516
+#: zerver/views/streams.py:316
+msgid "Your account is too new to modify other users' subscriptions."
+msgstr ""
+
+#: zerver/views/streams.py:521
 #, python-format
 msgid "Unknown subscription property: %s"
 msgstr ""
 
-#: zerver/views/streams.py:520
+#: zerver/views/streams.py:525
 #, python-format
 msgid "Not subscribed to stream id %d"
 msgstr "ストリームID %d は購読していません"
@@ -3593,11 +3596,11 @@ msgstr "ストリームID %d は購読していません"
 msgid "Invalid json for submessage"
 msgstr ""
 
-#: zerver/views/thumbnail.py:26 zerver/views/upload.py:59
+#: zerver/views/thumbnail.py:27 zerver/views/upload.py:59
 msgid "<p>You are not authorized to view this file.</p>"
 msgstr "<p>このファイルの表示を許可されていません。</p>"
 
-#: zerver/views/thumbnail.py:35
+#: zerver/views/thumbnail.py:36
 msgid "<p>Invalid size.</p>"
 msgstr ""
 
@@ -3702,33 +3705,33 @@ msgstr ""
 msgid "Username already in use"
 msgstr "ユーザー名は使用済みです"
 
-#: zerver/views/users.py:431
+#: zerver/views/users.py:438
 #, python-format
 msgid "Email '%(email)s' not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:434
+#: zerver/views/users.py:441
 msgid "Disposable email addresses are not allowed in this organization"
 msgstr ""
 
-#: zerver/views/users.py:440
+#: zerver/views/users.py:447
 #, python-format
 msgid "Email '%s' already in use"
 msgstr "メールアドレス '%s' は使用中です"
 
-#: zerver/views/zephyr.py:31
+#: zerver/views/zephyr.py:32
 msgid "Could not find Kerberos credential"
 msgstr ""
 
-#: zerver/views/zephyr.py:33
+#: zerver/views/zephyr.py:34
 msgid "Webathena login not enabled"
 msgstr "Webathenaのログインが有効ではありません"
 
-#: zerver/views/zephyr.py:43
+#: zerver/views/zephyr.py:44
 msgid "Invalid Kerberos cache"
 msgstr "不正なKerberosキャッシュ"
 
-#: zerver/views/zephyr.py:54
+#: zerver/views/zephyr.py:56
 msgid "We were unable to setup mirroring for you"
 msgstr ""
 
@@ -3769,9 +3772,13 @@ msgstr "Slackからのメッセージ"
 msgid "Unknown WordPress webhook action: "
 msgstr "不明なWordPress webhookのアクション: "
 
-#: zilencer/lib/stripe.py:91
+#: zilencer/lib/stripe.py:68
 #, python-format
-msgid "Something went wrong. Please try again or email us at %s."
+msgid "Something went wrong. Please contact %s)"
+msgstr ""
+
+#: zilencer/lib/stripe.py:69
+msgid "Something went wrong. Please reload the page."
 msgstr ""
 
 #. error
