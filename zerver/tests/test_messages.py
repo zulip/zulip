@@ -15,8 +15,17 @@ from zerver.lib.message import estimate_recent_messages
 from zerver.lib.addressee import Addressee
 
 from zerver.lib.actions import (
+    check_message,
+    check_send_stream_message,
+    do_add_alert_words,
+    do_change_stream_invite_only,
+    do_create_user,
+    do_deactivate_user,
     do_send_messages,
+    do_set_realm_property,
+    extract_recipients,
     get_active_presence_idle_user_ids,
+    get_client,
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message,
@@ -24,27 +33,18 @@ from zerver.lib.actions import (
     internal_send_message,
     internal_send_private_message,
     internal_send_stream_message,
-    check_message,
-    check_send_stream_message,
-    do_deactivate_user,
-    do_set_realm_property,
-    extract_recipients,
-    do_create_user,
-    get_client,
-    do_add_alert_words,
-    do_change_stream_invite_only,
     send_rate_limited_pm_notification_to_bot_owner,
 )
 
 from zerver.lib.message import (
     MessageDict,
+    bulk_access_messages,
+    get_first_visible_message_id,
+    get_raw_unread_data,
+    maybe_update_first_visible_message_id,
     messages_for_ids,
     sew_messages_and_reactions,
-    get_first_visible_message_id,
     update_first_visible_message_id,
-    maybe_update_first_visible_message_id,
-    get_raw_unread_data,
-    bulk_access_messages
 )
 
 from zerver.lib.test_helpers import (
@@ -64,7 +64,7 @@ from zerver.lib.soft_deactivation import (
     add_missing_messages,
     do_soft_activate_users,
     do_soft_deactivate_users,
-    maybe_catch_up_soft_deactivated_user
+    maybe_catch_up_soft_deactivated_user,
 )
 
 from zerver.models import (
