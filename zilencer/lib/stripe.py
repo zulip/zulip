@@ -181,7 +181,8 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
-    # Success implies the customer was charged: https://stripe.com/docs/billing/lifecycle#active
+    customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
+    # Success implies the stripe_customer was charged: https://stripe.com/docs/billing/lifecycle#active
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',
@@ -193,7 +194,6 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         tax_percent=tax_percent)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_subscription": ', str(stripe_subscription), ',']))  # nocoverage
-    customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
     with transaction.atomic():
         customer.has_billing_relationship = True
         customer.save(update_fields=['has_billing_relationship'])
