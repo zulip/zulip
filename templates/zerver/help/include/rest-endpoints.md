@@ -31,6 +31,7 @@
 #### Server & organizations
 
 * [Get server settings](/api/server-settings)
+* [List organization filters](/api/list-org-filters)
 * [Create organization filters](/api/create-org-filters)
 
 #### Real-time events

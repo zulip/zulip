@@ -1169,6 +1169,47 @@ paths:
                           "result": "error"
                       }
   /realm/filters:
+    get:
+      description: Fetch all the filters set up for the user's organization.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    filters:
+                      type: array
+                      items:
+                        type: array
+                        items:
+                          type:
+                            anyOf:
+                            - string
+                            - integer
+                      description: An array of sub-arrays, each representing
+                        one of the filters set up in the organization. Each of
+                        these tuples contain the pattern, the formatted URL and
+                        the filter's ID, in that order.
+                        See [Create organization
+                        filters](/api/create-org-filters#create-organization-filters)
+                        for details on what does each field mean.
+                - example:
+                    {
+                        "msg": "",
+                        "filters": [
+                            [
+                                "#(?P<id>[0-9]+)",
+                                "https://github.com/zulip/zulip/issues/%(id)s",
+                                1
+                            ]
+                        ],
+                        "result": "success"
+                    }
     post:
       description: Establish patterns in the messages that should be
         automatically linkified.
