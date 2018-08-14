@@ -705,6 +705,20 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
         for row in rows]
     return muted_stream_ids
 
+def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
+    rows = UserMessage.objects.filter(
+        user_profile=user_profile,
+        flags=UserMessage.flags.starred
+    ).values(
+        'message_id'
+    ).order_by(
+        'message_id'
+    )
+    starred_message_ids = [
+        row['message_id']
+        for row in rows]
+    return starred_message_ids
+
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 
     excluded_recipient_ids = get_inactive_recipient_ids(user_profile)
