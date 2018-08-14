@@ -1,4 +1,5 @@
 import os
+from html import unescape
 from typing import Any, Dict, List, Optional
 
 import markdown
@@ -138,5 +139,14 @@ def render_markdown_path(markdown_file_path: str,
 
     html = md_engine.convert(markdown_string)
     rendered_html = jinja.from_string(html).render(context)
+
+    if context.get('unescape_rendered_html', False):
+        # In some exceptional cases (such as our Freshdesk webhook docs),
+        # code blocks in some of our Markdown templates have characters such
+        # as '{' encoded as '&#123;' to prevent clashes with Jinja2 syntax,
+        # but the encoded form never gets decoded because the text ends up
+        # inside a <pre> tag. So here, we explicitly "unescape" such characters
+        # if 'unescape_rendered_html' is True.
+        rendered_html = unescape(rendered_html)
 
     return mark_safe(rendered_html)
