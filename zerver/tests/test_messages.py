@@ -20,7 +20,10 @@ from zerver.lib.actions import (
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message,
+    internal_send_huddle_message,
+    internal_send_message,
     internal_send_private_message,
+    internal_send_stream_message,
     check_message,
     check_send_stream_message,
     do_deactivate_user,
@@ -363,6 +366,67 @@ class TestCrossRealmPMs(ZulipTestCase):
                                      sender_realm="1.example.com")
 
 class InternalPrepTest(ZulipTestCase):
+
+    def test_returns_for_internal_sends(self) -> None:
+        # For our internal_send_* functions we return
+        # if the prep stages fail.  This is mostly defensive
+        # code, since we are generally creating the messages
+        # ourselves, but we want to make sure that the functions
+        # won't actually explode if we give them bad content.
+        bad_content = ''
+        realm = get_realm('zulip')
+        cordelia = self.example_user('cordelia')
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        stream_name = 'Verona'
+
+        with mock.patch('logging.exception') as m:
+            internal_send_private_message(
+                realm=realm,
+                sender=cordelia,
+                recipient_user=hamlet,
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_huddle_message(
+                realm=realm,
+                sender=cordelia,
+                emails=[hamlet.email, othello.email],
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_stream_message(
+                realm=realm,
+                sender=cordelia,
+                stream_name=stream_name,
+                topic='whatever',
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
+        with mock.patch('logging.exception') as m:
+            internal_send_message(
+                realm=realm,
+                sender_email=settings.ERROR_BOT,
+                recipient_type_name='stream',
+                recipients=stream_name,
+                topic_name='whatever',
+                content=bad_content,
+            )
+
+        arg = m.call_args_list[0][0][0]
+        self.assertIn('Message must not be empty', arg)
+
     def test_error_handling(self) -> None:
         realm = get_realm('zulip')
         sender = self.example_user('cordelia')
