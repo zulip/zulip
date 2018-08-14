@@ -1781,6 +1781,28 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(mirror_fred_user.email, email)
         m.assert_called()
 
+    def test_guest_user(self) -> None:
+        sender = self.example_user('polonius')
+
+        stream_name = 'public stream'
+        self.make_stream(stream_name, invite_only=False)
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender.email,
+            client='test suite',
+            subject='whatever',
+            content='whatever',
+        )
+
+        # Guest user can't send message to unsubscribed public streams
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_error(result, "Not authorized to send to stream 'public stream'")
+
+        self.subscribe(sender, stream_name)
+        # Guest user can send message to subscribed public streams
+        result = self.api_post(sender.email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
 
 class ScheduledMessageTest(ZulipTestCase):
 
