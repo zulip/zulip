@@ -1996,8 +1996,8 @@ def validate_sender_can_write_to_stream(sender: UserProfile,
         if not (sender.is_realm_admin or is_cross_realm_bot_email(sender.email)):
             raise JsonableError(_("Only organization administrators can send to this stream."))
 
-    if not stream.invite_only:
-        # This is a public stream
+    if not (stream.invite_only or sender.is_guest):
+        # This is a public stream and sender is not a guest user
         return
 
     if subscribed_to_stream(sender, stream.id):
