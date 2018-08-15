@@ -705,6 +705,10 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
+#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
+    width: 28%;
+}
+
 .admin_profile_fields_table,
 .profile_field_choices_table {
     .movable-profile-field-row {

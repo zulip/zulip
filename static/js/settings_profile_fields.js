@@ -33,6 +33,17 @@ exports.field_type_id_to_string = function (type_id) {
     return field_type_str;
 };
 
+function update_profile_fields_table_element() {
+    var profile_fields_table = $("#admin_profile_fields_table").expectOne();
+
+    // If there are no custom fields, hide the table headers at the top
+    if (page_params.custom_profile_fields.length < 1) {
+        profile_fields_table.hide();
+    } else {
+        profile_fields_table.show();
+    }
+}
+
 function delete_profile_field(e) {
     e.preventDefault();
     e.stopPropagation();
@@ -41,6 +52,7 @@ function delete_profile_field(e) {
         channel.del,
         "/json/realm/profile_fields/" + encodeURIComponent($(this).attr('data-profile-field-id')),
         {}, $('#admin-profile-field-status').expectOne());
+    update_profile_fields_table_element();
 }
 
 function read_field_data_from_form(selector) {
@@ -114,6 +126,7 @@ function create_profile_field(e) {
 
     settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
                                    $('#admin-profile-field-status').expectOne(), opts);
+    update_profile_fields_table_element();
 }
 
 function add_choice_row(e) {
@@ -295,6 +308,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
             onUpdate: update_field_order,
         });
     }
+
+    update_profile_fields_table_element();
     loading.destroy_indicator($('#admin_page_profile_fields_loading_indicator'));
 };
 
