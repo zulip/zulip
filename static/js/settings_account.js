@@ -76,20 +76,21 @@ exports.add_custom_profile_fields_to_settings = function () {
     }
 
     var all_custom_fields = page_params.custom_profile_fields;
+    var field_types = page_params.custom_profile_field_types;
 
     all_custom_fields.forEach(function (field) {
-        var field_type = settings_profile_fields.field_type_id_to_string(field.type);
+        var field_type = field.type;
         var type;
         var value = people.my_custom_profile_data(field.id);
-        var is_long_text = field_type === "Long text";
-        var is_choice_field = field_type === "Choice";
-        var is_user_field = field_type === "User";
-        var is_date_field = field_type === "Date";
+        var is_long_text = field_type === field_types.LONG_TEXT.id;
+        var is_choice_field = field_type === field_types.CHOICE.id;
+        var is_user_field = field_type === field_types.USER.id;
+        var is_date_field = field_type === field_types.DATE.id;
         var field_choices = [];
 
-        if (field_type === "Long text" || field_type === "Short text") {
+        if (is_long_text || field_type === field_types.SHORT_TEXT.id) {
             type = "text";
-        } else if (field_type === "Choice") {
+        } else if (is_choice_field) {
             type = "choice";
             var field_choice_dict = JSON.parse(field.field_data);
             for (var choice in field_choice_dict) {
@@ -101,11 +102,11 @@ exports.add_custom_profile_fields_to_settings = function () {
                     };
                 }
             }
-        } else if (field_type === "Date") {
+        } else if (is_date_field) {
             type = "date";
-        } else if (field_type === "URL") {
+        } else if (field_type === field_types.URL.id) {
             type = "url";
-        } else if (field_type === "User") {
+        } else if (is_user_field) {
             if (value) {
                 value = JSON.parse(value);
             }

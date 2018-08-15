@@ -9,10 +9,17 @@ var meta = {
 var order = [];
 
 exports.field_type_id_to_string = function (type_id) {
-    var name = _.find(page_params.custom_profile_field_types, function (type) {
-        return type[0] === type_id;
-    })[1];
-    return name;
+    var field_types = page_params.custom_profile_field_types;
+    var field_type_str;
+
+    _.every(field_types, function (field_type) {
+        if (field_type.id === type_id) {
+            field_type_str = field_type.name;
+            return false;
+        }
+        return true;
+    });
+    return field_type_str;
 };
 
 function delete_profile_field(e) {
@@ -156,7 +163,7 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
 
-    if (exports.field_type_id_to_string(field.type) === "Choice") {
+    if (parseInt(field.type, 10) === page_params.custom_profile_field_types.CHOICE.id) {
         // Re-render field choices in edit form to load initial choice data
         var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
         choice_list.off();

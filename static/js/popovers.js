@@ -178,16 +178,17 @@ function show_user_profile(element, user) {
 
     var profile_data = {};
     var localFormat = moment.localeData().longDateFormat('L');
+    var field_types = page_params.custom_profile_field_types;
 
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user.user_id, field.id);
-        var field_type = settings_profile_fields.field_type_id_to_string(field.type);
+        var field_type = field.type;
         if (field_value) {
-            if (field_type === "Date") {
+            if (field_type === field_types.DATE.id) {
                 profile_data[field.name] = moment(field_value).format(localFormat);
-            } else if (field_type === "User") {
+            } else if (field_type === field_types.USER.id) {
                 profile_data[field.name] = people.safe_full_names(field_value);
-            } else if (field_type === "Choice") {
+            } else if (field_type === field_types.CHOICE.id) {
                 var field_choice_dict = JSON.parse(field.field_data);
                 profile_data[field.name] = field_choice_dict[field_value].text;
             } else {
