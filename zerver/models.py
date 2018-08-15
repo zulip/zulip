@@ -2264,10 +2264,10 @@ class CustomProfileField(models.Model):
     # and value argument. i.e. CHOICE require field_data, USER require
     # realm as argument.
     CHOICE_FIELD_TYPE_DATA = [
-        (CHOICE, str(_('Choice')), validate_choice_field, str),
+        (CHOICE, str(_('Choice')), validate_choice_field, str, "CHOICE"),
     ]  # type: FieldTypeData
     USER_FIELD_TYPE_DATA = [
-        (USER, str(_('User')), check_valid_user_ids, eval),
+        (USER, str(_('User')), check_valid_user_ids, eval, "USER"),
     ]  # type: FieldTypeData
 
     CHOICE_FIELD_VALIDATORS = {
@@ -2278,11 +2278,11 @@ class CustomProfileField(models.Model):
     }  # type: Dict[int, RealmUserValidator]
 
     FIELD_TYPE_DATA = [
-        # Type, Name, Validator, Converter
-        (SHORT_TEXT, str(_('Short text')), check_short_string, str),
-        (LONG_TEXT, str(_('Long text')), check_long_string, str),
-        (DATE, str(_('Date')), check_date, str),
-        (URL, str(_('URL')), check_url, str),
+        # Type, Display Name, Validator, Converter, Keyword
+        (SHORT_TEXT, str(_('Short text')), check_short_string, str, "SHORT_TEXT"),
+        (LONG_TEXT, str(_('Long text')), check_long_string, str, "LONG_TEXT"),
+        (DATE, str(_('Date')), check_date, str, "DATE"),
+        (URL, str(_('URL')), check_url, str, "URL"),
     ]  # type: FieldTypeData
 
     ALL_FIELD_TYPES = FIELD_TYPE_DATA + CHOICE_FIELD_TYPE_DATA + USER_FIELD_TYPE_DATA
@@ -2290,6 +2290,9 @@ class CustomProfileField(models.Model):
     FIELD_VALIDATORS = {item[0]: item[2] for item in FIELD_TYPE_DATA}  # type: Dict[int, Validator]
     FIELD_CONVERTERS = {item[0]: item[3] for item in ALL_FIELD_TYPES}  # type: Dict[int, Callable[[Any], Any]]
     FIELD_TYPE_CHOICES = [(item[0], item[1]) for item in ALL_FIELD_TYPES]  # type: List[Tuple[int, str]]
+    FIELD_TYPE_CHOICES_DICT = {
+        item[4]: {"id": item[0], "name": item[1]} for item in ALL_FIELD_TYPES
+    }  # type: Dict[str, Dict[str, Union[str, int]]]
 
     field_type = models.PositiveSmallIntegerField(choices=FIELD_TYPE_CHOICES,
                                                   default=SHORT_TEXT)  # type: int
