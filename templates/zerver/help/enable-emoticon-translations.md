@@ -18,7 +18,7 @@ automatically by Zulip.
 {settings_tab|display-settings}
 
 2. Select the option labeled
-   **Translate emoticons (convert `:)` to 😃 in messages)**.
+   **Convert emoticons before sending**.
 
 ## Current emoticon conversions
 
