@@ -43,6 +43,7 @@ from zerver.lib.message import (
     update_first_visible_message_id,
 )
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.retention import move_messages_to_archive
 from zerver.lib.send_email import send_email, FromAddress, send_email_to_admins
 from zerver.lib.stream_subscription import (
@@ -3084,6 +3085,22 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                     property="icon",
                     data=dict(icon_source=realm.icon_source,
                               icon_url=realm_icon_url(realm))),
+               active_user_ids(realm.id))
+
+def do_change_logo_source(realm: Realm, logo_source: str) -> None:
+    realm.logo_source = logo_source
+    realm.logo_version += 1
+    realm.save(update_fields=["logo_source", "logo_version"])
+
+    RealmAuditLog.objects.create(event_type=RealmAuditLog.REALM_LOGO_CHANGED,
+                                 realm=realm, event_time=timezone_now())
+
+    send_event(realm,
+               dict(type='realm',
+                    op='update_dict',
+                    property="logo",
+                    data=dict(logo_source=realm.logo_source,
+                              logo_url=realm_logo_url(realm))),
                active_user_ids(realm.id))
 
 def do_change_plan_type(realm: Realm, plan_type: int) -> None:
