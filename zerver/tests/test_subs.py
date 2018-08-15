@@ -50,10 +50,10 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     do_add_default_stream, do_change_is_admin, do_set_realm_property,
-    do_create_realm, do_remove_default_stream,
+    do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user, set_default_streams, check_stream_name,
+    get_user, set_default_streams, check_stream_name, do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -78,6 +78,7 @@ from zerver.lib.message import (
     aggregate_unread_data,
     get_raw_unread_data,
 )
+from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.http import HttpResponse
 from datetime import timedelta
@@ -85,6 +86,31 @@ import mock
 import random
 import ujson
 import urllib
+
+class TestMiscStuff(ZulipTestCase):
+    def test_empty_results(self) -> None:
+        # These are essentially just tests to ensure line
+        # coverage for codepaths that won't ever really be
+        # called in practice.
+
+        user_profile = self.example_user('cordelia')
+
+        result = bulk_get_subscriber_user_ids(
+            stream_dicts=[],
+            user_profile=user_profile,
+            sub_dict={},
+            stream_recipient=StreamRecipientMap(),
+        )
+        self.assertEqual(result, {})
+
+        streams = do_get_streams(
+            user_profile=user_profile,
+            include_public=False,
+            include_subscribed=False,
+            include_all_active=False,
+            include_default=False,
+        )
+        self.assertEqual(streams, [])
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self) -> None:
