@@ -1,6 +1,7 @@
 # Library code for use in management commands
 
 import sys
+import time
 
 from argparse import ArgumentParser
 from django.conf import settings
@@ -28,6 +29,10 @@ def check_config() -> None:
             pass
 
         raise CommandError("Error: You must set %s in /etc/zulip/settings.py." % (setting_name,))
+
+def sleep_forever() -> None:
+    while True:  # nocoverage
+        time.sleep(10**9)
 
 class ZulipBaseCommand(BaseCommand):
     def add_realm_args(self, parser: ArgumentParser, required: bool=False,

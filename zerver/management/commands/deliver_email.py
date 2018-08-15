@@ -20,6 +20,7 @@ from ujson import loads
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.management import sleep_forever
 from zerver.lib.send_email import EmailNotDeliveredException, send_email
 from zerver.models import ScheduledEmail
 
@@ -39,7 +40,7 @@ Usage: ./manage.py deliver_email
     def handle(self, *args: Any, **options: Any) -> None:
 
         if settings.EMAIL_DELIVERER_DISABLED:
-            time.sleep(10**9)  # "infinity seconds"
+            sleep_forever()
 
         with lockfile("/tmp/zulip_email_deliver.lockfile"):
             while True:
