@@ -32,15 +32,32 @@ run_test('build_emoji_upload_widget', () => {
 
 run_test('initialize', () => {
     var image_stub = false;
+    var urls = [];
+    var calls = 0;
     class Image {
         set src(data) {
-            assert.equal(data, '/static/generated/emoji/sheet_google_64.png');
             image_stub = true;
+            urls.push(data);
+            calls += 1;
         }
     }
     set_global('Image', Image);
     emoji.initialize();
     assert(image_stub);
+    assert.equal(calls, 2);
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet_google_64.png',
+                            '/static/generated/emoji/images-google-64/1f419.png']);
+
+    // Check initialization sequence for `text` emojiset.
+    page_params.emojiset = 'text';
+    image_stub = false;
+    urls = [];
+    calls = 0;
+    emoji.initialize();
+    assert(image_stub);
+    assert.equal(calls, 2);
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet_google_64.png',
+                            '/static/generated/emoji/images-google-64/1f419.png']);
 });
 
 run_test('get_canonical_name', () => {
