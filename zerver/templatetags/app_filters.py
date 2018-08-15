@@ -17,6 +17,7 @@ import zerver.lib.bugdown.api_arguments_table_generator
 import zerver.lib.bugdown.api_code_examples
 import zerver.lib.bugdown.nested_code_blocks
 import zerver.lib.bugdown.help_settings_links
+import zerver.lib.bugdown.help_emoticon_translations_table
 from zerver.context_processors import zulip_default_context
 from zerver.lib.cache import ignore_unhashable_lru_cache
 
@@ -105,6 +106,7 @@ def render_markdown_path(markdown_file_path: str,
             zerver.lib.bugdown.api_code_examples.makeExtension(),
             zerver.lib.bugdown.nested_code_blocks.makeExtension(),
             zerver.lib.bugdown.help_settings_links.makeExtension(),
+            zerver.lib.bugdown.help_emoticon_translations_table.makeExtension(),
         ]
     if md_macro_extension is None:
         md_macro_extension = markdown_include.include.makeExtension(
