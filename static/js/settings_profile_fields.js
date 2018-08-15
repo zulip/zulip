@@ -352,6 +352,7 @@ exports.set_up = function () {
     $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
     set_up_choices_field();
+    clear_form_data();
 };
 
 return exports;
