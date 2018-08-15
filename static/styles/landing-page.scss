@@ -183,6 +183,13 @@ button.green {
     border: 1px solid hsl(169, 45%, 43%);
 }
 
+button.black-disabled {
+    cursor: default;
+    color: #333;
+    background-color: transparent;
+    border: 1px solid #888;
+}
+
 button.button.grey-transparent {
     display: block;
     margin: 0 auto;

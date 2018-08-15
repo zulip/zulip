@@ -323,9 +323,40 @@ class PlansPageTest(ZulipTestCase):
         realm.plan_type = Realm.PREMIUM_FREE
         realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
-        self.assert_in_success_response(["Sign up now"], result)
+        self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
         result = self.client_get("/plans/", subdomain="")
         # TODO: works in manual testing, but I suspect something is funny in
         # the test environment
         # self.assert_in_success_response(["Sign up now"], result)
+
+    def test_CTA_text_by_plan_type(self) -> None:
+        sign_up_now = "Sign up now"
+        buy_premium = "Buy Premium"
+        current_plan = "Current plan"
+
+        # Root domain
+        result = self.client_get("/plans/", subdomain="")
+        self.assert_in_success_response([sign_up_now, buy_premium], result)
+        self.assert_not_in_success_response([current_plan], result)
+
+        self.login(self.example_email("iago"))
+        realm = get_realm("zulip")
+
+        realm.plan_type = Realm.LIMITED
+        realm.save(update_fields=["plan_type"])
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response([current_plan, buy_premium], result)
+        self.assert_not_in_success_response([sign_up_now], result)
+
+        realm.plan_type = Realm.PREMIUM_FREE
+        realm.save(update_fields=["plan_type"])
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response([current_plan], result)
+        self.assert_not_in_success_response([sign_up_now, buy_premium], result)
+
+        realm.plan_type = Realm.PREMIUM
+        realm.save(update_fields=["plan_type"])
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response([current_plan], result)
+        self.assert_not_in_success_response([sign_up_now, buy_premium], result)

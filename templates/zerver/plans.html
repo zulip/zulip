@@ -38,6 +38,7 @@
                             </div>
                             <div class="bottom">
                                 <div class="text-content">
+                                    {% if realm_plan_type == 0 %}
                                     <div class="pricing-details">
                                         Free
                                     </div>
@@ -46,6 +47,12 @@
                                             Sign up now
                                         </button>
                                     </a>
+                                    {% elif realm_plan_type == 2 %}
+                                    <div class="pricing-details"></div>
+                                    <button class="black-disabled" type="button">
+                                        Current plan
+                                    </button>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -76,11 +83,23 @@
                                             $8/month billed monthly
                                         </div>
                                     </div>
-                                    <a href="/new/">
+                                    {% if realm_plan_type in [3, 4] %}
+                                    <button class="black-disabled" type="button">
+                                        Current plan
+                                    </button>
+                                    {% elif realm_plan_type == 2 %}
+                                    <a href="/upgrade">
                                         <button class="green" type="button">
-                                            Try it free
+                                            Buy Premium
                                         </button>
                                     </a>
+                                    {% else %}
+                                    <a href="/new">
+                                        <button class="green" type="button">
+                                            Buy Premium
+                                        </button>
+                                    </a>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
