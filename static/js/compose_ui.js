@@ -49,6 +49,19 @@ exports.insert_syntax_and_focus = function (syntax, textarea) {
     exports.smart_insert(textarea, syntax);
 };
 
+exports.replace_syntax = function (old_syntax, new_syntax, textarea) {
+    // Replaces `old_syntax` with `new_syntax` text in the compose box. Due to
+    // the way that JavaScript handles string replacements, if `old_syntax` is
+    // a string it will only replace the first instance. If `old_syntax` is
+    // a RegExp with a global flag, it will replace all instances.
+
+    if (textarea === undefined) {
+        textarea = $('#compose-textarea');
+    }
+
+    textarea.val(textarea.val().replace(old_syntax, new_syntax));
+};
+
 return exports;
 
 }());

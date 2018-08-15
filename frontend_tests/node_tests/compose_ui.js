@@ -43,8 +43,12 @@ function make_textbox(s) {
         widget.focused = false;
     };
 
-    widget.val = function () {
-        return widget.s;
+    widget.val = function (new_val) {
+        if (new_val) {
+            widget.s = new_val;
+        } else {
+            return widget.s;
+        }
     };
 
     widget.trigger = function () {
@@ -107,3 +111,12 @@ run_test('smart_insert', () => {
     // like emojis and file links.
 });
 
+run_test('replace_syntax', () => {
+    $('#compose-textarea').val('abcabc');
+
+    compose_ui.replace_syntax('a', 'A');
+    assert.equal($('#compose-textarea').val(), 'Abcabc');
+
+    compose_ui.replace_syntax(/b/g, 'B');
+    assert.equal($('#compose-textarea').val(), 'ABcaBc');
+});
