@@ -3693,15 +3693,11 @@ def do_update_message_flags(user_profile: UserProfile,
     return count
 
 def subscribed_to_stream(user_profile: UserProfile, stream_id: int) -> bool:
-    try:
-        if Subscription.objects.get(user_profile=user_profile,
-                                    active=True,
-                                    recipient__type=Recipient.STREAM,
-                                    recipient__type_id=stream_id):
-            return True
-        return False
-    except Subscription.DoesNotExist:
-        return False
+    return Subscription.objects.filter(
+        user_profile=user_profile,
+        active=True,
+        recipient__type=Recipient.STREAM,
+        recipient__type_id=stream_id).exists()
 
 def truncate_content(content: str, max_length: int, truncation_message: str) -> str:
     if len(content) > max_length:
