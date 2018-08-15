@@ -1029,14 +1029,38 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
     def test_api_calls(self) -> None:
-        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
+        self.login(user_profile.email)
+
         stream_name = 'stream ADDED via api'
         ensure_stream(user_profile.realm, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
+
+        # look for it
+        self.subscribe(user_profile, stream_name)
+        payload = dict(
+            include_public='true',
+            include_default='true',
+        )
+        result = self.client_get('/json/streams', payload)
+        self.assert_json_success(result)
+        streams = result.json()['streams']
+        default_streams = {
+            stream['name']
+            for stream in streams
+            if stream['is_default']
+        }
+        self.assertEqual(default_streams, {stream_name})
+
+        other_streams = {
+            stream['name']
+            for stream in streams
+            if not stream['is_default']
+        }
+        self.assertTrue(len(other_streams) > 0)
 
         # and remove it
         result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
