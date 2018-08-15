@@ -187,7 +187,6 @@
 }
 
 form#add_new_subscription {
-    float: right;
     margin: 0;
 }
 
@@ -487,6 +486,8 @@ form#add_new_subscription {
 .subscriptions-container .left .search-container {
     padding: 6px 8px;
     border-bottom: 1px solid hsl(0, 0%, 86%);
+    display: flex;
+    justify-content: space-between;
 }
 
 .subscriptions-container .right .display-type {
