@@ -4,7 +4,7 @@
     <textarea maxlength="500" class="custom_user_field_value">{{ field_value }}</textarea>
     {{else if is_choice_field}}
     <select class="custom_user_field_value">
-        <option value="">--{{t 'Select' }}--</option>
+        <option value=""></option>
         {{#each field_choices}}
         <option value="{{ this.value }}" {{#if this.selected}}selected{{/if}}>{{ this.text }}</option>
         {{/each}}

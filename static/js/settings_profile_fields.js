@@ -14,7 +14,18 @@ exports.field_type_id_to_string = function (type_id) {
 
     _.every(field_types, function (field_type) {
         if (field_type.id === type_id) {
-            field_type_str = field_type.name;
+            // Few necessary modifications in field-type-name for
+            // table-list view of custom fields UI in org settings
+            if (field_type.name === "Date picker") {
+                field_type_str = "Date";
+            } else if (field_type.name === "Person picker") {
+                field_type_str = "Person";
+            } else if (field_type.name === "List of options") {
+                field_type_str = "List";
+            } else {
+                field_type_str = field_type.name;
+            }
+
             return false;
         }
         return true;
