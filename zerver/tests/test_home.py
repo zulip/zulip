@@ -23,6 +23,7 @@ from zerver.models import (
     flush_per_request_caches, DefaultStream, Realm,
 )
 from zerver.views.home import home, sent_time_in_epoch_seconds
+from zilencer.models import Customer
 
 class HomeTest(ZulipTestCase):
     def test_home(self) -> None:
@@ -276,7 +277,7 @@ class HomeTest(ZulipTestCase):
                 result = self._get_home_page()
                 self.assertEqual(result.status_code, 200)
                 self.assert_length(cache_mock.call_args_list, 6)
-            self.assert_length(queries, 38)
+            self.assert_length(queries, 39)
 
     @slow("Creates and subscribes 10 users in a loop.  Should use bulk queries.")
     def test_num_queries_with_streams(self) -> None:
@@ -627,6 +628,60 @@ class HomeTest(ZulipTestCase):
         result = self._get_home_page()
         html = result.content.decode('utf-8')
         self.assertNotIn('Invite more users', html)
+
+    def test_show_billing(self) -> None:
+        customer = Customer.objects.create(realm=get_realm("zulip"), stripe_customer_id="cus_id")
+
+        # realm admin, but no billing relationship -> no billing link
+        user = self.example_user('iago')
+        self.login(user.email)
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
+
+        # realm admin, with billing relationship -> show billing link
+        customer.has_billing_relationship = True
+        customer.save()
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertIn('Billing', result_html)
+
+        # billing admin, with billing relationship -> show billing link
+        user.is_realm_admin = False
+        user.is_billing_admin = True
+        user.save(update_fields=['is_realm_admin', 'is_billing_admin'])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertIn('Billing', result_html)
+
+        # billing admin, but no billing relationship -> no billing link
+        customer.has_billing_relationship = False
+        customer.save()
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Billing', result_html)
+
+        # billing admin, no customer object -> make sure it doesn't crash
+        customer.delete()
+        result = self._get_home_page()
+        self.assertEqual(result.status_code, 200)
+
+    def test_show_plans(self) -> None:
+        realm = get_realm("zulip")
+        self.login(self.example_email('hamlet'))
+
+        # Show plans link to all users if plan_type is LIMITED
+        realm.plan_type = Realm.LIMITED
+        realm.save(update_fields=["plan_type"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertIn('Plans', result_html)
+
+        # Show plans link to no one, including admins, if SELF_HOSTED or PREMIUM
+        realm.plan_type = Realm.SELF_HOSTED
+        realm.save(update_fields=["plan_type"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Plans', result_html)
+
+        realm.plan_type = Realm.PREMIUM
+        realm.save(update_fields=["plan_type"])
+        result_html = self._get_home_page().content.decode('utf-8')
+        self.assertNotIn('Plans', result_html)
 
     def test_desktop_home(self) -> None:
         email = self.example_email("hamlet")
