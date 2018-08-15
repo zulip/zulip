@@ -181,7 +181,7 @@ function show_user_profile(element, user) {
     popovers.hide_all();
 
     var profile_data = {};
-    var localFormat = moment.localeData().longDateFormat('L');
+    var localFormat = moment.localeData().longDateFormat('LL');
     var field_types = page_params.custom_profile_field_types;
 
     page_params.custom_profile_fields.forEach(function (field) {
