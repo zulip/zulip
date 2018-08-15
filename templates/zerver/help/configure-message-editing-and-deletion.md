@@ -13,14 +13,15 @@ is highly configurable. Two things are true under any configuration:
 * Message content can only ever be modified by the original author.
 * Any message can be deleted at any time by an organization administrator.
 
-|                              | Admins   | Members  |
-|---                           |---       |---       |
-| Edit your message content    | [1]      | [1]      |
-| Edit others' message content |          |          |
-| Edit your message topics     | [1]      | [1]      |
-| Edit others' message topics  | [1]      | [2]      |
-| Delete your messages         | &#10004; | [3]      |
-| Delete others' messages      | &#10004; |          |
+|                                    | Admins   | Members |
+|---                                 |---       |---      |
+| Edit your message content          | [1]      | [1]     |
+| Edit others' message content       |          |         |
+| Edit your message topics           | [1]      | [1]     |
+| Add a topic to a topicless message | [1]      | [1]     |
+| Edit others' message topics        | [1]      | [1, 2]  |
+| Delete your messages               | &#10004; | [3]     |
+| Delete others' messages            | &#10004; |         |
 
 [1] Controlled by **Allow message editing**.
 
