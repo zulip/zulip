@@ -34,7 +34,7 @@ also customize their stream settings; they can:
 
 * [pin a stream](/help/pin-a-stream)
 * [change the color of streams](/help/change-the-color-of-a-stream)
-* [enable desktop notifications for stream](/help/configure-desktop-notifications)
+* [enable notifications for stream](/help/stream-notifications)
 * [muting notification for streams](/help/mute-a-stream)
 
 If enabled by the organization administrators, users can
