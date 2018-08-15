@@ -127,7 +127,7 @@ def fetch_initial_state_data(user_profile: UserProfile,
     if want('custom_profile_fields'):
         fields = custom_profile_fields_for_realm(realm.id)
         state['custom_profile_fields'] = [f.as_dict() for f in fields]
-        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES
+        state['custom_profile_field_types'] = CustomProfileField.FIELD_TYPE_CHOICES_DICT
 
     if want('hotspots'):
         state['hotspots'] = get_next_hotspots(user_profile)

@@ -7,13 +7,19 @@ set_global('loading', {});
 set_global('Sortable', {create: () => {}});
 
 
-const SHORT_TEXT = 1;
-const CHOICE = 3;
+const SHORT_TEXT_ID = 1;
+const CHOICE_ID = 3;
 
-page_params.custom_profile_field_types = [
-    [SHORT_TEXT, 'short_text'],
-    [CHOICE, 'choice'],
-];
+page_params.custom_profile_field_types = {
+    SHORT_TEXT: {
+        id: SHORT_TEXT_ID,
+        name: "Short Text",
+    },
+    CHOICE: {
+        id: CHOICE_ID,
+        name: "Choice",
+    },
+};
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;
@@ -48,14 +54,14 @@ function test_populate(opts) {
 run_test('populate_profile_fields', () => {
     const fields_data = [
         {
-            type: SHORT_TEXT,
+            type: SHORT_TEXT_ID,
             id: 10,
             name: 'favorite color',
             hint: 'blue?',
             field_data: '',
         },
         {
-            type: CHOICE,
+            type: CHOICE_ID,
             id: 30,
             name: 'meal',
             hint: 'lunch',
@@ -77,7 +83,7 @@ run_test('populate_profile_fields', () => {
                 id: 10,
                 name: 'favorite color',
                 hint: 'blue?',
-                type: 'short_text',
+                type: 'Short Text',
                 choices: [],
                 is_choice_field: false,
             },
@@ -88,7 +94,7 @@ run_test('populate_profile_fields', () => {
                 id: 30,
                 name: 'meal',
                 hint: 'lunch',
-                type: 'choice',
+                type: 'Choice',
                 choices: [
                     {order: 0, value: 0, text: 'lunch'},
                     {order: 1, value: 1, text: 'dinner'},
