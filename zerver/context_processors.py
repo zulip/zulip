@@ -56,6 +56,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_icon = None
         realm_description = None
         realm_invite_required = False
+        realm_plan_type = 0
     else:
         realm_uri = realm.uri
         realm_name = realm.name
@@ -63,6 +64,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         realm_description_raw = realm.description or "The coolest place in the universe."
         realm_description = convert(realm_description_raw, message_realm=realm)
         realm_invite_required = realm.invite_required
+        realm_plan_type = realm.plan_type
 
     register_link_disabled = settings.REGISTER_LINK_DISABLED
     login_link_disabled = settings.LOGIN_LINK_DISABLED
@@ -114,6 +116,7 @@ def zulip_default_context(request: HttpRequest) -> Dict[str, Any]:
         'realm_name': realm_name,
         'realm_icon': realm_icon,
         'realm_description': realm_description,
+        'realm_plan_type': realm_plan_type,
         'root_domain_uri': settings.ROOT_DOMAIN_URI,
         'apps_page_url': apps_page_url,
         'open_realm_creation': settings.OPEN_REALM_CREATION,
