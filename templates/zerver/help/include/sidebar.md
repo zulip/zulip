@@ -89,7 +89,6 @@
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
-* [High contrast mode](/help/high-contrast-mode)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
 * [Display emoji as text](/help/display-emoji-as-text)

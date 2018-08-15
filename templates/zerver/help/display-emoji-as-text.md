@@ -8,7 +8,3 @@ For example, when a heart emoji is displayed as text, it looks like
 {settings_tab|display-settings}
 
 2. Under **Emoji settings**, select **Translate emoji to text**.
-
-## Related articles
-
-* [High contrast mode](/help/high-contrast-mode)
