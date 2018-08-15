@@ -38,9 +38,18 @@ run_test('upload_started', () => {
     $("#compose-send-status").append = function (html) {
         assert.equal(html, test_html);
     };
+    $('#compose-textarea').caret = function () {
+        return 0;
+    };
+    document.execCommand = function (command, show_default, value) {
+        assert.equal(value, "[Uploading some-file…]() ");
+    };
 
     upload_opts.drop();
-    upload_opts.uploadStarted(0, {lastModified: 1549958107000}, 1);
+    upload_opts.uploadStarted(0, {
+        lastModified: 1549958107000,
+        name: 'some-file',
+    }, 1);
 
     assert.equal($("#compose-send-button").attr("disabled"), '');
     assert($("#compose-send-status").hasClass("alert-info"));
@@ -103,7 +112,8 @@ run_test('upload_finish', () => {
     function test(i, response, textbox_val) {
         var compose_ui_autosize_textarea_checked = false;
         var compose_actions_start_checked = false;
-        var syntax_to_insert;
+        var syntax_to_replace;
+        var syntax_to_replace_with;
         var file_input_clear = false;
 
         function setup() {
@@ -111,8 +121,9 @@ run_test('upload_finish', () => {
             compose_ui.autosize_textarea = function () {
                 compose_ui_autosize_textarea_checked = true;
             };
-            compose_ui.insert_syntax_and_focus = function (syntax) {
-                syntax_to_insert = syntax;
+            compose_ui.replace_syntax = function (old_syntax, new_syntax) {
+                syntax_to_replace = old_syntax;
+                syntax_to_replace_with = new_syntax;
             };
             compose_state.set_message_type();
             global.compose_actions = {
@@ -142,7 +153,8 @@ run_test('upload_finish', () => {
 
         function assert_side_effects() {
             if (response.uri) {
-                assert.equal(syntax_to_insert, textbox_val);
+                assert.equal(syntax_to_replace, '[Uploading some-file…]()');
+                assert.equal(syntax_to_replace_with, textbox_val);
                 assert(compose_actions_start_checked);
                 assert(compose_ui_autosize_textarea_checked);
                 assert.equal($("#compose-send-button").prop('disabled'), false);
@@ -161,7 +173,10 @@ run_test('upload_finish', () => {
         };
 
         setup();
-        upload_opts.uploadFinished(i, {lastModified: 1549958107000}, response);
+        upload_opts.uploadFinished(i, {
+            lastModified: 1549958107000,
+            name: 'some-file',
+        }, response);
         upload_opts.progressUpdated(1, {lastModified: 1549958107000}, 100);
         assert_side_effects();
     }

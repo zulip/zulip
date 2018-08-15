@@ -73,6 +73,7 @@ exports.options = function (config) {
         send_status.append('<div class="progress active">' +
                            '<div class="bar" id="' + upload_bar + '-' + file.lastModified + '" style="width: 0"></div>' +
                            '</div>');
+        compose_ui.insert_syntax_and_focus("[Uploading " + file.name + "…]()", textarea);
     };
 
     var progressUpdated = function (i, file, progress) {
@@ -132,11 +133,11 @@ exports.options = function (config) {
         if (i === -1) {
             // This is a paste, so there's no filename. Show the image directly
             var pasted_image_uri = "[pasted image](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(pasted_image_uri, textarea);
+            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", pasted_image_uri, textarea);
         } else {
             // This is a dropped file, so make the filename a link to the image
             var filename_uri = "[" + filename + "](" + uri + ")";
-            compose_ui.insert_syntax_and_focus(filename_uri, textarea);
+            compose_ui.replace_syntax("[Uploading " + file.name + "…]()", filename_uri, textarea);
         }
         compose_ui.autosize_textarea();
 
