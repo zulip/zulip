@@ -2498,6 +2498,18 @@ def get_user_ids_for_streams(streams: Iterable[Stream]) -> Dict[int, List[int]]:
 
     return all_subscribers_by_stream
 
+def get_last_message_id() -> int:
+    # We generally use this function to populate RealmAuditLog, and
+    # the max id here is actually systemwide, not per-realm.  I
+    # assume there's some advantage in not filtering by realm.
+    last_id = Message.objects.aggregate(Max('id'))['id__max']
+    if last_id is None:
+        # During initial realm creation, there might be 0 messages in
+        # the database; in that case, the `aggregate` query returns
+        # None.  Since we want an int for "beginning of time", use -1.
+        last_id = -1
+    return last_id
+
 SubT = Tuple[List[Tuple[UserProfile, Stream]], List[Tuple[UserProfile, Stream]]]
 def bulk_add_subscriptions(streams: Iterable[Stream],
                            users: Iterable[UserProfile],
@@ -2560,12 +2572,7 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
-    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
-    if event_last_message_id is None:
-        # During initial realm creation, there might be 0 messages in
-        # the database; in that case, the `aggregate` query returns
-        # None.  Since we want an int for "beginning of time", use -1.
-        event_last_message_id = -1
+    event_last_message_id = get_last_message_id()
 
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_add:
@@ -2739,7 +2746,7 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     # Log Subscription Activities in RealmAuditLog
     event_time = timezone_now()
-    event_last_message_id = Message.objects.aggregate(Max('id'))['id__max']
+    event_last_message_id = get_last_message_id()
     all_subscription_logs = []  # type: (List[RealmAuditLog])
     for (sub, stream) in subs_to_deactivate:
         all_subscription_logs.append(RealmAuditLog(realm=sub.user_profile.realm,
