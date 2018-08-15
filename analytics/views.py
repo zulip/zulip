@@ -355,6 +355,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
         SELECT
             realm.string_id,
             realm.date_created,
+            realm.plan_type,
             coalesce(user_counts.dau_count, 0) dau_count,
             coalesce(wau_counts.wau_count, 0) wau_count,
             (
@@ -469,6 +470,8 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     for row in rows:
         row['date_created_day'] = row['date_created'].strftime('%Y-%m-%d')
+        row['plan_type_string'] = [
+            '', 'self hosted', 'limited', 'premium', 'premium free'][row['plan_type']]
         row['age_days'] = int((now - row['date_created']).total_seconds()
                               / 86400)
         row['is_new'] = row['age_days'] < 12 * 7
@@ -519,6 +522,7 @@ def realm_summary_table(realm_minutes: Dict[str, float]) -> str:
 
     rows.append(dict(
         string_id='Total',
+        plan_type_string="",
         stats_link = '',
         date_created_day='',
         realm_admin_email='',

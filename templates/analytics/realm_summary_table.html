@@ -38,6 +38,7 @@
         <tr>
             <th>Realm</th>
             <th>Created (green if ≤12wk)</th>
+            <th>Plan Type</th>
             <th></th>
             <th>DAU</th>
             <th>WAU</th>
@@ -62,6 +63,10 @@
               class="good" {% else %}
               class="neutral" {% endif %} >
                 {{ row.date_created_day }}
+            </td>
+
+            <td>
+                {{ row.plan_type_string }}
             </td>
 
             <td>
