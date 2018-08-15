@@ -25,8 +25,8 @@
             {{#each profile_data}}
                 {{#if this}}
                 <div class="user-profile-key-value-section">
-                    <div class="user-profile-modal-field-name">{{@key}}:</div>
-                    <div class="user-profile-modal-field-value">{{this}}</div>
+                    <div class="user-profile-modal-field-name">{{this.name}}:</div>
+                    <div class="user-profile-modal-field-value">{{this.value}}</div>
                 </div>
                 {{/if}}
             {{/each}}

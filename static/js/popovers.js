@@ -180,35 +180,48 @@ exports.hide_user_profile = function () {
 function show_user_profile(element, user) {
     popovers.hide_all();
 
-    var profile_data = {};
+    var profile_data = [];
     var localFormat = moment.localeData().longDateFormat('LL');
     var field_types = page_params.custom_profile_field_types;
 
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user.user_id, field.id);
         var field_type = field.type;
+        var profile_field = {};
+
+        profile_field.name = field.name;
         if (field_value) {
             if (field_type === field_types.DATE.id) {
-                profile_data[field.name] = moment(field_value).format(localFormat);
+                profile_field.value = moment(field_value).format(localFormat);
             } else if (field_type === field_types.USER.id) {
-                profile_data[field.name] = people.safe_full_names(field_value);
+                profile_field.value = people.safe_full_names(field_value);
             } else if (field_type === field_types.CHOICE.id) {
                 var field_choice_dict = JSON.parse(field.field_data);
-                profile_data[field.name] = field_choice_dict[field_value].text;
+                profile_field.value = field_choice_dict[field_value].text;
             } else {
-                profile_data[field.name] = field_value;
+                profile_field.value = field_value;
             }
         }
+        profile_data.push(profile_field);
     });
 
     var time_preferance = people.get_user_time_preferences(user.user_id);
 
     if (time_preferance) {
-        profile_data[i18n.t("User timezone")] = time_preferance.timezone;
+        profile_data.push({
+            name: i18n.t("User timezone"),
+            value: time_preferance.timezone,
+        });
     }
 
-    profile_data[i18n.t("Date joined")] = moment(user.date_joined).format(localFormat);
-    profile_data[i18n.t("Last seen")] = user_last_seen_time_status(user.user_id);
+    profile_data.push({
+        name: i18n.t("Date joined"),
+        value: moment(user.date_joined).format(localFormat),
+    });
+    profile_data.push({
+        name: i18n.t("Last seen"),
+        value: user_last_seen_time_status(user.user_id),
+    });
 
     var args = {
         full_name: user.full_name,
