@@ -1,8 +1,6 @@
-zrequire('settings_profile_fields');
-
+set_global('page_params', {});
 set_global('$', global.make_zjquery());
 set_global('templates', {});
-set_global('page_params', {});
 set_global('loading', {});
 set_global('Sortable', {create: () => {}});
 
@@ -20,6 +18,8 @@ page_params.custom_profile_field_types = {
         name: "Choice",
     },
 };
+
+zrequire('settings_profile_fields');
 
 function test_populate(opts) {
     const fields_data = opts.fields_data;

@@ -7,9 +7,9 @@ var meta = {
 };
 
 var order = [];
+var field_types = page_params.custom_profile_field_types;
 
 exports.field_type_id_to_string = function (type_id) {
-    var field_types = page_params.custom_profile_field_types;
     var field_type_str;
 
     _.every(field_types, function (field_type) {
@@ -69,8 +69,8 @@ function create_choice_row(container) {
 function clear_form_data() {
     $("#profile_field_name").val("");
     $("#profile_field_hint").val("");
-    // Set default in field type dropdown
-    $("#profile_field_type").val("1");
+    // Set default type "Short Text" in field type dropdown
+    $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from choice field form
     $("#profile_field_choices").html("");
     create_choice_row($("#profile_field_choices"));
@@ -84,8 +84,9 @@ function create_profile_field(e) {
 
     var selector = $('.admin-profile-field-form div.choice-row');
     var field_data = {};
+    var field_type = $('#profile_field_type').val();
 
-    if ($('#profile_field_type').val() === '3') {
+    if (parseInt(field_type, 10) === field_types.CHOICE.id) {
         // Only read choice data if we are creating a choice field.
         field_data = read_field_data_from_form(selector);
     }
@@ -95,7 +96,7 @@ function create_profile_field(e) {
     };
     var form_data = {
         name: $("#profile_field_name").val(),
-        field_type: $("#profile_field_type").val(),
+        field_type: field_type,
         hint: $("#profile_field_hint").val(),
         field_data: JSON.stringify(field_data),
     };
@@ -163,7 +164,7 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
 
-    if (parseInt(field.type, 10) === page_params.custom_profile_field_types.CHOICE.id) {
+    if (parseInt(field.type, 10) === field_types.CHOICE.id) {
         // Re-render field choices in edit form to load initial choice data
         var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
         choice_list.off();
@@ -257,7 +258,7 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
         var choices = exports.parse_field_choices_from_field_data(field_data);
         var is_choice_field = false;
 
-        if (profile_field.type === 3) {
+        if (profile_field.type === field_types.CHOICE.id) {
             is_choice_field = true;
         }
 
@@ -291,17 +292,18 @@ function set_up_choices_field() {
     update_choice_delete_btn($("#profile_field_choices"), false);
 
     var choice_list = $("#profile_field_choices")[0];
+    var field_type = $('#profile_field_type').val();
     Sortable.create(choice_list, {
         onUpdate: function () {},
     });
 
-    if ($('#profile_field_type').val() !== '3') {
+    if (parseInt(field_type, 10) !== field_types.CHOICE.id) {
         // If 'Choice' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
 
     $('#profile_field_type').on('change', function (e) {
-        if ($(e.target).val() === '3') {
+        if (parseInt($(e.target).val(), 10) === field_types.CHOICE.id) {
             $("#profile_field_choices_row").show();
         } else {
             $("#profile_field_choices_row").hide();
