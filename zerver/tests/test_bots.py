@@ -1000,24 +1000,50 @@ class BotTest(ZulipTestCase, UploadSerializeMixin):
         self.assert_json_error(result, "Invalid stream name 'missing'")
 
     def test_patch_bot_events_register_stream(self) -> None:
-        self.login(self.example_email('hamlet'))
+        hamlet = self.example_user('hamlet')
+        self.login(hamlet.email)
         bot_info = {
             'full_name': 'The Bot of Hamlet',
             'short_name': 'hambot',
         }
         result = self.client_post("/json/bots", bot_info)
         self.assert_json_success(result)
-        bot_info = {
-            'default_events_register_stream': 'Denmark',
-        }
+
         email = 'hambot-bot@zulip.testserver'
-        result = self.client_patch("/json/bots/{}".format(self.get_bot_user(email).id), bot_info)
+        bot_user = self.get_bot_user(email)
+        url = "/json/bots/{}".format(bot_user.id)
+
+        # Successfully give the bot a default stream.
+        stream_name = 'Denmark'
+        bot_info = dict(default_events_register_stream=stream_name)
+        result = self.client_patch(url, bot_info)
         self.assert_json_success(result)
 
-        self.assertEqual('Denmark', result.json()['default_events_register_stream'])
+        self.assertEqual(stream_name, result.json()['default_events_register_stream'])
 
         bot = self.get_bot()
-        self.assertEqual('Denmark', bot['default_events_register_stream'])
+        self.assertEqual(stream_name, bot['default_events_register_stream'])
+
+        # Make sure we are locked out of an unsubscribed private stream.
+        # We'll subscribe the bot but not the owner (since the check is
+        # on owner).
+        stream_name = 'private_stream'
+        self.make_stream(stream_name, hamlet.realm, invite_only=True)
+        self.subscribe(bot_user, stream_name)
+        bot_info = dict(default_events_register_stream=stream_name)
+        result = self.client_patch(url, bot_info)
+        self.assert_json_error_contains(result, 'Invalid stream name')
+
+        # Subscribing the owner allows us to patch the stream.
+        self.subscribe(hamlet, stream_name)
+        bot_info = dict(default_events_register_stream=stream_name)
+        result = self.client_patch(url, bot_info)
+        self.assert_json_success(result)
+
+        # Make sure the bot cannot create their own default stream.
+        url = "/api/v1/bots/{}".format(bot_user.id)
+        result = self.api_patch(bot_user.email, url, bot_info)
+        self.assert_json_error_contains(result, 'endpoint does not accept')
 
     def test_patch_bot_events_register_stream_allowed(self) -> None:
         self.login(self.example_email('hamlet'))
