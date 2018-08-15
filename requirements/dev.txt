@@ -12,7 +12,7 @@
 git+https://github.com/zulip/django-bitfield@0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38#egg=django-bitfield==1.9.3+dev.0d2b15cdb5af5ddec88d41cac19c0f2ce1b1ad38
 git+https://github.com/zulip/talon.git@7d8bdc4dbcfcc5a73298747293b99fe53da55315#egg=talon==1.2.10.zulip1
 git+https://github.com/zulip/ultrajson@70ac02bec#egg=ujson==1.35+git
-git+https://github.com/zulip/python-zulip-api.git@0.5.2#egg=zulip==0.5.2_git&subdirectory=zulip
+git+https://github.com/zulip/python-zulip-api.git@7dfecf557743dc0bed6a20cdd50f5e825beac4ce#egg=zulip==0.5.2_git&subdirectory=zulip
 git+https://github.com/zulip/python-zulip-api.git@7dfecf557743dc0bed6a20cdd50f5e825beac4ce#egg=zulip_bots==0.5.2+git&subdirectory=zulip_bots
 alabaster==0.7.11
 apns2==0.4.1
@@ -93,6 +93,7 @@ lxml==4.2.3
 markdown-include==0.5.1
 markdown==2.6.11
 markupsafe==1.0
+matrix-client==0.3.2
 mock==2.0.0
 moto==1.3.3
 mypy==0.620
@@ -146,7 +147,7 @@ recommonmark==0.4.0
 redis==2.10.6
 regex==2017.11.9
 requests-oauthlib==0.8.0
-requests[security]==2.18.4  # via aws-xray-sdk, docker, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
+requests[security]==2.18.4  # via aws-xray-sdk, docker, matrix-client, moto, premailer, pyoembed, python-digitalocean, python-gcm, python-twitter, requests-oauthlib, responses, social-auth-core, sphinx, stripe, twilio
 responses==0.9.0          # via moto
 rsa==3.4.2
 s3transfer==0.1.11        # via boto3
