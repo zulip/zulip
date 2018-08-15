@@ -14,10 +14,11 @@ Organization administrators can also
 
     Emoji names can only contain `a-z`, `0-9`, dashes (`-`), and
     spaces. Upper and lower case letters will be treated the same, and
-    underscores (`_`) will be treated the same as spaces.
+    underscores (`_`) will be treated the same as spaces. The emoji name
+    must be different from all other added emoji names.
 
-1. Click **Upload emoji** and add an image or GIF. The image will
-   automatically be scaled to 25x25 pixels.
+1. Click **Upload emoji** and add an image (png or jpg file format) or GIF.
+   The image will automatically be scaled to 25x25 pixels.
 
 1. Click **Add emoji**.
 
@@ -33,7 +34,7 @@ may have to scroll down a bit to find it).
 
 {settings_tab|emoji-settings}
 
-1. Click the trash icon next to the emoji that you would like to delete.
+1. Click the trash icon (<i class="icon-vector-trash"></i>) next to the emoji that you would like to delete.
 
 Deleting an emoji will not affect any existing messages or emoji
 reactions. Anyone can delete custom emoji they added, and organization

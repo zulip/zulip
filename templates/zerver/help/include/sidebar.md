@@ -41,7 +41,6 @@
 * [Write in a different language](/help/send-a-message-in-a-different-language)
 * [Reply to a message](/help/reply-to-a-message)
 * [Edit or delete a message](/help/edit-or-delete-a-message)
-* [Edit the topic of a message](/help/change-the-topic-of-a-message)
 * [Message a stream by email](/help/message-a-stream-by-email)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
 
@@ -75,6 +74,7 @@
 * [Pin a stream](/help/pin-a-stream)
 * [Change the color of a stream](/help/change-the-color-of-a-stream)
 * [Message a stream by email](/help/message-a-stream-by-email)
+* [Edit the topic of a message](/help/change-the-topic-of-a-message)
 
 ## Notifications
 * [Mute or unmute a stream](/help/mute-a-stream)
@@ -128,6 +128,7 @@
 * [Restrict name and email changes](/help/restrict-name-and-email-changes)
 * [Disable message edit history](/help/disable-message-edit-history)
 * [Manage editing of old messages](/help/configure-message-editing-and-deletion)
+* [Restrict topic editing](/help/restrict-topic-editing)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
 * [Configure authentication methods](/help/configure-authentication-methods)
