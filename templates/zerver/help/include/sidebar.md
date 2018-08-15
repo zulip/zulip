@@ -79,15 +79,14 @@
 * [Edit the topic of a message](/help/change-the-topic-of-a-message)
 
 ## Notifications
+* [Stream notifications](/help/stream-notifications)
+* [PMs, mentions, and alerts](/help/pm-mention-alert-notifications)
 * [Mute or unmute a stream](/help/mute-a-stream)
 * [Mute or unmute a topic](/help/mute-a-topic)
-* [Set notifications for a single stream](/help/set-notifications-for-a-single-stream)
-* [Desktop notifications](/help/configure-desktop-notifications)
-* [Email notifications](/help/configure-email-notifications)
-* [Mobile notifications](/help/configure-mobile-notifications)
 * [Digest emails](/help/configure-email-digest-notifications)
 * [Add an alert word](/help/add-an-alert-word)
 * [Notify everyone on a stream](/help/notify-everyone-on-a-stream)
+* [Troubleshoot desktop notifications](/help/troubleshooting-desktop-notifications)
 
 ## Tools & customization
 * [Bots and integrations](/help/add-a-bot-or-integration)
