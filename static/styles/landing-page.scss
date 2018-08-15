@@ -655,9 +655,23 @@ nav ul li.active::after {
     flex: 1 0 100%;
 }
 
-.portico-landing.features-app section > .feature-block {
+.portico-landing.features-app .keyboard-shortcuts .feature-block {
     margin: 10px 20px;
     flex: 1 1 320px;
+}
+.portico-landing.features-app .feature-details .feature-block {
+    margin: 10px auto 20px 10px;
+    flex: 0 1 320px;
+    padding: 25px;
+}
+
+.portico-landing.features-app .feature-details .feature-block:hover {
+    -webkit-box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
+    -moz-box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
+    box-shadow: 10px 20px 80px rgba(0, 0, 0, 0.15);
+    border-radius: 10px;
+    -webkit-transform: scale(1.01);
+    transform: scale(1.01);
 }
 
 .portico-landing.features-app .feature-block h3 {
