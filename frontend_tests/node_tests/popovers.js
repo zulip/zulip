@@ -11,6 +11,7 @@ var noop =  function () {};
 $.fn.popover = noop; // this will get wrapped by our code
 
 zrequire('popovers');
+popovers.hide_user_profile = noop;
 
 set_global('current_msg_list', {});
 set_global('page_params', {

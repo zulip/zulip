@@ -173,6 +173,10 @@ function show_user_info_popover(element, user, message) {
     }
 }
 
+exports.hide_user_profile = function () {
+    $("#user-profile-modal").modal("hide");
+};
+
 function show_user_profile(element, user) {
     popovers.hide_all();
 
@@ -676,6 +680,10 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '#user-profile-modal-body .user-profile-modal-edit-button', function () {
+        exports.hide_user_profile();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -944,6 +952,7 @@ exports.hide_all = function () {
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     stream_popover.restore_stream_list_size();
+    popovers.hide_user_profile();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(function ($o) {
