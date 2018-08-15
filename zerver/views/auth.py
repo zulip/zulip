@@ -871,6 +871,7 @@ def api_get_server_settings(request: HttpRequest) -> HttpResponse:
             "realm_uri",
             "realm_name",
             "realm_icon",
+            "realm_logo",
             "realm_description"]:
         if context[settings_item] is not None:
             result[settings_item] = context[settings_item]

@@ -30,6 +30,7 @@ from zerver.lib.narrow import check_supported_events_narrow_filter
 from zerver.lib.push_notifications import push_notifications_enabled
 from zerver.lib.soft_deactivation import maybe_catch_up_soft_deactivated_user
 from zerver.lib.realm_icon import realm_icon_url
+from zerver.lib.realm_logo import realm_logo_url
 from zerver.lib.request import JsonableError
 from zerver.lib.topic import TOPIC_NAME
 from zerver.lib.topic_mutes import get_topic_mutes
@@ -172,6 +173,9 @@ def fetch_initial_state_data(user_profile: UserProfile,
         state['realm_icon_url'] = realm_icon_url(realm)
         state['realm_icon_source'] = realm.icon_source
         state['max_icon_file_size'] = settings.MAX_ICON_FILE_SIZE
+        state['realm_logo_url'] = realm_logo_url(realm)
+        state['realm_logo_source'] = realm.logo_source
+        state['max_logo_file_size'] = settings.MAX_LOGO_FILE_SIZE
         state['realm_bot_domain'] = realm.get_bot_domain()
         state['realm_uri'] = realm.uri
         state['realm_available_video_chat_providers'] = realm.VIDEO_CHAT_PROVIDERS

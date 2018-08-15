@@ -23,20 +23,44 @@
         </div>
 
         <h3>{{t "Organization avatar" }}</h3>
+        <p>{{t "A square logo used to brand your Zulip organization." }}</p>
 
         <div class="realm-icon-section">
             <div class="inline-block">
                 <img id="realm-settings-icon" src="{{ realm_icon_url }}"/>
                 <input type="file" name="realm_icon_file_input" class="notvisible"
                   id="realm_icon_file_input" value="{{t 'Upload icon' }}"/>
-                <div id="upload_icon_spinner"></div>
             </div>
             <div class="inline-block avatar-controls">
+                <div id="realm_icon_file_input_error" class="alert text-error"></div>
                 <button class="button rounded sea-green w-200 block input-size"
-                  id="realm_icon_upload_button">{{t 'Upload new icon' }}</button>
-                <div id="realm_icon_file_input_error" class="text-error"></div>
+                  id="realm_icon_upload_button">
+                    <span id="upload_icon_button_text">{{t 'Upload new icon' }}</span>
+                    <span id="upload_icon_spinner"></span>
+                </button>
                 <button class="button rounded btn-danger w-200 m-t-10 block input-size"
                   id="realm_icon_delete_button">{{t 'Delete icon' }}</button>
+            </div>
+        </div>
+
+        <h3>{{t "Organization logo" }}</h3>
+        <p>{{t "A wide image, replacing the Zulip logo in the upper left corner of the Zulip apps." }}</p>
+
+        <div class="realm-logo-section">
+            <div class="block realm-logo-block">
+                <img id="realm-settings-logo" src="{{ realm_logo_url }}"/>
+                <input type="file" name="realm_logo_file_input" class="notvisible"
+                  id="realm_logo_file_input" value="{{t 'Upload logo' }}"/>
+            </div>
+            <div class="block avatar-controls">
+                <div id="realm_logo_file_input_error" class="alert text-error"></div>
+                <button class="button rounded sea-green w-200 block input-size"
+                  id="realm_logo_upload_button">
+                    <span id="upload_logo_button_text">{{t 'Upload new logo' }}</span>
+                    <span id="upload_logo_spinner"></span>
+                </button>
+                <button class="button rounded btn-danger w-200 m-t-10 block input-size"
+                  id="realm_logo_delete_button">{{t 'Delete logo' }}</button>
             </div>
         </div>
 
