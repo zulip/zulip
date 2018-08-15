@@ -93,7 +93,7 @@ function user_last_seen_time_status(user_id) {
     // We give the somewhat vague status of "Unknown" for these users.
     var last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
-        return i18n.t("Unknown");
+        return i18n.t("More than 2 weeks ago");
     }
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
