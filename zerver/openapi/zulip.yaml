@@ -1749,8 +1749,12 @@ paths:
                       description: The realm's name.
                     realm_icon:
                       type: string
-                      description: The URI of the organization's icon (usually
-                        a logo).
+                      description: The URI of the organization's mobile icon (usually
+                        a square version of the logo).
+                    realm_logo:
+                      type: string
+                      description: The URI of the organization's top-left navbar logo
+                        (usually a wide rectangular version of the logo).
                     realm_description:
                       type: string
                       description: HTML description of the organization, as
@@ -1762,6 +1766,7 @@ paths:
                         "push_notifications_enabled": false,
                         "msg": "",
                         "realm_icon": "https://secure.gravatar.com/avatar/62429d594b6ffc712f54aee976a18b44?d=identicon",
+                        "realm_logo": "/static/images/logo/zulip-org-logo.png",
                         "realm_description": "<p>The Zulip development environment default organization.  It's great for testing!</p>",
                         "email_auth_enabled": true,
                         "zulip_version": "1.9.0-rc1+git",

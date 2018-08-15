@@ -50,7 +50,12 @@ curl {{ api_url }}/v1/server_settings \
   enabled with a username and password combination.
 * `realm_uri`: the organization's canonical URI.
 * `realm_name`: the organization's name (for display purposes).
-* `realm_icon`: the URI of the organization's icon (usually a logo).
+* `realm_icon`: the URI of the organization's logo as a square image,
+  used for identifying the organization in small locations in the
+  mobile and desktop apps.
+* `realm_logo`: the URI of the organization's logo as a horizontal
+  format image (displayed in the top-left corner of the logged-in
+  webapp).
 * `realm_description`: HTML description of the organization, as configured by
   the [organization profile](/help/create-your-organization-profile).
 

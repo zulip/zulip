@@ -49,6 +49,8 @@ exports.build_page = function () {
         is_guest: page_params.is_guest,
         realm_icon_source: page_params.realm_icon_source,
         realm_icon_url: page_params.realm_icon_url,
+        realm_logo_source: page_params.realm_logo_source,
+        realm_logo_url: page_params.realm_logo_url,
         realm_mandatory_topics: page_params.realm_mandatory_topics,
         realm_send_welcome_emails: page_params.realm_send_welcome_emails,
         realm_default_twenty_four_hour_time: page_params.realm_default_twenty_four_hour_time,

@@ -2157,6 +2157,27 @@ div.floating_recipient {
     display: inline-block;
 }
 
+.settings-section .realm-icon-section .loading_indicator_text,
+.settings-section .realm-logo-section .loading_indicator_text {
+    font-size: 14px;
+    font-weight: 400;
+    vertical-align: middle;
+    line-height: 20px;
+    display: inline-block;
+    float: none;
+    margin-top: 0px;
+    margin-left: -12px;
+}
+
+.settings-section .realm-logo-section .loading_indicator_spinner,
+.settings-section .realm-icon-section .loading_indicator_spinner {
+    width: 10%;
+    height: 16px;
+    margin-top: 2px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
 .settings-section #default_language {
     text-decoration: none;
 }

@@ -166,6 +166,7 @@ import "js/templates.js";
 import "js/upload_widget.js";
 import "js/avatar.js";
 import "js/realm_icon.js";
+import "js/realm_logo.js";
 import 'js/reminder.js';
 import 'js/confirm_dialog.js';
 import "js/settings_account.js";
