@@ -1,0 +1,34 @@
+# This is a combination of 2 commits.
+# This is the 1st commit message:
+
+custom profile field: Minor tweaks in field-table in admin settings.
+
+This commit add minor changes in profile field table in
+admin settings:
+ - Hide table header if there is no field
+ - Fix width of table column
+
+# This is the commit message #2:
+
+#Table width, TODO: fix table css fully
+
+REMOVE VALIE COMMIT ALAG
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# Date:      Wed Aug 15 17:07:40 2018 +0530
+#
+# interactive rebase in progress; onto dc962f8b4
+# Last commands done (9 commands done):
+#    s 0269964fb Table width, TODO: fix table css fully
+#    s 7be86297e Remove table header from choice field edit form
+# Next command to do (1 remaining command):
+#    pick b0648bd4b custom profile field: Set default values in create-field form on load.
+# You are currently rebasing branch 'cp_followup' on 'dc962f8b4'.
+#
+# Changes to be committed:
+#	modified:   static/js/settings_profile_fields.js
+#	modified:   static/styles/settings.scss
+#	modified:   static/templates/admin_profile_field_list.handlebars
+#
