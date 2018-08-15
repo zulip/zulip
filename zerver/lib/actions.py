@@ -3002,20 +3002,8 @@ def do_change_icon_source(realm: Realm, icon_source: str, log: bool=True) -> Non
                               icon_url=realm_icon_url(realm))),
                active_user_ids(realm.id))
 
-def _default_stream_permision_check(user_profile: UserProfile, stream: Optional[Stream]) -> None:
-    # Any user can have a None default stream
-    if stream is not None:
-        if user_profile.is_bot:
-            user = user_profile.bot_owner
-        else:
-            user = user_profile
-        if stream.invite_only and (user is None or not subscribed_to_stream(user, stream.id)):
-            raise JsonableError(_('Insufficient permission'))
-
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
-    _default_stream_permision_check(user_profile, stream)
-
     user_profile.default_sending_stream = stream
     user_profile.save(update_fields=['default_sending_stream'])
     if log:
@@ -3038,8 +3026,6 @@ def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional
 def do_change_default_events_register_stream(user_profile: UserProfile,
                                              stream: Optional[Stream],
                                              log: bool=True) -> None:
-    _default_stream_permision_check(user_profile, stream)
-
     user_profile.default_events_register_stream = stream
     user_profile.save(update_fields=['default_events_register_stream'])
     if log:
