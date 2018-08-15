@@ -14,6 +14,7 @@ from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from zerver.lib.context_managers import lockfile
+from zerver.lib.management import sleep_forever
 from zilencer.lib.stripe import StripeConnectionError, \
     run_billing_processor_one_step
 from zilencer.models import BillingProcessor
@@ -28,7 +29,7 @@ Usage: ./manage.py process_billing_updates
 
     def handle(self, *args: Any, **options: Any) -> None:
         if not settings.BILLING_PROCESSOR_ENABLED:
-            time.sleep(10**9)  # "infinity seconds"
+            sleep_forever()
 
         with lockfile("/tmp/zulip_billing_processor.lockfile"):
             while True:

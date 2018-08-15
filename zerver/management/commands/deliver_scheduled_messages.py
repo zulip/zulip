@@ -10,6 +10,7 @@ from django.utils.timezone import now as timezone_now
 
 from zerver.lib.context_managers import lockfile
 from zerver.lib.logging_util import log_to_file
+from zerver.lib.management import sleep_forever
 from zerver.models import ScheduledMessage, Message, get_user
 from zerver.lib.actions import do_send_messages
 from zerver.lib.addressee import Addressee
@@ -55,8 +56,7 @@ Usage: ./manage.py deliver_scheduled_messages
             # not sound right. Actually we do this check to avoid running this
             # process on every server that might be in service to a realm. See
             # the comment in zproject/settings.py file about renaming this setting.
-            while True:
-                time.sleep(10*9)
+            sleep_forever()
 
         with lockfile("/tmp/zulip_scheduled_message_deliverer.lockfile"):
             while True:
