@@ -26,6 +26,7 @@ from zerver.lib.actions import (
     extract_recipients,
     get_active_presence_idle_user_ids,
     get_client,
+    get_last_message_id,
     get_user_info_for_message_updates,
     internal_prep_private_message,
     internal_prep_stream_message,
@@ -93,6 +94,17 @@ import ujson
 from typing import Any, Dict, List, Optional, Set
 
 from collections import namedtuple
+
+class MiscMessageTest(ZulipTestCase):
+    def test_get_last_message_id(self) -> None:
+        self.assertEqual(
+            get_last_message_id(),
+            Message.objects.latest('id').id
+        )
+
+        Message.objects.all().delete()
+
+        self.assertEqual(get_last_message_id(), -1)
 
 class TopicHistoryTest(ZulipTestCase):
     def test_topics_history_zephyr_mirror(self) -> None:

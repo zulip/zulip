@@ -50,10 +50,10 @@ from zerver.models import (
 
 from zerver.lib.actions import (
     do_add_default_stream, do_change_is_admin, do_set_realm_property,
-    do_create_realm, do_remove_default_stream,
+    do_create_realm, do_remove_default_stream, bulk_get_subscriber_user_ids,
     gather_subscriptions_helper, bulk_add_subscriptions, bulk_remove_subscriptions,
     gather_subscriptions, get_default_streams_for_realm, get_realm, get_stream,
-    get_user, set_default_streams, check_stream_name,
+    get_user, set_default_streams, check_stream_name, do_get_streams,
     create_stream_if_needed, create_streams_if_needed,
     ensure_stream,
     do_deactivate_stream,
@@ -78,6 +78,7 @@ from zerver.lib.message import (
     aggregate_unread_data,
     get_raw_unread_data,
 )
+from zerver.lib.stream_recipient import StreamRecipientMap
 
 from django.http import HttpResponse
 from datetime import timedelta
@@ -85,6 +86,31 @@ import mock
 import random
 import ujson
 import urllib
+
+class TestMiscStuff(ZulipTestCase):
+    def test_empty_results(self) -> None:
+        # These are essentially just tests to ensure line
+        # coverage for codepaths that won't ever really be
+        # called in practice.
+
+        user_profile = self.example_user('cordelia')
+
+        result = bulk_get_subscriber_user_ids(
+            stream_dicts=[],
+            user_profile=user_profile,
+            sub_dict={},
+            stream_recipient=StreamRecipientMap(),
+        )
+        self.assertEqual(result, {})
+
+        streams = do_get_streams(
+            user_profile=user_profile,
+            include_public=False,
+            include_subscribed=False,
+            include_all_active=False,
+            include_default=False,
+        )
+        self.assertEqual(streams, [])
 
 class TestCreateStreams(ZulipTestCase):
     def test_creating_streams(self) -> None:
@@ -1029,14 +1055,38 @@ class DefaultStreamTest(ZulipTestCase):
         self.assertEqual(self.get_default_stream_names(realm), orig_stream_names)
 
     def test_api_calls(self) -> None:
-        self.login(self.example_email("hamlet"))
         user_profile = self.example_user('hamlet')
         do_change_is_admin(user_profile, True)
+        self.login(user_profile.email)
+
         stream_name = 'stream ADDED via api'
         ensure_stream(user_profile.realm, stream_name)
         result = self.client_post('/json/default_streams', dict(stream_name=stream_name))
         self.assert_json_success(result)
         self.assertTrue(stream_name in self.get_default_stream_names(user_profile.realm))
+
+        # look for it
+        self.subscribe(user_profile, stream_name)
+        payload = dict(
+            include_public='true',
+            include_default='true',
+        )
+        result = self.client_get('/json/streams', payload)
+        self.assert_json_success(result)
+        streams = result.json()['streams']
+        default_streams = {
+            stream['name']
+            for stream in streams
+            if stream['is_default']
+        }
+        self.assertEqual(default_streams, {stream_name})
+
+        other_streams = {
+            stream['name']
+            for stream in streams
+            if not stream['is_default']
+        }
+        self.assertTrue(len(other_streams) > 0)
 
         # and remove it
         result = self.client_delete('/json/default_streams', dict(stream_name=stream_name))
@@ -1307,6 +1357,13 @@ class DefaultStreamGroupTest(ZulipTestCase):
                                   {"group_name": "abc\000", "description": description,
                                    "stream_names": ujson.dumps(stream_names)})
         self.assert_json_error(result, "Default stream group name 'abc\000' contains NULL (0x00) characters.")
+
+        # Also test that lookup_default_stream_groups raises an
+        # error if we pass it a bad name.  This function is used
+        # during registration, but it's a bit heavy to do a full
+        # test of that.
+        with self.assertRaisesRegex(JsonableError, 'Invalid default stream group invalid-name'):
+            lookup_default_stream_groups(['invalid-name'], realm)
 
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
