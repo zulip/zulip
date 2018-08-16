@@ -9,6 +9,7 @@ from zerver.models import (
     Realm,
     UserProfile,
     get_user_including_cross_realm,
+    get_user_by_id_in_realm_including_cross_realm,
 )
 
 def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
@@ -28,6 +29,16 @@ def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
             raise JsonableError(_("Invalid email '%s'") % (email,))
+        user_profiles.append(user_profile)
+    return user_profiles
+
+def get_user_profiles_by_ids(user_ids: Iterable[int], realm: Realm) -> List[UserProfile]:
+    user_profiles = []  # type: List[UserProfile]
+    for user_id in user_ids:
+        try:
+            user_profile = get_user_by_id_in_realm_including_cross_realm(user_id, realm)
+        except UserProfile.DoesNotExist:
+            raise JsonableError(_("Invalid user ID {}".format(user_id)))
         user_profiles.append(user_profile)
     return user_profiles
 
@@ -125,6 +136,14 @@ class Addressee:
     @staticmethod
     def for_private(emails: Sequence[str], realm: Realm) -> 'Addressee':
         user_profiles = get_user_profiles(emails, realm)
+        return Addressee(
+            msg_type='private',
+            user_profiles=user_profiles,
+        )
+
+    @staticmethod
+    def for_user_ids(user_ids: Sequence[int], realm: Realm) -> 'Addressee':
+        user_profiles = get_user_profiles_by_ids(user_ids, realm)
         return Addressee(
             msg_type='private',
             user_profiles=user_profiles,
