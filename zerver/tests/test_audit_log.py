@@ -5,9 +5,10 @@ from zerver.lib.actions import do_create_user, do_deactivate_user, \
     do_activate_user, do_reactivate_user, do_change_password, \
     do_change_user_email, do_change_avatar_fields, do_change_bot_owner, \
     do_regenerate_api_key, do_change_full_name, do_change_tos_version, \
-    bulk_add_subscriptions, bulk_remove_subscriptions
+    bulk_add_subscriptions, bulk_remove_subscriptions, get_streams_traffic
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import RealmAuditLog, get_client, get_realm
+from analytics.models import StreamCount
 
 from datetime import timedelta
 from django.contrib.auth.password_validation import validate_password
@@ -99,6 +100,24 @@ class TestRealmAuditLog(ZulipTestCase):
         self.assertEqual(RealmAuditLog.objects.filter(event_type=RealmAuditLog.USER_API_KEY_CHANGED,
                                                       event_time__gte=now).count(), 1)
         self.assertTrue(user.api_key)
+
+    def test_get_streams_traffic(self) -> None:
+        realm = get_realm('zulip')
+        stream_name = 'whatever'
+        stream = self.make_stream(stream_name, realm)
+        result = get_streams_traffic()
+        self.assertEqual(result, {})
+
+        StreamCount.objects.create(
+            realm=realm,
+            stream=stream,
+            property='messages_in_stream:is_bot:day',
+            end_time=timezone_now(),
+            value=999,
+        )
+
+        result = get_streams_traffic()
+        self.assertEqual(result, {stream.id: 999})
 
     def test_subscriptions(self) -> None:
         now = timezone_now()
