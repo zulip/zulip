@@ -5,13 +5,13 @@ emoji equivalents like
 <img
     src="/static/generated/emoji/images-google-64/1f642.png"
     alt="slight_smile"
-    style="width: 3%;"
+    class="emoji-small"
 />
 or
 <img
     src="/static/generated/emoji/images-google-64/1f641.png"
     alt="slight_frown"
-    style="width: 3%;"
+    class="emoji-small"
 />
 automatically by Zulip.
 
