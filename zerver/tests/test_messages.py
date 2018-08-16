@@ -269,7 +269,6 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
-
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
         realm = Realm.objects.create(string_id=domain, invite_required=False)
@@ -382,6 +381,29 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
+
+class TestAddressee(ZulipTestCase):
+    def test_addressee_for_user_ids(self) -> None:
+        realm = get_realm('zulip')
+        user_ids = [self.example_user('cordelia').id,
+                    self.example_user('hamlet').id,
+                    self.example_user('othello').id]
+
+        result = Addressee.for_user_ids(user_ids=user_ids, realm=realm)
+        user_profiles = result.user_profiles()
+        result_user_ids = [user_profiles[0].id, user_profiles[1].id,
+                           user_profiles[2].id]
+
+        self.assertEqual(result_user_ids, user_ids)
+
+    def test_addressee_for_user_ids_nonexistent_id(self) -> None:
+        def assert_invalid_user_id() -> Any:
+            return self.assertRaisesRegex(
+                JsonableError,
+                'Invalid user ID ')
+
+        with assert_invalid_user_id():
+            Addressee.for_user_ids(user_ids=[779], realm=get_realm('zulip'))
 
 class InternalPrepTest(ZulipTestCase):
 
