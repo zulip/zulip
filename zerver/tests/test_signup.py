@@ -260,6 +260,8 @@ class PasswordResetTest(ZulipTestCase):
                       outbox[0].body)
         self.assertNotIn('does have an active account in the zulip.testserver',
                          outbox[0].body)
+        self.assertIn('but your account has been deactivated',
+                      outbox[0].body)
 
     def test_password_reset_with_deactivated_realm(self) -> None:
         user_profile = self.example_user("hamlet")
@@ -304,9 +306,11 @@ class PasswordResetTest(ZulipTestCase):
         message = outbox.pop()
         tokenized_no_reply_email = parseaddr(message.from_email)[1]
         self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
-        self.assertIn('Someone (possibly you) requested a password',
+        self.assertIn('Someone (possibly you) requested a password reset email for',
                       message.body)
-        self.assertIn("but\nyou do not have an active account in http://zephyr.testserver",
+        self.assertIn("but you do not have an account in that organization",
+                      message.body)
+        self.assertIn("However, you do have an active account in the http://zulip.testserver\norganization;",
                       message.body)
 
     def test_invalid_subdomain(self) -> None:
