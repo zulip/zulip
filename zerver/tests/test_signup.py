@@ -623,6 +623,27 @@ class InviteUserTest(InviteUserBase):
         self.assertTrue(find_key_by_email(invitee))
         self.check_sent_emails([invitee], custom_from_name="Hamlet")
 
+    def test_newbie_restrictions(self) -> None:
+        user_profile = self.example_user('hamlet')
+        invitee = "alice-test@zulip.com"
+        stream_name = 'Denmark'
+
+        self.login(user_profile.email)
+
+        result = self.invite(invitee, [stream_name])
+        self.assert_json_success(result)
+
+        user_profile.date_joined = timezone_now() - datetime.timedelta(days=10)
+        user_profile.save()
+
+        with self.settings(INVITES_MIN_USER_AGE_DAYS=5):
+            result = self.invite(invitee, [stream_name])
+            self.assert_json_success(result)
+
+        with self.settings(INVITES_MIN_USER_AGE_DAYS=15):
+            result = self.invite(invitee, [stream_name])
+            self.assert_json_error_contains(result, "Your account is too new")
+
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
