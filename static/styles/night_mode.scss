@@ -91,6 +91,13 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
+    #streamlist-toggle-button,
+    #userlist-toggle-button {
+        background-color: hsl(212, 29%, 12%);
+        border-color: hsla(0, 0%, 0%, 0.6);
+        color: inherit;
+    }
+
     select option {
         background-color: hsl(212, 28%, 18%);
         color: hsl(236, 33%, 90%);
@@ -172,6 +179,10 @@ on a dark background, and don't change the dark labels dark either. */
 
     #searchbox_legacy {
         border-color: hsla(0, 0%, 0%, 0.6);
+
+        .navbar-search {
+            background-color: hsla(0, 0%, 0%, 0.2);
+        }
     }
 
     .overlay,

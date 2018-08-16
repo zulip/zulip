@@ -1689,7 +1689,6 @@ blockquote p {
     left: 0px;
     text-align: center;
     vertical-align: middle;
-    border-right: 2px solid hsl(204, 20%, 74%);
 }
 
 #streamlist-toggle-button {
@@ -1702,6 +1701,7 @@ blockquote p {
     height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
+    border-right: 2px solid hsl(204, 20%, 74%);
 }
 
 #streamlist-toggle-unreadcount,
