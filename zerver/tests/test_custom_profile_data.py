@@ -55,6 +55,11 @@ class CustomProfileFieldTest(ZulipTestCase):
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, u'Name cannot be blank.')
 
+        data["name"] = "*" * 41
+        data["field_type"] = 100
+        result = self.client_post("/json/realm/profile_fields", info=data)
+        self.assert_json_error(result, 'name is too long (limit: 40 characters)')
+
         data["name"] = "Phone"
         result = self.client_post("/json/realm/profile_fields", info=data)
         self.assert_json_error(result, u'Invalid field type.')
@@ -186,6 +191,13 @@ class CustomProfileFieldTest(ZulipTestCase):
         self.assertEqual(field.name, 'New phone number')
         self.assertIs(field.hint, '')
         self.assertEqual(field.field_type, CustomProfileField.SHORT_TEXT)
+
+        result = self.client_patch(
+            "/json/realm/profile_fields/{}".format(field.id),
+            info={'name': '*' * 41,
+                  'field_type': CustomProfileField.SHORT_TEXT})
+        msg = "name is too long (limit: 40 characters)"
+        self.assert_json_error(result, msg)
 
         result = self.client_patch(
             "/json/realm/profile_fields/{}".format(field.id),

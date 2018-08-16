@@ -20,11 +20,11 @@
                 <div class="settings-section-title new-profile-field-section-title">{{t "Add a new profile field" }}</div>
                 <div class="control-group">
                     <label for="profile_field_name" class="control-label">{{t "Label" }}</label>
-                    <input type="text" id="profile_field_name" name="name" autocomplete="off"/>
+                    <input type="text" id="profile_field_name" name="name" autocomplete="off" maxlength="40" />
                 </div>
                 <div class="control-group">
-                    <label for="profile_field_hint" class="control-label">{{t "Hint" }}</label>
-                    <input type="text" id="profile_field_hint" name="hint" autocomplete="off"/>
+                    <label for="profile_field_hint" class="control-label">{{t "Hint (up to 80 characters)" }}</label>
+                    <input type="text" id="profile_field_hint" name="hint" autocomplete="off" maxlength="80" />
                     <div class="alert" id="admin-profile-field-hint-status"></div>
                 </div>
                 <div class="control-group">

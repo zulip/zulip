@@ -29,11 +29,11 @@
         <form class="form-horizontal name-setting">
             <div class="input-group name_change_container">
                 <label for="name">{{t "Name" }}</label>
-                <input type="text" name="name" value="{{ name }}" />
+                <input type="text" name="name" value="{{ name }}" maxlength="40" />
             </div>
             <div class="input-group hint_change_container">
                 <label for="hint">{{t "Hint" }}</label>
-                <input type="text" name="hint" value="{{ hint }}" />
+                <input type="text" name="hint" value="{{ hint }}" maxlength="80" />
             </div>
             {{#if is_choice_field }}
             <div class="input-group">
