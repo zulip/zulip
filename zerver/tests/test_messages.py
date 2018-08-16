@@ -413,6 +413,22 @@ class TestAddressee(ZulipTestCase):
         with assert_invalid_user_id():
             Addressee.for_user_ids(user_ids=[779], realm=get_realm('zulip'))
 
+    def test_addressee_legacy_build_for_user_ids(self) -> None:
+        realm = get_realm('zulip')
+        self.login(self.example_email('hamlet'))
+        user_ids = [self.example_user('cordelia').id,
+                    self.example_user('othello').id]
+
+        result = Addressee.legacy_build(
+            sender=self.example_user('hamlet'), message_type_name='private',
+            message_to=user_ids, topic_name='random_topic',
+            realm=realm
+        )
+        user_profiles = result.user_profiles()
+        result_user_ids = [user_profiles[0].id, user_profiles[1].id]
+
+        self.assertEqual(set(result_user_ids), set(user_ids))
+
 class InternalPrepTest(ZulipTestCase):
 
     def test_returns_for_internal_sends(self) -> None:
