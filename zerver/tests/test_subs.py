@@ -1358,6 +1358,13 @@ class DefaultStreamGroupTest(ZulipTestCase):
                                    "stream_names": ujson.dumps(stream_names)})
         self.assert_json_error(result, "Default stream group name 'abc\000' contains NULL (0x00) characters.")
 
+        # Also test that lookup_default_stream_groups raises an
+        # error if we pass it a bad name.  This function is used
+        # during registration, but it's a bit heavy to do a full
+        # test of that.
+        with self.assertRaisesRegex(JsonableError, 'Invalid default stream group invalid-name'):
+            lookup_default_stream_groups(['invalid-name'], realm)
+
 class SubscriptionPropertiesTest(ZulipTestCase):
     def test_set_stream_color(self) -> None:
         """
