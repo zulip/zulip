@@ -236,6 +236,17 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(0, 0%, 100%);
     }
 
+    #streamlist-toggle,
+    #userlist-toggle {
+        border-color: hsla(199, 33%, 46%, 0.2);
+    }
+
+    #streamlist-toggle-button,
+    #userlist-toggle-button {
+        color: inherit;
+        background-color: inherit;
+    }
+
     li.active-filter,
     li.active-sub-filter {
         background-color: hsla(199, 33%, 46%, 0.2);
@@ -266,6 +277,7 @@ on a dark background, and don't change the dark labels dark either. */
     }
 
     #searchbox,
+    #searchbox_legacy,
     .drafts-header,
     .nav > li > a:hover,
     .subscriptions-header,
