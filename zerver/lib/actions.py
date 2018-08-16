@@ -2638,7 +2638,8 @@ def bulk_add_subscriptions(streams: Iterable[Stream],
                              user.id not in realm_admin_ids]
             send_stream_creation_event(stream, new_users_ids)
 
-    recent_traffic = get_streams_traffic(streams)
+    stream_ids = {stream.id for stream in streams}
+    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
     # The second batch is events for the users themselves that they
     # were subscribed to the new streams.
     for user_profile in users:
@@ -3982,14 +3983,13 @@ def do_delete_message(user_profile: UserProfile, message: Message) -> None:
     move_message_to_archive(message.id)
     send_event(event, ums)
 
-def get_streams_traffic(streams: Optional[Iterable[Stream]]=None) -> Dict[int, int]:
+def get_streams_traffic(stream_ids: Set[int]) -> Dict[int, int]:
     stat = COUNT_STATS['messages_in_stream:is_bot:day']
     traffic_from = timezone_now() - datetime.timedelta(days=28)
 
     query = StreamCount.objects.filter(property=stat.property,
                                        end_time__gt=traffic_from)
-    if streams is not None:
-        query = query.filter(stream__in=streams)
+    query = query.filter(stream_id__in=stream_ids)
 
     traffic_list = query.values('stream_id').annotate(value=Sum('value'))
     traffic_dict = {}
@@ -4130,10 +4130,11 @@ def gather_subscriptions_helper(user_profile: UserProfile,
     stream_recipient.populate_for_recipient_ids(sub_recipient_ids)
 
     stream_ids = set()  # type: Set[int]
-    recent_traffic = get_streams_traffic()
     for sub in sub_dicts:
         sub['stream_id'] = stream_recipient.stream_id_for(sub['recipient_id'])
         stream_ids.add(sub['stream_id'])
+
+    recent_traffic = get_streams_traffic(stream_ids=stream_ids)
 
     all_streams = get_active_streams(user_profile.realm).select_related(
         "realm").values("id", "name", "invite_only", "is_announcement_only", "realm_id",
