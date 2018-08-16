@@ -1,5 +1,5 @@
 
-from typing import Iterable, List, Optional, Sequence
+from typing import Iterable, List, Optional, Sequence, Union, cast
 
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
@@ -87,7 +87,7 @@ class Addressee:
     @staticmethod
     def legacy_build(sender: UserProfile,
                      message_type_name: str,
-                     message_to: Sequence[str],
+                     message_to: Union[Sequence[int], Sequence[str]],
                      topic_name: str,
                      realm: Optional[Realm]=None) -> 'Addressee':
 
@@ -102,7 +102,7 @@ class Addressee:
                 raise JsonableError(_("Cannot send to multiple streams"))
 
             if message_to:
-                stream_name = message_to[0]
+                stream_name = cast(str, message_to[0])
             else:
                 # This is a hack to deal with the fact that we still support
                 # default streams (and the None will be converted later in the
@@ -118,8 +118,12 @@ class Addressee:
             if not message_to:
                 raise JsonableError(_("Message must have recipients"))
 
-            emails = message_to
-            return Addressee.for_private(emails, realm)
+            if isinstance(message_to[0], str):
+                emails = cast(Sequence[str], message_to)
+                return Addressee.for_private(emails, realm)
+            elif isinstance(message_to[0], int):
+                user_ids = cast(Sequence[int], message_to)
+                return Addressee.for_user_ids(user_ids=user_ids, realm=realm)
         else:
             raise JsonableError(_("Invalid message type"))
 
