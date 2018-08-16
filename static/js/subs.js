@@ -735,18 +735,45 @@ function ajaxSubscribe(stream) {
 
 function ajaxUnsubscribe(sub) {
     // TODO: use stream_id when backend supports it
-    return channel.del({
-        url: "/json/users/me/subscriptions",
-        data: {subscriptions: JSON.stringify([sub.name]) },
-        success: function () {
-            $(".stream_change_property_info").hide();
-            // The rest of the work is done via the unsubscribe event we will get
-        },
-        error: function (xhr) {
-            ui_report.error(i18n.t("Error removing subscription"), xhr,
-                            $(".stream_change_property_info"));
-        },
-    });
+    if (sub.invite_only) {
+        var unsubscribe_stream_modal = templates.render('unsubscribe_stream', {stream_name: sub.name});
+        $("#unsubscribe_stream_modal_container").empty().append(unsubscribe_stream_modal);
+        overlays.open_modal("unsubscribe_stream_modal");
+        $("#unsubscribe_stream_modal").on("click", "#unsubscribe_stream_button", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            channel.del({
+                url: "/json/users/me/subscriptions",
+                data: {subscriptions: JSON.stringify([sub.name]) },
+                success: function () {
+                    if (Object.keys(sub.subscribers._items).length === 1) {
+                        $(".active_stream_row").remove();
+                        $(".settings").hide();
+                        $(".nothing-selected").show();
+                    }
+                    overlays.close_modal("unsubscribe_stream_modal");
+                    // The rest of the work is done via the unsubscribe event we will get
+                },
+                error: function (xhr) {
+                    ui_report.error(i18n.t("Error removing subscription"), xhr,
+                                    $(".stream_change_property_info"));
+                },
+            });
+        });
+    } else {
+        return channel.del({
+            url: "/json/users/me/subscriptions",
+            data: {subscriptions: JSON.stringify([sub.name]) },
+            success: function () {
+                $(".stream_change_property_info").hide();
+                // The rest of the work is done via the unsubscribe event we will get
+            },
+            error: function (xhr) {
+                ui_report.error(i18n.t("Error removing subscription"), xhr,
+                                $(".stream_change_property_info"));
+            },
+        });
+    }
 }
 
 exports.new_stream_clicked = function () {
