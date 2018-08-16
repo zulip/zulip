@@ -117,6 +117,14 @@ class UserGroupAPITestCase(ZulipTestCase):
         self.assert_json_error(result, "User group 'support' already exists.")
         self.assert_length(UserGroup.objects.all(), 2)
 
+    def test_user_group_get(self) -> None:
+        # Test success
+        user_profile = self.example_user('hamlet')
+        self.login(user_profile.email)
+        result = self.client_get('/json/user_groups')
+        self.assert_json_success(result)
+        self.assert_length(result.json()['user_groups'], UserGroup.objects.filter(realm=user_profile.realm).count())
+
     def test_user_group_create_by_guest_user(self) -> None:
         guest_user = self.example_user('polonius')
 

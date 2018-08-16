@@ -14,7 +14,8 @@ from zerver.lib.response import json_success, json_error
 from zerver.lib.users import user_ids_to_users
 from zerver.lib.validator import check_list, check_string, check_int, \
     check_short_string
-from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_users, get_user_group_members
+from zerver.lib.user_groups import access_user_group_by_id, get_memberships_of_users, \
+    get_user_group_members, user_groups_in_realm_serialized
 from zerver.models import UserProfile, UserGroup, UserGroupMembership
 from zerver.views.streams import compose_views, FuncKwargPair
 
@@ -27,6 +28,12 @@ def add_user_group(request: HttpRequest, user_profile: UserProfile,
     user_profiles = user_ids_to_users(members, user_profile.realm)
     check_add_user_group(user_profile.realm, name, user_profiles, description)
     return json_success()
+
+@require_non_guest_human_user
+@has_request_variables
+def get_user_group(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
+    user_groups = user_groups_in_realm_serialized(user_profile.realm)
+    return json_success({"user_groups": user_groups})
 
 @require_non_guest_human_user
 @has_request_variables

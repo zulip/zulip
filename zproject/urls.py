@@ -251,6 +251,8 @@ v1_api_and_json_patterns = [
          'DELETE': 'zerver.views.push_notifications.remove_android_reg_id'}),
 
     # user_groups -> zerver.views.user_groups
+    url(r'^user_groups$', rest_dispatch,
+        {'GET': 'zerver.views.user_groups.get_user_group'}),
     url(r'^user_groups/create$', rest_dispatch,
         {'POST': 'zerver.views.user_groups.add_user_group'}),
     url(r'^user_groups/(?P<user_group_id>\d+)$', rest_dispatch,
