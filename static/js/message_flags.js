@@ -101,8 +101,10 @@ exports.toggle_starred_and_update_server = function (message) {
 
     if (message.starred) {
         send_flag_update(message, 'starred', 'add');
+        starred_messages.add([message.id]);
     } else {
         send_flag_update(message, 'starred', 'remove');
+        starred_messages.remove([message.id]);
     }
 };
 

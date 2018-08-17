@@ -406,6 +406,11 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             _.each(event.messages, function (message_id) {
                 message_flags.update_starred_flag(message_id, new_value);
             });
+            if (event.operation === "add") {
+                starred_messages.add(event.messages);
+            } else {
+                starred_messages.remove(event.messages);
+            }
             break;
         case 'read':
             unread_ops.process_read_messages_event(event.messages);

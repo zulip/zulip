@@ -136,6 +136,7 @@ import "js/hash_util.js";
 import "js/hashchange.js";
 import "js/invite.js";
 import "js/message_flags.js";
+import "js/starred_messages.js";
 import "js/alert_words.js";
 import "js/alert_words_ui.js";
 import "js/attachments_ui.js";

@@ -81,6 +81,10 @@ set_global('blueslip', {
     },
 });
 
+set_global('starred_messages', {
+    add: noop,
+});
+
 zrequire('server_events_dispatch');
 var sed = server_events_dispatch;
 
