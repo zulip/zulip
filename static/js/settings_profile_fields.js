@@ -164,17 +164,21 @@ function get_profile_field(id) {
     return field;
 }
 
-exports.parse_field_choices_from_field_data = function (field_data) {
-    var choices = [];
-    _.each(field_data, function (choice, value) {
-        choices.push({
-            value: value,
-            text: choice.text,
-            order: choice.order,
-        });
-    });
-
-    return choices;
+exports.get_choices_order_wise = function (field_data, value) {
+    if (value === undefined) {
+        value = "";
+    }
+    var choices_order_wise = [];
+    for (var choice in field_data) {
+        if (choice) {
+            choices_order_wise[field_data[choice].order] = {
+                value: choice,
+                text: field_data[choice].text,
+                selected: choice === value,
+            };
+        }
+    }
+    return choices_order_wise;
 };
 
 function open_edit_form(e) {
@@ -189,7 +193,7 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=hint]').val(field.hint);
 
     if (parseInt(field.type, 10) === field_types.CHOICE.id) {
-        // Re-render field choices in edit form to load initial choice data
+        // Populate field choices in edit form to load initial choice data
         var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
         choice_list.off();
         choice_list.html("");
@@ -198,15 +202,18 @@ function open_edit_form(e) {
         if (field.field_data !== "") {
             field_data = JSON.parse(field.field_data);
         }
-        var choices_data = exports.parse_field_choices_from_field_data(field_data);
 
-        _.each(choices_data, function (choice) {
-            choice_list.append(
-                templates.render("profile-field-choice", {
-                    text: choice.text,
-                })
-            );
+        var choices_order_wise = exports.get_choices_order_wise(field_data);
+        _.each(choices_order_wise, function (choice) {
+            if (choice) {
+                choice_list.append(
+                    templates.render("profile-field-choice", {
+                        text: choice.text,
+                    })
+                );
+            }
         });
+
 
         // Add blank choice at last
         create_choice_row(choice_list);
@@ -275,11 +282,6 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
     order = [];
     _.each(profile_fields_data, function (profile_field) {
         order.push(profile_field.id);
-        var field_data = {};
-        if (profile_field.field_data !== "") {
-            field_data = JSON.parse(profile_field.field_data);
-        }
-        var choices = exports.parse_field_choices_from_field_data(field_data);
         var is_choice_field = false;
 
         if (profile_field.type === field_types.CHOICE.id) {
@@ -294,7 +296,6 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
                         name: profile_field.name,
                         hint: profile_field.hint,
                         type: exports.field_type_id_to_string(profile_field.type),
-                        choices: choices,
                         is_choice_field: is_choice_field,
                     },
                     can_modify: page_params.is_admin,

@@ -86,7 +86,6 @@ run_test('populate_profile_fields', () => {
                 name: 'favorite color',
                 hint: 'blue?',
                 type: 'Short Text',
-                choices: [],
                 is_choice_field: false,
             },
             can_modify: true,
@@ -97,10 +96,6 @@ run_test('populate_profile_fields', () => {
                 name: 'meal',
                 hint: 'lunch',
                 type: 'Choice',
-                choices: [
-                    {order: 0, value: 0, text: 'lunch'},
-                    {order: 1, value: 1, text: 'dinner'},
-                ],
                 is_choice_field: true,
             },
             can_modify: true,

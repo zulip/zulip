@@ -93,15 +93,9 @@ exports.add_custom_profile_fields_to_settings = function () {
         } else if (is_choice_field) {
             type = "choice";
             var field_choice_dict = JSON.parse(field.field_data);
-            for (var choice in field_choice_dict) {
-                if (choice) {
-                    field_choices[field_choice_dict[choice].order] = {
-                        value: choice,
-                        text: field_choice_dict[choice].text,
-                        selected: choice === value,
-                    };
-                }
-            }
+            field_choices = settings_profile_fields.get_choices_order_wise(field_choice_dict,
+                                                                           value);
+
         } else if (is_date_field) {
             type = "date";
         } else if (field_type === field_types.URL.id) {
