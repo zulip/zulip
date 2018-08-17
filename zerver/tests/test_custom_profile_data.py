@@ -5,7 +5,7 @@ from mock import patch
 
 from zerver.lib.actions import get_realm, try_add_realm_custom_profile_field, \
     do_update_user_custom_profile_data, do_remove_realm_custom_profile_field, \
-    try_reorder_realm_custom_profile_fields
+    try_reorder_realm_custom_profile_fields, try_update_realm_custom_profile_field
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.models import CustomProfileField, \
     custom_profile_fields_for_realm, get_realm, CustomProfileFieldValue
@@ -453,6 +453,47 @@ class CustomProfileFieldTest(ZulipTestCase):
         for f in iago.profile_data:
             if f['id'] == field.id:
                 self.assertEqual(f['value'], 'foobar')
+
+    def test_update_field_choices(self) -> None:
+        """
+        When admin modifies field choices, test how already selected choice values
+        should change.
+        If user selected value exists in new field choices, pass. If not exists
+        (admin delete that choice) reset value to null.
+        """
+        user_profile = self.example_user("iago")
+        realm = get_realm('zulip')
+
+        field = CustomProfileField.objects.get(name='Favorite editor', realm=realm)
+        data = [{
+            "id": field.id,
+            "value": "emacs",
+        }]
+        do_update_user_custom_profile_data(user_profile, data)
+
+        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile).value
+        self.assertEqual(field_value, "emacs")
+
+        # Modify choices order
+        new_field_data = {
+            'vscode': {'order': '1', 'text': 'VSCode'},
+            'notepad': {'order': '2', 'text': 'Notepad'},
+            'sublime': {'order': '3', 'text': 'Sublime'},
+            'vim': {'order': '4', 'text': 'Vim'},
+            'emacs': {'order': '5', 'text': 'Emacs'},
+        }
+        try_update_realm_custom_profile_field(realm, field, field.name, field.hint, new_field_data)
+        field_value = CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile).value
+        self.assertEqual(field_value, "emacs")
+
+        # If that choice get deleted
+        new_field_data = {
+            'vscode': {'order': '1', 'text': 'VSCode'},
+            'vim': {'order': '4', 'text': 'Vim'},
+        }
+        try_update_realm_custom_profile_field(realm, field, field.name, field.hint, new_field_data)
+        with self.assertRaises(CustomProfileFieldValue.DoesNotExist):
+            CustomProfileFieldValue.objects.get(field=field, user_profile=user_profile)
 
     def test_update_invalid_choice_field(self) -> None:
         field_name = "Favorite editor"

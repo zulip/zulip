@@ -4854,6 +4854,18 @@ def try_update_realm_custom_profile_field(realm: Realm, field: CustomProfileFiel
     field.name = name
     field.hint = hint
     if field.field_type == CustomProfileField.CHOICE:
+        all_field_values = CustomProfileFieldValue.objects.filter(field=field)
+
+        for field_value in all_field_values:
+            old_choice = field_value.value
+            # If choice text not exists in new choices list,
+            # delete value, as choice no longer exists
+            # in new choices list.
+            if old_choice not in field_data:
+                field_value.delete()
+                notify_user_update_custom_profile_data(field_value.user_profile,
+                                                       {"id": field.id, "value": None})
+
         field.field_data = ujson.dumps(field_data or {})
     field.save()
     notify_realm_custom_profile_fields(realm, 'update')
