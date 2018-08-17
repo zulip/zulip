@@ -8,4 +8,4 @@ ZULIP_VERSION = "1.9.0-rc1+git"
 # Typically, adding a dependency only requires a minor version bump, and
 # removing a dependency requires a major version bump.
 
-PROVISION_VERSION = '26.3'
+PROVISION_VERSION = '26.4'

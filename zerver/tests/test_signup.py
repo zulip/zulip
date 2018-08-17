@@ -310,7 +310,7 @@ class PasswordResetTest(ZulipTestCase):
                       message.body)
         self.assertIn("but you do not have an account in that organization",
                       message.body)
-        self.assertIn("However, you do have an active account in the http://zulip.testserver\norganization;",
+        self.assertIn("You do have active accounts in the following organization(s).\nhttp://zulip.testserver",
                       message.body)
 
     def test_invalid_subdomain(self) -> None:
