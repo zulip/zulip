@@ -1620,6 +1620,19 @@ input.new-organization-button {
     box-shadow: none;
 }
 
+.markdown img.emoji-small {
+    width: 20px;
+    box-shadow: none;
+    border: none;
+    vertical-align: sub;
+}
+
+.markdown img.emoji-big {
+    width: 25px;
+    box-shadow: none;
+    border: none;
+}
+
 .integration-instructions .tip,
 .markdown .warn,
 .markdown .tip,

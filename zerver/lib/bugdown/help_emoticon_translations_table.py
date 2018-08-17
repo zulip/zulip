@@ -29,7 +29,7 @@ ROW_HTML = """
         <img
             src="/static/generated/emoji/images-google-64/{codepoint}.png"
             alt="{name}"
-            style="width: 30%;">
+            class="emoji-big">
     </td>
 </tr>
 """
