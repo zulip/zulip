@@ -216,6 +216,22 @@ class TemplateTestCase(ZulipTestCase):
         self.assertEqual(content_sans_whitespace,
                          'header<h1id="hello">Hello!</h1><p>Thisissome<em>boldtext</em>.</p>footer')
 
+    def test_encoded_unicode_decimals_in_markdown_template(self) -> None:
+        template = get_template("tests/test_unicode_decimals.html")
+        context = {'unescape_rendered_html': False}
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         'header<p>&#123;&#125;</p>footer')
+
+        context = {'unescape_rendered_html': True}
+        content = template.render(context)
+
+        content_sans_whitespace = content.replace(" ", "").replace('\n', '')
+        self.assertEqual(content_sans_whitespace,
+                         'header<p>{}</p>footer')
+
     def test_markdown_nested_code_blocks(self) -> None:
         template = get_template("tests/test_markdown.html")
         context = {
