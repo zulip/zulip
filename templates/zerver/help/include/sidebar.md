@@ -7,6 +7,7 @@
 ## Account basics
 * [Change your name](/help/change-your-name)
 * [Change your email address](/help/change-your-email-address)
+* [Edit your profile](/help/edit-your-profile)
 * [Manage your password](/help/change-your-password)
 * [Edit your settings](/help/change-your-settings)
 * [Set your avatar](/help/change-your-avatar)
@@ -62,6 +63,7 @@
 ## People
 * [Check whether someone is on-line](/help/check-whether-someone-is-here-or-away)
 * [Invite another user](/help/invite-a-friend-to-zulip)
+* [View someone's profile](/help/view-someones-profile)
 
 ## Streams & topics
 * [About streams and topics](/help/about-streams-and-topics)
@@ -131,6 +133,7 @@
 * [Community topic edits](/help/community-topic-edits)
 * [Require topics in stream messages](/help/require-topics)
 * [Add custom emoji](/help/add-custom-emoji)
+* [Add custom profile fields](/help/add-custom-profile-fields)
 * [Configure authentication methods](/help/configure-authentication-methods)
 * [Add a custom linkification filter](/help/add-a-custom-linkification-filter)
 
