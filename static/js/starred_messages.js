@@ -33,8 +33,15 @@ exports.count = function () {
 };
 
 exports.rerender_ui = function () {
+    var count = exports.count();
+
+    if (!page_params.starred_message_counts) {
+        // This essentially hides the count
+        count = 0;
+    }
+
     var starred_li = top_left_corner.get_global_filter_li('starred');
-    top_left_corner.update_count_in_dom(starred_li, exports.count());
+    top_left_corner.update_count_in_dom(starred_li, count);
 };
 
 return exports;
