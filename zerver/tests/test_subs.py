@@ -2824,6 +2824,52 @@ class SubscriptionAPITest(ZulipTestCase):
         with self.assertRaises(ValidationError):
             validate_user_access_to_subscribers_helper(user_profile, stream_dict, lambda: True)
 
+    def test_subscriptions_query_count(self) -> None:
+        """
+        Test database query count when creating stream with api/v1/users/me/subscriptions.
+        """
+        user1 = self.example_user("cordelia")
+        user2 = self.example_user("iago")
+        new_streams = [
+            'query_count_stream_1',
+            'query_count_stream_2',
+            'query_count_stream_3'
+        ]
+
+        # Test creating a public stream when realm does not have a notification stream.
+        with queries_captured() as queries:
+            self.common_subscribe_to_streams(
+                self.test_email,
+                [new_streams[0]],
+                dict(principals=ujson.dumps([user1.email, user2.email])),
+            )
+        self.assert_length(queries, 43)
+
+        # Test creating private stream.
+        with queries_captured() as queries:
+            self.common_subscribe_to_streams(
+                self.test_email,
+                [new_streams[1]],
+                dict(principals=ujson.dumps([user1.email, user2.email])),
+                invite_only=True,
+            )
+        self.assert_length(queries, 38)
+
+        # Test creating a public stream with announce when realm has a notification stream.
+        notifications_stream = get_stream(self.streams[0], self.test_realm)
+        self.test_realm.notifications_stream_id = notifications_stream.id
+        self.test_realm.save()
+        with queries_captured() as queries:
+            self.common_subscribe_to_streams(
+                self.test_email,
+                [new_streams[2]],
+                dict(
+                    announce='true',
+                    principals=ujson.dumps([user1.email, user2.email])
+                )
+            )
+        self.assert_length(queries, 52)
+
 class GetPublicStreamsTest(ZulipTestCase):
 
     def test_public_streams_api(self) -> None:
