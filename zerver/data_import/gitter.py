@@ -13,7 +13,7 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 
-from zerver.models import Realm, UserProfile, Recipient
+from zerver.models import Realm, UserProfile, Recipient, Message
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
@@ -184,22 +184,19 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
                                                   user_short_name_to_full_name)
             rendered_content = None
 
-            zulip_message = dict(
-                sending_client=1,
+            zulip_message = Message(
                 rendered_content_version=1,  # This is Zulip-specific
-                has_image=False,
                 subject='imported from gitter',
                 pub_date=float(message_time),
                 id=message_id,
-                has_attachment=False,
-                edit_history=None,
-                sender=user_map[message['fromUser']['id']],
                 content=message['text'],
-                rendered_content=rendered_content,
-                recipient=recipient_id,
-                last_edit_time=None,
-                has_link=False)
-            zerver_message.append(zulip_message)
+                rendered_content=rendered_content)
+            zulip_message_dict = model_to_dict(zulip_message,
+                                               exclude=['recipient', 'sender', 'sending_client'])
+            zulip_message_dict['recipient'] = recipient_id
+            zulip_message_dict['sender'] = user_map[message['fromUser']['id']]
+            zulip_message_dict['sending_client'] = 1
+            zerver_message.append(zulip_message_dict)
 
             usermessage_id = build_usermessages(
                 zerver_usermessage, usermessage_id, zerver_subscription,
