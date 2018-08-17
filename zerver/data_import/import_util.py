@@ -4,11 +4,11 @@ import shutil
 import logging
 import os
 
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment, Stream
+    Attachment, Stream, Message
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
@@ -120,6 +120,28 @@ def build_stream(date_created: Any, realm_id: int, name: str,
                                 exclude=['realm'])
     stream_dict['realm'] = realm_id
     return stream_dict
+
+def build_message(subject: str, pub_date: float, message_id: int, content: str,
+                  rendered_content: Optional[str], user_id: int, recipient_id: int,
+                  has_image: bool=False, has_link: bool=False,
+                  has_attachment: bool=True) -> ZerverFieldsT:
+    zulip_message = Message(
+        rendered_content_version=1,  # this is Zulip specific
+        subject=subject,
+        pub_date=pub_date,
+        id=message_id,
+        content=content,
+        rendered_content=rendered_content,
+        has_image=has_image,
+        has_attachment=has_attachment,
+        has_link=has_link)
+    zulip_message_dict = model_to_dict(zulip_message,
+                                       exclude=['recipient', 'sender', 'sending_client'])
+    zulip_message_dict['sender'] = user_id
+    zulip_message_dict['sending_client'] = 1
+    zulip_message_dict['recipient'] = recipient_id
+
+    return zulip_message_dict
 
 def build_attachment(realm_id: int, message_id: int, attachment_id: int,
                      user_id: int, fileinfo: ZerverFieldsT, s3_path: str,

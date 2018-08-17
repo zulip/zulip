@@ -18,13 +18,13 @@ from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient, \
-    Message, CustomProfileField, CustomProfileFieldValue
+    CustomProfileField, CustomProfileFieldValue
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis, build_realm, build_stream
+    process_emojis, build_realm, build_stream, build_message
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -628,24 +628,12 @@ def channel_message_to_zerver_message(realm_id: int, users: List[ZerverFieldsT],
                 content = '[%s](%s)' % (file_name, fileinfo['url_private'])
 
         # construct message
-        zulip_message = Message(
-            rendered_content_version=1,  # This is Zulip-specific
-            has_image=has_image,
-            subject='imported from slack',  # This is Zulip-specific
-            pub_date=float(message['ts']),
-            id=message_id,
-            has_attachment=has_attachment,  # attachment will be posted in the subsequent message;
-                                            # this is how Slack does it, i.e. less like email
-            content=content,
-            rendered_content=rendered_content,  # slack doesn't cache this
-            has_link=has_link)
+        subject = 'imported from slack'
 
-        zulip_message_dict = model_to_dict(zulip_message,
-                                           exclude=['recipient', 'sender', 'sending_client'])
-        zulip_message_dict['recipient'] = recipient_id
-        zulip_message_dict['sender'] = added_users[user]  # map slack id to zulip id
-        zulip_message_dict['sending_client'] = 1
-        zerver_message.append(zulip_message_dict)
+        zulip_message = build_message(subject, float(message['ts']), message_id, content,
+                                      rendered_content, added_users[user], recipient_id,
+                                      has_image, has_link, has_attachment)
+        zerver_message.append(zulip_message)
 
         # construct usermessages
         usermessage_id_count = build_usermessages(
