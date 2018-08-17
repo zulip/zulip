@@ -2246,9 +2246,10 @@ class CustomProfileField(models.Model):
     these fields.
     """
     HINT_MAX_LENGTH = 80
+    NAME_MAX_LENGTH = 40
 
     realm = models.ForeignKey(Realm, on_delete=CASCADE)  # type: Realm
-    name = models.CharField(max_length=100)  # type: str
+    name = models.CharField(max_length=NAME_MAX_LENGTH)  # type: str
     hint = models.CharField(max_length=HINT_MAX_LENGTH, default='', null=True)  # type: Optional[str]
     order = models.IntegerField(default=0)  # type: int
 

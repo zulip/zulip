@@ -23,28 +23,37 @@ from zerver.lib.validator import (check_dict, check_list, check_int,
 
 from zerver.models import (custom_profile_fields_for_realm, UserProfile, CustomProfileFieldValue,
                            CustomProfileField, custom_profile_fields_for_realm)
+from zerver.lib.exceptions import JsonableError
 
 def list_realm_custom_profile_fields(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
     fields = custom_profile_fields_for_realm(user_profile.realm_id)
     return json_success({'custom_fields': [f.as_dict() for f in fields]})
 
 hint_validator = check_capped_string(CustomProfileField.HINT_MAX_LENGTH)
+name_validator = check_capped_string(CustomProfileField.NAME_MAX_LENGTH)
+
+def validate_field_name_and_hint(name: str, hint: str) -> None:
+    if not name.strip():
+        raise JsonableError(_("Name cannot be blank."))
+
+    error = hint_validator('hint', hint)
+    if error:
+        raise JsonableError(error)
+
+    error = name_validator('name', name)
+    if error:
+        raise JsonableError(error)
 
 @require_realm_admin
 @has_request_variables
 def create_realm_custom_profile_field(request: HttpRequest,
-                                      user_profile: UserProfile, name: str=REQ(),
+                                      user_profile: UserProfile,
+                                      name: str=REQ(),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
                                       field_type: int=REQ(validator=check_int)) -> HttpResponse:
-    if not name.strip():
-        return json_error(_("Name cannot be blank."))
-
-    error = hint_validator('hint', hint)
-    if error:
-        return json_error(error)
-
+    validate_field_name_and_hint(name, hint)
     field_types = [i[0] for i in CustomProfileField.FIELD_TYPE_CHOICES]
     if field_type not in field_types:
         return json_error(_("Invalid field type."))
@@ -84,18 +93,13 @@ def delete_realm_custom_profile_field(request: HttpRequest, user_profile: UserPr
 @require_realm_admin
 @has_request_variables
 def update_realm_custom_profile_field(request: HttpRequest, user_profile: UserProfile,
-                                      field_id: int, name: str=REQ(),
+                                      field_id: int,
+                                      name: str=REQ(),
                                       hint: str=REQ(default=''),
                                       field_data: ProfileFieldData=REQ(default={},
                                                                        converter=ujson.loads),
                                       ) -> HttpResponse:
-    if not name.strip():
-        return json_error(_("Name cannot be blank."))
-
-    error = hint_validator('hint', hint)
-    if error:
-        return json_error(error, data={'field': 'hint'})
-
+    validate_field_name_and_hint(name, hint)
     error = validate_field_data(field_data)
     if error:
         return json_error(error)
