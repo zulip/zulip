@@ -168,6 +168,7 @@ class HomeTest(ZulipTestCase):
             "server_generation",
             "server_inline_image_preview",
             "server_inline_url_embed_preview",
+            "starred_message_counts",
             "starred_messages",
             "stream_description_max_length",
             "stream_name_max_length",
