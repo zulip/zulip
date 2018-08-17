@@ -13,11 +13,12 @@ from django.forms.models import model_to_dict
 from django.utils.timezone import now as timezone_now
 from typing import Any, Dict, List, Tuple
 
-from zerver.models import Realm, UserProfile, Recipient, Message
+from zerver.models import Realm, UserProfile, Recipient
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars, build_realm, build_stream
+    build_defaultstream, process_avatars, build_realm, build_stream, \
+    build_message
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -181,20 +182,12 @@ def convert_gitter_workspace_messages(gitter_data: GitterDataT, output_dir: str,
             mentioned_user_ids = get_usermentions(message, user_map,
                                                   user_short_name_to_full_name)
             rendered_content = None
+            subject = 'imported from gitter'
+            user_id = user_map[message['fromUser']['id']]
 
-            zulip_message = Message(
-                rendered_content_version=1,  # This is Zulip-specific
-                subject='imported from gitter',
-                pub_date=float(message_time),
-                id=message_id,
-                content=message['text'],
-                rendered_content=rendered_content)
-            zulip_message_dict = model_to_dict(zulip_message,
-                                               exclude=['recipient', 'sender', 'sending_client'])
-            zulip_message_dict['recipient'] = recipient_id
-            zulip_message_dict['sender'] = user_map[message['fromUser']['id']]
-            zulip_message_dict['sending_client'] = 1
-            zerver_message.append(zulip_message_dict)
+            zulip_message = build_message(subject, float(message_time), message_id, message['text'],
+                                          rendered_content, user_id, recipient_id)
+            zerver_message.append(zulip_message)
 
             usermessage_id = build_usermessages(
                 zerver_usermessage, usermessage_id, zerver_subscription,
