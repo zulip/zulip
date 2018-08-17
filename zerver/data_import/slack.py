@@ -24,7 +24,7 @@ from zerver.data_import.slack_message_conversion import convert_to_zulip_markdow
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
     build_defaultstream, build_attachment, process_avatars, process_uploads, \
-    process_emojis, build_realm
+    process_emojis, build_realm, build_stream
 from zerver.lib.parallel import run_parallel
 from zerver.lib.upload import random_name, sanitize_name
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
@@ -349,16 +349,9 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
         recipient_id = recipient_id_count
 
         # construct the stream object and append it to zerver_stream
-        stream = dict(
-            realm=realm_id,
-            name=channel["name"],
-            deactivated=channel["is_archived"],
-            description=description,
-            invite_only=False,  # TODO: private channels are not
-                                # exported with Slack's standard plan;
-                                # so this field is always false
-            date_created=float(channel["created"]),
-            id=stream_id)
+        stream = build_stream(float(channel["created"]), realm_id, channel["name"],
+                              description, stream_id, channel["is_archived"])
+        zerver_stream.append(stream)
 
         # construct defaultstream object
         # slack has the default channel 'general' and 'random'
@@ -370,7 +363,6 @@ def channels_to_zerver_stream(slack_data_dir: str, realm_id: int, added_users: A
             zerver_defaultstream.append(defaultstream)
             defaultstream_id += 1
 
-        zerver_stream.append(stream)
         added_channels[stream['name']] = (channel['id'], stream_id)
 
         recipient = build_recipient(stream_id, recipient_id, Recipient.STREAM)
