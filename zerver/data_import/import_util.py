@@ -7,7 +7,8 @@ import os
 from typing import List, Dict, Any
 from django.forms.models import model_to_dict
 
-from zerver.models import Realm, RealmEmoji, Subscription, Recipient
+from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
+    Attachment
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
@@ -112,17 +113,21 @@ def build_attachment(realm_id: int, message_id: int, attachment_id: int,
     This function should be passed a 'fileinfo' dictionary, which contains
     information about 'size', 'created' (created time) and ['name'] (filename).
     """
-    attachment = dict(
-        owner=user_id,
-        messages=[message_id],
+    attachment = Attachment(
         id=attachment_id,
         size=fileinfo['size'],
         create_time=fileinfo['created'],
         is_realm_public=True,
         path_id=s3_path,
-        realm=realm_id,
         file_name=fileinfo['name'])
-    zerver_attachment.append(attachment)
+
+    attachment_dict = model_to_dict(attachment,
+                                    exclude=['owner', 'messages', 'realm'])
+    attachment_dict['owner'] = user_id
+    attachment_dict['messages'] = [message_id]
+    attachment_dict['realm'] = realm_id
+
+    zerver_attachment.append(attachment_dict)
 
 def process_avatars(avatar_list: List[ZerverFieldsT], avatar_dir: str, realm_id: int,
                     threads: int, size_url_suffix: str='') -> List[ZerverFieldsT]:
