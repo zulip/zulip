@@ -79,6 +79,13 @@ exports.set_up = function () {
         change_display_setting(data, '#display-settings-status');
     });
 
+    $('#starred_message_counts').change(function () {
+        var starred_message_counts = this.checked;
+        var data = {};
+        data.starred_message_counts = JSON.stringify(starred_message_counts);
+        change_display_setting(data, '#display-settings-status');
+    });
+
     $("#night_mode").change(function () {
         exports.set_night_mode(this.checked);
     });
