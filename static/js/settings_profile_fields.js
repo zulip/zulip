@@ -57,11 +57,11 @@ function delete_profile_field(e) {
 
 function read_field_data_from_form(selector) {
     var field_data = {};
-    var field_order = 1;
+    var field_order = 0;
     selector.each(function () {
-        var text = $(this).find("input")[0].value;
+        var text = $(this).find("input")[0].value.trim();
         if (text) {
-            field_data[field_order - 1] = {text: text, order: field_order.toString()};
+            field_data[text] = {text: text, order: field_order.toString()};
             field_order += 1;
         }
     });
