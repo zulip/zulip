@@ -18,7 +18,7 @@ from django.forms.models import model_to_dict
 from typing import Any, Dict, List, Optional, Tuple
 from zerver.forms import check_subdomain_available
 from zerver.models import Reaction, RealmEmoji, Realm, UserProfile, Recipient, \
-    Message
+    Message, CustomProfileField, CustomProfileFieldValue
 from zerver.data_import.slack_message_conversion import convert_to_zulip_markdown, \
     get_user_full_name
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
@@ -97,15 +97,18 @@ def build_realmemoji(custom_emoji_list: ZerverFieldsT,
         if 'emoji.slack-edge.com' in url:
             # Some of the emojis we get from the api have invalid links
             # this is to prevent errors related to them
-            realmemoji = dict(
+            realmemoji = RealmEmoji(
                 name=emoji_name,
                 id=emoji_id,
-                author=None,
-                realm=realm_id,
                 file_name=os.path.basename(url),
                 deactivated=False)
+
+            realmemoji_dict = model_to_dict(realmemoji, exclude=['realm', 'author'])
+            realmemoji_dict['author'] = None
+            realmemoji_dict['realm'] = realm_id
+
             emoji_url_map[emoji_name] = url
-            zerver_realmemoji.append(realmemoji)
+            zerver_realmemoji.append(realmemoji_dict)
             emoji_id += 1
     return zerver_realmemoji, emoji_url_map
 
@@ -228,16 +231,20 @@ def build_customprofile_field(customprofile_field: List[ZerverFieldsT], fields: 
                 field_name = field
             else:
                 field_name = ("slack custom field %s" % str(customprofilefield_id + 1))
-            customprofilefield = dict(
+            customprofilefield = CustomProfileField(
                 id=customprofilefield_id,
-                realm=realm_id,
                 name=field_name,
                 field_type=1  # For now this is defaulted to 'SHORT_TEXT'
                               # Processing is done in the function 'process_customprofilefields'
             )
+
+            customprofilefield_dict = model_to_dict(customprofilefield,
+                                                    exclude=['realm'])
+            customprofilefield_dict['realm'] = realm_id
+
             custom_field_map[field] = customprofilefield_id
             customprofilefield_id += 1
-            customprofile_field.append(customprofilefield)
+            customprofile_field.append(customprofilefield_dict)
     return custom_field_map, customprofilefield_id
 
 def process_slack_custom_fields(user: ZerverFieldsT,
@@ -255,12 +262,16 @@ def build_customprofilefields_values(custom_field_map: ZerverFieldsT, fields: Ze
                                      user_id: int, custom_field_id: int,
                                      custom_field_values: List[ZerverFieldsT]) -> int:
     for field, value in fields.items():
-        custom_field_value = dict(
+        custom_field_value = CustomProfileFieldValue(
             id=custom_field_id,
-            user_profile=user_id,
-            field=custom_field_map[field],
             value=value['value'])
-        custom_field_values.append(custom_field_value)
+
+        custom_field_value_dict = model_to_dict(custom_field_value,
+                                                exclude=['user_profile', 'field'])
+        custom_field_value_dict['user_profile'] = user_id
+        custom_field_value_dict['field'] = custom_field_map[field]
+
+        custom_field_values.append(custom_field_value_dict)
         custom_field_id += 1
     return custom_field_id
 
