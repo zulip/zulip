@@ -17,7 +17,7 @@ from zerver.models import Realm, UserProfile, Recipient, Message
 from zerver.lib.export import MESSAGE_BATCH_CHUNK_SIZE
 from zerver.data_import.import_util import ZerverFieldsT, build_zerver_realm, \
     build_avatar, build_subscription, build_recipient, build_usermessages, \
-    build_defaultstream, process_avatars, build_realm
+    build_defaultstream, process_avatars, build_realm, build_stream
 
 # stubs
 GitterDataT = List[Dict[str, Any]]
@@ -39,7 +39,7 @@ def gitter_workspace_to_realm(domain_name: str, gitter_data: GitterDataT,
     realm = build_realm(zerver_realm, realm_id, domain_name)
 
     zerver_userprofile, avatars, user_map = build_userprofile(int(NOW), domain_name, gitter_data)
-    zerver_stream, zerver_defaultstream = build_stream(int(NOW))
+    zerver_stream, zerver_defaultstream = build_stream_and_defaultstream(int(NOW))
     zerver_recipient, zerver_subscription = build_recipient_and_subscription(
         zerver_userprofile, zerver_stream)
 
@@ -101,20 +101,18 @@ def get_user_email(user_data: ZerverFieldsT, domain_name: str) -> str:
     email = ("%s@users.noreply.github.com" % user_data['username'])
     return email
 
-def build_stream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
-                                          List[ZerverFieldsT]]:
+def build_stream_and_defaultstream(timestamp: Any) -> Tuple[List[ZerverFieldsT],
+                                                            List[ZerverFieldsT]]:
     logging.info('######### IMPORTING STREAM STARTED #########\n')
     # We have only one stream for gitter export
-    stream = dict(
-        realm=realm_id,
-        name="from gitter",
-        deactivated=False,
-        description="Imported from gitter",
-        invite_only=False,
-        date_created=timestamp,
-        id=0)
+    stream_name = 'from gitter'
+    stream_description = "Imported from gitter"
+    stream_id = 0
+    stream = build_stream(timestamp, realm_id, stream_name, stream_description,
+                          stream_id)
 
-    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=0, defaultstream_id=0)
+    defaultstream = build_defaultstream(realm_id=realm_id, stream_id=stream_id,
+                                        defaultstream_id=0)
     logging.info('######### IMPORTING STREAMS FINISHED #########\n')
     return [stream], [defaultstream]
 

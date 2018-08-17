@@ -8,7 +8,7 @@ from typing import List, Dict, Any
 from django.forms.models import model_to_dict
 
 from zerver.models import Realm, RealmEmoji, Subscription, Recipient, \
-    Attachment
+    Attachment, Stream
 from zerver.lib.actions import STREAM_ASSIGNMENT_COLORS as stream_colors
 from zerver.lib.avatar_hash import user_avatar_path_from_ids
 from zerver.lib.parallel import run_parallel
@@ -105,6 +105,21 @@ def build_defaultstream(realm_id: int, stream_id: int,
         realm=realm_id,
         id=defaultstream_id)
     return defaultstream
+
+def build_stream(date_created: Any, realm_id: int, name: str,
+                 description: str, stream_id: int, deactivated: bool=False,
+                 invite_only: bool=False) -> ZerverFieldsT:
+    stream = Stream(
+        name=name,
+        deactivated=deactivated,
+        description=description,
+        date_created=date_created,
+        invite_only=invite_only,
+        id=stream_id)
+    stream_dict = model_to_dict(stream,
+                                exclude=['realm'])
+    stream_dict['realm'] = realm_id
+    return stream_dict
 
 def build_attachment(realm_id: int, message_id: int, attachment_id: int,
                      user_id: int, fileinfo: ZerverFieldsT, s3_path: str,
