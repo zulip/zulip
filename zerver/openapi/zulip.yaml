@@ -1012,7 +1012,42 @@ paths:
                         "msg": "User not authorized for this query",
                         "result": "error"
                     }
-
+  /typing:
+    post:
+      description: Send an event indicating that the user has started or
+        stopped typing on their client.
+      parameters:
+      - name: op
+        in: query
+        description: Whether the user has started (`start`) or stopped (`stop`)
+          to type.
+        schema:
+          type: string
+          enum:
+          - start
+          - stop
+        example: start
+        required: true
+      - name: notification_to
+        in: query
+        description: The email addresses of the people this user is PMing to
+          (i.e. users who should be notified about the typing status). It can
+          be either a JSON-encoded array or a double-quoted CSV list.
+        schema:
+          type: array
+          items:
+            type: string
+        example: ["iago@zulip.com", "polonius@zulip.com"]
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
 components:
   #######################
   # Security definitions
