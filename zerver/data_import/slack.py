@@ -689,15 +689,19 @@ def build_reactions(reaction_list: List[ZerverFieldsT], reactions: List[ZerverFi
             continue
 
         for user in slack_reaction['users']:
-            reaction = dict(
+            reaction = Reaction(
                 id=reaction_id,
                 emoji_code=emoji_code,
                 emoji_name=emoji_name,
-                message=message_id,
-                reaction_type=reaction_type,
-                user_profile=added_users[user])
+                reaction_type=reaction_type)
+
+            reaction_dict = model_to_dict(reaction,
+                                          exclude=['message', 'user_profile'])
+            reaction_dict['message'] = message_id
+            reaction_dict['user_profile'] = added_users[user]
+
             reaction_id += 1
-            reaction_list.append(reaction)
+            reaction_list.append(reaction_dict)
     return reaction_id
 
 def build_uploads(user_id: int, realm_id: int, email: str, fileinfo: ZerverFieldsT, s3_path: str,
