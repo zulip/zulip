@@ -3,6 +3,8 @@ var noop = function () {};
 set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
+global.patch_builtin('window', {});
+
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
 set_global('home_msg_list', {
@@ -223,6 +225,20 @@ var event_fixtures = {
         value: false,
     },
 
+    realm__update_notifications_stream_id: {
+        type: 'realm',
+        op: 'update',
+        property: 'notifications_stream_id',
+        value: 42,
+    },
+
+    realm__update_signup_notifications_stream_id: {
+        type: 'realm',
+        op: 'update',
+        property: 'signup_notifications_stream_id',
+        value: 41,
+    },
+
     realm__update_dict__default: {
         type: 'realm',
         op: 'update_dict',
@@ -230,7 +246,25 @@ var event_fixtures = {
         data: {
             allow_message_editing: true,
             message_content_edit_limit_seconds: 5,
+            authentication_methods: {
+                Google: true,
+            },
         },
+    },
+
+    realm__update_dict__icon: {
+        type: 'realm',
+        op: 'update_dict',
+        property: 'icon',
+        data: {
+            icon_url: 'icon.png',
+            icon_source: 'U',
+        },
+    },
+
+    realm__deactivated: {
+        type: 'realm',
+        op: 'deactivated',
     },
 
     realm_bot__add: {
@@ -753,9 +787,20 @@ with_overrides(function (override) {
     test_realm_boolean(event, 'realm_invite_required');
 
     event = event_fixtures.realm__update__name;
-    override('notifications.redraw_title', noop);
     dispatch(event);
     assert_same(page_params.realm_name, 'new_realm_name');
+
+    var called = false;
+    window.electron_bridge = {
+        send_event: (key, val) => {
+            assert_same(key, 'realm_name');
+            assert_same(val, 'new_realm_name');
+            called = true;
+        },
+    };
+
+    dispatch(event);
+    assert_same(called, true);
 
     event = event_fixtures.realm__update__emails_restricted_to_domains;
     test_realm_boolean(event, 'realm_emails_restricted_to_domains');
@@ -766,13 +811,48 @@ with_overrides(function (override) {
     event = event_fixtures.realm__update__create_stream_by_admins_only;
     test_realm_boolean(event, 'realm_create_stream_by_admins_only');
 
+    event = event_fixtures.realm__update_notifications_stream_id;
+    override('settings_org.render_notifications_stream_ui', noop);
+    dispatch(event);
+    assert_same(page_params.realm_notifications_stream_id, 42);
+    page_params.realm_notifications_stream_id = -1;  // make sure to reset for future tests
+
+    event = event_fixtures.realm__update_signup_notifications_stream_id;
+    dispatch(event);
+    assert_same(page_params.realm_signup_notifications_stream_id, 41);
+    page_params.realm_signup_notifications_stream_id = -1; // make sure to reset for future tests
+
     event = event_fixtures.realm__update_dict__default;
     page_params.realm_allow_message_editing = false;
     page_params.realm_message_content_edit_limit_seconds = 0;
+    override('settings_org.populate_auth_methods', noop);
     dispatch(event);
     assert_same(page_params.realm_allow_message_editing, true);
     assert_same(page_params.realm_message_content_edit_limit_seconds, 5);
+    assert_same(page_params.realm_authentication_methods, {Google: true});
 
+    event = event_fixtures.realm__update_dict__icon;
+    override('realm_icon.rerender', noop);
+
+    called = false;
+    window.electron_bridge = {
+        send_event: (key, val) => {
+            assert_same(key, 'realm_icon_url');
+            assert_same(val, 'icon.png');
+            called = true;
+        },
+    };
+
+    dispatch(event);
+
+    assert_same(called, true);
+    assert_same(page_params.realm_icon_url, 'icon.png');
+    assert_same(page_params.realm_icon_source, 'U');
+
+    event = event_fixtures.realm__deactivated;
+    window.location = {};
+    dispatch(event);
+    assert_same(window.location.href, "/accounts/deactivated/");
 });
 
 with_overrides(function (override) {
