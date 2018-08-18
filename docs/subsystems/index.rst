@@ -23,7 +23,7 @@ Subsystems Documentation
    emoji
    hotspots
    full-text-search
-   oauth
+   auth
    email
    analytics
    html-templates
