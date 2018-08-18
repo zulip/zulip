@@ -444,6 +444,13 @@ var event_fixtures = {
         op: 'stop',
     },
 
+    typing__self: {
+        type: 'typing',
+        sender: {
+            user_id: 5,
+        },
+    },
+
     update_display_settings__default_language: {
         type: 'update_display_settings',
         setting_name: 'default_language',
@@ -1008,6 +1015,10 @@ with_overrides(function (override) {
         var args = stub.get_args('event');
         assert_same(args.event.sender.user_id, 6);
     });
+
+    page_params.user_id = 5;
+    event = event_fixtures.typing__self;
+    dispatch(event); // get line coverage
 });
 
 with_overrides(function (override) {
