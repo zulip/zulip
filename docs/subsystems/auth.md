@@ -50,3 +50,35 @@ The steps to do this are a variation of the steps documented in
   showing a client ID and a client secret.  In `dev_settings.py`, set
   `SOCIAL_AUTH_GITHUB_KEY` to the client ID, and in
   `dev-secrets.conf`, set `social_auth_github_secret` to the client secret.
+
+## Testing LDAP in development
+
+Historically, one of the more common classes of bug reports with
+Zulip's authentication was users having trouble getting LDAP
+authentication working.  A big part of the cause was because setting
+up a local LDAP server for development was difficult.
+
+We solved this problem for our unit tests long ago by using the
+popular [fakeldap](https://github.com/zulip/fakeldap) library.  And in
+2018, we added convenient support for using fakeldap in the Zulip
+development environment as well, so that you can go through all the
+actual flows for LDAP configuration.
+
+- To enable fakeldap, set `FAKE_LDAP_MODE` in
+`zproject/dev_settings.py` to one of the following options.  For more
+information on these modes, refer
+`zproject/prod_settings_template.py`.:
+  - `a`: If users' email addresses are in LDAP and used as username.
+  - `b`: If LDAP only has usernames but email addresses are of the form
+  username@example.com
+  - `c`: If LDAP usernames are completely unrelated to email addresses.
+
+- To disable fakeldap, set `FAKE_LDAP_MODE` back to `None`.
+
+- In all fakeldap configurations, users' fake LDAP passwords are equal
+  to their usernames (e.g. for `ldapuser1@zulip.com`, the password is
+  `ldapuser1`).
+
+- `FAKE_LDAP_EXTRA_USERS` in `zproject/dev_settings.py` can be used to
+generate additional extra users to be added, in addition to the
+8 default LDAP users.
