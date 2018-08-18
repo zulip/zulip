@@ -352,6 +352,15 @@ var event_fixtures = {
         value: 'blue',
     },
 
+    stream__create: {
+        type: 'stream',
+        op: 'create',
+        streams: [
+            {stream_id: 42},
+            {stream_id: 99},
+        ],
+    },
+
     subscription__add: {
         type: 'subscription',
         op: 'add',
@@ -859,6 +868,18 @@ with_overrides(function (override) {
         assert_same(args.stream_id, event.stream_id);
         assert_same(args.property, event.property);
         assert_same(args.value, event.value);
+    });
+
+    // stream create
+    event = event_fixtures.stream__create;
+    global.with_stub(function (stub) {
+        override('stream_data.create_streams', stub.f);
+        override('stream_data.get_sub_by_id', noop);
+        override('stream_data.update_calculated_fields', noop);
+        override('subs.add_sub_to_table', noop);
+        dispatch(event);
+        var args = stub.get_args('streams');
+        assert_same(_.pluck(args.streams, 'stream_id'), [42, 99]);
     });
 });
 
