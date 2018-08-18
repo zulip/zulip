@@ -70,7 +70,6 @@ zrequire('stream_data');
 zrequire('settings_account');
 zrequire('settings_org');
 zrequire('settings_ui');
-zrequire('settings_ui');
 
 run_test('unloaded', () => {
     // This test mostly gets us line coverage, and makes
@@ -682,6 +681,10 @@ run_test('set_up', () => {
     const parent_elem = $.create('waiting-period-parent-stub');
     $('#id_realm_waiting_period_threshold').set_parent(parent_elem);
     $("#allowed_domains_label").set_parent($.create('<stub-allowed-domain-label-parent>'));
+
+    const allow_topic_edit_label_parent = $.create('allow-topic-edit-label-parent');
+    $('#id_realm_allow_community_topic_editing_label').set_parent(allow_topic_edit_label_parent);
+
     // TEST set_up() here, but this mostly just allows us to
     // get access to the click handlers.
     settings_org.set_up();
