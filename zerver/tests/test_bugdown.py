@@ -215,6 +215,11 @@ class BugdownMiscTest(ZulipTestCase):
         content = '@**King Hamlet** @**Cordelia lear**'
         mention_data = bugdown.MentionData(realm.id, content)
         self.assertEqual(mention_data.get_user_ids(), {hamlet.id, cordelia.id})
+        self.assertEqual(mention_data.get_user_by_id(hamlet.id), dict(
+            email=hamlet.email,
+            full_name=hamlet.full_name,
+            id=hamlet.id
+        ))
 
         user = mention_data.get_user('king hamLET')
         assert(user is not None)

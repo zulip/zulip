@@ -1811,8 +1811,8 @@ class MentionData:
     def __init__(self, realm_id: int, content: str) -> None:
         full_names = possible_mentions(content)
         self.full_name_info = get_full_name_info(realm_id, full_names)
-        self.user_ids = {
-            row['id']
+        self.user_id_info = {
+            row['id']: row
             for row in self.full_name_info.values()
         }
 
@@ -1829,6 +1829,9 @@ class MentionData:
     def get_user(self, name: str) -> Optional[FullNameInfo]:
         return self.full_name_info.get(name.lower(), None)
 
+    def get_user_by_id(self, id: str) -> Optional[FullNameInfo]:
+        return self.user_id_info.get(int(id), None)
+
     def get_user_ids(self) -> Set[int]:
         """
         Returns the user IDs that might have been mentioned by this
@@ -1836,7 +1839,7 @@ class MentionData:
         the message and does not know about escaping/code blocks, this
         will overestimate the list of user ids.
         """
-        return self.user_ids
+        return set(self.user_id_info.keys())
 
     def get_user_group(self, name: str) -> Optional[UserGroup]:
         return self.user_group_name_info.get(name.lower(), None)
