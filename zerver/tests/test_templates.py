@@ -172,6 +172,8 @@ class TemplateTestCase(ZulipTestCase):
         email = user_profile.email
 
         context = dict(
+            sidebar_index="zerver/help/include/sidebar_index.md",
+            doc_root="/help/",
             article="zerver/help/index.md",
             shallow_tested=True,
             user_profile=user_profile,

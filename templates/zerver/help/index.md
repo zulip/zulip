@@ -13,4 +13,4 @@ downloaded [here](https://zulipchat.com/apps/).
 One Zulip account, associated with a particular company, project, or team,
 is known as an **organization**.
 
-{!sidebar.md!}
+{!sidebar_index.md!}
