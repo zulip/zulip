@@ -249,6 +249,8 @@ function set_msg_edit_limit_dropdown() {
     } else {
         $("#id_realm_message_content_edit_limit_minutes").parent().hide();
     }
+    settings_ui.disable_sub_setting_onchange(value !== "never",
+                                             "id_realm_allow_community_topic_editing", true);
 }
 
 function set_msg_delete_limit_dropdown() {
