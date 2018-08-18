@@ -1593,6 +1593,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/JsonSuccess'
+  /user_groups:
+    get:
+      description: Get all user groups of the realm.
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    user_groups:
+                      type: array
+                      items:
+                        type: object
+                      description: A list of `user_group` objects, which contain a
+                        `description`, a `name`, their `id` and the list of members
+                        of the user group.
+                - example:
+                    {
+                        "msg": "",
+                        "result": "success",
+                        "user_groups": [
+                            {
+                                "description": "Characters of Hamlet",
+                                "id": 1,
+                                "name": "hamletcharacters",
+                                "members": [3, 4]
+                            },
+                            {
+                                "description": "Other users",
+                                "id": 2,
+                                "name": "otherusers",
+                                "members": [1, 2]
+                            }
+                        ]
+                    }
 components:
   #######################
   # Security definitions
