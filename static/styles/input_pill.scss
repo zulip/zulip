@@ -33,23 +33,23 @@
     outline: none;
 }
 
-.pill-container.notmem {
+.pill-container.not-editable {
     cursor: not-allowed;
     border: none;
 }
 
-.pill-container.notmem .pill {
+.pill-container.not-editable .pill {
     padding-right: 4px;
     cursor: not-allowed;
 }
 
-.pill-container.notmem .pill:focus {
+.pill-container.not-editable .pill:focus {
     color: inherit;
     border: 1px solid hsla(0, 0%, 0%, 0.15);
     background: hsla(0, 0%, 0%, 0.07);
 }
 
-.pill-container.notmem .pill .exit {
+.pill-container.not-editable .pill .exit {
     display: none;
 }
 
