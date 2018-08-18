@@ -38,7 +38,7 @@ exports.create = function (opts) {
     var store = {
         pills: [],
         $parent: opts.container,
-        $input: opts.container.find(".input"),
+        $input: opts.container.find(".input").expectOne(),
         create_item_from_text: opts.create_item_from_text,
         get_text_from_item: opts.get_text_from_item,
     };
