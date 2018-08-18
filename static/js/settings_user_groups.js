@@ -66,7 +66,7 @@ exports.populate_user_groups = function () {
             userg.addClass('ntm');
             pill_container.find('.input').attr('contenteditable','false');
             pill_container.find('.input').css('display', 'none');
-            pill_container.addClass('notmem');
+            pill_container.addClass('not-editable');
             pill_container.off('keydown', '.pill');
             pill_container.off('keydown', '.input');
             pill_container.off('click');
