@@ -1785,6 +1785,14 @@ def get_full_name_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNam
     if not full_names:
         return dict()
 
+    # Remove the trailing part of the `user|id` mention syntax.
+    name_re = r'(?P<full_name>.+)\|\d+$'
+    for full_name in full_names.copy():
+        name_syntax_match = re.match(name_re, full_name)
+        if name_syntax_match:
+            full_names.remove(full_name)
+            full_names.add(name_syntax_match.group("full_name"))
+
     q_list = {
         Q(full_name__iexact=full_name)
         for full_name in full_names
@@ -1800,11 +1808,13 @@ def get_full_name_info(realm_id: int, full_names: Set[str]) -> Dict[str, FullNam
         'full_name',
         'email',
     )
-
-    dct = {
-        row['full_name'].lower(): row
-        for row in rows
-    }
+    dct = {}  # type: Dict[str, FullNameInfo]
+    for row in rows:
+        key = row['full_name'].lower()
+        # To insert users with duplicate full names in the dict
+        if key in dct:
+            key = '{}|{}'.format(key, row['id'])
+        dct[key] = row
     return dct
 
 class MentionData:
