@@ -98,6 +98,10 @@ var event_fixtures = {
         alert_words: ['fire', 'lunch'],
     },
 
+    attachment: {
+        type: 'attachment',
+    },
+
     default_streams: {
         type: 'default_streams',
         default_streams: [
@@ -119,6 +123,10 @@ var event_fixtures = {
     hotspots: {
         type: 'hotspots',
         hotspots: ['nice', 'chicken'],
+    },
+
+    invites_changed: {
+        type: 'invites_changed',
     },
 
     muted_topics: {
@@ -377,6 +385,15 @@ var event_fixtures = {
         ],
     },
 
+    submessage: {
+        type: 'submessage',
+        submessage_id: 99,
+        sender_id: 42,
+        msg_type: 'stream',
+        message_id: 56,
+        content: 'test',
+    },
+
     subscription__add: {
         type: 'subscription',
         op: 'add',
@@ -575,6 +592,16 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
+    // attachements
+    var event = event_fixtures.attachment;
+    global.with_stub(function (stub) {
+        override('attachments_ui.update_attachments', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('event').event, event);
+    });
+});
+
+with_overrides(function (override) {
     // User groups
     var event = event_fixtures.user_group__add;
     override('settings_user_groups.reload', noop);
@@ -643,6 +670,16 @@ with_overrides(function (override) {
     override('hotspots.load_new', noop);
     dispatch(event);
     assert_same(page_params.hotspots, event.hotspots);
+});
+
+with_overrides(function (override) {
+    // invites_changed
+    var event = event_fixtures.invites_changed;
+    $('#admin-invites-list').length = 1;
+    global.with_stub(function (stub) {
+        override('settings_invites.set_up', stub.f);
+        dispatch(event); // stub automatically checks if stub.f is called once
+    });
 });
 
 with_overrides(function (override) {
@@ -941,6 +978,23 @@ with_overrides(function (override) {
         page_params.realm_signup_notifications_stream_id = 42;
         dispatch(event);
         assert_same(page_params.realm_signup_notifications_stream_id, -1);
+    });
+});
+
+with_overrides(function (override) {
+    // submessage
+    var event = event_fixtures.submessage;
+    global.with_stub(function (stub) {
+        override('submessage.handle_event', stub.f);
+        dispatch(event);
+        var submsg = stub.get_args('submsg').submsg;
+        assert_same(submsg, {
+            id: 99,
+            sender_id: 42,
+            msg_type: 'stream',
+            message_id: 56,
+            content: 'test',
+        });
     });
 });
 
