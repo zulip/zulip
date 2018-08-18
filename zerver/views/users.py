@@ -109,11 +109,11 @@ def avatar(request: HttpRequest, email_or_id: str, medium: bool=False) -> HttpRe
     try:
         if is_email:
             realm = request.user.realm
-            user_profile = get_user_including_cross_realm(email_or_id, realm)
+            avatar_user_profile = get_user_including_cross_realm(email_or_id, realm)
         else:
-            user_profile = get_user_profile_by_id(email_or_id)
+            avatar_user_profile = get_user_profile_by_id(email_or_id)
         # If there is a valid user account passed in, use its avatar
-        url = avatar_url(user_profile, medium=medium)
+        url = avatar_url(avatar_user_profile, medium=medium)
     except UserProfile.DoesNotExist:
         # If there is no such user, treat it as a new gravatar
         email = email_or_id
