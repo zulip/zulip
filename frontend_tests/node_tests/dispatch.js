@@ -1,11 +1,7 @@
 var noop = function () {};
 
 set_global('document', 'document-stub');
-set_global('$', function () {
-    return {
-        trigger: noop,
-    };
-});
+set_global('$', global.make_zjquery());
 
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
