@@ -968,6 +968,37 @@ class BugdownTest(ZulipTestCase):
                          'check this out</p>' % (hamlet.id, cordelia.id))
         self.assertEqual(msg.mentions_user_ids, set([hamlet.id, cordelia.id]))
 
+    def test_mention_duplicate_full_name(self) -> None:
+        realm = get_realm('zulip')
+
+        def make_user(email: str, full_name: str) -> UserProfile:
+            return create_user(
+                email=email,
+                password='whatever',
+                realm=realm,
+                full_name=full_name,
+                short_name='whatever',
+            )
+
+        sender_user_profile = self.example_user('othello')
+        twin1 = make_user('twin1@example.com', 'Mark Twin')
+        twin2 = make_user('twin2@example.com', 'Mark Twin')
+        cordelia = self.example_user('cordelia')
+        msg = Message(sender=sender_user_profile, sending_client=get_client("test"))
+
+        content = "@**Mark Twin|{}**, @**Mark Twin|{}** and @**Cordelia Lear**, hi.".format(twin1.id, twin2.id)
+
+        self.assertEqual(render_markdown(msg, content),
+                         '<p>'
+                         '<span class="user-mention" '
+                         'data-user-id="%s">@Mark Twin</span>, '
+                         '<span class="user-mention" '
+                         'data-user-id="%s">@Mark Twin</span> and '
+                         '<span class="user-mention" '
+                         'data-user-id="%s">@Cordelia Lear</span>, '
+                         'hi.</p>' % (twin1.id, twin2.id, cordelia.id))
+        self.assertEqual(msg.mentions_user_ids, set([twin1.id, twin2.id, cordelia.id]))
+
     def test_mention_invalid(self) -> None:
         sender_user_profile = self.example_user('othello')
         msg = Message(sender=sender_user_profile, sending_client=get_client("test"))

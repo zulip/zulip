@@ -1376,7 +1376,13 @@ class UserMentionPattern(markdown.inlinepatterns.Pattern):
                 return None
 
             wildcard = mention.user_mention_matches_wildcard(name)
-            user = arguments.db_data['mention_data'].get_user(name)
+
+            id_syntax_match = re.match(r'.+\|(?P<user_id>\d+)$', name)
+            if id_syntax_match:
+                id = id_syntax_match.group("user_id")
+                user = arguments.db_data['mention_data'].get_user_by_id(id)
+            else:
+                user = arguments.db_data['mention_data'].get_user(name)
 
             if wildcard:
                 arguments.current_message.mentions_wildcard = True
