@@ -862,8 +862,10 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
             self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
 
     def test_get_user_avatar(self) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_email("hamlet")
+        self.login(hamlet)
         cordelia = self.example_user('cordelia')
+        cross_realm_bot = self.example_user('welcome_bot')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
         cordelia.save()
@@ -878,8 +880,34 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/avatar/")
         self.assertEqual(response.status_code, 404)
 
+        self.logout()
+
+        # Test /avatar/<email_or_id> endpoint with HTTP basic auth.
+        response = self.api_get(hamlet, "/avatar/cordelia@zulip.com?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
+
+        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cordelia.id))
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia)) + '&foo=bar'))
+
+        # Test cross_realm_bot avatar access using email.
+        response = self.api_get(hamlet, "/avatar/welcome-bot@zulip.com?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
+
+        # Test cross_realm_bot avatar access using id.
+        response = self.api_get(hamlet, "/avatar/%s?foo=bar" % (cross_realm_bot.id))
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cross_realm_bot)) + '&foo=bar'))
+
+        response = self.client_get("/avatar/cordelia@zulip.com?foo=bar")
+        self.assert_json_error(response, "Not logged in: API authentication or user session required",
+                               status_code=401)
+
     def test_get_user_avatar_medium(self) -> None:
-        self.login(self.example_email("hamlet"))
+        hamlet = self.example_email("hamlet")
+        self.login(hamlet)
         cordelia = self.example_user('cordelia')
 
         cordelia.avatar_source = UserProfile.AVATAR_FROM_USER
@@ -891,6 +919,21 @@ class AvatarTest(UploadSerializeMixin, ZulipTestCase):
         response = self.client_get("/avatar/%s/medium?foo=bar" % (cordelia.id,))
         redirect_url = response['Location']
         self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
+
+        self.logout()
+
+        # Test /avatar/<email_or_id>/medium endpoint with HTTP basic auth.
+        response = self.api_get(hamlet, "/avatar/cordelia@zulip.com/medium?foo=bar")
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
+
+        response = self.api_get(hamlet, "/avatar/%s/medium?foo=bar" % (cordelia.id,))
+        redirect_url = response['Location']
+        self.assertTrue(redirect_url.endswith(str(avatar_url(cordelia, True)) + '&foo=bar'))
+
+        response = self.client_get("/avatar/cordelia@zulip.com/medium?foo=bar")
+        self.assert_json_error(response, "Not logged in: API authentication or user session required",
+                               status_code=401)
 
     def test_non_valid_user_avatar(self) -> None:
 
