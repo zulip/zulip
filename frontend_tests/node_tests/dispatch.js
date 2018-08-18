@@ -996,6 +996,31 @@ with_overrides(function (override) {
         assert_same(args.property, event.property);
         assert_same(args.value, event.value);
     });
+
+    // test blueslip errors/warns
+    event = event_fixtures.subscription__add;
+    global.with_stub(function (stub) {
+        override('stream_data.get_sub_by_id', noop);
+        override('blueslip.error', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Subscribing to unknown stream with ID 42');
+    });
+
+    event = event_fixtures.subscription__peer_add;
+    global.with_stub(function (stub) {
+        override('stream_data.add_subscriber', noop);
+        override('blueslip.warn', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Cannot process peer_add event');
+    });
+
+    event = event_fixtures.subscription__peer_remove;
+    global.with_stub(function (stub) {
+        override('stream_data.remove_subscriber', noop);
+        override('blueslip.warn', stub.f);
+        dispatch(event);
+        assert_same(stub.get_args('param').param, 'Cannot process peer_remove event.');
+    });
 });
 
 with_overrides(function (override) {
