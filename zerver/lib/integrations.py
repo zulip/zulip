@@ -327,6 +327,7 @@ WEBHOOK_INTEGRATIONS = [
     WebhookIntegration('jira', ['project-management'], display_name='JIRA'),
     WebhookIntegration('librato', ['monitoring']),
     WebhookIntegration('mention', ['marketing'], display_name='Mention'),
+    WebhookIntegration('netlify', ['continuous-integration', 'deployment'], display_name='Netlify'),
     WebhookIntegration('newrelic', ['monitoring'], display_name='New Relic'),
     WebhookIntegration(
         'opbeat',
