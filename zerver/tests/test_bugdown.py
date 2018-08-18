@@ -200,12 +200,20 @@ class BugdownMiscTest(ZulipTestCase):
         fred3.is_active = False
         fred3.save()
 
+        fred4 = make_user('fred4@example.com', 'Fred Flintstone')
+        fred4_key = 'fred flintstone|{}'.format(fred4.id)
+
         dct = bugdown.get_full_name_info(realm.id, {'Fred Flintstone', 'cordelia LEAR', 'Not A User'})
-        self.assertEqual(set(dct.keys()), {'fred flintstone', 'cordelia lear'})
+        self.assertEqual(set(dct.keys()), {'fred flintstone', fred4_key, 'cordelia lear'})
         self.assertEqual(dct['fred flintstone'], dict(
             email='fred2@example.com',
             full_name='Fred Flintstone',
             id=fred2.id
+        ))
+        self.assertEqual(dct[fred4_key], dict(
+            email='fred4@example.com',
+            full_name='Fred Flintstone',
+            id=fred4.id
         ))
 
     def test_mention_data(self) -> None:
