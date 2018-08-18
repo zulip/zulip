@@ -103,7 +103,7 @@ ALWAYS_SEND_ALL_HOTSPOTS = False  # type: bool
 # In any case, the LDAP user account data is available in:
 #    zerver/tests/fixtures/ldap_dir.json
 FAKE_LDAP_MODE = None  # type: Optional[str]
-FAKE_LDAP_EXTRA_USERS = 0
+# FAKE_LDAP_NUM_USERS = 8
 
 if FAKE_LDAP_MODE:
     LDAP_APPEND_DOMAIN = None

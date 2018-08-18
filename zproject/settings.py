@@ -144,7 +144,7 @@ DEFAULT_SETTINGS = {
     # support local development of LDAP auth without an LDAP server.
     # Detailed docs in zproject/dev_settings.py.
     'FAKE_LDAP_MODE': None,
-    'FAKE_LDAP_EXTRA_USERS': 0,
+    'FAKE_LDAP_NUM_USERS': 8,
 
     # Social auth; we support providing values for some of these
     # settings in zulip-secrets.conf instead of settings.py in development.

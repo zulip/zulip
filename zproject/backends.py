@@ -107,20 +107,11 @@ def common_get_active_user(email: str, realm: Realm,
         return None
     return user_profile
 
-def generate_dev_ldap_dir(mode: str, extra_users: int=0) -> Dict[str, Dict[str, Sequence[str]]]:
+def generate_dev_ldap_dir(mode: str, num_users: int=8) -> Dict[str, Dict[str, Sequence[str]]]:
     mode = mode.lower()
-    names = [
-        ("Zoe", "ldap_ZOE@zulip.com"),
-        ("Othello, the Moor of Venice", "ldap_othello@zulip.com"),
-        ("Iago", "ldap_iago@zulip.com"),
-        ("Prospero from The Tempest", "ldap_prospero@zulip.com"),
-        ("Cordelia Lear", "ldap_cordelia@zulip.com"),
-        ("King Hamlet", "ldap_hamlet@zulip.com"),
-        ("aaron", "ldap_AARON@zulip.com"),
-        ("Polonius", "ldap_polonius@zulip.com"),
-    ]
-    for i in range(extra_users):
-        names.append(('Extra User %d' % (i,), 'ldap_extrauser%d@zulip.com' % (i,)))
+    names = []
+    for i in range(1, num_users+1):
+        names.append(('LDAP User %d' % (i,), 'ldapuser%d@zulip.com' % (i,)))
 
     ldap_dir = {}
     if mode == 'a':
@@ -336,7 +327,7 @@ class ZulipLDAPAuthBackend(ZulipLDAPAuthBackendBase):
             self.mock_initialize.return_value = self.mock_ldap
 
             self.mock_ldap.directory = generate_dev_ldap_dir(settings.FAKE_LDAP_MODE,
-                                                             settings.FAKE_LDAP_EXTRA_USERS)
+                                                             settings.FAKE_LDAP_NUM_USERS)
 
     def authenticate(self, username: str, password: str, realm: Optional[Realm]=None,
                      return_data: Optional[Dict[str, Any]]=None) -> Optional[UserProfile]:
