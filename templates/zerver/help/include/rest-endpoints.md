@@ -31,6 +31,7 @@
 * [Create a user](/api/create-user)
 * [Set "typing" status](/api/typing)
 * [Get user presence](/api/get-presence)
+* [Get all user groups](/api/get-user-groups)
 
 #### Server & organizations
 
