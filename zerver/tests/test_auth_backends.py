@@ -2110,16 +2110,26 @@ class TestLDAP(ZulipTestCase):
         realm.save()
 
     def test_generate_dev_ldap_dir(self) -> None:
-        fixtures = ujson.loads(self.fixture_data("ldap_dir.json"))
-
         ldap_dir = generate_dev_ldap_dir('A', 2)
-        self.assertEqual(ldap_dir, fixtures['a'])
+        self.assertEqual(len(ldap_dir), 10)
+        regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+(\,ou\=users\,dc\=zulip\,dc\=com)')
+        for key, value in ldap_dir.items():
+            self.assertTrue(regex.match(key))
+            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword'])
 
         ldap_dir = generate_dev_ldap_dir('b', 1)
-        self.assertEqual(ldap_dir, fixtures['b'])
+        self.assertEqual(len(ldap_dir), 9)
+        regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
+        for key, value in ldap_dir.items():
+            self.assertTrue(regex.match(key))
+            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword'])
 
         ldap_dir = generate_dev_ldap_dir('c', 0)
-        self.assertEqual(ldap_dir, fixtures['c'])
+        self.assertEqual(len(ldap_dir), 8)
+        regex = re.compile(r'(uid\=)+[a-zA-Z0-9_.+-]+(\,ou\=users\,dc\=zulip\,dc\=com)')
+        for key, value in ldap_dir.items():
+            self.assertTrue(regex.match(key))
+            self.assertCountEqual(list(value.keys()), ['cn', 'userPassword', 'email'])
 
     @override_settings(AUTHENTICATION_BACKENDS=('zproject.backends.ZulipLDAPAuthBackend',))
     def test_login_success(self) -> None:
