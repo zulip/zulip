@@ -319,20 +319,6 @@ function test_upload_realm_icon(upload_realm_icon) {
     assert(posted);
 }
 
-function test_change_invite_required(change_invite_required) {
-    var parent_elem = $.create('invite-parent-stub');
-
-    $('#id_realm_invite_by_admins_only_label').set_parent(parent_elem);
-
-    change_invite_required.apply({checked: false});
-    assert(parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), 'disabled');
-
-    change_invite_required.apply({checked: true});
-    assert(!parent_elem.hasClass('control-label-disabled'));
-    assert.equal($('#id_realm_invite_by_admins_only').attr('disabled'), false);
-}
-
 function test_disable_notifications_stream(disable_notifications_stream) {
     var success_callback;
     var error_callback;
@@ -656,7 +642,6 @@ run_test('set_up', () => {
 
     $('#id_realm_create_stream_permission').change = set_callback('realm_create_stream_permission');
     $('#id_realm_video_chat_provider').change = set_callback('realm_video_chat_provider');
-    $('#id_realm_invite_required').change = set_callback('change_invite_required');
     $("#id_realm_org_join_restrictions").change = set_callback('change_org_join_restrictions');
     $('#submit-add-realm-domain').click = set_callback('add_realm_domain');
     $('#admin_auth_methods_table').change = set_callback('admin_auth_methods_table');
@@ -706,7 +691,6 @@ run_test('set_up', () => {
     test_realms_domain_modal(callbacks.add_realm_domain);
     test_submit_settings_form(submit_settings_form);
     test_upload_realm_icon(upload_realm_icon);
-    test_change_invite_required(callbacks.change_invite_required);
     test_disable_notifications_stream(callbacks.disable_notifications_stream);
     test_disable_signup_notifications_stream(callbacks.disable_signup_notifications_stream);
     test_change_allow_subdomains(change_allow_subdomains);
