@@ -234,6 +234,18 @@ def get_streams(client):
     validate_against_openapi_schema(result, '/streams', 'get', '200')
     assert len(result['streams']) == 4
 
+def get_user_groups(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Get all user groups of the realm
+    result = client.get_user_groups()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/user_groups', 'get', '200')
+    user_groups = [u for u in result['user_groups'] if u['name'] == "hamletcharacters"]
+    assert user_groups[0]['description'] == 'Characters of Hamlet'
+
 def test_user_not_authorized_error(nonadmin_client):
     # type: (Client) -> None
     result = nonadmin_client.get_streams(include_all_active=True)
@@ -793,6 +805,7 @@ TEST_FUNCTIONS = {
     '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
+    '/user_groups:get': get_user_groups,
 }
 
 # SETUP METHODS FOLLOW
@@ -871,6 +884,7 @@ def test_users(client):
     upload_file(client)
     set_typing_status(client)
     get_user_presence(client)
+    get_user_groups(client)
 
 def test_streams(client, nonadmin_client):
     # type: (Client, Client) -> None
