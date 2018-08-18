@@ -4,6 +4,7 @@ set_global('document', 'document-stub');
 set_global('$', global.make_zjquery());
 
 global.patch_builtin('window', {});
+global.patch_builtin('setTimeout', func => func());
 
 // These dependencies are closer to the dispatcher, and they
 // apply to all tests.
@@ -534,10 +535,34 @@ var event_fixtures = {
         setting: true,
     },
 
+    update_display_settings__dense_mode: {
+        type: 'update_display_settings',
+        setting_name: 'dense_mode',
+        setting: true,
+    },
+
+    update_display_settings__night_mode: {
+        type: 'update_display_settings',
+        setting_name: 'night_mode',
+        setting: true,
+    },
+
+    update_display_settings__night_mode_false: {
+        type: 'update_display_settings',
+        setting_name: 'night_mode',
+        setting: false,
+    },
+
     update_display_settings__translate_emoticons: {
         type: 'update_display_settings',
         setting_name: 'translate_emoticons',
         setting: true,
+    },
+
+    update_display_settings__emojiset: {
+        type: 'update_display_settings',
+        setting_name: 'emojiset',
+        setting: 'google',
     },
 
     update_global_notifications: {
@@ -1210,16 +1235,68 @@ with_overrides(function (override) {
     dispatch(event);
     assert_same(page_params.left_side_userlist, true);
 
-    override('message_list.narrowed', noop);
+    var called = false;
+    current_msg_list.rerender = () => {
+        called = true;
+    };
+
+    override('message_list.narrowed', current_msg_list);
     event = event_fixtures.update_display_settings__twenty_four_hour_time;
     page_params.twenty_four_hour_time = false;
     dispatch(event);
     assert_same(page_params.twenty_four_hour_time, true);
+    assert_same(called, true);
 
     event = event_fixtures.update_display_settings__translate_emoticons;
     page_params.translate_emoticons = false;
     dispatch(event);
     assert_same(page_params.translate_emoticons, true);
+
+    event = event_fixtures.update_display_settings__high_contrast_mode;
+    page_params.high_contrast_mode = false;
+    var toggled = [];
+    $("body").toggleClass = (cls) => {
+        toggled.push(cls);
+    };
+    dispatch(event);
+    assert_same(page_params.high_contrast_mode, true);
+    assert_same(toggled, ['high-contrast']);
+
+    event = event_fixtures.update_display_settings__dense_mode;
+    page_params.dense_mode = false;
+    toggled = [];
+    dispatch(event);
+    assert_same(page_params.dense_mode, true);
+    assert_same(toggled, ['less_dense_mode', 'more_dense_mode']);
+
+    $("body").fadeOut = (secs) => { assert_same(secs, 300); };
+    $("body").fadeIn  = (secs) => { assert_same(secs, 300); };
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__night_mode;
+        page_params.night_mode = false;
+        override('night_mode.enable', stub.f); // automatically checks if called
+        dispatch(event);
+        assert_same(page_params.night_mode, true);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__night_mode_false;
+        page_params.night_mode = true;
+        override('night_mode.disable', stub.f); // automatically checks if called
+        dispatch(event);
+        assert(!page_params.night_mode);
+    });
+
+    global.with_stub(function (stub) {
+        event = event_fixtures.update_display_settings__emojiset;
+        called = false;
+        override('settings_display.report_emojiset_change', stub.f);
+        page_params.emojiset = 'text';
+        dispatch(event);
+        assert_same(called, true);
+        assert_same(page_params.emojiset, 'google');
+    });
 });
 
 with_overrides(function (override) {
