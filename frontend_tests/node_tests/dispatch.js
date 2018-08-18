@@ -361,6 +361,15 @@ var event_fixtures = {
         ],
     },
 
+    stream__delete: {
+        type: 'stream',
+        op: 'delete',
+        streams: [
+            {stream_id: 42},
+            {stream_id: 99},
+        ],
+    },
+
     subscription__add: {
         type: 'subscription',
         op: 'add',
@@ -880,6 +889,33 @@ with_overrides(function (override) {
         dispatch(event);
         var args = stub.get_args('streams');
         assert_same(_.pluck(args.streams, 'stream_id'), [42, 99]);
+    });
+
+    // stream delete
+    event = event_fixtures.stream__delete;
+    global.with_stub(function (stub) {
+        override('subs.remove_stream', noop);
+        override('stream_data.delete_sub', noop);
+        override('settings_streams.remove_default_stream', noop);
+        override('stream_data.remove_default_stream', noop);
+
+        override('stream_data.get_sub_by_id', function (id) {
+            return id === 42 ? {subscribed: true} : {subscribed: false};
+        });
+        override('stream_list.remove_sidebar_row', stub.f);
+        dispatch(event);
+        var args = stub.get_args('stream_id');
+        assert_same(args.stream_id, 42);
+
+        override('stream_list.remove_sidebar_row', noop);
+        override('settings_org.render_notifications_stream_ui', noop);
+        page_params.realm_notifications_stream_id = 42;
+        dispatch(event);
+        assert_same(page_params.realm_notifications_stream_id, -1);
+
+        page_params.realm_signup_notifications_stream_id = 42;
+        dispatch(event);
+        assert_same(page_params.realm_signup_notifications_stream_id, -1);
     });
 });
 
