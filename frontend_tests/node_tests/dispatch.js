@@ -343,7 +343,7 @@ var event_fixtures = {
         immediate: true,
     },
 
-    stream: {
+    stream__update: {
         type: 'stream',
         op: 'update',
         name: 'devel',
@@ -848,8 +848,8 @@ with_overrides(function (override) {
 });
 
 with_overrides(function (override) {
-    // stream
-    var event = event_fixtures.stream;
+    // stream update
+    var event = event_fixtures.stream__update;
 
     global.with_stub(function (stub) {
         override('stream_events.update_property', stub.f);
