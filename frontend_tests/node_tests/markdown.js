@@ -79,6 +79,24 @@ people.add({
     email: 'bobby@zulip.com',
 });
 
+people.add({
+    full_name: 'Mark Twin',
+    user_id: 104,
+    email: 'twin1@zulip.com',
+});
+
+people.add({
+    full_name: 'Mark Twin',
+    user_id: 105,
+    email: 'twin2@zulip.com',
+});
+
+people.add({
+    full_name: 'Brother of Bobby|123',
+    user_id: 106,
+    email: 'bobby2@zulip.com',
+});
+
 people.initialize_current_user(cordelia.user_id);
 
 var hamletcharacters = {
@@ -305,6 +323,16 @@ run_test('marked', () => {
          expected: '<p>T<br>\n<a class="stream" data-stream-id="1" href="http://zulip.zulipdev.com/#narrow/stream/1-Denmark">#Denmark</a></p>'},
         {input: 'T\n@**Cordelia Lear**',
          expected: '<p>T<br>\n<span class="user-mention" data-user-id="101">@Cordelia Lear</span></p>'},
+        {input: '@**Mark Twin|104** and @**Mark Twin|105** are out to confuse you.',
+         expected:'<p><span class="user-mention" data-user-id="104">@Mark Twin</span> and <span class="user-mention" data-user-id="105">@Mark Twin</span> are out to confuse you.</p>'},
+        {input: '@**Invalid User|1234**',
+         expected: '<p>@**Invalid User|1234**</p>'},
+        {input: '@**Cordelia Lear|103** has a wrong user_id.',
+         expected: '<p>@**Cordelia Lear|103** has a wrong user_id.</p>'},
+        {input: '@**Brother of Bobby|123** is really the full name.',
+         expected: '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span> is really the full name.</p>'},
+        {input: '@**Brother of Bobby|123|106**',
+         expected: '<p><span class="user-mention" data-user-id="106">@Brother of Bobby|123</span></p>'},
         {input: 'T\n@hamletcharacters',
          expected: '<p>T<br>\n@hamletcharacters</p>'},
         {input: 'T\n@*hamletcharacters*',

@@ -60,6 +60,18 @@ exports.apply_markdown = function (message) {
     var options = {
         userMentionHandler: function (name) {
             var person = people.get_by_name(name);
+
+            var id_regex = /(.+)\|(\d+)$/g; // For @**user|id** syntax
+            var match = id_regex.exec(name);
+            if (match) {
+                if (people.is_known_user_id(match[2])) {
+                    person = people.get_person_from_user_id(match[2]);
+                    if (person.full_name !== match[1]) { // Invalid Syntax
+                        return;
+                    }
+                }
+            }
+
             if (person !== undefined) {
                 if (people.is_my_user_id(person.user_id)) {
                     message.mentioned = true;
