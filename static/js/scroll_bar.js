@@ -51,7 +51,7 @@ exports.initialize = function () {
         $(".compose-content").css({left: sbWidth + "px",
                                    "margin-right": 250 + sbWidth + "px"});
         $("#compose-container").css("max-width", 1400 + sbWidth + "px");
-        $('#sidebar-keyboard-shortcuts #keyboard-icon').css({right: sbWidth + 13 + "px"});
+        $('#keyboard-icon').css({right: sbWidth + 13 + "px"});
 
         $("head").append("<style> @media (max-width: 1025px) { .compose-content, .header-main .column-middle { margin-right: " + (7 + sbWidth) + "px !important; } } " +
                          "@media (max-width: 775px) { .fixed-app .column-middle { margin-left: " + (7 + sbWidth) + "px !important; } } " +

@@ -72,7 +72,7 @@ function get_new_heights() {
     // RIGHT SIDEBAR
     var buddy_list_wrapper = $('#buddy_list_wrapper').expectOne();
     var group_pms = $('#group-pms').expectOne();
-    var keyboard_popover_shortcut = $('#sidebar-keyboard-shortcuts #keyboard-icon').expectOne();
+    var keyboard_popover_shortcut = $('#keyboard-icon').expectOne();
 
     var usable_height =
         res.right_sidebar_height
