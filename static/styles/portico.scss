@@ -1532,14 +1532,14 @@ input.new-organization-button {
     font-weight: 400;
     font-size: 1rem;
     line-height: 1.5;
+    overflow: auto;
+    -webkit-font-smoothing: antialiased;
+}
 
+.help .markdown {
     background-color: #fff;
-
     width: calc(100vw - 300px);
     height: calc(100vh - 59px);
-    overflow: auto;
-
-    -webkit-font-smoothing: antialiased;
 }
 
 .markdown .content {
