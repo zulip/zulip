@@ -219,11 +219,6 @@ function initialize_kitchen_sink_stuff() {
         timerender.set_full_datetime(message, time_elem);
     });
 
-    // compose-content padding = icon bottom to make keyboard popover shortcut
-    // vertically aligned with the compose box
-    $('#sidebar-keyboard-shortcuts #keyboard-icon').css('bottom',
-                                                        parseInt($(".compose-content").css("paddingBottom"), 10));
-
     $('#streams_header h4').tooltip({placement: 'right',
                                      animation: false});
 

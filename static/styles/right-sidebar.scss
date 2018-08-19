@@ -236,12 +236,13 @@
     margin-right: 10px;
 }
 
-#sidebar-keyboard-shortcuts #keyboard-icon {
+#keyboard-icon {
     position: fixed;
+    bottom: 8px; /* bottom padding of .compose-content */
     cursor: pointer;
     font-size: 20px;
 }
 
-#sidebar-keyboard-shortcuts a {
-    color: hsl(0, 0%, 1.2%); //#333
+#sidebar-keyboard-shortcuts {
+    color: inherit;
 }
