@@ -120,6 +120,23 @@ exports.initialize = function () {
         }
     });
 
+    $('#contact_support').on('click', function (e) {
+        var menu_item = $(e.target);
+        new ClipboardJS('#contact_support', {
+            text: function () {
+                var data = page_params.zulip_administrator;
+                return data;
+            },
+        });
+        e.stopPropagation();
+        menu_item.html('<i class="fa fa-address-book" aria-hidden="true"></i> Email copied');
+        menu_item.addClass("contact_support-active");
+        setTimeout(function () {
+            menu_item.html('<i class="fa fa-address-book" aria-hidden="true"></i> Contact support');
+            menu_item.removeClass("contact_support-active");
+        }, 2000);
+    });
+
     // The admin and settings pages are generated client-side through
     // templates.
 };

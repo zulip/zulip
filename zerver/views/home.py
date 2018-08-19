@@ -200,6 +200,7 @@ def home_real(request: HttpRequest) -> HttpResponse:
         search_pills_enabled  = settings.SEARCH_PILLS_ENABLED,
 
         # Misc. extra data.
+        zulip_administrator   = settings.ZULIP_ADMINISTRATOR,
         have_initial_messages = user_has_messages,
         initial_servertime    = time.time(),  # Used for calculating relative presence age
         default_language_name = get_language_name(register_ret['default_language']),
