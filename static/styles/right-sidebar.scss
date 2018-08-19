@@ -186,7 +186,6 @@
     right: 0px;
     text-align: center;
     vertical-align: middle;
-    border-left: 2px solid hsl(204, 20%, 74%);
 }
 
 #userlist-toggle-button {
@@ -198,6 +197,7 @@
     height: 19px;
     padding-top: 12px;
     padding-bottom: 9px;
+    border-left: 2px solid hsl(204, 20%, 74%);
 }
 
 #group-pm-list {
