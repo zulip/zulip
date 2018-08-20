@@ -41,9 +41,6 @@ from zerver.views.upload import upload_file_backend, serve_local
 
 import urllib
 from PIL import Image
-
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 from io import StringIO
 import mock
 import os
@@ -53,6 +50,7 @@ import re
 import datetime
 import requests
 import base64
+import boto3
 from datetime import timedelta
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -1239,8 +1237,9 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1248,7 +1247,7 @@ class S3Test(ZulipTestCase):
         base = '/user_uploads/'
         self.assertEqual(base, uri[:len(base)])
         path_id = re.sub('/user_uploads/', '', uri)
-        content = bucket.get_key(path_id).get_contents_as_string()
+        content = bucket.Object(path_id).get()['Body'].read()
         self.assertEqual(b"zulip!", content)
 
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
@@ -1261,21 +1260,24 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
 
         path_id = re.sub('/user_uploads/', '', uri)
-        self.assertEqual(b"zulip!", bucket.get_key(path_id).get_contents_as_string())
+        content = bucket.Object(path_id).get()['Body'].read()
+        self.assertEqual(b"zulip!", content)
         uploaded_file = Attachment.objects.get(owner=user_profile, path_id=path_id)
         self.assertEqual(len(b"zulip!"), uploaded_file.size)
 
     @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1285,6 +1287,9 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_when_file_doesnt_exist(self) -> None:
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(False, delete_message_image('non-existant-file'))
 
     @use_s3_backend
@@ -1292,8 +1297,9 @@ class S3Test(ZulipTestCase):
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -1308,8 +1314,9 @@ class S3Test(ZulipTestCase):
 
         response = self.client_get(uri)
         redirect_url = response['Location']
-
-        self.assertEqual(b"zulip!", urllib.request.urlopen(redirect_url).read().strip())
+        # Caution: use urllib.request.urlopen will cause 403 error
+        # since moto.mock_s3 does not mock urllib correctly.
+        self.assertEqual(b"zulip!", requests.get(redirect_url).content)
 
         self.subscribe(self.example_user("hamlet"), "Denmark")
         body = "First message ...[zulip.txt](http://localhost:9991" + uri + ")"
@@ -1318,8 +1325,9 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user('hamlet')
         path_id = user_avatar_path(user_profile)
@@ -1331,25 +1339,26 @@ class S3Test(ZulipTestCase):
         test_image_data = open(get_test_image_file('img.png').name, 'rb').read()
         test_medium_image_data = resize_avatar(test_image_data, MEDIUM_AVATAR_SIZE)
 
-        original_image_key = bucket.get_key(original_image_path_id)
+        original_image_key = bucket.Object(original_image_path_id)
         self.assertEqual(original_image_key.key, original_image_path_id)
-        image_data = original_image_key.get_contents_as_string()
+        image_data = original_image_key.get()['Body'].read()
         self.assertEqual(image_data, test_image_data)
 
-        medium_image_key = bucket.get_key(medium_path_id)
+        medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
-        medium_image_data = medium_image_key.get_contents_as_string()
+        medium_image_data = medium_image_key.get()['Body'].read()
         self.assertEqual(medium_image_data, test_medium_image_data)
-        bucket.delete_key(medium_image_key)
+        medium_image_key.delete()
 
         zerver.lib.upload.upload_backend.ensure_medium_avatar_image(user_profile)
-        medium_image_key = bucket.get_key(medium_path_id)
+        medium_image_key = bucket.Object(medium_path_id)
         self.assertEqual(medium_image_key.key, medium_path_id)
 
     @use_s3_backend
     def test_copy_avatar_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         with get_test_image_file('img.png') as image_file:
@@ -1364,38 +1373,39 @@ class S3Test(ZulipTestCase):
         target_path_id = user_avatar_path(target_user_profile)
         self.assertNotEqual(source_path_id, target_path_id)
 
-        source_image_key = bucket.get_key(source_path_id)
-        target_image_key = bucket.get_key(target_path_id)
+        source_image_key = bucket.Object(source_path_id)
+        target_image_key = bucket.Object(target_path_id)
         self.assertEqual(target_image_key.key, target_path_id)
         self.assertEqual(source_image_key.content_type, target_image_key.content_type)
-        source_image_data = source_image_key.get_contents_as_string()
-        target_image_data = target_image_key.get_contents_as_string()
+        source_image_data = source_image_key.get()['Body'].read()
+        target_image_data = target_image_key.get()['Body'].read()
         self.assertEqual(source_image_data, target_image_data)
 
         source_original_image_path_id = source_path_id + ".original"
         target_original_image_path_id = target_path_id + ".original"
-        target_original_image_key = bucket.get_key(target_original_image_path_id)
+        target_original_image_key = bucket.Object(target_original_image_path_id)
         self.assertEqual(target_original_image_key.key, target_original_image_path_id)
-        source_original_image_key = bucket.get_key(source_original_image_path_id)
+        source_original_image_key = bucket.Object(source_original_image_path_id)
         self.assertEqual(source_original_image_key.content_type, target_original_image_key.content_type)
-        source_image_data = source_original_image_key.get_contents_as_string()
-        target_image_data = target_original_image_key.get_contents_as_string()
+        source_image_data = source_original_image_key.get()['Body'].read()
+        target_image_data = target_original_image_key.get()['Body'].read()
         self.assertEqual(source_image_data, target_image_data)
 
         target_medium_path_id = target_path_id + "-medium.png"
         source_medium_path_id = source_path_id + "-medium.png"
-        source_medium_image_key = bucket.get_key(source_medium_path_id)
-        target_medium_image_key = bucket.get_key(target_medium_path_id)
+        source_medium_image_key = bucket.Object(source_medium_path_id)
+        target_medium_image_key = bucket.Object(target_medium_path_id)
         self.assertEqual(target_medium_image_key.key, target_medium_path_id)
         self.assertEqual(source_medium_image_key.content_type, target_medium_image_key.content_type)
-        source_medium_image_data = source_medium_image_key.get_contents_as_string()
-        target_medium_image_data = target_medium_image_key.get_contents_as_string()
+        source_medium_image_data = source_medium_image_key.get()['Body'].read()
+        target_medium_image_data = target_medium_image_key.get()['Body'].read()
         self.assertEqual(source_medium_image_data, target_medium_image_data)
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1404,31 +1414,36 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
         zerver.lib.upload.upload_backend.upload_realm_icon_image(image_file, user_profile)
 
         original_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.original")
-        original_key = bucket.get_key(original_path_id)
+        original_key = bucket.Object(original_path_id)
         image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
         resized_path_id = os.path.join(str(user_profile.realm.id), "realm", "icon.png")
-        resized_data = bucket.get_key(resized_path_id).read()
+        resized_data = bucket.Object(resized_path_id).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data)).size
         self.assertEqual(resized_image, (DEFAULT_AVATAR_SIZE, DEFAULT_AVATAR_SIZE))
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
@@ -1439,11 +1454,11 @@ class S3Test(ZulipTestCase):
             realm_id=user_profile.realm_id,
             emoji_file_name=emoji_name,
         )
-        original_key = bucket.get_key(emoji_path + ".original")
+        original_key = bucket.Object(emoji_path + ".original")
         image_file.seek(0)
-        self.assertEqual(image_file.read(), original_key.get_contents_as_string())
+        self.assertEqual(image_file.read(), original_key.get()['Body'].read())
 
-        resized_data = bucket.get_key(emoji_path).read()
+        resized_data = bucket.Object(emoji_path).get()['Body'].read()
         resized_image = Image.open(io.BytesIO(resized_data))
         self.assertEqual(resized_image.size, (DEFAULT_EMOJI_SIZE, DEFAULT_EMOJI_SIZE))
 

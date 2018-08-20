@@ -11,7 +11,8 @@ from PIL import Image
 from mock import patch, MagicMock
 from typing import Any, Dict, List, Set, Optional, Tuple, Callable, \
     FrozenSet
-from boto.s3.connection import Location, S3Connection
+import boto3
+import botocore.exceptions
 
 from zerver.lib.export import (
     do_export_realm,
@@ -336,9 +337,10 @@ class ImportExportTest(ZulipTestCase):
 
     @use_s3_backend
     def test_export_files_from_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
         attachment_path_id, emoji_path, original_avatar_path_id, test_image = self._setup_export_files()
@@ -766,9 +768,10 @@ class ImportExportTest(ZulipTestCase):
 
     @use_s3_backend
     def test_import_files_from_s3(self) -> None:
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        uploads_bucket = conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        avatar_bucket = conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        uploads_bucket = s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        avatar_bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         realm = Realm.objects.get(string_id='zulip')
         self._setup_export_files()
@@ -782,7 +785,7 @@ class ImportExportTest(ZulipTestCase):
         uploaded_file = Attachment.objects.get(realm=imported_realm)
         self.assertEqual(len(b'zulip!'), uploaded_file.size)
 
-        attachment_content = uploads_bucket.get_key(uploaded_file.path_id).get_contents_as_string()
+        attachment_content = uploads_bucket.Object(uploaded_file.path_id).get()['Body'].read()
         self.assertEqual(b"zulip!", attachment_content)
 
         # Test emojis
@@ -791,15 +794,24 @@ class ImportExportTest(ZulipTestCase):
             realm_id=imported_realm.id,
             emoji_file_name=realm_emoji.file_name,
         )
-        emoji_key = avatar_bucket.get_key(emoji_path)
-        self.assertIsNotNone(emoji_key)
+        emoji_key = avatar_bucket.Object(emoji_path)
+        # Work around since python unittest does not have assertNotRaises
+        try:
+            emoji_key.load()
+        except botocore.exceptions.ClientError as error:
+            if error.response['Error']['Code'] == '404':
+                self.fail(
+                    'Test raises ClientError exception due to non-exist s3 object %s' % (emoji_key.key,))
+            else:
+                raise
+
         self.assertEqual(emoji_key.key, emoji_path)
 
         # Test avatars
         user_email = Message.objects.all()[0].sender.email
         user_profile = UserProfile.objects.get(email=user_email, realm=imported_realm)
         avatar_path_id = user_avatar_path(user_profile) + ".original"
-        original_image_key = avatar_bucket.get_key(avatar_path_id)
+        original_image_key = avatar_bucket.Object(avatar_path_id)
         self.assertEqual(original_image_key.key, avatar_path_id)
-        image_data = original_image_key.get_contents_as_string()
+        image_data = avatar_bucket.Object(avatar_path_id).get()['Body'].read()
         self.assertEqual(image_data, test_image_data)

@@ -11,7 +11,7 @@ from zerver.lib.upload import upload_backend, upload_emoji_image
 from zerver.lib.users import get_api_key
 
 from io import StringIO
-from boto.s3.connection import S3Connection
+import boto3
 import ujson
 import urllib
 import base64
@@ -27,9 +27,10 @@ class ThumbnailTest(ZulipTestCase):
             hex_uri = base64.urlsafe_b64encode(uri.encode()).decode('utf-8')
             return url_in_result % (hex_uri)
 
-        conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-        conn.create_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
-        conn.create_bucket(settings.S3_AVATAR_BUCKET)
+        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+        s3 = session.resource('s3')
+        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")

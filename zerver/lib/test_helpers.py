@@ -62,7 +62,7 @@ import ujson
 import unittest
 import urllib
 from zerver.lib.str_utils import NonBinaryStr
-from moto import mock_s3_deprecated
+from moto import mock_s3
 
 import fakeldap
 import ldap
@@ -456,7 +456,7 @@ def load_subdomain_token(response: HttpResponse) -> Dict[str, Any]:
 FuncT = TypeVar('FuncT', bound=Callable[..., None])
 
 def use_s3_backend(method: FuncT) -> FuncT:
-    @mock_s3_deprecated
+    @mock_s3
     @override_settings(LOCAL_UPLOADS_DIR=None)
     def new_method(*args: Any, **kwargs: Any) -> Any:
         zerver.lib.upload.upload_backend = S3UploadBackend()

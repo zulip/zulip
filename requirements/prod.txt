@@ -22,7 +22,9 @@ backcall==0.1.0           # via ipython
 backports-abc==0.5
 backports.ssl-match-hostname==3.5.0.1
 beautifulsoup4==4.6.0
+boto3===1.7.80
 boto==2.49.0
+botocore==1.10.80         # via boto3, s3transfer
 cachetools==2.1.0         # via google-auth
 cchardet==2.1.1
 certifi==2018.4.16
@@ -46,6 +48,7 @@ django-two-factor-auth==1.7.0
 django-webpack-loader==0.6.0
 django==1.11.14
 docopt==0.6.2
+docutils==0.14            # via botocore
 gitdb==0.6.4
 google-api-python-client==1.7.4
 google-auth-httplib2==0.0.3  # via google-api-python-client
@@ -62,6 +65,7 @@ ipython-genutils==0.2.0   # via traitlets
 ipython==6.5.0
 jedi==0.11.0              # via ipython
 jinja2==2.10
+jmespath==0.9.3           # via boto3, botocore
 libthumbor==1.3.2
 lxml==4.2.3
 markdown-include==0.5.1
@@ -109,6 +113,7 @@ regex==2017.11.9
 requests-oauthlib==0.8.0
 requests[security]==2.18.4  # via matrix-client, premailer, pyoembed, python-gcm, python-twitter, requests-oauthlib, social-auth-core, stripe, twilio
 rsa==3.4.2
+s3transfer==0.1.13        # via boto3
 simplegeneric==0.8.1      # via ipython
 six==1.11.0
 smmap==0.9.0

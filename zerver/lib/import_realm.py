@@ -4,8 +4,6 @@ import os
 import ujson
 import shutil
 
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
 from django.conf import settings
 from django.db import connection
 from django.db.models import Max
@@ -21,7 +19,7 @@ from zerver.lib.export import DATE_FIELDS, realm_tables, \
 from zerver.lib.message import save_message_rendered_content
 from zerver.lib.bugdown import version as bugdown_version
 from zerver.lib.upload import random_name, sanitize_name, \
-    S3UploadBackend, LocalUploadBackend, guess_type
+    S3UploadBackend, LocalUploadBackend, guess_type, get_s3_object
 from zerver.lib.utils import generate_api_key
 from zerver.models import UserProfile, Realm, Client, Huddle, Stream, \
     UserMessage, Subscription, Message, RealmEmoji, \
@@ -496,9 +494,6 @@ def import_uploads_local(import_dir: Path, processing_avatars: bool=False,
 
 def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bool=False,
                       processing_emojis: bool=False) -> None:
-    upload_backend = S3UploadBackend()
-    conn = S3Connection(settings.S3_KEY, settings.S3_SECRET_KEY)
-    bucket = conn.get_bucket(bucket_name, validate=True)
 
     records_filename = os.path.join(import_dir, "records.json")
     with open(records_filename) as records_file:
@@ -511,35 +506,35 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
         re_map_foreign_keys_internal(records, 'records', 'user_profile_id',
                                      related_table="user_profile", id_field=True)
     for record in records:
-        key = Key(bucket)
 
         if processing_avatars:
             # For avatars, we need to rehash the user's email with the
             # new server's avatar salt
             avatar_path = user_avatar_path_from_ids(record['user_profile_id'], record['realm_id'])
-            key.key = avatar_path
+            s3_object_key = avatar_path
             if record['s3_path'].endswith('.original'):
-                key.key += '.original'
+                s3_object_key += '.original'
         elif processing_emojis:
             # For emojis we follow the function 'upload_emoji_image'
             emoji_path = RealmEmoji.PATH_ID_TEMPLATE.format(
                 realm_id=record['realm_id'],
                 emoji_file_name=record['file_name'])
-            key.key = emoji_path
+            s3_object_key = emoji_path
             record['last_modified'] = timestamp
         else:
             # Should be kept in sync with its equivalent in zerver/lib/uploads in the
             # function 'upload_message_image'
-            s3_file_name = "/".join([
+            s3_object_key = "/".join([
                 str(record['realm_id']),
                 random_name(18),
                 sanitize_name(os.path.basename(record['path']))
             ])
-            key.key = s3_file_name
-            path_maps['attachment_path'][record['s3_path']] = s3_file_name
+            path_maps['attachment_path'][record['s3_path']] = s3_object_key
+        s3_object = get_s3_object(bucket_name, s3_object_key)
 
         # Exported custom emoji from tools like Slack don't have
         # the data for what user uploaded them in `user_profile_id`.
+        metadata = {}
         if not processing_emojis:
             user_profile_id = int(record['user_profile_id'])
             # Support email gateway bot and other cross-realm messages
@@ -547,16 +542,16 @@ def import_uploads_s3(bucket_name: str, import_dir: Path, processing_avatars: bo
                 logging.info("Uploaded by ID mapped user: %s!" % (user_profile_id,))
                 user_profile_id = id_maps["user_profile"][user_profile_id]
             user_profile = get_user_profile_by_id(user_profile_id)
-            key.set_metadata("user_profile_id", str(user_profile.id))
+            metadata['user_profile_id'] = str(user_profile.id)
 
-        key.set_metadata("orig_last_modified", record['last_modified'])
-        key.set_metadata("realm_id", str(record['realm_id']))
+        metadata['orig_last_modified'] = str(record['last_modified'])
+        metadata['realm_id'] = str(record['realm_id'])
 
         # Zulip exports will always have a content-type, but third-party exports might not.
         content_type = record.get("content_type", guess_type(record['s3_path'])[0])
-        headers = {'Content-Type': content_type}
-
-        key.set_contents_from_filename(os.path.join(import_dir, record['path']), headers=headers)
+        s3_object.upload_file(
+            os.path.join(import_dir, record['path']),
+            ExtraArgs={'ContentType': content_type, 'Metadata': metadata})
 
     if processing_avatars:
         # Ensure that we have medium-size avatar images for every

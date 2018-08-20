@@ -34,8 +34,12 @@ backports-abc==0.5
 # Needed for Tornado 4 compatibility
 backports.ssl-match-hostname==3.5.0.1
 
-# Needed for S3 file uploads
+# Keep boto since puppet needs boto.utils.get_instance_metadata and this is not implemented in boto3
+# Reference: https://github.com/boto/boto3/issues/313
 boto==2.49.0
+
+# Needed for S3 file uploads
+boto3===1.7.80
 
 certifi==2018.4.16
 
