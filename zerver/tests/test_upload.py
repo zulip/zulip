@@ -16,6 +16,7 @@ from zerver.lib.test_helpers import (
     get_test_image_file,
     POSTRequestMock,
     use_s3_backend,
+    create_s3_bucket,
     queries_captured,
 )
 from zerver.lib.test_runner import slow
@@ -50,7 +51,6 @@ import re
 import datetime
 import requests
 import base64
-import boto3
 from datetime import timedelta
 from django.http import HttpRequest
 from django.utils.timezone import now as timezone_now
@@ -1237,9 +1237,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1260,9 +1258,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_file_upload_s3_with_undefined_content_type(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), None, b'zulip!', user_profile)
@@ -1275,9 +1271,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_s3(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1287,9 +1281,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_when_file_doesnt_exist(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(False, delete_message_image('non-existant-file'))
 
     @use_s3_backend
@@ -1297,9 +1289,7 @@ class S3Test(ZulipTestCase):
         """
         A call to /json/user_uploads should return a uri and actually create an object.
         """
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         self.login(self.example_email("hamlet"))
         fp = StringIO("zulip!")
@@ -1325,9 +1315,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_avatar_image(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user('hamlet')
         path_id = user_avatar_path(user_profile)
@@ -1356,9 +1344,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_copy_avatar_image(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AVATAR_BUCKET)
 
         self.login(self.example_email("hamlet"))
         with get_test_image_file('img.png') as image_file:
@@ -1403,9 +1389,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
 
         user_profile = self.example_user('hamlet')
         uri = upload_message_file(u'dummy.txt', len(b'zulip!'), u'text/plain', b'zulip!', user_profile)
@@ -1414,16 +1398,12 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        s3.create_bucket(Bucket=settings.S3_AUTH_UPLOADS_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")
@@ -1441,9 +1421,7 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_upload_emoji_image(self) -> None:
-        session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
-        s3 = session.resource('s3')
-        bucket = s3.create_bucket(Bucket=settings.S3_AVATAR_BUCKET)
+        bucket, = create_s3_bucket(settings.S3_AVATAR_BUCKET)
 
         user_profile = self.example_user("hamlet")
         image_file = get_test_image_file("img.png")

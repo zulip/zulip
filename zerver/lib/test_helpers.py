@@ -63,6 +63,7 @@ import unittest
 import urllib
 from zerver.lib.str_utils import NonBinaryStr
 from moto import mock_s3
+import boto3
 
 import fakeldap
 import ldap
@@ -465,6 +466,14 @@ def use_s3_backend(method: FuncT) -> FuncT:
         finally:
             zerver.lib.upload.upload_backend = LocalUploadBackend()
     return new_method
+
+
+def create_s3_bucket(*bucket_names: Tuple[str]) -> boto3.resources.base.ServiceResource:
+    session = boto3.Session(settings.S3_KEY, settings.S3_SECRET_KEY)
+    s3 = session.resource('s3')
+    buckets = [s3.create_bucket(Bucket=name) for name in bucket_names]
+    return buckets
+
 
 def use_db_models(method: Callable[..., None]) -> Callable[..., None]:
     def method_patched_with_mock(self: 'MigrationsTestCase', apps: StateApps) -> None:
