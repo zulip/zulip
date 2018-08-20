@@ -21,22 +21,15 @@ def raw_pm_with_emails(email_str: str, my_email: str) -> List[str]:
 
     return emails
 
-def user_profiles_from_unvalidated_emails(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
+def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
     user_profiles = []  # type: List[UserProfile]
     for email in emails:
         try:
             user_profile = get_user_including_cross_realm(email, realm)
         except UserProfile.DoesNotExist:
-            raise ValidationError(_("Invalid email '%s'") % (email,))
+            raise JsonableError(_("Invalid email '%s'") % (email,))
         user_profiles.append(user_profile)
     return user_profiles
-
-def get_user_profiles(emails: Iterable[str], realm: Realm) -> List[UserProfile]:
-    try:
-        return user_profiles_from_unvalidated_emails(emails, realm)
-    except ValidationError as e:
-        assert isinstance(e.messages[0], str)
-        raise JsonableError(e.messages[0])
 
 class Addressee:
     # This is really just a holder for vars that tended to be passed
