@@ -50,6 +50,7 @@ import shutil
 import re
 import datetime
 import requests
+import botocore.exceptions
 import base64
 from datetime import timedelta
 from django.http import HttpRequest
@@ -1281,8 +1282,13 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_message_image_delete_when_file_doesnt_exist(self) -> None:
-        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(False, delete_message_image('non-existant-file'))
+
+    @use_s3_backend
+    def test_message_image_delete_when_bucket_doesnt_exist(self) -> None:
+        with self.assertRaises(botocore.exceptions.ClientError):
+            delete_message_image('non-existant-file')
 
     @use_s3_backend
     def test_file_upload_authed(self) -> None:
@@ -1398,8 +1404,12 @@ class S3Test(ZulipTestCase):
 
     @use_s3_backend
     def test_get_realm_for_filename_when_key_doesnt_exist(self) -> None:
-        bucket, = create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
+        create_s3_bucket(settings.S3_AUTH_UPLOADS_BUCKET)
         self.assertEqual(None, get_realm_for_filename('non-existent-file-path'))
+
+    def test_get_realm_for_filename_when_bucket_doesnt_exist(self) -> None:
+        with self.assertRaises(botocore.exceptions.ClientError):
+            get_realm_for_filename('non-existent-file-path')
 
     @use_s3_backend
     def test_upload_realm_icon_image(self) -> None:

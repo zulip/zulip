@@ -793,16 +793,7 @@ class ImportExportTest(ZulipTestCase):
             emoji_file_name=realm_emoji.file_name,
         )
         emoji_key = avatar_bucket.Object(emoji_path)
-        # Work around since python unittest does not have assertNotRaises
-        try:
-            emoji_key.load()
-        except botocore.exceptions.ClientError as error:
-            if error.response['Error']['Code'] == '404':
-                self.fail(
-                    'Test raises ClientError exception due to non-exist s3 object %s' % (emoji_key.key,))
-            else:
-                raise
-
+        self.assertIsNotNone(emoji_key.get()['Body'].read())
         self.assertEqual(emoji_key.key, emoji_path)
 
         # Test avatars
