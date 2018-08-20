@@ -148,7 +148,6 @@ exports.launch = function () {
             hashchange.exit_overlay();
         },
     });
-    $("#submit-invitation").on("click", submit_invitation_form);
 };
 
 exports.initialize = function () {
@@ -161,6 +160,7 @@ exports.initialize = function () {
         $('#streams_to_add :checkbox').prop('checked', false);
         e.preventDefault();
     });
+    $("#submit-invitation").on("click", submit_invitation_form);
 };
 
 return exports;
