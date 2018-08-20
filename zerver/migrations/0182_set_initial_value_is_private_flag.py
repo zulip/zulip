@@ -33,7 +33,10 @@ def set_initial_value_of_is_private_flag(
 
         i = range_end
         processed += len(message_ids)
-        percent = round((processed / total) * 100, 2)
+        if total != 0:
+            percent = round((processed / total) * 100, 2)
+        else:
+            percent = 100.00
         print("Processed %s/%s %s%%" % (processed, total, percent))
         sys.stdout.flush()
 
