@@ -22,7 +22,7 @@
         <div class="user-profile-modal-content">
             {{#each profile_data}}
                 {{#if this.value}}
-                <div class="user-profile-key-value-section">
+                <div data-type="{{this.type}}" class="user-profile-key-value-section">
                     <div class="user-profile-modal-field-name">{{this.name}}:</div>
                     {{#if this.is_user_field}}
                     <div class="pill-container not-editable" data-field-id="{{this.id}}">

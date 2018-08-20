@@ -194,6 +194,11 @@ ul.remind_me_popover .remind_icon {
     font-size: 15px;
 }
 
+.user-profile-key-value-section[data-type="2"] .user-profile-modal-field-value {
+    white-space: pre-line;
+    overflow-wrap: break-word;
+}
+
 #user-profile-modal {
     border-radius: 4px;
 }
