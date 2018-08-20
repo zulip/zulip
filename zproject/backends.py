@@ -313,7 +313,8 @@ class ZulipLDAPAuthBackendBase(ZulipAuthMixin, LDAPBackend):
     def django_to_ldap_username(self, username: str) -> str:
         if settings.LDAP_APPEND_DOMAIN:
             if not username.endswith("@" + settings.LDAP_APPEND_DOMAIN):
-                raise ZulipLDAPExceptionOutsideDomain("Username does not match LDAP domain.")
+                raise ZulipLDAPExceptionOutsideDomain("Email %s does not match LDAP domain %s." % (
+                    username, settings.LDAP_APPEND_DOMAIN))
             return email_to_username(username)
         return username
 

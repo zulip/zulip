@@ -2274,7 +2274,7 @@ class TestLDAP(ZulipTestCase):
     def test_django_to_ldap_username_when_domain_does_not_match(self) -> None:
         backend = self.backend
         email = self.example_email("hamlet")
-        with self.assertRaisesRegex(Exception, 'Username does not match LDAP domain.'):
+        with self.assertRaisesRegex(Exception, 'Email hamlet@zulip.com does not match LDAP domain acme.com.'):
             with self.settings(LDAP_APPEND_DOMAIN='acme.com'):
                 backend.django_to_ldap_username(email)
 
