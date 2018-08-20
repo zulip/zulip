@@ -2,23 +2,14 @@
 
 {!admin-only.md!}
 
-{!subscriptions.md!}
-{!filter-streams.md!}
+{!go-to-streams.md!}
 
-    !!! tip ""
-    {!all-streams.md!}
+{!select-a-stream.md!}
 
-2. Click on the stream that you want to delete; {!stream-settings.md!}
-
-3. Click the **Delete** button to
-the right of the **Streams Settings** section.
-
-4. Upon clicking on the **Delete** button, a confirmation window titled
-**Delete stream (stream name)** will appear. Click the **Yes, delete this stream**
-button to delete the stream.
+3. In the right panel, click the **Delete** button.
 
 !!! warn ""
-    **Warning:** Please be aware of the consequences of deleting a stream,
-    since this operation is irreversible. Deleting a stream will immediately
+    Deleting a stream is irreversible. It will immediately
     unsubscribe all users from the stream, and the stream's content will not be
     recoverable.
+
