@@ -21,7 +21,7 @@ from zerver.lib.bugdown import (
 )
 from zerver.lib.addressee import (
     Addressee,
-    user_profiles_from_unvalidated_emails,
+    get_user_profiles,
 )
 from zerver.lib.bot_config import (
     ConfigError,
@@ -1797,7 +1797,7 @@ def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
                          forwarder_user_profile: Optional[UserProfile],
                          sender: UserProfile) -> Recipient:
 
-    user_profiles = user_profiles_from_unvalidated_emails(emails, sender.realm)
+    user_profiles = get_user_profiles(emails, sender.realm)
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,

@@ -295,7 +295,7 @@ class NarrowBuilder:
                 emails = [e.strip() for e in operand.split(',') if e.strip() != self.user_profile.email]
                 recipient = recipient_for_emails(emails, False,
                                                  self.user_profile, self.user_profile)
-            except ValidationError:
+            except JsonableError:
                 raise BadNarrowOperator('unknown recipient ' + operand)
             cond = column("recipient_id") == recipient.id
             return query.where(maybe_negate(cond))
