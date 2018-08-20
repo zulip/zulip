@@ -1,5 +1,6 @@
 import datetime
 from boto.s3.connection import S3Connection
+from boto.s3.key import Key
 from django.apps import apps
 from django.conf import settings
 from django.db import connection
@@ -1055,6 +1056,68 @@ def export_uploads_and_avatars(realm: Realm, output_dir: Path) -> None:
                              output_dir=emoji_output_dir,
                              processing_emoji=True)
 
+
+def _check_key_metadata(
+        email_gateway_bot: Optional[UserProfile],
+        key: Key, processing_avatars: bool,
+        realm: Realm, user_ids: Set[int]) -> None:
+    # This can happen if an email address has moved realms
+    if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
+        if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
+            raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
+        # Email gateway bot sends messages, potentially including attachments, cross-realm.
+        print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
+    elif processing_avatars:
+        if 'user_profile_id' not in key.metadata:
+            raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
+        if int(key.metadata['user_profile_id']) not in user_ids:
+            raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
+    elif 'realm_id' not in key.metadata:
+        raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
+
+
+def _get_exported_s3_record(
+        bucket_name: str,
+        key: Key,
+        processing_avatars: bool,
+        processing_emoji: bool) -> Dict[str, Union[str, int]]:
+
+    record = dict(
+        s3_path=key.name,
+        bucket=bucket_name,
+        size=key.size,
+        last_modified=key.last_modified,
+        content_type=key.content_type,
+        md5=key.md5)
+    record.update(key.metadata)
+    if processing_emoji:
+        record['file_name'] = os.path.basename(key.name)
+    # A few early avatars don't have 'realm_id' on the object; fix their metadata
+    user_profile = get_user_profile_by_id(record['user_profile_id'])
+    if 'realm_id' not in record:
+        record['realm_id'] = user_profile.realm_id
+    record['user_profile_email'] = user_profile.email
+    # Fix the record ids
+    record['user_profile_id'] = int(record['user_profile_id'])
+    record['realm_id'] = int(record['realm_id'])
+    if processing_avatars or processing_emoji:
+        record['path'] = key.name
+    else:
+        fields = key.name.split('/')
+        if len(fields) != 3:
+            raise AssertionError("Suspicious key with invalid format %s" % (key.name))
+        record['path'] = os.path.join(fields[1], fields[2])
+    return record
+
+
+def _save_s3_object_to_file(key: Key, output_dir: str, path: str) -> None:
+    filename = os.path.join(output_dir, path)
+    dirname = os.path.dirname(filename)
+    if not os.path.exists(dirname):
+        os.makedirs(dirname)
+    key.get_contents_to_filename(filename)
+
+
 def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
                          processing_avatars: bool=False,
                          processing_emoji: bool=False) -> None:
@@ -1067,7 +1130,6 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
     avatar_hash_values = set()
     user_ids = set()
     if processing_avatars:
-        bucket_list = bucket.list()
         for user_profile in UserProfile.objects.filter(realm=realm):
             avatar_path = user_avatar_path_from_ids(user_profile.id, realm.id)
             avatar_hash_values.add(avatar_path)
@@ -1088,62 +1150,18 @@ def export_files_from_s3(realm: Realm, bucket_name: str, output_dir: Path,
         if processing_avatars and bkey.name not in avatar_hash_values:
             continue
         key = bucket.get_key(bkey.name)
-
-        # This can happen if an email address has moved realms
-        if 'realm_id' in key.metadata and key.metadata['realm_id'] != str(realm.id):
-            if email_gateway_bot is None or key.metadata['user_profile_id'] != str(email_gateway_bot.id):
-                raise AssertionError("Key metadata problem: %s %s / %s" % (key.name, key.metadata, realm.id))
-            # Email gateway bot sends messages, potentially including attachments, cross-realm.
-            print("File uploaded by email gateway bot: %s / %s" % (key.name, key.metadata))
-        elif processing_avatars:
-            if 'user_profile_id' not in key.metadata:
-                raise AssertionError("Missing user_profile_id in key metadata: %s" % (key.metadata,))
-            if int(key.metadata['user_profile_id']) not in user_ids:
-                raise AssertionError("Wrong user_profile_id in key metadata: %s" % (key.metadata,))
-        elif 'realm_id' not in key.metadata:
-            raise AssertionError("Missing realm_id in key metadata: %s" % (key.metadata,))
-
-        record = dict(s3_path=key.name, bucket=bucket_name,
-                      size=key.size, last_modified=key.last_modified,
-                      content_type=key.content_type, md5=key.md5)
-        record.update(key.metadata)
-
-        if processing_emoji:
-            record['file_name'] = os.path.basename(key.name)
-
-        # A few early avatars don't have 'realm_id' on the object; fix their metadata
-        user_profile = get_user_profile_by_id(record['user_profile_id'])
-        if 'realm_id' not in record:
-            record['realm_id'] = user_profile.realm_id
-        record['user_profile_email'] = user_profile.email
-
-        # Fix the record ids
-        record['user_profile_id'] = int(record['user_profile_id'])
-        record['realm_id'] = int(record['realm_id'])
-
-        if processing_avatars or processing_emoji:
-            filename = os.path.join(output_dir, key.name)
-            record['path'] = key.name
-        else:
-            fields = key.name.split('/')
-            if len(fields) != 3:
-                raise AssertionError("Suspicious key with invalid format %s" % (key.name))
-            filename = os.path.join(output_dir, fields[1], fields[2])
-            record['path'] = os.path.join(fields[1], fields[2])
-
-        dirname = os.path.dirname(filename)
-        if not os.path.exists(dirname):
-            os.makedirs(dirname)
-        key.get_contents_to_filename(filename)
-
+        _check_key_metadata(email_gateway_bot, key, processing_avatars, realm, user_ids)
+        record = _get_exported_s3_record(bucket_name, key, processing_avatars, processing_emoji)
+        _save_s3_object_to_file(key, output_dir, str(record['path']))
         records.append(record)
         count += 1
 
-        if (count % 100 == 0):
+        if count % 100 == 0:
             logging.info("Finished %s" % (count,))
 
     with open(os.path.join(output_dir, "records.json"), "w") as records_file:
         ujson.dump(records, records_file, indent=4)
+
 
 def export_uploads_from_local(realm: Realm, local_dir: Path, output_dir: Path) -> None:
 
