@@ -8,7 +8,7 @@ from django.db.utils import IntegrityError
 
 from zerver.lib.logging_util import log_to_file
 from zerver.models import UserProfile
-from zproject.backends import ZulipLDAPUserPopulator
+from zproject.backends import ZulipLDAPUserPopulator, ZulipLDAPException
 
 ## Setup ##
 logger = logging.getLogger(__name__)
@@ -26,8 +26,9 @@ def sync_ldap_user_data() -> None:
                 logger.info("Updated %s." % (u.email,))
             else:
                 logger.warning("Did not find %s in LDAP." % (u.email,))
-        except IntegrityError:
-            logger.warning("User populated did not match an existing user.")
+        except ZulipLDAPException as e:
+            logger.error("Error attempting to update user %s:" % (u.email,))
+            logger.error(e)
     logger.info("Finished update.")
 
 class Command(BaseCommand):
