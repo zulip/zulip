@@ -1,1 +1,1 @@
-1. Click on **Save changes**.
+1. Click **Save changes**.
