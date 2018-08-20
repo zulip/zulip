@@ -221,12 +221,16 @@
     #tab_bar,
     #searchbox,
     #searchbox_legacy,
-    #search_query,
     #tab_list li,
     #tab_list,
     .header {
         height: 30px;
         line-height: 30px;
+    }
+
+    #search_query {
+        height: 30px !important;
+        vertical-align: text-bottom;
     }
 
     #streamlist-toggle-button,
