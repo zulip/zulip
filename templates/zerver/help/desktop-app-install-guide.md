@@ -110,3 +110,8 @@ sudo apt install zulip
 
 [latest]: https://github.com/zulip/zulip-electron/releases/latest
 [release-list]: https://github.com/zulip/zulip-electron/releases
+
+## Related articles
+
+* [Connect through a proxy](/help/connect-through-a-proxy)
+* [Add a custom certificate](/help/custom-certificates)
