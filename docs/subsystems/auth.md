@@ -1,10 +1,14 @@
-# Google & GitHub authentication with OAuth 2
+# Authentication in the development environment
+
+This page documents special notes that are useful for configuring
+Zulip's various authentication methods for testing in a development
+environment.
+
+## Testing OAuth in development
 
 Among the many [authentication methods](../production/authentication-methods.html)
 we support, a server can be configured to allow users to sign in with
 their Google accounts or GitHub accounts, using the OAuth protocol.
-
-## Testing OAuth in development
 
 Because these authentication methods involve an interaction between
 Zulip, an external service, and the user's browser, and particularly
