@@ -55,4 +55,4 @@ will appear under the message as an emoji reaction.
     message with the particular emoji.
 
 !!! warn ""
-    **Note:** You can change Zulip to [display emoji reactions as text](/help/display-emoji-as-text).
+    **Note:** You can change Zulip to [view emoji reactions as text](/help/view-emoji-as-text).

@@ -92,7 +92,7 @@
 * [Bots and integrations](/help/add-a-bot-or-integration)
 * [Night mode](/help/night-mode)
 * [Enable emoticon translations](/help/enable-emoticon-translations)
-* [Display emoji as text](/help/display-emoji-as-text)
+* [View emoji as text](/help/view-emoji-as-text)
 * [Display the buddy list on narrow screens](/help/move-the-users-list-to-the-left-sidebar)
 * [View organization statistics](/help/analytics)
 * [Connect through a proxy](/help/connect-through-a-proxy)
