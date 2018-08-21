@@ -1658,29 +1658,50 @@ class MessagePOSTTest(ZulipTestCase):
         self.assertEqual(int(datetime_to_timestamp(msg.pub_date)), int(fake_pub_time))
 
     def test_unsubscribed_api_super_user(self) -> None:
-        sender = self.example_user('cordelia')
+        cordelia = self.example_user('cordelia')
         stream_name = 'private_stream'
         self.make_stream(stream_name, invite_only=True)
 
-        self.unsubscribe(sender, stream_name)
+        self.unsubscribe(cordelia, stream_name)
 
-        payload = dict(
-            type="stream",
-            to=stream_name,
-            sender=sender.email,
+        # As long as Cordelia is a super_user, she can send messages
+        # to ANY stream, even one she is not unsubscribed to, and
+        # she can do it for herself or on behalf of a mirrored user.
+
+        def test_with(sender_email: str, client: str, forged: bool) ->None:
+            payload = dict(
+                type="stream",
+                to=stream_name,
+                sender=sender_email,
+                client=client,
+                subject='whatever',
+                content='whatever',
+                forged=ujson.dumps(forged),
+            )
+
+            cordelia.is_api_super_user = False
+            cordelia.save()
+
+            result = self.api_post(cordelia.email, "/api/v1/messages", payload)
+            self.assert_json_error_contains(result, 'authorized')
+
+            cordelia.is_api_super_user = True
+            cordelia.save()
+
+            result = self.api_post(cordelia.email, "/api/v1/messages", payload)
+            self.assert_json_success(result)
+
+        test_with(
+            sender_email=cordelia.email,
             client='test suite',
-            subject='whatever',
-            content='whatever',
+            forged=False,
         )
 
-        result = self.api_post(sender.email, "/api/v1/messages", payload)
-        self.assert_json_error_contains(result, 'Not authorized to send')
-
-        sender.is_api_super_user = True
-        sender.save()
-
-        result = self.api_post(sender.email, "/api/v1/messages", payload)
-        self.assert_json_success(result)
+        test_with(
+            sender_email='irc_person@zulip.com',
+            client='irc_mirror',
+            forged=True,
+        )
 
     def test_bot_can_send_to_owner_stream(self) -> None:
         cordelia = self.example_user('cordelia')
