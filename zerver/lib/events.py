@@ -466,6 +466,7 @@ def apply_event(state: Dict[str, Any],
             if (field in ['realm_create_stream_by_admins_only',
                           'realm_waiting_period_threshold']) and 'can_create_streams' in state:
                 state['can_create_streams'] = user_profile.can_create_streams()
+                state['can_subscribe_other_users'] = user_profile.can_subscribe_other_users()
         elif event['op'] == "update_dict":
             for key, value in event['data'].items():
                 state['realm_' + key] = value
