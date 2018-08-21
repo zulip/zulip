@@ -1062,14 +1062,21 @@ input[type=checkbox].inline-block {
 #user-groups .user-group h4 {
     font-weight: normal;
     margin: 0px;
+    display: flex;
+    align-items: center;
+    justify-content: left;
 }
 
-#user-groups .user-group p {
-    font-weight: bold;
+#user-groups p {
     line-height: 2;
-    margin: 0px;
+    margin: 0;
 }
 
+#user-groups .spacer {
+    margin: 0 2px;
+}
+
+#user-groups .subscribers,
 #user-groups .user-group h4 > .name {
     font-weight: bold;
 }
@@ -1101,10 +1108,6 @@ input[type=checkbox].inline-block {
     opacity: 0.5;
 }
 
-#user-groups .user-group h4 > .button {
-    vertical-align: 1px;
-}
-
 #user-groups .ntm h4 > .button {
     cursor: not-allowed;
     display: none;
@@ -1115,35 +1118,22 @@ input[type=checkbox].inline-block {
 }
 
 #user-groups .save-status {
-    vertical-align: middle;
-    height: auto;
-    width: auto;
-    background: transparent;
+    background-color: transparent;
     padding: 2px 5px;
     border-radius: 4px;
     margin-left: 10px;
-}
-
-#user-groups .save-status.saved {
+    border-style: solid;
+    border-width: 1px;
     display: none;
     opacity: 0;
-    border: 1px solid hsl(178, 100%, 40%);
-    color: hsl(178, 100%, 40%);
-}
-
-#user-groups .save-status.cancel {
-    display: none;
-    opacity: 0;
-    border: 1px solid #333;
-    color: #333;
 }
 
 #user-groups .checkmark {
-    width: 13px;
+    height: 12px;
 }
 
 #user-groups .delete {
-    float: right;
+    margin-left: auto;
 }
 
 #user-groups .save-instructions {

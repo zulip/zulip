@@ -166,6 +166,9 @@ exports.make_new_elem = function (selector, opts) {
             return self;
         },
         data: noop,
+        delay: function () {
+            return self;
+        },
         debug: function () {
             return {
                 value: value,

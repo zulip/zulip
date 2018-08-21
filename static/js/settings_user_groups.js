@@ -98,8 +98,8 @@ exports.populate_user_groups = function () {
             if (!exports.can_edit(data.id)) {
                 return;
             }
-            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
-            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
 
             if (is_user_group_changed() &&
@@ -115,13 +115,13 @@ exports.populate_user_groups = function () {
         }
 
         function show_saved_button() {
-            var cancel_button = $('#user-groups #' + data.id + ' .cancel');
-            var saved_button = $('#user-groups #' + data.id + ' .saved');
+            var cancel_button = $('#user-groups #' + data.id + ' .save-status.btn-danger');
+            var saved_button = $('#user-groups #' + data.id + ' .save-status.sea-green');
             var save_instructions = $('#user-groups #' + data.id + ' .save-instructions');
             if (!saved_button.is(':visible')) {
                 cancel_button.fadeOut(0);
                 save_instructions.fadeOut(0);
-                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1);
+                saved_button.css({display: 'inline-block', opacity: 0}).fadeTo(400, 1).delay(2000).fadeTo(400, 0);
             }
         }
 
@@ -142,7 +142,7 @@ exports.populate_user_groups = function () {
                     delete: JSON.stringify(removed),
                 },
                 success: function () {
-                    show_saved_button();
+                    setTimeout(show_saved_button, 200);
                 },
             });
         }
@@ -163,7 +163,7 @@ exports.populate_user_groups = function () {
                     description: description,
                 },
                 success: function () {
-                    setTimeout(show_saved_button, 100);
+                    setTimeout(show_saved_button, 200);
                 },
             });
         }
@@ -193,7 +193,7 @@ exports.populate_user_groups = function () {
                 return;
             }
             if ($(event.relatedTarget).closest('#user-groups #' + data.id) &&
-                $(event.relatedTarget).closest('.cancel').length) {
+                $(event.relatedTarget).closest('.save-status.btn-danger').length) {
                 settings_user_groups.reload();
                 return;
             }
