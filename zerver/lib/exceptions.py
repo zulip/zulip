@@ -31,6 +31,7 @@ class ErrorCode(AbstractEnum):
     BAD_IMAGE = ()
     REALM_UPLOAD_QUOTA = ()
     BAD_NARROW = ()
+    CANNOT_DEACTIVATE_LAST_USER = ()
     MISSING_HTTP_EVENT_HEADER = ()
     STREAM_DOES_NOT_EXIST = ()
     UNAUTHORIZED_PRINCIPAL = ()
@@ -136,6 +137,18 @@ class StreamDoesNotExistError(JsonableError):
     @staticmethod
     def msg_format() -> str:
         return _("Stream '{stream}' does not exist")
+
+class CannotDeactivateLastUserError(JsonableError):
+    code = ErrorCode.CANNOT_DEACTIVATE_LAST_USER
+    data_fields = ['is_last_admin', 'entity']
+
+    def __init__(self, is_last_admin: bool) -> None:
+        self.is_last_admin = is_last_admin
+        self.entity = _("organization administrator") if is_last_admin else _("user")
+
+    @staticmethod
+    def msg_format() -> str:
+        return _("Cannot deactivate the only {entity}.")
 
 class RateLimited(PermissionDenied):
     def __init__(self, msg: str="") -> None:
