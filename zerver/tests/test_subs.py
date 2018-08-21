@@ -2400,18 +2400,25 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assertNotIn((user5.id, user1.id, 'private_stream'), notifications)
 
     def test_bulk_subscribe_MIT(self) -> None:
+        mit_user = self.mit_user('starnine')
+
         realm = get_realm("zephyr")
-        streams = ["stream_%s" % i for i in range(40)]
-        for stream_name in streams:
+        stream_names = ["stream_%s" % i for i in range(40)]
+        streams = [
             self.make_stream(stream_name, realm=realm)
+            for stream_name in stream_names]
+
+        for stream in streams:
+            stream.is_in_zephyr_realm = True
+            stream.save()
 
         events = []  # type: List[Mapping[str, Any]]
         with tornado_redirected_to_list(events):
             with queries_captured() as queries:
                 self.common_subscribe_to_streams(
-                    self.mit_email("starnine"),
-                    streams,
-                    dict(principals=ujson.dumps([self.mit_email("starnine")])),
+                    mit_user.email,
+                    stream_names,
+                    dict(principals=ujson.dumps([mit_user.email])),
                     subdomain="zephyr",
                 )
         # Make sure Zephyr mirroring realms such as MIT do not get
