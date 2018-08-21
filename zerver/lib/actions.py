@@ -22,6 +22,7 @@ from zerver.lib.bugdown import (
 from zerver.lib.addressee import (
     Addressee,
     get_user_profiles,
+    get_user_profiles_by_ids,
 )
 from zerver.lib.bot_config import (
     ConfigError,
@@ -1798,6 +1799,21 @@ def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
                          sender: UserProfile) -> Recipient:
 
     user_profiles = get_user_profiles(emails, sender.realm)
+
+    return recipient_for_user_profiles(
+        user_profiles=user_profiles,
+        not_forged_mirror_message=not_forged_mirror_message,
+        forwarder_user_profile=forwarder_user_profile,
+        sender=sender
+    )
+
+def recipient_for_user_ids(user_ids: Iterable[int], not_forged_mirror_message: bool,
+                           forwarder_user_profile: Optional[UserProfile],
+                           sender: UserProfile) -> Recipient:
+    user_profiles = get_user_profiles_by_ids(
+        user_ids=user_ids,
+        realm=sender.realm
+    )
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
