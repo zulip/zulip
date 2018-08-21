@@ -866,9 +866,15 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
-            return create_user(email, None, realm,
-                               email_to_fullname(email), email_to_username(email),
-                               active=False, is_mirror_dummy=True)
+            return create_user(
+                email=email,
+                password=None,
+                realm=realm,
+                full_name=email_to_fullname(email),
+                short_name=email_to_username(email),
+                active=False,
+                is_mirror_dummy=True,
+            )
         except IntegrityError:
             return get_user(email, realm)
 
@@ -1101,7 +1107,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
     if sender.is_bot:
         return event_dict
 
-    for user_profile_id, bot_type in service_bot_tuples:
+    def maybe_add_event(user_profile_id: int, bot_type: int) -> None:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             queue_name = 'outgoing_webhooks'
         elif bot_type == UserProfile.EMBEDDED_BOT:
@@ -1110,7 +1116,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
             logging.error(
                 'Unexpected bot_type for Service bot id=%s: %s' %
                 (user_profile_id, bot_type))
-            continue
+            return
 
         is_stream = (recipient_type == Recipient.STREAM)
 
@@ -1125,7 +1131,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         # these not-actually-mentioned users here, to help keep this
         # function future-proof.
         if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
-            continue
+            return
 
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
@@ -1134,12 +1140,18 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = 'private_message'
         else:
-            continue
+            return
 
         event_dict[queue_name].append({
             'trigger': trigger,
             'user_profile_id': user_profile_id,
         })
+
+    for user_profile_id, bot_type in service_bot_tuples:
+        maybe_add_event(
+            user_profile_id=user_profile_id,
+            bot_type=bot_type,
+        )
 
     return event_dict
 
@@ -2778,9 +2790,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
-    for stream in streams:
+    def send_peer_remove_event(stream: Stream) -> None:
         if stream.is_in_zephyr_realm and not stream.invite_only:
-            continue
+            return
 
         altered_users = altered_user_dict[stream.id]
         altered_user_ids = [u.id for u in altered_users]
@@ -2800,6 +2812,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                              subscriptions=[stream.name],
                              user_id=removed_user.id)
                 send_event(event, peer_user_ids)
+
+    for stream in streams:
+        send_peer_remove_event(stream=stream)
 
     new_vacant_streams = [stream for stream in
                           set(occupied_streams_before) - set(occupied_streams_after)]

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db import IntegrityError
 from django.db.models import Q, Max
 from django.conf import settings
 from django.http import HttpResponse
@@ -17,6 +18,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,
+    create_mirror_user_if_needed,
     do_add_alert_words,
     do_change_stream_invite_only,
     do_create_user,
@@ -35,6 +37,10 @@ from zerver.lib.actions import (
     internal_send_private_message,
     internal_send_stream_message,
     send_rate_limited_pm_notification_to_bot_owner,
+)
+
+from zerver.lib.create_user import (
+    create_user_profile,
 )
 
 from zerver.lib.message import (
@@ -78,7 +84,7 @@ from zerver.models import (
 
 
 from zerver.lib.upload import create_attachment
-from zerver.lib.timestamp import convert_to_UTC
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
 
 from zerver.views.messages import create_mirrored_message_users
@@ -1633,8 +1639,14 @@ class MessagePOSTTest(ZulipTestCase):
         user.save()
         user = get_user(email, get_realm('zulip'))
         self.subscribe(user, "IRCland")
+
+        # Simulate a mirrored message with a slightly old timestamp.
+        fake_pub_date = timezone_now() - datetime.timedelta(minutes=37)
+        fake_pub_time = datetime_to_timestamp(fake_pub_date)
+
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "forged": "true",
+                                                           "time": fake_pub_time,
                                                            "sender": "irc-user@irc.zulip.com",
                                                            "content": "Test message",
                                                            "client": "irc_mirror",
@@ -1642,30 +1654,54 @@ class MessagePOSTTest(ZulipTestCase):
                                                            "to": "IRCLand"})
         self.assert_json_success(result)
 
+        msg = self.get_last_message()
+        self.assertEqual(int(datetime_to_timestamp(msg.pub_date)), int(fake_pub_time))
+
     def test_unsubscribed_api_super_user(self) -> None:
-        sender = self.example_user('cordelia')
+        cordelia = self.example_user('cordelia')
         stream_name = 'private_stream'
         self.make_stream(stream_name, invite_only=True)
 
-        self.unsubscribe(sender, stream_name)
+        self.unsubscribe(cordelia, stream_name)
 
-        payload = dict(
-            type="stream",
-            to=stream_name,
-            sender=sender.email,
+        # As long as Cordelia is a super_user, she can send messages
+        # to ANY stream, even one she is not unsubscribed to, and
+        # she can do it for herself or on behalf of a mirrored user.
+
+        def test_with(sender_email: str, client: str, forged: bool) ->None:
+            payload = dict(
+                type="stream",
+                to=stream_name,
+                sender=sender_email,
+                client=client,
+                subject='whatever',
+                content='whatever',
+                forged=ujson.dumps(forged),
+            )
+
+            cordelia.is_api_super_user = False
+            cordelia.save()
+
+            result = self.api_post(cordelia.email, "/api/v1/messages", payload)
+            self.assert_json_error_contains(result, 'authorized')
+
+            cordelia.is_api_super_user = True
+            cordelia.save()
+
+            result = self.api_post(cordelia.email, "/api/v1/messages", payload)
+            self.assert_json_success(result)
+
+        test_with(
+            sender_email=cordelia.email,
             client='test suite',
-            subject='whatever',
-            content='whatever',
+            forged=False,
         )
 
-        result = self.api_post(sender.email, "/api/v1/messages", payload)
-        self.assert_json_error_contains(result, 'Not authorized to send')
-
-        sender.is_api_super_user = True
-        sender.save()
-
-        result = self.api_post(sender.email, "/api/v1/messages", payload)
-        self.assert_json_success(result)
+        test_with(
+            sender_email='irc_person@zulip.com',
+            client='irc_mirror',
+            forged=True,
+        )
 
     def test_bot_can_send_to_owner_stream(self) -> None:
         cordelia = self.example_user('cordelia')
@@ -1712,6 +1748,39 @@ class MessagePOSTTest(ZulipTestCase):
 
         result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
+
+    def test_create_mirror_user_despite_race(self) -> None:
+        realm = get_realm('zulip')
+
+        email = 'fred@example.com'
+
+        email_to_full_name = lambda email: 'fred'
+
+        def create_user(**kwargs: Any) -> UserProfile:
+            self.assertEqual(kwargs['full_name'], 'fred')
+            self.assertEqual(kwargs['email'], email)
+            self.assertEqual(kwargs['active'], False)
+            self.assertEqual(kwargs['is_mirror_dummy'], True)
+            # We create an actual user here to simulate a race.
+            # We use the minimal, un-mocked function.
+            kwargs['bot_type'] = None
+            kwargs['bot_owner'] = None
+            kwargs['tos_version'] = None
+            kwargs['timezone'] = timezone_now()
+            create_user_profile(**kwargs).save()
+            raise IntegrityError()
+
+        with mock.patch('zerver.lib.actions.create_user',
+                        side_effect=create_user) as m:
+            mirror_fred_user = create_mirror_user_if_needed(
+                realm,
+                email,
+                email_to_full_name,
+            )
+
+        self.assertEqual(mirror_fred_user.email, email)
+        m.assert_called()
+
 
 class ScheduledMessageTest(ZulipTestCase):
 
