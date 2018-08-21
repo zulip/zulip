@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django.db import IntegrityError
 from django.db.models import Q, Max
 from django.conf import settings
 from django.http import HttpResponse
@@ -17,6 +18,7 @@ from zerver.lib.addressee import Addressee
 from zerver.lib.actions import (
     check_message,
     check_send_stream_message,
+    create_mirror_user_if_needed,
     do_add_alert_words,
     do_change_stream_invite_only,
     do_create_user,
@@ -35,6 +37,10 @@ from zerver.lib.actions import (
     internal_send_private_message,
     internal_send_stream_message,
     send_rate_limited_pm_notification_to_bot_owner,
+)
+
+from zerver.lib.create_user import (
+    create_user_profile,
 )
 
 from zerver.lib.message import (
@@ -1712,6 +1718,39 @@ class MessagePOSTTest(ZulipTestCase):
 
         result = self.api_post(sender.email, "/api/v1/messages", payload)
         self.assert_json_success(result)
+
+    def test_create_mirror_user_despite_race(self) -> None:
+        realm = get_realm('zulip')
+
+        email = 'fred@example.com'
+
+        email_to_full_name = lambda email: 'fred'
+
+        def create_user(**kwargs: Any) -> UserProfile:
+            self.assertEqual(kwargs['full_name'], 'fred')
+            self.assertEqual(kwargs['email'], email)
+            self.assertEqual(kwargs['active'], False)
+            self.assertEqual(kwargs['is_mirror_dummy'], True)
+            # We create an actual user here to simulate a race.
+            # We use the minimal, un-mocked function.
+            kwargs['bot_type'] = None
+            kwargs['bot_owner'] = None
+            kwargs['tos_version'] = None
+            kwargs['timezone'] = timezone_now()
+            create_user_profile(**kwargs).save()
+            raise IntegrityError()
+
+        with mock.patch('zerver.lib.actions.create_user',
+                        side_effect=create_user) as m:
+            mirror_fred_user = create_mirror_user_if_needed(
+                realm,
+                email,
+                email_to_full_name,
+            )
+
+        self.assertEqual(mirror_fred_user.email, email)
+        m.assert_called()
+
 
 class ScheduledMessageTest(ZulipTestCase):
 

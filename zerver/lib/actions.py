@@ -866,9 +866,15 @@ def create_mirror_user_if_needed(realm: Realm, email: str,
     except UserProfile.DoesNotExist:
         try:
             # Forge a user for this person
-            return create_user(email, None, realm,
-                               email_to_fullname(email), email_to_username(email),
-                               active=False, is_mirror_dummy=True)
+            return create_user(
+                email=email,
+                password=None,
+                realm=realm,
+                full_name=email_to_fullname(email),
+                short_name=email_to_username(email),
+                active=False,
+                is_mirror_dummy=True,
+            )
         except IntegrityError:
             return get_user(email, realm)
 
