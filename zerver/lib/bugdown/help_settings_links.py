@@ -97,13 +97,9 @@ class Setting(Preprocessor):
         setting_name = link_mapping[setting_identifier][1]
         setting_link = link_mapping[setting_identifier][2]
         if relative_settings_links:
-            setting_reference = "[%s](%s)" % (setting_name, setting_link)
-        else:
-            setting_reference = "**%s**" % (setting_name,)
-        instructions = settings_markdown % {'setting_type_name': setting_type_name,
-                                            'setting_reference': setting_reference}
-        return instructions
-
+            return "1. Go to [%s](%s)." % (setting_name, setting_link)
+        return settings_markdown % {'setting_type_name': setting_type_name,
+                                    'setting_reference': "**%s**" % (setting_name,)}
 
 def makeExtension(*args: Any, **kwargs: Any) -> SettingHelpExtension:
     return SettingHelpExtension(*args, **kwargs)
