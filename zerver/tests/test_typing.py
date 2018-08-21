@@ -3,11 +3,14 @@
 import ujson
 from typing import Any, Mapping, List
 
+from django.core.exceptions import ValidationError
+
+from zerver.lib.actions import recipient_for_user_ids
 from zerver.lib.test_helpers import tornado_redirected_to_list, get_display_recipient
 from zerver.lib.test_classes import (
     ZulipTestCase,
 )
-from zerver.models import get_realm, get_user
+from zerver.models import get_realm, get_user, get_display_recipient
 
 class TypingNotificationOperatorTest(ZulipTestCase):
     def test_missing_parameter(self) -> None:
@@ -222,3 +225,27 @@ class StoppedTypingNotificationTest(ZulipTestCase):
         self.assertEqual(event['sender']['email'], sender.email)
         self.assertEqual(event['type'], 'typing')
         self.assertEqual(event['op'], 'stop')
+
+class TypingValidationHelpersTest(ZulipTestCase):
+    def test_recipient_for_user_ids(self) -> None:
+        hamlet = self.example_user('hamlet')
+        othello = self.example_user('othello')
+        cross_realm_bot = self.example_user('welcome_bot')
+        sender = self.example_user('iago')
+        recipient_user_ids = [hamlet.id, othello.id, cross_realm_bot.id]
+
+        result = recipient_for_user_ids(recipient_user_ids, sender)
+        recipient = get_display_recipient(result)
+        recipient_ids = [recipient[0]['id'], recipient[1]['id'],  # type: ignore
+                         recipient[2]['id'], recipient[3]['id']]  # type: ignore
+
+        expected_recipient_ids = [hamlet.id, othello.id,
+                                  sender.id, cross_realm_bot.id]
+        self.assertEqual(set(recipient_ids), set(expected_recipient_ids))
+
+    def test_recipient_for_user_ids_non_existent_id(self) -> None:
+        sender = self.example_user('iago')
+        recipient_user_ids = [999]
+
+        with self.assertRaisesRegex(ValidationError, 'Invalid user ID '):
+            recipient_for_user_ids(recipient_user_ids, sender)

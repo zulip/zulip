@@ -97,7 +97,7 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
     DisposableEmailError, EmailContainsPlusError, \
-    get_user_including_cross_realm
+    get_user_including_cross_realm, get_user_by_id_in_realm_including_cross_realm
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -1782,6 +1782,23 @@ def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
         user_profiles=user_profiles,
         not_forged_mirror_message=not_forged_mirror_message,
         forwarder_user_profile=forwarder_user_profile,
+        sender=sender
+    )
+
+def recipient_for_user_ids(user_ids: Iterable[int], sender: UserProfile) -> Recipient:
+    user_profiles = []  # type: List[UserProfile]
+    for user_id in user_ids:
+        try:
+            user_profile = get_user_by_id_in_realm_including_cross_realm(
+                user_id, sender.realm)
+        except UserProfile.DoesNotExist:
+            raise ValidationError(_("Invalid user ID {}".format(user_id)))
+        user_profiles.append(user_profile)
+
+    return recipient_for_user_profiles(
+        user_profiles=user_profiles,
+        not_forged_mirror_message=False,
+        forwarder_user_profile=None,
         sender=sender
     )
 
