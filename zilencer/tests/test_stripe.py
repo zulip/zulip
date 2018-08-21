@@ -50,6 +50,12 @@ def mock_customer_with_cancel_at_period_end_subscription(*args: Any, **kwargs: A
 def mock_upcoming_invoice(*args: Any, **kwargs: Any) -> stripe.Invoice:
     return stripe.util.convert_to_stripe_object(fixture_data["upcoming_invoice"])
 
+# A Kandra is a fictional character that can become anything. Used as a
+# wildcard when testing for equality.
+class Kandra(object):
+    def __eq__(self, other: Any) -> bool:
+        return True
+
 class StripeTest(ZulipTestCase):
     def setUp(self) -> None:
         self.token = 'token'
@@ -103,6 +109,7 @@ class StripeTest(ZulipTestCase):
         response = self.client_get("/upgrade/")
         self.assert_in_success_response(['We can also bill by invoice'], response)
         self.assertFalse(user.realm.has_seat_based_plan)
+        self.assertNotEqual(user.realm.plan_type, Realm.PREMIUM)
 
         # Click "Make payment" in Stripe Checkout
         self.client_post("/upgrade/", {
@@ -135,10 +142,12 @@ class StripeTest(ZulipTestCase):
             (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created)),
             (RealmAuditLog.STRIPE_CARD_ADDED, timestamp_to_datetime(self.customer_created)),
             (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created)),
+            (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra()),
         ])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)
+        self.assertEqual(realm.plan_type, Realm.PREMIUM)
         # Check that we can no longer access /upgrade
         response = self.client_get("/upgrade/")
         self.assertEqual(response.status_code, 302)
@@ -202,12 +211,13 @@ class StripeTest(ZulipTestCase):
         # correctly handled the requires_billing_update field
         audit_log_entries = list(RealmAuditLog.objects.order_by('-id')
                                  .values_list('event_type', 'event_time',
-                                              'requires_billing_update')[:4])[::-1]
+                                              'requires_billing_update')[:5])[::-1]
         self.assertEqual(audit_log_entries, [
             (RealmAuditLog.STRIPE_CUSTOMER_CREATED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.STRIPE_CARD_ADDED, timestamp_to_datetime(self.customer_created), False),
             (RealmAuditLog.STRIPE_PLAN_CHANGED, timestamp_to_datetime(self.subscription_created), False),
             (RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET, timestamp_to_datetime(self.subscription_created), True),
+            (RealmAuditLog.REALM_PLAN_TYPE_CHANGED, Kandra(), False),
         ])
         self.assertEqual(ujson.loads(RealmAuditLog.objects.filter(
             event_type=RealmAuditLog.STRIPE_PLAN_QUANTITY_RESET).values_list('extra_data', flat=True).first()),
@@ -261,7 +271,8 @@ class StripeTest(ZulipTestCase):
         self.assertEqual(audit_log_entries, [RealmAuditLog.STRIPE_CUSTOMER_CREATED,
                                              RealmAuditLog.STRIPE_CARD_ADDED,
                                              RealmAuditLog.STRIPE_CARD_ADDED,
-                                             RealmAuditLog.STRIPE_PLAN_CHANGED])
+                                             RealmAuditLog.STRIPE_PLAN_CHANGED,
+                                             RealmAuditLog.REALM_PLAN_TYPE_CHANGED])
         # Check that we correctly updated Realm
         realm = get_realm("zulip")
         self.assertTrue(realm.has_seat_based_plan)

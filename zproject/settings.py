@@ -437,6 +437,10 @@ DEFAULT_SETTINGS.update({
     # DEFAULT_SETTINGS, since it likely isn't usefully user-configurable.
     'OFFLINE_THRESHOLD_SECS': 5 * 60,
 
+    # Enables billing pages and plan-based feature gates. If False, all features
+    # are available to all realms.
+    'BILLING_ENABLED': False,
+
     # Controls whether we run the worker that syncs billing-related updates
     # into Stripe. Should be True on at most one machine.
     'BILLING_PROCESSOR_ENABLED': False,
