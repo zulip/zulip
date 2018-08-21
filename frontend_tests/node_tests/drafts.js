@@ -71,6 +71,12 @@ var draft_2 = {
     type: "private",
     content: "Test Private Message",
 };
+var short_msg = {
+    stream: "stream",
+    subject: "topic",
+    type: "stream",
+    content: "a",
+};
 
 run_test('draft_model', () => {
     var draft_model = drafts.draft_model;
@@ -151,6 +157,9 @@ run_test('snapshot_message', () => {
 
     stub_draft(draft_2);
     assert.deepEqual(drafts.snapshot_message(), draft_2);
+
+    stub_draft(short_msg);
+    assert.deepEqual(drafts.snapshot_message(), undefined);
 
     stub_draft({});
     assert.equal(drafts.snapshot_message(), undefined);
