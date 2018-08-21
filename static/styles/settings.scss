@@ -705,6 +705,10 @@ input[type=checkbox].inline-block {
     margin: 10px 0px;
 }
 
+#settings_content .admin-table-wrapper table.admin_profile_fields_table tr td {
+    width: 28%;
+}
+
 .admin_profile_fields_table,
 .profile_field_choices_table {
     .movable-profile-field-row {
@@ -1732,13 +1736,6 @@ thead .actions {
     display: inline-block;
 }
 
-.profile-field-choices .choices-header .choice-field {
-    width: 65px;
-    margin-top: 5px;
-    display: inline-block;
-    font-weight: bold;
-}
-
 .profile-field-choices hr {
     margin-top: 0;
     margin-bottom: 5px;
@@ -1763,6 +1760,7 @@ thead .actions {
 .custom_user_field .pill-container {
     padding: 2px 6px;
     height: 24px;
+    background-color: white;
 }
 
 .custom_user_field .pill-container:focus-within {

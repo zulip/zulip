@@ -20,16 +20,22 @@
         </div>
         <hr class="user-profile-modal-hr">
         {{#if profile_data}}
-        {{/if}}
         <div class="user-profile-modal-content">
             {{#each profile_data}}
-                {{#if this}}
+                {{#if this.value}}
                 <div class="user-profile-key-value-section">
-                    <div class="user-profile-modal-field-name">{{@key}}:</div>
-                    <div class="user-profile-modal-field-value">{{this}}</div>
+                    <div class="user-profile-modal-field-name">{{this.name}}:</div>
+                    {{#if this.is_user_field}}
+                    <div class="pill-container not-editable" data-field-id="{{this.id}}">
+                        <div class="input" contenteditable="false" style="display: none;"></div>
+                    </div>
+                    {{else}}
+                    <div class="user-profile-modal-field-value">{{this.value}}</div>
+                    {{/if}}
                 </div>
                 {{/if}}
             {{/each}}
         </div>
+        {{/if}}
     </div>
 </div>

@@ -31,7 +31,7 @@
                     <label for="profile_field_type" class="control-label">{{t "Type" }}</label>
                     <select id="profile_field_type" name="field_type">
                         {{#each custom_profile_field_types}}
-                        <option value='{{this.[0]}}'>{{this.[1]}}</option>
+                        <option value='{{this.id}}'>{{this.name}}</option>
                         {{/each}}
                     </select>
                 </div>

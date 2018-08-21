@@ -70,7 +70,7 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
 
     var minutes = Math.floor(last_active_date.diffMinutes(current_date));
     if (minutes <= 2) {
-        return i18n.t("Last seen just now");
+        return i18n.t("Just now");
     }
     if (minutes < 60) {
         return i18n.t("Last seen __minutes__ minutes ago", {minutes: minutes});

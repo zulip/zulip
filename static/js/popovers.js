@@ -93,7 +93,7 @@ function user_last_seen_time_status(user_id) {
     // We give the somewhat vague status of "Unknown" for these users.
     var last_active_date = presence.last_active_date(user_id);
     if (last_active_date === undefined) {
-        return i18n.t("Unknown");
+        return i18n.t("More than 2 weeks ago");
     }
     return timerender.last_seen_status_from_date(last_active_date.clone());
 }
@@ -173,37 +173,58 @@ function show_user_info_popover(element, user, message) {
     }
 }
 
+exports.hide_user_profile = function () {
+    $("#user-profile-modal").modal("hide");
+};
+
 function show_user_profile(element, user) {
     popovers.hide_all();
 
-    var profile_data = {};
-    var localFormat = moment.localeData().longDateFormat('L');
+    var profile_data = [];
+    var localFormat = moment.localeData().longDateFormat('LL');
+    var field_types = page_params.custom_profile_field_types;
 
     page_params.custom_profile_fields.forEach(function (field) {
         var field_value = people.get_custom_profile_data(user.user_id, field.id);
-        var field_type = settings_profile_fields.field_type_id_to_string(field.type);
+        var field_type = field.type;
+        var profile_field = {};
+
+        profile_field.name = field.name;
+        profile_field.is_user_field = false;
         if (field_value) {
-            if (field_type === "Date") {
-                profile_data[field.name] = moment(field_value).format(localFormat);
-            } else if (field_type === "User") {
-                profile_data[field.name] = people.safe_full_names(field_value);
-            } else if (field_type === "Choice") {
+            if (field_type === field_types.DATE.id) {
+                profile_field.value = moment(field_value).format(localFormat);
+            } else if (field_type === field_types.USER.id) {
+                profile_field.id = field.id;
+                profile_field.is_user_field = true;
+                profile_field.value = field_value;
+            } else if (field_type === field_types.CHOICE.id) {
                 var field_choice_dict = JSON.parse(field.field_data);
-                profile_data[field.name] = field_choice_dict[field_value].text;
+                profile_field.value = field_choice_dict[field_value].text;
             } else {
-                profile_data[field.name] = field_value;
+                profile_field.value = field_value;
             }
         }
+        profile_data.push(profile_field);
     });
 
     var time_preferance = people.get_user_time_preferences(user.user_id);
 
     if (time_preferance) {
-        profile_data[i18n.t("User timezone")] = time_preferance.timezone;
+        profile_data.push({
+            name: i18n.t("User timezone"),
+            value: time_preferance.timezone,
+        });
     }
 
-    profile_data[i18n.t("Date joined")] = moment(user.date_joined).format(localFormat);
-    profile_data[i18n.t("Last seen")] = user_last_seen_time_status(user.user_id);
+    profile_data.push({
+        name: i18n.t("Date joined"),
+        value: moment(user.date_joined).format(localFormat),
+    });
+    profile_data.push({
+        name: i18n.t("Last seen"),
+        value: user_last_seen_time_status(user.user_id),
+    });
 
     var args = {
         full_name: user.full_name,
@@ -216,6 +237,21 @@ function show_user_profile(element, user) {
     $("#user-profile-modal-holder").html(templates.render("user_profile_modal", args));
     ui.set_up_scrollbar($("#user-profile-modal-body"));
     $("#user-profile-modal").modal("show");
+
+    page_params.custom_profile_fields.forEach(function (field) {
+        var field_value = people.get_custom_profile_data(user.user_id, field.id);
+
+        if (field.type === field_types.USER.id && field_value) {
+            field_value = JSON.parse(field_value);
+            var pill_container = $('.user-profile-modal-content .pill-container[data-field-id="' + field.id + '"]');
+            var pills = user_pill.create_pills(pill_container);
+
+            field_value.forEach(function (user_id) {
+                var user = people.get_person_from_user_id(user_id);
+                user_pill.append_user(user, pills);
+            });
+        }
+    });
 }
 
 function get_user_info_popover_items() {
@@ -675,6 +711,10 @@ exports.register_click_handlers = function () {
         e.preventDefault();
     });
 
+    $('body').on('click', '#user-profile-modal-body .user-profile-modal-edit-button', function () {
+        exports.hide_user_profile();
+    });
+
     $('#user_presences').on('click', 'span.arrow', function (e) {
         e.stopPropagation();
 
@@ -943,6 +983,7 @@ exports.hide_all = function () {
     popovers.hide_user_sidebar_popover();
     popovers.hide_userlist_sidebar();
     stream_popover.restore_stream_list_size();
+    popovers.hide_user_profile();
 
     // look through all the popovers that have been added and removed.
     list_of_popovers.forEach(function ($o) {

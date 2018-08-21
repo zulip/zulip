@@ -7,13 +7,42 @@ var meta = {
 };
 
 var order = [];
+var field_types = page_params.custom_profile_field_types;
 
 exports.field_type_id_to_string = function (type_id) {
-    var name = _.find(page_params.custom_profile_field_types, function (type) {
-        return type[0] === type_id;
-    })[1];
-    return name;
+    var field_type_str;
+
+    _.every(field_types, function (field_type) {
+        if (field_type.id === type_id) {
+            // Few necessary modifications in field-type-name for
+            // table-list view of custom fields UI in org settings
+            if (field_type.name === "Date picker") {
+                field_type_str = "Date";
+            } else if (field_type.name === "Person picker") {
+                field_type_str = "Person";
+            } else if (field_type.name === "List of options") {
+                field_type_str = "List";
+            } else {
+                field_type_str = field_type.name;
+            }
+
+            return false;
+        }
+        return true;
+    });
+    return field_type_str;
 };
+
+function update_profile_fields_table_element() {
+    var profile_fields_table = $("#admin_profile_fields_table").expectOne();
+
+    // If there are no custom fields, hide the table headers at the top
+    if (page_params.custom_profile_fields.length < 1) {
+        profile_fields_table.hide();
+    } else {
+        profile_fields_table.show();
+    }
+}
 
 function delete_profile_field(e) {
     e.preventDefault();
@@ -23,6 +52,7 @@ function delete_profile_field(e) {
         channel.del,
         "/json/realm/profile_fields/" + encodeURIComponent($(this).attr('data-profile-field-id')),
         {}, $('#admin-profile-field-status').expectOne());
+    update_profile_fields_table_element();
 }
 
 function read_field_data_from_form(selector) {
@@ -62,8 +92,8 @@ function create_choice_row(container) {
 function clear_form_data() {
     $("#profile_field_name").val("");
     $("#profile_field_hint").val("");
-    // Set default in field type dropdown
-    $("#profile_field_type").val("1");
+    // Set default type "Short Text" in field type dropdown
+    $("#profile_field_type").val(field_types.SHORT_TEXT.id);
     // Clear data from choice field form
     $("#profile_field_choices").html("");
     create_choice_row($("#profile_field_choices"));
@@ -77,8 +107,9 @@ function create_profile_field(e) {
 
     var selector = $('.admin-profile-field-form div.choice-row');
     var field_data = {};
+    var field_type = $('#profile_field_type').val();
 
-    if ($('#profile_field_type').val() === '3') {
+    if (parseInt(field_type, 10) === field_types.CHOICE.id) {
         // Only read choice data if we are creating a choice field.
         field_data = read_field_data_from_form(selector);
     }
@@ -88,13 +119,14 @@ function create_profile_field(e) {
     };
     var form_data = {
         name: $("#profile_field_name").val(),
-        field_type: $("#profile_field_type").val(),
+        field_type: field_type,
         hint: $("#profile_field_hint").val(),
         field_data: JSON.stringify(field_data),
     };
 
     settings_ui.do_settings_change(channel.post, "/json/realm/profile_fields", form_data,
                                    $('#admin-profile-field-status').expectOne(), opts);
+    update_profile_fields_table_element();
 }
 
 function add_choice_row(e) {
@@ -156,7 +188,7 @@ function open_edit_form(e) {
     profile_field.form.find('input[name=name]').val(field.name);
     profile_field.form.find('input[name=hint]').val(field.hint);
 
-    if (exports.field_type_id_to_string(field.type) === "Choice") {
+    if (parseInt(field.type, 10) === field_types.CHOICE.id) {
         // Re-render field choices in edit form to load initial choice data
         var choice_list = profile_field.form.find('.edit_profile_field_choices_container');
         choice_list.off();
@@ -250,7 +282,7 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
         var choices = exports.parse_field_choices_from_field_data(field_data);
         var is_choice_field = false;
 
-        if (profile_field.type === 3) {
+        if (profile_field.type === field_types.CHOICE.id) {
             is_choice_field = true;
         }
 
@@ -276,6 +308,8 @@ exports.do_populate_profile_fields = function (profile_fields_data) {
             onUpdate: update_field_order,
         });
     }
+
+    update_profile_fields_table_element();
     loading.destroy_indicator($('#admin_page_profile_fields_loading_indicator'));
 };
 
@@ -284,17 +318,18 @@ function set_up_choices_field() {
     update_choice_delete_btn($("#profile_field_choices"), false);
 
     var choice_list = $("#profile_field_choices")[0];
+    var field_type = $('#profile_field_type').val();
     Sortable.create(choice_list, {
         onUpdate: function () {},
     });
 
-    if ($('#profile_field_type').val() !== '3') {
+    if (parseInt(field_type, 10) !== field_types.CHOICE.id) {
         // If 'Choice' type is already selected, show choice row.
         $("#profile_field_choices_row").hide();
     }
 
     $('#profile_field_type').on('change', function (e) {
-        if ($(e.target).val() === '3') {
+        if (parseInt($(e.target).val(), 10) === field_types.CHOICE.id) {
             $("#profile_field_choices_row").show();
         } else {
             $("#profile_field_choices_row").hide();
@@ -317,6 +352,7 @@ exports.set_up = function () {
     $("#profile-field-settings").on("click", "#add-custom-profile-field-btn", create_profile_field);
     $("#admin_profile_fields_table").on("click", ".open-edit-form", open_edit_form);
     set_up_choices_field();
+    clear_form_data();
 };
 
 return exports;

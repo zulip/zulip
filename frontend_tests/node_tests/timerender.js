@@ -232,13 +232,13 @@ run_test('last_seen_status_from_date', () => {
     }
 
     assert_same(function (d) { return d.addSeconds(-20); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-1); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-2); },
-                i18n.t("Last seen just now"));
+                i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-30); },
                 i18n.t("Last seen 30 minutes ago"));
