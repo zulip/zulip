@@ -22,7 +22,7 @@ from zerver.lib.actions import do_change_avatar_fields, do_change_bot_owner, \
     do_update_user_custom_profile_data
 from zerver.lib.avatar import avatar_url, get_gravatar_url, get_avatar_field
 from zerver.lib.bot_config import set_bot_config
-from zerver.lib.exceptions import JsonableError
+from zerver.lib.exceptions import JsonableError, CannotDeactivateLastUserError
 from zerver.lib.integrations import EMBEDDED_BOTS
 from zerver.lib.request import has_request_variables, REQ
 from zerver.lib.response import json_error, json_success
@@ -48,9 +48,11 @@ def deactivate_user_backend(request: HttpRequest, user_profile: UserProfile,
     return _deactivate_user_profile_backend(request, user_profile, target)
 
 def deactivate_user_own_backend(request: HttpRequest, user_profile: UserProfile) -> HttpResponse:
-
+    if UserProfile.objects.filter(realm=user_profile.realm, is_active=True).count() == 1:
+        raise CannotDeactivateLastUserError(is_last_admin=False)
     if user_profile.is_realm_admin and check_last_admin(user_profile):
-        return json_error(_('Cannot deactivate the only organization administrator'))
+        raise CannotDeactivateLastUserError(is_last_admin=True)
+
     do_deactivate_user(user_profile, acting_user=user_profile)
     return json_success()
 

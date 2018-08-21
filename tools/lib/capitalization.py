@@ -93,6 +93,8 @@ IGNORED_PHRASES = [
     r"was too large; the maximum file size is 25MiB.",
     r"selected message",
     r"a-z",
+    r"organization administrator",
+    r"user",
 
     # SPECIAL CASES
     # Enter is usually capitalized

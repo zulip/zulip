@@ -440,8 +440,18 @@ exports.set_up = function () {
                     window.location.href = "/login";
                 },
                 error: function (xhr) {
+                    var error_last_admin = i18n.t("Error: Cannot deactivate the only organization administrator.");
+                    var error_last_user = i18n.t("Error: Cannot deactivate the only user. You can deactivate the whole organization though in your <a target=\"_blank\" href=\"/#organization/organization-profile\">Organization profile settings</a>.");
+                    var rendered_error_msg;
+                    if (xhr.responseJSON.code === "CANNOT_DEACTIVATE_LAST_USER") {
+                        if (xhr.responseJSON.is_last_admin) {
+                            rendered_error_msg = error_last_admin;
+                        } else {
+                            rendered_error_msg = error_last_user;
+                        }
+                    }
                     $("#deactivate_self_modal").modal("hide");
-                    ui_report.error(i18n.t("Error deactivating account"), xhr, $('#account-settings-status').expectOne());
+                    $("#account-settings-status").addClass("alert-error").html(rendered_error_msg).show();
                 },
             });
         }, 5000);
