@@ -3570,10 +3570,10 @@ def do_update_pointer(user_profile: UserProfile, client: Client,
         # when we drop support for the old Android app entirely.
         app_message_ids = UserMessage.objects.filter(
             user_profile=user_profile,
-            flags=UserMessage.flags.active_mobile_push_notification,
             message__id__gt=prev_pointer,
             message__id__lte=pointer).extra(where=[
                 UserMessage.where_unread(),
+                UserMessage.where_active_push_notification(),
             ]).values_list("message_id", flat=True)
 
         UserMessage.objects.filter(user_profile=user_profile,
@@ -3611,8 +3611,9 @@ def do_mark_all_as_read(user_profile: UserProfile, client: Client) -> int:
 
     all_push_message_ids = UserMessage.objects.filter(
         user_profile=user_profile,
-        flags=UserMessage.flags.active_mobile_push_notification,
-    ).values_list("message_id", flat=True)
+    ).extra(
+        where=[UserMessage.where_active_push_notification()],
+    ).values_list("message_id", flat=True)[0:10000]
     do_clear_mobile_push_notifications_for_ids(user_profile, all_push_message_ids)
 
     return count
@@ -3660,8 +3661,8 @@ def do_clear_mobile_push_notifications_for_ids(user_profile: UserProfile,
                                                message_ids: List[int]) -> None:
     for user_message in UserMessage.objects.filter(
             message_id__in=message_ids,
-            flags=UserMessage.flags.active_mobile_push_notification,
-            user_profile=user_profile):
+            user_profile=user_profile).extra(
+                where=[UserMessage.where_active_push_notification()]):
         event = {
             "user_profile_id": user_profile.id,
             "message_id": user_message.message_id,

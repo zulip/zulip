@@ -1559,6 +1559,11 @@ class AbstractUserMessage(models.Model):
         # will generate a query involving `flags & 2 = 2`, which doesn't match our index.
         return 'flags & 2 <> 0'
 
+    @staticmethod
+    def where_active_push_notification() -> str:
+        # See where_starred for documentation.
+        return 'flags & 4096 <> 0'
+
     def flags_list(self) -> List[str]:
         flags = int(self.flags)
         return self.flags_list_for_flags(flags)
