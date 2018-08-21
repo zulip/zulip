@@ -23,6 +23,7 @@ from confirmation import settings as confirmation_settings
 
 from zerver.forms import HomepageForm, WRONG_SUBDOMAIN_ERROR, check_subdomain_available
 from zerver.lib.actions import do_change_password
+from zerver.lib.exceptions import CannotDeactivateLastUserError
 from zerver.decorator import do_two_factor_login
 from zerver.views.auth import login_or_register_remote_user, \
     redirect_and_log_into_subdomain, start_two_factor_auth
@@ -2886,7 +2887,7 @@ class DeactivateUserTest(ZulipTestCase):
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         result = self.client_delete('/json/users/me')
-        self.assert_json_error(result, "Cannot deactivate the only organization administrator")
+        self.assert_json_error(result, "Cannot deactivate the only organization administrator.")
         user = self.example_user('iago')
         self.assertTrue(user.is_active)
         self.assertTrue(user.is_realm_admin)
@@ -2897,6 +2898,14 @@ class DeactivateUserTest(ZulipTestCase):
         result = self.client_delete('/json/users/me')
         self.assert_json_success(result)
         do_change_is_admin(user, True)
+
+    def test_do_not_deactivate_final_user(self) -> None:
+        realm = get_realm('zulip')
+        UserProfile.objects.filter(realm=realm, is_realm_admin=False).update(is_active=False)
+        email = self.example_email("iago")
+        self.login(email)
+        result = self.client_delete('/json/users/me')
+        self.assert_json_error(result, "Cannot deactivate the only user.")
 
 class TestLoginPage(ZulipTestCase):
     def test_login_page_wrong_subdomain_error(self) -> None:
