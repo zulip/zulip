@@ -1107,7 +1107,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
     if sender.is_bot:
         return event_dict
 
-    for user_profile_id, bot_type in service_bot_tuples:
+    def maybe_add_event(user_profile_id: int, bot_type: int) -> None:
         if bot_type == UserProfile.OUTGOING_WEBHOOK_BOT:
             queue_name = 'outgoing_webhooks'
         elif bot_type == UserProfile.EMBEDDED_BOT:
@@ -1116,7 +1116,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
             logging.error(
                 'Unexpected bot_type for Service bot id=%s: %s' %
                 (user_profile_id, bot_type))
-            continue
+            return
 
         is_stream = (recipient_type == Recipient.STREAM)
 
@@ -1131,7 +1131,7 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         # these not-actually-mentioned users here, to help keep this
         # function future-proof.
         if user_profile_id not in mentioned_user_ids and user_profile_id not in active_user_ids:
-            continue
+            return
 
         # Mention triggers, for stream messages
         if is_stream and user_profile_id in mentioned_user_ids:
@@ -1140,12 +1140,18 @@ def get_service_bot_events(sender: UserProfile, service_bot_tuples: List[Tuple[i
         elif (not is_stream) and (user_profile_id in active_user_ids):
             trigger = 'private_message'
         else:
-            continue
+            return
 
         event_dict[queue_name].append({
             'trigger': trigger,
             'user_profile_id': user_profile_id,
         })
+
+    for user_profile_id, bot_type in service_bot_tuples:
+        maybe_add_event(
+            user_profile_id=user_profile_id,
+            bot_type=bot_type,
+        )
 
     return event_dict
 
