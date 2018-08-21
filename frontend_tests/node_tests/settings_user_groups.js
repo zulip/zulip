@@ -63,8 +63,8 @@ run_test('can_edit', () => {
 });
 
 var user_group_selector = "#user-groups #1";
-var cancel_selector = "#user-groups #1 .cancel";
-var saved_selector = "#user-groups #1 .saved";
+var cancel_selector = "#user-groups #1 .save-status.btn-danger";
+var saved_selector = "#user-groups #1 .save-status.sea-green";
 var name_selector = "#user-groups #1 .name";
 var description_selector = "#user-groups #1 .description";
 var instructions_selector = "#user-groups #1 .save-instructions";
@@ -649,7 +649,7 @@ run_test('on_events', () => {
             };
             api_endpoint_called = false;
             fake_this.closest = function (class_name) {
-                if (class_name === ".cancel" || class_name === user_group_selector) {
+                if (class_name === ".save-status.btn-danger" || class_name === user_group_selector) {
                     return [1];
                 }
                 return [];
@@ -734,6 +734,7 @@ run_test('on_events', () => {
         };
         $(saved_selector).fadeTo = function () {
             saved_fade_to_called = true;
+            return $(saved_selector);
         };
 
         channel.patch = function (opts) {
@@ -806,6 +807,7 @@ run_test('on_events', () => {
         };
         $(saved_selector).fadeTo = function () {
             saved_fade_to_called = true;
+            return $(saved_selector);
         };
 
         var api_endpoint_called = false;
