@@ -324,6 +324,7 @@ $(function () {
     ui.initialize();
     panels.initialize();
     typing.initialize();
+    starred_messages.initialize();
 });
 
 

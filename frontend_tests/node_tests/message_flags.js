@@ -4,6 +4,10 @@ zrequire('message_flags');
 
 set_global('ui', {});
 set_global('channel', {});
+set_global('starred_messages', {
+    add: () => {},
+    remove: () => {},
+});
 
 run_test('starred', () => {
     const message = {
