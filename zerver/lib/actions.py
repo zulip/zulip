@@ -2790,9 +2790,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
 
     all_subscribers_by_stream = get_user_ids_for_streams(streams=streams)
 
-    for stream in streams:
+    def send_peer_remove_event(stream: Stream) -> None:
         if stream.is_in_zephyr_realm and not stream.invite_only:
-            continue
+            return
 
         altered_users = altered_user_dict[stream.id]
         altered_user_ids = [u.id for u in altered_users]
@@ -2812,6 +2812,9 @@ def bulk_remove_subscriptions(users: Iterable[UserProfile],
                              subscriptions=[stream.name],
                              user_id=removed_user.id)
                 send_event(event, peer_user_ids)
+
+    for stream in streams:
+        send_peer_remove_event(stream=stream)
 
     new_vacant_streams = [stream for stream in
                           set(occupied_streams_before) - set(occupied_streams_after)]

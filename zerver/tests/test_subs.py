@@ -2426,6 +2426,16 @@ class SubscriptionAPITest(ZulipTestCase):
         self.assert_length(events, 0)
         self.assert_length(queries, 9)
 
+        events = []
+        with tornado_redirected_to_list(events):
+            bulk_remove_subscriptions(
+                users=[mit_user],
+                streams=streams,
+                acting_client=get_client('website'),
+            )
+
+        self.assert_length(events, 0)
+
     def test_bulk_subscribe_many(self) -> None:
 
         # Create a whole bunch of streams
