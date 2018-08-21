@@ -706,18 +706,13 @@ def get_muted_stream_ids(user_profile: UserProfile) -> List[int]:
     return muted_stream_ids
 
 def get_starred_message_ids(user_profile: UserProfile) -> List[int]:
-    rows = UserMessage.objects.filter(
+    return list(UserMessage.objects.filter(
         user_profile=user_profile,
-        flags=UserMessage.flags.starred
-    ).values(
-        'message_id'
+    ).extra(
+        where=[UserMessage.where_starred()]
     ).order_by(
         'message_id'
-    )
-    starred_message_ids = [
-        row['message_id']
-        for row in rows]
-    return starred_message_ids
+    ).values_list('message_id', flat=True)[0:10000])
 
 def get_raw_unread_data(user_profile: UserProfile) -> RawUnreadMessagesResult:
 

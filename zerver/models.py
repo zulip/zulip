@@ -1543,12 +1543,21 @@ class AbstractUserMessage(models.Model):
 
     @staticmethod
     def where_unread() -> str:
-        # Use this for Django ORM queries where we are getting lots
-        # of rows.  This custom SQL plays nice with our partial indexes.
-        # Grep the code for example usage.
-        #
-        # This optimization is only helpful for checking a flag being False.
+        # Use this for Django ORM queries to access unread message.
+        # This custom SQL plays nice with our partial indexes.  Grep
+        # the code for example usage.
         return 'flags & 1 = 0'
+
+    @staticmethod
+    def where_starred() -> str:
+        # Use this for Django ORM queries to access starred messages.
+        # This custom SQL plays nice with our partial indexes.  Grep
+        # the code for example usage.
+        #
+        # The key detail is that e.g.
+        #   UserMessage.objects.filter(user_profile=user_profile, flags=UserMessage.flags.starred)
+        # will generate a query involving `flags & 2 = 2`, which doesn't match our index.
+        return 'flags & 2 <> 0'
 
     def flags_list(self) -> List[str]:
         flags = int(self.flags)
