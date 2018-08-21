@@ -644,6 +644,67 @@ class InviteUserTest(InviteUserBase):
             result = self.invite(invitee, [stream_name])
             self.assert_json_error_contains(result, "Your account is too new")
 
+    def test_invite_limits(self) -> None:
+        user_profile = self.example_user('hamlet')
+        realm = user_profile.realm
+        stream_name = 'Denmark'
+
+        # These constants only need to be in descending order
+        # for this test to trigger an InvitationError based
+        # on max daily counts.
+        site_max = 50
+        realm_max = 40
+        num_invitees = 30
+        max_daily_count = 20
+
+        daily_counts = [(1, max_daily_count)]
+
+        invite_emails = [
+            'foo-%02d@zulip.com' % (i,)
+            for i in range(num_invitees)
+        ]
+        invitees = ','.join(invite_emails)
+
+        self.login(user_profile.email)
+
+        realm.max_invites = realm_max
+        realm.date_created = timezone_now()
+        realm.save()
+
+        def try_invite() -> HttpResponse:
+            with self.settings(OPEN_REALM_CREATION=True,
+                               INVITES_DEFAULT_REALM_DAILY_MAX=site_max,
+                               INVITES_NEW_REALM_LIMIT_DAYS=daily_counts):
+                result = self.invite(invitees, [stream_name])
+                return result
+
+        result = try_invite()
+        self.assert_json_error_contains(result, 'enough remaining invites')
+
+        # Next show that aggregate limits expire once the realm is old
+        # enough.
+
+        realm.date_created = timezone_now() - datetime.timedelta(days=8)
+        realm.save()
+
+        result = try_invite()
+        self.assert_json_success(result)
+
+        # Next get line coverage on bumping a realm's max_invites.
+        realm.date_created = timezone_now()
+        realm.max_invites = site_max + 10
+        realm.save()
+
+        result = try_invite()
+        self.assert_json_success(result)
+
+        # Finally get coverage on the case that OPEN_REALM_CREATION is False.
+
+        with self.settings(OPEN_REALM_CREATION=False):
+            result = self.invite(invitees, [stream_name])
+
+        self.assert_json_success(result)
+
     def test_successful_invite_user_as_admin_from_admin_account(self) -> None:
         """
         Test that a new user invited to a stream receives some initial
