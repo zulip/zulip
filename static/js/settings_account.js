@@ -115,7 +115,7 @@ exports.add_custom_profile_fields_to_settings = function () {
             blueslip.error("Undefined field type.");
         }
 
-        if (value === undefined) {
+        if (value === undefined || value === null) {
             // If user has not set value for field.
             value = "";
         }
