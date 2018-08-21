@@ -84,7 +84,7 @@ from zerver.models import (
 
 
 from zerver.lib.upload import create_attachment
-from zerver.lib.timestamp import convert_to_UTC
+from zerver.lib.timestamp import convert_to_UTC, datetime_to_timestamp
 from zerver.lib.timezone import get_timezone
 
 from zerver.views.messages import create_mirrored_message_users
@@ -1639,14 +1639,23 @@ class MessagePOSTTest(ZulipTestCase):
         user.save()
         user = get_user(email, get_realm('zulip'))
         self.subscribe(user, "IRCland")
+
+        # Simulate a mirrored message with a slightly old timestamp.
+        fake_pub_date = timezone_now() - datetime.timedelta(minutes=37)
+        fake_pub_time = datetime_to_timestamp(fake_pub_date)
+
         result = self.api_post(email, "/api/v1/messages", {"type": "stream",
                                                            "forged": "true",
+                                                           "time": fake_pub_time,
                                                            "sender": "irc-user@irc.zulip.com",
                                                            "content": "Test message",
                                                            "client": "irc_mirror",
                                                            "subject": "from irc",
                                                            "to": "IRCLand"})
         self.assert_json_success(result)
+
+        msg = self.get_last_message()
+        self.assertEqual(int(datetime_to_timestamp(msg.pub_date)), int(fake_pub_time))
 
     def test_unsubscribed_api_super_user(self) -> None:
         sender = self.example_user('cordelia')
