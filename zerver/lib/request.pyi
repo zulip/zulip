@@ -7,8 +7,7 @@
 # types.
 
 from typing import Any, List, Callable, TypeVar, Optional, Union, Type
-from zerver.lib.types import ViewFuncT, Validator
-
+from zerver.lib.types import ViewFuncT, Validator, ExtractRecipients
 from zerver.lib.exceptions import JsonableError as JsonableError
 
 ResultT = TypeVar('ResultT')
@@ -23,7 +22,7 @@ NotSpecified = _NotSpecified()
 def REQ(whence: Optional[str] = None,
         *,
         type: Type[ResultT] = Type[None],
-        converter: Optional[Callable[[str], ResultT]] = None,
+        converter: Union[Optional[Callable[[str], ResultT]], ExtractRecipients] = None,
         default: Union[_NotSpecified, ResultT, None] = Optional[NotSpecified],
         validator: Optional[Validator] = None,
         str_validator: Optional[Validator] = None,
