@@ -53,7 +53,6 @@ not_yet_fully_covered = {
     # We have 100% coverage on the new stuff; need to refactor old stuff.
     'analytics/views.py',
     # Major lib files should have 100% coverage
-    'zerver/lib/actions.py',
     'zerver/lib/addressee.py',
     'zerver/lib/bugdown/__init__.py',
     'zerver/lib/cache.py',
