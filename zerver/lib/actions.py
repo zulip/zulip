@@ -1853,12 +1853,14 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         return messages[0].id
     return None
 
-def extract_recipients(s: Union[str, Iterable[str]]) -> List[str]:
+def extract_recipients(
+        s: Union[str, Iterable[str], Iterable[int]]
+) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
         data = ujson.loads(s)  # type: ignore # This function has a super weird union argument.
-    except ValueError:
+    except (ValueError, TypeError):
         data = s
 
     if isinstance(data, str):
@@ -1867,12 +1869,27 @@ def extract_recipients(s: Union[str, Iterable[str]]) -> List[str]:
     if not isinstance(data, list):
         raise ValueError("Invalid data type for recipients")
 
-    recipients = data
+    if all(isinstance(elem, int) for elem in data):
+        return list(set(data))
 
-    # Strip recipients, and then remove any duplicates and any that
-    # are the empty string after being stripped.
-    recipients = [recipient.strip() for recipient in recipients]
-    return list(set(recipient for recipient in recipients if recipient))
+    recipients = []  # type: List[Any]
+    for recipient in data:
+        recipient = recipient.strip()
+        if recipient.isdigit():
+            recipients.append(int(recipient))
+        elif recipient:
+            # Just append the stripped recipient sting
+            # if they are not an integer ID
+            recipients.append(recipient)
+
+    is_heterogenous = (not all(isinstance(recipient, int) for recipient in recipients) and
+                       not all(isinstance(recipient, str) for recipient in recipients))
+    if is_heterogenous:
+        # We don't support heterogenous lists (i.e. lists with both IDs and emails)
+        raise ValueError("Invalid data type for recipients")
+
+    # Remove any duplicates.
+    return list(set(recipients))
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
                               topic: str, body: str) -> int:
