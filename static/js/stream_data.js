@@ -301,6 +301,15 @@ exports.get_announcement_only = function (stream_name) {
     return sub.is_announcement_only;
 };
 
+exports.is_more_topics_needed = function (sub) {
+    if (message_list.narrowed.first() !== undefined) {
+        if (sub.first_message_id === null || message_list.narrowed.first().id <= sub.first_message_id) {
+            return true;
+        }
+        return false;
+    };
+};
+
 var default_stream_ids = new Dict();
 
 exports.set_realm_default_streams = function (realm_default_streams) {
@@ -455,6 +464,7 @@ exports.create_sub_from_server_data = function (stream_name, attrs) {
         push_notifications: page_params.enable_stream_push_notifications,
         email_notifications: page_params.enable_stream_email_notifications,
         description: '',
+        first_message_id: null,
     });
 
     exports.set_subscribers(sub, subscriber_user_ids);

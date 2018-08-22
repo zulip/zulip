@@ -1090,6 +1090,8 @@ class Stream(models.Model):
     email_token = models.CharField(
         max_length=32, default=generate_email_token_for_stream)  # type: str
 
+    first_message_id = models.IntegerField(null=True)  # type: Optional[int]
+
     def __str__(self) -> str:
         return "<Stream: %s>" % (self.name,)
 
@@ -1114,7 +1116,8 @@ class Stream(models.Model):
             description=self.description,
             invite_only=self.invite_only,
             is_announcement_only=self.is_announcement_only,
-            history_public_to_subscribers=self.history_public_to_subscribers
+            history_public_to_subscribers=self.history_public_to_subscribers,
+            first_message_id=self.first_message_id
         )
 
 post_save.connect(flush_stream, sender=Stream)

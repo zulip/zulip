@@ -94,8 +94,10 @@ exports.widget = function (parent_elem, my_stream_id) {
             ul.append(li);
         });
 
-        var show_more = self.build_more_topics_section();
-        ul.append(show_more);
+        if (stream_data.is_more_topics_needed(stream_data.get_sub_by_id(my_stream_id))) {
+            var show_more = self.build_more_topics_section();
+            ul.append(show_more);
+        };
 
         return ul;
     };

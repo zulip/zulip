@@ -1272,6 +1272,7 @@ class EventsRegisterTest(ZulipTestCase):
                     ('is_announcement_only', check_bool),
                     ('name', check_string),
                     ('stream_id', check_int),
+                    ('first_message_id', check_int),
                     ('history_public_to_subscribers', check_bool)]))),
             ]))),
         ])
@@ -2086,6 +2087,7 @@ class EventsRegisterTest(ZulipTestCase):
             ('desktop_notifications', check_bool),
             ('push_notifications', check_bool),
             ('stream_id', check_int),
+            ('first_message_id', check_int),
             ('history_public_to_subscribers', check_bool),
             ('pin_to_top', check_bool),
             ('stream_weekly_traffic', check_none_or(check_int)),
