@@ -64,9 +64,9 @@ var draft_model = (function () {
 exports.draft_model = draft_model;
 
 exports.snapshot_message = function () {
-    if (!compose_state.composing() || compose_state.message_content() === "") {
+    if (!compose_state.composing() || compose_state.message_content().length <= 2) {
         // If you aren't in the middle of composing the body of a
-        // message, don't try to snapshot.
+        // message or the message is shorter than 2 characters long, don't try to snapshot.
         return;
     }
 
