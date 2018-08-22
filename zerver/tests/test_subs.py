@@ -1213,6 +1213,12 @@ class DefaultStreamGroupTest(ZulipTestCase):
         self.assertEqual(default_stream_groups[0].description, description)
         self.assertEqual(list(default_stream_groups[0].streams.all().order_by("id")), streams)
 
+        # Try adding the same streams to the group.
+        result = self.client_post('/json/default_stream_groups/create',
+                                  {"group_name": group_name, "description": description,
+                                   "stream_names": ujson.dumps(stream_names)})
+        self.assert_json_error(result, "Default stream group 'group1' already exists")
+
         # Test adding streams to existing default stream group
         group_id = default_stream_groups[0].id
         new_stream_names = ["stream4", "stream5"]
