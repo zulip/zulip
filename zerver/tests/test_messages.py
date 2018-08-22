@@ -269,7 +269,6 @@ class TopicHistoryTest(ZulipTestCase):
         result = self.client_get(endpoint, dict())
         self.assert_json_error(result, 'Invalid stream id')
 
-
 class TestCrossRealmPMs(ZulipTestCase):
     def make_realm(self, domain: str) -> Realm:
         realm = Realm.objects.create(string_id=domain, invite_required=False)
@@ -382,6 +381,45 @@ class TestCrossRealmPMs(ZulipTestCase):
         with assert_invalid_email():
             self.send_huddle_message(user1_email, [user2_email, user3_email],
                                      sender_realm="1.example.com")
+
+class TestAddressee(ZulipTestCase):
+    def test_addressee_for_user_ids(self) -> None:
+        realm = get_realm('zulip')
+        user_ids = [self.example_user('cordelia').id,
+                    self.example_user('hamlet').id,
+                    self.example_user('othello').id]
+
+        result = Addressee.for_user_ids(user_ids=user_ids, realm=realm)
+        user_profiles = result.user_profiles()
+        result_user_ids = [user_profiles[0].id, user_profiles[1].id,
+                           user_profiles[2].id]
+
+        self.assertEqual(result_user_ids, user_ids)
+
+    def test_addressee_for_user_ids_nonexistent_id(self) -> None:
+        def assert_invalid_user_id() -> Any:
+            return self.assertRaisesRegex(
+                JsonableError,
+                'Invalid user ID ')
+
+        with assert_invalid_user_id():
+            Addressee.for_user_ids(user_ids=[779], realm=get_realm('zulip'))
+
+    def test_addressee_legacy_build_for_user_ids(self) -> None:
+        realm = get_realm('zulip')
+        self.login(self.example_email('hamlet'))
+        user_ids = [self.example_user('cordelia').id,
+                    self.example_user('othello').id]
+
+        result = Addressee.legacy_build(
+            sender=self.example_user('hamlet'), message_type_name='private',
+            message_to=user_ids, topic_name='random_topic',
+            realm=realm
+        )
+        user_profiles = result.user_profiles()
+        result_user_ids = [user_profiles[0].id, user_profiles[1].id]
+
+        self.assertEqual(result_user_ids, user_ids)
 
 class InternalPrepTest(ZulipTestCase):
 
@@ -498,11 +536,14 @@ class InternalPrepTest(ZulipTestCase):
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
 class ExtractedRecipientsTest(TestCase):
-    def test_extract_recipients(self) -> None:
+    def test_extract_recipients_emails(self) -> None:
 
         # JSON list w/dups, empties, and trailing whitespace
         s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        # sorted() gets confused by extract_recipients' return type
+        # For testing, ignorance here is better than manual casting
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # simple string with one name
         s = 'alice@zulip.com    '
@@ -514,16 +555,45 @@ class ExtractedRecipientsTest(TestCase):
 
         # bare comma-delimited string
         s = 'bob@zulip.com, alice@zulip.com'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # Invalid data
         s = ujson.dumps(dict(color='red'))
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
             extract_recipients(s)
+
+    def test_extract_recipient_ids(self) -> None:
+        # JSON list w/dups
+        s = ujson.dumps([3, 3, 12])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, [3, 12])
+
+        # bare comma-delimited string
+        s = '3, 12'
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, [3, 12])
+
+        # JSON-encoded, comma-delimited string
+        s = '"3,12"'
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, [3, 12])
+
+        # Invalid data
+        ids = ujson.dumps(dict(recipient=12))
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_recipients(ids)
+
+    def test_recipient_data_containing_both_ids_and_emails(self) -> None:
+        # Heterogenous lists are not supported
+        invalid_json = ujson.dumps(['alice@zulip.com', '19'])
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_recipients(invalid_json)
 
 class PersonalMessagesTest(ZulipTestCase):
 
