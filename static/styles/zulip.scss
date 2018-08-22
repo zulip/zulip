@@ -452,7 +452,7 @@ pre {
     direction: ltr;
     /* code block text is a bit smaller than normal text */
     font-size: 0.8em;
-    line-height: 1.4;
+    line-height: 1.6;
     white-space: pre;
     overflow-x: auto;
     word-wrap: normal;
@@ -460,10 +460,7 @@ pre {
     margin-top: 5px;
     margin-bottom: 5px;
     /* Bootstrap's default here is 9.5 on all sides */
-    padding-top: 5px;
-    padding-bottom: 3px;
-    padding-left: 7px;
-    padding-right: 7px;
+    padding: 1em 0.5em;
 }
 
 /* Ensure the horizontal scrollbar is visible on Mac */
@@ -1316,8 +1313,8 @@ div.focused_table {
 }
 
 .message_content {
-    line-height: 17px;
-    min-height: 17px;
+    line-height: 19px;
+    min-height: 19px;
     font-size: 14px;
     margin-left: 46px;
     display: block;
