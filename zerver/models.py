@@ -143,6 +143,7 @@ class Realm(models.Model):
     MAX_REALM_SUBDOMAIN_LENGTH = 40
     MAX_VIDEO_CHAT_PROVIDER_LENGTH = 40
     MAX_GOOGLE_HANGOUTS_DOMAIN_LENGTH = 255  # This is just the maximum domain length by RFC
+    MAX_INVITES_PREMIUM = 3000
     VIDEO_CHAT_PROVIDERS = [u"Jitsi", u"Google Hangouts"]
     AUTHENTICATION_FLAGS = [u'Google', u'Email', u'GitHub', u'LDAP', u'Dev', u'RemoteUser']
     SUBDOMAIN_FOR_ROOT_DOMAIN = ''
