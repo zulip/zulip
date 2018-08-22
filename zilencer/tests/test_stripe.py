@@ -136,9 +136,8 @@ class StripeTest(ZulipTestCase):
             prorate=True,
             tax_percent=0)
         # Check that we correctly populated Customer and RealmAuditLog in Zulip
-        self.assertEqual(1, Customer.objects.filter(realm=user.realm,
-                                                    stripe_customer_id=self.stripe_customer_id,
-                                                    billing_user=user).count())
+        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=self.stripe_customer_id,
+                                                    realm=user.realm).count())
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
@@ -318,7 +317,7 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         Customer.objects.create(
-            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user,
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id,
             has_billing_relationship=True)
 
         response = self.client_get("/billing/")

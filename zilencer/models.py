@@ -43,8 +43,6 @@ class Customer(models.Model):
     # goes back to being False
     has_billing_relationship = models.BooleanField(default=False)  # type: bool
 
-    billing_user = models.ForeignKey(UserProfile, on_delete=models.SET_NULL, null=True)
-
     def __str__(self) -> str:
         return "<Customer %s %s>" % (self.realm, self.stripe_customer_id)
 

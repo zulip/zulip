@@ -164,10 +164,7 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
             RealmAuditLog.objects.create(
                 realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
                 event_time=event_time)
-        Customer.objects.create(
-            realm=realm,
-            stripe_customer_id=stripe_customer.id,
-            billing_user=user)
+        Customer.objects.create(realm=realm, stripe_customer_id=stripe_customer.id)
         user.is_billing_admin = True
         user.save(update_fields=["is_billing_admin"])
     return stripe_customer
