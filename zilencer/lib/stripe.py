@@ -168,6 +168,8 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
             realm=realm,
             stripe_customer_id=stripe_customer.id,
             billing_user=user)
+        user.is_billing_admin = True
+        user.save(update_fields=["is_billing_admin"])
     return stripe_customer
 
 @catch_stripe_errors
@@ -190,7 +192,7 @@ def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
     return stripe_customer.save()
 
 @catch_stripe_errors
-def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
+def do_subscribe_customer_to_plan(user: UserProfile, stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
     if extract_current_subscription(stripe_customer) is not None:
         # Most likely due to two people in the org going to the billing page,
@@ -227,7 +229,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
         customer.realm.save(update_fields=['has_seat_based_plan'])
         RealmAuditLog.objects.create(
             realm=customer.realm,
-            acting_user=customer.billing_user,
+            acting_user=user,
             event_type=RealmAuditLog.STRIPE_PLAN_CHANGED,
             event_time=timestamp_to_datetime(stripe_subscription.created),
             extra_data=ujson.dumps({'plan': stripe_plan_id, 'quantity': seat_count}))
@@ -248,6 +250,7 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
     else:
         stripe_customer = do_replace_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(
+        user=user,
         stripe_customer=stripe_customer,
         stripe_plan_id=plan.stripe_plan_id,
         seat_count=seat_count,
