@@ -690,6 +690,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True, db_index=True)  # type: bool
 
     is_realm_admin = models.BooleanField(default=False, db_index=True)  # type: bool
+    is_billing_admin = models.BooleanField(default=False, db_index=True)  # type: bool
 
     # Guest users are limited users without default access to public streams (etc.)
     is_guest = models.BooleanField(default=False, db_index=True)  # type: bool
