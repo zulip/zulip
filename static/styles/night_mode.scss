@@ -74,7 +74,7 @@ on a dark background, and don't change the dark labels dark either. */
         opacity: 0.5;
     }
 
-    .new-style .button,
+    .new-style .button:not(.save-status),
     .new-style .button[disabled=disabled]:hover,
     input[type="text"],
     input[type="email"],
@@ -140,7 +140,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: inherit;
     }
 
-    .new-style button.button:focus,
+    .new-style .button:not(.save-status):focus,
     input[type="text"]:focus,
     input[type="email"]:focus,
     input[type="number"]:focus,
@@ -225,6 +225,7 @@ on a dark background, and don't change the dark labels dark either. */
     .clear_search_button:focus,
     .clear_search_button:active,
     .clear_search_button[disabled]:hover,
+    #user-groups .save-instructions,
     #searchbox_legacy a.search_icon,
     #searchbox_legacy .search_button,
     #searchbox a.search_icon,
