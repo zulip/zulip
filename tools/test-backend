@@ -58,7 +58,6 @@ not_yet_fully_covered = {
     'zerver/lib/bugdown/__init__.py',
     'zerver/lib/cache.py',
     'zerver/lib/cache_helpers.py',
-    'zerver/lib/exceptions.py',
     'zerver/lib/i18n.py',
     'zerver/lib/notifications.py',
     'zerver/lib/send_email.py',
