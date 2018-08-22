@@ -12,7 +12,11 @@ upstream prod {
 
 server {
     listen 80;
-    return 301 https://$host$request_uri;
+    location / {
+        return 301 https://$host$request_uri;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
 }
 
 server {
@@ -22,8 +26,8 @@ server {
     server_name zulipstaging.com *.zulipstaging.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-zulipstaging.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/wildcard-zulipstaging.com.key;
+    ssl_certificate /etc/letsencrypt/live/zulipstaging.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulipstaging.com/privkey.pem;
 
     location / {
         proxy_pass https://staging/;
@@ -51,8 +55,60 @@ server {
     server_name zulipchat.com *.zulipchat.com;
 
     ssl on;
-    ssl_certificate /etc/ssl/certs/wildcard-zulipchat.com.combined-chain.crt;
-    ssl_certificate_key /etc/ssl/private/wildcard-zulipchat.com.key;
+    ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulipchat.com/privkey.pem;
+
+    location / {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/events|/api/v1/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+
+server {
+    # The listen needs to be `www.zulip.com` since bare zulip.com
+    # is not a CNAME and thus has the public IP inside EC2
+    listen www.zulip.com:443;
+    server_name zulip.com *.zulip.com;
+
+    ssl on;
+    ssl_certificate /etc/letsencrypt/live/zulipchat.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/zulipchat.com/privkey.pem;
+
+    location / {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy;
+    }
+
+    location /sockjs {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/location-sockjs;
+    }
+
+    location ~ /json/events|/api/v1/events {
+        proxy_pass https://prod;
+        include /etc/nginx/zulip-include/proxy_longpolling;
+    }
+
+    include /etc/nginx/zulip-include/certbot;
+}
+
+server {
+    listen chat.hl7.org:443;
+    server_name chat.hl7.org;
+    ssl_certificate /etc/letsencrypt/live/chat.hl7.org/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/chat.hl7.org/privkey.pem;
 
     location / {
         proxy_pass https://prod;
