@@ -1876,12 +1876,14 @@ def already_sent_mirrored_message_id(message: Message) -> Optional[int]:
         return messages[0].id
     return None
 
-def extract_recipients(s: Union[str, Iterable[str]]) -> List[str]:
+def extract_recipients(
+        s: Union[str, Iterable[str], Iterable[int]]
+) -> Union[List[str], List[int]]:
     # We try to accept multiple incoming formats for recipients.
     # See test_extract_recipients() for examples of what we allow.
     try:
         data = ujson.loads(s)  # type: ignore # This function has a super weird union argument.
-    except ValueError:
+    except (ValueError, TypeError):
         data = s
 
     if isinstance(data, str):
@@ -1890,12 +1892,40 @@ def extract_recipients(s: Union[str, Iterable[str]]) -> List[str]:
     if not isinstance(data, list):
         raise ValueError("Invalid data type for recipients")
 
-    recipients = data
+    if not data:
+        # We don't complain about empty message recipients here
+        return data
 
-    # Strip recipients, and then remove any duplicates and any that
-    # are the empty string after being stripped.
-    recipients = [recipient.strip() for recipient in recipients]
-    return list(set(recipient for recipient in recipients if recipient))
+    if isinstance(data[0], str):
+        recipients = extract_emails(data)  # type: Union[List[str], List[int]]
+
+    if isinstance(data[0], int):
+        recipients = extract_user_ids(data)
+
+    # Remove any duplicates.
+    return list(set(recipients))  # type: ignore # mypy gets confused about what's passed to set()
+
+def extract_user_ids(user_ids: Iterable[int]) -> List[int]:
+    recipients = []
+    for user_id in user_ids:
+        if not isinstance(user_id, int):
+            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+
+        recipients.append(user_id)
+
+    return recipients
+
+def extract_emails(emails: Iterable[str]) -> List[str]:
+    recipients = []
+    for email in emails:
+        if not isinstance(email, str):
+            raise TypeError("Recipient lists may contain emails or user IDs, but not both.")
+
+        email = email.strip()
+        if email:
+            recipients.append(email)
+
+    return recipients
 
 def check_send_stream_message(sender: UserProfile, client: Client, stream_name: str,
                               topic: str, body: str) -> int:

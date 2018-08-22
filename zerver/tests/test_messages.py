@@ -528,11 +528,14 @@ class InternalPrepTest(ZulipTestCase):
         Stream.objects.get(name=stream_name, realm_id=realm.id)
 
 class ExtractedRecipientsTest(TestCase):
-    def test_extract_recipients(self) -> None:
+    def test_extract_recipients_emails(self) -> None:
 
         # JSON list w/dups, empties, and trailing whitespace
         s = ujson.dumps([' alice@zulip.com ', ' bob@zulip.com ', '   ', 'bob@zulip.com'])
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        # sorted() gets confused by extract_recipients' return type
+        # For testing, ignorance here is better than manual casting
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # simple string with one name
         s = 'alice@zulip.com    '
@@ -544,16 +547,42 @@ class ExtractedRecipientsTest(TestCase):
 
         # bare comma-delimited string
         s = 'bob@zulip.com, alice@zulip.com'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # JSON-encoded, comma-delimited string
         s = '"bob@zulip.com,alice@zulip.com"'
-        self.assertEqual(sorted(extract_recipients(s)), ['alice@zulip.com', 'bob@zulip.com'])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, ['alice@zulip.com', 'bob@zulip.com'])
 
         # Invalid data
         s = ujson.dumps(dict(color='red'))
         with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
             extract_recipients(s)
+
+        # Empty list
+        self.assertEqual(extract_recipients([]), [])
+
+        # Heterogeneous lists are not supported
+        mixed = ujson.dumps(['eeshan@example.com', 3, 4])
+        with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
+            extract_recipients(mixed)
+
+    def test_extract_recipient_ids(self) -> None:
+        # JSON list w/dups
+        s = ujson.dumps([3, 3, 12])
+        result = sorted(extract_recipients(s))  # type: ignore
+        self.assertEqual(result, [3, 12])
+
+        # Invalid data
+        ids = ujson.dumps(dict(recipient=12))
+        with self.assertRaisesRegex(ValueError, 'Invalid data type for recipients'):
+            extract_recipients(ids)
+
+        # Heterogeneous lists are not supported
+        mixed = ujson.dumps([3, 4, 'eeshan@example.com'])
+        with self.assertRaisesRegex(TypeError, 'Recipient lists may contain emails or user IDs, but not both.'):
+            extract_recipients(mixed)
 
 class PersonalMessagesTest(ZulipTestCase):
 
