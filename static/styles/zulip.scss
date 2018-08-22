@@ -16,6 +16,9 @@ html {
 
 body {
     font-family: 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-smoothing: antialiased;
 }
 
 /* Common background color */
@@ -175,8 +178,6 @@ p.n-margin {
 }
 
 #panels {
-    -webkit-font-smoothing: antialiased;
-
     font-size: 1rem;
 }
 
@@ -2412,11 +2413,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     margin-bottom: 0px;
 }
 
-#invite-user {
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-
 #invite-user .modal-header {
     padding: 7px 15px;
     border-color: hsl(0, 0%, 86%);
@@ -2779,10 +2775,6 @@ div.topic_edit_spinner .loading_indicator_spinner {
     height: 80px;
     padding: 5px;
     z-index: 1;
-
-    -moz-osx-font-smoothing: grayscale;
-    font-smoothing: antialiased;
-    -webkit-font-smoothing: antialiased;
     text-shadow: rgba(0, 0, 0, .01) 0 0 1px;
 }
 
