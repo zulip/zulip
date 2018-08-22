@@ -124,6 +124,14 @@
                 </div>
             </form>
 
+            <form class="deactivate_account grid">
+                <div class="input-group">
+                    <button type="submit" class="button rounded btn-danger" id="user_deactivate_account_button">
+                        {{t 'Deactivate account' }}
+                    </button>
+                </div>
+            </form>
+
             <h3 class="inline-block" id="custom-field-header" {{#unless page_params.custom_profile_fields}}style="display: none"{{/unless}}>{{t "Profile" }}</h3>
             <div class="alert-notification" id="custom-field-status"></div>
             <form class="form-horizontal custom-profile-fields-form grid"></form>
@@ -216,16 +224,6 @@
             </a>
             <div id="user_api_key_error text-error">
             </div>
-        </div>
-        <div class="inline-block">
-            <h3>{{t "Deactivate account" }}</h3>
-            <form class="deactivate_account grid">
-                <div class="input-group">
-                    <button type="submit" class="button rounded w-200 btn-danger input-size" id="user_deactivate_account_button">
-                        {{t 'Deactivate account' }}
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
 </div>
