@@ -23,7 +23,7 @@ class Customer:
         ...
 
     @staticmethod
-    def save(idempotency_key: str) -> Customer:
+    def save() -> Customer:
         ...
 
 class Invoice:

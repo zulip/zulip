@@ -165,9 +165,7 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
     # Deletes existing card: https://stripe.com/docs/api#update_customer-source
     # This can also have other side effects, e.g. it will try to pay certain past-due
     # invoices: https://stripe.com/docs/api#update_customer
-    updated_stripe_customer = stripe_customer.save(
-        # stripe_token[:4] = 'tok_', so 8 characters of entropy
-        idempotency_key='do_replace_payment_source:%s' % (stripe_token[:12]))
+    updated_stripe_customer = stripe_customer.save()
     RealmAuditLog.objects.create(
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
         event_time=timezone_now())
