@@ -176,13 +176,22 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
 def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
                                   seat_count: int, tax_percent: float) -> None:
     if extract_current_subscription(stripe_customer) is not None:
-        # Most likely due to a race condition where two people in the org
-        # try to upgrade their plan at the same time
+        # Most likely due to two people in the org going to the billing page,
+        # and then both upgrading their plan. We don't send clients
+        # real-time event updates for the billing pages, so this is more
+        # likely than it would be in other parts of the app.
         billing_logger.error("Stripe customer %s trying to subscribe to %s, "
                              "but has an active subscription" % (stripe_customer.id, stripe_plan_id))
         raise BillingError('subscribing with existing subscription', BillingError.TRY_RELOADING)
     customer = Customer.objects.get(stripe_customer_id=stripe_customer.id)
-    # Success implies the stripe_customer was charged: https://stripe.com/docs/billing/lifecycle#active
+    # Note that there is a race condition here, where if two users upgrade at exactly the
+    # same time, they will have two subscriptions, and get charged twice. We could try to
+    # reduce the chance of it with a well-designed idempotency_key, but it's not easy since
+    # we also need to be careful not to block the customer from retrying if their
+    # subscription attempt fails (e.g. due to insufficient funds).
+
+    # Success here implies the stripe_customer was charged: https://stripe.com/docs/billing/lifecycle#active
+    # Otherwise we should expect it to throw a stripe.error.
     stripe_subscription = stripe.Subscription.create(
         customer=stripe_customer.id,
         billing='charge_automatically',
