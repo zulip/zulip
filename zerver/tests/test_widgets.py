@@ -103,6 +103,50 @@ class WidgetContentTestCase(ZulipTestCase):
         # Add a positive check for context
         self.assertEqual(get_widget_data(content='/tictactoe'), ('tictactoe', None))
 
+    def test_explicit_widget_content(self) -> None:
+        # Users can send widget_content directly on messages
+        # using the `widget_content` field.
+
+        sender_email = self.example_email('cordelia')
+        stream_name = 'Verona'
+        content = 'does-not-matter'
+        zform_data = dict(
+            type='choices',
+            heading='Options:',
+            choices=[],
+        )
+
+        widget_content = ujson.dumps(
+            dict(
+                widget_type='zform',
+                extra_data=zform_data,
+            ),
+        )
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender_email,
+            client='test suite',
+            subject='whatever',
+            content=content,
+            widget_content=widget_content,
+        )
+        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="zform",
+            extra_data=zform_data,
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, 'widget')
+        self.assertEqual(ujson.loads(submessage.content), expected_submessage_content)
+
     def test_tictactoe(self) -> None:
         # The tictactoe widget is mostly useful as a code sample,
         # and it also helps us get test coverage that could apply
