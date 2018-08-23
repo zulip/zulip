@@ -138,6 +138,10 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
 @catch_stripe_errors
 def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
     realm = user.realm
+    # We could do a better job of handling race conditions here, but if two
+    # people from a realm try to upgrade at exactly the same time, the main
+    # bad thing that will happen is that we will create an extra stripe
+    # customer that we can delete or ignore.
     stripe_customer = stripe.Customer.create(
         description="%s (%s)" % (realm.string_id, realm.name),
         email=user.email,
