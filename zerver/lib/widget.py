@@ -10,9 +10,8 @@ from zerver.models import SubMessage
 def get_widget_data(content: str) -> Tuple[Optional[str], Optional[str]]:
     valid_widget_types = ['tictactoe', 'poll', 'todo']
     tokens = content.split(' ')
-    if not tokens:
-        return None, None
 
+    # tokens[0] will always exist
     if tokens[0].startswith('/'):
         widget_type = tokens[0][1:]
         if widget_type in valid_widget_types:

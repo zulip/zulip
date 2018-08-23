@@ -6,6 +6,8 @@ from zerver.models import SubMessage
 
 from zerver.lib.test_classes import ZulipTestCase
 
+from zerver.lib.widget import get_widget_data
+
 from zerver.lib.validator import check_widget_content
 
 class WidgetContentTestCase(ZulipTestCase):
@@ -80,6 +82,26 @@ class WidgetContentTestCase(ZulipTestCase):
         payload['widget_content'] = ujson.dumps(bogus_data)
         result = self.api_post(sender_email, "/api/v1/messages", payload)
         self.assert_json_error_contains(result, 'Widgets: widget_type is not in widget_content')
+
+    def test_get_widget_data_for_non_widget_messages(self) -> None:
+        # This is a pretty important test, despite testing the
+        # "negative" case.  We never want widgets to interfere
+        # with normal messages.
+
+        test_messages = [
+            '',
+            '     ',
+            'this is an ordinary message',
+            '/bogus_command',
+            '/me shrugs',
+            'use /poll',
+        ]
+
+        for message in test_messages:
+            self.assertEqual(get_widget_data(content=message), (None, None))
+
+        # Add a positive check for context
+        self.assertEqual(get_widget_data(content='/tictactoe'), ('tictactoe', None))
 
     def test_tictactoe(self) -> None:
         # The tictactoe widget is mostly useful as a code sample,
