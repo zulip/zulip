@@ -1367,14 +1367,12 @@ div.focused_table {
 #inline_topic_edit.header-v {
     height: 18px;
     display: inline-block;
-    margin: -2px 0 0 0;
     padding: 0px 3px;
+    vertical-align: baseline;
 
     line-height: 0px;
     font-size: 14px;
 
-    border-radius: 0px;
-    border: 1px solid hsl(204, 20%, 74%);
     box-shadow: none;
 }
 
@@ -2381,7 +2379,8 @@ button.topic_edit_cancel {
     font-size: 12px;
     width: 18px;
     height: 18px;
-    margin-top: -1px;
+    vertical-align: baseline;
+    border-radius: 4px;
 }
 
 div.topic_edit_spinner {
