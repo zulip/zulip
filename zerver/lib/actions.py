@@ -4907,14 +4907,15 @@ def notify_user_update_custom_profile_data(user_profile: UserProfile,
 def do_update_user_custom_profile_data(user_profile: UserProfile,
                                        data: List[Dict[str, Union[int, str, List[int]]]]) -> None:
     with transaction.atomic():
-        update_or_create = CustomProfileFieldValue.objects.update_or_create
         for field in data:
-            field_value, created = update_or_create(user_profile=user_profile,
-                                                    field_id=field['id'],
-                                                    defaults={'value': field['value']})
-            notify_user_update_custom_profile_data(user_profile, {"id": field['id'],
-                                                                  "value": field['value'],
-                                                                  "type": field_value.field.field_type})
+            field_value, created = CustomProfileFieldValue.objects.update_or_create(
+                user_profile=user_profile,
+                field_id=field['id'],
+                defaults={'value': field['value']})
+            notify_user_update_custom_profile_data(user_profile, {
+                "id": field_value.field_id,
+                "value": field_value.value,
+                "type": field_value.field.field_type})
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
     event = dict(type="user_group",
