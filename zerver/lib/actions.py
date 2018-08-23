@@ -4895,8 +4895,12 @@ def try_reorder_realm_custom_profile_fields(realm: Realm, order: List[int]) -> N
 
 def notify_user_update_custom_profile_data(user_profile: UserProfile,
                                            field: Dict[str, Union[int, str, List[int], None]]) -> None:
+    if field['type'] == CustomProfileField.USER:
+        field_value = ujson.dumps(field['value'])  # type: Union[int, str, List[int], None]
+    else:
+        field_value = field['value']
     payload = dict(user_id=user_profile.id, custom_profile_field=dict(id=field['id'],
-                                                                      value=field['value']))
+                                                                      value=field_value))
     event = dict(type="realm_user", op="update", person=payload)
     send_event(event, active_user_ids(user_profile.realm.id))
 
@@ -4905,10 +4909,12 @@ def do_update_user_custom_profile_data(user_profile: UserProfile,
     with transaction.atomic():
         update_or_create = CustomProfileFieldValue.objects.update_or_create
         for field in data:
-            update_or_create(user_profile=user_profile,
-                             field_id=field['id'],
-                             defaults={'value': field['value']})
-            notify_user_update_custom_profile_data(user_profile, field)
+            field_value, created = update_or_create(user_profile=user_profile,
+                                                    field_id=field['id'],
+                                                    defaults={'value': field['value']})
+            notify_user_update_custom_profile_data(user_profile, {"id": field['id'],
+                                                                  "value": field['value'],
+                                                                  "type": field_value.field.field_type})
 
 def do_send_create_user_group_event(user_group: UserGroup, members: List[UserProfile]) -> None:
     event = dict(type="user_group",
