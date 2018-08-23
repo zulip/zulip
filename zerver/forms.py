@@ -184,6 +184,14 @@ class LoggingSetPasswordForm(SetPasswordForm):
                            commit=commit)
         return self.user
 
+def generate_password_reset_url(user_profile: UserProfile,
+                                token_generator: PasswordResetTokenGenerator) -> str:
+    token = token_generator.make_token(user_profile)
+    uid = urlsafe_base64_encode(force_bytes(user_profile.id)).decode('ascii')
+    endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
+                       kwargs=dict(uidb64=uid, token=token))
+    return "{}{}".format(user_profile.realm.uri, endpoint)
+
 class ZulipPasswordResetForm(PasswordResetForm):
     def save(self,
              domain_override: Optional[bool]=None,
@@ -240,13 +248,8 @@ class ZulipPasswordResetForm(PasswordResetForm):
             user = None
 
         if user is not None:
-            token = token_generator.make_token(user)
-            uid = urlsafe_base64_encode(force_bytes(user.id)).decode('ascii')
-            endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
-                               kwargs=dict(uidb64=uid, token=token))
-
             context['active_account_in_realm'] = True
-            context['reset_url'] = "{}{}".format(user.realm.uri, endpoint)
+            context['reset_url'] = generate_password_reset_url(user, token_generator)
             send_email('zerver/emails/password_reset', to_user_id=user.id,
                        from_name="Zulip Account Security",
                        from_address=FromAddress.tokenized_no_reply_address(),

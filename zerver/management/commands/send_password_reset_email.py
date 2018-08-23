@@ -3,12 +3,9 @@ import logging
 from argparse import ArgumentParser
 from typing import Any, Dict, List, Optional
 
-from django.contrib.auth.tokens import PasswordResetTokenGenerator, \
-    default_token_generator
-from django.utils.encoding import force_bytes
-from django.utils.http import urlsafe_base64_encode
-from django.urls import reverse
+from django.contrib.auth.tokens import default_token_generator
 
+from zerver.forms import generate_password_reset_url
 from zerver.lib.management import CommandError, ZulipBaseCommand
 from zerver.lib.send_email import FromAddress, send_email
 from zerver.models import UserProfile
@@ -44,18 +41,12 @@ class Command(ZulipBaseCommand):
 
         """
         for user_profile in users:
-            token = default_token_generator.make_token(user_profile)
-            uid = urlsafe_base64_encode(force_bytes(user_profile.id)).decode('ascii')
-            endpoint = reverse('django.contrib.auth.views.password_reset_confirm',
-                               kwargs=dict(uidb64=uid, token=token))
-
             context = {
                 'email': user_profile.email,
-                'reset_url': "{}{}".format(user_profile.realm.uri, endpoint),
+                'reset_url': generate_password_reset_url(user_profile, default_token_generator),
                 'realm_uri': user_profile.realm.uri,
                 'active_account_in_realm': True,
             }
-
             send_email('zerver/emails/password_reset', to_user_id=user_profile.id,
                        from_address=FromAddress.tokenized_no_reply_address(),
                        from_name="Zulip Account Security", context=context)
