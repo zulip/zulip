@@ -18,7 +18,7 @@ from zerver.lib.timestamp import datetime_to_timestamp, timestamp_to_datetime
 from zerver.lib.utils import generate_random_token
 from zerver.lib.actions import do_change_plan_type
 from zerver.models import Realm, UserProfile, RealmAuditLog
-from zilencer.models import Customer, Plan, BillingProcessor
+from zilencer.models import Customer, Plan, Coupon, BillingProcessor
 from zproject.settings import get_secret
 
 STRIPE_PUBLISHABLE_KEY = get_secret('stripe_publishable_key')
@@ -32,6 +32,7 @@ billing_logger = logging.getLogger('zilencer.stripe')
 log_to_file(billing_logger, BILLING_LOG_PATH)
 log_to_file(logging.getLogger('stripe'), BILLING_LOG_PATH)
 
+## Note: this is no longer accurate, as of when we added coupons
 # To generate the fixture data in stripe_fixtures.json:
 # * Set PRINT_STRIPE_FIXTURE_DATA to True
 # * ./manage.py setup_stripe
@@ -136,8 +137,12 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
     return None
 
 @catch_stripe_errors
-def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> stripe.Customer:
+def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None,
+                       coupon: Optional[Coupon]=None) -> stripe.Customer:
     realm = user.realm
+    stripe_coupon_id = None
+    if coupon is not None:
+        stripe_coupon_id = coupon.stripe_coupon_id
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
     # bad thing that will happen is that we will create an extra stripe
@@ -146,7 +151,8 @@ def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> s
         description="%s (%s)" % (realm.string_id, realm.name),
         email=user.email,
         metadata={'realm_id': realm.id, 'realm_str': realm.string_id},
-        source=stripe_token)
+        source=stripe_token,
+        coupon=stripe_coupon_id)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
     event_time = timestamp_to_datetime(stripe_customer.created)
@@ -176,6 +182,12 @@ def do_replace_payment_source(user: UserProfile, stripe_token: str) -> stripe.Cu
         realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
         event_time=timezone_now())
     return updated_stripe_customer
+
+@catch_stripe_errors
+def do_replace_coupon(user: UserProfile, coupon: Coupon) -> stripe.Customer:
+    stripe_customer = stripe_get_customer(Customer.objects.get(realm=user.realm).stripe_customer_id)
+    stripe_customer.coupon = coupon.stripe_coupon_id
+    return stripe_customer.save()
 
 @catch_stripe_errors
 def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_id: str,
@@ -243,6 +255,14 @@ def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stri
         # use that to calculate taxes.
         tax_percent=0)
     do_change_plan_type(user, Realm.PREMIUM)
+
+def attach_discount_to_realm(user: UserProfile, percent_off: int) -> None:
+    coupon = Coupon.objects.get(percent_off=percent_off)
+    customer = Customer.objects.filter(realm=user.realm).first()
+    if customer is None:
+        do_create_customer(user, coupon=coupon)
+    else:
+        do_replace_coupon(user, coupon)
 
 ## Process RealmAuditLog
 

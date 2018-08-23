@@ -17,11 +17,11 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.timestamp import timestamp_to_datetime, datetime_to_timestamp
 from zerver.models import Realm, UserProfile, get_realm, RealmAuditLog
 from zilencer.lib.stripe import catch_stripe_errors, \
-    do_subscribe_customer_to_plan, \
+    do_subscribe_customer_to_plan, attach_discount_to_realm, \
     get_seat_count, extract_current_subscription, sign_string, unsign_string, \
     get_next_billing_log_entry, run_billing_processor_one_step, \
     BillingError, StripeCardError, StripeConnectionError
-from zilencer.models import Customer, Plan, BillingProcessor
+from zilencer.models import Customer, Plan, Coupon, BillingProcessor
 
 fixture_data_file = open(os.path.join(os.path.dirname(__file__), 'stripe_fixtures.json'), 'r')
 fixture_data = ujson.load(fixture_data_file)
@@ -62,12 +62,14 @@ class StripeTest(ZulipTestCase):
         # The values below should be copied from stripe_fixtures.json
         self.stripe_customer_id = 'cus_D7OT2jf5YAtZQL'
         self.customer_created = 1529990750
+        self.stripe_coupon_id = "rncBblSZ"
         self.stripe_plan_id = 'plan_D7Nh2BtpTvIzYp'
         self.subscription_created = 1529990751
         self.quantity = 8
 
         self.signed_seat_count, self.salt = sign_string(str(self.quantity))
         Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=self.stripe_plan_id)
+        Coupon.objects.create(percent_off=85, stripe_coupon_id=self.stripe_coupon_id)
 
     def get_signed_seat_count_from_response(self, response: HttpResponse) -> Optional[str]:
         match = re.search(r'name=\"signed_seat_count\" value=\"(.+)\"', response.content.decode("utf-8"))
@@ -122,7 +124,8 @@ class StripeTest(ZulipTestCase):
             description="zulip (Zulip Dev)",
             email=user.email,
             metadata={'realm_id': user.realm.id, 'realm_str': 'zulip'},
-            source=self.token)
+            source=self.token,
+            coupon=None)
         mock_create_subscription.assert_called_once_with(
             customer=self.stripe_customer_id,
             billing='charge_automatically',
@@ -357,6 +360,25 @@ class StripeTest(ZulipTestCase):
 
         with self.assertRaises(signing.BadSignature):
             unsign_string(signed_string, "randomsalt")
+
+    @mock.patch("stripe.Customer.retrieve", side_effect=mock_create_customer)
+    @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
+    def test_attach_discount_to_realm(self, mock_create_customer: mock.Mock,
+                                      mock_retrieve_customer: mock.Mock) -> None:
+        user = self.example_user('hamlet')
+        # Before customer exists
+        attach_discount_to_realm(user, 85)
+        mock_create_customer.assert_called_once_with(
+            description=Kandra(), email=self.example_email('hamlet'), metadata=Kandra(),
+            source=None, coupon=self.stripe_coupon_id)
+        mock_create_customer.reset_mock()
+        # For existing customer
+        Coupon.objects.create(percent_off=25, stripe_coupon_id='25OFF')
+        with mock.patch.object(
+                stripe.Customer, 'save', autospec=True,
+                side_effect=lambda stripe_customer: self.assertEqual(stripe_customer.coupon, '25OFF')):
+            attach_discount_to_realm(user, 25)
+        mock_create_customer.assert_not_called()
 
     @mock.patch("stripe.Customer.create", side_effect=mock_create_customer)
     @mock.patch("stripe.Subscription.create", side_effect=mock_create_subscription)

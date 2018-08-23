@@ -56,6 +56,13 @@ class Plan(models.Model):
 
     stripe_plan_id = models.CharField(max_length=255, unique=True)  # type: str
 
+class Coupon(models.Model):
+    percent_off = models.SmallIntegerField(unique=True)  # type: int
+    stripe_coupon_id = models.CharField(max_length=255, unique=True)  # type: str
+
+    def __str__(self) -> str:
+        return '<Coupon: %s %s %s>' % (self.percent_off, self.stripe_coupon_id, self.id)
+
 class BillingProcessor(models.Model):
     log_row = models.ForeignKey(RealmAuditLog, on_delete=models.CASCADE)  # RealmAuditLog
     # Exactly one processor, the global processor, has realm=None.

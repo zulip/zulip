@@ -1,5 +1,5 @@
 from zerver.lib.management import ZulipBaseCommand
-from zilencer.models import Plan
+from zilencer.models import Plan, Coupon
 from zproject.settings import get_secret
 
 from typing import Any
@@ -39,3 +39,15 @@ class Command(ZulipBaseCommand):
             nickname=Plan.CLOUD_ANNUAL,
             usage_type='licensed')
         Plan.objects.create(nickname=Plan.CLOUD_ANNUAL, stripe_plan_id=plan.id)
+
+        coupon = stripe.Coupon.create(
+            duration='forever',
+            name='25% discount',
+            percent_off=25)
+        Coupon.objects.create(percent_off=25, stripe_coupon_id=coupon.id)
+
+        coupon = stripe.Coupon.create(
+            duration='forever',
+            name='85% discount',
+            percent_off=85)
+        Coupon.objects.create(percent_off=85, stripe_coupon_id=coupon.id)

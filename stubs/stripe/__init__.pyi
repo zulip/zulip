@@ -12,6 +12,7 @@ class Customer:
     id: str
     source: str
     subscriptions: SubscriptionListObject
+    coupon: str
 
     @staticmethod
     def retrieve(customer_id: str, expand: Optional[List[str]]) -> Customer:
@@ -19,7 +20,7 @@ class Customer:
 
     @staticmethod
     def create(description: str, email: str, metadata: Dict[str, Any],
-               source: Optional[str]) -> Customer:
+               source: Optional[str], coupon: Optional[str]) -> Customer:
         ...
 
     @staticmethod
@@ -62,4 +63,11 @@ class Product:
 
     @staticmethod
     def create(name: str, type: str, statement_descriptor: str, unit_label: str) -> Product:
+        ...
+
+class Coupon:
+    id: str
+
+    @staticmethod
+    def create(duration: str, name: str, percent_off: int) -> Coupon:
         ...
