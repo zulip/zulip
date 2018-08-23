@@ -4,6 +4,7 @@ import glob
 import os
 import re
 from datetime import timedelta
+from email.utils import parseaddr
 from mock import MagicMock, patch, call
 from typing import List, Dict, Any, Optional
 
@@ -274,3 +275,15 @@ class TestCalculateFirstVisibleMessageID(ZulipTestCase):
             call_command(self.COMMAND_NAME, "--lookback-hours=35")
         calls = [call(realm, 35) for realm in Realm.objects.all()]
         m.has_calls(calls, any_order=True)
+
+class TestPasswordRestEmail(ZulipTestCase):
+    COMMAND_NAME = "send_password_reset_email"
+
+    def test_if_command_sends_password_reset_email(self) -> None:
+        call_command(self.COMMAND_NAME, users=self.example_email("iago"))
+        from django.core.mail import outbox
+        from_email = outbox[0].from_email
+        self.assertIn("Zulip Account Security", from_email)
+        tokenized_no_reply_email = parseaddr(from_email)[1]
+        self.assertTrue(re.search(self.TOKENIZED_NOREPLY_REGEX, tokenized_no_reply_email))
+        self.assertIn("Psst. Word on the street is that you", outbox[0].body)
