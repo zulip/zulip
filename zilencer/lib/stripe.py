@@ -136,7 +136,7 @@ def extract_current_subscription(stripe_customer: stripe.Customer) -> Any:
     return None
 
 @catch_stripe_errors
-def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str) -> stripe.Customer:
+def do_create_customer(user: UserProfile, stripe_token: Optional[str]=None) -> stripe.Customer:
     realm = user.realm
     # We could do a better job of handling race conditions here, but if two
     # people from a realm try to upgrade at exactly the same time, the main
@@ -154,9 +154,10 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
         RealmAuditLog.objects.create(
             realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
             event_time=event_time)
-        RealmAuditLog.objects.create(
-            realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
-            event_time=event_time)
+        if stripe_token is not None:
+            RealmAuditLog.objects.create(
+                realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+                event_time=event_time)
         Customer.objects.create(
             realm=realm,
             stripe_customer_id=stripe_customer.id,
@@ -231,7 +232,7 @@ def do_subscribe_customer_to_plan(stripe_customer: stripe.Customer, stripe_plan_
 def process_initial_upgrade(user: UserProfile, plan: Plan, seat_count: int, stripe_token: str) -> None:
     customer = Customer.objects.filter(realm=user.realm).first()
     if customer is None:
-        stripe_customer = do_create_customer_with_payment_source(user, stripe_token)
+        stripe_customer = do_create_customer(user, stripe_token=stripe_token)
     else:
         stripe_customer = do_replace_payment_source(user, stripe_token)
     do_subscribe_customer_to_plan(

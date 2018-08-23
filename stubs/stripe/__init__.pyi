@@ -19,7 +19,7 @@ class Customer:
 
     @staticmethod
     def create(description: str, email: str, metadata: Dict[str, Any],
-               source: str) -> Customer:
+               source: Optional[str]) -> Customer:
         ...
 
     @staticmethod
