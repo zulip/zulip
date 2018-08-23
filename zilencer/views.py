@@ -257,7 +257,9 @@ def billing_home(request: HttpRequest) -> HttpResponse:
         if prorated_charges < 0:
             prorated_credits = -prorated_charges  # nocoverage -- no way to get here yet
             prorated_charges = 0  # nocoverage
-    else:  # nocoverage -- no way to get here yet
+    # Can only get here by subscribing and then downgrading. We don't support downgrading
+    # yet, but keeping this code here since we will soon.
+    else:  # nocoverage
         plan_name = "Zulip Free"
         seat_count = 0
         renewal_date = ''
