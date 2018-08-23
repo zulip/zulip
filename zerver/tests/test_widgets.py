@@ -81,6 +81,38 @@ class WidgetContentTestCase(ZulipTestCase):
         result = self.api_post(sender_email, "/api/v1/messages", payload)
         self.assert_json_error_contains(result, 'Widgets: widget_type is not in widget_content')
 
+    def test_tictactoe(self) -> None:
+        # The tictactoe widget is mostly useful as a code sample,
+        # and it also helps us get test coverage that could apply
+        # to future widgets.
+
+        sender_email = self.example_email('cordelia')
+        stream_name = 'Verona'
+        content = '/tictactoe'
+
+        payload = dict(
+            type="stream",
+            to=stream_name,
+            sender=sender_email,
+            client='test suite',
+            subject='whatever',
+            content=content,
+        )
+        result = self.api_post(sender_email, "/api/v1/messages", payload)
+        self.assert_json_success(result)
+
+        message = self.get_last_message()
+        self.assertEqual(message.content, content)
+
+        expected_submessage_content = dict(
+            widget_type="tictactoe",
+            extra_data=None,
+        )
+
+        submessage = SubMessage.objects.get(message_id=message.id)
+        self.assertEqual(submessage.msg_type, 'widget')
+        self.assertEqual(ujson.loads(submessage.content), expected_submessage_content)
+
     def test_poll_command_extra_data(self) -> None:
         sender_email = self.example_email('cordelia')
         stream_name = 'Verona'
