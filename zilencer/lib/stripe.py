@@ -146,16 +146,17 @@ def do_create_customer_with_payment_source(user: UserProfile, stripe_token: str)
     if PRINT_STRIPE_FIXTURE_DATA:
         print(''.join(['"create_customer": ', str(stripe_customer), ',']))  # nocoverage
     event_time = timestamp_to_datetime(stripe_customer.created)
-    RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
-        event_time=event_time)
-    RealmAuditLog.objects.create(
-        realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
-        event_time=event_time)
-    Customer.objects.create(
-        realm=realm,
-        stripe_customer_id=stripe_customer.id,
-        billing_user=user)
+    with transaction.atomic():
+        RealmAuditLog.objects.create(
+            realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CUSTOMER_CREATED,
+            event_time=event_time)
+        RealmAuditLog.objects.create(
+            realm=user.realm, acting_user=user, event_type=RealmAuditLog.STRIPE_CARD_ADDED,
+            event_time=event_time)
+        Customer.objects.create(
+            realm=realm,
+            stripe_customer_id=stripe_customer.id,
+            billing_user=user)
     return stripe_customer
 
 @catch_stripe_errors
