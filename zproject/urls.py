@@ -428,7 +428,7 @@ i18n_urls = [
         name='signup_send_confirm'),
     url(r'^accounts/new/send_confirm/(?P<email>[\S]+)?',
         TemplateView.as_view(template_name='zerver/accounts_send_confirm.html'),
-        name='new_realm_send_confirm'),
+        {'realm_creation': True}, name='new_realm_send_confirm'),
     url(r'^accounts/register/', zerver.views.registration.accounts_register,
         name='zerver.views.registration.accounts_register'),
     url(r'^accounts/do_confirm/(?P<confirmation_key>[\w]+)',
