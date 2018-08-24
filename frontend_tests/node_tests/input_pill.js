@@ -15,6 +15,14 @@ set_global('ui_util', {
     place_caret_at_end: noop,
 });
 
+global.patch_builtin('window', {
+    getSelection: () => {
+        return {
+            anchorOffset: 0,
+        };
+    },
+});
+
 var id_seq = 0;
 run_test('set_up_ids', () => {
     // just get coverage on a simple one-liner:
@@ -134,6 +142,40 @@ function set_up() {
         container: container,
     };
 }
+
+run_test('left arrow on input', () => {
+    const info = set_up();
+    const config = info.config;
+    const pill_input = info.pill_input;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+
+    pill_input.before = () => {};
+
+    widget.appendValue('blue,red');
+
+    const LEFT_ARROW = 37;
+    const key_handler = container.get_on_handler('keydown', '.input');
+
+    var last_pill_focused = false;
+
+    container.set_find_results('.pill', {
+        last: () => {
+            return {
+                focus: () => {
+                    last_pill_focused = true;
+                },
+            };
+        },
+    });
+
+    key_handler({
+        keyCode: LEFT_ARROW,
+    });
+
+    assert(last_pill_focused);
+});
 
 run_test('comma', () => {
     const info = set_up();
