@@ -397,6 +397,9 @@ class PasswordResetTest(ZulipTestCase):
         result = self.client_get('/accounts/send_confirm/alice@example.com')
         self.assert_in_success_response(["Still no email?"], result)
 
+        result = self.client_get('/accounts/new/send_confirm/alice@example.com')
+        self.assert_in_success_response(["Still no email?"], result)
+
 class LoginTest(ZulipTestCase):
     """
     Logging in, registration, and logging out.
@@ -1577,7 +1580,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/new/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
@@ -1652,7 +1655,7 @@ class RealmCreationTest(ZulipTestCase):
         result = self.client_post('/new/', {'email': email})
         self.assertEqual(result.status_code, 302)
         self.assertTrue(result["Location"].endswith(
-            "/accounts/send_confirm/%s" % (email,)))
+            "/accounts/new/send_confirm/%s" % (email,)))
         result = self.client_get(result["Location"])
         self.assert_in_response("Check your email so we can get started.", result)
 
