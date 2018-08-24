@@ -135,6 +135,52 @@ function set_up() {
     };
 }
 
+run_test('comma', () => {
+    const info = set_up();
+    const config = info.config;
+    const items = info.items;
+    const pill_input = info.pill_input;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+
+    pill_input.before = () => {};
+
+    widget.appendValue('blue,red');
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+    ]);
+
+    const COMMA = 188;
+    const key_handler = container.get_on_handler('keydown', '.input');
+
+    pill_input.text = () => ' yel';
+
+    key_handler({
+        keyCode: COMMA,
+        preventDefault: noop,
+    });
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+    ]);
+
+    pill_input.text = () => ' yellow';
+
+    key_handler({
+        keyCode: COMMA,
+    });
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+        items.yellow,
+    ]);
+});
+
 run_test('enter key with text', () => {
     const info = set_up();
     const config = info.config;
