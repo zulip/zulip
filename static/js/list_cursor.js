@@ -83,20 +83,20 @@ var list_cursor = function (opts) {
     };
 
     self.go_to = function (key) {
-        if (key === self.curr_key) {
-            return;
-        }
         if (key === undefined) {
             blueslip.error('Caller is not checking keys for list_cursor.go_to');
             return;
         }
+        if (key === self.curr_key) {
+            return;
+        }
         self.clear();
-        self.curr_key = key;
         var row = self.get_row(key);
         if (row === undefined) {
             blueslip.error('Cannot highlight key for list_cursor: ' + key);
             return;
         }
+        self.curr_key = key;
         row.highlight();
     };
 
