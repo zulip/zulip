@@ -2,9 +2,11 @@ import datetime
 from django.conf import settings
 from django.core import mail
 from django.contrib.auth.signals import user_logged_in
+from django.test import override_settings
+
 from zerver.lib.test_classes import ZulipTestCase
 from zerver.signals import get_device_browser, get_device_os, JUST_CREATED_THRESHOLD
-from zerver.lib.actions import notify_new_user
+from zerver.lib.actions import notify_new_user, do_change_notification_settings
 from zerver.models import Recipient, Stream, Realm
 from zerver.lib.initial_password import initial_password
 from unittest import mock
@@ -83,6 +85,29 @@ class SendLoginEmailTest(ZulipTestCase):
             for email in mail.outbox:
                 subject = 'New login from an unknown browser on an unknown operating system'
                 self.assertNotEqual(email.subject, subject)
+
+    @override_settings(SEND_LOGIN_EMAILS=True)
+    def test_enable_login_emails_user_setting(self) -> None:
+        user = self.example_user('hamlet')
+        utc = get_timezone('utc')
+        mock_time = datetime.datetime(year=2018, month=1, day=1, tzinfo=utc)
+
+        user.timezone = 'US/Pacific'
+        user.date_joined = mock_time - datetime.timedelta(seconds=JUST_CREATED_THRESHOLD + 1)
+        user.save()
+
+        do_change_notification_settings(user, "enable_login_emails", False)
+        self.assertFalse(user.enable_login_emails)
+        with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
+            self.login(user.email)
+        self.assertEqual(len(mail.outbox), 0)
+
+        do_change_notification_settings(user, "enable_login_emails", True)
+        self.assertTrue(user.enable_login_emails)
+        with mock.patch('zerver.signals.timezone_now', return_value=mock_time):
+            self.login(user.email)
+        self.assertEqual(len(mail.outbox), 1)
+
 
 class TestBrowserAndOsUserAgentStrings(ZulipTestCase):
 
