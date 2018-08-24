@@ -395,10 +395,10 @@ class PasswordResetTest(ZulipTestCase):
         self.assert_in_success_response(["We've reset your password!"], result)
 
         result = self.client_get('/accounts/send_confirm/alice@example.com')
-        self.assert_in_success_response(["Still no email?"], result)
+        self.assert_in_success_response(["/accounts/home/"], result)
 
         result = self.client_get('/accounts/new/send_confirm/alice@example.com')
-        self.assert_in_success_response(["Still no email?"], result)
+        self.assert_in_success_response(["/new/"], result)
 
 class LoginTest(ZulipTestCase):
     """
