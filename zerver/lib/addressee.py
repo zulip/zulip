@@ -115,6 +115,9 @@ class Addressee:
 
             return Addressee.for_stream(stream_name, topic_name)
         elif message_type_name == 'private':
+            if not message_to:
+                raise JsonableError(_("Message must have recipients"))
+
             emails = message_to
             return Addressee.for_private(emails, realm)
         else:
@@ -135,6 +138,7 @@ class Addressee:
 
     @staticmethod
     def for_private(emails: Sequence[str], realm: Realm) -> 'Addressee':
+        assert len(emails) > 0
         user_profiles = get_user_profiles(emails, realm)
         return Addressee(
             msg_type='private',
@@ -143,6 +147,7 @@ class Addressee:
 
     @staticmethod
     def for_user_ids(user_ids: Sequence[int], realm: Realm) -> 'Addressee':
+        assert len(user_ids) > 0
         user_profiles = get_user_profiles_by_ids(user_ids, realm)
         return Addressee(
             msg_type='private',
