@@ -90,7 +90,7 @@ run_test('basics', () => {
     assert.deepEqual(widget.items(), [item]);
 });
 
-run_test('insert_remove', () => {
+function set_up() {
     set_global('$', global.make_zjquery());
     var items = {
         blue: {
@@ -112,11 +112,6 @@ run_test('insert_remove', () => {
 
     var pill_input = $.create('pill_input');
 
-    var inserted_html = [];
-    pill_input.before = function (elem) {
-        inserted_html.push(elem.html());
-    };
-
     var create_item_from_text = function (text) {
         return items[text];
     };
@@ -132,8 +127,64 @@ run_test('insert_remove', () => {
 
     id_seq = 0;
 
+    return {
+        config: config,
+        pill_input: pill_input,
+        items: items,
+        container: container,
+    };
+}
 
-    // FINALLY CREATE THE WIDGET!!
+run_test('enter key with text', () => {
+    const info = set_up();
+    const config = info.config;
+    const items = info.items;
+    const pill_input = info.pill_input;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+
+    pill_input.before = () => {};
+
+    widget.appendValue('blue,red');
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+    ]);
+
+    const ENTER = 13;
+    const key_handler = container.get_on_handler('keydown', '.input');
+
+    key_handler({
+        keyCode: ENTER,
+        preventDefault: noop,
+        stopPropagation: noop,
+        target: {
+            innerText: ' yellow ',
+        },
+    });
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+        items.yellow,
+    ]);
+});
+
+run_test('insert_remove', () => {
+    const info = set_up();
+
+    const config = info.config;
+    const pill_input = info.pill_input;
+    const items = info.items;
+    const container = info.container;
+
+    var inserted_html = [];
+    pill_input.before = function (elem) {
+        inserted_html.push(elem.html());
+    };
+
     var widget = input_pill.create(config);
 
     var created;
@@ -186,4 +237,31 @@ run_test('insert_remove', () => {
         items.blue,
         items.red,
     ]);
+
+    var next_pill_focused = false;
+
+    const next_pill_stub = {
+        focus: () => {
+            next_pill_focused = true;
+        },
+    };
+
+    const focus_pill_stub = {
+        next: () => next_pill_stub,
+        data: (field) => {
+            assert.equal(field, 'id');
+            return 'some_id1';
+        },
+    };
+
+    container.set_find_results('.pill:focus', focus_pill_stub);
+
+    key_handler = container.get_on_handler('keydown', '.pill');
+    key_handler({
+        keyCode: BACKSPACE,
+        preventDefault: noop,
+    });
+
+    assert(next_pill_focused);
+
 });
