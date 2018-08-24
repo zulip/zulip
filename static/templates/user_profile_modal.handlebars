@@ -28,6 +28,8 @@
                     <div class="pill-container not-editable" data-field-id="{{this.id}}">
                         <div class="input" contenteditable="false" style="display: none;"></div>
                     </div>
+                    {{else if this.is_link}}
+                    <a href={{this.value}} target="_blank" class="user-profile-modal-field-value">{{this.value}}</a>
                     {{else}}
                     <div class="user-profile-modal-field-value">{{this.value}}</div>
                     {{/if}}
