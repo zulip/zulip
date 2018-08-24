@@ -102,6 +102,7 @@ function setup_settings_label() {
 
         // other_notification_settings
         enable_digest_emails: i18n.t("Send digest emails when I'm away"),
+        enable_login_emails: i18n.t("Send email notifications for new logins to my account"),
         message_content_in_email_notifications: i18n.t("Include message content in missed message emails"),
         realm_name_in_notifications: i18n.t("Include organization name in subject of missed message emails"),
 

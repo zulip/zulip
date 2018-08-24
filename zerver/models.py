@@ -734,6 +734,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     enable_online_push_notifications = models.BooleanField(default=False)  # type: bool
 
     enable_digest_emails = models.BooleanField(default=True)  # type: bool
+    enable_login_emails = models.BooleanField(default=True)  # type: bool
     realm_name_in_notifications = models.BooleanField(default=False)  # type: bool
 
     # Words that trigger a mention for this user, formatted as a json-serialized list of strings
@@ -829,6 +830,7 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     notification_setting_types = dict(
         enable_desktop_notifications=bool,
         enable_digest_emails=bool,
+        enable_login_emails=bool,
         enable_offline_email_notifications=bool,
         enable_offline_push_notifications=bool,
         enable_online_push_notifications=bool,

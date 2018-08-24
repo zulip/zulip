@@ -59,6 +59,8 @@ def get_device_os(user_agent: str) -> Optional[str]:
 
 @receiver(user_logged_in, dispatch_uid="only_on_login")
 def email_on_new_login(sender: Any, user: UserProfile, request: Any, **kwargs: Any) -> None:
+    if not user.enable_login_emails:
+        return
     # We import here to minimize the dependencies of this module,
     # since it runs as part of `manage.py` initialization
     from zerver.context_processors import common_context
