@@ -235,9 +235,8 @@ exports.create = function (opts) {
 
                 // if there is input, grab the input, make a pill from it,
                 // and append the pill, then clear the input.
-                if (funcs.value(e.target).length > 0) {
-                    var value = funcs.value(e.target);
-
+                var value = funcs.value(e.target);
+                if (value.length > 0) {
                     // append the pill and by proxy create the pill object.
                     var ret = funcs.appendPill(value);
 
