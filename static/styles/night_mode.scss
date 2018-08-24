@@ -221,6 +221,7 @@ on a dark background, and don't change the dark labels dark either. */
         border-right-color: hsl(235, 18%, 7%);
     }
 
+    #message_edit_tooltip,
     .clear_search_button,
     .clear_search_button:focus,
     .clear_search_button:active,
@@ -235,6 +236,7 @@ on a dark background, and don't change the dark labels dark either. */
         color: hsl(236, 33%, 80%);
     }
 
+    #message_edit_tooltip:hover,
     .clear_search_button:hover,
     #searchbox_legacy a.search_icon:hover,
     #searchbox_legacy .search_button:hover,
