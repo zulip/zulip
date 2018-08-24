@@ -135,6 +135,43 @@ function set_up() {
     };
 }
 
+run_test('enter key with text', () => {
+    const info = set_up();
+    const config = info.config;
+    const items = info.items;
+    const pill_input = info.pill_input;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+
+    pill_input.before = () => {};
+
+    widget.appendValue('blue,red');
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+    ]);
+
+    const ENTER = 13;
+    const key_handler = container.get_on_handler('keydown', '.input');
+
+    key_handler({
+        keyCode: ENTER,
+        preventDefault: noop,
+        stopPropagation: noop,
+        target: {
+            innerText: ' yellow ',
+        },
+    });
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.red,
+        items.yellow,
+    ]);
+});
+
 run_test('insert_remove', () => {
     const info = set_up();
 
