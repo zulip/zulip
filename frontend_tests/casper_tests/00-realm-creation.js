@@ -17,7 +17,7 @@ casper.then(function () {
     });
     // Make sure confirmation email is send
     this.waitWhileVisible('form[action^="/new/"]', function () {
-        var regex = new RegExp('^http://[^/]+/accounts/send_confirm/' + email);
+        var regex = new RegExp('^http://[^/]+/accounts/new/send_confirm/' + email);
         this.test.assertUrlMatch(regex, 'Confirmation mail send');
     });
 });
