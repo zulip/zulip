@@ -90,7 +90,7 @@ run_test('basics', () => {
     assert.deepEqual(widget.items(), [item]);
 });
 
-run_test('insert_remove', () => {
+function set_up() {
     set_global('$', global.make_zjquery());
     var items = {
         blue: {
@@ -112,11 +112,6 @@ run_test('insert_remove', () => {
 
     var pill_input = $.create('pill_input');
 
-    var inserted_html = [];
-    pill_input.before = function (elem) {
-        inserted_html.push(elem.html());
-    };
-
     var create_item_from_text = function (text) {
         return items[text];
     };
@@ -132,8 +127,27 @@ run_test('insert_remove', () => {
 
     id_seq = 0;
 
+    return {
+        config: config,
+        pill_input: pill_input,
+        items: items,
+        container: container,
+    };
+}
 
-    // FINALLY CREATE THE WIDGET!!
+run_test('insert_remove', () => {
+    const info = set_up();
+
+    const config = info.config;
+    const pill_input = info.pill_input;
+    const items = info.items;
+    const container = info.container;
+
+    var inserted_html = [];
+    pill_input.before = function (elem) {
+        inserted_html.push(elem.html());
+    };
+
     var widget = input_pill.create(config);
 
     var created;
