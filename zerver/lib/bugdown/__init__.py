@@ -225,7 +225,8 @@ def add_a(
     if data_id is not None:
         a.set("data-id", data_id)
     img = markdown.util.etree.SubElement(a, "img")
-    if is_thumbor_enabled() and use_thumbnails:
+    user_uploads_or_external = url.startswith('http') or url.lstrip('/').startswith('user_uploads/')
+    if is_thumbor_enabled() and use_thumbnails and user_uploads_or_external:
         # See docs/thumbnailing.md for some high-level documentation.
         #
         # We strip leading '/' from relative URLs here to ensure
