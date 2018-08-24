@@ -19,10 +19,7 @@ from zerver.lib.bugdown import (
     version as bugdown_version,
     url_embed_preview_enabled_for_realm
 )
-from zerver.lib.addressee import (
-    Addressee,
-    user_profiles_from_unvalidated_emails,
-)
+from zerver.lib.addressee import Addressee
 from zerver.lib.bot_config import (
     ConfigError,
     get_bot_config,
@@ -99,7 +96,8 @@ from zerver.models import Realm, RealmEmoji, Stream, UserProfile, UserActivity, 
     get_display_recipient_by_id, query_for_ids, get_huddle_recipient, \
     UserGroup, UserGroupMembership, get_default_stream_groups, \
     get_bot_services, get_bot_dicts_in_realm, DomainNotAllowedForRealmError, \
-    DisposableEmailError, EmailContainsPlusError
+    DisposableEmailError, EmailContainsPlusError, \
+    get_user_including_cross_realm
 
 from zerver.lib.alert_words import alert_words_in_realm
 from zerver.lib.avatar import avatar_url, avatar_url_from_dict
@@ -1770,7 +1768,15 @@ def recipient_for_emails(emails: Iterable[str], not_forged_mirror_message: bool,
                          forwarder_user_profile: Optional[UserProfile],
                          sender: UserProfile) -> Recipient:
 
-    user_profiles = user_profiles_from_unvalidated_emails(emails, sender.realm)
+    # This helper should only be used for searches.
+    # Other features are moving toward supporting ids.
+    user_profiles = []  # type: List[UserProfile]
+    for email in emails:
+        try:
+            user_profile = get_user_including_cross_realm(email, sender.realm)
+        except UserProfile.DoesNotExist:
+            raise ValidationError(_("Invalid email '%s'") % (email,))
+        user_profiles.append(user_profile)
 
     return recipient_for_user_profiles(
         user_profiles=user_profiles,
