@@ -1628,7 +1628,7 @@ paths:
                             {
                                 "description": "Other users",
                                 "id": 2,
-                                "name": "otherusers",
+                                "name": "other users",
                                 "members": [1, 2]
                             }
                         ]
