@@ -186,4 +186,31 @@ run_test('insert_remove', () => {
         items.blue,
         items.red,
     ]);
+
+    var next_pill_focused = false;
+
+    const next_pill_stub = {
+        focus: () => {
+            next_pill_focused = true;
+        },
+    };
+
+    const focus_pill_stub = {
+        next: () => next_pill_stub,
+        data: (field) => {
+            assert.equal(field, 'id');
+            return 'some_id1';
+        },
+    };
+
+    container.set_find_results('.pill:focus', focus_pill_stub);
+
+    key_handler = container.get_on_handler('keydown', '.pill');
+    key_handler({
+        keyCode: BACKSPACE,
+        preventDefault: noop,
+    });
+
+    assert(next_pill_focused);
+
 });
