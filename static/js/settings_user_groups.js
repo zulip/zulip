@@ -86,6 +86,11 @@ exports.populate_user_groups = function () {
             var same_groups = _.isEqual(_.sortBy(draft_group), _.sortBy(original_group));
             var description = $('#user-groups #' + data.id + ' .description').text().trim();
             var name = $('#user-groups #' + data.id + ' .name').text().trim();
+            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
+
+            if (user_group_status.is(':visible')) {
+                return false;
+            }
 
             if (group_data.description === description && group_data.name === name &&
                 (!draft_group.length || same_groups)) {
@@ -148,6 +153,7 @@ exports.populate_user_groups = function () {
         }
 
         function save_name_desc() {
+            var user_group_status = $('#user-groups #' + data.id + ' .user-group-status');
             var group_data = user_groups.get_user_group_from_id(data.id);
             var description = $('#user-groups #' + data.id + ' .description').text().trim();
             var name = $('#user-groups #' + data.id + ' .name').text().trim();
@@ -163,7 +169,16 @@ exports.populate_user_groups = function () {
                     description: description,
                 },
                 success: function () {
+                    user_group_status.hide();
                     setTimeout(show_saved_button, 200);
+                },
+                error: function (xhr) {
+                    var errors = JSON.parse(xhr.responseText).msg;
+                    xhr.responseText = JSON.stringify({msg: errors});
+                    ui_report.error(i18n.t("Failed"), xhr, user_group_status);
+                    update_cancel_button();
+                    $('#user-groups #' + data.id + ' .name').text(group_data.name);
+                    $('#user-groups #' + data.id + ' .description').text(group_data.description);
                 },
             });
         }
