@@ -2167,10 +2167,6 @@ def check_message(sender: UserProfile, client: Client, addressee: Addressee,
 
     elif addressee.is_private():
         user_profiles = addressee.user_profiles()
-
-        if user_profiles is None or len(user_profiles) == 0:
-            raise JsonableError(_("Message must have recipients"))
-
         mirror_message = client and client.name in ["zephyr_mirror", "irc_mirror",
                                                     "jabber_mirror", "JabberMirror"]
         not_forged_mirror_message = mirror_message and not forged
