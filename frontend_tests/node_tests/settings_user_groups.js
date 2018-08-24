@@ -693,6 +693,14 @@ run_test('on_events', () => {
         assert(cancel_fade_out_called);
         assert(instructions_fade_out_called);
 
+        // Check if cancel button removed if user group error is showing.
+        $(user_group_selector + ' .user-group-status').show();
+        cancel_fade_out_called = false;
+        instructions_fade_out_called = false;
+        handler_name.call(fake_this);
+        assert(cancel_fade_out_called);
+        assert(instructions_fade_out_called);
+
         // Check for handler_desc to achieve 100% coverage.
         cancel_fade_out_called = false;
         instructions_fade_out_called = false;
@@ -750,6 +758,24 @@ run_test('on_events', () => {
                 assert(cancel_fade_out_called);
                 assert(instructions_fade_out_called);
                 assert(saved_fade_to_called);
+            }());
+            (function test_post_error() {
+                var user_group_error = $(user_group_selector + ' .user-group-status');
+                user_group_error.show();
+                ui_report.error = function (error_msg, error_obj, ele) {
+                    var xhr = {
+                        responseText: '{"msg":"fake-msg"}',
+                    };
+                    assert.equal(error_msg, 'translated: Failed');
+                    assert.deepEqual(error_obj, xhr);
+                    assert.equal(ele, user_group_error);
+                };
+                var xhr = {
+                    responseText: '{"msg":"fake-msg", "attrib":"val"}',
+                };
+                opts.error(xhr);
+
+                assert(user_group_error.visible());
             }());
         };
 
