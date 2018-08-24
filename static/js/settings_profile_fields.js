@@ -317,11 +317,14 @@ function set_up_choices_field() {
     create_choice_row('#profile_field_choices');
     update_choice_delete_btn($("#profile_field_choices"), false);
 
-    var choice_list = $("#profile_field_choices")[0];
+    if (page_params.is_admin) {
+        var choice_list = $("#profile_field_choices")[0];
+        Sortable.create(choice_list, {
+            onUpdate: function () {},
+        });
+    }
+
     var field_type = $('#profile_field_type').val();
-    Sortable.create(choice_list, {
-        onUpdate: function () {},
-    });
 
     if (parseInt(field_type, 10) !== field_types.CHOICE.id) {
         // If 'Choice' type is already selected, show choice row.
