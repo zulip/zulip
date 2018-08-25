@@ -14,6 +14,7 @@ from zerver.models import UserProfile, Service, Realm, \
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 def check_full_name(full_name_raw: str) -> str:
+    
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
