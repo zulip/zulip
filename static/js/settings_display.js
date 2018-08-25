@@ -143,7 +143,7 @@ exports.report_emojiset_change = function () {
 
     var sprite = new Image();
     sprite.onload = function () {
-        var sprite_css_href = "/static/generated/emoji/" + page_params.emojiset + "_sprite.css";
+        var sprite_css_href = "/static/generated/emoji/" + page_params.emojiset + "-sprite.css";
         $("#emoji-spritesheet").attr('href', sprite_css_href);
     };
     sprite.src = "/static/generated/emoji/sheet-" + page_params.emojiset + "-64.png";

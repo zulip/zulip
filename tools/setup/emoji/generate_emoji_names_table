@@ -47,7 +47,7 @@ TABLE_ROW_TEMPLATE = """
 EMOJI_LISTING_TEMPLATE = """
 <html>
     <head>
-        <link rel = "stylesheet" type = "text/css" href = "/static/generated/emoji/google_sprite.css" />
+        <link rel = "stylesheet" type = "text/css" href = "/static/generated/emoji/google-sprite.css" />
         <style>
             %(table_css)s
         </style>

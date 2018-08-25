@@ -816,5 +816,5 @@ class HomeTest(ZulipTestCase):
         self.assertEqual(result.status_code, 200)
 
         html = result.content.decode('utf-8')
-        self.assertIn('google_sprite.css', html)
-        self.assertNotIn('text_sprite.css', html)
+        self.assertIn('google-sprite.css', html)
+        self.assertNotIn('text-sprite.css', html)

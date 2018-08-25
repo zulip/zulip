@@ -120,7 +120,7 @@ def generate_sprite_css_files(cache_path: str,
                 'pos_y': (emoji["sheet_y"] * 100) / 51,
             }
 
-    SPRITE_CSS_PATH = os.path.join(cache_path, '%s_sprite.css' % (emojiset,))
+    SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
     sprite_css_file = open(SPRITE_CSS_PATH, 'w')
     sprite_css_file.write(SPRITE_CSS_FILE_TEMPLATE % {'emojiset': emojiset,
                                                       'emoji_positions': emoji_positions,
