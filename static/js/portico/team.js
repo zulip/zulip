@@ -7,6 +7,10 @@
 var repos = ['server', 'desktop', 'mobile', 'python-zulip-api', 'zulip-js', 'zulipbot', 'terminal'];
 var hidden_repos = ['zulip-android', 'zulip-ios-legacy'];
 
+// Remember the loaded repositories so that HTML is not redundantly edited
+// if a user leaves and then revisits the same tab.
+var loaded_repos = [];
+
 function contrib_total_commits(contrib) {
     var commits = 0;
     repos.concat(hidden_repos).forEach(function (repo) {
@@ -16,7 +20,6 @@ function contrib_total_commits(contrib) {
 }
 
 // TODO (for v2 of /team contributors):
-//   - Lazy-render all but the total tab.
 //   - Make tab header responsive.
 //   - Display full name instead of github username.
 export default function render_tabs() {
@@ -48,20 +51,29 @@ export default function render_tabs() {
     $('#tab-total').html(total_tab_html);
 
     _.each(repos, function (repo) {
-        var html = _.chain(contributors_list)
-            .filter(repo)
-            .sortBy(repo)
-            .reverse()
-            .map(function (c) {
-                return template({
-                    name: c.name,
-                    avatar: c.avatar,
-                    commits: c[repo],
-                });
-            })
-            .value()
-            .join('');
+        // Set as the loading template for now, and load when clicked.
+        $('#tab-' + repo).html($('#loading-template').html());
 
-        $('#tab-' + repo).html(html);
+        $('#' + repo).click(function () {
+            if (!_.contains(loaded_repos, repo)) {
+                var html = _.chain(contributors_list)
+                    .filter(repo)
+                    .sortBy(repo)
+                    .reverse()
+                    .map(function (c) {
+                        return template({
+                            name: c.name,
+                            avatar: c.avatar,
+                            commits: c[repo],
+                        });
+                    })
+                    .value()
+                    .join('');
+
+                $('#tab-' + repo).html(html);
+
+                loaded_repos.push(repo);
+            }
+        });
     });
 }
