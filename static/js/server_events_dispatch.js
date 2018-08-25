@@ -14,9 +14,31 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         attachments_ui.update_attachments(event);
         break;
 
+    case 'custom_profile_fields':
+        page_params.custom_profile_fields = event.fields;
+        settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
+        settings_account.add_custom_profile_fields_to_settings();
+        break;
+
     case 'default_streams':
         stream_data.set_realm_default_streams(event.default_streams);
         settings_streams.update_default_streams_table();
+        break;
+
+    case 'delete_message':
+        var msg_id = event.message_id;
+        // message is passed to unread.get_unread_messages,
+        // which returns all the unread messages out of a given list.
+        // So double marking something as read would not occur
+        unread_ops.process_read_messages_event([msg_id]);
+        if (event.message_type === 'stream') {
+            topic_data.remove_message({
+                stream_id: event.stream_id,
+                topic_name: event.topic,
+            });
+            stream_list.update_streams_sidebar();
+        }
+        ui.remove_message(msg_id);
         break;
 
     case 'hotspots':
@@ -176,12 +198,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
         page_params.realm_filters = event.realm_filters;
         markdown.set_realm_filters(page_params.realm_filters);
         settings_filters.populate_filters(page_params.realm_filters);
-        break;
-
-    case 'custom_profile_fields':
-        page_params.custom_profile_fields = event.fields;
-        settings_profile_fields.populate_profile_fields(page_params.custom_profile_fields);
-        settings_account.add_custom_profile_fields_to_settings();
         break;
 
     case 'realm_domains':
@@ -420,22 +436,6 @@ exports.dispatch_normal_event = function dispatch_normal_event(event) {
             unread_ops.process_read_messages_event(event.messages);
             break;
         }
-        break;
-
-    case 'delete_message':
-        var msg_id = event.message_id;
-        // message is passed to unread.get_unread_messages,
-        // which returns all the unread messages out of a given list.
-        // So double marking something as read would not occur
-        unread_ops.process_read_messages_event([msg_id]);
-        if (event.message_type === 'stream') {
-            topic_data.remove_message({
-                stream_id: event.stream_id,
-                topic_name: event.topic,
-            });
-            stream_list.update_streams_sidebar();
-        }
-        ui.remove_message(msg_id);
         break;
 
     case 'user_group':
