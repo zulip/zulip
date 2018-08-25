@@ -2890,7 +2890,7 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/?')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_redirects_for_root_domain(self, mock_get_host: MagicMock) -> None:
@@ -2898,7 +2898,7 @@ class TestLoginPage(ZulipTestCase):
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/?')
 
         mock_get_host.return_value = 'www.testserver.com'
         with self.settings(ROOT_DOMAIN_LANDING_PAGE=True,
@@ -2906,7 +2906,7 @@ class TestLoginPage(ZulipTestCase):
                            ROOT_SUBDOMAIN_ALIASES=['test']):
             result = self.client_get("/en/login/")
             self.assertEqual(result.status_code, 302)
-            self.assertEqual(result.url, '/accounts/find/')
+            self.assertEqual(result.url, '/accounts/go/?')
 
     @patch('django.http.HttpRequest.get_host')
     def test_login_page_works_without_subdomains(self, mock_get_host: MagicMock) -> None:
