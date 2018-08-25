@@ -67,6 +67,10 @@ def run_production() -> None:
     dictionary. Retry fetching each repository if responded with non HTTP 200
     status.
     """
+
+    # This dictionary should hold all repositories that should be included in
+    # the total count, including those that should *not* have tabs on the team
+    # page (e.g. if they are deprecated).
     repositories = {
         'server': 'https://api.github.com/repos/zulip/zulip/stats/contributors',
         'desktop': 'https://api.github.com/repos/zulip/zulip-electron/stats/contributors',
@@ -75,6 +79,8 @@ def run_production() -> None:
         'zulip-js': 'https://api.github.com/repos/zulip/zulip-js/stats/contributors',
         'zulipbot': 'https://api.github.com/repos/zulip/zulipbot/stats/contributors',
         'terminal': 'https://api.github.com/repos/zulip/zulip-terminal/stats/contributors',
+        'zulip-ios-legacy': 'https://api.github.com/repos/zulip/zulip-ios-legacy/stats/contributors',
+        'zulip-android': 'https://api.github.com/repos/zulip/zulip-android/stats/contributors',
     }
 
     data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON

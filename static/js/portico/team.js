@@ -2,19 +2,20 @@
 // eslint's error.
 /* global contributors_list */
 
+// `repos` are repositories to be shown as tabs, whereas `hidden_repos` are
+// repositories that should count towards the total but not have tabs.
 var repos = ['server', 'desktop', 'mobile', 'python-zulip-api', 'zulip-js', 'zulipbot', 'terminal'];
+var hidden_repos = ['zulip-android', 'zulip-ios-legacy'];
 
 function contrib_total_commits(contrib) {
     var commits = 0;
-    repos.forEach(function (repo) {
+    repos.concat(hidden_repos).forEach(function (repo) {
         commits += contrib[repo] || 0;
     });
     return commits;
 }
 
 // TODO (for v2 of /team contributors):
-//   - Freeze contributions data for legacy repo (ios, android) and include them
-//     in totals tab.
 //   - Lazy-render all but the total tab.
 //   - Make tab header responsive.
 //   - Display full name instead of github username.
