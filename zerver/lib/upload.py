@@ -27,6 +27,7 @@ import base64
 import os
 import re
 from PIL import Image, ImageOps, ExifTags
+from PIL.ImageSequence import Iterator
 from PIL.GifImagePlugin import GifImageFile
 import io
 import random
@@ -121,20 +122,15 @@ def resize_avatar(image_data: bytes, size: int=DEFAULT_AVATAR_SIZE) -> bytes:
 def resize_gif(im: GifImageFile, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
     frames = []
     duration_info = []
-    # If 'loop' info is not set then loop for infinite number of times.
-    loop = im.info.get("loop", 0)
-    for frame_num in range(0, im.n_frames):
-        im.seek(frame_num)
-        new_frame = Image.new("RGBA", im.size)
-        new_frame.paste(im, (0, 0), im.convert("RGBA"))
-        new_frame = ImageOps.fit(new_frame, (size, size), Image.ANTIALIAS)
+    for frame_num, frame in enumerate(Iterator(im)):
+        new_frame = ImageOps.fit(frame, (size, size), Image.ANTIALIAS)
         frames.append(new_frame)
-        duration_info.append(im.info['duration'])
+        duration_info.append(frame.info["duration"])
     out = io.BytesIO()
-    frames[0].save(out, save_all=True, optimize=True,
-                   format="GIF", append_images=frames[1:],
-                   duration=duration_info,
-                   loop=loop)
+    frames[0].save(out, format="GIF", dispose=im.disposal_method, palette=im.getpalette(),
+                   loop=im.info.get("loop", 0), append_images=frames[1:], save_all=True,
+                   optimize=False, duration=duration_info, transparency=im.info.get("transparency"),
+                   background=im.info.get("background"))
     return out.getvalue()
 
 def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
@@ -142,7 +138,11 @@ def resize_emoji(image_data: bytes, size: int=DEFAULT_EMOJI_SIZE) -> bytes:
         im = Image.open(io.BytesIO(image_data))
         image_format = im.format
         if image_format == "GIF":
-            return resize_gif(im, size)
+            try:
+                return resize_gif(im, size)
+            except Exception as e:
+                print(e)
+                raise e
         else:
             im = exif_rotate(im)
             im = ImageOps.fit(im, (size, size), Image.ANTIALIAS)
