@@ -9,6 +9,7 @@ from django.conf import settings
 from django.test import override_settings
 from django.template import Template, Context
 from django.template.loader import get_template
+from django.test.client import RequestFactory
 
 from zerver.lib.test_helpers import get_all_templates
 from zerver.lib.test_classes import (
@@ -183,6 +184,8 @@ class TemplateTestCase(ZulipTestCase):
                 terms=get_form_value(True),
                 email=get_form_value(email),
                 emails=get_form_value(email),
+                subdomain=get_form_value("zulip"),
+                next_param=get_form_value("billing")
             ),
             current_url=lambda: 'www.zulip.com',
             integrations_dict={},
@@ -202,6 +205,7 @@ class TemplateTestCase(ZulipTestCase):
             api_uri_context={},
             cloud_annual_price=80,
             seat_count=8,
+            request=RequestFactory().get("/")
         )
 
         context.update(kwargs)
