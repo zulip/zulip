@@ -7,6 +7,8 @@ const _people = {
 };
 
 set_global('people', _people);
+zrequire('util');
+
 zrequire('compose_pm_pill');
 zrequire('input_pill');
 zrequire('user_pill');
@@ -130,6 +132,9 @@ run_test('pills', () => {
 
     var user_ids = compose_pm_pill.get_user_ids();
     assert.deepEqual(user_ids, [othello.user_id, hamlet.user_id]);
+
+    var user_ids_string = compose_pm_pill.get_user_ids_string();
+    assert.equal(user_ids_string, '1,3');
 
     var emails = compose_pm_pill.get_emails();
     assert.equal(emails, 'othello@example.com,hamlet@example.com');

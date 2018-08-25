@@ -41,6 +41,13 @@ exports.get_user_ids = function () {
     return user_pill.get_user_ids(exports.widget);
 };
 
+exports.get_user_ids_string = function () {
+    var user_ids = exports.get_user_ids();
+    var sorted_user_ids = util.sorted_ids(user_ids);
+    var user_ids_string = sorted_user_ids.join(',');
+    return user_ids_string;
+};
+
 exports.get_emails = function () {
     // return something like "alice@example.com,bob@example.com"
     var user_ids = exports.get_user_ids();
