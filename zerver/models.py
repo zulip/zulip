@@ -615,8 +615,8 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     MAX_NAME_LENGTH = 100
     MIN_NAME_LENGTH = 2
     API_KEY_LENGTH = 32
-    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@']
-
+    NAME_INVALID_CHARS = ['*', '`', '>', '"', '@','\n','\t','\r','\0']
+    NAME_OFFENSIVE_CHARS = ['~','!','@','#','$','%','^','&','*','(',')','-','+','<','>',':','()']
     DEFAULT_BOT = 1
     """
     Incoming webhook bots are limited to only sending messages via webhooks.

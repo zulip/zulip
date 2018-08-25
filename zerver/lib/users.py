@@ -21,6 +21,16 @@ def check_full_name(full_name_raw: str) -> str:
         raise JsonableError(_("Name too short!"))
     if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
         raise JsonableError(_("Invalid characters in name!"))
+# Two more checks added
+    if fullname[0] == '.':
+        raise JsonableError(_("Name should not start with '.' !"))
+    if fullname[len(full_name)-1] == '.':
+        raise JsonableError(_("Name should not end with '.' !"))
+
+# Check for offending characters
+    if list(set(full_name).intersection(UserProfile.NAME_OFFENSIVE_CHARS)):
+        raise JsonableError(_("Try Avoiding Special Characters!"))
+
     return full_name
 
 def check_short_name(short_name_raw: str) -> str:
