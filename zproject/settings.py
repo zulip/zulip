@@ -883,34 +883,7 @@ PIPELINE = {
     'PIPELINE_ENABLED': PIPELINE_ENABLED,
     'CSS_COMPRESSOR': 'pipeline.compressors.yui.YUICompressor',
     'YUI_BINARY': '/usr/bin/env yui-compressor',
-    'STYLESHEETS': {
-        # If you add a style here, please update stylesheets()
-        # in frontend_tests/zjsunit/output.js as needed.
-        'apple_sprite': {
-            'source_filenames': (
-                'generated/emoji/apple_sprite.css',
-            ),
-            'output_filename': 'min/apple_sprite.css',
-        },
-        'emojione_sprite': {
-            'source_filenames': (
-                'generated/emoji/emojione_sprite.css',
-            ),
-            'output_filename': 'min/emojione_sprite.css',
-        },
-        'google_sprite': {
-            'source_filenames': (
-                'generated/emoji/google_sprite.css',
-            ),
-            'output_filename': 'min/google_sprite.css',
-        },
-        'twitter_sprite': {
-            'source_filenames': (
-                'generated/emoji/twitter_sprite.css',
-            ),
-            'output_filename': 'min/twitter_sprite.css',
-        },
-    },
+    'STYLESHEETS': {},
     'JAVASCRIPT': {},
 }
 
