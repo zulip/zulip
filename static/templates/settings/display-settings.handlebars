@@ -82,7 +82,6 @@
             <h3 class="inline-block light">Emoji settings</h3>
             <div class="alert-notification" id="emoji-settings-status"></div>
 
-            {{#if false}}
             <div class="input-group">
                 <div class="emojiset_choices grey-box">
                     {{#each page_params.emojiset_choices }}
@@ -103,12 +102,6 @@
                     {{/each}}
                 </div>
             </div>
-            {{/if}}
-
-            {{partial "settings_checkbox"
-              "setting_name" "translate_emoji_to_text"
-              "is_checked" false
-              "label" settings_label.translate_emoji_to_text}}
 
             {{partial "settings_checkbox"
               "setting_name" "translate_emoticons"

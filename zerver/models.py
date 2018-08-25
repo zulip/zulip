@@ -784,11 +784,15 @@ class UserProfile(AbstractBaseUser, PermissionsMixin):
     timezone = models.CharField(max_length=40, default=u'')  # type: str
 
     # Emojisets
-    GOOGLE_EMOJISET     = u'google'
-    TEXT_EMOJISET       = u'text'
-    EMOJISET_CHOICES    = ((GOOGLE_EMOJISET, "Google"),
-                           (TEXT_EMOJISET, "Plain text"))
-    emojiset = models.CharField(default=GOOGLE_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)  # type: str
+    GOOGLE_EMOJISET         = 'google'
+    GOOGLE_BLOB_EMOJISET    = 'google-blob'
+    TEXT_EMOJISET           = 'text'
+    TWITTER_EMOJISET        = 'twitter'
+    EMOJISET_CHOICES        = ((GOOGLE_EMOJISET, "Google modern"),
+                               (GOOGLE_BLOB_EMOJISET, "Google classic"),
+                               (TWITTER_EMOJISET, "Twitter"),
+                               (TEXT_EMOJISET, "Plain text"))
+    emojiset = models.CharField(default=GOOGLE_BLOB_EMOJISET, choices=EMOJISET_CHOICES, max_length=20)  # type: str
 
     AVATAR_FROM_GRAVATAR = u'G'
     AVATAR_FROM_USER = u'U'

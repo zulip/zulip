@@ -2170,7 +2170,7 @@ class UserSignUpTest(ZulipTestCase):
         hamlet = get_user(self.example_email("hamlet"), realm)
         self.assertEqual(hamlet.left_side_userlist, False)
         self.assertEqual(hamlet.default_language, "en")
-        self.assertEqual(hamlet.emojiset, "google")
+        self.assertEqual(hamlet.emojiset, "google-blob")
         self.assertEqual(hamlet.high_contrast_mode, False)
         self.assertEqual(hamlet.enable_stream_sounds, False)
         self.assertEqual(hamlet.enter_sends, False)

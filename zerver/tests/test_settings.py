@@ -270,8 +270,8 @@ class ChangeSettingsTest(ZulipTestCase):
 
     def test_emojiset(self) -> None:
         """Test banned emojisets are not accepted."""
-        banned_emojisets = ['apple', 'emojione', 'twitter']
-        valid_emojisets = ['google', 'text']
+        banned_emojisets = ['apple', 'emojione']
+        valid_emojisets = ['google', 'google-blob', 'text', 'twitter']
 
         for emojiset in banned_emojisets:
             result = self.do_change_emojiset(emojiset)

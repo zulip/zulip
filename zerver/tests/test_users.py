@@ -496,7 +496,7 @@ class UserProfileTest(ZulipTestCase):
 
         self.assertEqual(iago.emojiset, "apple")
         self.assertEqual(cordelia.emojiset, "apple")
-        self.assertEqual(hamlet.emojiset, "google")
+        self.assertEqual(hamlet.emojiset, "google-blob")
 
         self.assertEqual(iago.timezone, "America/Phoenix")
         self.assertEqual(cordelia.timezone, "America/Phoenix")
