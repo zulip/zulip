@@ -1,0 +1,39 @@
+{% extends "zerver/portico.html" %}
+
+{% block portico_content %}
+
+<div class="app find-account-page flex full-page">
+    <div class="inline-block new-style">
+        <div class="lead">
+            <h1 class="get-started">{{ _("Log in to your organization") }}</h1>
+        </div>
+
+        <div class="app-main find-account-page-container white-box">
+            <div class="realm-redirect-form">
+                <form class="form-inline" name="realm_redirect_form"
+                  action="/accounts/go/?{{ request.GET.urlencode() }}" method="post">
+                    {{ csrf_input }}
+                    <div class="input-box moving-label horizontal">
+                        <div class="inline-block relative">
+                            <p id="realm_redirect_description">Enter your organization URL</p>
+                            <input
+                              type="text" value="{% if form.subdomain.value() %}{{ form.subdomain.value() }}{% endif %}"
+                              placeholder="{{ _('your-organization-url') }}" autofocus id="realm_redirect_subdomain" name="subdomain"
+                              autocomplete="off" required/>
+                            <span id="realm_redirect_external_host">.{{external_host}}</span>
+                        </div>
+                        <div id="errors">
+                            {% if form.subdomain.errors %}
+                                {% for error in form.subdomain.errors %}
+                                <div class="alert alert-error">{{ error }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                        <button type="submit">{{ _('Next') }}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

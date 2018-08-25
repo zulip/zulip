@@ -126,6 +126,8 @@ IGNORED_PHRASES = [
     r"GIF",
     # Emoji name placeholder
     r"leafy green vegetable",
+    # Subdomain placeholder
+    r"your-organization-url",
 ]
 
 # Sort regexes in descending order of their lengths. As a result, the
