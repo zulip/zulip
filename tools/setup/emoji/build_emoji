@@ -7,7 +7,7 @@ import shutil
 import sys
 import ujson
 
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from emoji_setup_utils import generate_emoji_catalog, generate_codepoint_to_name_map, \
     get_emoji_code, generate_name_to_codepoint_map, emoji_names_for_picker, \
@@ -155,19 +155,28 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         dst_file = os.path.join(target_emoji_farm, img_file_name)
         shutil.copy2(src_file, dst_file)
 
-    def setup_emoji_farm(emojiset: str, emoji_data: List[Dict[str, Any]]) -> None:
+    def setup_emoji_farm(emojiset: str,
+                         emoji_data: List[Dict[str, Any]],
+                         alt_name: Optional[str]=None) -> None:
+        # `alt_name` is an optional parameter that we use to avoid duplicating below
+        # code. It is only used while setting up google-blob emojiset as it is just
+        # a wrapper for an older version of emoji-datasource package due to which we
+        # need to use 'google' at some places in this code. It has no meaning for other
+        # emojisets and is just equivalent to `emojiset`.
+        alt_name = alt_name or emojiset
+
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
-            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64')
+            NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', alt_name, '64')
         target_emoji_farm = os.path.join(cache_path, 'images-' + emojiset + '-64')
         run(['mkdir', '-p', target_emoji_farm])
         print("Copying individual image files...")
         for emoji_dict in emoji_data:
-            if emoji_dict['has_img_' + emojiset]:
+            if emoji_dict['has_img_' + alt_name]:
                 ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
                 skin_variations = emoji_dict.get('skin_variations', {})
                 for skin_tone, img_info in skin_variations.items():
-                    if img_info['has_img_' + emojiset]:
+                    if img_info['has_img_' + alt_name]:
                         ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
@@ -176,7 +185,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         # Copy spritesheets.
         emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
-        input_sprite_sheet = os.path.join(emoji_data_path, 'img', emojiset, 'sheets-256', '64.png')
+        input_sprite_sheet = os.path.join(emoji_data_path, 'img', alt_name, 'sheets-256', '64.png')
         output_sprite_sheet = os.path.join(cache_path, 'sheet-%s-64.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])
 
@@ -188,8 +197,17 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset)
 
-    for emojiset in ['google']:
+    # Setup standard emojisets.
+    for emojiset in ['google', 'twitter']:
         setup_emoji_farm(emojiset, emoji_data)
+
+    # Setup old google "blobs" emojiset.
+    GOOGLE_BLOB_EMOJI_DATA_PATH = os.path.join(NODE_MODULES_PATH,
+                                               'emoji-datasource-google-blob',
+                                               'emoji.json')
+    with open(GOOGLE_BLOB_EMOJI_DATA_PATH) as fp:
+        blob_emoji_data = ujson.load(fp)
+    setup_emoji_farm('google-blob', blob_emoji_data, 'google')
 
 def setup_old_emoji_farm(cache_path: str,
                          emoji_map: Dict[str, str],

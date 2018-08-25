@@ -3057,9 +3057,17 @@ elliptic@^6.0.0:
     minimalistic-assert "^1.0.0"
     minimalistic-crypto-utils "^1.0.0"
 
+"emoji-datasource-google-blob@npm:emoji-datasource-google@3.0.0":
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-3.0.0.tgz#d6f77b56385338e10667d2b150dbe9f9b5a4e921"
+
 emoji-datasource-google@4.0.4:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/emoji-datasource-google/-/emoji-datasource-google-4.0.4.tgz#87392c07255e172e578107a9f1a3b6755907eb01"
+
+emoji-datasource-twitter@4.0.4:
+  version "4.0.4"
+  resolved "https://registry.yarnpkg.com/emoji-datasource-twitter/-/emoji-datasource-twitter-4.0.4.tgz#83bd4bd719205d41d2da1d7f346a093db429f036"
 
 emojis-list@^2.0.0:
   version "2.1.0"
