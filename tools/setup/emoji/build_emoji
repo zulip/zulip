@@ -142,7 +142,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         dst_file = os.path.join(target_emoji_farm, img_file_name)
         shutil.copy2(src_file, dst_file)
 
-    for emojiset in ['google']:
+    def setup_emoji_farm(emojiset: str, emoji_data: List[Dict[str, Any]]) -> None:
         # Copy individual emoji images from npm packages.
         src_emoji_farm = os.path.join(
             NODE_MODULES_PATH, 'emoji-datasource-' + emojiset, 'img', emojiset, '64')
@@ -173,6 +173,9 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         run(['cp', input_img_file, output_img_file])
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset)
+
+    for emojiset in ['google', 'twitter']:
+        setup_emoji_farm(emojiset, emoji_data)
 
 def setup_old_emoji_farm(cache_path: str,
                          emoji_map: Dict[str, str],
