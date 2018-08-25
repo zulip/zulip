@@ -351,5 +351,57 @@ run_test('insert_remove', () => {
     });
 
     assert(next_pill_focused);
+});
+
+run_test('exit button on pill', () => {
+    const info = set_up();
+
+    const config = info.config;
+    const pill_input = info.pill_input;
+    const items = info.items;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+
+    pill_input.before = () => {};
+
+    widget.appendValue('blue,red');
+
+    var next_pill_focused = false;
+
+    const next_pill_stub = {
+        focus: () => {
+            next_pill_focused = true;
+        },
+    };
+
+    const curr_pill_stub = {
+        next: () => next_pill_stub,
+        data: (field) => {
+            assert.equal(field, 'id');
+            return 'some_id1';
+        },
+    };
+
+    const exit_button_stub = {
+        to_$: () => {
+            return {
+                closest: (sel) => {
+                    assert.equal(sel, '.pill');
+                    return curr_pill_stub;
+                },
+            };
+        },
+    };
+
+    const exit_click_handler = container.get_on_handler('click', '.exit');
+
+    exit_click_handler.apply(exit_button_stub);
+
+    assert(next_pill_focused);
+
+    assert.deepEqual(widget.items(), [
+        items.red,
+    ]);
 
 });
