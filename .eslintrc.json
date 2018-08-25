@@ -71,6 +71,7 @@
         "info_overlay": false,
         "input_pill": false,
         "invite": false,
+        "invite_stream_pill": false,
         "jQuery": false,
         "katex": false,
         "keydown_util": false,
