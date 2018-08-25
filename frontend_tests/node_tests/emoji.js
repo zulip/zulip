@@ -45,7 +45,7 @@ run_test('initialize', () => {
     emoji.initialize();
     assert(image_stub);
     assert.equal(calls, 2);
-    assert.deepEqual(urls, ['/static/generated/emoji/sheet_google_64.png',
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet-google-64.png',
                             '/static/generated/emoji/images-google-64/1f419.png']);
 
     // Check initialization sequence for `text` emojiset.
@@ -56,7 +56,7 @@ run_test('initialize', () => {
     emoji.initialize();
     assert(image_stub);
     assert.equal(calls, 2);
-    assert.deepEqual(urls, ['/static/generated/emoji/sheet_google_64.png',
+    assert.deepEqual(urls, ['/static/generated/emoji/sheet-google-64.png',
                             '/static/generated/emoji/images-google-64/1f419.png']);
 });
 

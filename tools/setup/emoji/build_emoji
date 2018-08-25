@@ -50,7 +50,7 @@ div.emoji,
 span.emoji
 {
     display: inline-block;
-    background-image: url('sheet_%(emojiset)s_64.png');
+    background-image: url('sheet-%(emojiset)s-64.png');
     -webkit-background-size: 5200%%;
     -moz-background-size: 5200%%;
     background-size: 5200%%;
@@ -163,7 +163,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         # Copy spritesheets.
         emoji_data_path = os.path.join(NODE_MODULES_PATH, 'emoji-datasource-' + emojiset)
         input_sprite_sheet = os.path.join(emoji_data_path, 'img', emojiset, 'sheets-256', '64.png')
-        output_sprite_sheet = os.path.join(cache_path, 'sheet_%s_64.png' % (emojiset,))
+        output_sprite_sheet = os.path.join(cache_path, 'sheet-%s-64.png' % (emojiset,))
         run(['cp', input_sprite_sheet, output_sprite_sheet])
 
         # We hardcode octopus emoji image to Google emojiset's old

@@ -99,19 +99,19 @@ TABLE_CSS = """
     }
 
     .google {
-        background-image: url('sheet_google_64.png') !important;
+        background-image: url('sheet-google-64.png') !important;
     }
 
     .apple {
-        background-image: url('sheet_apple_64.png') !important;
+        background-image: url('sheet-apple-64.png') !important;
     }
 
     .emojione {
-        background-image: url('sheet_emojione_64.png') !important;
+        background-image: url('sheet-emojione-64.png') !important;
     }
 
     .twitter {
-        background-image: url('sheet_twitter_64.png') !important;
+        background-image: url('sheet-twitter-64.png') !important;
     }
 """
 

@@ -96,7 +96,7 @@ exports.initialize = function initialize() {
     // Load the sprite image and octopus image in the background, so
     // that the browser will cache it for later use.
     var sprite = new Image();
-    sprite.src = '/static/generated/emoji/sheet_' + emojiset + '_64.png';
+    sprite.src = '/static/generated/emoji/sheet-' + emojiset + '-64.png';
     var octopus_image = new Image();
     octopus_image.src = '/static/generated/emoji/images-' + emojiset + '-64/1f419.png';
 };
