@@ -452,6 +452,10 @@ i18n_urls = [
     url(r'^accounts/find/$', zerver.views.registration.find_account,
         name='zerver.views.registration.find_account'),
 
+    # Go to organization subdomain
+    url(r'^accounts/go/$', zerver.views.registration.realm_redirect,
+        name='zerver.views.registration.realm_redirect'),
+
     # Realm Creation
     url(r'^new/$', zerver.views.registration.create_realm,
         name='zerver.views.create_realm'),
