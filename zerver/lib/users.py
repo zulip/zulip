@@ -14,7 +14,7 @@ from zerver.models import UserProfile, Service, Realm, \
 from zulip_bots.custom_exceptions import ConfigValidationError
 
 def check_full_name(full_name_raw: str) -> str:
-    
+
     full_name = full_name_raw.strip()
     if len(full_name) > UserProfile.MAX_NAME_LENGTH:
         raise JsonableError(_("Name too long!"))
@@ -23,9 +23,9 @@ def check_full_name(full_name_raw: str) -> str:
     if list(set(full_name).intersection(UserProfile.NAME_INVALID_CHARS)):
         raise JsonableError(_("Invalid characters in name!"))
 # Two more checks added
-    if fullname[0] == '.':
+    if full_name[0] == '.':
         raise JsonableError(_("Name should not start with '.' !"))
-    if fullname[len(full_name)-1] == '.':
+    if full_name[len(full_name)-1] == '.':
         raise JsonableError(_("Name should not end with '.' !"))
 
 # Check for offending characters
