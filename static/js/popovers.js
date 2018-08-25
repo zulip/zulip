@@ -177,7 +177,7 @@ exports.hide_user_profile = function () {
     $("#user-profile-modal").modal("hide");
 };
 
-function show_user_profile(element, user) {
+exports.show_user_profile = function (element, user) {
     popovers.hide_all();
 
     var profile_data = [];
@@ -253,7 +253,7 @@ function show_user_profile(element, user) {
             });
         }
     });
-}
+};
 
 function get_user_info_popover_items() {
     if (!current_message_info_popover_elem) {
@@ -707,7 +707,7 @@ exports.register_click_handlers = function () {
     $('body').on('click', '.info_popover_actions .view_user_profile', function (e) {
         var user_id = $(e.target).parents('ul').attr('data-user-id');
         var user = people.get_person_from_user_id(user_id);
-        show_user_profile(e.target, user);
+        exports.show_user_profile(e.target, user);
         e.stopPropagation();
         e.preventDefault();
     });
