@@ -65,9 +65,7 @@ exports.append_person = function (opts) {
         email: person.email,
         img_src: avatar_url,
     });
-    if (pill_widget.clear_text !== undefined) {
-        pill_widget.clear_text();
-    }
+    pill_widget.clear_text();
 };
 
 exports.get_user_ids = function (pill_widget) {
