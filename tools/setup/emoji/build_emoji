@@ -166,8 +166,9 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
             if emoji_dict['has_img_' + emojiset]:
                 ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
                 skin_variations = emoji_dict.get('skin_variations', {})
-                for skin_tone in skin_variations:
-                    ensure_emoji_image(skin_variations[skin_tone], src_emoji_farm, target_emoji_farm)
+                for skin_tone, img_info in skin_variations.items():
+                    if img_info['has_img_' + emojiset]:
+                        ensure_emoji_image(img_info, src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
         zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
