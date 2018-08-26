@@ -120,6 +120,8 @@ function set_up() {
 
     var pill_input = $.create('pill_input');
 
+    pill_input.before = () => {};
+
     var create_item_from_text = function (text) {
         return items[text];
     };
@@ -146,13 +148,9 @@ function set_up() {
 run_test('left arrow on input', () => {
     const info = set_up();
     const config = info.config;
-    const pill_input = info.pill_input;
     const container = info.container;
 
     const widget = input_pill.create(config);
-
-    pill_input.before = () => {};
-
     widget.appendValue('blue,red');
 
     const LEFT_ARROW = 37;
@@ -185,9 +183,6 @@ run_test('comma', () => {
     const container = info.container;
 
     const widget = input_pill.create(config);
-
-    pill_input.before = () => {};
-
     widget.appendValue('blue,red');
 
     assert.deepEqual(widget.items(), [
@@ -227,13 +222,9 @@ run_test('enter key with text', () => {
     const info = set_up();
     const config = info.config;
     const items = info.items;
-    const pill_input = info.pill_input;
     const container = info.container;
 
     const widget = input_pill.create(config);
-
-    pill_input.before = () => {};
-
     widget.appendValue('blue,red');
 
     assert.deepEqual(widget.items(), [
@@ -357,13 +348,10 @@ run_test('exit button on pill', () => {
     const info = set_up();
 
     const config = info.config;
-    const pill_input = info.pill_input;
     const items = info.items;
     const container = info.container;
 
     const widget = input_pill.create(config);
-
-    pill_input.before = () => {};
 
     widget.appendValue('blue,red');
 
