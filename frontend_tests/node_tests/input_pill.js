@@ -221,6 +221,57 @@ run_test('paste to input', () => {
     ]);
 });
 
+run_test('arrows on pills', () => {
+    const info = set_up();
+    const config = info.config;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+    widget.appendValue('blue,red');
+
+    const key_handler = container.get_on_handler('keydown', '.pill');
+
+    function test_key(c) {
+        key_handler({
+            charCode: c,
+        });
+    }
+
+    const LEFT_ARROW = 37;
+    const RIGHT_ARROW = 39;
+
+    var prev_focused = false;
+    var next_focused = false;
+
+    const pill_stub = {
+        prev: () => {
+            return {
+                focus: () => {
+                    prev_focused = true;
+                },
+            };
+        },
+        next: () => {
+            return {
+                focus: () => {
+                    next_focused = true;
+                },
+            };
+        },
+    };
+
+    container.set_find_results('.pill:focus', pill_stub);
+
+    // We use the same stub to test both arrows, since we don't
+    // actually cause any real state changes here.  We stub out
+    // the only interaction, which is to move the focus.
+    test_key(LEFT_ARROW);
+    assert(prev_focused);
+
+    test_key(RIGHT_ARROW);
+    assert(next_focused);
+});
+
 run_test('left arrow on input', () => {
     const info = set_up();
     const config = info.config;
