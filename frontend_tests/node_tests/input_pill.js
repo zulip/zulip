@@ -7,6 +7,7 @@ zrequire('templates');
 global.compile_template('input_pill');
 
 set_global('blueslip', global.make_zblueslip());
+set_global('document', {});
 
 var noop = function () {};
 var example_img_link = 'http://example.com/example.png';
@@ -181,6 +182,43 @@ run_test('copy from pill', () => {
     copy_handler(e);
 
     assert.equal(copied_text, 'RED');
+});
+
+run_test('paste to input', () => {
+    const info = set_up();
+    const config = info.config;
+    const container = info.container;
+    const items = info.items;
+
+    const widget = input_pill.create(config);
+
+    const paste_handler = container.get_on_handler('paste', '.input');
+
+    var paste_text = 'blue,yellow';
+
+    const e = {
+        originalEvent: {
+            clipboardData: {
+                getData: (format) => {
+                    assert.equal(format, 'text/plain');
+                    return paste_text;
+                },
+            },
+        },
+        preventDefault: noop,
+    };
+
+    document.execCommand = (cmd, _, text) => {
+        assert.equal(cmd, 'insertText');
+        container.find('.input').text(text);
+    };
+
+    paste_handler(e);
+
+    assert.deepEqual(widget.items(), [
+        items.blue,
+        items.yellow,
+    ]);
 });
 
 run_test('left arrow on input', () => {
