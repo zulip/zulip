@@ -132,7 +132,7 @@ function set_up() {
     var config = {
         container: container,
         create_item_from_text: create_item_from_text,
-        get_text_from_item: noop,
+        get_text_from_item: (item) => item.display_value,
     };
 
     id_seq = 0;
@@ -144,6 +144,44 @@ function set_up() {
         container: container,
     };
 }
+
+run_test('copy from pill', () => {
+    const info = set_up();
+    const config = info.config;
+    const container = info.container;
+
+    const widget = input_pill.create(config);
+    widget.appendValue('blue,red');
+
+    const copy_handler = container.get_on_handler('copy', '.pill');
+
+    var copied_text;
+
+    const pill_stub = {
+        data: (field) => {
+            assert.equal(field, 'id');
+            return 'some_id2';
+        },
+    };
+
+    const e = {
+        originalEvent: {
+            clipboardData: {
+                setData: (format, text) => {
+                    assert.equal(format, 'text/plain');
+                    copied_text = text;
+                },
+            },
+        },
+        preventDefault: noop,
+    };
+
+    container.set_find_results(':focus', pill_stub);
+
+    copy_handler(e);
+
+    assert.equal(copied_text, 'RED');
+});
 
 run_test('left arrow on input', () => {
     const info = set_up();
