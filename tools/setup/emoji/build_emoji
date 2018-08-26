@@ -128,7 +128,9 @@ def generate_sprite_css_files(cache_path: str,
     sprite_css_file.close()
 
 def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None:
-    def ensure_emoji_image(emoji_dict: Dict[str, Any]) -> None:
+    def ensure_emoji_image(emoji_dict: Dict[str, Any],
+                           src_emoji_farm: str,
+                           target_emoji_farm: str) -> None:
         # We use individual images from emoji farm for rendering emojis
         # in notification messages. We have a custom emoji formatter in
         # notifications processing code that converts `span` tags to
@@ -149,10 +151,10 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
         print("Copying individual image files...")
         for emoji_dict in emoji_data:
             if emoji_dict['has_img_' + emojiset]:
-                ensure_emoji_image(emoji_dict)
+                ensure_emoji_image(emoji_dict, src_emoji_farm, target_emoji_farm)
                 skin_variations = emoji_dict.get('skin_variations', {})
                 for skin_tone in skin_variations:
-                    ensure_emoji_image(skin_variations[skin_tone])
+                    ensure_emoji_image(skin_variations[skin_tone], src_emoji_farm, target_emoji_farm)
 
         # Copy zulip.png to the emoji farm.
         zulip_image = "{}/static/assets/zulip-emoji/*".format(ZULIP_PATH)
