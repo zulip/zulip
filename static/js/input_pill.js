@@ -377,61 +377,6 @@ exports.create = function (opts) {
     return prototype;
 };
 
-// Following function is used for creating non-editable pills.
-exports.create_non_editable_pills = function (opts) {
-
-    if (!opts.container) {
-        blueslip.error('Pill needs container.');
-        return;
-    }
-
-    var store = {
-        pills: [],
-        $parent: opts.container,
-    };
-
-    var funcs = {
-        // This is generally called by typeahead logic, where we have all
-        // the data we need (as opposed to, say, just a user-typed email).
-        appendValidatedData: function (item) {
-            var id = exports.random_id();
-
-            if (!item.display_value) {
-                blueslip.error('no display_value returned');
-                return;
-            }
-
-            var payload = {
-                id: id,
-                item: item,
-            };
-
-            store.pills.push(payload);
-
-            var opts = {
-                id: payload.id,
-                display_value: item.display_value,
-                cannot_edit: true,
-            };
-
-            var pill_html = templates.render('input_pill', opts);
-            payload.$element = $(pill_html);
-            store.$parent.append(payload.$element);
-        },
-
-        items: function () {
-            return _.pluck(store.pills, 'item');
-        },
-    };
-
-    var prototype = {
-        appendValidatedData: funcs.appendValidatedData.bind(funcs),
-        items: funcs.items,
-    };
-
-    return prototype;
-
-};
 return exports;
 
 }());
