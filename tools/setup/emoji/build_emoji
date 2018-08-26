@@ -105,7 +105,20 @@ def get_success_stamp() -> str:
 def generate_sprite_css_files(cache_path: str,
                               emoji_data: List[Dict[str, Any]],
                               emojiset: str) -> None:
-    # Spritesheet CSS generation code.
+    def get_max_val(field: str, emoji_data: List[Dict[str, Any]]) -> int:
+        max_val = 0
+        for emoji_dict in emoji_data:
+            max_val = max(max_val, emoji_dict[field])
+            if 'skin_variations' in emoji_dict:
+                for skin_tone, img_info in emoji_dict['skin_variations'].items():
+                    max_val = max(max_val, img_info[field])
+        return max_val
+
+    # Spritesheet CSS generation code. Spritesheets are squared using
+    # padding, so we have to take only the maximum of two dimensions.
+    nrows = get_max_val('sheet_x', emoji_data)
+    ncols = get_max_val('sheet_y', emoji_data)
+    max_dim = max(nrows, ncols)
     emoji_positions = ""
     for emoji in emoji_data:
         if emoji["has_img_google"]:
@@ -116,8 +129,8 @@ def generate_sprite_css_files(cache_path: str,
             # those google emoji (in case anyone used them).
             emoji_positions += EMOJI_POS_INFO_TEMPLATE % {
                 'codepoint': get_emoji_code(emoji),
-                'pos_x': (emoji["sheet_x"] * 100) / 51,
-                'pos_y': (emoji["sheet_y"] * 100) / 51,
+                'pos_x': (emoji["sheet_x"] * 100) / max_dim,
+                'pos_y': (emoji["sheet_y"] * 100) / max_dim,
             }
 
     SPRITE_CSS_PATH = os.path.join(cache_path, '%s-sprite.css' % (emojiset,))
