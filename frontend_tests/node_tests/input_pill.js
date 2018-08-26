@@ -520,3 +520,52 @@ run_test('exit button on pill', () => {
     ]);
 
 });
+
+run_test('misc things', () => {
+    const info = set_up();
+
+    const config = info.config;
+    const container = info.container;
+    const pill_input = info.pill_input;
+
+    const widget = input_pill.create(config);
+
+    // animation
+    const animation_end_handler = container.get_on_handler('animationend', '.input');
+
+    var shake_class_removed = false;
+
+    const input_stub = {
+        to_$: () => {
+            return {
+                removeClass: (cls) => {
+                    assert.equal(cls, 'shake');
+                    shake_class_removed = true;
+                },
+            };
+        },
+    };
+
+    animation_end_handler.apply(input_stub);
+    assert(shake_class_removed);
+
+    // bad data
+    blueslip.set_test_data('error', 'no display_value returned');
+    widget.appendValidatedData('this-has-no-item-attribute');
+
+    // click on container
+    const container_click_handler = container.get_on_handler('click');
+
+    const stub = $.create('the-pill-container');
+    stub.set_find_results('.input', pill_input);
+    stub.is = (sel) => {
+        assert.equal(sel, '.pill-container');
+        return true;
+    };
+
+    const this_ = {
+        to_$: () => stub,
+    };
+
+    container_click_handler.call(this_, {target: this_});
+});
