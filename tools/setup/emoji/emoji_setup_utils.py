@@ -63,7 +63,9 @@ def get_emoji_code(emoji_dict: Dict[str, Any]) -> str:
     # should have a colorful display. Hence we can continue using emoji characters
     # without appending emoji presentation selector.
     # (http://unicode.org/reports/tr51/index.html#Presentation_Style)
-    emoji_code = emoji_dict["non_qualified"] or emoji_dict["unified"]
+    # If `non_qualified` field is present and not None return it otherwise
+    # return `unified` field.
+    emoji_code = emoji_dict.get("non_qualified") or emoji_dict["unified"]
     return emoji_code.lower()
 
 # Returns a dict from categories to list of codepoints. The list of
