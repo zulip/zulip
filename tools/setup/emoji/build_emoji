@@ -188,7 +188,7 @@ def setup_emoji_farms(cache_path: str, emoji_data: List[Dict[str, Any]]) -> None
 
         generate_sprite_css_files(cache_path, emoji_data, emojiset)
 
-    for emojiset in ['google', 'twitter']:
+    for emojiset in ['google']:
         setup_emoji_farm(emojiset, emoji_data)
 
 def setup_old_emoji_farm(cache_path: str,
