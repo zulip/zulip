@@ -294,6 +294,8 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
 def plans_view(request: HttpRequest) -> HttpResponse:
     realm = get_realm_from_request(request)
     if realm is not None:
+        if realm.plan_type == Realm.SELF_HOSTED:
+            return HttpResponseRedirect(reverse('zerver.views.home.home'))
         if not request.user.is_authenticated():
             return redirect_to_login(next="plans")
     return render(request, "zerver/plans.html")

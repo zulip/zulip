@@ -314,14 +314,14 @@ class PlansPageTest(ZulipTestCase):
         result = self.client_get("/plans/", subdomain="moo")
         self.assert_in_success_response(["does not exist"], result)
         # Test valid domain, no login
+        realm = get_realm("zulip")
+        realm.plan_type = Realm.PREMIUM_FREE
+        realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assertEqual(result.status_code, 302)
         self.assertEqual(result["Location"], "/accounts/login?next=plans")
         # Test valid domain, with login
         self.login(self.example_email('hamlet'))
-        realm = get_realm("zulip")
-        realm.plan_type = Realm.PREMIUM_FREE
-        realm.save(update_fields=["plan_type"])
         result = self.client_get("/plans/", subdomain="zulip")
         self.assert_in_success_response(["Current plan"], result)
         # Test root domain, with login on different domain
@@ -340,8 +340,19 @@ class PlansPageTest(ZulipTestCase):
         self.assert_in_success_response([sign_up_now, buy_premium], result)
         self.assert_not_in_success_response([current_plan], result)
 
-        self.login(self.example_email("iago"))
         realm = get_realm("zulip")
+        realm.plan_type = Realm.SELF_HOSTED
+        realm.save(update_fields=["plan_type"])
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
+
+        self.login(self.example_email("iago"))
+
+        # SELF_HOSTED should hide plans, even if logged in
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/")
 
         realm.plan_type = Realm.LIMITED
         realm.save(update_fields=["plan_type"])
