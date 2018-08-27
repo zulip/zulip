@@ -624,10 +624,10 @@ urls += [url(r'^', include('social_django.urls', namespace='social'))]
 
 # User documentation site
 urls += [url(r'^help/(?P<article>.*)$',
-             MarkdownDirectoryView.as_view(template_name='zerver/help/main.html',
+             MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
                                            path_template='/zerver/help/%s.md'))]
 urls += [url(r'^api/(?P<article>[-\w]*\/?)$',
-             MarkdownDirectoryView.as_view(template_name='zerver/api/main.html',
+             MarkdownDirectoryView.as_view(template_name='zerver/documentation_main.html',
                                            path_template='/zerver/api/%s.md'))]
 
 # Two Factor urls

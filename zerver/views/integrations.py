@@ -64,6 +64,8 @@ class MarkdownDirectoryView(ApiURLView):
     def get_path(self, article: str) -> str:
         if article == "":
             article = "index"
+        elif article == "include/sidebar_index":
+            pass
         elif "/" in article:
             article = "missing"
         return self.path_template % (article,)
@@ -80,10 +82,20 @@ class MarkdownDirectoryView(ApiURLView):
 
         # For disabling the "Back to home" on the homepage
         context["not_index_page"] = not path.endswith("/index.md")
-        if self.template_name == "zerver/help/main.html":
+        if self.path_template == '/zerver/help/%s.md':
             context["page_is_help_center"] = True
+            context["doc_root"] = "/help/"
+            sidebar_index = self.get_path("include/sidebar_index")
+            # We want the sliding/collapsing behavior for /help pages only
+            sidebar_class = "sidebar slide"
         else:
             context["page_is_api_center"] = True
+            context["doc_root"] = "/api/"
+            sidebar_index = self.get_path("sidebar_index")
+            sidebar_class = "sidebar"
+
+        context["sidebar_index"] = sidebar_index
+        context["sidebar_class"] = sidebar_class
         # An "article" might require the api_uri_context to be rendered
         api_uri_context = {}  # type: Dict[str, Any]
         add_api_uri_context(api_uri_context, self.request)
