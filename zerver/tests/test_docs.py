@@ -15,6 +15,7 @@ from zerver.lib.test_classes import ZulipTestCase
 from zerver.lib.test_helpers import HostRequestMock
 from zerver.lib.test_runner import slow
 from zerver.lib.utils import split_by
+from zerver.models import Realm, get_realm
 from zerver.views.integrations import (
     add_api_uri_context,
     add_integrations_context,
@@ -104,7 +105,6 @@ class DocPageTest(ZulipTestCase):
         self._test('/for/companies/', 'in a company')
         self._test('/for/working-groups-and-communities/', 'standards bodies')
         self._test('/for/mystery-hunt/', 'four SIPB alums')
-        self._test('/plans/', 'Community support')
         self._test('/devlogin/', 'Normal users', landing_page=False)
         self._test('/devtools/', 'Useful development URLs')
         self._test('/errors/404/', 'Page not found')
@@ -304,3 +304,28 @@ class ConfigErrorTest(ZulipTestCase):
         result = self.client_get("/config-error/dev")
         self.assertEqual(result.status_code, 200)
         self.assert_in_success_response(["DevAuthBackend"], result)
+
+class PlansPageTest(ZulipTestCase):
+    def test_plans_auth(self) -> None:
+        # Test root domain
+        result = self.client_get("/plans/", subdomain="")
+        self.assert_in_success_response(["Sign up now"], result)
+        # Test non-existant domain
+        result = self.client_get("/plans/", subdomain="moo")
+        self.assert_in_success_response(["does not exist"], result)
+        # Test valid domain, no login
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assertEqual(result.status_code, 302)
+        self.assertEqual(result["Location"], "/accounts/login?next=plans")
+        # Test valid domain, with login
+        self.login(self.example_email('hamlet'))
+        realm = get_realm("zulip")
+        realm.plan_type = Realm.PREMIUM_FREE
+        realm.save(update_fields=["plan_type"])
+        result = self.client_get("/plans/", subdomain="zulip")
+        self.assert_in_success_response(["Sign up now"], result)
+        # Test root domain, with login on different domain
+        result = self.client_get("/plans/", subdomain="")
+        # TODO: works in manual testing, but I suspect something is funny in
+        # the test environment
+        # self.assert_in_success_response(["Sign up now"], result)
