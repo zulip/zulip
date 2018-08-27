@@ -8,7 +8,9 @@ from django.utils import translation
 from django.utils.cache import patch_cache_control
 from itertools import zip_longest
 
-from zerver.decorator import zulip_login_required, process_client
+from zerver.context_processors import get_realm_from_request
+from zerver.decorator import zulip_login_required, process_client, \
+    redirect_to_login
 from zerver.forms import ToSForm
 from zerver.lib.realm_icon import realm_icon_url
 from zerver.models import Message, UserProfile, Stream, Subscription, Huddle, \
@@ -288,3 +290,10 @@ def apps_view(request: HttpRequest, _: str) -> HttpResponse:
     if settings.ZILENCER_ENABLED:
         return render(request, 'zerver/apps.html')
     return HttpResponseRedirect('https://zulipchat.com/apps/', status=301)
+
+def plans_view(request: HttpRequest) -> HttpResponse:
+    realm = get_realm_from_request(request)
+    if realm is not None:
+        if not request.user.is_authenticated():
+            return redirect_to_login(next="plans")
+    return render(request, "zerver/plans.html")
