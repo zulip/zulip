@@ -405,7 +405,7 @@ def create_realm(request: HttpRequest, creation_key: Optional[str]=None) -> Http
 
             if key_record is not None:
                 key_record.delete()
-            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
+            return HttpResponseRedirect(reverse('new_realm_send_confirm', kwargs={'email': email}))
     else:
         form = RealmCreationForm()
     return render(request,
@@ -444,7 +444,7 @@ def accounts_home(request: HttpRequest, multiuse_object: Optional[MultiuseInvite
                 logging.error('Error in accounts_home: %s' % (str(e),))
                 return HttpResponseRedirect("/config-error/smtp")
 
-            return HttpResponseRedirect(reverse('send_confirm', kwargs={'email': email}))
+            return HttpResponseRedirect(reverse('signup_send_confirm', kwargs={'email': email}))
 
         email = request.POST['email']
         try:

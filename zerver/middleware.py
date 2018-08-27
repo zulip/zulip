@@ -108,7 +108,7 @@ def write_log_line(log_data: MutableMapping[str, Any], path: str, method: str, r
         # because someone manually entered a nonexistent path), as UTF-8 chars make
         # statsd sad when it sends the key name over the socket
         statsd_path = statsd_path.encode('ascii', errors='ignore').decode("ascii")
-    blacklisted_requests = ['do_confirm', 'send_confirm',
+    blacklisted_requests = ['do_confirm', 'signup_send_confirm', 'new_realm_send_confirm,'
                             'eventslast_event_id', 'webreq.content', 'avatar', 'user_uploads',
                             'password.reset', 'static', 'json.bots', 'json.users', 'json.streams',
                             'accounts.unsubscribe', 'apple-touch-icon', 'emoji', 'json.bots',
