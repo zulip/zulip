@@ -790,6 +790,71 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NonExistingStreamError'
+  /users/me/subscriptions/muted_topics:
+    patch:
+      description: Toggle muting for a specific topic the user is subscribed
+        to.
+      parameters:
+      - name: stream
+        in: query_function
+        description: The name of the stream where the topic is located.
+        schema:
+          type: string
+        example: Verona
+        required: true
+      - name: topic
+        in: query
+        description: The name of the topic to (un)mute. Please note that this
+          will succeed regardless of whether any messages have been sent to the
+          specified topic in the past.
+        schema:
+          type: string
+        example: dinner
+        required: true
+      - name: op
+        in: query
+        description: Whether to mute (`add`) or unmute (`remove`) the provided
+          topic.
+        schema:
+          type: string
+          enum:
+          - add
+          - remove
+        example: add
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400_topic_already_muted':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsonError'
+                  - example:
+                      {
+                          "msg": "Topic already muted",
+                          "result": "error"
+                      }
+        '400_topic_not_muted':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/JsonError'
+                  - example:
+                      {
+                          "msg": "Topic is not there in the muted_topics list",
+                          "result": "error"
+                      }
   /realm/filters:
     post:
       description: Establish patterns in the messages that should be
