@@ -42,49 +42,6 @@ produces:
 
 paths:
 
-  /dev_fetch_api_key:
-    post:
-      description: |
-                   Gather a token bound to a user account, to identify and
-                   authenticate them when making operations in the API.
-
-                   This token must be used as the password in the rest of the
-                   endpoints that require Basic authentication.
-
-                   ---
-
-                   **This endpoint is only for development environments!**
-                   It will not work if `settings.PRODUCTION` is set to `False`.
-      operationId: zerver.views.auth.api_dev_fetch_api_key
-      parameters:
-      - name: username
-        in: formData
-        description: The email address for the user that owns the API key.
-        required: true
-        type: string
-      responses:
-        '200':
-          description: Success.
-          schema:
-            allOf:
-            - $ref: '#/definitions/JsonSuccess'
-            - required:
-              - api_key
-              - email
-            - properties:
-                api_key:
-                  type: string
-                  example: c2hvdWxuJ3QgdSBiZSB3b3JraW5nPzsp
-                email:
-                  description: |
-                               The email address for the user that owns the API
-                               key.
-                  type: string
-                  example: iago@zulip.com
-                msg:
-                  enum:
-                    - ''
-
   /events:
     get:
       description: Get new events from an events queue

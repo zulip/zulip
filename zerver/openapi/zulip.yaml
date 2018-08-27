@@ -24,6 +24,27 @@ servers:
 # Endpoint definitions
 #######################
 paths:
+  /dev_fetch_api_key:
+    post:
+      description: Gather a token bound to a user account, to identify and
+        authenticate them when making operations with the API. This token must
+        be used as the password in the rest of the endpoints that require
+        Basic authentication.
+      parameters:
+      - name: username
+        in: query
+        description: The email address for the user that owns the API key.
+        schema:
+          type: string
+        example: iago@zulip.com
+        required: true
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiKeyResponse'
   /events:
     get:
       description: Receive new events from
@@ -1203,6 +1224,24 @@ components:
             - error
           msg:
             type: string
+    ApiKeyResponse:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          api_key:
+            type: string
+            description: The API key that can be used to authenticate as the
+              requested user.
+          email:
+            type: string
+            description: The email address of the user who owns the API key.
+      - example:
+          {
+              "api_key": "gjA04ZYcqXKalvYMA8OeXSfzUOLrtbZv",
+              "email": "iago@zulip.com",
+              "msg": "",
+              "result": "success"
+          }
     CodedError:
       allOf:
       - $ref: '#/components/schemas/JsonError'
