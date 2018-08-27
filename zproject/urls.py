@@ -487,6 +487,8 @@ i18n_urls = [
     url(r'^history/$', TemplateView.as_view(template_name='zerver/history.html')),
     url(r'^apps/(.*)', zerver.views.home.apps_view, name='zerver.views.home.apps_view'),
     url(r'^plans/$', TemplateView.as_view(template_name='zerver/plans.html'), name='plans'),
+    url(r'^plans/on-prem$', TemplateView.as_view(template_name='zerver/plans-on-prem.html'),
+        name='plans-on-prem'),
 
     # Landing page, features pages, signup form, etc.
     url(r'^hello/$', TemplateView.as_view(template_name='zerver/hello.html'), name='landing-page'),

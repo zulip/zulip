@@ -1,0 +1,30 @@
+{% extends "zerver/portico.html" %}
+
+{% block title %}
+<title>Zulip On-premise</title>
+{% endblock %}
+
+{% block customhead %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+{{ render_bundle('landing-page') }}
+{% endblock %}
+
+{% block portico_content %}
+
+{% include 'zerver/landing_nav.html' %}
+
+<div class="portico-landing why-page">
+    <div class="hero">
+        <h1 class="center">{% trans %}Zulip On-premise{% endtrans %}</h1>
+        <p>Plans and pricing for when you make Zulip your home</p>
+    </div>
+    <div class="main">
+        <div class="padded-content">
+            <div class="inner-content">
+                {{ render_markdown_path('zerver/plans-on-prem.md') }}
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

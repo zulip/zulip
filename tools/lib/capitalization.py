@@ -52,6 +52,7 @@ IGNORED_PHRASES = [
     r"XML",
     r"Zephyr",
     r"Zulip",
+    r"Zulip On-premise",
     r"Zulip Team",
     r"iPhone",
     r"iOS",
