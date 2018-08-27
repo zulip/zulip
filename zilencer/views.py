@@ -236,7 +236,7 @@ def billing_home(request: HttpRequest) -> HttpResponse:
     if not customer.has_billing_relationship:
         return HttpResponseRedirect(reverse('zilencer.views.initial_upgrade'))
 
-    if not user.is_realm_admin and not user == customer.billing_user:
+    if not user.is_realm_admin and not user.is_billing_admin:
         context = {'admin_access': False}  # type: Dict[str, Any]
         return render(request, 'zilencer/billing.html', context=context)
     context = {'admin_access': True}

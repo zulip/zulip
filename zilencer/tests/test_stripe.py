@@ -136,9 +136,8 @@ class StripeTest(ZulipTestCase):
             prorate=True,
             tax_percent=0)
         # Check that we correctly populated Customer and RealmAuditLog in Zulip
-        self.assertEqual(1, Customer.objects.filter(realm=user.realm,
-                                                    stripe_customer_id=self.stripe_customer_id,
-                                                    billing_user=user).count())
+        self.assertEqual(1, Customer.objects.filter(stripe_customer_id=self.stripe_customer_id,
+                                                    realm=user.realm).count())
         audit_log_entries = list(RealmAuditLog.objects.filter(acting_user=user)
                                  .values_list('event_type', 'event_time').order_by('id'))
         self.assertEqual(audit_log_entries, [
@@ -177,11 +176,11 @@ class StripeTest(ZulipTestCase):
         # Check that the non-admin hamlet can still access /billing
         response = self.client_get("/billing/")
         self.assert_in_success_response(["for billing history or to make changes"], response)
-        # Check admins can access billing, even though they are not the billing_user
+        # Check admins can access billing, even though they are not a billing admin
         self.login(self.example_email('iago'))
         response = self.client_get("/billing/")
         self.assert_in_success_response(["for billing history or to make changes"], response)
-        # Check that non-admin, non-billing_user does not have access
+        # Check that a non-admin, non-billing admin user does not have access
         self.login(self.example_email("cordelia"))
         response = self.client_get("/billing/")
         self.assert_in_success_response(["You must be an organization administrator"], response)
@@ -310,7 +309,7 @@ class StripeTest(ZulipTestCase):
     @mock.patch("stripe.Invoice.upcoming", side_effect=mock_upcoming_invoice)
     def test_billing_home(self, mock_upcoming_invoice: mock.Mock,
                           mock_customer_with_subscription: mock.Mock) -> None:
-        user = self.example_user("hamlet")
+        user = self.example_user("iago")
         self.login(user.email)
         # No Customer yet; check that we are redirected to /upgrade
         response = self.client_get("/billing/")
@@ -318,8 +317,9 @@ class StripeTest(ZulipTestCase):
         self.assertEqual('/upgrade/', response.url)
 
         Customer.objects.create(
-            realm=user.realm, stripe_customer_id=self.stripe_customer_id, billing_user=user,
+            realm=user.realm, stripe_customer_id=self.stripe_customer_id,
             has_billing_relationship=True)
+
         response = self.client_get("/billing/")
         self.assert_not_in_success_response(['We can also bill by invoice'], response)
         for substring in ['Your plan will renew on', '$%s.00' % (80 * self.quantity,),
@@ -350,7 +350,8 @@ class StripeTest(ZulipTestCase):
 
     def test_subscribe_customer_to_second_plan(self) -> None:
         with self.assertRaisesRegex(BillingError, 'subscribing with existing subscription'):
-            do_subscribe_customer_to_plan(mock_customer_with_subscription(),
+            do_subscribe_customer_to_plan(self.example_user("iago"),
+                                          mock_customer_with_subscription(),
                                           self.stripe_plan_id, self.quantity, 0)
 
     def test_sign_string(self) -> None:
