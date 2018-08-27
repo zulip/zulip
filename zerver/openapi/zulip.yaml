@@ -852,7 +852,7 @@ paths:
                   - $ref: '#/components/schemas/JsonError'
                   - example:
                       {
-                          "msg": "Topic is not there in the muted_topics list",
+                          "msg": "Topic is not muted",
                           "result": "error"
                       }
   /realm/filters:
