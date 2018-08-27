@@ -49,8 +49,19 @@ ContributorsJSON = TypedDict('ContributorsJSON', {
 
 
 def fetch_contributors(repo_link: str) -> Optional[List[Dict[str, Dict[str, Any]]]]:
-    r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'))  # type: requests.Response
+    r = requests.get(repo_link, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'),
+                     auth=(os.environ.get('GITHUB_USERNAME'), os.environ.get('GITHUB_PASSWORD')))  # type: requests.Response
     return r.json() if r.status_code == 200 else None
+
+def fetch_name(username: str) -> str:
+    user_url = 'https://api.github.com/users/' + username
+    default_name = '@' + username
+    r = requests.get(user_url, verify=os.environ.get('CUSTOM_CA_CERTIFICATES'),
+                     auth=(os.environ.get('GITHUB_USERNAME'), os.environ.get('GITHUB_PASSWORD')))  # type: requests.Response
+
+    # `name` might be set to `None` instead of just being empty, so a default
+    # `get` parameter won't handle names. (They'll show as `null`.)
+    return (r.json().get('name') if r.json() else None) or default_name
 
 def write_to_disk(json_data: ContributorsJSON, out_file: str) -> None:
     with open(out_file, 'w') as f:
@@ -86,6 +97,10 @@ def run_production() -> None:
     data = dict(date=str(date.today()), contrib=[])  # type: ContributorsJSON
     contribs_list = {}  # type: Dict[str, Dict[str, Union[str, int]]]
 
+    # Store the names for each username to decrease the number of requests,
+    # instead of re-fetching for different repositories.
+    names_list = {}  # type: Dict[str, str]
+
     for _ in range(args.max_retries):
         repos_done = []
         for name, link in repositories.items():
@@ -108,8 +123,14 @@ def run_production() -> None:
                     total = contrib.get('total')
                     assert total is not None  # TODO: To improve/clarify
 
+                    full_name = names_list.get(username)
+                    if not full_name:
+                        full_name = fetch_name(username)
+                        names_list[username] = full_name
+
                     contrib_data = {
                         'avatar': avatar,
+                        'name': full_name,
                         name: total,
                     }
                     if username in contribs_list:
@@ -141,8 +162,8 @@ def run_production() -> None:
         if not args.not_required:
             sys.exit(1)
 
-    for contributor_name, contributor_data in contribs_list.items():
-        contributor_data['name'] = contributor_name
+    for contributor_username, contributor_data in contribs_list.items():
+        contributor_data['username'] = contributor_username
         data['contrib'].append(contributor_data)
 
     write_to_disk(data, settings.CONTRIBUTORS_DATA)

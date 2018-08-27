@@ -287,7 +287,9 @@ the current version of Zulip in the /about page.  These data are
 fetched using the GitHub API with `tools/update-authors-json`.  In
 development, it just returns some basic test data to avoid adding load
 to GitHub's APIs unnecessarily; it's primarily run as part of building
-a release tarball.
+a release tarball. `tools/update-authors-json` often must be run with GitHub
+authentication to prevent rate-limiting, through the environment variables
+`GITHUB_USERNAME` and `GITHUB_PASSWORD`.
 
 ## Modifying provisioning
 

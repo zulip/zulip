@@ -21,7 +21,6 @@ function contrib_total_commits(contrib) {
 
 // TODO (for v2 of /team contributors):
 //   - Make tab header responsive.
-//   - Display full name instead of github username.
 export default function render_tabs() {
     var template = _.template($('#contributors-template').html());
 
@@ -36,6 +35,7 @@ export default function render_tabs() {
     var total_tab_html = _.chain(contributors_list)
         .map(function (c) {
             return {
+                username: c.username,
                 name: c.name,
                 avatar: c.avatar,
                 commits: contrib_total_commits(c),
@@ -62,6 +62,7 @@ export default function render_tabs() {
                     .reverse()
                     .map(function (c) {
                         return template({
+                            username: c.username,
                             name: c.name,
                             avatar: c.avatar,
                             commits: c[repo],
