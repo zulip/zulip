@@ -19,7 +19,8 @@ exports.suspect_offline = false;
 
 function get_events_success(events) {
     var messages = [];
-    var messages_to_update = [];
+    var update_message_events = [];
+    var post_message_events = [];
     var new_pointer;
 
     var clean_event = function clean_event(event) {
@@ -69,7 +70,13 @@ function get_events_success(events) {
             break;
 
         case 'update_message':
-            messages_to_update.push(event);
+            update_message_events.push(event);
+            break;
+
+        case 'delete_message':
+        case 'submessage':
+        case 'update_message_flags':
+            post_message_events.push(event);
             break;
 
         default:
@@ -116,9 +123,9 @@ function get_events_success(events) {
         home_msg_list.select_id(home_msg_list.first().id, {then_scroll: false});
     }
 
-    if (messages_to_update.length !== 0) {
+    if (update_message_events.length !== 0) {
         try {
-            message_events.update_messages(messages_to_update);
+            message_events.update_messages(update_message_events);
         } catch (ex3) {
             blueslip.error('Failed to update messages\n' +
                            blueslip.exception_msg(ex3),
@@ -126,6 +133,13 @@ function get_events_success(events) {
                            ex3.stack);
         }
     }
+
+    // We do things like updating message flags and deleting messages last,
+    // to avoid ordering issues that are caused by batch handling of
+    // messages above.
+    _.each(post_message_events, function (event) {
+        server_events_dispatch.dispatch_normal_event(event);
+    });
 }
 
 function get_events(options) {
