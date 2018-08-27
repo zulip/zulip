@@ -970,6 +970,11 @@ a.bottom-signup-button {
     border-bottom-color: #fff;
 }
 
+.contributors-list {
+    margin-left: -40px;
+    width: calc(100% + 80px);
+}
+
 .contributors {
     display: none;
 }
@@ -1906,6 +1911,11 @@ input.new-organization-button {
 
     .line-break-desktop {
         display: none;
+    }
+
+    .contributors-list {
+        width: 100%;
+        margin-left: 0px;
     }
 }
 
