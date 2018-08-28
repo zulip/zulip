@@ -73,27 +73,27 @@ exports.last_seen_status_from_date = function (last_active_date, current_date) {
         return i18n.t("Just now");
     }
     if (minutes < 60) {
-        return i18n.t("Last seen __minutes__ minutes ago", {minutes: minutes});
+        return i18n.t("__minutes__ minutes ago", {minutes: minutes});
     }
 
     var hours = Math.floor(minutes / 60);
     if (hours === 1) {
-        return i18n.t("Last seen an hour ago");
+        return i18n.t("An hour ago");
     }
     if (hours < 24) {
-        return i18n.t("Last seen __hours__ hours ago", {hours: hours});
+        return i18n.t("__hours__ hours ago", {hours: hours});
     }
 
     var days = Math.floor(hours / 24);
     if (days === 1) {
-        return [i18n.t("Last seen yesterday")];
+        return [i18n.t("Yesterday")];
     }
     if (days < 365) {
-        return i18n.t("Last seen on __last_active__",
+        return i18n.t("On __last_active__",
                       {last_active: last_active_date.toString("MMM\xa0dd")});
     }
 
-    return i18n.t("Last seen on __last_active_date__",
+    return i18n.t("On __last_active_date__",
                   {last_active_date: last_active_date.toString("MMM\xa0dd,\xa0yyyy")});
 };
 

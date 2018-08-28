@@ -241,34 +241,34 @@ run_test('last_seen_status_from_date', () => {
                 i18n.t("Just now"));
 
     assert_same(function (d) { return d.addMinutes(-30); },
-                i18n.t("Last seen 30 minutes ago"));
+                i18n.t("30 minutes ago"));
 
     assert_same(function (d) { return d.addHours(-1); },
-                i18n.t("Last seen an hour ago"));
+                i18n.t("An hour ago"));
 
     assert_same(function (d) { return d.addHours(-2); },
-                i18n.t("Last seen 2 hours ago"));
+                i18n.t("2 hours ago"));
 
     assert_same(function (d) { return d.addHours(-20); },
-                i18n.t("Last seen 20 hours ago"));
+                i18n.t("20 hours ago"));
 
     assert_same(function (d) { return d.addDays(-1); },
-                i18n.t("Last seen yesterday"));
+                i18n.t("Yesterday"));
 
     assert_same(function (d) { return d.addDays(-2); },
-                i18n.t("Last seen on Feb 28"));
+                i18n.t("On Feb 28"));
 
     assert_same(function (d) { return d.addDays(-61); },
-                i18n.t("Last seen on Dec 31"));
+                i18n.t("On Dec 31"));
 
     assert_same(function (d) { return d.addDays(-300); },
-                i18n.t("Last seen on May 06"));
+                i18n.t("On May 06"));
 
     assert_same(function (d) { return d.addDays(-366); },
-                i18n.t("Last seen on Mar 01, 2015"));
+                i18n.t("On Mar 01, 2015"));
 
     assert_same(function (d) { return d.addYears(-3); },
-                i18n.t("Last seen on Mar 01, 2013"));
+                i18n.t("On Mar 01, 2013"));
 
 });
 
