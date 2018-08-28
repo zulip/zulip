@@ -140,6 +140,10 @@ def send_apple_push_notification(user_id: int, devices: List[DeviceToken],
         if result is None:
             result = "HTTP error, retries exhausted"
 
+        if result[0] == "Unregistered":
+            # For some reason, "Unregistered" result values have a
+            # different format, as a tuple of the pair ("Unregistered", 12345132131).
+            result = result[0]  # type: ignore # APNS API is inconsistent
         if result == 'Success':
             logging.info("APNs: Success sending for user %d to device %s",
                          user_id, device.token)

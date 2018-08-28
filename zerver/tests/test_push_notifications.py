@@ -391,7 +391,7 @@ class HandlePushNotificationTest(PushNotificationTest):
                     "GCM: Sent %s as %s" % (token, message.id))
 
             # Now test the unregistered case
-            mock_apns.get_notification_result.return_value = 'Unregistered'
+            mock_apns.get_notification_result.return_value = ('Unregistered', 1234567)
             apn.handle_push_notification(self.user_profile.id, missed_message)
             for _, _, token in apns_devices:
                 mock_info.assert_any_call(
