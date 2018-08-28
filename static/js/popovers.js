@@ -191,6 +191,7 @@ function show_user_profile(element, user) {
 
         profile_field.name = field.name;
         profile_field.is_user_field = false;
+        profile_field.type = field_type;
         if (field_value) {
             if (field_type === field_types.DATE.id) {
                 profile_field.value = moment(field_value).format(localFormat);
