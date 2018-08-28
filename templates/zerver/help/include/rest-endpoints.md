@@ -5,6 +5,7 @@
 * [Render a message](/api/render-message)
 * [Upload a file](/api/upload-file)
 * [Construct a narrow](/api/construct-narrow)
+* [Update a message's flags](/api/update-message-flags)
 
 #### Streams
 
