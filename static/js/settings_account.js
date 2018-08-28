@@ -447,6 +447,14 @@ exports.set_up = function () {
         }, 5000);
     });
 
+    $("#show_my_user_profile_modal").on('click', function (e) {
+        overlays.close_overlay("settings");
+        var user = people.get_person_from_user_id(people.my_current_user_id());
+        setTimeout(function () {
+            popovers.show_user_profile(e.target, user);
+        }, 100);
+    });
+
 
     function upload_avatar(file_input) {
         var form_data = new FormData();

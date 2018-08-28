@@ -20,8 +20,6 @@ exports.field_type_id_to_string = function (type_id) {
                 field_type_str = "Date";
             } else if (field_type.name === "Person picker") {
                 field_type_str = "Person";
-            } else if (field_type.name === "List of options") {
-                field_type_str = "List";
             } else {
                 field_type_str = field_type.name;
             }

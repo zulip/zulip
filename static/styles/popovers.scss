@@ -179,7 +179,7 @@ ul.remind_me_popover .remind_icon {
 }
 
 .user-profile-key-value-section {
-    margin: 8px 0;
+    margin-top: 8px;
 }
 
 .user-profile-modal-content {
@@ -200,9 +200,13 @@ ul.remind_me_popover .remind_icon {
 
 #user-profile-modal-body {
     padding-bottom: 10px;
-    padding-top: 10px;
+    padding-top: 4px;
     margin-bottom: 10px;
     margin-top: 10px;
+}
+
+#user-profile-modal #user-profile-modal-body .exit-sign {
+    font-size: 1.5rem;
 }
 
 .user-profile-modal-edit-button {
