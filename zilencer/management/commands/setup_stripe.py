@@ -1,5 +1,5 @@
 from zerver.lib.management import ZulipBaseCommand
-from zilencer.models import Plan, Coupon
+from zilencer.models import Plan, Coupon, Customer
 from zproject.settings import get_secret
 
 from typing import Any
@@ -11,7 +11,9 @@ class Command(ZulipBaseCommand):
     help = """Script to add the appropriate products and plans to Stripe."""
 
     def handle(self, *args: Any, **options: Any) -> None:
+        Customer.objects.all().delete()
         Plan.objects.all().delete()
+        Coupon.objects.all().delete()
 
         # Zulip Cloud offerings
         product = stripe.Product.create(
