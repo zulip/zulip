@@ -17,7 +17,7 @@ class zulip::redis {
   }
 
   exec { 'rediscleanup':
-    onlyif  => "echo '80a4cee76bac751576c3db8916fc50a6ea319428 /etc/redis/redis.conf' | sha1sum -c",
+    onlyif  => 'echo "80a4cee76bac751576c3db8916fc50a6ea319428 /etc/redis/redis.conf" | sha1sum -c',
     command => 'head -n-3 /etc/redis/redis.conf | sponge /etc/redis/redis.conf',
   }
 

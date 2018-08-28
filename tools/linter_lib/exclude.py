@@ -5,6 +5,7 @@ EXCLUDED_FILES = [
     "puppet/apt/README.md",
     "puppet/apt/manifests/backports.pp",
     "puppet/apt/manifests/params.pp",
+    "puppet/apt/manifests/release.pp",
     "puppet/apt/manifests/unattended_upgrades.pp",
     "puppet/stdlib/tests/file_line.pp",
     "static/third",

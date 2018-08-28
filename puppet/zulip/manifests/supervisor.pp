@@ -45,7 +45,7 @@ class zulip::supervisor {
       # We use supervisor[d] as the pattern so the bash/grep commands don't match.
       hasrestart => true,
       # lint:ignore:140chars
-      restart    => "bash -c 'if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi'"
+      restart    => 'bash -c "if pgrep -f supervisor[d] >/dev/null; then supervisorctl reread && supervisorctl update; else /etc/init.d/supervisor start; fi"'
       # lint:endignore
     }
   }

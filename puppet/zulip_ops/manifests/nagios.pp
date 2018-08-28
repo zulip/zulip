@@ -126,12 +126,12 @@ class zulip_ops::nagios {
 
   exec { 'fix_nagios_permissions':
     command => 'dpkg-statoverride --update --add nagios www-data 2710 /var/lib/nagios3/rw',
-    unless  => "bash -c 'ls -ld /var/lib/nagios3/rw | grep ^drwx--s--- -q'",
+    unless  => 'bash -c "ls -ld /var/lib/nagios3/rw | grep ^drwx--s--- -q"',
     notify  => Service['nagios3'],
   }
   exec { 'fix_nagios_permissions2':
     command => 'dpkg-statoverride --update --add nagios nagios 751 /var/lib/nagios3',
-    unless  => "bash -c 'ls -ld /var/lib/nagios3 | grep ^drwxr-x--x -q'",
+    unless  => 'bash -c "ls -ld /var/lib/nagios3 | grep ^drwxr-x--x -q"',
     notify  => Service['nagios3'],
   }
 
