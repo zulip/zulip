@@ -3027,6 +3027,10 @@ def do_change_plan_type(user: UserProfile, plan_type: int) -> None:
                                  realm=realm, acting_user=user, event_time=timezone_now(),
                                  extra_data={'old_value': old_value, 'new_value': plan_type})
 
+    if plan_type == Realm.PREMIUM:
+        realm.max_invites = 1000000000
+        realm.save(update_fields=['_max_invites'])
+
 def do_change_default_sending_stream(user_profile: UserProfile, stream: Optional[Stream],
                                      log: bool=True) -> None:
     user_profile.default_sending_stream = stream
