@@ -1624,15 +1624,21 @@ def check_send_typing_notification(sender: UserProfile, notification_to: Sequenc
 # check_typing_notification:
 # Returns typing notification ready for sending with do_send_typing_notification on success
 # or the error message (string) on error.
-def check_typing_notification(sender: UserProfile, notification_to: Sequence[str],
+def check_typing_notification(sender: UserProfile,
+                              notification_to: Union[Sequence[str], Sequence[int]],
                               operator: str) -> Dict[str, Any]:
     if len(notification_to) == 0:
         raise JsonableError(_('Missing parameter: \'to\' (recipient)'))
     elif operator not in ('start', 'stop'):
         raise JsonableError(_('Invalid \'op\' value (should be start or stop)'))
+
     try:
-        recipient = recipient_for_emails(notification_to, False,
-                                         sender, sender)
+        if isinstance(notification_to[0], str):
+            emails = cast(Sequence[str], notification_to)
+            recipient = recipient_for_emails(emails, False, sender, sender)
+        elif isinstance(notification_to[0], int):
+            user_ids = cast(Sequence[int], notification_to)
+            recipient = recipient_for_user_ids(user_ids, sender)
     except ValidationError as e:
         assert isinstance(e.messages[0], str)
         raise JsonableError(e.messages[0])
