@@ -210,6 +210,178 @@ paths:
                         "result": "error"
                     }
   /messages:
+    get:
+      description: Fetch messages that match a specific narrow.
+      parameters:
+      - name: anchor
+        in: query
+        description: A message ID. Required unless `use_first_unread_anchor`
+          is set to true.
+        schema:
+          type: integer
+        example: 42
+      - name: use_first_unread_anchor
+        in: query
+        description: Whether to use the first unread message as the `anchor`.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: num_before
+        in: query
+        description: The number of messages to retrieve before the anchor
+          value.
+        schema:
+          type: integer
+        example: 4
+        required: true
+      - name: num_after
+        in: query
+        description: The number of messages to retrieve after the anchor
+          value.
+        schema:
+          type: integer
+        example: 8
+        required: true
+      - name: narrow
+        in: query
+        description: The narrow where you want to fetch the messages from.
+          See how to [construct a narrow](/api/construct-narrow).
+        schema:
+          type: array
+          items:
+            type: object
+          default: []
+        example: [{"operator": "sender", "operand"}]
+      - name: client_gravatar
+        in: query
+        description: Whether to get the `avatar_url` in the response or not.
+          When this is set to `true`, `avatar_url` won't be sent.
+        schema:
+          type: boolean
+          default: false
+        example: true
+      - name: apply_markdown
+        in: query
+        description: Set to `true` if you would like the content to be
+          rendered in HTML format (by default, the API returns the raw text
+          that the user entered).
+        schema:
+          type: boolean
+          default: true
+        example: false
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    anchor:
+                      type: integer
+                      description: The same `anchor` specified in the request.
+                    found_newest:
+                      type: boolean
+                      description: Whether the `messages` list includes the
+                        latest message in the narrow or not.
+                    found_oldest:
+                      type: boolean
+                      description: Whether the `messages` list includes the
+                        oldest message in the narrow or not.
+                    found_anchor:
+                      type: boolean
+                      description: Whether it was possible to fetch the
+                        requested anchor, or the closest in the narrow has
+                        been used.
+                    messages:
+                      type: array
+                      items:
+                        type: object
+                - example:
+                    {
+                        "anchor": 21,
+                        "found_newest": true,
+                        "found_anchor": true,
+                        "result": "success",
+                        "msg": "",
+                        "messages": [
+                            {
+                                "subject": "",
+                                "sender_realm_str": "zulip",
+                                "type": "private",
+                                "content": "<p>Security experts agree that relational algorithms are an interesting new topic in the field of networking, and scholars concur.</p>",
+                                "flags": [
+                                    "read"
+                                ],
+                                "id": 16,
+                                "display_recipient": [
+                                    {
+                                        "short_name": "hamlet",
+                                        "id": 4,
+                                        "is_mirror_dummy": false,
+                                        "email": "hamlet@zulip.com",
+                                        "full_name": "King Hamlet"
+                                    },
+                                    {
+                                        "short_name": "iago",
+                                        "id": 5,
+                                        "is_mirror_dummy": false,
+                                        "email": "iago@zulip.com",
+                                        "full_name": "Iago"
+                                    },
+                                    {
+                                        "short_name": "prospero",
+                                        "id": 8,
+                                        "is_mirror_dummy": false,
+                                        "email": "prospero@zulip.com",
+                                        "full_name": "Prospero from The Tempest"
+                                    }
+                                ],
+                                "content_type": "text/html",
+                                "is_me_message": false,
+                                "sender_short_name": "hamlet",
+                                "timestamp": 1527921326,
+                                "sender_id": 4,
+                                "sender_full_name": "King Hamlet",
+                                "recipient_id": 27,
+                                "subject_links": [],
+                                "client": "populate_db",
+                                "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                                "submessages": [],
+                                "sender_email": "hamlet@zulip.com",
+                                "reactions": []
+                            },
+                            {
+                                "subject": "Verona3",
+                                "stream_id": 5,
+                                "sender_realm_str": "zulip",
+                                "type": "stream",
+                                "content": "<p>Wait, is this from the frontend js code or backend python code</p>",
+                                "flags": [
+                                    "read"
+                                ],
+                                "id": 21,
+                                "display_recipient": "Verona",
+                                "content_type": "text/html",
+                                "is_me_message": false,
+                                "sender_short_name": "hamlet",
+                                "timestamp": 1527939746,
+                                "sender_id": 4,
+                                "sender_full_name": "King Hamlet",
+                                "recipient_id": 20,
+                                "subject_links": [],
+                                "client": "populate_db",
+                                "avatar_url": "https://secure.gravatar.com/avatar/6d8cad0fd00256e7b40691d27ddfd466?d=identicon&version=1",
+                                "submessages": [],
+                                "sender_email": "hamlet@zulip.com",
+                                "reactions": []
+                            }
+                        ]
+                    }
     post:
       description: Send a message.
       parameters:
@@ -288,6 +460,42 @@ paths:
                         "result": "error"
                     }
   /messages/{message_id}:
+    get:
+      description: Get the raw content of a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message to read.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    raw_content:
+                      type: string
+                      description: The raw content of the message.
+                - example:
+                    {
+                        "raw_content": "**Don't** forget your towel!",
+                        "result": "success",
+                        "msg": ""
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
     patch:
       description: Edit a message that has already been sent.
       parameters:
@@ -356,6 +564,104 @@ paths:
                         "msg": "You don't have permission to edit this message",
                         "result": "error"
                     }
+    delete:
+      description: Delete a message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message to delete.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+      - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/JsonSuccess'
+        '400_invalid_message':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
+        '400_not_admin':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/CodedError'
+                - example:
+                    {
+                        "code": "BAD_REQUEST",
+                        "msg": "You don't have permission to delete this message",
+                        "result": "error"
+                    }
+  /messages/{message_id}/history:
+    get:
+      description: Get the different versions of a previously edited message.
+      parameters:
+      - name: message_id
+        in: path
+        description: The ID of the message which history you want to fetch.
+        schema:
+          type: integer
+        example: 42
+        required: true
+      security:
+        - basicAuth: []
+      responses:
+        '200':
+          description: Success.
+          content:
+            application/json:
+              schema:
+                allOf:
+                - $ref: '#/components/schemas/JsonSuccess'
+                - properties:
+                    message_history:
+                      type: array
+                      items:
+                        type: object
+                      description: A chronologically sorted array of
+                        `snapshot` objects, each one with the values of the
+                        message after the edition.
+                - example:
+                    {
+                        "message_history": [
+                            {
+                                "content": "Hello!",
+                                "topic": "party at my houz",
+                                "rendered_content": "<p>Hello!</p>",
+                                "timestamp": 1530129122,
+                                "user_id": 5
+                            },
+                            {
+                                "topic": "party at my house",
+                                "content": "Howdy!",
+                                "prev_content": "Hello!",
+                                "rendered_content": "<p>Howdy!</p>",
+                                "user_id": 5,
+                                "prev_rendered_content": "<p>Hello!</p>",
+                                "content_html_diff": "<div><p><span class=\"highlight_text_inserted\">Howdy!</span></p> <p><span class=\"highlight_text_deleted\">Hello!</span></p></div>",
+                                "prev_topic": "party at my houz",
+                                "timestamp": 1530129134
+                            }
+                        ],
+                        "msg": "",
+                        "result": "success"
+                    }
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InvalidMessageError'
   /messages/render:
     post:
       description: Render a message to HTML.
@@ -908,7 +1214,7 @@ paths:
       - name: apply_markdown
         in: query
         description: Set to `true` if you would like the content to be
-          rendered in HTML format (by default, the API returns the raw text
+          rendered in HTML format (otherwise the API will return the raw text
           that the user entered)
         schema:
           type: boolean
@@ -1295,6 +1601,19 @@ components:
               "code": "BAD_EVENT_QUEUE_ID",
               "msg": "Bad event queue id: 1518820930:1",
               "queue_id": "1518820930:1",
+              "result": "error"
+          }
+    InvalidMessageError:
+      allOf:
+      - $ref: '#/components/schemas/JsonSuccess'
+      - properties:
+          raw_content:
+            type: string
+            description: The raw content of tshe message.
+      - example:
+          {
+              "msg": "Invalid message(s)",
+              "code": "BAD_REQUEST",
               "result": "error"
           }
     NonExistingStreamError:

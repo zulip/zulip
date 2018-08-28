@@ -1,10 +1,14 @@
 #### Messages
 
+* [Get messages](/api/get-messages)
+* [Get a raw message](/api/get-raw-message)
 * [Send a message](/api/send-message)
 * [Update a message](/api/update-message)
 * [Render a message](/api/render-message)
 * [Upload a file](/api/upload-file)
+* [Delete a message](/api/delete-message)
 * [Construct a narrow](/api/construct-narrow)
+* [Get a message's history](/api/get-message-history)
 
 #### Streams
 
