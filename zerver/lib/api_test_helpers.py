@@ -474,6 +474,16 @@ def deregister_queue(client, queue_id):
     result = client.deregister(queue_id)
     validate_against_openapi_schema(result, '/events', 'delete', '400')
 
+def get_server_settings(client):
+    # type: (Client) -> None
+
+    # {code_example|start}
+    # Fetch the settings for this server
+    result = client.get_server_settings()
+    # {code_example|end}
+
+    validate_against_openapi_schema(result, '/server_settings', 'get', '200')
+
 def upload_file(client):
     # type: (Client) -> None
     fp = StringIO("zulip")
@@ -562,6 +572,7 @@ TEST_FUNCTIONS = {
     '/realm/filters:post': add_realm_filter,
     '/register:post': register_queue,
     '/events:delete': deregister_queue,
+    '/server_settings:get': get_server_settings,
     '/user_uploads:post': upload_file,
     '/users/me/{stream_id}/topics:get': get_stream_topics,
     '/typing:post': set_typing_status,
@@ -666,6 +677,7 @@ def test_server_organizations(client):
     # type: (Client) -> None
 
     add_realm_filter(client)
+    get_server_settings(client)
 
 def test_errors(client):
     # type: (Client) -> None
