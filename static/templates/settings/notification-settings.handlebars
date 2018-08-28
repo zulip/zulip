@@ -102,6 +102,11 @@
               "is_checked" page_params.enable_digest_emails
               "label" settings_label.enable_digest_emails}}
 
+            {{partial "settings_checkbox"
+              "setting_name" "enable_login_emails"
+              "is_checked" page_params.enable_login_emails
+              "label" settings_label.enable_login_emails}}
+
             <div class="input-group {{#unless page_params.enable_offline_email_notifications}}control-label-disabled{{/unless}}">
                 <label class="checkbox">
                     <input type="checkbox" name="message_content_in_email_notifications"
