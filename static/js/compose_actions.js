@@ -104,7 +104,11 @@ function clear_box() {
 }
 
 exports.autosize_message_content = function () {
-    $("#compose-textarea").autosize();
+    $("#compose-textarea").autosize({
+        callback: function () {
+            compose_actions.maybe_scroll_up_selected_message();
+        },
+    });
 };
 
 exports.expand_compose_box = function () {
